@@ -15,6 +15,7 @@ export default withMermaid(
   defineConfig({
     title: 'Nubisco',
     description: 'Nubisco UI Documentation',
+    base: '/ui/',
     appearance: false,
     markdown: {
       config(md) {
