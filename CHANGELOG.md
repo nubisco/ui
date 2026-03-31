@@ -1,3 +1,9 @@
+## [1.0.4](https://github.com/nubisco/ui/compare/v1.0.3...v1.0.4) (2026-03-31)
+
+### Bug Fixes
+
+- set vitepress base to /ui/ for github pages deployment ([66cd76f](https://github.com/nubisco/ui/commit/66cd76fb5cb712e1600a22ad57114ec3cfcaae6e))
+
 ## [1.0.3](https://github.com/nubisco/ui/compare/v1.0.2...v1.0.3) (2026-03-31)
 
 ### Bug Fixes
