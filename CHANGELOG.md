@@ -1,3 +1,9 @@
+## [1.0.3](https://github.com/nubisco/ui/compare/v1.0.2...v1.0.3) (2026-03-31)
+
+### Bug Fixes
+
+- **docs:** format VitePress config for Prettier compliance ([8b0563f](https://github.com/nubisco/ui/commit/8b0563f3481e370780c9cc2cf6bf160ef15cf3d6))
+
 ## [1.0.2](https://github.com/nubisco/ui/compare/v1.0.1...v1.0.2) (2026-03-31)
 
 ### Bug Fixes
