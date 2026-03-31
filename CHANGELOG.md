@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/nubisco/ui/compare/v1.0.0...v1.0.1) (2026-03-31)
+
+### Bug Fixes
+
+- **logo:** fix the project logo path in README.md re [#1](https://github.com/nubisco/ui/issues/1) ([7a9caf7](https://github.com/nubisco/ui/commit/7a9caf745b4c482dd4c9a0cbcb2fb9da0ecc2113))
+
 # 1.0.0 (2026-03-31)
 
 ### Bug Fixes
