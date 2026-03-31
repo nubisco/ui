@@ -1,0 +1,45 @@
+@use 'sass:list';
+@use 'sass:meta';
+@use 'sass:math';
+@use '../variables/grid';
+
+@function generate-list($value) {
+  $result: 0;
+  @for $i from 1 through $value {
+    $result: list.append($result, $i);
+  }
+  @return $result;
+}
+
+$var-columns: generate-list(grid.$grid-columns) !default;
+
+@function remove-nth($list, $index) {
+  $result: null;
+
+  @if meta.type-of($index) != number {
+    @warn "$index: #{quote($index)} is not a number for `remove-nth`.";
+  } @else if $index == 0 {
+    @warn "List index 0 must be a non-zero integer for `remove-nth`.";
+  } @else if math.abs($index) > list.length($list) {
+    @warn "List index is #{$index} but list is only #{length($list)} item long for `remove-nth`.";
+  } @else {
+    $result: ();
+    @if $index < 0 {
+      $index: list.length($list) + $index + 1;
+    }
+
+    @for $i from 1 through list.length($list) {
+      @if $i != $index {
+        $result: list.append($result, list.nth($list, $i));
+      }
+    }
+  }
+
+  @return $result;
+}
+
+$var-columns-top: remove-nth($var-columns, 1);
+$var-columns-bottom: remove-nth(
+  $var-columns-top,
+  list.length($var-columns-top)
+);

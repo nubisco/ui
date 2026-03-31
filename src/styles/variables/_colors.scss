@@ -1,0 +1,46 @@
+@use 'sass:map';
+
+@use '../logic' as logic;
+@forward '../logic';
+
+// Initial map of color values
+// https: //coolors.co/10151c-ffffff-f7f6f5-ebe7e4-79a1f1-37061d-c4793c-f7645d-8c8c8c-d8d8d8
+// Colors starting with `nubisco` are specifically defined by the designer, other colors are infered from designs
+/// @type Map
+/// @access public
+/// @group @nubisco/colors
+$colors: (
+  grape-hyacinth: #5c35c4,
+  plain-white: #ffffff,
+  plain-black: #000000,
+  french-gray: #a7a7a7,
+  liberty-blue: #4d4f8c,
+  powder-blue: #b5b8e7,
+  emerald-reflection: #4acf7b,
+  the-blues-brothers: #214da6,
+  phoenix-flames: #f59e0b,
+  chicken-comb: #dc2626,
+  nouveau-gray: #6b7280,
+);
+
+$palette: ();
+
+@each $key, $value in $colors {
+  $shades: ();
+  $shades: map.merge(
+    $shades,
+    (
+      $key: logic.make-shades($value),
+    )
+  );
+  $palette: map.merge($palette, $shades);
+}
+
+/// Returns the color value from a color name and level
+/// @param {String} $name - The name of the color in the $colors list
+/// @param {level} $level - The color step level, defaults to 500
+/// @access private
+/// @group @nubisco/colors
+@function get-color($name, $level: 500) {
+  @return map.get(map.get($palette, $name), $level);
+}

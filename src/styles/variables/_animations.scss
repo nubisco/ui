@@ -1,0 +1,10 @@
+/// Animation delay base values
+/// @type Array
+/// @access public
+/// @group @nubisco/animations
+$timings: (
+  fast: 0.2s,
+  base: 0.3s,
+  slow: 0.4s,
+  xslow: 1s,
+) !default;

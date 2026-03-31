@@ -1,0 +1,117 @@
+@use 'sass:map';
+@use './common';
+@use '../variables/grid';
+
+@mixin generate-styles($prefix) {
+  // grid
+  @each $column in common.$var-columns-top {
+    &.#{$prefix}grid-#{$column} {
+      flex-basis: calc((100% * #{$column}) / #{grid.$grid-columns});
+      max-width: calc((100% * #{$column}) / #{grid.$grid-columns});
+      min-width: calc((100% * #{$column}) / #{grid.$grid-columns});
+    }
+  }
+  @each $column in common.$var-columns-bottom {
+    &.#{$prefix}shift-#{$column} {
+      margin-left: calc((100% * #{$column}) / #{grid.$grid-columns});
+    }
+  }
+
+  // direction
+  &.#{$prefix}row {
+    flex-direction: row;
+    // width: 100%;
+    // overflow-x: hidden;
+  }
+  &.#{$prefix}col {
+    flex-direction: column;
+    // width: 100%;
+  }
+
+  // wrap
+  &.#{$prefix}wrap {
+    flex-wrap: wrap;
+  }
+  &.#{$prefix}nowrap {
+    flex-wrap: nowrap;
+  }
+  &.#{$prefix}wrapreverse {
+    flex-wrap: wrap-reverse;
+  }
+
+  // order
+  &.#{$prefix}reverse {
+    &.#{$prefix}row,
+    &.row {
+      flex-direction: row-reverse;
+    }
+    &.#{$prefix}col,
+    &.col {
+      flex-direction: column-reverse;
+    }
+  }
+  &.#{$prefix}first {
+    order: -1;
+  }
+  &.#{$prefix}last {
+    order: 1;
+  }
+
+  // visibility
+  &.#{$prefix}hidden {
+    display: none;
+  }
+  &.#{$prefix}visible {
+    display: flex;
+  }
+
+  // vertical alignment
+  &.#{$prefix}align-stretch {
+    align-items: stretch;
+  }
+  &.#{$prefix}align-start {
+    align-items: flex-start;
+  }
+  &.#{$prefix}align-end {
+    align-items: flex-end;
+  }
+  &.#{$prefix}align-center {
+    align-items: center;
+  }
+  &.#{$prefix}align-base {
+    align-items: baseline;
+  }
+
+  // horizontal alignment
+  &.#{$prefix}justify-start {
+    justify-content: flex-start;
+  }
+  &.#{$prefix}justify-end {
+    justify-content: flex-end;
+  }
+  &.#{$prefix}justify-center {
+    justify-content: center;
+  }
+  &.#{$prefix}justify-between {
+    justify-content: space-between;
+  }
+  &.#{$prefix}justify-around {
+    justify-content: space-around;
+  }
+  &.#{$prefix}justify-evenly {
+    justify-content: space-evenly;
+  }
+  &.#{$prefix}justify-initial {
+    justify-content: initial;
+  }
+  &.#{$prefix}justify-inherit {
+    justify-content: inherit;
+  }
+
+  // gap
+  @each $gap in map.keys(grid.$gap-ratios) {
+    &.#{$prefix}gap-#{$gap} {
+      gap: map.get(grid.$gap-ratios, $gap);
+    }
+  }
+}

@@ -1,0 +1,53 @@
+@use '../config';
+
+/// Grid base value
+/// @type Number
+/// @access public
+/// @group @nubisco/layout
+$base-unit: 8 !default;
+
+/// preset sizes
+/// Some sizes fall outside the grid system by imposition from the designer
+/// @type Array
+/// @access public
+/// @group @nubisco/layout
+$presetSizes: (
+  titlebar-height: #{calc((var(--nb-base-unit) * 6) + 1px)},
+) !default;
+
+/// root based Z Index values
+/// @type Array
+/// @access public
+/// @group @nubisco/layout
+$zIndexesRoot: (
+  root: 0,
+  inspector: #{calc(var(--nb-zindex-root) + 1)},
+  table-rows: #{calc(var(--nb-zindex-root) + 1)},
+  table-rows-fixed: #{calc(var(--nb-zindex-root) + 2)},
+  table-rows-last-fixed: #{calc(var(--nb-zindex-root) + 3)},
+  tableheader: #{calc(var(--nb-zindex-root) + 5)},
+  select: #{calc(var(--nb-zindex-root) + 10)},
+  dropdown: #{calc(var(--nb-zindex-root) + 10)},
+  pageheader: #{calc(var(--nb-zindex-dropdown) + 1)},
+  splitviewhandle: #{calc(var(--nb-zindex-dropdown) + 2)},
+  // debug sits above all page-level overlays (dropdowns, split handles) but below app chrome
+  debug: #{calc(var(--nb-zindex-root) + 15)},
+  // split handle should be above the header which is calculated from the dropdown
+  titlebar: #{calc(var(--nb-zindex-root) + 20)},
+  // header components like select or dropdown will be able to overlap page components
+  navigation: #{calc(var(--nb-zindex-root) + 100)},
+  backdrop: #{calc(var(--nb-zindex-navigation) + 200)},
+  modal: #{calc(var(--nb-zindex-backdrop) + 1)},
+  toast: #{calc(var(--nb-zindex-modal) + 50)},
+  tooltip: #{calc(var(--nb-zindex-modal) + 100)},
+) !default;
+
+/// modal based Z Index values
+/// @type Array
+/// @access public
+/// @group @nubisco/layout
+$zIndexesModal: (
+  select: #{calc(var(--nb-zindex-modal) + 10)},
+  dropdown: #{calc(var(--nb-zindex-modal) + 10)},
+  debug: #{calc(var(--nb-zindex-modal) + 11)},
+) !default;

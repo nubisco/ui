@@ -1,0 +1,56 @@
+# Configuration for actions/labeler
+# Labels are applied to PRs based on file paths changed
+
+components:
+  - changed-files:
+      - any-glob-to-any-file: 'src/components/**'
+
+composables:
+  - changed-files:
+      - any-glob-to-any-file: 'src/composables/**'
+
+styles:
+  - changed-files:
+      - any-glob-to-any-file: 'src/styles/**'
+
+types:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/types/**'
+          - 'src/types.ts'
+
+utils:
+  - changed-files:
+      - any-glob-to-any-file: 'src/utils/**'
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file: 'tests/**'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**'
+          - '*.md'
+          - '!CHANGELOG.md'
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file: '.github/**'
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'package.json'
+          - 'pnpm-lock.yaml'
+
+tooling:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'tsconfig.json'
+          - 'tsconfig.eslint.json'
+          - 'vite.config.ts'
+          - 'vitest.config.ts'
+          - 'eslint.config.mjs'
+          - '.prettierrc'
+          - '.editorconfig'

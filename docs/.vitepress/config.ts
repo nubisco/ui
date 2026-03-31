@@ -1,0 +1,171 @@
+import { defineConfig } from 'vitepress'
+import svgLoader from 'vite-svg-loader'
+import path from 'path'
+import { tabsMarkdownPlugin } from './plugins/tabs/markdown'
+import { withMermaid } from './plugins/mermaid'
+import {
+  groupIconMdPlugin,
+  groupIconVitePlugin,
+} from 'vitepress-plugin-group-icons'
+import { icons } from '../../src/plugins/icons'
+import { flags } from '../../src/plugins/flags'
+import { fonts } from '../../src/plugins/fonts'
+
+export default withMermaid(
+  defineConfig({
+    title: 'Nubisco',
+    description: 'Nubisco UI Documentation',
+    appearance: false,
+    markdown: {
+      config(md) {
+        md.use(tabsMarkdownPlugin)
+        md.use(groupIconMdPlugin)
+      },
+    },
+    vite: {
+      plugins: [
+        svgLoader({
+          svgoConfig: {
+            plugins: [
+              {
+                name: 'preset-default',
+                params: {
+                  overrides: {
+                    convertPathData: false,
+                    mergePaths: false,
+                  },
+                },
+              },
+            ],
+          },
+        }),
+        groupIconVitePlugin(),
+        icons(path.resolve(__dirname, '../..')),
+        flags(path.resolve(__dirname, '../..')),
+        fonts(),
+      ],
+      resolve: {
+        alias: {
+          '@': path.resolve(__dirname, '../../src'),
+        },
+      },
+      server: {
+        fs: {
+          // Allow serving files from the workspace root and project source
+          allow: [
+            path.resolve(__dirname, '../..'), // Project root (src, assets, node_modules)
+          ],
+        },
+      },
+      ssr: {
+        noExternal: ['vue'],
+      },
+      css: {
+        preprocessorOptions: {
+          scss: {
+            // Force sass-embedded to use modern compiler API
+            api: 'modern-compiler',
+            // Alternatively, you can use 'modern' depending on your sass-embedded version
+            // api: 'modern'
+          },
+        },
+      },
+    },
+    themeConfig: {
+      siteTitle: 'Nubisco UI',
+      logo: { src: '/logo.svg', width: 24, height: 24 },
+      nav: [
+        { text: 'Home', link: '/' },
+        { text: 'Components', link: '/ui/components/modal' },
+      ],
+      sidebar: {
+        '/': [
+          {
+            text: 'Getting Started',
+            items: [
+              { text: 'Introduction', link: '/introduction' },
+              { text: 'Quickstart', link: '/quickstart' },
+            ],
+          },
+          {
+            text: 'Design System',
+            items: [
+              { text: 'Colors', link: '/principles/color' },
+              { text: 'Typography', link: '/principles/typography' },
+              { text: 'Z-Index', link: '/principles/z-index' },
+            ],
+          },
+          {
+            text: 'Code Conventions',
+            items: [
+              { text: 'Types, Interfaces & Enums', link: '/conventions/types' },
+            ],
+          },
+          {
+            text: 'UI Library',
+            items: [
+              {
+                text: 'Components',
+                items: [
+                  { text: 'AI Label', link: '/ui/components/ai-label' },
+                  { text: 'Badge', link: '/ui/components/badge' },
+                  { text: 'Button', link: '/ui/components/button/button.md' },
+                  { text: 'Checkbox', link: '/ui/components/checkbox' },
+                  { text: 'Color Strip', link: '/ui/components/color-strip' },
+                  {
+                    text: 'File Uploader',
+                    link: '/ui/components/file-uploader',
+                  },
+                  { text: 'Flag', link: '/ui/components/flag' },
+                  { text: 'Grid', link: '/ui/components/grid' },
+                  { text: 'Icon', link: '/ui/components/icon' },
+                  {
+                    text: 'Image Cropper',
+                    link: '/ui/components/image-cropper',
+                  },
+                  { text: 'Label', link: '/ui/components/label' },
+                  { text: 'Message', link: '/ui/components/message' },
+                  { text: 'Modal', link: '/ui/components/modal' },
+                  { text: 'Number Input', link: '/ui/components/number-input' },
+                  { text: 'Panel', link: '/ui/components/panel' },
+                  { text: 'Radio', link: '/ui/components/radio' },
+                  { text: 'Select', link: '/ui/components/select' },
+                  { text: 'Slider', link: '/ui/components/slider' },
+                  { text: 'Switch', link: '/ui/components/switch' },
+                  { text: 'Text Input', link: '/ui/components/text-input' },
+                  { text: 'Toast', link: '/ui/components/toast' },
+                ],
+              },
+              {
+                text: 'Composables',
+                items: [
+                  {
+                    text: 'useStableId',
+                    link: '/ui/composables/use-stable-id',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      socialLinks: [{ icon: 'github', link: 'https://github.com/nubisco/ui' }],
+      editLink: {
+        pattern: 'https://github.com/nubisco/ui/edit/master/docs/:path',
+        text: 'Edit this page on GitHub',
+      },
+      search: {
+        provider: 'local',
+      },
+      lastUpdated: {
+        text: 'Last updated',
+      },
+      footer: {
+        message:
+          'Released under the <a href="https://github.com/nubisco/ui/blob/master/LICENSE">MIT License</a>. · <a href="https://github.com/sponsors/joseporto">♥ Sponsor this project</a>',
+        copyright:
+          'Copyright © 2026 <a href="https://nubisco.io">Nubisco</a> · Inspired by <a href="https://carbondesignsystem.com" target="_blank" rel="noopener">IBM Carbon Design System</a>',
+      },
+    },
+  }),
+)

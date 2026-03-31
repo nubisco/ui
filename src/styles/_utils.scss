@@ -1,0 +1,37 @@
+@use 'config';
+
+.box {
+  &-borderless {
+    border: none !important;
+  }
+
+  &-rounded {
+    border-radius: var(--nb-base-unit) !important;
+  }
+
+  &-circled {
+    border-radius: 50%;
+  }
+
+  &-background {
+    background: var(--nb-c-surface) !important;
+  }
+
+  &-shadowless {
+    box-shadow: none !important;
+  }
+
+  &-tight {
+    > * {
+      padding: 0 !important;
+    }
+  }
+
+  &-clickable {
+    cursor: pointer !important;
+  }
+}
+
+.w-full {
+  width: 100%;
+}

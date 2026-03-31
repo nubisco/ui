@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://nubisco.github.io/ui/
+    about: Check the docs before opening an issue. Many setup and usage questions are already covered.
+  - name: Discussions
+    url: https://github.com/nubisco/ui/discussions
+    about: Ask questions and share tips with the community.
+  - name: Security policy
+    url: https://github.com/nubisco/ui/blob/master/SECURITY.md
+    about: Report vulnerabilities privately using the project's responsible disclosure process.

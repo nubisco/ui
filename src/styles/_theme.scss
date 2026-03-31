@@ -1,0 +1,365 @@
+@use 'sass:color';
+@use 'sass:map';
+@use 'config';
+@use 'variables/layout';
+@use 'variables/colors';
+@use 'variables/type';
+@use 'variables/grid';
+@use 'variables/animations';
+
+@mixin base {
+  :root {
+    --nb-base-unit: #{layout.$base-unit}px;
+
+    $tints:
+      100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800,
+      850, 900;
+    @each $colorKey, $colorValue in colors.$palette {
+      @each $tint in $tints {
+        --nb-c-#{$colorKey}-#{$tint}: #{colors.get-color($colorKey, $tint)};
+        --nb-c-#{$colorKey}-#{$tint}-a11y: #{colors.color-contrast(
+            colors.get-color($colorKey, $tint)
+          )};
+      }
+    }
+
+    /*
+    * root Z-Index
+    */
+    @each $key, $value in layout.$zIndexesRoot {
+      --nb-zindex-#{$key}: #{$value};
+    }
+
+    /*
+    * modal Z-Index (for teleported overlays opened from inside a modal)
+    */
+    @each $key, $value in layout.$zIndexesModal {
+      --nb-zindex-modal-#{$key}: #{$value};
+    }
+
+    /*
+    * root predefined sizes
+    */
+    @each $key, $value in layout.$presetSizes {
+      --nb-size-#{$key}: #{$value};
+    }
+
+    /*
+    * Font family
+    */
+    @each $key, $value in type.$fontFamilies {
+      --nb-font-family-#{$key}: #{$value};
+    }
+
+    /*
+    * Font size
+    */
+    @each $key, $value in type.$fontSizes {
+      --nb-font-size-#{$key}: #{$value};
+    }
+
+    /*
+    * Font weight
+    */
+    @each $key, $value in type.$fontWeight {
+      --nb-font-weight-#{$key}: #{$value};
+    }
+
+    /*
+    * Line heights
+    */
+    @each $key, $value in type.$lineHeights {
+      --nb-line-height-#{$key}: #{$value};
+    }
+
+    /*
+    * Letter spacing
+    */
+    @each $key, $value in type.$letterSpacing {
+      --nb-letter-spacing-#{$key}: #{$value};
+    }
+
+    /*
+    * Type sets (font-size + weight + line-height + letter-spacing bundles)
+    */
+    @each $name, $props in type.$typeSets {
+      $family: map.get($props, family);
+      --nb-type-#{$name}-size: var(--nb-font-size-#{map.get($props, size)});
+      --nb-type-#{$name}-weight: var(
+        --nb-font-weight-#{map.get($props, weight)}
+      );
+      --nb-type-#{$name}-line-height: #{map.get($props, line-height)};
+      --nb-type-#{$name}-letter-spacing: #{map.get($props, letter-spacing)};
+      --nb-type-#{$name}-family: var(
+        --nb-font-family-#{if(sass($family): $family; else: sans)}
+      );
+    }
+
+    /*
+    * Spacing sizes
+    */
+    @each $key, $value in type.$spacingSizes {
+      --nb-spacing-#{$key}: #{$value};
+    }
+
+    // Absolute color utilities — always pure white/black regardless of theme
+    --nb-c-white: #{colors.get-color('plain-white', 100)};
+    --nb-c-black: #{colors.get-color('plain-black', 900)};
+
+    // Semantic surface tokens — adapt between light and dark
+    --nb-c-surface: #{colors.get-color('plain-white', 100)}; // card/panel background (white in light)
+    --nb-c-contrast: #{colors.get-color('plain-black', 900)}; // maximum contrast on surface (near-black in light)
+    --nb-c-document: #{colors.get-color('plain-white', 50)}; // document background
+
+    // Semantic color variables for components
+    --nb-c-primary: var(--nb-c-grape-hyacinth-500);
+    --nb-c-primary-a11y: var(--nb-c-grape-hyacinth-500-a11y);
+    --nb-c-primary-hover: var(--nb-c-grape-hyacinth-600);
+    --nb-c-primary-hover-a11y: var(--nb-c-grape-hyacinth-600-a11y);
+    --nb-c-primary-active: var(--nb-c-grape-hyacinth-700);
+    --nb-c-primary-active-a11y: var(--nb-c-grape-hyacinth-700-a11y);
+
+    --nb-c-secondary: var(--nb-c-plain-black-700);
+    --nb-c-secondary-a11y: var(--nb-c-plain-black-700-a11y);
+    --nb-c-secondary-hover: var(--nb-c-plain-black-800);
+    --nb-c-secondary-hover-a11y: var(--nb-c-plain-black-800-a11y);
+    --nb-c-secondary-active: var(--nb-c-plain-black-850);
+    --nb-c-secondary-active-a11y: var(--nb-c-plain-black-850-a11y);
+
+    --nb-c-success: var(--nb-c-emerald-reflection-600);
+    --nb-c-success-a11y: var(--nb-c-emerald-reflection-600-a11y);
+    --nb-c-success-hover: var(--nb-c-emerald-reflection-700);
+    --nb-c-success-hover-a11y: var(--nb-c-emerald-reflection-700-a11y);
+    --nb-c-success-active: var(--nb-c-emerald-reflection-800);
+    --nb-c-success-active-a11y: var(--nb-c-emerald-reflection-800-a11y);
+
+    --nb-c-info: var(--nb-c-the-blues-brothers-500);
+    --nb-c-info-a11y: var(--nb-c-the-blues-brothers-500-a11y);
+    --nb-c-info-hover: var(--nb-c-the-blues-brothers-600);
+    --nb-c-info-hover-a11y: var(--nb-c-the-blues-brothers-600-a11y);
+    --nb-c-info-active: var(--nb-c-the-blues-brothers-700);
+    --nb-c-info-active-a11y: var(--nb-c-the-blues-brothers-700-a11y);
+
+    --nb-c-warning: var(--nb-c-phoenix-flames-500);
+    --nb-c-warning-a11y: var(--nb-c-phoenix-flames-500-a11y);
+    --nb-c-warning-hover: var(--nb-c-phoenix-flames-600);
+    --nb-c-warning-hover-a11y: var(--nb-c-phoenix-flames-600-a11y);
+    --nb-c-warning-active: var(--nb-c-phoenix-flames-700);
+    --nb-c-warning-active-a11y: var(--nb-c-phoenix-flames-700-a11y);
+
+    --nb-c-danger: var(--nb-c-chicken-comb-500);
+    --nb-c-danger-a11y: var(--nb-c-chicken-comb-500-a11y);
+    --nb-c-danger-hover: var(--nb-c-chicken-comb-600);
+    --nb-c-danger-hover-a11y: var(--nb-c-chicken-comb-600-a11y);
+    --nb-c-danger-active: var(--nb-c-chicken-comb-700);
+    --nb-c-danger-active-a11y: var(--nb-c-chicken-comb-700-a11y);
+
+    --nb-c-component-plain: var(--nb-c-nouveau-gray-500);
+    --nb-c-component-plain-a11y: var(--nb-c-nouveau-gray-500-a11y);
+    --nb-c-component-inactive: var(--nb-c-nouveau-gray-700);
+    --nb-c-component-inactive-a11y: var(--nb-c-nouveau-gray-700-a11y);
+    --nb-c-component-active: var(--nb-c-nouveau-gray-600);
+    --nb-c-component-active-a11y: var(--nb-c-nouveau-gray-600-a11y);
+    --nb-c-component-disabled: var(--nb-c-nouveau-gray-200);
+    --nb-c-component-disabled-a11y: var(--nb-c-nouveau-gray-200-a11y);
+    --nb-c-component-plain-border: var(--nb-c-nouveau-gray-300);
+    --nb-c-component-plain-border-a11y: var(--nb-c-nouveau-gray-300-a11y);
+
+    // Text
+    --nb-c-text: var(--nb-c-plain-black-900);
+    --nb-c-text-a11y: var(--nb-c-plain-black-900-a11y);
+    --nb-c-text-muted: var(--nb-c-nouveau-gray-600);
+    --nb-c-text-muted-a11y: var(--nb-c-nouveau-gray-600-a11y);
+    --nb-c-text-subtle: var(--nb-c-nouveau-gray-500);
+    --nb-c-text-subtle-a11y: var(--nb-c-nouveau-gray-500-a11y);
+
+    // Form field tokens: heights and padding relative to --nb-base-unit (8px)
+    --nb-c-field-bg: var(--nb-c-french-gray-100);
+    --nb-c-field-border: var(--nb-c-french-gray-500);
+    --nb-field-height-sm: calc(var(--nb-base-unit) * 4);
+    --nb-field-height-md: calc(var(--nb-base-unit) * 5);
+    --nb-field-height-lg: calc(var(--nb-base-unit) * 6);
+    --nb-field-padding-h: calc(var(--nb-base-unit) * 2);
+    --nb-field-font-size: var(--nb-font-size-14);
+    --nb-field-line-height: 1.5;
+    --nb-field-disabled-opacity: 0.45;
+
+    // Background tiers
+    --nb-c-bg: var(--nb-c-french-gray-100);
+    --nb-c-bg-soft: var(--nb-c-french-gray-200);
+
+    // Discrete / muted interactive states
+    --nb-c-discrete: var(--nb-c-nouveau-gray-200);
+    --nb-c-discrete-a11y: var(--nb-c-nouveau-gray-200-a11y);
+    --nb-c-component-discrete-text: var(--nb-c-nouveau-gray-700);
+
+    // Focus ring — used by all interactive controls via :focus-visible
+    --nb-c-focus-ring: var(--nb-c-primary);
+
+    --nb-grid-max-width: #{grid.$grid-max-width}px;
+    --nb-grid-columns: #{grid.$grid-columns};
+    --nb-grid-gutter: #{grid.$grid-gutter}px;
+
+    /*
+    * modal Z-Index
+    */
+    .nb-modal {
+      @each $key, $value in layout.$zIndexesModal {
+        --nb-zindex-#{$key}: #{$value};
+      }
+    }
+
+    /*
+    * Animation helpers
+    */
+    @each $key, $value in animations.$timings {
+      --nb-animation-#{$key}: #{$value};
+    }
+  }
+}
+
+@mixin classes {
+  /*
+  * Font size utilities — set font-size only; line-height comes from type sets or component styles
+  */
+  @each $key, $value in type.$fontSizes {
+    .text-#{$key} {
+      font-size: var(--nb-font-size-#{$key});
+    }
+  }
+
+  /*
+  * Font weight utilities
+  */
+  @each $key, $value in type.$fontWeight {
+    .weight-#{$key} {
+      font-weight: var(--nb-font-weight-#{$key});
+    }
+  }
+
+  /*
+  * Type set utilities — apply the full typographic role in one class
+  */
+  @each $name, $props in type.$typeSets {
+    .type-#{$name} {
+      font-family: var(--nb-type-#{$name}-family);
+      font-size: var(--nb-type-#{$name}-size);
+      font-weight: var(--nb-type-#{$name}-weight);
+      line-height: var(--nb-type-#{$name}-line-height);
+      letter-spacing: var(--nb-type-#{$name}-letter-spacing);
+    }
+  }
+
+  /*
+  * Heading elements — wired to the corresponding heading type set
+  */
+  $heading-type-set-map: (
+    1: 'heading-06',
+    2: 'heading-05',
+    3: 'heading-04',
+    4: 'heading-03',
+    5: 'heading-02',
+    6: 'heading-01',
+  );
+  @each $level, $set-name in $heading-type-set-map {
+    h#{$level} {
+      font-family: var(--nb-type-#{$set-name}-family);
+      font-size: var(--nb-type-#{$set-name}-size);
+      font-weight: var(--nb-type-#{$set-name}-weight);
+      line-height: var(--nb-type-#{$set-name}-line-height);
+      letter-spacing: var(--nb-type-#{$set-name}-letter-spacing);
+    }
+  }
+
+  /*
+  * Sizing
+  */
+  @each $size_key, $size_value in type.$spacingSizes {
+    @each $type_key, $type_value in type.$spacingTypes {
+      .#{$type_key}-#{$size_key} {
+        #{$type_value}: var(--nb-spacing-#{$size_key});
+      }
+      .#{$type_key}h-#{$size_key} {
+        #{$type_value}-left: var(--nb-spacing-#{$size_key});
+        #{$type_value}-right: var(--nb-spacing-#{$size_key});
+      }
+      .#{$type_key}v-#{$size_key} {
+        #{$type_value}-top: var(--nb-spacing-#{$size_key});
+        #{$type_value}-bottom: var(--nb-spacing-#{$size_key});
+      }
+
+      @each $dir_key, $dir_value in type.$spacingDir {
+        .#{$type_key}#{$dir_key}-#{$size_key} {
+          #{$type_value}-#{$dir_value}: var(--nb-spacing-#{$size_key});
+        }
+      }
+    }
+  }
+}
+
+@mixin light {
+  :root {
+    // Light theme overrides (same as defaults for now)
+    --nb-c-primary: #{colors.get-color('grape-hyacinth', 500)};
+    --nb-c-success: #{colors.get-color('emerald-reflection', 600)};
+    --nb-c-info: #{colors.get-color('the-blues-brothers', 500)};
+    --nb-c-warning: #{colors.get-color('phoenix-flames', 500)};
+    --nb-c-danger: #{colors.get-color('chicken-comb', 500)};
+    --nb-c-component-plain: #{colors.get-color('nouveau-gray', 500)};
+  }
+}
+
+@mixin dark {
+  .dark {
+    // Status colors — lighter tints for dark backgrounds
+    --nb-c-primary: #{colors.get-color('grape-hyacinth', 400)};
+    --nb-c-primary-a11y: #{colors.color-contrast(
+        colors.get-color('grape-hyacinth', 400)
+      )};
+    --nb-c-primary-hover: #{colors.get-color('grape-hyacinth', 350)};
+    --nb-c-primary-active: #{colors.get-color('grape-hyacinth', 300)};
+    --nb-c-success: #{colors.get-color('emerald-reflection', 500)};
+    --nb-c-info: #{colors.get-color('the-blues-brothers', 400)};
+    --nb-c-warning: #{colors.get-color('phoenix-flames', 400)};
+    --nb-c-danger: #{colors.get-color('chicken-comb', 400)};
+    --nb-c-component-plain: #{colors.get-color('nouveau-gray', 400)};
+
+    // Surface / contrast inversion
+    // Note: --nb-c-white and --nb-c-black are NOT overridden — they remain absolute #fff/#000.
+    // These semantic tokens shift to dark-mode-appropriate greys, not pure black/white.
+    --nb-c-surface: #{colors.get-color('plain-black', 850)}; // card surface: ~#262626
+    --nb-c-contrast: #{colors.get-color('plain-white', 150)}; // high contrast on surface: ~#d9d9d9
+    --nb-c-document: #{colors.get-color('plain-white', 50)}; // document background
+
+    // Text
+    --nb-c-text: #{colors.get-color('plain-white', 150)}; // primary text: ~#d9d9d9
+    --nb-c-text-muted: #{colors.get-color('nouveau-gray', 400)};
+    --nb-c-text-subtle: #{colors.get-color('nouveau-gray', 500)};
+
+    // Background tiers — deepest layer for page background
+    --nb-c-bg: #{colors.get-color('nouveau-gray', 900)}; // page bg: ~#17191c (close to VitePress's #1b1b1f)
+    --nb-c-bg-soft: #{colors.get-color('nouveau-gray', 850)}; // elevated bg: ~#242527
+
+    // Form fields
+    --nb-c-field-bg: #{colors.get-color('plain-black', 800)}; // input bg: ~#333333
+    --nb-c-field-border: #{colors.get-color('nouveau-gray', 600)};
+
+    // Discrete
+    --nb-c-discrete: #{colors.get-color('nouveau-gray', 700)};
+    --nb-c-component-discrete-text: #{colors.get-color('nouveau-gray', 300)};
+
+    // Secondary button — mid-grey in dark mode
+    --nb-c-secondary: #{colors.get-color('nouveau-gray', 700)};
+    --nb-c-secondary-a11y: #{colors.color-contrast(
+        colors.get-color('nouveau-gray', 700)
+      )};
+    --nb-c-secondary-hover: #{colors.get-color('nouveau-gray', 650)};
+    --nb-c-secondary-active: #{colors.get-color('nouveau-gray', 600)};
+
+    // Component states
+    --nb-c-component-inactive: #{colors.get-color('nouveau-gray', 500)};
+    --nb-c-component-active: #{colors.get-color('nouveau-gray', 400)};
+    --nb-c-component-disabled: #{colors.get-color('nouveau-gray', 700)};
+    --nb-c-component-plain-border: #{colors.get-color('nouveau-gray', 600)};
+  }
+}

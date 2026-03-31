@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 24 16" width="24px" height="16px" xmlns="http://www.w3.org/2000/svg">
+  <defs/>
+  <path d="M 0 0 L 0 16 L 24 16 L 24 0 L 0 0 Z" fill="#001489" style="">
+    <title>blue</title>
+  </path>
+  <path d="M 0 0 L 0 8 L 24 8 L 24 0 L 0 0 Z" fill="#e03c31" style="">
+    <title>red</title>
+  </path>
+  <path d="M 0 16 L 0 0 L 4.808 0 L 12.808 5.333 L 24 5.333 L 24 10.667 L 12.808 10.667 L 4.808 16 L 0 16 Z" style="stroke-width: 1px; stroke: none; fill: rgb(255, 255, 255);">
+    <title>white</title>
+  </path>
+  <path d="M 0 3.208 L 7.189 7.997 L 0 12.795 L 0 3.208 Z" style="stroke-width: 1px; stroke: none;">
+    <title>black</title>
+  </path>
+  <path d="M 0 0 L 12 7.998 L 0 16 L 0 12.795 L 7.189 7.998 L 0 3.207 L 0 0 Z" style="fill: rgb(255, 184, 29);">
+    <title>yellow</title>
+  </path>
+  <path d="M 0 0 L 2.883 0 L 12.485 6.4 L 24 6.4 L 24 9.6 L 12.485 9.6 L 2.883 16 L 0 16 L 0 14.068 L 9.102 8 L 0 1.936 L 0 0 Z" style="fill: rgb(2, 119, 73);">
+    <title>green</title>
+  </path>
+</svg>

@@ -1,0 +1,31 @@
+@use 'sass:map';
+
+$bp-sm: 320 !default;
+$bp-md: 672 !default;
+$bp-lg: 1056 !default;
+$bp-xl: 1312 !default;
+$bp-xxl: 1584 !default;
+
+// Initial map of our breakpoints and their values
+/// @type Map
+/// @access public
+/// @group @nubisco/layout
+$breakpoints: (
+  sm: $bp-sm,
+  md: $bp-md,
+  lg: $bp-lg,
+  xl: $bp-xl,
+  xxl: $bp-xxl,
+) !default;
+
+@mixin mq($key) {
+  $size: map.get($breakpoints, $key);
+
+  @if ($size) {
+    @media only screen and (min-width: #{$size}px) {
+      @content;
+    }
+  } @else {
+    @error '`#{$key}` does not exist in the $breakpoints variable';
+  }
+}

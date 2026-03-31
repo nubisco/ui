@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 24 16" width="24px" height="16px" xmlns="http://www.w3.org/2000/svg">
+  <defs/>
+  <path fill="#1eb53a" d="M 0 16 L 0 0 L 24 0 L 0 16 Z"/>
+  <path fill="#00a3dd" d="M 24 0 L 24 16 L 0 16 L 24 0 Z"/>
+  <g style="">
+    <path style="stroke: none; fill-rule: nonzero; fill-opacity: 1; fill: rgb(252, 209, 22);" d="M 0 16 L 0 12.194 L 18.291 0 L 24 0 L 24 3.806 L 5.705 16 L 0 16 Z M 0 16"/>
+    <path style="stroke: none; fill-rule: nonzero; fill-opacity: 1;" d="M 0 16 L 0 13.395 L 20.089 0 L 24 0 L 24 2.603 L 3.907 16 L 0 16 Z M 0 16"/>
+  </g>
+</svg>

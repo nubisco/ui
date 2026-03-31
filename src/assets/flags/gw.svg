@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 12" version="1.1">
+<g id="surface1">
+<path style=" stroke:none;fill-rule:nonzero;fill:rgb(80.784314%,6.666667%,14.901961%);fill-opacity:1;" d="M 0 0 L 8 0 L 8 12 L 0 12 Z M 0 0 "/>
+<path style=" stroke:none;fill-rule:nonzero;fill:rgb(98.823529%,81.960784%,8.627451%);fill-opacity:1;" d="M 8 0 L 24 0 L 24 6 L 8 6 Z M 8 0 "/>
+<path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,61.960784%,28.627451%);fill-opacity:1;" d="M 8 6 L 24 6 L 24 12 L 8 12 Z M 8 6 "/>
+<path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 4 4 L 3.382812 5.902344 L 4.332031 6.210938 "/>
+<path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 4 4 L 4.617188 5.902344 L 3.667969 6.210938 "/>
+<path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 5.902344 5.382812 L 3.902344 5.382812 L 3.902344 6.382812 "/>
+<path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 5.902344 5.382812 L 4.285156 6.558594 L 3.695312 5.75 "/>
+<path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 5.175781 7.617188 L 4.558594 5.714844 L 3.605469 6.023438 "/>
+<path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 5.175781 7.617188 L 3.558594 6.441406 L 4.144531 5.632812 "/>
+<path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 2.824219 7.617188 L 4.441406 6.441406 L 3.855469 5.632812 "/>
+<path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 2.824219 7.617188 L 3.441406 5.714844 L 4.394531 6.023438 "/>
+<path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 2.097656 5.382812 L 3.714844 6.558594 L 4.304688 5.75 "/>
+<path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 2.097656 5.382812 L 4.097656 5.382812 L 4.097656 6.382812 "/>
+</g>
+</svg>

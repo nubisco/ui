@@ -1,0 +1,9 @@
+<svg width="24px" height="16px" viewBox="0 0 24 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <defs></defs>
+  <path style="stroke: none; fill-rule: nonzero; fill: rgb(0, 158, 71); fill-opacity: 1;" d="M 0 0 L 24 0 L 0 16 Z M 0 0 "></path>
+  <path style="stroke: none; fill-rule: nonzero; fill: rgb(206, 18, 38); fill-opacity: 1;" d="M 0 16 L 24 0 L 24 16 Z M 0 16 "></path>
+  <path style="stroke: none; fill-rule: nonzero; fill: rgb(252, 209, 22); fill-opacity: 1;" d="M 0 16 L 0 11.964844 L 17.9375 0 L 24 0 L 24 4.03125 L 6.0625 16 Z M 0 16 "></path>
+  <path style="stroke: none; fill-rule: nonzero; fill: rgb(0, 0, 0); fill-opacity: 1;" d="M 0 16 L 0 13.113281 L 19.6875 0 L 24 0 L 24 2.886719 L 4.320312 16 Z M 0 16 "></path>
+  <path style="stroke: none; fill-rule: nonzero; fill-opacity: 1; fill: rgb(255, 255, 255);" d="M 15.422 3.102 L 16.692 4.078 L 18.02 3.239 L 17.508 4.739 L 18.735 5.77 L 17.157 5.715 L 16.586 7.192 L 16.118 5.66 L 14.536 5.543 L 15.829 4.649 L 15.422 3.102 Z M 15.422 3.102"></path>
+  <path style="stroke: none; fill-rule: nonzero; fill-opacity: 1; fill: rgb(255, 255, 255);" d="M 6.205 9.212 L 7.475 10.188 L 8.803 9.349 L 8.291 10.849 L 9.518 11.88 L 7.94 11.825 L 7.369 13.302 L 6.901 11.77 L 5.319 11.653 L 6.612 10.759 L 6.205 9.212 Z M 6.205 9.212"></path>
+</svg>

@@ -1,0 +1,132 @@
+@mixin tooltip {
+  .nb-tooltip {
+    position: fixed;
+    overflow: visible;
+    padding: var(--nb-base-unit);
+    border-radius: calc(var(--nb-base-unit) / 1.333);
+    background: var(--nb-c-discrete);
+    color: var(--nb-c-discrete-a11y);
+    z-index: var(--nb-zindex-tooltip);
+    text-transform: none;
+    font-size: var(--nb-font-size-13);
+    line-height: 1;
+    user-select: none;
+    pointer-events: none;
+    opacity: 0;
+    text-align: center;
+    --tooltip-arrow-border-color: var(--nb-c-discrete);
+    transform: scale(0.95);
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease;
+    &:before {
+      position: absolute;
+      content: '';
+      border: var(--nb-base-unit) solid transparent;
+    }
+
+    &-header {
+      font-weight: var(--nb-font-weight-semibold);
+    }
+    &-body {
+      font-weight: var(--nb-font-weight-regular);
+    }
+    &-tip {
+      font-weight: var(--nb-font-weight-regular);
+      color: var(--nb-c-component-discrete-text);
+    }
+
+    &-flavor {
+      &-primary {
+        background: var(--nb-c-primary);
+        color: var(--nb-c-white);
+        --tooltip-arrow-border-color: var(--nb-c-primary);
+        .nb-tooltip-tip {
+          color: var(--nb-c-white);
+        }
+      }
+      &-danger {
+        background: var(--nb-c-danger);
+        color: var(--nb-c-white);
+        --tooltip-arrow-border-color: var(--nb-c-danger);
+        .nb-tooltip-tip {
+          color: var(--nb-c-white);
+        }
+      }
+      &-info {
+        background: var(--nb-c-info);
+        color: var(--nb-c-white);
+        --tooltip-arrow-border-color: var(--nb-c-info);
+        .nb-tooltip-tip {
+          color: var(--nb-c-white);
+        }
+      }
+    }
+
+    &-top {
+      &:before {
+        left: 50%;
+        bottom: 1px;
+        transform: translate(-50%, var(--nb-base-unit));
+        border-bottom-width: 0;
+        border-top-color: var(--tooltip-arrow-border-color); // Top arrow color
+      }
+    }
+
+    &-bottom {
+      &:before {
+        left: 50%;
+        top: 1px;
+        transform: translate(-50%, calc(var(--nb-base-unit) * -1));
+        border-top-width: 0;
+        border-bottom-color: var(
+          --tooltip-arrow-border-color
+        ); // Bottom arrow color
+      }
+    }
+
+    &-left {
+      &:before {
+        top: 50%;
+        right: 0;
+        transform: translate(var(--nb-base-unit), -50%);
+        border-right-width: 0;
+        border-left-color: var(
+          --tooltip-arrow-border-color
+        ); // Left arrow color
+      }
+    }
+
+    &-right {
+      &:before {
+        top: 50%;
+        left: 0;
+        transform: translate(calc(var(--nb-base-unit) * -1), -50%);
+        border-left-width: 0;
+        border-right-color: var(
+          --tooltip-arrow-border-color
+        ); // Right arrow color
+      }
+    }
+  }
+
+  // Animation for appearing
+  @keyframes tooltipAppear {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  // Animation for disappearing
+  @keyframes tooltipDisappear {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+}

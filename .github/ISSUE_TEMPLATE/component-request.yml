@@ -1,0 +1,56 @@
+name: Component request
+description: Request a new component or composable that is not yet available
+labels: [component-request]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new component. This information helps us evaluate and prioritize it.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-flight checklist
+      options:
+        - label: I have searched existing issues and this component hasn't been requested yet
+          required: true
+        - label: I have confirmed this fits the scope of a UI component library
+          required: true
+
+  - type: input
+    id: component_name
+    attributes:
+      label: Proposed component name
+      description: What would you call it? (e.g. NbDatePicker, NbTooltip)
+      placeholder: NbDatePicker
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What does this component do? What problem does it solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_api
+    attributes:
+      label: Proposed API (props, events, slots)
+      description: Sketch out how the component would be used.
+      render: vue
+    validations:
+      required: true
+
+  - type: textarea
+    id: design_reference
+    attributes:
+      label: Design reference
+      description: Links to design systems, screenshots, or similar implementations in other libraries.
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Anything else maintainers should know

@@ -1,0 +1,63 @@
+@use 'config';
+
+html,
+body {
+  font-family: var(--nb-font-family-sans);
+  font-optical-sizing: auto;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.not-allowed {
+  cursor: not-allowed;
+}
+
+.text {
+  // Transformations
+  &-uppercase {
+    text-transform: uppercase;
+  }
+
+  &-italic {
+    font-style: italic;
+  }
+
+  &-lowercase {
+    text-transform: lowercase;
+  }
+
+  &-underline {
+    text-decoration: underline;
+  }
+
+  &-capitalize {
+    text-transform: capitalize;
+  }
+
+  &-center {
+    text-align: center;
+  }
+
+  &-ellipsed {
+    text-overflow: ellipsis;
+  }
+
+  // Coloring
+  &-gray {
+    color: var(--nb-c-text-gray);
+  }
+  &-danger {
+    color: var(--nb-c-danger);
+  }
+  &-warning {
+    color: var(--nb-c-warning-accent);
+  }
+
+  // Utils
+  &-divider {
+    color: var(--nb-c-text);
+    padding: 0px calc(var(--nb-base-unit) / 2);
+  }
+}

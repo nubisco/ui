@@ -1,0 +1,18 @@
+<template>
+  <div class="nb-panel">
+    <slot />
+  </div>
+</template>
+
+<script setup lang="ts">
+// No props — Panel is a plain surface container
+</script>
+
+<style lang="scss" scoped>
+.nb-panel {
+  background: var(--nb-c-surface, #fff);
+  border: 1px solid var(--nb-c-border, #ddd);
+  padding: 12px;
+  border-radius: 8px;
+}
+</style>
