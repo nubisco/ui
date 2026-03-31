@@ -57,8 +57,11 @@ export default withMermaid(
           ],
         },
       },
+      define: {
+        __VUE_PROD_DEVTOOLS__: false,
+      },
       ssr: {
-        noExternal: ['vue'],
+        noExternal: ['vue', 'vue-i18n', '@intlify/core-base', '@intlify/shared'],
       },
       css: {
         preprocessorOptions: {
