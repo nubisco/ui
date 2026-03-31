@@ -31,11 +31,8 @@ jobs:
       - run: pnpm run format:check
 
   build:
-    name: Build (Node ${{ matrix.node-version }})
+    name: Build
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20, 22]
 
     steps:
       - uses: actions/checkout@v4
@@ -46,18 +43,15 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
 
   test:
-    name: Test (Node ${{ matrix.node-version }})
+    name: Test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20, 22]
 
     steps:
       - uses: actions/checkout@v4
@@ -68,14 +62,14 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
 
   coverage:
-    name: Coverage (Node 20)
+    name: Coverage
     runs-on: ubuntu-latest
 
     steps:
@@ -87,7 +81,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
