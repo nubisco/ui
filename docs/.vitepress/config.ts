@@ -61,7 +61,12 @@ export default withMermaid(
         __VUE_PROD_DEVTOOLS__: false,
       },
       ssr: {
-        noExternal: ['vue', 'vue-i18n', '@intlify/core-base', '@intlify/shared'],
+        noExternal: [
+          'vue',
+          'vue-i18n',
+          '@intlify/core-base',
+          '@intlify/shared',
+        ],
       },
       css: {
         preprocessorOptions: {
