@@ -77,4 +77,4 @@ Or import SCSS source for deeper customization:
 
 - Browse [Components](/ui/components/modal)
 - Explore the [Grid docs](/ui/components/grid/overview)
-- Review project usage examples in [README](../README.md)
+- Review project usage examples in [README](https://github.com/nubisco/ui#readme)
