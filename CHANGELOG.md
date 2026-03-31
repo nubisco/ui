@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/nubisco/ui/compare/v1.0.1...v1.0.2) (2026-03-31)
+
+### Bug Fixes
+
+- ssr bundle vue-i18n for vitepress static build; drop node 20 from ci matrix ([3eecae1](https://github.com/nubisco/ui/commit/3eecae1a19fbd082c955cdccaffa84988b9de7fe))
+
 ## [1.0.1](https://github.com/nubisco/ui/compare/v1.0.0...v1.0.1) (2026-03-31)
 
 ### Bug Fixes
