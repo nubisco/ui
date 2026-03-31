@@ -2,7 +2,7 @@
 
   <br />
 
-  <img src="docs/public/media/logo.svg" alt="Nubisco" width="96" />
+  <img src="docs/public/logo.svg" alt="Nubisco" width="96" />
 
 <br /><br />
 
