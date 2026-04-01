@@ -130,7 +130,9 @@ function validateFile(file: File): string | undefined {
     const matched = exts.some((ext) => {
       if (ext.startsWith('.')) return name.endsWith(ext)
       if (ext.includes('/'))
-        return file.type === ext || file.type.startsWith(ext.replace('*', ''))
+        return (
+          file.type === ext || file.type.startsWith(ext.replaceAll('*', ''))
+        )
       return false
     })
     if (!matched) return `File type not accepted.`
