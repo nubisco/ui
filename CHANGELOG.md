@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/nubisco/ui/compare/v1.0.4...v1.0.5) (2026-04-01)
+
+### Bug Fixes
+
+- **file-uploader:** replace all wildcard characters in MIME type check ([f55a569](https://github.com/nubisco/ui/commit/f55a5697c96678c186407095b2c97922724d8ac4))
+- make NbIcon clickable/hoverable optional and harden pre-commit hook ([ede827d](https://github.com/nubisco/ui/commit/ede827d780c1691f9a033483b164bd50740e3aac))
+
 ## [1.0.4](https://github.com/nubisco/ui/compare/v1.0.3...v1.0.4) (2026-03-31)
 
 ### Bug Fixes
