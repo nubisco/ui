@@ -52,8 +52,8 @@ interface IIconProps {
   color?: string
   weight?: EWeight
   title?: string
-  clickable: boolean
-  hoverable: boolean
+  clickable?: boolean
+  hoverable?: boolean
 }
 
 export { EAnimation, EAnimationMode, EWeight, EIconSize, IIconProps }
