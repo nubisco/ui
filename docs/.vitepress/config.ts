@@ -85,22 +85,36 @@ export default withMermaid(
       logo: { src: '/logo.svg', width: 24, height: 24 },
       nav: [
         { text: 'Home', link: '/' },
-        { text: 'Components', link: '/ui/components/modal' },
+        { text: 'Showcase', link: '/showcase' },
+        { text: 'Theming', link: '/theming' },
+        { text: 'Components', link: '/ui/components/button/button' },
       ],
       sidebar: {
         '/': [
           {
             text: 'Getting Started',
             items: [
-              { text: 'Introduction', link: '/introduction' },
               { text: 'Quickstart', link: '/quickstart' },
+              { text: 'Showcase', link: '/showcase' },
+            ],
+          },
+          {
+            text: 'Why NubiscoUI',
+            items: [
+              { text: 'Introduction', link: '/introduction' },
+            ],
+          },
+          {
+            text: 'Theming',
+            items: [
+              { text: 'Overview', link: '/theming' },
+              { text: 'Colors', link: '/principles/color' },
+              { text: 'Typography', link: '/principles/typography' },
             ],
           },
           {
             text: 'Design System',
             items: [
-              { text: 'Colors', link: '/principles/color' },
-              { text: 'Typography', link: '/principles/typography' },
               { text: 'Z-Index', link: '/principles/z-index' },
             ],
           },
@@ -118,20 +132,14 @@ export default withMermaid(
                 items: [
                   { text: 'AI Label', link: '/ui/components/ai-label' },
                   { text: 'Badge', link: '/ui/components/badge' },
-                  { text: 'Button', link: '/ui/components/button/button.md' },
+                  { text: 'Button', link: '/ui/components/button/button' },
                   { text: 'Checkbox', link: '/ui/components/checkbox' },
                   { text: 'Color Strip', link: '/ui/components/color-strip' },
-                  {
-                    text: 'File Uploader',
-                    link: '/ui/components/file-uploader',
-                  },
+                  { text: 'File Uploader', link: '/ui/components/file-uploader' },
                   { text: 'Flag', link: '/ui/components/flag' },
-                  { text: 'Grid', link: '/ui/components/grid' },
+                  { text: 'Grid', link: '/ui/components/grid/overview' },
                   { text: 'Icon', link: '/ui/components/icon' },
-                  {
-                    text: 'Image Cropper',
-                    link: '/ui/components/image-cropper',
-                  },
+                  { text: 'Image Cropper', link: '/ui/components/image-cropper' },
                   { text: 'Label', link: '/ui/components/label' },
                   { text: 'Message', link: '/ui/components/message' },
                   { text: 'Modal', link: '/ui/components/modal' },
@@ -148,10 +156,13 @@ export default withMermaid(
               {
                 text: 'Composables',
                 items: [
-                  {
-                    text: 'useStableId',
-                    link: '/ui/composables/use-stable-id',
-                  },
+                  { text: 'useStableId', link: '/ui/composables/use-stable-id' },
+                ],
+              },
+              {
+                text: 'Directives',
+                items: [
+                  { text: 'Tooltip', link: '/ui/directives/tooltip' },
                 ],
               },
             ],
