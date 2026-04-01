@@ -14,44 +14,20 @@
 // @ts-expect-error virtual module provided by icons vite plugin
 import icons from 'virtual:icons'
 import { computed } from 'vue'
-import type { PropType } from 'vue'
 import kebab2camel from '@/utils/kebab2camel.helper'
-import { EAnimation, EAnimationMode, EWeight, ESize, EIconSize } from './Icon.d'
+import { ESize } from '@/types/Size.d'
+import { EAnimationMode, EWeight, EIconSize, IIconProps } from './Icon.d'
 import { useStableId } from '@/composables/useStableId.composable'
 
-const props = defineProps({
-  name: {
-    type: String,
-    required: true,
-  },
-  size: {
-    type: [String, String, Number] as PropType<ESize | string | number>,
-    default: ESize.Medium,
-  },
-  animation: {
-    type: [String, null] as PropType<EAnimation | null>,
-    default: null,
-  },
-  animationMode: {
-    type: String as PropType<EAnimationMode>,
-    default: 'always',
-  },
-  color: {
-    type: String,
-    default: null,
-  },
-  weight: {
-    type: String as PropType<EWeight>,
-    default: EWeight.Regular,
-    validator: (val: string) =>
-      ['thin', 'light', 'regular', 'bold', 'fill', 'duotone'].includes(val),
-  },
-  title: {
-    type: String,
-    default: null,
-  },
-  clickable: Boolean,
-  hoverable: Boolean,
+const props = withDefaults(defineProps<IIconProps>(), {
+  size: ESize.Medium,
+  animation: null,
+  animationMode: EAnimationMode.Always,
+  color: undefined,
+  weight: EWeight.Regular,
+  title: undefined,
+  clickable: false,
+  hoverable: false,
 })
 
 const emit = defineEmits(['click'])

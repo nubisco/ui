@@ -38,24 +38,33 @@ tabs: ['Usage', 'Icons', 'Api']
 <preview :props="availableProps" v-slot="{ resultingProps }" propsPosition="top">
   <ul class="icon-demo">
     <li
-      v-for="(iconName, iconIndex) in iconList.filter((item) => {
-        if (resultingProps.search != '' && resultingProps.search.length >= 2) {
-          return item.toUpperCase().includes(resultingProps.search.toUpperCase())
+      v-for="(icon, iconIndex) in iconList.filter((icon) => {
+        if (resultingProps.category && !icon.categories.includes(resultingProps.category)) return false
+        if (resultingProps.search !== '' && resultingProps.search.length >= 2) {
+          const q = resultingProps.search.toUpperCase()
+          return icon.name.toUpperCase().includes(q)
+            || icon.tags.some((t) => t.toUpperCase().includes(q))
         }
         return true
       })"
       :key="iconIndex"
+      :class="{ copied: copiedIcon === icon.name }"
+      @click="copyName(icon.name)"
     >
-      <div class="box">
-        <NbIcon
-          :name="iconName"
-          :size="resultingProps.size"
-          :color="resultingProps.color"
-          :weight="resultingProps.weight"
-          v-bind="{...(resultingProps.animation && {animation: resultingProps.animation})}"
-        />
+      <NbIcon
+        :name="copiedIcon === icon.name ? 'check' : icon.name"
+        :size="resultingProps.size"
+        :color="resultingProps.color"
+        :weight="resultingProps.weight"
+        v-bind="{...(resultingProps.animation && {animation: resultingProps.animation})}"
+      />
+      <span class="icon-name">{{ icon.name }}</span>
+      <div class="icon-overlay">
+        <NbGrid dir="col">
+          <span v-for="(category, categoryIndex) in icon.categories" :key="categoryIndex">{{ category }}</span>
+        </NbGrid>
+        <p v-if="icon.tags.length" class="icon-overlay-tags">{{ icon.tags.map(tag => `#${tag}`).join(', ') }}</p>
       </div>
-      <span>{{iconName}}</span>
     </li>
   </ul>
 </preview>
@@ -113,20 +122,29 @@ You can also pass any number: `:size="32"` sets both width and height to 32px. S
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import icons from 'virtual:icons'
-import str2kebab from '@nubisco/ui/utils/str2kebab.helper'
+import { catalog } from 'virtual:icons'
+
+const copiedIcon = ref<string | null>(null)
+
+function copyName(name: string) {
+  navigator.clipboard.writeText(name)
+  copiedIcon.value = name
+  setTimeout(() => {
+    copiedIcon.value = null
+  }, 1500)
+}
 import type { PreviewPropDef } from '../../.vitepress/components/Preview.d'
 
 const isDialogOpen = ref(false)
 
-// Extract base icon names (remove weight suffixes and deduplicate)
-const iconList = [...new Set(Object.keys(icons)
-  .map(item => {
-    const baseName = str2kebab(item.replace(/^i/, ''))
-    // Remove weight suffixes to get base name
-    return baseName.replace(/-(thin|light|bold|fill|duotone)$/, '')
-  })
-)]
+const iconList = Object.values(catalog)
+
+const categoryOptions = [...new Set(iconList.flatMap((icon) => icon.categories))]
+  .sort()
+  .map((cat) => ({
+    label: cat.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+    value: cat,
+  }))
 
 const availableProps: PreviewPropDef[] = [
   {
@@ -135,6 +153,14 @@ const availableProps: PreviewPropDef[] = [
     type: 'string',
     default: '',
     placeholder: 'Search by name',
+  },
+  {
+    label: 'Category',
+    name: 'category',
+    type: 'single',
+    options: categoryOptions,
+    default: null,
+    placeholder: 'Filter by category',
   },
   {
     label: 'Weight',
@@ -263,39 +289,88 @@ const availableProps: PreviewPropDef[] = [
 .icon-demo {
   display: grid;
   list-style-type: none;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 1px;
   padding: 0;
   margin: calc(var(--nb-base-unit) * 2) 0 0 0;
   background-color: var(--vp-c-divider);
 
   li {
+    position: relative;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    align-items: flex-start; // Left-align content
-    height: 120px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 100px;
     background: var(--vp-code-block-bg);
-    border-radius: 0;
     padding: calc(var(--nb-base-unit) * 1.5);
     margin: 0;
     box-sizing: border-box;
-    .box {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      flex-grow: 1;
-      margin: 0;
-      padding: 0;
+    cursor: pointer;
+    transition: background 0.1s ease;
+
+    &:hover,
+    &.copied {
+      background: var(--vp-c-bg-soft);
+
+      .icon-overlay {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
 
-    span {
-      font-size: 12px;
-      word-break: break-word;
-      width: 100%;
-      text-align: left;
+    &.copied .icon-overlay {
+      background: var(--vp-c-bg-soft);
+
+      &::after {
+        content: 'Copied!';
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        font-size: 10px;
+        color: var(--vp-c-brand-1);
+        font-weight: 600;
+      }
+    }
+  }
+
+  .icon-name {
+    font-size: 11px;
+    text-align: center;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--vp-c-text-2);
+    margin: 0;
+    padding: 0;
+  }
+
+  .icon-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--vp-c-bg-soft);
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    font-size: 10px;
+    transform: translateY(100%);
+    opacity: 0;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+    line-height: 1.2;
+
+    &-tags {
+      color: var(--vp-c-text-3);
       margin: 0;
-      padding: 0;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      line-height: 1.4;
     }
   }
 }

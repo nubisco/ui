@@ -44,4 +44,16 @@ enum EIconSize {
   XXS = 8,
 }
 
-export { EAnimation, EAnimationMode, EWeight, EIconSize, ESize }
+interface IIconProps {
+  name: string
+  size?: ESize | string | number
+  animation?: EAnimation | null
+  animationMode?: EAnimationMode
+  color?: string
+  weight?: EWeight
+  title?: string
+  clickable: boolean
+  hoverable: boolean
+}
+
+export { EAnimation, EAnimationMode, EWeight, EIconSize, IIconProps }
