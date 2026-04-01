@@ -94,15 +94,15 @@
     "prepare": "simple-git-hooks"
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpm test && npx lint-staged"
+    "pre-commit": "pnpm test && pnpm run types:check && npx lint-staged"
   },
   "lint-staged": {
     "src/**/*.{ts,vue}": [
-      "pnpm run lint:fix",
-      "pnpm run format"
+      "eslint --fix",
+      "prettier --write"
     ],
-    "tests/**/*.ts": "pnpm run format",
-    "*.{json,md,mts,mjs,scss}": "pnpm run format"
+    "tests/**/*.ts": "prettier --write",
+    "*.{json,md,mts,mjs,scss}": "prettier --write"
   },
   "peerDependencies": {
     "vue": "^3.5.30",
