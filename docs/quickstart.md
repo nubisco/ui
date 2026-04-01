@@ -1,3 +1,8 @@
+---
+layout: nubisco
+title: Quickstart
+---
+
 # Quickstart
 
 ## Install
@@ -6,7 +11,7 @@
 pnpm add @nubisco/ui
 ```
 
-## Register Components
+## Register components
 
 ```ts
 import { createApp } from 'vue'
@@ -17,7 +22,7 @@ import '@nubisco/ui/dist/ui.css'
 createApp(App).use(NubiscoUI).mount('#app')
 ```
 
-## Vite Configuration
+## Configure Vite
 
 Add the `fonts` plugin to load the bundled typefaces (Plus Jakarta Sans + Fira Code), and configure SCSS so design tokens are available across all your stylesheets:
 
@@ -39,7 +44,22 @@ export default defineConfig({
 })
 ```
 
-## Use Components
+## Add icon support
+
+If your project uses `NbIcon`, add the icons plugin. It resolves icons from the `@phosphor-icons/core` package at build time. Only icons you reference end up in the bundle.
+
+```ts
+import { fonts } from '@nubisco/ui/plugins/fonts'
+import { icons } from '@nubisco/ui/plugins/icons'
+
+export default defineConfig({
+  plugins: [vue(), fonts(), icons(process.cwd())],
+})
+```
+
+> **Note:** Import plugins from `@nubisco/ui/plugins/*`. They contain Node.js-only code that cannot run in the browser.
+
+## Use components
 
 ```vue
 <template>
@@ -53,28 +73,29 @@ export default defineConfig({
 </template>
 ```
 
-## Import Individual Components
+## Import individual components
 
 ```ts
 import { NbButton, NbPanel, NbGrid } from '@nubisco/ui'
 ```
 
-## Styling Options
+## Styling options
 
-Use the prebuilt stylesheet:
+**Option 1: Pre-built CSS (recommended for most projects):**
 
 ```ts
 import '@nubisco/ui/dist/ui.css'
 ```
 
-Or import SCSS source for deeper customization:
+**Option 2: SCSS source (for full customisation):**
 
 ```scss
 @use '@nubisco/ui/styles' as *;
 ```
 
-## Next Steps
+## Next steps
 
-- Browse [Components](/ui/components/modal)
-- Explore the [Grid docs](/ui/components/grid/overview)
-- Review project usage examples in [README](https://github.com/nubisco/ui#readme)
+- [Showcase](/showcase): see all components in action
+- [Theming](/theming): customise colors, spacing, and type for your brand
+- [Grid](/ui/components/grid/overview): understand the layout system
+- [Components](/ui/components/button/button): browse the full component library

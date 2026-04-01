@@ -1,112 +1,113 @@
-# Introduction
+---
+layout: nubisco
+title: Why NubiscoUI
+---
 
-## The Nubisco UI Component Library
+Most Vue component libraries make the same trade-off: they optimise for fast setup at the cost of long-term maintainability. You get a working UI in an afternoon, and a custom theming headache by the end of the quarter.
 
-Welcome to **Nubisco UI**.
-
-Nubisco UI is a Vue 3 component library focused on accessibility, predictable APIs, and practical styling customization.
-
-## Key Features
-
-- Accessible, production-ready components
-- TypeScript-first APIs
-- SCSS tokens for theme customization
-- Tree-shakeable imports
-- Responsive grid utilities
-
-## Quick Example
-
-<ClientOnly>
-  <div class="demo-preview">
-    <NbPanel style="padding: 16px;">
-      <h3>Welcome</h3>
-      <p>Build consistent interfaces with simple components.</p>
-      <NbButton variant="primary">Primary Action</NbButton>
-    </NbPanel>
-  </div>
-</ClientOnly>
-
-## Components
-
-Explore the component library:
-
-- [**Modal**](/ui/components/modal) - Dialogs and overlays
-- [**Panel**](/ui/components/panel) - Surface containers for content grouping
-- [**Message**](/ui/components/message) - Contextual feedback blocks
-
-## Design Philosophy
-
-The goal is a library that is easy to adopt and easy to maintain:
-
-- **Clear contracts**: explicit props and events
-- **Composability**: components work well together
-- **A11y by default**: keyboard and screen reader support
-- **Customization**: use your own tokens and brand styles
-
-## Explore More
-
-<div class="feature-grid">
-  <a href="/ui/components/modal" class="feature-card">
-    <h3>Modal</h3>
-    <p>Dialogs with slots for header, body, and footer.</p>
-  </a>
-
-  <a href="/ui/components/panel" class="feature-card">
-    <h3>Panel</h3>
-    <p>Simple surface wrappers for grouping content.</p>
-  </a>
-
-  <a href="/ui/components/message" class="feature-card">
-    <h3>Message</h3>
-    <p>Helper, warning, and error messaging patterns.</p>
-  </a>
-</div>
+NubiscoUI makes a different bet. It is built to scale in teams, in codebases, and across products.
 
 ---
 
-Check the component pages for interactive examples and API details.
+## The problem with most libraries
 
-<style scoped>
-.demo-preview {
-  margin: 2rem 0;
-  padding: 2rem;
-  background: #f5f5f5;
-  border-radius: 12px;
-}
+The typical component library ships with a handful of CSS variables for colors, a set of pre-built components, and a theming guide that amounts to "override these tokens in your root." This works until:
 
-.demo-preview h3 {
-  margin-top: 0;
-}
+- You need a color that isn't in the palette and there's no principled way to add one.
+- Two teams use the same library and ship interfaces that feel visually inconsistent.
+- A designer changes the brand primary color and you discover it's hardcoded in six places.
+- You try to customise spacing and find the component uses arbitrary magic numbers.
 
-.feature-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin: 2rem 0;
-}
+NubiscoUI exists because these problems are predictable, and they have principled solutions.
 
-.feature-card {
-  padding: 1.5rem;
-  background: var(--vp-c-bg-soft);
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 12px;
-  text-decoration: none;
-  transition: all 0.2s;
-}
+---
 
-.feature-card:hover {
-  border-color: var(--vp-c-brand);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
+## The SCSS engine
 
-.feature-card h3 {
-  margin-top: 0;
-  color: var(--vp-c-brand);
-}
+The core of NubiscoUI is not a set of components. It's a typed SCSS variable system that generates the entire token surface.
 
-.feature-card p {
-  margin-bottom: 0;
-  color: var(--vp-c-text-2);
+Every color is defined once in `$colors` as a named hex value. `_theme.scss` expands each color into 17 tints (100–900) plus accessible a11y contrast variants, and emits all of them as CSS custom properties on `:root`. Add one entry to `$colors`, get a full shade ramp for free.
+
+```scss
+// _colors.scss: add your brand color here
+$colors: (
+  grape-hyacinth: #5c35c4,
+  // ← generates --nb-c-grape-hyacinth-100 through -900
+  your-brand: #1a56db, // ← add this, get --nb-c-your-brand-100 through -900
+);
+```
+
+The semantic layer then maps from palette to intent:
+
+```css
+/* Override the primary color: zero SCSS required as a consumer */
+:root {
+  --nb-c-primary: var(--nb-c-your-brand-500);
+  --nb-c-primary-hover: var(--nb-c-your-brand-600);
 }
-</style>
+```
+
+This is the right architecture: palette stays stable, semantic tokens carry meaning, components reference semantic tokens only. Changing the brand color is a two-line edit.
+
+---
+
+## Geometry-first layout
+
+NubiscoUI uses an 8px base unit (`--nb-base-unit`). Every spacing value, gaps, field heights, padding, is a multiple of that unit. This isn't a coincidence; it's enforced by the SCSS system.
+
+`NbGrid` is the primary layout primitive. It is not a grid library bolted on to a component kit. It is the foundation every component is built on top of.
+
+```vue
+<NbGrid dir="col" gap="md">
+  <NbGrid dir="row" gap="sm" align="center">
+    <NbLabel>Status</NbLabel>
+    <NbBadge variant="success">Active</NbBadge>
+  </NbGrid>
+  <NbTextInput label="Name" placeholder="Ada Lovelace" />
+  <NbGrid dir="row" gap="sm" justify="end">
+    <NbButton variant="ghost">Cancel</NbButton>
+    <NbButton variant="primary">Save</NbButton>
+  </NbGrid>
+</NbGrid>
+```
+
+Five breakpoints, 16 columns, seven named gap sizes, full flex alignment control. If you are composing a layout, `NbGrid` is the right tool, not a custom `div` with inline styles.
+
+---
+
+## TypeScript discipline
+
+NubiscoUI enforces a naming convention across every type contract in the library:
+
+| Prefix | Meaning                                               | Example                              |
+| ------ | ----------------------------------------------------- | ------------------------------------ |
+| `I`    | Interface: describes the shape of an object           | `ITextInputProps`, `IFieldComponent` |
+| `E`    | Enum: a fixed set of named values                     | `ESize`, `EVariant`                  |
+| `T`    | Type alias: a union, intersection, or primitive alias | `TActiveHandle`                      |
+
+Shared types live in `src/types/` and are composed via interface extension. Adding a new input component means extending `IFieldComponent`. You get `label`, `disabled`, `required`, `variant`, `size`, and message slots for free, with correct intellisense descriptions everywhere.
+
+This scales to teams. When a prop description changes in `IWithMessages`, it propagates to every component that extends `IFieldComponent`. There is no copy-paste maintenance.
+
+---
+
+## Built for real products
+
+NubiscoUI is not a side project. It is the component system underlying active and future Nubisco products. Used in production, maintained with the same rigour as the applications that depend on it.
+
+That means:
+
+- Components are designed for **data-dense product interfaces**, not marketing pages
+- The default `body-md` type set is 14px. The right density for dashboards, not for blogs
+- `NbModal` uses Vue's `Teleport` and a proper focus trap, not a positioned `div`
+- Every interactive component handles keyboard navigation, ARIA attributes, and disabled states
+
+When you adopt NubiscoUI, you are adopting the same foundation that ships to real users.
+
+---
+
+## Next
+
+- [Quickstart](/quickstart): install and configure in under 5 minutes
+- [Theming](/theming): customize the token system for your brand
+- [Showcase](/showcase): see the full component set in action
