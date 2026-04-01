@@ -100,9 +100,7 @@ export default withMermaid(
           },
           {
             text: 'Why NubiscoUI',
-            items: [
-              { text: 'Introduction', link: '/introduction' },
-            ],
+            items: [{ text: 'Introduction', link: '/introduction' }],
           },
           {
             text: 'Theming',
@@ -114,9 +112,7 @@ export default withMermaid(
           },
           {
             text: 'Design System',
-            items: [
-              { text: 'Z-Index', link: '/principles/z-index' },
-            ],
+            items: [{ text: 'Z-Index', link: '/principles/z-index' }],
           },
           {
             text: 'Code Conventions',
@@ -135,11 +131,17 @@ export default withMermaid(
                   { text: 'Button', link: '/ui/components/button/button' },
                   { text: 'Checkbox', link: '/ui/components/checkbox' },
                   { text: 'Color Strip', link: '/ui/components/color-strip' },
-                  { text: 'File Uploader', link: '/ui/components/file-uploader' },
+                  {
+                    text: 'File Uploader',
+                    link: '/ui/components/file-uploader',
+                  },
                   { text: 'Flag', link: '/ui/components/flag' },
                   { text: 'Grid', link: '/ui/components/grid/overview' },
                   { text: 'Icon', link: '/ui/components/icon' },
-                  { text: 'Image Cropper', link: '/ui/components/image-cropper' },
+                  {
+                    text: 'Image Cropper',
+                    link: '/ui/components/image-cropper',
+                  },
                   { text: 'Label', link: '/ui/components/label' },
                   { text: 'Message', link: '/ui/components/message' },
                   { text: 'Modal', link: '/ui/components/modal' },
@@ -156,14 +158,15 @@ export default withMermaid(
               {
                 text: 'Composables',
                 items: [
-                  { text: 'useStableId', link: '/ui/composables/use-stable-id' },
+                  {
+                    text: 'useStableId',
+                    link: '/ui/composables/use-stable-id',
+                  },
                 ],
               },
               {
                 text: 'Directives',
-                items: [
-                  { text: 'Tooltip', link: '/ui/directives/tooltip' },
-                ],
+                items: [{ text: 'Tooltip', link: '/ui/directives/tooltip' }],
               },
             ],
           },
