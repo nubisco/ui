@@ -11,12 +11,20 @@ import { icons } from '../../src/plugins/icons'
 import { flags } from '../../src/plugins/flags'
 import { fonts } from '../../src/plugins/fonts'
 
+const gaId = process.env.VITE_GA_ID
+
 export default withMermaid(
   defineConfig({
     title: 'Nubisco',
     description: 'Nubisco UI Documentation',
     base: '/ui/',
     appearance: false,
+    head: gaId
+      ? [
+          ['script', { async: '', src: `https://www.googletagmanager.com/gtag/js?id=${gaId}` }],
+          ['script', {}, `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${gaId}')`],
+        ]
+      : [],
     markdown: {
       config(md) {
         md.use(tabsMarkdownPlugin)
