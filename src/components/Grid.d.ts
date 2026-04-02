@@ -1,15 +1,19 @@
 import type { PropType } from 'vue'
 
-// Breakpoint type with short names
+// Breakpoint names — mobile-first (min-width)
 export type TBreakpoint = 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
 
 // Grid direction types
 export type TGridType = 'row' | 'col' | 'row-reverse' | 'col-reverse'
 export type TGridTypeResponsive = Partial<Record<TBreakpoint, TGridType>>
+export type TGridTypeFn = () => TGridType
+export type TGridTypeInput = TGridType | TGridTypeResponsive | TGridTypeFn
 
 // Alignment types
 export type TGridAlign = 'start' | 'end' | 'center' | 'baseline' | 'stretch'
 export type TGridAlignResponsive = Partial<Record<TBreakpoint, TGridAlign>>
+export type TGridAlignFn = () => TGridAlign
+export type TGridAlignInput = TGridAlign | TGridAlignResponsive | TGridAlignFn
 
 // Justify types
 export type TGridJustify =
@@ -20,14 +24,26 @@ export type TGridJustify =
   | 'evenly'
   | 'start'
 export type TGridJustifyResponsive = Partial<Record<TBreakpoint, TGridJustify>>
+export type TGridJustifyFn = () => TGridJustify
+export type TGridJustifyInput =
+  | TGridJustify
+  | TGridJustifyResponsive
+  | TGridJustifyFn
 
 // Wrap types
 export type TGridWrap = 'nowrap' | 'wrap' | 'reverse'
 export type TGridWrapResponsive = Partial<Record<TBreakpoint, TGridWrap>>
+export type TGridWrapFn = () => TGridWrap
+export type TGridWrapInput = TGridWrap | TGridWrapResponsive | TGridWrapFn
 
 // Gap types
 export type TGapSize = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
 export type TGridGap = TGapSize | Partial<Record<TBreakpoint, TGapSize>>
+export type TGridGapFn = () => TGapSize
+export type TGridGapInput =
+  | TGapSize
+  | Partial<Record<TBreakpoint, TGapSize>>
+  | TGridGapFn
 
 // Grid columns (1-16)
 export type TGridColumns =
@@ -48,6 +64,11 @@ export type TGridColumns =
   | 15
   | 16
 export type TGridColumnsResponsive = Partial<Record<TBreakpoint, TGridColumns>>
+export type TGridColumnsFn = () => TGridColumns
+export type TGridColumnsInput =
+  | TGridColumns
+  | TGridColumnsResponsive
+  | TGridColumnsFn
 
 // Grid shift (0-15)
 export type TGridShift =
@@ -68,8 +89,18 @@ export type TGridShift =
   | 14
   | 15
 export type TGridShiftResponsive = Partial<Record<TBreakpoint, TGridShift>>
+export type TGridShiftFn = () => TGridShift
+export type TGridShiftInput = TGridShift | TGridShiftResponsive | TGridShiftFn
 
-// Boolean responsive type (for first, last, reverse)
+// Visible types
+export type TGridVisibleResponsive = Partial<Record<TBreakpoint, boolean>>
+export type TGridVisibleFn = () => boolean
+export type TGridVisibleInput =
+  | boolean
+  | TGridVisibleResponsive
+  | TGridVisibleFn
+
+// Boolean responsive type (for first, last, reverse — array of breakpoints, not objects)
 export type TBooleanResponsive = boolean | TBreakpoint[]
 
 // Grid mode
@@ -89,16 +120,16 @@ export interface IHandlerContext {
 export interface IGridProps {
   id?: string | null
   is?: string
-  dir?: TGridType | TGridTypeResponsive
-  align?: TGridAlign | TGridAlignResponsive | null
-  justify?: TGridJustify | TGridJustifyResponsive | null
-  gap?: TGridGap | null
-  grid?: TGridColumns | TGridColumnsResponsive | null
-  shift?: TGridShift | TGridShiftResponsive | null
-  wrap?: TGridWrap | TGridWrapResponsive | null
+  dir?: TGridTypeInput
+  align?: TGridAlignInput | null
+  justify?: TGridJustifyInput | null
+  gap?: TGridGapInput | null
+  grid?: TGridColumnsInput | null
+  shift?: TGridShiftInput | null
+  wrap?: TGridWrapInput | null
   first?: TBooleanResponsive | null
   last?: TBooleanResponsive | null
-  visible?: boolean | Partial<Record<TBreakpoint, boolean>> | null
+  visible?: TGridVisibleInput | null
   reverse?: TBooleanResponsive
   grow?: boolean | null
   flex?: boolean | null
@@ -121,9 +152,10 @@ export const gridPropDefinitions = {
   },
 
   dir: {
-    type: [String, Object] as PropType<TGridType | TGridTypeResponsive>,
+    type: [String, Object, Function] as PropType<TGridTypeInput>,
     default: 'row',
-    validator: (value: TGridType | TGridTypeResponsive): boolean => {
+    validator: (value: TGridTypeInput): boolean => {
+      if (typeof value === 'function') return true
       if (typeof value === 'string') {
         return (['row', 'col', 'row-reverse', 'col-reverse'] as const).includes(
           value as TGridType,
@@ -138,10 +170,10 @@ export const gridPropDefinitions = {
   },
 
   align: {
-    type: [String, Object] as PropType<TGridAlign | TGridAlignResponsive>,
+    type: [String, Object, Function] as PropType<TGridAlignInput>,
     default: null,
-    validator: (value: TGridAlign | TGridAlignResponsive): boolean => {
-      if (value == null) return true
+    validator: (value: TGridAlignInput): boolean => {
+      if (value == null || typeof value === 'function') return true
       if (typeof value === 'string') {
         return (
           ['start', 'end', 'center', 'baseline', 'stretch'] as const
@@ -156,10 +188,10 @@ export const gridPropDefinitions = {
   },
 
   justify: {
-    type: [String, Object] as PropType<TGridJustify | TGridJustifyResponsive>,
+    type: [String, Object, Function] as PropType<TGridJustifyInput>,
     default: null,
-    validator: (value: TGridJustify | TGridJustifyResponsive): boolean => {
-      if (value == null) return true
+    validator: (value: TGridJustifyInput): boolean => {
+      if (value == null || typeof value === 'function') return true
       if (typeof value === 'string') {
         return (
           ['around', 'between', 'center', 'end', 'evenly', 'start'] as const
@@ -174,10 +206,10 @@ export const gridPropDefinitions = {
   },
 
   gap: {
-    type: [String, Object] as PropType<TGridGap>,
+    type: [String, Object, Function] as PropType<TGridGapInput>,
     default: null,
-    validator: (value: TGridGap): boolean => {
-      if (value == null) return true
+    validator: (value: TGridGapInput): boolean => {
+      if (value == null || typeof value === 'function') return true
       const validSizes = ['xxs', 'xs', 'sm', 'md', 'lg', 'xl', 'xxl'] as const
       if (typeof value === 'string') {
         return validSizes.includes(value as TGapSize)
@@ -189,12 +221,10 @@ export const gridPropDefinitions = {
   },
 
   grid: {
-    type: [Number, String, Object] as PropType<
-      TGridColumns | TGridColumnsResponsive
-    >,
+    type: [Number, String, Object, Function] as PropType<TGridColumnsInput>,
     default: null,
-    validator: (value: TGridColumns | TGridColumnsResponsive): boolean => {
-      if (value == null) return true
+    validator: (value: TGridColumnsInput): boolean => {
+      if (value == null || typeof value === 'function') return true
       const isValidColumn = (v: number | string) => {
         const num = typeof v === 'string' ? parseInt(v, 10) : v
         return num >= 1 && num <= 16 && !isNaN(num)
@@ -208,12 +238,10 @@ export const gridPropDefinitions = {
   },
 
   shift: {
-    type: [Number, String, Object] as PropType<
-      TGridShift | TGridShiftResponsive
-    >,
+    type: [Number, String, Object, Function] as PropType<TGridShiftInput>,
     default: null,
-    validator: (value: TGridShift | TGridShiftResponsive): boolean => {
-      if (value == null) return true
+    validator: (value: TGridShiftInput): boolean => {
+      if (value == null || typeof value === 'function') return true
       const isValidShift = (v: number | string) => {
         const num = typeof v === 'string' ? parseInt(v, 10) : v
         return num >= 0 && num <= 15 && !isNaN(num)
@@ -227,10 +255,10 @@ export const gridPropDefinitions = {
   },
 
   wrap: {
-    type: [String, Object] as PropType<TGridWrap | TGridWrapResponsive>,
+    type: [String, Object, Function] as PropType<TGridWrapInput>,
     default: null,
-    validator: (value: TGridWrap | TGridWrapResponsive): boolean => {
-      if (value == null) return true
+    validator: (value: TGridWrapInput): boolean => {
+      if (value == null || typeof value === 'function') return true
       if (typeof value === 'string') {
         return (['nowrap', 'wrap', 'reverse'] as const).includes(
           value as TGridWrap,
@@ -265,9 +293,7 @@ export const gridPropDefinitions = {
   },
 
   visible: {
-    type: [Boolean, Object] as PropType<
-      boolean | Partial<Record<TBreakpoint, boolean>>
-    >,
+    type: [Boolean, Object, Function] as PropType<TGridVisibleInput>,
     default: null,
   },
 

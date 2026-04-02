@@ -103,7 +103,7 @@ function handleJustify(value: TGridJustify, ctx: IHandlerContext): void {
 }
 
 /**
- * Handles gap prop (xxs, xs, s, m, l, xl, xxl)
+ * Handles gap prop (xxs, xs, sm, md, lg, xl, xxl)
  */
 function handleGap(value: string, ctx: IHandlerContext): void {
   const { collection, breakpoint } = ctx
@@ -185,17 +185,39 @@ function handleVisible(value: boolean, ctx: IHandlerContext): void {
 // ============================================================================
 
 /**
- * Generic processor for responsive props
- * Handles: simple values, arrays (breakpoint lists), and responsive objects
+ * Generic processor for responsive props.
+ * Handles three input modes:
+ *   1. Scalar value  — applies at all breakpoints: dir="col"
+ *   2. Breakpoint map — per-breakpoint object: :dir="{ sm: 'col', md: 'row' }"
+ *   3. Function — called at render time; reactive deps are tracked by the
+ *      parent computed(): :dir="() => isNavOpen ? 'col' : 'row'"
+ *
+ * Array form is also accepted for boolean props (first, last, reverse):
+ *   :first="['sm', 'md']"
  */
 function processResponsiveProp<T>(
-  prop: T | Partial<Record<TBreakpoint, T>> | TBreakpoint[] | null | undefined,
+  prop:
+    | T
+    | Partial<Record<TBreakpoint, T>>
+    | TBreakpoint[]
+    | (() => T)
+    | null
+    | undefined,
   handler: (value: T, ctx: IHandlerContext) => void,
   classMap?: Record<string, string>,
 ): TClassCollection {
   const collection: TClassCollection = {}
 
   if (prop == null) return collection
+
+  // Function — call it; Vue's reactivity tracks deps inside the parent computed
+  if (typeof prop === 'function') {
+    const value = (prop as () => T)()
+    if (value != null) {
+      handler(value, { collection, classMap })
+    }
+    return collection
+  }
 
   // Simple value (string, number, boolean)
   if (
@@ -207,7 +229,7 @@ function processResponsiveProp<T>(
     return collection
   }
 
-  // Array of breakpoints (for boolean responsive props like first: ['s', 'm'])
+  // Array of breakpoints (for boolean props like first: ['sm', 'md'])
   if (Array.isArray(prop)) {
     prop.forEach((breakpoint) => {
       const normBp = normalizeBreakpoint(breakpoint as string)
@@ -216,7 +238,7 @@ function processResponsiveProp<T>(
     return collection
   }
 
-  // Object (responsive prop with breakpoint keys)
+  // Object (responsive map with breakpoint keys)
   if (typeof prop === 'object') {
     Object.entries(prop).forEach(([breakpoint, value]) => {
       if (value != null) {

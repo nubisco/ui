@@ -136,7 +136,7 @@ export default withMermaid(
                     link: '/ui/components/file-uploader',
                   },
                   { text: 'Flag', link: '/ui/components/flag' },
-                  { text: 'Grid', link: '/ui/components/grid/overview' },
+                  { text: 'Grid', link: '/ui/components/grid' },
                   { text: 'Icon', link: '/ui/components/icon' },
                   {
                     text: 'Image Cropper',

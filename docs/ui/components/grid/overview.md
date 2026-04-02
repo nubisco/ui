@@ -10,97 +10,92 @@ Configured at compile time via the `src/styles/variables/_grid.scss` file.
 
 ### Breakpoints
 
-This design system ships with **predefined** `$breakpoints` variable which you can override, prior to importing the `src/styles/grid/index.scss` file:
+The grid ships with five predefined breakpoints. All breakpoints are **mobile-first** (`min-width`): a rule set at `md` applies from 672 px upward and is inherited by `lg`, `xl`, and `xxl` unless overridden.
 
-| Name | Value |
-| ---- | :---: |
-| s    |  320  |
-| m    |  672  |
-| l    | 1056  |
-| xl   | 1312  |
-| xxl  | 1584  |
+| Name  | Min-width |
+| ----- | :-------: |
+| `sm`  |   320px   |
+| `md`  |   672px   |
+| `lg`  |  1056px   |
+| `xl`  |  1312px   |
+| `xxl` |  1584px   |
 
 ::: tip
-These breakpoint names are important, because you can use them to define rules **per breakpoint**.
-They can be edited in the `src/styles/variables/_breakpoints.scss` file or by overriding the `$breakpoints` map.
+These breakpoint names are important because you use them as keys in responsive prop objects.
+They can be overridden in `src/styles/variables/_breakpoints.scss` or by replacing the `$breakpoints` map.
 :::
 
 ![An image](/media/breakpoints.svg){width=640px}
 
 ### Columns and Gap
 
-Columns come **predefined** to `16`, but you may use any other number of columns that best suits your design.
+Columns default to `16`. The gap system uses an 8px base unit with a named scale:
 
-The optional gap is set as an initial unit of `8`, and a **predefined** set of gap options is provided. These can also be defined for more or less granularity.
+| Name  | Value |
+| ----- | ----: |
+| `xxs` |   2px |
+| `xs`  |   4px |
+| `sm`  |   8px |
+| `md`  |  16px |
+| `lg`  |  24px |
+| `xl`  |  32px |
+| `xxl` |  48px |
 
 ::: tip
-This can be configured in the `src/styles/variables/_grid.scss` file or by overriding the `$gap-ratios` map.
+Gap tokens are configured in `src/styles/variables/_grid.scss` via the `$gap-ratios` map.
 :::
 
-| Name | Rap ratio | Result |
-| ---- | :-------: | -----: |
-| xs   |    1/4    |    2px |
-| sm   |    1/2    |    4px |
-| md   |    1/1    |    8px |
-| lg   |   1\*2    |   16px |
-| xl   |   1\*4    |   32px |
-
 ## Visual Demo
-
-The Grid component provides a flexible layout system. To better understand how it works, here's a visual demonstration showing the grid structure with exaggerated styling:
 
 <preview style-grid>
   <div class="grid-demo-label">Grid Structure Demo</div>
   <div class="grid-demo-description">This demo shows how the grid system works with visual indicators for spacing, alignment, and column spanning.</div>
-  <!-- Row 1: 15 small items -->
   <nb-grid dir="row" gap="sm">
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">1</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">2</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">3</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">4</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">5</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">6</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">7</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">8</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">9</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">10</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">11</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">12</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">13</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">14</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">15</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">1</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">3</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">4</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">5</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">6</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">7</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">8</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">9</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">10</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">11</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">12</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">13</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">14</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">15</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">16</nb-grid>
   </nb-grid>
-  <!-- Row 2: 8 medium items -->
   <nb-grid dir="row" gap="sm">
-    <nb-grid dir="col" grid="2" class="grid-demo-item wireframe-row-2">2 cols</nb-grid>
-    <nb-grid dir="col" grid="2" class="grid-demo-item wireframe-row-2">2 cols</nb-grid>
-    <nb-grid dir="col" grid="2" class="grid-demo-item wireframe-row-2">2 cols</nb-grid>
-    <nb-grid dir="col" grid="2" class="grid-demo-item wireframe-row-2">2 cols</nb-grid>
-    <nb-grid dir="col" grid="2" class="grid-demo-item wireframe-row-2">2 cols</nb-grid>
-    <nb-grid dir="col" grid="2" class="grid-demo-item wireframe-row-2">2 cols</nb-grid>
-    <nb-grid dir="col" grid="2" class="grid-demo-item wireframe-row-2">2 cols</nb-grid>
-    <nb-grid dir="col" grid="2" class="grid-demo-item wireframe-row-2">2 cols</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
   </nb-grid>
-  <!-- Row 3: 4 large items -->
   <nb-grid dir="row" gap="sm">
-    <nb-grid dir="col" grid="4" class="grid-demo-item wireframe-row-3">4 cols</nb-grid>
-    <nb-grid dir="col" grid="4" class="grid-demo-item wireframe-row-3">4 cols</nb-grid>
-    <nb-grid dir="col" grid="4" class="grid-demo-item wireframe-row-3">4 cols</nb-grid>
-    <nb-grid dir="col" grid="4" class="grid-demo-item wireframe-row-3">4 cols</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item">4</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item">4</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item">4</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item">4</nb-grid>
   </nb-grid>
-  <!-- Row 4: 2 extra large items -->
   <nb-grid dir="row" gap="sm">
-    <nb-grid dir="col" grid="8" class="grid-demo-item wireframe-row-4">8 cols</nb-grid>
-    <nb-grid dir="col" grid="8" class="grid-demo-item wireframe-row-4">8 cols</nb-grid>
+    <nb-grid dir="col" grid="8" class="grid-demo-item">8</nb-grid>
+    <nb-grid dir="col" grid="8" class="grid-demo-item">8</nb-grid>
   </nb-grid>
   <nb-grid dir="row">
-    <nb-grid dir="col" grid="16" class="grid-demo-item wireframe-row-5">16 cols (full width)</nb-grid>
+    <nb-grid dir="col" grid="16" class="grid-demo-item">16</nb-grid>
   </nb-grid>
 </preview>
 
 ### Refs
 
-In order to get the ref from a `nb-grid` object, you must realize you are getting the reference to the parent `component` and not the actual object. So, we need to relly on a method exposed by the `grid` component which returns the actual `ref`.
+To get the underlying DOM element from a `nb-grid`, use the `getRef()` method it exposes — the component ref itself points to the Vue instance, not the element.
 
 ```vue
 <template>
