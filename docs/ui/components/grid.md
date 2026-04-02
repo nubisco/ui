@@ -23,22 +23,70 @@ The grid is configured at compile time via `src/styles/variables/_grid.scss`.
 
 ## Breakpoints
 
-| Name | Min-width |
-| ---- | :-------: |
-| s    |   320px   |
-| m    |   672px   |
-| l    |  1056px   |
-| xl   |  1312px   |
-| xxl  |  1584px   |
+All breakpoints are **mobile-first** (`min-width`). Base styles apply at all viewport sizes. A rule defined at `md` kicks in from 672px upward and stays active unless a wider breakpoint overrides it.
 
-Most props (`dir`, `gap`, `grid`, `justify`, `align`, `wrap`, `visible`) accept either a scalar value or a breakpoint map for responsive control:
+| Name  | Min-width |
+| ----- | :-------: |
+| `sm`  |   320px   |
+| `md`  |   672px   |
+| `lg`  |  1056px   |
+| `xl`  |  1312px   |
+| `xxl` |  1584px   |
+
+### How responsive props work
+
+Most layout props (`dir`, `gap`, `grid`, `justify`, `align`, `wrap`, `visible`) accept three input forms:
+
+**1. Scalar** — applies at all viewport sizes:
 
 ```vue
-<nb-grid :dir="{ s: 'col', m: 'row' }" :gap="{ s: 'sm', m: 'lg' }">
-  <nb-grid :grid="{ s: 16, m: 8 }">Left / top</nb-grid>
-  <nb-grid :grid="{ s: 16, m: 8 }">Right / bottom</nb-grid>
-</nb-grid>
+<nb-grid dir="col">...</nb-grid>
 ```
+
+**2. Breakpoint map** — different values per breakpoint. Rules cascade upward; only the breakpoints you define are set:
+
+```vue
+<!-- col until 672px, then row -->
+<nb-grid :dir="{ sm: 'col', md: 'row' }">...</nb-grid>
+```
+
+**3. Function** — called reactively at render time. Any reactive state accessed inside is tracked automatically:
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+const isExpanded = ref(false)
+</script>
+
+<template>
+  <nb-grid :dir="() => (isExpanded ? 'col' : 'row')">...</nb-grid>
+</template>
+```
+
+::: tip
+The function form is for dynamic logic that does not map cleanly to breakpoints — for example, toggling layout based on component state. For viewport-driven changes, use the breakpoint map.
+:::
+
+### Props that accept responsive forms
+
+| Prop      | Scalar | Breakpoint map | Function |
+| --------- | :----: | :------------: | :------: |
+| `dir`     |   ✓    |       ✓        |    ✓     |
+| `gap`     |   ✓    |       ✓        |    ✓     |
+| `grid`    |   ✓    |       ✓        |    ✓     |
+| `shift`   |   ✓    |       ✓        |    ✓     |
+| `justify` |   ✓    |       ✓        |    ✓     |
+| `align`   |   ✓    |       ✓        |    ✓     |
+| `wrap`    |   ✓    |       ✓        |    ✓     |
+| `visible` |   ✓    |       ✓        |    ✓     |
+| `first`   |   ✓    |   array form   |    -     |
+| `last`    |   ✓    |   array form   |    -     |
+| `reverse` |   ✓    |   array form   |    -     |
+| `grow`    |   ✓    |       -        |    -     |
+| `flex`    |   ✓    |       -        |    -     |
+| `shrink`  |   ✓    |       -        |    -     |
+
+`first`, `last`, and `reverse` use an array of breakpoint names instead of an object: `:first="['sm', 'md']"`.
 
 ## Visual demo
 
@@ -46,45 +94,45 @@ Most props (`dir`, `gap`, `grid`, `justify`, `align`, `wrap`, `visible`) accept 
   <div class="grid-demo-label">Grid structure</div>
   <div class="grid-demo-description">Column-spanning overview — each row uses the same 16-column total width.</div>
   <nb-grid dir="row" gap="sm">
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">1</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">2</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">3</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">4</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">5</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">6</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">7</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">8</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">9</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">10</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">11</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">12</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">13</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">14</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">15</nb-grid>
-    <nb-grid dir="col" grid="1" class="grid-demo-item wireframe-row-1">16</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">1</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">3</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">4</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">5</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">6</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">7</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">8</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">9</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">10</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">11</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">12</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">13</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">14</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">15</nb-grid>
+    <nb-grid dir="col" grid="1" class="grid-demo-item">16</nb-grid>
   </nb-grid>
   <nb-grid dir="row" gap="sm">
-    <nb-grid dir="col" grid="2" class="grid-demo-item wireframe-row-2">2</nb-grid>
-    <nb-grid dir="col" grid="2" class="grid-demo-item wireframe-row-2">2</nb-grid>
-    <nb-grid dir="col" grid="2" class="grid-demo-item wireframe-row-2">2</nb-grid>
-    <nb-grid dir="col" grid="2" class="grid-demo-item wireframe-row-2">2</nb-grid>
-    <nb-grid dir="col" grid="2" class="grid-demo-item wireframe-row-2">2</nb-grid>
-    <nb-grid dir="col" grid="2" class="grid-demo-item wireframe-row-2">2</nb-grid>
-    <nb-grid dir="col" grid="2" class="grid-demo-item wireframe-row-2">2</nb-grid>
-    <nb-grid dir="col" grid="2" class="grid-demo-item wireframe-row-2">2</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
   </nb-grid>
   <nb-grid dir="row" gap="sm">
-    <nb-grid dir="col" grid="4" class="grid-demo-item wireframe-row-3">4</nb-grid>
-    <nb-grid dir="col" grid="4" class="grid-demo-item wireframe-row-3">4</nb-grid>
-    <nb-grid dir="col" grid="4" class="grid-demo-item wireframe-row-3">4</nb-grid>
-    <nb-grid dir="col" grid="4" class="grid-demo-item wireframe-row-3">4</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item">4</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item">4</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item">4</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item">4</nb-grid>
   </nb-grid>
   <nb-grid dir="row" gap="sm">
-    <nb-grid dir="col" grid="8" class="grid-demo-item wireframe-row-4">8</nb-grid>
-    <nb-grid dir="col" grid="8" class="grid-demo-item wireframe-row-4">8</nb-grid>
+    <nb-grid dir="col" grid="8" class="grid-demo-item">8</nb-grid>
+    <nb-grid dir="col" grid="8" class="grid-demo-item">8</nb-grid>
   </nb-grid>
   <nb-grid dir="row">
-    <nb-grid dir="col" grid="16" class="grid-demo-item wireframe-row-5">16 (full width)</nb-grid>
+    <nb-grid dir="col" grid="16" class="grid-demo-item">16</nb-grid>
   </nb-grid>
 </preview>
 
@@ -116,23 +164,23 @@ The `grid` prop sets how many of the 16 available columns a child item spans. Th
 <preview style-grid>
   <div class="grid-demo-label">Column spanning</div>
   <nb-grid dir="row" class="grid-demo-row" gap="sm">
-    <nb-grid dir="col" grid="16" class="grid-demo-item span-8">16</nb-grid>
+    <nb-grid dir="col" grid="16" class="grid-demo-item">16</nb-grid>
   </nb-grid>
   <nb-grid dir="row" class="grid-demo-row" gap="sm">
-    <nb-grid dir="col" grid="2" class="grid-demo-item span-2">2</nb-grid>
-    <nb-grid dir="col" grid="14" class="grid-demo-item span-6">14</nb-grid>
+    <nb-grid dir="col" grid="2" class="grid-demo-item">2</nb-grid>
+    <nb-grid dir="col" grid="14" class="grid-demo-item span-b">14</nb-grid>
   </nb-grid>
   <nb-grid dir="row" class="grid-demo-row" gap="sm">
-    <nb-grid dir="col" grid="4" class="grid-demo-item span-4">4</nb-grid>
-    <nb-grid dir="col" grid="12" class="grid-demo-item span-4">12</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item">4</nb-grid>
+    <nb-grid dir="col" grid="12" class="grid-demo-item span-b">12</nb-grid>
   </nb-grid>
   <nb-grid dir="row" class="grid-demo-row" gap="sm">
-    <nb-grid dir="col" grid="6" class="grid-demo-item span-6">6</nb-grid>
-    <nb-grid dir="col" grid="10" class="grid-demo-item span-2">10</nb-grid>
+    <nb-grid dir="col" grid="6" class="grid-demo-item">6</nb-grid>
+    <nb-grid dir="col" grid="10" class="grid-demo-item span-b">10</nb-grid>
   </nb-grid>
   <nb-grid dir="row" class="grid-demo-row" gap="sm">
-    <nb-grid dir="col" grid="8" class="grid-demo-item span-8">8</nb-grid>
-    <nb-grid dir="col" grid="8" class="grid-demo-item span-8">8</nb-grid>
+    <nb-grid dir="col" grid="8" class="grid-demo-item">8</nb-grid>
+    <nb-grid dir="col" grid="8" class="grid-demo-item span-b">8</nb-grid>
   </nb-grid>
 </preview>
 
@@ -151,16 +199,16 @@ Pass a breakpoint map to change column spans at different screen widths.
 
 <preview style-grid>
   <nb-grid dir="row" gap="sm">
-    <nb-grid dir="col" :grid="{ s: 16, m: 8 }" class="grid-demo-item span-4">16 → 8</nb-grid>
-    <nb-grid dir="col" :grid="{ s: 16, m: 8 }" class="grid-demo-item span-8">16 → 8</nb-grid>
+    <nb-grid dir="col" :grid="{ sm: 16, md: 8 }" class="grid-demo-item">16 → 8</nb-grid>
+    <nb-grid dir="col" :grid="{ sm: 16, md: 8 }" class="grid-demo-item span-b">16 → 8</nb-grid>
   </nb-grid>
 </preview>
 
 ```vue
 <template>
   <nb-grid dir="row">
-    <nb-grid dir="col" :grid="{ s: 16, m: 8 }">Left</nb-grid>
-    <nb-grid dir="col" :grid="{ s: 16, m: 8 }">Right</nb-grid>
+    <nb-grid dir="col" :grid="{ sm: 16, md: 8 }">Left</nb-grid>
+    <nb-grid dir="col" :grid="{ sm: 16, md: 8 }">Right</nb-grid>
   </nb-grid>
 </template>
 ```
@@ -171,10 +219,10 @@ Use `shift` to push a column to the right by a number of column widths.
 
 <preview style-grid>
   <nb-grid dir="col" gap="xs">
-    <nb-grid justify="end" grid="4" shift="12" class="grid-demo-item span-4">shift 12</nb-grid>
-    <nb-grid justify="end" grid="8" shift="8" class="grid-demo-item span-8">shift 8</nb-grid>
-    <nb-grid justify="end" grid="12" shift="4" class="grid-demo-item span-4">shift 4</nb-grid>
-    <nb-grid justify="end" grid="16" shift="0" class="grid-demo-item span-8">shift 0</nb-grid>
+    <nb-grid justify="end" grid="4" shift="12" class="grid-demo-item">shift 12</nb-grid>
+    <nb-grid justify="end" grid="8" shift="8" class="grid-demo-item span-b">shift 8</nb-grid>
+    <nb-grid justify="end" grid="12" shift="4" class="grid-demo-item">shift 4</nb-grid>
+    <nb-grid justify="end" grid="16" shift="0" class="grid-demo-item span-b">shift 0</nb-grid>
   </nb-grid>
 </preview>
 
@@ -225,19 +273,19 @@ The `dir` prop controls the main axis: `row` lays children side by side; `col` s
 ## Responsive direction
 
 <preview style-grid>
-  <nb-grid :dir="{ s: 'col', m: 'row' }" gap="sm">
-    <nb-grid :dir="{ s: 'row', m: 'col' }" class="grid-demo-item demo-small">First</nb-grid>
-    <nb-grid :dir="{ s: 'row', m: 'col' }" class="grid-demo-item demo-small">Second</nb-grid>
-    <nb-grid :dir="{ s: 'row', m: 'col' }" class="grid-demo-item demo-small">Third</nb-grid>
+  <nb-grid :dir="{ sm: 'col', md: 'row' }" gap="sm">
+    <nb-grid :dir="{ sm: 'row', md: 'col' }" class="grid-demo-item demo-small">First</nb-grid>
+    <nb-grid :dir="{ sm: 'row', md: 'col' }" class="grid-demo-item demo-small">Second</nb-grid>
+    <nb-grid :dir="{ sm: 'row', md: 'col' }" class="grid-demo-item demo-small">Third</nb-grid>
   </nb-grid>
 </preview>
 
 ```vue
 <template>
   <!-- col on small, row on medium+ -->
-  <nb-grid :dir="{ s: 'col', m: 'row' }">
-    <nb-grid :dir="{ s: 'row', m: 'col' }">First</nb-grid>
-    <nb-grid :dir="{ s: 'row', m: 'col' }">Second</nb-grid>
+  <nb-grid :dir="{ sm: 'col', md: 'row' }">
+    <nb-grid :dir="{ sm: 'row', md: 'col' }">First</nb-grid>
+    <nb-grid :dir="{ sm: 'row', md: 'col' }">Second</nb-grid>
   </nb-grid>
 </template>
 ```
@@ -308,7 +356,7 @@ The `gap` prop controls spacing between children using named size tokens.
 ## Responsive gaps
 
 <preview style-grid>
-  <nb-grid dir="row" :gap="{ s: 'xs', m: 'xl' }">
+  <nb-grid dir="row" :gap="{ sm: 'xs', md: 'xl' }">
     <nb-grid dir="col" grow class="grid-demo-item demo-small">xs → xl</nb-grid>
     <nb-grid dir="col" grow class="grid-demo-item demo-small">xs → xl</nb-grid>
   </nb-grid>
@@ -316,7 +364,7 @@ The `gap` prop controls spacing between children using named size tokens.
 
 ```vue
 <template>
-  <nb-grid dir="row" :gap="{ s: 'xs', m: 'xl' }">
+  <nb-grid dir="row" :gap="{ sm: 'xs', md: 'xl' }">
     <nb-grid dir="col" grow>One</nb-grid>
     <nb-grid dir="col" grow>Two</nb-grid>
   </nb-grid>
@@ -330,31 +378,31 @@ The `gap` prop controls spacing between children using named size tokens.
 ## Horizontal alignment (`justify`)
 
 <preview style-grid>
-  <nb-grid dir="row" class="grid-demo-row" justify="start">
+  <nb-grid dir="row" class="grid-demo-row" justify="start" style="border: 1px dotted lightgrey">
     <nb-grid dir="col" class="grid-demo-item demo-small">start</nb-grid>
   </nb-grid>
-  <nb-grid dir="row" class="grid-demo-row" justify="center">
+  <nb-grid dir="row" class="grid-demo-row" justify="center" style="border: 1px dotted lightgrey">
     <nb-grid dir="col" class="grid-demo-item demo-small">center</nb-grid>
   </nb-grid>
-  <nb-grid dir="row" class="grid-demo-row" justify="end">
+  <nb-grid dir="row" class="grid-demo-row" justify="end" style="border: 1px dotted lightgrey">
     <nb-grid dir="col" class="grid-demo-item demo-small">end</nb-grid>
   </nb-grid>
-  <nb-grid dir="row" class="grid-demo-row" justify="between">
+  <nb-grid dir="row" class="grid-demo-row" justify="between" style="border: 1px dotted lightgrey">
     <nb-grid dir="col" class="grid-demo-item demo-small">between</nb-grid>
     <nb-grid dir="col" class="grid-demo-item demo-small">between</nb-grid>
     <nb-grid dir="col" class="grid-demo-item demo-small">between</nb-grid>
   </nb-grid>
-  <nb-grid dir="row" class="grid-demo-row" justify="around">
+  <nb-grid dir="row" class="grid-demo-row" justify="around" style="border: 1px dotted lightgrey">
     <nb-grid dir="col" class="grid-demo-item demo-small">around</nb-grid>
     <nb-grid dir="col" class="grid-demo-item demo-small">around</nb-grid>
     <nb-grid dir="col" class="grid-demo-item demo-small">around</nb-grid>
   </nb-grid>
-  <nb-grid dir="row" class="grid-demo-row" justify="evenly">
+  <nb-grid dir="row" class="grid-demo-row" justify="evenly" style="border: 1px dotted lightgrey">
     <nb-grid dir="col" class="grid-demo-item demo-small">evenly</nb-grid>
     <nb-grid dir="col" class="grid-demo-item demo-small">evenly</nb-grid>
     <nb-grid dir="col" class="grid-demo-item demo-small">evenly</nb-grid>
   </nb-grid>
-  <nb-grid dir="row" class="grid-demo-row" distributed>
+  <nb-grid dir="row" class="grid-demo-row" distributed style="border: 1px dotted lightgrey">
     <nb-grid dir="col" class="grid-demo-item demo-small">distributed</nb-grid>
     <nb-grid dir="col" class="grid-demo-item demo-small">distributed</nb-grid>
     <nb-grid dir="col" class="grid-demo-item demo-small">distributed</nb-grid>
@@ -377,13 +425,13 @@ The `gap` prop controls spacing between children using named size tokens.
 ## Vertical alignment (`align`)
 
 <preview style-grid>
-  <nb-grid dir="row" align="start" style="height: 80px" class="grid-demo-row">
+  <nb-grid dir="row" align="start" style="height: 80px; border: 1px dotted lightgrey" class="grid-demo-row">
     <nb-grid dir="col" grow class="grid-demo-item demo-small">start</nb-grid>
   </nb-grid>
-  <nb-grid dir="row" align="center" style="height: 80px" class="grid-demo-row">
+  <nb-grid dir="row" align="center" style="height: 80px; border: 1px dotted lightgrey" class="grid-demo-row">
     <nb-grid dir="col" grow class="grid-demo-item demo-small">center</nb-grid>
   </nb-grid>
-  <nb-grid dir="row" align="end" style="height: 80px" class="grid-demo-row">
+  <nb-grid dir="row" align="end" style="height: 80px; border: 1px dotted lightgrey" class="grid-demo-row">
     <nb-grid dir="col" grow class="grid-demo-item demo-small">end</nb-grid>
   </nb-grid>
 </preview>
@@ -404,31 +452,31 @@ The `wrap` prop controls what happens when children overflow the container's inl
 
 <preview style-grid>
   <div class="grid-demo-label">nowrap — items overflow</div>
-  <NbGrid is="ul" wrap="nowrap" gap="sm" style="list-style: none; padding: 0; margin-bottom: 16px;">
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">1</NbGrid>
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">2</NbGrid>
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">3</NbGrid>
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">4</NbGrid>
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">5</NbGrid>
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">6</NbGrid>
+  <NbGrid is="ul" wrap="nowrap" gap="sm">
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
   </NbGrid>
   <div class="grid-demo-label">wrap — items flow to next line</div>
-  <NbGrid is="ul" wrap="wrap" gap="sm" style="list-style: none; padding: 0; margin-bottom: 16px;">
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">1</NbGrid>
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">2</NbGrid>
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">3</NbGrid>
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">4</NbGrid>
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">5</NbGrid>
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">6</NbGrid>
+  <NbGrid is="ul" wrap="wrap" gap="sm"">
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
   </NbGrid>
   <div class="grid-demo-label">reverse — wraps and reverses row order</div>
-  <NbGrid is="ul" wrap="reverse" gap="sm" style="list-style: none; padding: 0;">
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">1</NbGrid>
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">2</NbGrid>
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">3</NbGrid>
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">4</NbGrid>
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">5</NbGrid>
-    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">6</NbGrid>
+  <NbGrid is="ul" wrap="reverse" gap="sm">
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
+    <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
   </NbGrid>
 </preview>
 
@@ -445,7 +493,7 @@ The `wrap` prop controls what happens when children overflow the container's inl
 `wrap` also supports a breakpoint map:
 
 ```vue
-<NbGrid :wrap="{ s: 'wrap', l: 'nowrap' }">...</NbGrid>
+<NbGrid :wrap="{ sm: 'wrap', lg: 'nowrap' }">...</NbGrid>
 ```
 
 </doc-tab>
@@ -507,7 +555,7 @@ Use `first` and `last` boolean props to reorder items visually without changing 
 `reverse` also accepts an array of breakpoint names to apply the reversal only at those sizes:
 
 ```vue
-<nb-grid :dir="{ m: 'col' }" :reverse="['m']">...</nb-grid>
+<nb-grid :dir="{ md: 'col' }" :reverse="['md']">...</nb-grid>
 ```
 
 </doc-tab>
@@ -540,7 +588,7 @@ Use the `visible` prop to show or hide grid items. It accepts a boolean or a bre
 <preview style-grid>
   <div class="grid-demo-description">First item hidden on small, visible on large (resize the window).</div>
   <nb-grid dir="row" gap="sm">
-    <nb-grid dir="col" :visible="{ s: false, l: true }" class="grid-demo-item demo-small">hidden on small</nb-grid>
+    <nb-grid dir="col" :visible="{ sm: false, lg: true }" class="grid-demo-item demo-small">hidden on small</nb-grid>
     <nb-grid dir="col" class="grid-demo-item demo-small">always visible</nb-grid>
   </nb-grid>
 </preview>
@@ -549,7 +597,7 @@ Use the `visible` prop to show or hide grid items. It accepts a boolean or a bre
 <template>
   <nb-grid dir="row">
     <!-- Hidden on small, visible on large -->
-    <nb-grid dir="col" :visible="{ s: false, l: true }">Sidebar</nb-grid>
+    <nb-grid dir="col" :visible="{ sm: false, lg: true }">Sidebar</nb-grid>
     <nb-grid dir="col" grow>Main content</nb-grid>
   </nb-grid>
 </template>
@@ -561,23 +609,23 @@ Use the `visible` prop to show or hide grid items. It accepts a boolean or a bre
 
 ## Props
 
-| Prop          | Type                                               | Default | Description                                               |
-| ------------- | -------------------------------------------------- | ------- | --------------------------------------------------------- |
-| `dir`         | `'row' \| 'col' \| ResponsiveMap`                  | -       | Main axis direction                                       |
-| `gap`         | `GapToken \| ResponsiveMap`                        | -       | Gap between children                                      |
-| `grid`        | `number \| ResponsiveMap`                          | -       | Number of columns to span (1–16)                          |
-| `shift`       | `number`                                           | -       | Column offset from the left edge                          |
-| `justify`     | `JustifyValue \| ResponsiveMap`                    | -       | Horizontal alignment of children                          |
-| `align`       | `AlignValue \| ResponsiveMap`                      | -       | Vertical alignment of children                            |
-| `distributed` | `boolean`                                          | `false` | Children grow equally to fill width                       |
-| `wrap`        | `'wrap' \| 'nowrap' \| 'reverse' \| ResponsiveMap` | -       | Wrapping behaviour                                        |
-| `grow`        | `boolean`                                          | `false` | Flex-grow: child expands to fill remaining space          |
-| `visible`     | `boolean \| ResponsiveMap`                         | `true`  | Show or hide the element                                  |
-| `first`       | `boolean`                                          | `false` | Render this item visually first in the flex order         |
-| `last`        | `boolean`                                          | `false` | Render this item visually last in the flex order          |
-| `reverse`     | `boolean \| string[]`                              | `false` | Reverse child order; array form per breakpoint            |
-| `is`          | `string`                                           | `'div'` | HTML element tag to render (e.g. `'ul'`, `'li'`, `'nav'`) |
-| `mode`        | `'wide' \| 'narrow' \| 'condensed'`                | -       | Predefined gap presets                                    |
+| Prop          | Type                                                     | Default  | Description                                                |
+| ------------- | -------------------------------------------------------- | -------- | ---------------------------------------------------------- |
+| `dir`         | `'row' \| 'col' \| ResponsiveMap \| Fn`                  | `'row'`  | Main axis direction                                        |
+| `gap`         | `GapToken \| ResponsiveMap \| Fn`                        | -        | Gap between children                                       |
+| `grid`        | `number \| ResponsiveMap \| Fn`                          | -        | Number of columns to span (1–16)                           |
+| `shift`       | `number \| ResponsiveMap \| Fn`                          | -        | Column offset from the left edge                           |
+| `justify`     | `JustifyValue \| ResponsiveMap \| Fn`                    | -        | Horizontal alignment of children                           |
+| `align`       | `AlignValue \| ResponsiveMap \| Fn`                      | -        | Vertical alignment of children                             |
+| `distributed` | `boolean`                                                | `false`  | Children grow equally to fill width                        |
+| `wrap`        | `'wrap' \| 'nowrap' \| 'reverse' \| ResponsiveMap \| Fn` | -        | Wrapping behaviour                                         |
+| `grow`        | `boolean`                                                | `false`  | Flex-grow: child expands to fill remaining space           |
+| `visible`     | `boolean \| ResponsiveMap \| Fn`                         | `true`   | Show or hide the element                                   |
+| `first`       | `boolean \| string[]`                                    | `false`  | Render this item visually first; array form per breakpoint |
+| `last`        | `boolean \| string[]`                                    | `false`  | Render this item visually last; array form per breakpoint  |
+| `reverse`     | `boolean \| string[]`                                    | `false`  | Reverse child order; array form per breakpoint             |
+| `is`          | `string`                                                 | `'div'`  | HTML element tag to render (e.g. `'ul'`, `'li'`, `'nav'`)  |
+| `mode`        | `'wide' \| 'narrow' \| 'condensed'`                      | `'wide'` | Predefined gap preset                                      |
 
 ## Gap tokens
 
@@ -591,12 +639,45 @@ Use the `visible` prop to show or hide grid items. It accepts a boolean or a bre
 
 `start` · `center` · `end` · `stretch` · `baseline`
 
+## Breakpoints
+
+Mobile-first. Rules at `sm` apply from 320px up; later breakpoints override earlier ones.
+
+| Name  | Min-width |
+| ----- | :-------: |
+| `sm`  |   320px   |
+| `md`  |   672px   |
+| `lg`  |  1056px   |
+| `xl`  |  1312px   |
+| `xxl` |  1584px   |
+
 ## Responsive maps
 
-All responsive props accept an object keyed by breakpoint name:
+Props that accept a breakpoint map take an object keyed by breakpoint name:
 
 ```typescript
-{ s?: T, m?: T, l?: T, xl?: T, xxl?: T }
+{ sm?: T, md?: T, lg?: T, xl?: T, xxl?: T }
+```
+
+## Function props
+
+Props that accept a function are called inside the component's computed class generator. Any reactive refs or stores accessed inside are tracked automatically:
+
+```typescript
+// TypeScript signatures
+type TGridTypeFn = () => 'row' | 'col' | 'row-reverse' | 'col-reverse'
+type TGridGapFn = () => 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
+// ...same pattern for align, justify, wrap, grid, shift, visible
+```
+
+```vue
+<script setup lang="ts">
+const isExpanded = ref(false)
+</script>
+
+<template>
+  <nb-grid :dir="() => (isExpanded ? 'col' : 'row')">...</nb-grid>
+</template>
 ```
 
 ## Exposed

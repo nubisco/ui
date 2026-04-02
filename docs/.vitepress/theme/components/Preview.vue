@@ -443,20 +443,21 @@ const previewWrapperClasses = computed(() => ({
 
 /* Grid demo container styles */
 .preview--grid-demo {
-  padding: 2rem 8px;
-  background: #f5f5f5;
-  border-radius: 8px;
+  padding: 24px 12px;
+  background: #f4f4f4;
+  border-radius: 4px;
   margin: 1rem 0;
   position: relative;
+  overflow: hidden;
 
-  /* Boundary markers: light pink bars on left and right */
+  /* Margin indicators */
   &::before,
   &::after {
     content: '';
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 4px;
+    width: 3px;
     background: #ffb3ba;
     z-index: 1;
   }
@@ -469,22 +470,16 @@ const previewWrapperClasses = computed(() => ({
     right: 0;
   }
 
-  /* Grid demo row/col separators: dashed borders for visual structure */
-  :deep(.grid-demo-row) {
-    border: 1px dashed #ccc;
-    padding: 8px;
-    margin-bottom: 8px;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
+  /* Allow all flex children to shrink below their content size */
+  :deep(.NbGrid) {
+    min-width: 0;
   }
 
   /* Section labels */
   :deep(.grid-demo-label) {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
-    color: #666;
+    color: #525252;
     margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -492,97 +487,63 @@ const previewWrapperClasses = computed(() => ({
 
   /* Section descriptions */
   :deep(.grid-demo-description) {
-    font-size: 14px;
-    color: #888;
-    margin-bottom: 16px;
+    font-size: 13px;
+    color: #6f6f6f;
+    margin-bottom: 12px;
     line-height: 1.4;
   }
 
-  /* Demo items: unified orange color as base */
+  /* Row wrapper: subtle separator */
+  :deep(.grid-demo-row) {
+    margin-bottom: 4px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  /* Demo items: unified blue */
   :deep(.grid-demo-item) {
-    background: #fff3e0;
-    border: 2px solid #ff9800;
-    border-radius: 4px;
-    padding: 8px 12px;
+    background: #d0e2ff;
+    border: 1px solid #78a9ff;
+    border-radius: 2px;
+    padding: 5px 2px;
     text-align: center;
-    font-size: 14px;
+    font-size: 11px;
     font-weight: 500;
-    color: #f57c00;
-    min-height: 40px;
+    color: #0043ce;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
+    min-width: 0;
+    overflow: hidden;
 
-    /* Compact variant for smaller items */
     &.demo-small {
-      min-height: 30px;
-      font-size: 12px;
-      padding: 6px 8px;
+      height: 28px;
     }
   }
 
-  /* Span color scheme: multicolor for columns demo to show proportions */
-  :deep(.grid-demo-item.span-1) {
-    background: #e8f5e8;
-    border-color: #4caf50;
-    color: #2e7d32;
-  }
-
-  :deep(.grid-demo-item.span-2) {
-    background: #fff3e0;
-    border-color: #ff9800;
-    color: #f57c00;
-  }
-
-  :deep(.grid-demo-item.span-3) {
-    background: #fce4ec;
-    border-color: #e91e63;
-    color: #c2185b;
-  }
-
-  :deep(.grid-demo-item.span-4) {
-    background: #f3e5f5;
-    border-color: #9c27b0;
-    color: #7b1fa2;
-  }
-
-  :deep(.grid-demo-item.span-5) {
-    background: #e0f2f1;
-    border-color: #009688;
-    color: #00695c;
-  }
-
-  :deep(.grid-demo-item.span-6) {
-    background: #e1f5fe;
-    border-color: #00bcd4;
-    color: #00838f;
-  }
-
-  :deep(.grid-demo-item.span-7) {
-    background: #fff8e1;
-    border-color: #ffc107;
-    color: #f57f17;
-  }
-
-  :deep(.grid-demo-item.span-8) {
-    background: #ffebee;
-    border-color: #f44336;
-    color: #d32f2f;
+  /* Second color: purple — second item in column-pair demos */
+  :deep(.grid-demo-item.span-b) {
+    background: #e8daff;
+    border-color: #be95ff;
+    color: #6929c4;
   }
 
   /* Order demo: highlight the reordered item */
   :deep(.grid-demo-item.order-first),
   :deep(.grid-demo-item.order-last) {
-    background: #e3f2fd;
-    border-color: #2196f3;
-    color: #1565c0;
+    background: #ffd6e8;
+    border-color: #ff7eb6;
+    color: #740937;
     font-weight: 700;
   }
 
   /* Visibility demo: hidden items */
   :deep(.grid-demo-item.hidden) {
-    opacity: 0.25;
+    opacity: 0.3;
     text-decoration: line-through;
   }
 }
