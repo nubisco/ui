@@ -1,8 +1,15 @@
 import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
+import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+      'virtual:icons': resolve(__dirname, 'tests/__mocks__/virtual-icons.ts'),
+    },
+  },
   test: {
     root: '.',
     include: ['tests/**/*.test.ts'],
