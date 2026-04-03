@@ -22,6 +22,8 @@ interface IButtonProps {
   target?: string
   /** Forwarded to the `<a>` element. Only used when `href` is set. */
   rel?: string
+  /** When provided the component renders as a `<RouterLink>`. Accepts any value valid for RouterLink's `to` prop. */
+  to?: string | Record<string, unknown>
 }
 
 export { EButtonType, IButtonProps }

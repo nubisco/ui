@@ -1,6 +1,6 @@
 <template>
   <component
-    :is="href ? 'a' : 'button'"
+    :is="to ? resolveComponent('RouterLink') : href ? 'a' : 'button'"
     :class="[
       'nb-button',
       `nb-button--${variant}`,
@@ -9,12 +9,13 @@
       { 'nb-button--loading': loading },
       { 'nb-button--icon-only': isIconOnly },
     ]"
+    :to="to ?? undefined"
     :href="href ?? undefined"
     :target="href ? target : undefined"
     :rel="href ? rel : undefined"
-    :disabled="!href ? disabled || loading : undefined"
-    :aria-disabled="href && (disabled || loading) ? true : undefined"
-    :type="!href ? type : undefined"
+    :disabled="!href && !to ? disabled || loading : undefined"
+    :aria-disabled="(href || to) && (disabled || loading) ? true : undefined"
+    :type="!href && !to ? type : undefined"
     @click="disabled || loading ? undefined : $emit('click', $event)"
   >
     <slot />
@@ -31,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useSlots } from 'vue'
+import { computed, resolveComponent, useSlots } from 'vue'
 import { ESizeShort } from '@/types/Size.d'
 import { EButtonType, IButtonProps } from './Button.d'
 import NbIcon from './Icon.vue'
@@ -47,6 +48,7 @@ const props = withDefaults(defineProps<IButtonProps>(), {
   href: undefined,
   target: undefined,
   rel: undefined,
+  to: undefined,
 })
 
 defineEmits<{ click: [event: MouseEvent] }>()
