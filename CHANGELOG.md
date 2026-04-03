@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/nubisco/ui/compare/v1.3.0...v1.4.0) (2026-04-03)
+
+
+### Features
+
+* **docs:** add design token pipeline and live token reference page ([ef94d9b](https://github.com/nubisco/ui/commit/ef94d9be2c9c3ca0307d6aaa0349fa4c7ed042ff))
+
 # [1.3.0](https://github.com/nubisco/ui/compare/v1.2.2...v1.3.0) (2026-04-03)
 
 
