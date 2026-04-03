@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/nubisco/ui/compare/v1.1.1...v1.2.0) (2026-04-03)
+
+
+### Features
+
+* **Button:** add `to` prop for Vue Router navigation ([e1f588a](https://github.com/nubisco/ui/commit/e1f588af226cedbfcb5677cb3393ad5b5420f807))
+
 ## [1.1.1](https://github.com/nubisco/ui/compare/v1.1.0...v1.1.1) (2026-04-03)
 
 
