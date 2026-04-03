@@ -3,11 +3,11 @@
  *
  * Compiles the SCSS theme mixin with sass-embedded, parses every --nb-* CSS
  * custom property, resolves var() references to real values, then writes a
- * structured W3C Design Token (DTCG) JSON to docs/.vitepress/public/tokens.json.
+ * structured W3C Design Token (DTCG) JSON to docs/public/tokens.json.
  *
  * Run automatically via: pnpm docs:build
  * Output is a build artifact — not committed to the repo.
- * Tokens Studio (Figma) can read it from: https://docs.nubisco.io/ui/tokens.json
+ * Tokens Studio (Figma) can read it from: https://docs.nubisco.io/tokens.json
  */
 
 import * as sass from 'sass-embedded'
@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..')
-const OUT_DIR = resolve(ROOT, 'docs/.vitepress/public')
+const OUT_DIR = resolve(ROOT, 'docs/public')
 const OUT_FILE = resolve(OUT_DIR, 'tokens.json')
 
 // ─── 1. Compile SCSS → CSS ──────────────────────────────────────────────────
@@ -180,4 +180,4 @@ mkdirSync(OUT_DIR, { recursive: true })
 writeFileSync(OUT_FILE, JSON.stringify(out, null, 2))
 
 const count = Object.keys(raw).length
-console.log(`✓ ${count} tokens → docs/.vitepress/public/tokens.json`)
+console.log(`✓ ${count} tokens → docs/public/tokens.json`)
