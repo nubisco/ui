@@ -19,7 +19,7 @@
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20.0.0-339933)](https://www.npmjs.com/package/@nubisco/ui)
 [![Vue](https://img.shields.io/badge/vue-%5E3.5.0-42b883)](https://vuejs.org)
 [![license](https://img.shields.io/npm/l/@nubisco/ui)](LICENSE)
-[![Docs](https://img.shields.io/website?url=https%3A%2F%2Fnubisco.github.io%2Fui%2F&label=docs)](https://nubisco.github.io/ui/)
+[![Docs](https://img.shields.io/website?url=https%3A%2F%2Fdocs.nubisco.io%2Fui%2F&label=docs)](https://docs.nubisco.io/ui/)
 [![CLA](https://img.shields.io/badge/CLA-required-0A7F5A)](docs/CLA-INDIVIDUAL.md)
 
 </div>
@@ -243,11 +243,11 @@ import type {
 
 ## Documentation
 
-Full documentation is available at **[nubisco.github.io/ui](https://nubisco.github.io/ui/)**, including:
+Full documentation is available at **[docs.nubisco.io/ui](https://docs.nubisco.io/ui/)**, including:
 
-- [Installation](https://nubisco.github.io/ui/installation)
-- [Components](https://nubisco.github.io/ui/components/)
-- [Grid System](https://nubisco.github.io/ui/components/grid/)
+- [Installation](https://docs.nubisco.io/ui/installation)
+- [Components](https://docs.nubisco.io/ui/components/)
+- [Grid System](https://docs.nubisco.io/ui/components/grid/)
 - [Contributor License Agreement (CLA)](docs/CLA-INDIVIDUAL.md)
 
 ---

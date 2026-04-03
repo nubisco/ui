@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: Documentation
-    url: https://nubisco.github.io/ui/
+    url: https://docs.nubisco.io/ui/
     about: Check the docs before opening an issue. Many setup and usage questions are already covered.
   - name: Discussions
     url: https://github.com/nubisco/ui/discussions

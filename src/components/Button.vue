@@ -1,6 +1,6 @@
 <template>
   <component
-    :is="to ? resolveComponent('RouterLink') : href ? 'a' : 'button'"
+    :is="to ? 'a' : href ? 'a' : 'button'"
     :class="[
       'nb-button',
       `nb-button--${variant}`,
@@ -9,8 +9,7 @@
       { 'nb-button--loading': loading },
       { 'nb-button--icon-only': isIconOnly },
     ]"
-    :to="to ?? undefined"
-    :href="href ?? undefined"
+    :href="to ? (typeof to === 'string' ? to : undefined) : (href ?? undefined)"
     :target="href ? target : undefined"
     :rel="href ? rel : undefined"
     :disabled="!href && !to ? disabled || loading : undefined"
@@ -32,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, resolveComponent, useSlots } from 'vue'
+import { computed, useSlots } from 'vue'
 import { ESizeShort } from '@/types/Size.d'
 import { EButtonType, IButtonProps } from './Button.d'
 import NbIcon from './Icon.vue'
