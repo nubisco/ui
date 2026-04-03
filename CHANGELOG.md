@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/nubisco/ui/compare/v1.4.0...v1.4.1) (2026-04-03)
+
+
+### Bug Fixes
+
+* **docs:** write tokens.json to docs/public so VitePress copies it to dist ([12f33b0](https://github.com/nubisco/ui/commit/12f33b084ee04c9b0ff8a89ac45e374535df7ef4))
+
 # [1.4.0](https://github.com/nubisco/ui/compare/v1.3.0...v1.4.0) (2026-04-03)
 
 
