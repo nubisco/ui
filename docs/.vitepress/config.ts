@@ -140,7 +140,10 @@ export default withMermaid(
           },
           {
             text: 'Design System',
-            items: [{ text: 'Z-Index', link: '/principles/z-index' }],
+            items: [
+              { text: 'Design Tokens', link: '/design-tokens' },
+              { text: 'Z-Index', link: '/principles/z-index' },
+            ],
           },
           {
             text: 'Code Conventions',

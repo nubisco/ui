@@ -89,7 +89,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
+    "docs:build": "node scripts/build-tokens.mjs && vitepress build docs",
     "docs:serve": "vitepress serve docs",
     "prepare": "simple-git-hooks"
   },
