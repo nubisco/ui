@@ -253,21 +253,28 @@ The button uses CSS custom properties from the design system:
 
 ## Props
 
-| Prop       | Type                                                                                  | Default     | Description                                                        |
-| ---------- | ------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------ |
-| `variant`  | `'primary' \| 'secondary' \| 'ghost' \| 'danger' \| 'success' \| 'warning' \| 'info'` | `'primary'` | Color and style variant                                            |
-| `outlined` | `boolean`                                                                             | `false`     | Transparent bg with colored border/text                            |
-| `size`     | `'sm' \| 'md' \| 'lg'`                                                                | `'md'`      | Button size                                                        |
-| `disabled` | `boolean`                                                                             | `false`     | Disables the button                                                |
-| `loading`  | `boolean`                                                                             | `false`     | Shows a spinner and prevents interaction                           |
-| `type`     | `'button' \| 'submit' \| 'reset'`                                                     | `'button'`  | Native `<button>` type. Ignored when `href` is set                 |
-| `href`     | `string`                                                                              | -           | When provided, renders as `<a>` instead of `<button>`              |
-| `target`   | `string`                                                                              | -           | Forwarded to `<a>`. Only used when `href` is set (e.g. `_blank`)   |
-| `rel`      | `string`                                                                              | -           | Forwarded to `<a>`. Only used when `href` is set (e.g. `noopener`) |
+| Prop       | Type                                                                                  | Default     | Description                                                          |
+| ---------- | ------------------------------------------------------------------------------------- | ----------- | -------------------------------------------------------------------- |
+| `variant`  | `'primary' \| 'secondary' \| 'ghost' \| 'danger' \| 'success' \| 'warning' \| 'info'` | `'primary'` | Color and style variant                                              |
+| `outlined` | `boolean`                                                                             | `false`     | Transparent bg with colored border/text                              |
+| `size`     | `'sm' \| 'md' \| 'lg'`                                                                | `'md'`      | Button size                                                          |
+| `disabled` | `boolean`                                                                             | `false`     | Disables the button                                                  |
+| `loading`  | `boolean`                                                                             | `false`     | Shows a spinner and prevents interaction                             |
+| `type`     | `'button' \| 'submit' \| 'reset'`                                                     | `'button'`  | Native `<button>` type. Ignored when `href` is set                   |
+| `href`     | `string`                                                                              | -           | When provided, renders as `<a>` instead of `<button>`                |
+| `target`   | `string`                                                                              | -           | Forwarded to `<a>`. Only used when `href` is set (e.g. `_blank`)     |
+| `rel`      | `string`                                                                              | -           | Forwarded to `<a>`. Only used when `href` is set (e.g. `noopener`)   |
+| `to`       | `string \| object`                                                                    | -           | When provided, renders as a `<RouterLink>` for Vue Router navigation |
 
 ### Link buttons
 
-When `href` is provided the component renders a semantic `<a>` element, preserving native browser link behaviors (right-click, middle-click, ctrl+click, `target="_blank"`). Disabled state is communicated via `aria-disabled` instead of the `disabled` attribute, which `<a>` does not support.
+Use `href` for external links and `to` for internal Vue Router navigation.
+
+When `href` is provided the component renders a semantic `<a>` element, preserving native browser link behaviors (right-click, middle-click, ctrl+click, `target="_blank"`).
+
+When `to` is provided the component renders as a `<RouterLink>`, enabling client-side navigation with active-link tracking.
+
+Disabled state is communicated via `aria-disabled` instead of the `disabled` attribute for both `<a>` and `<RouterLink>`.
 
 ```vue
 <!-- External link: renders <a href="..." target="_blank" rel="noopener"> -->
@@ -280,9 +287,9 @@ When `href` is provided the component renders a semantic `<a>` element, preservi
   View on GitHub
 </NbButton>
 
-<!-- Internal link: still renders <a>, pair with RouterLink or use href directly -->
-<NbButton variant="ghost" href="/pricing">
-  See pricing
+<!-- Internal Vue Router link: renders <RouterLink to="..."> -->
+<NbButton variant="ghost" to="/products">
+  Explore products
 </NbButton>
 ```
 
