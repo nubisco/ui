@@ -17,7 +17,7 @@ export default withMermaid(
   defineConfig({
     title: 'Nubisco',
     description: 'Nubisco UI Documentation',
-    base: '/ui/',
+    base: process.env.NODE_ENV === 'production' ? '/ui/' : '/',
     appearance: false,
     head: gaId
       ? [
