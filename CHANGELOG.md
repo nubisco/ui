@@ -1,3 +1,15 @@
+# [1.3.0](https://github.com/nubisco/ui/compare/v1.2.2...v1.3.0) (2026-04-03)
+
+
+### Bug Fixes
+
+* **docs:** reformat Plausible script tag to satisfy Prettier line length ([11a8b13](https://github.com/nubisco/ui/commit/11a8b13f7d398ffce8ef0301eb01c690860b985a))
+
+
+### Features
+
+* **docs:** add Plausible analytics for docs.nubisco.io ([e48ca04](https://github.com/nubisco/ui/commit/e48ca04df2ecc03c5915af3e576f6b81bfec608d))
+
 ## [1.2.2](https://github.com/nubisco/ui/compare/v1.2.1...v1.2.2) (2026-04-03)
 
 
