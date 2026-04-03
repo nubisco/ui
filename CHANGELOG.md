@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/nubisco/ui/compare/v1.1.0...v1.1.1) (2026-04-03)
+
+
+### Bug Fixes
+
+* format config.ts to pass prettier check ([7186e1b](https://github.com/nubisco/ui/commit/7186e1b9593aad5a1f0327da909dbb99a0ac9262))
+
 # [1.1.0](https://github.com/nubisco/ui/compare/v1.0.5...v1.1.0) (2026-04-03)
 
 ### Features
