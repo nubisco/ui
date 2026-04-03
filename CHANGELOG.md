@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/nubisco/ui/compare/v1.2.1...v1.2.2) (2026-04-03)
+
+
+### Bug Fixes
+
+* **docs:** move sitemap config to top level so VitePress generates sitemap.xml ([d30851b](https://github.com/nubisco/ui/commit/d30851b207bb8e6a79f998cc312dd8d63cc10b4a))
+
 ## [1.2.1](https://github.com/nubisco/ui/compare/v1.2.0...v1.2.1) (2026-04-03)
 
 
