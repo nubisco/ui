@@ -198,6 +198,9 @@ export default withMermaid(
       search: {
         provider: 'local',
       },
+      sitemap: {
+        hostname: 'https://docs.nubisco.io/ui/',
+      },
       lastUpdated: {
         text: 'Last updated',
       },
