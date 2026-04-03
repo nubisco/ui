@@ -25,7 +25,7 @@ coverage/
 .nyc_output/
 
 # Generated build artifacts
-docs/.vitepress/public/tokens.json
+docs/public/tokens.json
 
 # Logs
 *.log

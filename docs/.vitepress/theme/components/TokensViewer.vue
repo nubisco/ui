@@ -37,8 +37,7 @@ const error = ref<string | null>(null)
 
 onMounted(async () => {
   try {
-    const base = import.meta.env.BASE_URL ?? '/'
-    const res = await fetch(`${base}tokens.json`)
+    const res = await fetch('/tokens.json')
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
     tokens.value = await res.json()
   } catch (e) {
