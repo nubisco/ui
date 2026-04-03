@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/nubisco/ui/compare/v1.2.0...v1.2.1) (2026-04-03)
+
+
+### Bug Fixes
+
+* **Button:** render to prop as plain <a href> for SSR compatibility ([bfe6060](https://github.com/nubisco/ui/commit/bfe606012fdb7af99f6e3339a9f2c0a22a527b31))
+
 # [1.2.0](https://github.com/nubisco/ui/compare/v1.1.1...v1.2.0) (2026-04-03)
 
 
