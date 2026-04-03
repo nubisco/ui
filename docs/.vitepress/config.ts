@@ -21,8 +21,18 @@ export default withMermaid(
     appearance: false,
     head: gaId
       ? [
-          ['script', { async: '', src: `https://www.googletagmanager.com/gtag/js?id=${gaId}` }],
-          ['script', {}, `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${gaId}')`],
+          [
+            'script',
+            {
+              async: '',
+              src: `https://www.googletagmanager.com/gtag/js?id=${gaId}`,
+            },
+          ],
+          [
+            'script',
+            {},
+            `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${gaId}')`,
+          ],
         ]
       : [],
     markdown: {
