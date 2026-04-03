@@ -198,9 +198,6 @@ export default withMermaid(
       search: {
         provider: 'local',
       },
-      sitemap: {
-        hostname: 'https://docs.nubisco.io/ui/',
-      },
       lastUpdated: {
         text: 'Last updated',
       },
@@ -210,6 +207,9 @@ export default withMermaid(
         copyright:
           'Copyright © 2026 <a href="https://nubisco.io">Nubisco</a> · Inspired by <a href="https://carbondesignsystem.com" target="_blank" rel="noopener">IBM Carbon Design System</a>',
       },
+    },
+    sitemap: {
+      hostname: 'https://docs.nubisco.io/ui/',
     },
   }),
 )
