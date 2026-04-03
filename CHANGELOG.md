@@ -1,3 +1,9 @@
+# [1.1.0](https://github.com/nubisco/ui/compare/v1.0.5...v1.1.0) (2026-04-03)
+
+### Features
+
+- add Google Analytics support via VITE_GA_ID env variable ([f2c513f](https://github.com/nubisco/ui/commit/f2c513f8899cadb54e0344896fa4bb26f0e194ca))
+
 ## [1.0.5](https://github.com/nubisco/ui/compare/v1.0.4...v1.0.5) (2026-04-01)
 
 ### Bug Fixes
