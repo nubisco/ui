@@ -19,22 +19,25 @@ export default withMermaid(
     description: 'Nubisco UI Documentation',
     base: process.env.NODE_ENV === 'production' ? '/ui/' : '/',
     appearance: false,
-    head: gaId
-      ? [
-          [
-            'script',
-            {
-              async: '',
-              src: `https://www.googletagmanager.com/gtag/js?id=${gaId}`,
-            },
-          ],
-          [
-            'script',
-            {},
-            `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${gaId}')`,
-          ],
-        ]
-      : [],
+    head: [
+      ['script', { defer: '', 'data-domain': 'docs.nubisco.io', src: 'https://plausible.io/js/script.outbound-links.js' }],
+      ...(gaId
+        ? [
+            [
+              'script',
+              {
+                async: '',
+                src: `https://www.googletagmanager.com/gtag/js?id=${gaId}`,
+              },
+            ] as [string, Record<string, string>],
+            [
+              'script',
+              {},
+              `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${gaId}')`,
+            ] as [string, Record<string, string>, string],
+          ]
+        : []),
+    ],
     markdown: {
       config(md) {
         md.use(tabsMarkdownPlugin)
