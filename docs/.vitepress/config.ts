@@ -20,7 +20,14 @@ export default withMermaid(
     base: process.env.NODE_ENV === 'production' ? '/ui/' : '/',
     appearance: false,
     head: [
-      ['script', { defer: '', 'data-domain': 'docs.nubisco.io', src: 'https://plausible.io/js/script.outbound-links.js' }],
+      [
+        'script',
+        {
+          defer: '',
+          'data-domain': 'docs.nubisco.io',
+          src: 'https://plausible.io/js/script.outbound-links.js',
+        },
+      ],
       ...(gaId
         ? [
             [
