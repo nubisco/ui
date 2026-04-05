@@ -24,8 +24,7 @@ export default withMermaid(
         'script',
         {
           defer: '',
-          'data-domain': 'docs.nubisco.io',
-          src: 'https://plausible.io/js/script.outbound-links.js',
+          src: 'https://nubisco-analytics.nubisco-6bc.workers.dev/script.js',
         },
       ],
       ...(gaId

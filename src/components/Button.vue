@@ -73,7 +73,7 @@ const iconSize = computed(() => iconSizeMap[props.size ?? 'md'] ?? 14)
 .nb-button {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 6px;
   border: none;
   font-family: inherit;
@@ -91,65 +91,56 @@ const iconSize = computed(() => iconSizeMap[props.size ?? 'md'] ?? 14)
     outline-offset: -2px;
   }
   line-height: 1;
-  position: relative;
   text-decoration: none;
   background: var(--nb-c-contrast);
   color: var(--nb-c-surface);
-  padding-inline: calc(var(--nb-base-unit) * 2) calc(var(--nb-base-unit) * 8);
+  padding-inline: calc(var(--nb-base-unit) * 2);
+
   &--xxs {
     height: calc(var(--nb-base-unit) * 2);
     padding-block: 0;
+    padding-inline: calc(var(--nb-base-unit) * 1);
     font-size: var(--nb-font-size-12);
     --nb-button-icon-size: var(--nb-font-size-12);
-    --nb-button-padding-end: calc(var(--nb-base-unit) * 5);
   }
   &--xs {
     height: calc(var(--nb-base-unit) * 3);
+    padding-inline: calc(var(--nb-base-unit) * 1.5);
     font-size: var(--nb-font-size-12);
     --nb-button-icon-size: var(--nb-font-size-12);
-    --nb-button-padding-end: calc(var(--nb-base-unit) * 5);
   }
   &--sm {
     height: calc(var(--nb-base-unit) * 4);
+    padding-inline: calc(var(--nb-base-unit) * 1.5);
     font-size: var(--nb-font-size-12);
     --nb-button-icon-size: var(--nb-font-size-12);
-    --nb-button-padding-end: calc(var(--nb-base-unit) * 5);
   }
   &--md {
     height: calc(var(--nb-base-unit) * 5);
     font-size: var(--nb-font-size-14);
     --nb-button-icon-size: var(--nb-font-size-14);
-    --nb-button-padding-end: calc(var(--nb-base-unit) * 5);
   }
   &--lg {
     height: calc(var(--nb-base-unit) * 6);
+    padding-inline: calc(var(--nb-base-unit) * 2.5);
     font-size: var(--nb-font-size-14);
     --nb-button-icon-size: var(--nb-font-size-14);
-    --nb-button-padding-end: calc(var(--nb-base-unit) * 5);
   }
   &--xl {
     height: calc(var(--nb-base-unit) * 8);
     padding-block: 14px;
+    padding-inline: calc(var(--nb-base-unit) * 3);
     font-size: var(--nb-font-size-16);
-    align-items: flex-start;
+    align-items: center;
     --nb-button-icon-size: var(--nb-font-size-16);
-    --nb-button-padding-end: calc(var(--nb-base-unit) * 6);
-    .nb-button__decorations {
-      padding-top: calc(var(--nb-base-unit) * 2);
-      align-items: start;
-    }
   }
   &--xxl {
     height: calc(var(--nb-base-unit) * 16);
     padding-block: 14px;
+    padding-inline: calc(var(--nb-base-unit) * 4);
     font-size: var(--nb-font-size-32);
-    align-items: flex-start;
+    align-items: center;
     --nb-button-icon-size: var(--nb-font-size-32);
-    --nb-button-padding-end: calc(var(--nb-base-unit) * 8);
-    .nb-button__decorations {
-      padding-top: calc(var(--nb-base-unit) * 3);
-      align-items: start;
-    }
   }
 
   // Icon-only: no slot content → square button, icon centered and slightly larger
@@ -188,9 +179,6 @@ const iconSize = computed(() => iconSizeMap[props.size ?? 'md'] ?? 14)
     }
 
     .nb-button__decorations {
-      inset: 0;
-      width: auto;
-      padding-top: 0;
       align-items: center;
     }
   }
@@ -234,8 +222,7 @@ const iconSize = computed(() => iconSizeMap[props.size ?? 'md'] ?? 14)
     background: transparent;
     color: var(--nb-c-contrast);
     border-bottom: 1px solid transparent;
-    padding-inline: calc(var(--nb-base-unit) * 2) calc(var(--nb-base-unit) * 2);
-    --nb-button-padding-end: auto;
+    padding-inline: calc(var(--nb-base-unit) * 1.5);
     &:hover:not(:disabled) {
       background: var(--nb-c-primary-hover);
       color: var(--nb-c-primary-hover-a11y);
@@ -422,15 +409,11 @@ const iconSize = computed(() => iconSizeMap[props.size ?? 'md'] ?? 14)
   }
 
   &__decorations {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: var(--nb-button-padding-end);
     display: flex;
     align-items: center;
     justify-content: center;
     pointer-events: none;
+    flex-shrink: 0;
   }
 
   &__spinner {
