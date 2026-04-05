@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/nubisco/ui/compare/v1.5.0...v1.5.1) (2026-04-05)
+
+
+### Bug Fixes
+
+* **docs:** resolve design tokens 404 in production by respecting base path ([8c11bf0](https://github.com/nubisco/ui/commit/8c11bf0b100fdb439c48a6c8020743f8fbf09b7b))
+
 # [1.5.0](https://github.com/nubisco/ui/compare/v1.4.1...v1.5.0) (2026-04-05)
 
 
