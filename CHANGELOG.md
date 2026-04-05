@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/nubisco/ui/compare/v1.4.1...v1.5.0) (2026-04-05)
+
+
+### Features
+
+* new nubisco analytics integration ([75d7a50](https://github.com/nubisco/ui/commit/75d7a50fb41c521709bcf8c0162a7d8c99d6b75e))
+
 ## [1.4.1](https://github.com/nubisco/ui/compare/v1.4.0...v1.4.1) (2026-04-03)
 
 
