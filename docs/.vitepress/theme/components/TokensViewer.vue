@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { withBase } from 'vitepress'
 
 interface Token {
   $value: string
@@ -37,7 +38,7 @@ const error = ref<string | null>(null)
 
 onMounted(async () => {
   try {
-    const res = await fetch('/tokens.json')
+    const res = await fetch(withBase('/tokens.json'))
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
     tokens.value = await res.json()
   } catch (e) {
