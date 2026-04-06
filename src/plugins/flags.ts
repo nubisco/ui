@@ -1,8 +1,8 @@
 import fs from 'fs'
 import { resolve as resolver } from 'path'
 import type { Plugin } from 'vite'
-import str2kebab from '../utils/str2kebab.helper.ts'
-import kebab2camel from '../utils/kebab2camel.helper.ts'
+import str2kebab from '../utils/str2kebab.helper'
+import kebab2camel from '../utils/kebab2camel.helper'
 
 // Inline type helper to avoid esbuild resolution issues during config loading
 const VitePlugin = <T extends Plugin>(p: T): Plugin & T => p

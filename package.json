@@ -41,7 +41,7 @@
     "./dist/ui.css": "./dist/ui.css",
     "./plugins/*": {
       "types": "./dist/plugins/*.d.ts",
-      "import": "./src/plugins/*"
+      "import": "./dist/plugins/*.js"
     },
     "./components/*": {
       "types": "./dist/components/*.d.ts",
@@ -76,9 +76,10 @@
   "scripts": {
     "clean": "rm -rf dist",
     "prebuild": "pnpm run clean",
-    "build": "pnpm run build:lib && pnpm run build:types",
+    "build": "pnpm run build:lib && pnpm run build:types && pnpm run build:plugins",
     "build:lib": "vite build",
     "build:types": "vue-tsc --noEmit false --declaration --emitDeclarationOnly --outDir dist",
+    "build:plugins": "tsc --project tsconfig.plugins.json",
     "dev": "vite build --watch",
     "prepublishOnly": "pnpm run build",
     "test": "vitest run",
