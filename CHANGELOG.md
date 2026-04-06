@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/nubisco/ui/compare/v1.6.0...v1.7.0) (2026-04-06)
+
+
+### Features
+
+* **shell:** add NbShell layout and NbSidebarLink navigation components ([a03ac97](https://github.com/nubisco/ui/commit/a03ac9765d4afb045d514ab015e9dc9eb27d8e5c))
+
 # [1.6.0](https://github.com/nubisco/ui/compare/v1.5.2...v1.6.0) (2026-04-06)
 
 
