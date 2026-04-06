@@ -11,8 +11,6 @@ import { icons } from '../../src/plugins/icons'
 import { flags } from '../../src/plugins/flags'
 import { fonts } from '../../src/plugins/fonts'
 
-const gaId = process.env.VITE_GA_ID
-
 export default withMermaid(
   defineConfig({
     title: 'Nubisco',
@@ -27,22 +25,6 @@ export default withMermaid(
           src: 'https://analytics.nubisco.io/script.js',
         },
       ],
-      ...(gaId
-        ? [
-            [
-              'script',
-              {
-                async: '',
-                src: `https://www.googletagmanager.com/gtag/js?id=${gaId}`,
-              },
-            ] as [string, Record<string, string>],
-            [
-              'script',
-              {},
-              `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${gaId}')`,
-            ] as [string, Record<string, string>, string],
-          ]
-        : []),
     ],
     markdown: {
       config(md) {
