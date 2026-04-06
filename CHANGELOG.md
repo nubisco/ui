@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/nubisco/ui/compare/v1.5.2...v1.6.0) (2026-04-06)
+
+
+### Features
+
+* **analytics:** remove GA and keep Nubisco Analytics only ([ecee46b](https://github.com/nubisco/ui/commit/ecee46bf3747de05d7446352b1a42040a92ec053))
+
 ## [1.5.2](https://github.com/nubisco/ui/compare/v1.5.1...v1.5.2) (2026-04-06)
 
 
