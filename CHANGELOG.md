@@ -1,3 +1,10 @@
+## [1.5.2](https://github.com/nubisco/ui/compare/v1.5.1...v1.5.2) (2026-04-06)
+
+
+### Bug Fixes
+
+* point analytics script to self-hosted NAS endpoint ([8c5c853](https://github.com/nubisco/ui/commit/8c5c853c20ffdaffaaace260197bc61278de1116))
+
 ## [1.5.1](https://github.com/nubisco/ui/compare/v1.5.0...v1.5.1) (2026-04-05)
 
 
