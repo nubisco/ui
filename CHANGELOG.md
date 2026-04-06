@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/nubisco/ui/compare/v1.7.0...v1.7.1) (2026-04-06)
+
+
+### Bug Fixes
+
+* build plugins to dist/plugins as JS, fix exports ([26f12da](https://github.com/nubisco/ui/commit/26f12dad963fe7e7a92b65f97949d74f81ae386d))
+
 # [1.7.0](https://github.com/nubisco/ui/compare/v1.6.0...v1.7.0) (2026-04-06)
 
 
