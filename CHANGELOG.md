@@ -1,3 +1,10 @@
+## [1.7.2](https://github.com/nubisco/ui/compare/v1.7.1...v1.7.2) (2026-04-07)
+
+
+### Bug Fixes
+
+* **types:** add NbShell and NbSidebarLink to global component type declarations ([32b78aa](https://github.com/nubisco/ui/commit/32b78aa40aaeac17b790f686b0bbe5210fb137ca))
+
 ## [1.7.1](https://github.com/nubisco/ui/compare/v1.7.0...v1.7.1) (2026-04-06)
 
 
