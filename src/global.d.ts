@@ -20,6 +20,8 @@ import NumberInput from './components/NumberInput.vue'
 import Panel from './components/Panel.vue'
 import Radio from './components/Radio.vue'
 import Select from './components/Select.vue'
+import Shell from './components/Shell.vue'
+import SidebarLink from './components/SidebarLink.vue'
 import Slider from './components/Slider.vue'
 import Switch from './components/Switch.vue'
 import TextInput from './components/TextInput.vue'
@@ -47,6 +49,8 @@ declare module 'vue' {
     NbPanel: typeof Panel
     NbRadio: typeof Radio
     NbSelect: typeof Select
+    NbShell: typeof Shell
+    NbSidebarLink: typeof SidebarLink
     NbSlider: typeof Slider
     NbSwitch: typeof Switch
     NbTextInput: typeof TextInput
