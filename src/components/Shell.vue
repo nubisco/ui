@@ -28,6 +28,10 @@
         </div>
       </div>
 
+      <div v-if="hasFixedbarContent" class="nb-shell__fixedbar">
+        <slot name="fixedbar" />
+      </div>
+
       <main class="nb-shell__main">
         <slot />
       </main>
@@ -47,7 +51,31 @@
 </template>
 
 <script setup lang="ts">
+import { Comment, Fragment, Text, computed, useSlots, type VNode } from 'vue'
 import { IShellProps } from './Shell.d'
+
+const slots = useSlots()
+
+function hasRenderableContent(nodes: VNode[]): boolean {
+  return nodes.some((node) => {
+    if (node.type === Comment) return false
+    if (node.type === Text)
+      return (
+        typeof node.children === 'string' && node.children.trim().length > 0
+      )
+    if (node.type === Fragment) {
+      return Array.isArray(node.children)
+        ? hasRenderableContent(node.children as VNode[])
+        : false
+    }
+    return true
+  })
+}
+
+const hasFixedbarContent = computed(() => {
+  const content = slots.fixedbar?.()
+  return content ? hasRenderableContent(content) : false
+})
 
 withDefaults(defineProps<IShellProps>(), {
   inspectorVisible: false,
@@ -170,6 +198,15 @@ withDefaults(defineProps<IShellProps>(), {
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+}
+
+.nb-shell__fixedbar {
+  flex-shrink: 0;
+  display: flex;
+  padding: 0 calc(var(--nb-base-unit) * 3);
+  border-bottom: 1px solid var(--nb-c-border, #f0f0f8);
+  background: var(--nb-c-bg);
+  gap: 1rem;
 }
 
 .nb-shell__main {
