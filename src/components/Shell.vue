@@ -205,7 +205,7 @@ withDefaults(defineProps<IShellProps>(), {
   display: flex;
   padding: 0 calc(var(--nb-base-unit) * 3);
   border-bottom: 1px solid var(--nb-c-border, #f0f0f8);
-  background: var(--nb-c-bg);
+  background: var(--nb-c-surface);
   gap: 1rem;
 }
 
