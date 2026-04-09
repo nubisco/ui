@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/nubisco/ui/compare/v1.8.0...v1.8.1) (2026-04-09)
+
+
+### Bug Fixes
+
+* register components explicitly to fix global registration in library builds ([f8174e7](https://github.com/nubisco/ui/commit/f8174e78997ac0fb7d86f25ff2b2f4125304d1f7))
+
 # [1.8.0](https://github.com/nubisco/ui/compare/v1.7.2...v1.8.0) (2026-04-08)
 
 
