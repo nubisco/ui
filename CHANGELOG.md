@@ -1,3 +1,10 @@
+## [1.8.2](https://github.com/nubisco/ui/compare/v1.8.1...v1.8.2) (2026-04-09)
+
+
+### Bug Fixes
+
+* add missing components to global registration (FileUploader, ImageCropper, AiLabel, Switch, Form) ([4faef00](https://github.com/nubisco/ui/commit/4faef005122151dbdcde34a52e32eb4a47aa84fa))
+
 ## [1.8.1](https://github.com/nubisco/ui/compare/v1.8.0...v1.8.1) (2026-04-09)
 
 
