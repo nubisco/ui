@@ -182,6 +182,12 @@ export default withMermaid(
               },
             ],
           },
+          {
+            text: 'Labs',
+            items: [
+              { text: 'Liquid Glass', link: '/ui/labs/liquid-glass' },
+            ],
+          },
         ],
       },
       socialLinks: [{ icon: 'github', link: 'https://github.com/nubisco/ui' }],
