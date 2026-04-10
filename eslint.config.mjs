@@ -15,7 +15,7 @@ export default defineConfig(
     ignores: ['**/*.d.ts'],
     languageOptions: {
       parserOptions: {
-        project: './tsconfig.eslint.json',
+        projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -26,7 +26,7 @@ export default defineConfig(
       parser: vueParser,
       parserOptions: {
         parser: tseslint.parser,
-        project: './tsconfig.eslint.json',
+        projectService: true,
         tsconfigRootDir: import.meta.dirname,
         extraFileExtensions: ['.vue'],
       },
