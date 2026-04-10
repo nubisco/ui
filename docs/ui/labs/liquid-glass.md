@@ -30,7 +30,23 @@ import { NbLiquidGlass } from '@nubisco/ui'
 
 ## Basic usage
 
-Place `NbLiquidGlass` over any content. The component uses absolute/fixed positioning internally so it works best inside a `position: relative` container.
+Place `NbLiquidGlass` over any content. The component works best inside a `position: relative` container. Use the controls below to explore `shape` and `ior`.
+
+<preview :props="availableProps" v-slot="{ resultingProps }">
+  <div style="position: relative; width: 200px; height: 200px; border-radius: 8px; overflow: hidden; flex-shrink: 0;">
+    <img
+      src="/media/sample.webp"
+      style="width: 100%; height: 100%; object-fit: cover; display: block;"
+    />
+    <NbLiquidGlass
+      :width="200"
+      :height="200"
+      :shape="resultingProps.shape"
+      :ior="resultingProps.ior"
+      style="position: absolute; inset: 0;"
+    />
+  </div>
+</preview>
 
 ```vue
 <template>
@@ -94,6 +110,33 @@ Any content placed in the default slot renders on top of the glass surface, abov
 The displacement map is a one-time canvas operation. It only rebuilds when `width`, `height`, `shape`, or `ior` change. Animating position or opacity is free. Animating size is expensive.
 
 </doc-tab>
+
+<script setup lang="ts">
+const availableProps = [
+  {
+    label: 'Shape',
+    name: 'shape',
+    type: 'single',
+    options: [
+      { value: 'squircle', label: 'squircle' },
+      { value: 'circle', label: 'circle' },
+      { value: 'concave', label: 'concave' },
+      { value: 'lip', label: 'lip' },
+    ],
+    default: 'squircle',
+    allowClear: false,
+  },
+  {
+    label: 'IOR',
+    name: 'ior',
+    type: 'slider',
+    min: 1.0,
+    max: 2.4,
+    step: 0.1,
+    default: 1.5,
+  },
+]
+</script>
 
 <doc-tab name="Api">
 
