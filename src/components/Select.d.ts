@@ -11,6 +11,10 @@ interface ISelectProps extends IFieldComponent {
   options?: ISelectOption[]
   /** Allows selecting multiple options simultaneously. */
   multiple?: boolean
+  /** Shows a clear button when a value is selected. */
+  allowClear?: boolean
+  /** Reserved for future virtual-scroll support. Currently unused. */
+  virtual?: boolean
 }
 
 export { ISelectOption, ISelectProps }
