@@ -48,6 +48,15 @@
           class="nb-select__status-icon"
           >{{ warning }}</NbMessage
         >
+        <button
+          v-if="allowClear && selectedValues.length > 0"
+          type="button"
+          class="nb-select__clear"
+          aria-label="Clear selection"
+          @click="clearValue"
+        >
+          <NbIcon name="x" :size="14" />
+        </button>
         <NbGrid align="center" justify="center" class="nb-select__caret">
           <NbIcon :name="isOpen ? 'caret-up' : 'caret-down'" :size="16" />
         </NbGrid>
@@ -118,6 +127,15 @@
           >
             {{ displayValue || placeholder }}
           </span>
+          <button
+            v-if="allowClear && selectedValues.length > 0"
+            type="button"
+            class="nb-select__clear"
+            aria-label="Clear selection"
+            @click="clearValue"
+          >
+            <NbIcon name="x" :size="14" />
+          </button>
           <NbGrid align="center" justify="center" class="nb-select__caret">
             <NbIcon :name="isOpen ? 'caret-up' : 'caret-down'" :size="16" />
           </NbGrid>
@@ -215,6 +233,8 @@ const props = withDefaults(defineProps<ISelectProps>(), {
   required: false,
   id: undefined,
   name: '',
+  allowClear: false,
+  virtual: false,
 })
 
 const emit = defineEmits<{
@@ -286,6 +306,12 @@ function selectOption(option: ISelectOption) {
   }
   emit('update:modelValue', next)
   emit('change', next)
+}
+
+function clearValue(e: MouseEvent) {
+  e.stopPropagation()
+  emit('update:modelValue', props.multiple ? [] : null)
+  emit('change', props.multiple ? [] : null)
 }
 
 function updateDropdownPosition() {
@@ -597,6 +623,24 @@ defineExpose({
     flex-shrink: 0;
     .nb-message__tooltip {
       z-index: calc(var(--nb-zindex-tooltip, 401) + 1);
+    }
+  }
+
+  &__clear {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    color: var(--nb-c-field-border);
+    border-radius: 2px;
+    transition: color 0.15s;
+
+    &:hover {
+      color: var(--nb-c-text);
     }
   }
 
