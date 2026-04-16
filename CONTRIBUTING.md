@@ -77,3 +77,13 @@ By opening a pull request, you must explicitly confirm you agree to the CLA in t
 - Avoid unrelated refactors in the same PR
 - Update docs when component APIs, styles, or composables change
 - Add or update tests for non-trivial logic changes
+
+## Quality gate
+
+Before committing or pushing, run:
+
+```sh
+pnpm run quality:check
+```
+
+The local Git hooks are expected to enforce the same gate automatically. Commits must not proceed unless tests, linting, formatting, and type checks all pass.

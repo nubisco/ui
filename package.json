@@ -89,13 +89,15 @@
     "types:check": "vue-tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "quality:check": "pnpm run test && pnpm run lint && pnpm run format:check && pnpm run types:check",
     "docs:dev": "vitepress dev docs",
     "docs:build": "node scripts/build-tokens.mjs && vitepress build docs",
     "docs:serve": "vitepress serve docs",
     "prepare": "simple-git-hooks"
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpm test && pnpm run types:check && npx lint-staged"
+    "pre-commit": "npx lint-staged && pnpm run quality:check",
+    "pre-push": "pnpm run quality:check"
   },
   "lint-staged": {
     "src/**/*.{ts,vue}": [
