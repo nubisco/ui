@@ -18,6 +18,35 @@ export default withMermaid(
     base: process.env.NODE_ENV === 'production' ? '/ui/' : '/',
     appearance: false,
     head: [
+      ['link', { rel: 'icon', href: '/ui/favicon.ico', sizes: 'any' }],
+      [
+        'link',
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '32x32',
+          href: '/ui/favicon-32x32.png',
+        },
+      ],
+      [
+        'link',
+        {
+          rel: 'icon',
+          type: 'image/png',
+          sizes: '16x16',
+          href: '/ui/favicon-16x16.png',
+        },
+      ],
+      [
+        'link',
+        {
+          rel: 'apple-touch-icon',
+          sizes: '180x180',
+          href: '/ui/apple-touch-icon.png',
+        },
+      ],
+      ['link', { rel: 'manifest', href: '/ui/site.webmanifest' }],
+      ['meta', { name: 'theme-color', content: '#0d0d0f' }],
       [
         'script',
         {
