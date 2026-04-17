@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/nubisco/ui/compare/v1.8.2...v1.9.0) (2026-04-17)
+
+
+### Features
+
+* **shell:** add notification slot and component documentation ([b4da3db](https://github.com/nubisco/ui/commit/b4da3dbbc79d183ced87810047d402ff6b8d207b))
+
 ## [1.8.2](https://github.com/nubisco/ui/compare/v1.8.1...v1.8.2) (2026-04-09)
 
 
