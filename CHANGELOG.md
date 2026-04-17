@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/nubisco/ui/compare/v1.9.0...v1.9.1) (2026-04-17)
+
+
+### Bug Fixes
+
+* **docs:** contain z-index in preview wrapper to prevent NbShell overlap ([a30fcc3](https://github.com/nubisco/ui/commit/a30fcc3199e9294ecaf106333ac3be9a7dfb5313))
+
 # [1.9.0](https://github.com/nubisco/ui/compare/v1.8.2...v1.9.0) (2026-04-17)
 
 
