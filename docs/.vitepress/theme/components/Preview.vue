@@ -308,6 +308,7 @@ const previewWrapperClasses = computed(() => ({
     overflow: visible;
     padding: calc(var(--nb-base-unit) * 4);
     background: var(--nb-c-surface);
+    isolation: isolate; // contain z-index from child components (e.g. NbShell sidebar)
   }
   .configuration-wrapper {
     padding: 12px 20px;
