@@ -190,6 +190,7 @@ export default withMermaid(
                   { text: 'Panel', link: '/ui/components/panel' },
                   { text: 'Radio', link: '/ui/components/radio' },
                   { text: 'Select', link: '/ui/components/select' },
+                  { text: 'Shell', link: '/ui/components/shell' },
                   { text: 'Slider', link: '/ui/components/slider' },
                   { text: 'Switch', link: '/ui/components/switch' },
                   { text: 'Text Input', link: '/ui/components/text-input' },

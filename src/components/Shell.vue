@@ -19,6 +19,9 @@
 
     <!-- ═══ BODY (topbar + main) ═══ -->
     <div class="nb-shell__body">
+      <div v-if="$slots.notification" class="nb-shell__notification">
+        <slot name="notification" />
+      </div>
       <div class="nb-shell__topbar">
         <div class="nb-shell__topbar-left">
           <slot name="topbar-left" />
@@ -171,6 +174,10 @@ withDefaults(defineProps<IShellProps>(), {
   flex-direction: column;
   overflow: hidden;
   background: var(--nb-c-surface, #fff);
+}
+
+.nb-shell__notification {
+  flex-shrink: 0;
 }
 
 .nb-shell__topbar {
