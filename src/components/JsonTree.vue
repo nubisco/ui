@@ -137,7 +137,6 @@ const asIndexable = (v: TJsonValue): Record<string | number, TJsonValue> =>
   background: var(--nb-json-tree-sprite);
   background-color: transparent;
   background-repeat: no-repeat;
-  // color: var(--nb-c-surface);
   &:not(.root) {
     background-repeat: repeat-y;
     background-position: -99px 0px;

@@ -12,7 +12,6 @@
 .nb-panel {
   background: var(--nb-c-surface, #fff);
   border: 1px solid var(--nb-c-border, #ddd);
-  padding: 12px;
-  border-radius: 8px;
+  padding: calc(var(--nb-base-unit) * 2);
 }
 </style>
