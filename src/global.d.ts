@@ -2,6 +2,7 @@
 // Re-run the build to update this file when components change
 import AiLabel from './components/AiLabel.vue'
 import Badge from './components/Badge.vue'
+import BarChart from './components/Charts/BarChart.vue'
 import Breadcrumbs from './components/Breadcrumbs.vue'
 import Button from './components/Button.vue'
 import Checkbox from './components/Checkbox.vue'
@@ -14,10 +15,12 @@ import Icon from './components/Icon.vue'
 import ImageCropper from './components/ImageCropper.vue'
 import JsonTree from './components/JsonTree.vue'
 import Label from './components/Label.vue'
+import LineChart from './components/Charts/LineChart.vue'
 import Message from './components/Message.vue'
 import Modal from './components/Modal.vue'
 import NumberInput from './components/NumberInput.vue'
 import Panel from './components/Panel.vue'
+import PieChart from './components/Charts/PieChart.vue'
 import Radio from './components/Radio.vue'
 import Select from './components/Select.vue'
 import Shell from './components/Shell.vue'
@@ -31,6 +34,7 @@ declare module 'vue' {
   interface IGlobalComponents {
     NbAiLabel: typeof AiLabel
     NbBadge: typeof Badge
+    NbBarChart: typeof BarChart
     NbBreadcrumbs: typeof Breadcrumbs
     NbButton: typeof Button
     NbCheckbox: typeof Checkbox
@@ -43,10 +47,12 @@ declare module 'vue' {
     NbImageCropper: typeof ImageCropper
     NbJsonTree: typeof JsonTree
     NbLabel: typeof Label
+    NbLineChart: typeof LineChart
     NbMessage: typeof Message
     NbModal: typeof Modal
     NbNumberInput: typeof NumberInput
     NbPanel: typeof Panel
+    NbPieChart: typeof PieChart
     NbRadio: typeof Radio
     NbSelect: typeof Select
     NbShell: typeof Shell
