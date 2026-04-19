@@ -2,11 +2,13 @@ import type { App } from 'vue'
 import NbBarChart from './BarChart.vue'
 import NbLineChart from './LineChart.vue'
 import NbPieChart from './PieChart.vue'
+import NbSparkline from './Sparkline.vue'
 
 const chartComponents = {
   NbBarChart,
   NbLineChart,
   NbPieChart,
+  NbSparkline,
 }
 
 export default {
@@ -17,4 +19,4 @@ export default {
   },
 }
 
-export { NbBarChart, NbLineChart, NbPieChart }
+export { NbBarChart, NbLineChart, NbPieChart, NbSparkline }
