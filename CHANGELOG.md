@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/nubisco/ui/compare/v1.10.0...v1.11.0) (2026-04-19)
+
+
+### Features
+
+* **charts:** add NbSparkline component for inline dashboard charts ([85753d0](https://github.com/nubisco/ui/commit/85753d08eec57336dce48a0b27230a04c14f662e))
+
 # [1.10.0](https://github.com/nubisco/ui/compare/v1.9.1...v1.10.0) (2026-04-19)
 
 
