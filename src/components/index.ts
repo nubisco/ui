@@ -1,6 +1,7 @@
 import type { App } from 'vue'
 import NbAiLabel from './AiLabel.vue'
 import NbBadge from './Badge.vue'
+import NbBarChart from './Charts/BarChart.vue'
 import NbBreadcrumbs from './Breadcrumbs.vue'
 import NbButton from './Button.vue'
 import NbCheckbox from './Checkbox.vue'
@@ -12,11 +13,13 @@ import NbGrid from './Grid.vue'
 import NbIcon from './Icon.vue'
 import NbImageCropper from './ImageCropper.vue'
 import NbJsonTree from './JsonTree.vue'
+import NbLineChart from './Charts/LineChart.vue'
 import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
 import NbModal from './Modal.vue'
 import NbNumberInput from './NumberInput.vue'
 import NbPanel from './Panel.vue'
+import NbPieChart from './Charts/PieChart.vue'
 import NbRadio from './Radio.vue'
 import NbSelect from './Select.vue'
 import NbShell from './Shell.vue'
@@ -29,6 +32,7 @@ import NbToast from './Toast.vue'
 const components = {
   NbAiLabel,
   NbBadge,
+  NbBarChart,
   NbBreadcrumbs,
   NbButton,
   NbCheckbox,
@@ -41,10 +45,12 @@ const components = {
   NbImageCropper,
   NbJsonTree,
   NbLabel,
+  NbLineChart,
   NbMessage,
   NbModal,
   NbNumberInput,
   NbPanel,
+  NbPieChart,
   NbRadio,
   NbSelect,
   NbShell,

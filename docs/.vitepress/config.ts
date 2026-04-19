@@ -170,6 +170,18 @@ export default withMermaid(
                   { text: 'AI Label', link: '/ui/components/ai-label' },
                   { text: 'Badge', link: '/ui/components/badge' },
                   { text: 'Button', link: '/ui/components/button/button' },
+                  {
+                    text: 'Charts',
+                    items: [
+                      {
+                        text: 'Overview',
+                        link: '/ui/components/charts/overview',
+                      },
+                      { text: 'Bar', link: '/ui/components/charts/bar' },
+                      { text: 'Line', link: '/ui/components/charts/line' },
+                      { text: 'Pie', link: '/ui/components/charts/pie' },
+                    ],
+                  },
                   { text: 'Checkbox', link: '/ui/components/checkbox' },
                   { text: 'Color Strip', link: '/ui/components/color-strip' },
                   {
