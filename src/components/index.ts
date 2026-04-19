@@ -25,6 +25,7 @@ import NbSelect from './Select.vue'
 import NbShell from './Shell.vue'
 import NbSidebarLink from './SidebarLink.vue'
 import NbSlider from './Slider.vue'
+import NbSparkline from './Charts/Sparkline.vue'
 import NbSwitch from './Switch.vue'
 import NbTextInput from './TextInput.vue'
 import NbToast from './Toast.vue'
@@ -56,6 +57,7 @@ const components = {
   NbShell,
   NbSidebarLink,
   NbSlider,
+  NbSparkline,
   NbSwitch,
   NbTextInput,
   NbToast,

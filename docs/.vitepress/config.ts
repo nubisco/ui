@@ -180,6 +180,10 @@ export default withMermaid(
                       { text: 'Bar', link: '/ui/components/charts/bar' },
                       { text: 'Line', link: '/ui/components/charts/line' },
                       { text: 'Pie', link: '/ui/components/charts/pie' },
+                      {
+                        text: 'Sparkline',
+                        link: '/ui/components/charts/sparkline',
+                      },
                     ],
                   },
                   { text: 'Checkbox', link: '/ui/components/checkbox' },

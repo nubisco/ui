@@ -26,6 +26,7 @@ import Select from './components/Select.vue'
 import Shell from './components/Shell.vue'
 import SidebarLink from './components/SidebarLink.vue'
 import Slider from './components/Slider.vue'
+import Sparkline from './components/Charts/Sparkline.vue'
 import Switch from './components/Switch.vue'
 import TextInput from './components/TextInput.vue'
 import Toast from './components/Toast.vue'
@@ -58,6 +59,7 @@ declare module 'vue' {
     NbShell: typeof Shell
     NbSidebarLink: typeof SidebarLink
     NbSlider: typeof Slider
+    NbSparkline: typeof Sparkline
     NbSwitch: typeof Switch
     NbTextInput: typeof TextInput
     NbToast: typeof Toast
