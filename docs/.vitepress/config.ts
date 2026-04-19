@@ -183,6 +183,7 @@ export default withMermaid(
                     text: 'Image Cropper',
                     link: '/ui/components/image-cropper',
                   },
+                  { text: 'JSON Tree', link: '/ui/components/json-tree' },
                   { text: 'Label', link: '/ui/components/label' },
                   { text: 'Message', link: '/ui/components/message' },
                   { text: 'Modal', link: '/ui/components/modal' },
