@@ -1,3 +1,11 @@
+# [1.10.0](https://github.com/nubisco/ui/compare/v1.9.1...v1.10.0) (2026-04-19)
+
+
+### Features
+
+* **charts:** add Bar, Line and Pie chart components with documentation ([2fe1cc5](https://github.com/nubisco/ui/commit/2fe1cc5dfd4b4e9d5c3d191f9ac6bbe77391dfed))
+* **json-tree:** add NbJsonTree documentation page ([3ff2e8e](https://github.com/nubisco/ui/commit/3ff2e8e60d8b04b8d017141b87896c132080e612))
+
 ## [1.9.1](https://github.com/nubisco/ui/compare/v1.9.0...v1.9.1) (2026-04-17)
 
 
