@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/nubisco/ui/compare/v1.11.0...v1.12.0) (2026-04-20)
+
+
+### Features
+
+* **theme:** add layer system for visual depth ([2d5b578](https://github.com/nubisco/ui/commit/2d5b5785421645e98b00bc2e7e01601a91198fb0))
+
 # [1.11.0](https://github.com/nubisco/ui/compare/v1.10.0...v1.11.0) (2026-04-19)
 
 
