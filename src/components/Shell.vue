@@ -107,15 +107,15 @@ withDefaults(defineProps<IShellProps>(), {
   // Inspector
   --nb-shell-inspector-width: 560px;
   --nb-shell-inspector-expanded-width: 50vw;
-  --nb-shell-inspector-border: 1px solid #e8e8f0;
-  --nb-shell-inspector-bg: var(--nb-c-surface, #fff);
+  --nb-shell-inspector-border: 1px solid var(--nb-c-border);
+  --nb-shell-inspector-bg: var(--nb-c-surface);
 
   // ── Layout ────────────────────────────────────────────────────────────────
 
   display: flex;
   height: 100vh;
   overflow: hidden;
-  background: var(--nb-c-surface-raised, #f5f6fa);
+  background: var(--nb-c-surface-raised);
 }
 
 // ── Sidebar ────────────────────────────────────────────────────────────────────
@@ -173,7 +173,7 @@ withDefaults(defineProps<IShellProps>(), {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--nb-c-surface, #fff);
+  background: var(--nb-c-surface);
 }
 
 .nb-shell__notification {
@@ -187,8 +187,8 @@ withDefaults(defineProps<IShellProps>(), {
   align-items: center;
   justify-content: space-between;
   padding: 0 calc(var(--nb-base-unit) * 3);
-  border-bottom: 1px solid var(--nb-c-border, #f0f0f8);
-  background: var(--nb-c-surface, #fff);
+  border-bottom: 1px solid var(--nb-c-border);
+  background: var(--nb-c-surface);
   gap: 1rem;
 }
 
@@ -211,7 +211,7 @@ withDefaults(defineProps<IShellProps>(), {
   flex-shrink: 0;
   display: flex;
   padding: 0 calc(var(--nb-base-unit) * 3);
-  border-bottom: 1px solid var(--nb-c-border, #f0f0f8);
+  border-bottom: 1px solid var(--nb-c-border);
   background: var(--nb-c-surface);
   gap: 1rem;
 }

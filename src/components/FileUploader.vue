@@ -224,7 +224,7 @@ defineExpose({ files, setFileStatus })
     margin: 0;
     font-size: 0.875rem;
     color: var(--nb-c-text-secondary, #6b7280);
-    border-left: 3px solid var(--nb-c-border, #e5e7eb);
+    border-left: 3px solid var(--nb-c-border);
     padding-left: 0.75rem;
     line-height: 1.5;
   }
@@ -243,7 +243,7 @@ defineExpose({ files, setFileStatus })
     align-items: center;
     justify-content: center;
     padding: 2rem 1.5rem;
-    border: 2px dashed var(--nb-c-border, #d1d5db);
+    border: 2px dashed var(--nb-c-border);
     border-radius: 6px;
     cursor: pointer;
     text-align: center;
@@ -308,7 +308,7 @@ defineExpose({ files, setFileStatus })
     grid-template-columns: 1fr auto;
     grid-template-rows: auto auto;
     align-items: center;
-    background: var(--nb-c-surface, #f3f4f6);
+    background: var(--nb-c-surface);
     border: 1px solid transparent;
     border-radius: 4px;
     padding: 0.6rem 0.875rem;
@@ -344,7 +344,7 @@ defineExpose({ files, setFileStatus })
     font-size: 0.8125rem;
     color: var(--nb-c-danger);
     padding-top: 0.35rem;
-    border-top: 1px solid var(--nb-c-border, #e5e7eb);
+    border-top: 1px solid var(--nb-c-border);
     margin-top: 0.35rem;
   }
 

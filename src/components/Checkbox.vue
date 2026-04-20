@@ -83,7 +83,7 @@ function handleChange(e: Event) {
     justify-content: center;
     width: 16px;
     height: 16px;
-    border: 1.5px solid var(--nb-c-border, #d0d0d0);
+    border: 1.5px solid var(--nb-c-border);
     border-radius: 4px;
     transition:
       background 0.15s,

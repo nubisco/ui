@@ -10,8 +10,8 @@
 
 <style lang="scss" scoped>
 .nb-panel {
-  background: var(--nb-c-surface, #fff);
-  border: 1px solid var(--nb-c-border, #ddd);
+  background: var(--nb-c-surface);
+  border: 1px solid var(--nb-c-border);
   padding: calc(var(--nb-base-unit) * 2);
 }
 </style>

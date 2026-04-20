@@ -1,7 +1,7 @@
 ---
 layout: nubisco
 title: Theming
-tabs: ['Overview', 'Colors', 'Typography', 'Custom Properties']
+tabs: ['Overview', 'Layers', 'Colors', 'Typography', 'Custom Properties']
 ---
 
 <doc-tab name="Overview">
@@ -78,6 +78,104 @@ If you import `@nubisco/ui/styles` directly, you can also override the SCSS maps
 ```
 
 This gives you the full shade ramp (`--nb-c-your-brand-100` through `--nb-c-your-brand-900`) plus a11y contrast variants: generated automatically from a single hex value.
+
+</doc-tab>
+
+<doc-tab name="Layers">
+
+## Layer system
+
+NubiscoUI uses a four-level layering system to create visual depth. Each layer defines a surface color, border color, and hover color. Components placed inside a layer context automatically inherit the correct tones.
+
+### The problem
+
+Without layers, a panel on a dark page background and a panel inside another panel both get the same `--nb-c-surface`. There is no visual distinction between nesting levels, and in dark mode the contrast between the app background and card surfaces may be too harsh or too subtle.
+
+### How layers work
+
+Four depth levels, from deepest to highest:
+
+| Level | Class         | Light mode | Dark mode        | Typical use                       |
+| ----- | ------------- | ---------- | ---------------- | --------------------------------- |
+| 0     | `.nb-layer-0` | Light gray | Near-black       | App/page background               |
+| 1     | `.nb-layer-1` | White      | Dark gray        | Panels, cards, sidebar body       |
+| 2     | `.nb-layer-2` | Light gray | Medium-dark gray | Nested panels, inspector sections |
+| 3     | `.nb-layer-3` | White      | Lighter gray     | Overlays, popovers, modals        |
+
+In **light mode**, layers alternate between white and light gray, creating a subtle card-on-background effect.
+
+In **dark mode**, layers get progressively lighter as elevation increases, providing clear visual separation.
+
+### Usage
+
+Apply a layer class to a container. All child components (`NbPanel`, `NbShell`, form inputs, etc.) automatically inherit the right surface colors:
+
+```html
+<!-- App background at layer 0 -->
+<div class="nb-layer-0">
+  <!-- Panel inherits layer-0 surface context -->
+  <!-- But Panel itself renders with --nb-c-surface (layer-1 by default) -->
+  <NbPanel>
+    <!-- Nested content at layer 2 -->
+    <div class="nb-layer-2">
+      <NbPanel>
+        <!-- This inner panel uses layer-2 surface -->
+      </NbPanel>
+    </div>
+  </NbPanel>
+</div>
+```
+
+### Dark mode
+
+Activate dark mode by adding the `dark` class to your app root:
+
+```html
+<div id="app" class="dark">
+  <!-- All components flip to dark surfaces automatically -->
+</div>
+```
+
+Combine with layers:
+
+```html
+<div id="app" class="dark nb-layer-0">
+  <!-- Dark page background with layered components -->
+</div>
+```
+
+### Tokens
+
+Each layer defines three CSS custom properties:
+
+| Token                     | Description                    |
+| ------------------------- | ------------------------------ |
+| `--nb-c-layer-{N}`        | Surface background for layer N |
+| `--nb-c-layer-border-{N}` | Border color for layer N       |
+| `--nb-c-layer-hover-{N}`  | Hover background for layer N   |
+
+The `.nb-layer-{N}` class maps these to the semantic tokens that components consume:
+
+```css
+.nb-layer-2 {
+  --nb-c-surface: var(--nb-c-layer-2);
+  --nb-c-border: var(--nb-c-layer-border-2);
+  --nb-c-surface-hover: var(--nb-c-layer-hover-2);
+}
+```
+
+### Overriding layer colors
+
+Override layer tokens in your own stylesheet to match your brand:
+
+```css
+:root {
+  --nb-c-layer-0: #0d1117;
+  --nb-c-layer-1: #161b22;
+  --nb-c-layer-2: #21262d;
+  --nb-c-layer-3: #30363d;
+}
+```
 
 </doc-tab>
 
@@ -238,20 +336,36 @@ These are the tokens you override to rebrand the library. Each semantic token ha
 
 Each token above also has `-a11y` (auto-computed contrast text color), `-hover`, `-hover-a11y`, `-active`, `-active-a11y` variants.
 
+### Layers
+
+| Token                       | Description                       |
+| --------------------------- | --------------------------------- |
+| `--nb-c-layer-0`            | App/page background surface       |
+| `--nb-c-layer-1`            | Panels, cards surface             |
+| `--nb-c-layer-2`            | Nested panels, inspector sections |
+| `--nb-c-layer-3`            | Overlays, modals, popovers        |
+| `--nb-c-layer-border-{0-3}` | Border color for each layer       |
+| `--nb-c-layer-hover-{0-3}`  | Hover background for each layer   |
+
+See the [Layers tab](#layers) for usage details.
+
 ### Surface & text
 
-| Token                | Description                                       |
-| -------------------- | ------------------------------------------------- |
-| `--nb-c-surface`     | Card and panel background (white in light mode)   |
-| `--nb-c-contrast`    | Maximum contrast on surface (near-black in light) |
-| `--nb-c-document`    | Page/document background                          |
-| `--nb-c-white`       | Absolute white, not theme-aware                   |
-| `--nb-c-black`       | Absolute black, not theme-aware                   |
-| `--nb-c-text`        | Primary body text                                 |
-| `--nb-c-text-muted`  | Supporting text, captions, secondary labels       |
-| `--nb-c-text-subtle` | Placeholder text, disabled labels                 |
-| `--nb-c-bg`          | Page background tier                              |
-| `--nb-c-bg-soft`     | Elevated/inset background tier                    |
+| Token                   | Description                                       |
+| ----------------------- | ------------------------------------------------- |
+| `--nb-c-surface`        | Current surface background (set by layer context) |
+| `--nb-c-surface-raised` | Background below the current surface (page level) |
+| `--nb-c-border`         | Current border color (set by layer context)       |
+| `--nb-c-surface-hover`  | Hover background for current layer                |
+| `--nb-c-contrast`       | Maximum contrast on surface (near-black in light) |
+| `--nb-c-document`       | Page/document background                          |
+| `--nb-c-white`          | Absolute white, not theme-aware                   |
+| `--nb-c-black`          | Absolute black, not theme-aware                   |
+| `--nb-c-text`           | Primary body text                                 |
+| `--nb-c-text-muted`     | Supporting text, captions, secondary labels       |
+| `--nb-c-text-subtle`    | Placeholder text, disabled labels                 |
+| `--nb-c-bg`             | Page background tier                              |
+| `--nb-c-bg-soft`        | Elevated/inset background tier                    |
 
 ### Form field tokens
 
