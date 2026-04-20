@@ -106,9 +106,36 @@
     --nb-c-white: #{colors.get-color('plain-white', 100)};
     --nb-c-black: #{colors.get-color('plain-black', 900)};
 
-    // Semantic surface tokens — adapt between light and dark
-    --nb-c-surface: #{colors.get-color('plain-white', 100)}; // card/panel background (white in light)
-    --nb-c-contrast: #{colors.get-color('plain-black', 900)}; // maximum contrast on surface (near-black in light)
+    // ── Layer system ──────────────────────────────────────────────────────
+    // Four visual depth levels. Components use --nb-c-surface and --nb-c-border
+    // which get overridden by .nb-layer-{0-3} classes, so nested elements
+    // auto-adapt to their container's depth.
+    //
+    // Layer 0: app/page background (deepest)
+    // Layer 1: panels, cards, sidebar body
+    // Layer 2: nested panels, inspector sections
+    // Layer 3: overlays, popovers, modals (highest)
+    --nb-c-layer-0: #{colors.get-color('french-gray', 100)};
+    --nb-c-layer-1: #{colors.get-color('plain-white', 100)};
+    --nb-c-layer-2: #{colors.get-color('french-gray', 100)};
+    --nb-c-layer-3: #{colors.get-color('plain-white', 100)};
+
+    --nb-c-layer-border-0: #{colors.get-color('french-gray', 250)};
+    --nb-c-layer-border-1: #{colors.get-color('french-gray', 250)};
+    --nb-c-layer-border-2: #{colors.get-color('french-gray', 300)};
+    --nb-c-layer-border-3: #{colors.get-color('french-gray', 200)};
+
+    --nb-c-layer-hover-0: #{colors.get-color('french-gray', 200)};
+    --nb-c-layer-hover-1: #{colors.get-color('french-gray', 150)};
+    --nb-c-layer-hover-2: #{colors.get-color('french-gray', 200)};
+    --nb-c-layer-hover-3: #{colors.get-color('french-gray', 150)};
+
+    // Semantic surface tokens — default to layer-1 (most components sit on layer-0)
+    --nb-c-surface: var(--nb-c-layer-1);
+    --nb-c-surface-raised: var(--nb-c-layer-0);
+    --nb-c-border: var(--nb-c-layer-border-1);
+    --nb-c-surface-hover: var(--nb-c-layer-hover-1);
+    --nb-c-contrast: #{colors.get-color('plain-black', 900)}; // maximum contrast on surface
     --nb-c-document: #{colors.get-color('plain-white', 50)}; // document background
 
     // Semantic color variables for components
@@ -220,6 +247,19 @@
 
 @mixin classes {
   /*
+  * Layer utilities — set surface context for child components.
+  * Applying .nb-layer-N overrides --nb-c-surface and --nb-c-border
+  * so all children (Panel, Shell, etc.) automatically adapt.
+  */
+  @for $i from 0 through 3 {
+    .nb-layer-#{$i} {
+      --nb-c-surface: var(--nb-c-layer-#{$i});
+      --nb-c-border: var(--nb-c-layer-border-#{$i});
+      --nb-c-surface-hover: var(--nb-c-layer-hover-#{$i});
+    }
+  }
+
+  /*
   * Font size utilities — set font-size only; line-height comes from type sets or component styles
   */
   @each $key, $value in type.$fontSizes {
@@ -324,12 +364,30 @@
     --nb-c-danger: #{colors.get-color('chicken-comb', 400)};
     --nb-c-component-plain: #{colors.get-color('nouveau-gray', 400)};
 
-    // Surface / contrast inversion
-    // Note: --nb-c-white and --nb-c-black are NOT overridden — they remain absolute #fff/#000.
-    // These semantic tokens shift to dark-mode-appropriate greys, not pure black/white.
-    --nb-c-surface: #{colors.get-color('plain-black', 850)}; // card surface: ~#262626
-    --nb-c-contrast: #{colors.get-color('plain-white', 150)}; // high contrast on surface: ~#d9d9d9
-    --nb-c-document: #{colors.get-color('plain-white', 50)}; // document background
+    // ── Layer system (dark) ───────────────────────────────────────────────
+    // In dark mode, layers get progressively lighter as elevation increases
+    --nb-c-layer-0: #{colors.get-color('nouveau-gray', 900)};
+    --nb-c-layer-1: #{colors.get-color('plain-black', 850)};
+    --nb-c-layer-2: #{colors.get-color('nouveau-gray', 800)};
+    --nb-c-layer-3: #{colors.get-color('nouveau-gray', 750)};
+
+    --nb-c-layer-border-0: #{colors.get-color('nouveau-gray', 750)};
+    --nb-c-layer-border-1: #{colors.get-color('nouveau-gray', 700)};
+    --nb-c-layer-border-2: #{colors.get-color('nouveau-gray', 650)};
+    --nb-c-layer-border-3: #{colors.get-color('nouveau-gray', 600)};
+
+    --nb-c-layer-hover-0: #{colors.get-color('nouveau-gray', 800)};
+    --nb-c-layer-hover-1: #{colors.get-color('nouveau-gray', 750)};
+    --nb-c-layer-hover-2: #{colors.get-color('nouveau-gray', 700)};
+    --nb-c-layer-hover-3: #{colors.get-color('nouveau-gray', 650)};
+
+    // Surface tokens — override to dark values
+    --nb-c-surface: var(--nb-c-layer-1);
+    --nb-c-surface-raised: var(--nb-c-layer-0);
+    --nb-c-border: var(--nb-c-layer-border-1);
+    --nb-c-surface-hover: var(--nb-c-layer-hover-1);
+    --nb-c-contrast: #{colors.get-color('plain-white', 150)};
+    --nb-c-document: #{colors.get-color('plain-white', 50)};
 
     // Text
     --nb-c-text: #{colors.get-color('plain-white', 150)}; // primary text: ~#d9d9d9

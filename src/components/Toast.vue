@@ -123,8 +123,8 @@ watch(
   align-items: flex-start;
   gap: 10px;
   padding: 12px 14px;
-  background: var(--nb-c-bg, #fff);
-  border: 1px solid var(--nb-c-border, #e5e7eb);
+  background: var(--nb-c-bg);
+  border: 1px solid var(--nb-c-border);
   border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   min-width: 280px;
@@ -222,7 +222,7 @@ watch(
   margin-top: -1px;
 
   &:hover {
-    background: var(--nb-c-bg-subtle, #f3f4f6);
+    background: var(--nb-c-bg-soft);
     color: var(--nb-c-text, #1a1a2e);
   }
 }
