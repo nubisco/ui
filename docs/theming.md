@@ -83,68 +83,111 @@ This gives you the full shade ramp (`--nb-c-your-brand-100` through `--nb-c-your
 
 <doc-tab name="Layers">
 
-## Layer system
+<script setup>
+const layerProps = [
+  {
+    name: 'theme',
+    type: 'single',
+    label: 'Theme',
+    default: 'light',
+    options: [
+      { value: 'light', label: 'Light' },
+      { value: 'dark', label: 'Dark' },
+    ],
+  },
+]
+</script>
 
-NubiscoUI uses a four-level layering system to create visual depth. Each layer defines a surface color, border color, and hover color. Components placed inside a layer context automatically inherit the correct tones.
+## Layers
 
-### The problem
+Four visual depth levels that give nested components distinct surfaces. Toggle between light and dark to see how each layer adapts.
 
-Without layers, a panel on a dark page background and a panel inside another panel both get the same `--nb-c-surface`. There is no visual distinction between nesting levels, and in dark mode the contrast between the app background and card surfaces may be too harsh or too subtle.
+### Nested panels
 
-### How layers work
+<preview :props="layerProps" v-slot="{ resultingProps }">
+  <div :class="[resultingProps.theme === 'dark' ? 'dark' : '', 'nb-layer-0']" style="padding: 20px; border-radius: 8px;">
+    <NbLabel size="sm" muted>Layer 0 — page background</NbLabel>
+    <NbPanel style="margin-top: 8px;">
+      <NbLabel size="sm" muted>Layer 1 — panel</NbLabel>
+      <NbGrid dir="col" gap="sm" style="margin-top: 8px;">
+        <NbTextInput label="Name" placeholder="Enter your name" size="sm" />
+        <div class="nb-layer-2" style="padding: 12px; border-radius: 6px;">
+          <NbLabel size="sm" muted>Layer 2 — nested section</NbLabel>
+          <NbPanel style="margin-top: 8px;">
+            <NbLabel size="sm" muted>Layer 3 — deepest</NbLabel>
+            <NbButton variant="primary" size="sm" style="margin-top: 8px;">Action</NbButton>
+          </NbPanel>
+        </div>
+      </NbGrid>
+    </NbPanel>
+  </div>
+</preview>
 
-Four depth levels, from deepest to highest:
+### Side-by-side comparison
 
-| Level | Class         | Light mode | Dark mode        | Typical use                       |
-| ----- | ------------- | ---------- | ---------------- | --------------------------------- |
-| 0     | `.nb-layer-0` | Light gray | Near-black       | App/page background               |
-| 1     | `.nb-layer-1` | White      | Dark gray        | Panels, cards, sidebar body       |
-| 2     | `.nb-layer-2` | Light gray | Medium-dark gray | Nested panels, inspector sections |
-| 3     | `.nb-layer-3` | White      | Lighter gray     | Overlays, popovers, modals        |
+<preview :props="layerProps" v-slot="{ resultingProps }">
+  <NbGrid dir="row" gap="md" :class="resultingProps.theme === 'dark' ? 'dark' : ''" style="padding: 16px;">
+    <div v-for="layer in [0, 1, 2, 3]" :key="layer" :class="'nb-layer-' + layer" style="flex: 1; padding: 16px; border-radius: 8px; text-align: center;">
+      <NbLabel size="sm" muted>Layer {{ layer }}</NbLabel>
+      <NbPanel style="margin-top: 8px;">
+        <NbLabel size="sm">Panel</NbLabel>
+        <NbButton size="sm" outlined style="margin-top: 8px;">Button</NbButton>
+      </NbPanel>
+    </div>
+  </NbGrid>
+</preview>
 
-In **light mode**, layers alternate between white and light gray, creating a subtle card-on-background effect.
+### Dark mode app shell
 
-In **dark mode**, layers get progressively lighter as elevation increases, providing clear visual separation.
+<preview>
+  <div class="dark nb-layer-0" style="padding: 16px; border-radius: 8px;">
+    <NbGrid dir="row" gap="md">
+      <NbPanel style="flex: 1;">
+        <NbGrid dir="col" gap="sm">
+          <NbLabel size="md">Settings</NbLabel>
+          <NbTextInput label="API Key" placeholder="sk-..." size="sm" />
+          <NbSlider :model-value="50" :min="0" :max="100" label="Volume" size="sm" />
+          <NbSwitch name="dark-mode" label="Enable notifications" size="sm" />
+        </NbGrid>
+      </NbPanel>
+      <NbPanel style="flex: 1;">
+        <NbGrid dir="col" gap="sm">
+          <NbLabel size="md">Actions</NbLabel>
+          <NbButton variant="primary" size="sm">Save changes</NbButton>
+          <NbButton variant="danger" size="sm" outlined>Delete account</NbButton>
+        </NbGrid>
+      </NbPanel>
+    </NbGrid>
+  </div>
+</preview>
 
-### Usage
+---
 
-Apply a layer class to a container. All child components (`NbPanel`, `NbShell`, form inputs, etc.) automatically inherit the right surface colors:
+## How it works
+
+Apply `.nb-layer-{0-3}` to a container. All child components automatically inherit the right surface, border, and hover colors.
+
+| Level | Class         | Use                               |
+| ----- | ------------- | --------------------------------- |
+| 0     | `.nb-layer-0` | App/page background               |
+| 1     | `.nb-layer-1` | Panels, cards, sidebar body       |
+| 2     | `.nb-layer-2` | Nested panels, inspector sections |
+| 3     | `.nb-layer-3` | Overlays, popovers, modals        |
 
 ```html
-<!-- App background at layer 0 -->
-<div class="nb-layer-0">
-  <!-- Panel inherits layer-0 surface context -->
-  <!-- But Panel itself renders with --nb-c-surface (layer-1 by default) -->
+<div class="dark nb-layer-0">
   <NbPanel>
-    <!-- Nested content at layer 2 -->
+    <!-- Automatically uses layer-1 surface -->
     <div class="nb-layer-2">
       <NbPanel>
-        <!-- This inner panel uses layer-2 surface -->
+        <!-- Uses layer-2 surface -->
       </NbPanel>
     </div>
   </NbPanel>
 </div>
 ```
 
-### Dark mode
-
-Activate dark mode by adding the `dark` class to your app root:
-
-```html
-<div id="app" class="dark">
-  <!-- All components flip to dark surfaces automatically -->
-</div>
-```
-
-Combine with layers:
-
-```html
-<div id="app" class="dark nb-layer-0">
-  <!-- Dark page background with layered components -->
-</div>
-```
-
-### Tokens
+## Tokens
 
 Each layer defines three CSS custom properties:
 
@@ -154,19 +197,7 @@ Each layer defines three CSS custom properties:
 | `--nb-c-layer-border-{N}` | Border color for layer N       |
 | `--nb-c-layer-hover-{N}`  | Hover background for layer N   |
 
-The `.nb-layer-{N}` class maps these to the semantic tokens that components consume:
-
-```css
-.nb-layer-2 {
-  --nb-c-surface: var(--nb-c-layer-2);
-  --nb-c-border: var(--nb-c-layer-border-2);
-  --nb-c-surface-hover: var(--nb-c-layer-hover-2);
-}
-```
-
-### Overriding layer colors
-
-Override layer tokens in your own stylesheet to match your brand:
+Override them to match your brand:
 
 ```css
 :root {
