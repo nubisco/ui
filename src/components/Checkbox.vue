@@ -89,7 +89,7 @@ function handleChange(e: Event) {
       background 0.15s,
       border-color 0.15s,
       box-shadow 0.15s;
-    color: #fff;
+    color: var(--nb-c-white);
   }
 
   &__check {
@@ -106,24 +106,25 @@ function handleChange(e: Event) {
 
   &__label {
     font-size: 13px;
-    color: var(--nb-c-text, #1a1a2e);
+    color: var(--nb-c-text);
     line-height: 1.4;
   }
 
   /* Checked / indeterminate state */
   &__input:checked ~ &__box,
   &__input:indeterminate ~ &__box {
-    background: var(--nb-c-grape-hyacinth-500, #5856a9);
-    border-color: var(--nb-c-grape-hyacinth-500, #5856a9);
+    background: var(--nb-c-primary);
+    border-color: var(--nb-c-primary);
   }
 
   /* Focus ring */
   &__input:focus-visible ~ &__box {
-    box-shadow: 0 0 0 3px var(--nb-c-grape-hyacinth-200, #d6d5f2);
+    box-shadow: 0 0 0 3px
+      color-mix(in srgb, var(--nb-c-primary) 30%, transparent);
   }
 
   &:hover:not(.nb-checkbox--disabled) &__box {
-    border-color: var(--nb-c-grape-hyacinth-400, #7b79c0);
+    border-color: var(--nb-c-primary);
   }
 }
 </style>
