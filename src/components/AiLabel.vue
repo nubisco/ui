@@ -38,11 +38,11 @@ const classes = computed(() => {
 .nb-ai-label {
   width: calc(var(--nb-base-unit) * 4);
   height: calc(var(--nb-base-unit) * 4);
-  border: solid 1px black;
+  border: solid 1px var(--nb-c-border);
   &--dot {
     width: var(--nb-base-unit);
     height: var(--nb-base-unit);
-    background: black;
+    background: var(--nb-c-contrast);
   }
   svg {
     width: calc(var(--nb-base-unit) * 2);
@@ -50,8 +50,8 @@ const classes = computed(() => {
   }
   &__default {
     &:hover {
-      background: black;
-      color: white;
+      background: var(--nb-c-contrast);
+      color: var(--nb-c-surface);
       cursor: pointer;
     }
     &:focus {
@@ -71,7 +71,7 @@ const classes = computed(() => {
       height: calc(var(--nb-base-unit) * 2);
     }
     &:hover {
-      outline: solid 1px black;
+      outline: solid 1px var(--nb-c-border);
       cursor: pointer;
     }
     &:focus {

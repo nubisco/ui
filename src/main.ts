@@ -38,6 +38,16 @@ export { default as NbSelect } from './components/Select.vue'
 export { default as NbTextInput } from './components/TextInput.vue'
 export type { ISelectOption, ISelectProps } from './components/Select.d'
 
+export { default as NbBottomPanel } from './components/BottomPanel.vue'
+export type { TBottomPanelSize } from './components/BottomPanel.d'
+export { default as NbBlueprint } from './components/Blueprint.vue'
+export type { IBlueprintConnection } from './components/Blueprint.d'
+export { default as NbBlueprintCard } from './components/BlueprintCard.vue'
+export type {
+  IBlueprintPort,
+  IBlueprintCardProps,
+} from './components/BlueprintCard.d'
+
 // Directives
 export { default as nbTooltipDirective } from './directives/ToolTip.directive'
 

@@ -96,7 +96,7 @@ onUnmounted(() => {
 }
 
 .nb-modal--content {
-  background: var(--nb-c-bg, var(--nb-c-surface));
+  background: var(--nb-c-surface);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   width: 100%;
   max-height: 90vh;
@@ -118,7 +118,7 @@ onUnmounted(() => {
   padding: 16px 20px;
   font-size: 15px;
   font-weight: 600;
-  color: var(--nb-c-text, #1a1a2e);
+  color: var(--nb-c-text);
 }
 
 .nb-modal--close {
@@ -148,7 +148,7 @@ onUnmounted(() => {
   padding: 20px;
   overflow-y: auto;
   flex: 1;
-  color: var(--nb-c-text, #1a1a2e);
+  color: var(--nb-c-text);
 }
 
 .nb-modal--footer {

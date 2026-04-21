@@ -85,8 +85,8 @@ const iconMap = {
     bottom: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%) translateY(4px);
-    background: var(--nb-c-plain-black-800, #1f2937);
-    color: #fff;
+    background: var(--nb-c-contrast);
+    color: var(--nb-c-surface);
     padding: 6px 10px;
     border-radius: 4px;
     font-size: 11px;
@@ -112,7 +112,7 @@ const iconMap = {
       left: 50%;
       transform: translateX(-50%);
       border: 5px solid transparent;
-      border-top-color: var(--nb-c-plain-black-800, #1f2937);
+      border-top-color: var(--nb-c-contrast);
     }
   }
 }
