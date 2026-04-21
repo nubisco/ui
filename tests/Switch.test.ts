@@ -32,12 +32,12 @@ describe('Switch', () => {
 
   it('renders label when provided', () => {
     const wrapper = createWrapper({ label: 'Dark mode' })
-    expect(wrapper.find('.nb-switch-label').text()).toBe('Dark mode')
+    expect(wrapper.find('.nb-label').text()).toBe('Dark mode')
   })
 
   it('does not render label element when label is empty', () => {
     const wrapper = createWrapper({ label: '' })
-    expect(wrapper.find('.nb-switch-label').exists()).toBe(false)
+    expect(wrapper.find('.nb-label').exists()).toBe(false)
   })
 
   it('applies disabled attribute on input', () => {

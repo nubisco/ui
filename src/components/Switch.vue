@@ -1,8 +1,12 @@
 <template>
   <NbGrid :id="componentInternalId" :class="classes" align="center" gap="sm">
-    <span v-if="label" class="nb-switch-label">
+    <NbLabel
+      v-if="label"
+      :for="`${componentInternalId}-input`"
+      :disabled="disabled"
+    >
       {{ label }}
-    </span>
+    </NbLabel>
     <label
       :for="`${componentInternalId}-input`"
       :class="wrapperClasses"
@@ -25,6 +29,7 @@
 import { computed } from 'vue'
 import type { PropType } from 'vue'
 import { ESwitchSize, ESwitchVariant } from './Switch.d'
+import NbLabel from './Label.vue'
 import { useStableId } from '@/composables/useStableId.composable'
 
 const model = defineModel<boolean>()
@@ -252,9 +257,6 @@ const wrapperClasses = computed(() => ({
         }
       }
     }
-  }
-  *-label {
-    font-size: var(--nb-font-size-14);
   }
 }
 </style>

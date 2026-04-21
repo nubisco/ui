@@ -61,8 +61,8 @@ defineEmits<{ click: [event: MouseEvent] }>()
     left: calc(100% + 10px);
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(15, 15, 30, 0.95);
-    color: #fff;
+    background: var(--nb-c-contrast);
+    color: var(--nb-c-surface);
     padding: 0.3rem 0.65rem;
     border-radius: 5px;
     font-size: 0.76rem;
@@ -96,8 +96,11 @@ defineEmits<{ click: [event: MouseEvent] }>()
   }
 
   &--danger:hover:not(&--disabled) {
-    background: rgba(239, 68, 68, 0.12);
-    color: #f87171;
+    background: var(
+      --nb-shell-sidebar-link-danger-bg,
+      color-mix(in srgb, var(--nb-c-danger) 12%, transparent)
+    );
+    color: var(--nb-shell-sidebar-link-danger-color, var(--nb-c-danger));
   }
 
   &--disabled {

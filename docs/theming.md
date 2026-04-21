@@ -187,6 +187,20 @@ Apply `.nb-layer-{0-3}` to a container. All child components automatically inher
 </div>
 ```
 
+## Layer-aware components
+
+Every component in the library consumes semantic tokens that respond to layer context. The following tokens are overridden by `.nb-layer-{N}` classes:
+
+| Semantic token         | What it controls                                                      |
+| ---------------------- | --------------------------------------------------------------------- |
+| `--nb-c-surface`       | Background of Panel, Modal, file items, badges, image cropper preview |
+| `--nb-c-border`        | Borders on Panel, Checkbox, AiLabel, file items, dropzones            |
+| `--nb-c-surface-hover` | Hover states on interactive surfaces                                  |
+
+Components that use `--nb-c-text`, `--nb-c-text-muted`, and `--nb-c-text-subtle` for their text (Label, Switch, Checkbox, Breadcrumbs, Toast, Modal, FileUploader) adapt to light/dark mode automatically. Text tokens are set once per theme rather than per layer.
+
+Components that use `color-mix()` with `--nb-c-surface` (such as Badge) will also adapt, since their tinted backgrounds blend against the current surface color.
+
 ## Tokens
 
 Each layer defines three CSS custom properties:
@@ -205,6 +219,31 @@ Override them to match your brand:
   --nb-c-layer-1: #161b22;
   --nb-c-layer-2: #21262d;
   --nb-c-layer-3: #30363d;
+}
+```
+
+## Authoring layer-aware components
+
+When building custom components that should respond to layers, use these semantic tokens instead of palette colors:
+
+```scss
+.my-card {
+  background: var(--nb-c-surface); // adapts to layer context
+  border: 1px solid var(--nb-c-border); // adapts to layer context
+  color: var(--nb-c-text); // adapts to light/dark mode
+
+  &:hover {
+    background: var(--nb-c-surface-hover); // adapts to layer context
+  }
+}
+```
+
+For tinted backgrounds (e.g. status badges), use `color-mix()` with `var(--nb-c-surface)` so the tint adapts to the current layer:
+
+```scss
+.my-status {
+  background: color-mix(in srgb, var(--nb-c-info) 12%, var(--nb-c-surface));
+  color: var(--nb-c-info);
 }
 ```
 

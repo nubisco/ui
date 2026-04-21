@@ -36,32 +36,48 @@ withDefaults(defineProps<IBadgeProps>(), {
 
   /* Variants */
   &--grey {
-    background: #e8e8ee;
-    color: #555566;
+    background: color-mix(
+      in srgb,
+      var(--nb-c-text-subtle) 15%,
+      var(--nb-c-surface)
+    );
+    color: var(--nb-c-text-muted);
   }
   &--blue {
-    background: #dbeafe;
-    color: #1d4ed8;
+    background: color-mix(in srgb, var(--nb-c-info) 12%, var(--nb-c-surface));
+    color: var(--nb-c-info);
   }
   &--orange {
-    background: #fef3c7;
-    color: #92400e;
+    background: color-mix(
+      in srgb,
+      var(--nb-c-warning) 12%,
+      var(--nb-c-surface)
+    );
+    color: var(--nb-c-warning);
   }
   &--green {
-    background: #d1fae5;
-    color: #065f46;
+    background: color-mix(
+      in srgb,
+      var(--nb-c-success) 12%,
+      var(--nb-c-surface)
+    );
+    color: var(--nb-c-success);
   }
   &--red {
-    background: #fee2e2;
-    color: #991b1b;
+    background: color-mix(in srgb, var(--nb-c-danger) 12%, var(--nb-c-surface));
+    color: var(--nb-c-danger);
   }
   &--purple {
-    background: var(--nb-c-grape-hyacinth-100, #eeedf9);
-    color: var(--nb-c-grape-hyacinth-600, #444480);
+    background: color-mix(
+      in srgb,
+      var(--nb-c-primary) 12%,
+      var(--nb-c-surface)
+    );
+    color: var(--nb-c-primary);
   }
   &--primary {
-    background: var(--nb-c-grape-hyacinth-500, #5856a9);
-    color: #fff;
+    background: var(--nb-c-primary);
+    color: var(--nb-c-primary-a11y);
   }
 
   &__dot {
