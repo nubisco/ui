@@ -759,8 +759,8 @@ watch(
 <style lang="scss" scoped>
 $handle-size: 10px;
 $handle-offset: -7px;
-$border-color: black;
-$background-color: white;
+$border-color: var(--nb-c-border);
+$background-color: var(--nb-c-surface);
 
 .nb-image-cropper {
   position: relative;
@@ -787,8 +787,8 @@ $background-color: white;
     position: absolute;
     width: 10px;
     height: 10px;
-    background: white;
-    border: 1px solid black;
+    background: var(--nb-c-surface);
+    border: 1px solid var(--nb-c-border);
     z-index: 1;
 
     &.top-left {
@@ -832,14 +832,14 @@ $background-color: white;
     overflow: hidden;
     height: calc(var(--nb-base-unit, 8px) * 14);
     margin-top: 20px;
-    border: dotted 1px var(--nb-c-component-border, #e0e0e0);
-    background: var(--nb-c-backdrop, #fff);
+    border: dotted 1px var(--nb-c-border);
+    background: var(--nb-c-surface);
     user-select: none;
     pointer-events: none;
     ul {
       min-width: calc(var(--nb-base-unit, 8px) * 9);
-      background: black;
-      color: white;
+      background: var(--nb-c-contrast);
+      color: var(--nb-c-surface);
       font-size: var(--nb-font-size-10, 10px);
       padding: calc(var(--nb-base-unit, 8px) / 2);
       line-height: var(--nb-font-size-14, 14px);

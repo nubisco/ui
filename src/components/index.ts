@@ -29,6 +29,9 @@ import NbSparkline from './Charts/Sparkline.vue'
 import NbSwitch from './Switch.vue'
 import NbTextInput from './TextInput.vue'
 import NbToast from './Toast.vue'
+import NbBottomPanel from './BottomPanel.vue'
+import NbBlueprint from './Blueprint.vue'
+import NbBlueprintCard from './BlueprintCard.vue'
 
 const components = {
   NbAiLabel,
@@ -61,6 +64,9 @@ const components = {
   NbSwitch,
   NbTextInput,
   NbToast,
+  NbBottomPanel,
+  NbBlueprint,
+  NbBlueprintCard,
 }
 
 export default {

@@ -415,9 +415,8 @@ defineExpose({
 <style lang="scss">
 // Dropdown is teleported to body: cannot use scoped styles
 .nb-select__dropdown {
-  background: var(--nb-c-field-bg, var(--nb-c-french-gray-100, #f4f4f4));
-  border: 1px solid
-    var(--nb-c-field-border, var(--nb-c-french-gray-500, #a7a7a7));
+  background: var(--nb-c-field-bg);
+  border: 1px solid var(--nb-c-field-border);
   max-height: 240px;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -432,7 +431,7 @@ defineExpose({
   padding: 10px 16px;
   font-size: 14px;
   font-weight: 400;
-  color: var(--nb-c-text, #161616);
+  color: var(--nb-c-text);
   cursor: pointer;
   position: relative;
   transition: background 0.1s;
@@ -456,7 +455,7 @@ defineExpose({
   }
 
   &--selected {
-    background: var(--nb-c-primary, #5856a9);
+    background: var(--nb-c-primary);
     color: var(--nb-c-surface);
     font-weight: 500;
 
@@ -466,7 +465,7 @@ defineExpose({
   }
 
   &--selected.nb-select__option--highlighted {
-    background: color-mix(in srgb, var(--nb-c-primary, #5856a9) 85%, black);
+    background: color-mix(in srgb, var(--nb-c-primary) 85%, var(--nb-c-black));
   }
 
   &--disabled {
@@ -478,7 +477,7 @@ defineExpose({
 .nb-select__option-check {
   width: 14px;
   flex-shrink: 0;
-  color: var(--nb-c-primary, #5856a9);
+  color: var(--nb-c-primary);
   display: flex;
   align-items: center;
 }
@@ -493,7 +492,7 @@ defineExpose({
 .nb-select__empty {
   padding: 12px 16px;
   font-size: 14px;
-  color: var(--nb-c-text-subtle, var(--nb-c-nouveau-gray-500, #6b7280));
+  color: var(--nb-c-text-subtle);
   text-align: center;
 }
 

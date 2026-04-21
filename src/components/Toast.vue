@@ -176,14 +176,14 @@ watch(
   margin: 0;
   font-size: 13px;
   font-weight: 600;
-  color: var(--nb-c-text, #1a1a2e);
+  color: var(--nb-c-text);
   line-height: 1.4;
 }
 
 .nb-toast__message {
   margin: 0;
   font-size: 13px;
-  color: var(--nb-c-text-muted, #6b7280);
+  color: var(--nb-c-text-muted);
   line-height: 1.5;
 }
 
@@ -214,7 +214,7 @@ watch(
   border: none;
   background: transparent;
   border-radius: 4px;
-  color: var(--nb-c-text-subtle, #9ca3af);
+  color: var(--nb-c-text-subtle);
   cursor: pointer;
   transition:
     background 0.15s,
@@ -223,7 +223,7 @@ watch(
 
   &:hover {
     background: var(--nb-c-bg-soft);
-    color: var(--nb-c-text, #1a1a2e);
+    color: var(--nb-c-text);
   }
 }
 

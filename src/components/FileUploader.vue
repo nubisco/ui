@@ -223,7 +223,7 @@ defineExpose({ files, setFileStatus })
   &__description {
     margin: 0;
     font-size: 0.875rem;
-    color: var(--nb-c-text-secondary, #6b7280);
+    color: var(--nb-c-text-muted);
     border-left: 3px solid var(--nb-c-border);
     padding-left: 0.75rem;
     line-height: 1.5;
@@ -353,7 +353,7 @@ defineExpose({ files, setFileStatus })
     border: none;
     padding: 0;
     cursor: pointer;
-    color: var(--nb-c-text-secondary, #6b7280);
+    color: var(--nb-c-text-muted);
     display: flex;
     align-items: center;
     line-height: 1;

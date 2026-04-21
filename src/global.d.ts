@@ -3,6 +3,9 @@
 import AiLabel from './components/AiLabel.vue'
 import Badge from './components/Badge.vue'
 import BarChart from './components/Charts/BarChart.vue'
+import Blueprint from './components/Blueprint.vue'
+import BlueprintCard from './components/BlueprintCard.vue'
+import BottomPanel from './components/BottomPanel.vue'
 import Breadcrumbs from './components/Breadcrumbs.vue'
 import Button from './components/Button.vue'
 import Checkbox from './components/Checkbox.vue'
@@ -36,6 +39,9 @@ declare module 'vue' {
     NbAiLabel: typeof AiLabel
     NbBadge: typeof Badge
     NbBarChart: typeof BarChart
+    NbBlueprint: typeof Blueprint
+    NbBlueprintCard: typeof BlueprintCard
+    NbBottomPanel: typeof BottomPanel
     NbBreadcrumbs: typeof Breadcrumbs
     NbButton: typeof Button
     NbCheckbox: typeof Checkbox

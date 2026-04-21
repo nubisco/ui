@@ -54,16 +54,16 @@ const hasDefaultSlot = computed(() => !!slots.default?.())
 
 .nb-breadcrumbs__title {
   font-weight: 400;
-  color: var(--nb-c-text-primary, #1a1a2e);
+  color: var(--nb-c-text);
 }
 
 .nb-breadcrumbs__subtitle {
   font-weight: 700;
-  color: var(--nb-c-text-primary, #1a1a2e);
+  color: var(--nb-c-text);
 }
 
 .nb-breadcrumbs__sep {
-  color: var(--nb-c-text-tertiary, #d1d5db);
+  color: var(--nb-c-text-subtle);
   flex-shrink: 0;
 }
 
@@ -72,6 +72,6 @@ const hasDefaultSlot = computed(() => !!slots.default?.())
   align-items: center;
   gap: 0.35rem;
   font-weight: 700;
-  color: var(--nb-c-text-primary, #1a1a2e);
+  color: var(--nb-c-text);
 }
 </style>

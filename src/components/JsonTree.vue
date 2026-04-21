@@ -225,7 +225,7 @@ const asIndexable = (v: TJsonValue): Record<string | number, TJsonValue> =>
           overflow-x: hidden;
           width: auto;
           &.value--null {
-            color: var(--nb-c-text-faded);
+            color: var(--nb-c-text-subtle);
           }
         }
         input {
@@ -258,8 +258,8 @@ const asIndexable = (v: TJsonValue): Record<string | number, TJsonValue> =>
       }
 
       &.editor {
-        background: var(--nb-c-panel-background);
-        border-bottom: solid 1px var(--nb-c-component-border);
+        background: var(--nb-c-surface);
+        border-bottom: solid 1px var(--nb-c-border);
       }
     }
   }

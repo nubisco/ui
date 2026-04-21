@@ -38,6 +38,11 @@
       <main class="nb-shell__main">
         <slot />
       </main>
+
+      <!-- ═══ BOTTOM PANEL (optional) ═══ -->
+      <div v-if="$slots.bottom" class="nb-shell__bottom">
+        <slot name="bottom" />
+      </div>
     </div>
 
     <!-- ═══ INSPECTOR (optional third column) ═══ -->
@@ -222,6 +227,14 @@ withDefaults(defineProps<IShellProps>(), {
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Bottom panel ──────────────────────────────────────────────────────────────
+
+.nb-shell__bottom {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
 }
