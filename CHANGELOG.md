@@ -1,3 +1,10 @@
+## [1.12.1](https://github.com/nubisco/ui/compare/v1.12.0...v1.12.1) (2026-04-21)
+
+
+### Bug Fixes
+
+* **theme:** adapt more components to the layer system ([90c65de](https://github.com/nubisco/ui/commit/90c65de98f8fae98b8a5b7afff9689c6302e573b))
+
 # [1.12.0](https://github.com/nubisco/ui/compare/v1.11.0...v1.12.0) (2026-04-20)
 
 
