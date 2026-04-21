@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/nubisco/ui/compare/v1.12.1...v1.13.0) (2026-04-21)
+
+
+### Features
+
+* **components:** add NbBottomPanel, NbBlueprint, NbBlueprintCard ([8c8e400](https://github.com/nubisco/ui/commit/8c8e40077f4a153eaebf6d52860d40790da3d3e8)), closes [#bottom](https://github.com/nubisco/ui/issues/bottom) [#bottom](https://github.com/nubisco/ui/issues/bottom)
+
 ## [1.12.1](https://github.com/nubisco/ui/compare/v1.12.0...v1.12.1) (2026-04-21)
 
 
