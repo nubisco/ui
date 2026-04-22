@@ -28,6 +28,7 @@ $zIndexesRoot: (
   tableheader: #{calc(var(--nb-zindex-root) + 5)},
   select: #{calc(var(--nb-zindex-root) + 10)},
   dropdown: #{calc(var(--nb-zindex-root) + 10)},
+  menu: #{calc(var(--nb-zindex-dropdown) + 5)},
   pageheader: #{calc(var(--nb-zindex-dropdown) + 1)},
   splitviewhandle: #{calc(var(--nb-zindex-dropdown) + 2)},
   // debug sits above all page-level overlays (dropdowns, split handles) but below app chrome
@@ -38,6 +39,7 @@ $zIndexesRoot: (
   navigation: #{calc(var(--nb-zindex-root) + 100)},
   backdrop: #{calc(var(--nb-zindex-navigation) + 200)},
   modal: #{calc(var(--nb-zindex-backdrop) + 1)},
+  command-palette: #{calc(var(--nb-zindex-modal) + 25)},
   toast: #{calc(var(--nb-zindex-modal) + 50)},
   tooltip: #{calc(var(--nb-zindex-modal) + 100)},
 ) !default;

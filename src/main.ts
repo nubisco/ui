@@ -22,6 +22,25 @@ export { default as NbIcon } from './components/Icon.vue'
 export { default as NbJsonTree } from './components/JsonTree.vue'
 export { default as NbLineChart } from './components/Charts/LineChart.vue'
 export { default as NbLabel } from './components/Label.vue'
+export { default as NbMenu } from './components/Menu.vue'
+export { default as NbMenuBar } from './components/MenuBar.vue'
+export { default as NbMenuBarItem } from './components/MenuBarItem.vue'
+export { default as NbMenuItem } from './components/MenuItem.vue'
+export { default as NbMenuDivider } from './components/MenuDivider.vue'
+export { default as NbSubmenu } from './components/Submenu.vue'
+export { default as NbCommandPalette } from './components/CommandPalette.vue'
+export type {
+  IMenuProps,
+  IMenuItemProps,
+  ISubmenuProps,
+  IMenuBarProps,
+  TMenuItemSize,
+} from './components/Menu.d'
+export type {
+  ICommand,
+  ICommandPaletteProps,
+  ICommandPaletteState,
+} from './components/CommandPalette.d'
 export { default as NbMessage } from './components/Message.vue'
 export { default as NbModal } from './components/Modal.vue'
 export { default as NbPanel } from './components/Panel.vue'
@@ -50,6 +69,13 @@ export type {
 
 // Directives
 export { default as nbTooltipDirective } from './directives/ToolTip.directive'
+
+// Composables
+export { useCommandPalette } from './composables/useCommandPalette.composable'
+export { useContextMenu } from './composables/useContextMenu.composable'
+
+// Plugins
+export { NbCommandPalettePlugin } from './plugins/commandPalette'
 
 // Labs plugin (experimental components)
 export { default as NubiscoUILabs } from './labs'

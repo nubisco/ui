@@ -12,7 +12,7 @@ import { rulersDirective } from './directives/rulers'
 import '@nubisco/ui/styles'
 // import '@nubisco/ui/dist/ui.css'
 
-import NubiscoUI, { NubiscoUILabs } from '../../../src'
+import NubiscoUI, { NubiscoUILabs, NbCommandPalettePlugin } from '../../../src'
 
 export default {
   extends: DefaultTheme,
@@ -34,5 +34,6 @@ export default {
     )
     app.use(NubiscoUI)
     app.use(NubiscoUILabs)
+    app.use(NbCommandPalettePlugin)
   },
 }

@@ -22,6 +22,11 @@
       <div v-if="$slots.notification" class="nb-shell__notification">
         <slot name="notification" />
       </div>
+
+      <div v-if="$slots.menubar" class="nb-shell__menubar">
+        <slot name="menubar" />
+      </div>
+
       <div class="nb-shell__topbar">
         <div class="nb-shell__topbar-left">
           <slot name="topbar-left" />
@@ -183,6 +188,12 @@ withDefaults(defineProps<IShellProps>(), {
 
 .nb-shell__notification {
   flex-shrink: 0;
+}
+
+.nb-shell__menubar {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--nb-c-border);
+  background: var(--nb-c-surface);
 }
 
 .nb-shell__topbar {

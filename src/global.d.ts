@@ -10,6 +10,7 @@ import Breadcrumbs from './components/Breadcrumbs.vue'
 import Button from './components/Button.vue'
 import Checkbox from './components/Checkbox.vue'
 import ColorStrip from './components/ColorStrip.vue'
+import CommandPalette from './components/CommandPalette.vue'
 import FileUploader from './components/FileUploader.vue'
 import Flag from './components/Flag.vue'
 import Form from './components/Form.vue'
@@ -19,6 +20,11 @@ import ImageCropper from './components/ImageCropper.vue'
 import JsonTree from './components/JsonTree.vue'
 import Label from './components/Label.vue'
 import LineChart from './components/Charts/LineChart.vue'
+import Menu from './components/Menu.vue'
+import MenuBar from './components/MenuBar.vue'
+import MenuBarItem from './components/MenuBarItem.vue'
+import MenuDivider from './components/MenuDivider.vue'
+import MenuItem from './components/MenuItem.vue'
 import Message from './components/Message.vue'
 import Modal from './components/Modal.vue'
 import NumberInput from './components/NumberInput.vue'
@@ -30,6 +36,7 @@ import Shell from './components/Shell.vue'
 import SidebarLink from './components/SidebarLink.vue'
 import Slider from './components/Slider.vue'
 import Sparkline from './components/Charts/Sparkline.vue'
+import Submenu from './components/Submenu.vue'
 import Switch from './components/Switch.vue'
 import TextInput from './components/TextInput.vue'
 import Toast from './components/Toast.vue'
@@ -46,6 +53,7 @@ declare module 'vue' {
     NbButton: typeof Button
     NbCheckbox: typeof Checkbox
     NbColorStrip: typeof ColorStrip
+    NbCommandPalette: typeof CommandPalette
     NbFileUploader: typeof FileUploader
     NbFlag: typeof Flag
     NbForm: typeof Form
@@ -55,6 +63,11 @@ declare module 'vue' {
     NbJsonTree: typeof JsonTree
     NbLabel: typeof Label
     NbLineChart: typeof LineChart
+    NbMenu: typeof Menu
+    NbMenuBar: typeof MenuBar
+    NbMenuBarItem: typeof MenuBarItem
+    NbMenuDivider: typeof MenuDivider
+    NbMenuItem: typeof MenuItem
     NbMessage: typeof Message
     NbModal: typeof Modal
     NbNumberInput: typeof NumberInput
@@ -66,6 +79,7 @@ declare module 'vue' {
     NbSidebarLink: typeof SidebarLink
     NbSlider: typeof Slider
     NbSparkline: typeof Sparkline
+    NbSubmenu: typeof Submenu
     NbSwitch: typeof Switch
     NbTextInput: typeof TextInput
     NbToast: typeof Toast

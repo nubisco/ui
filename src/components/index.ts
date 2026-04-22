@@ -15,6 +15,13 @@ import NbImageCropper from './ImageCropper.vue'
 import NbJsonTree from './JsonTree.vue'
 import NbLineChart from './Charts/LineChart.vue'
 import NbLabel from './Label.vue'
+import NbMenu from './Menu.vue'
+import NbMenuBar from './MenuBar.vue'
+import NbMenuBarItem from './MenuBarItem.vue'
+import NbMenuItem from './MenuItem.vue'
+import NbMenuDivider from './MenuDivider.vue'
+import NbSubmenu from './Submenu.vue'
+import NbCommandPalette from './CommandPalette.vue'
 import NbMessage from './Message.vue'
 import NbModal from './Modal.vue'
 import NbNumberInput from './NumberInput.vue'
@@ -50,6 +57,13 @@ const components = {
   NbJsonTree,
   NbLabel,
   NbLineChart,
+  NbMenu,
+  NbMenuBar,
+  NbMenuBarItem,
+  NbMenuItem,
+  NbMenuDivider,
+  NbSubmenu,
+  NbCommandPalette,
   NbMessage,
   NbModal,
   NbNumberInput,
