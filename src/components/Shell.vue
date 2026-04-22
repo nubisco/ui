@@ -237,6 +237,19 @@ withDefaults(defineProps<IShellProps>(), {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+}
+
+// When the bottom panel is maximized, collapse the main area so the panel
+// fills the body below the topbar. `:has()` lets the parent react to the
+// size class set on the child NbBottomPanel.
+.nb-shell__body:has(.nb-bottom-panel.full) {
+  .nb-shell__main {
+    display: none;
+  }
+  .nb-shell__bottom {
+    flex: 1 1 0;
+  }
 }
 
 // ── Inspector ─────────────────────────────────────────────────────────────────
