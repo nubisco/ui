@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/nubisco/ui/compare/v1.14.0...v1.15.0) (2026-04-22)
+
+
+### Features
+
+* **components:** add Tree and TreeNode components ([65a727d](https://github.com/nubisco/ui/commit/65a727de4e36aab1298d14fb8e2b7807adda13e3))
+
 # [1.14.0](https://github.com/nubisco/ui/compare/v1.13.1...v1.14.0) (2026-04-22)
 
 
