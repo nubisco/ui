@@ -192,6 +192,10 @@ export default withMermaid(
                     ],
                   },
                   { text: 'Checkbox', link: '/ui/components/checkbox' },
+                  {
+                    text: 'Command Palette',
+                    link: '/ui/components/command-palette',
+                  },
                   { text: 'Color Strip', link: '/ui/components/color-strip' },
                   {
                     text: 'File Uploader',
@@ -206,6 +210,8 @@ export default withMermaid(
                   },
                   { text: 'JSON Tree', link: '/ui/components/json-tree' },
                   { text: 'Label', link: '/ui/components/label' },
+                  { text: 'Menu', link: '/ui/components/menu' },
+                  { text: 'Menu Bar', link: '/ui/components/menu-bar' },
                   { text: 'Message', link: '/ui/components/message' },
                   { text: 'Modal', link: '/ui/components/modal' },
                   { text: 'Number Input', link: '/ui/components/number-input' },
@@ -222,6 +228,14 @@ export default withMermaid(
               {
                 text: 'Composables',
                 items: [
+                  {
+                    text: 'useCommandPalette',
+                    link: '/ui/composables/use-command-palette',
+                  },
+                  {
+                    text: 'useContextMenu',
+                    link: '/ui/composables/use-context-menu',
+                  },
                   {
                     text: 'useStableId',
                     link: '/ui/composables/use-stable-id',
