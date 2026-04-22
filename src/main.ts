@@ -57,6 +57,16 @@ export { default as NbSelect } from './components/Select.vue'
 export { default as NbTextInput } from './components/TextInput.vue'
 export type { ISelectOption, ISelectProps } from './components/Select.d'
 
+export { default as NbTree } from './components/Tree.vue'
+export { default as NbTreeNode } from './components/TreeNode.vue'
+export type {
+  ITreeProps,
+  ITreeNodeProps,
+  ITreeContext,
+  ITreeDropEvent,
+  ITreeDragState,
+  TTreeDropPosition,
+} from './components/Tree.d'
 export { default as NbBottomPanel } from './components/BottomPanel.vue'
 export type { TBottomPanelSize } from './components/BottomPanel.d'
 export { default as NbBlueprint } from './components/Blueprint.vue'
