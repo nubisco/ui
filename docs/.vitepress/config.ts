@@ -169,6 +169,11 @@ export default withMermaid(
                 items: [
                   { text: 'AI Label', link: '/ui/components/ai-label' },
                   { text: 'Badge', link: '/ui/components/badge' },
+                  { text: 'Blueprint', link: '/ui/components/blueprint' },
+                  {
+                    text: 'Blueprint Card',
+                    link: '/ui/components/blueprint-card',
+                  },
                   { text: 'Button', link: '/ui/components/button/button' },
                   {
                     text: 'Charts',
