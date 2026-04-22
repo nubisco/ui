@@ -40,6 +40,8 @@ import Submenu from './components/Submenu.vue'
 import Switch from './components/Switch.vue'
 import TextInput from './components/TextInput.vue'
 import Toast from './components/Toast.vue'
+import Tree from './components/Tree.vue'
+import TreeNode from './components/TreeNode.vue'
 
 declare module 'vue' {
   interface IGlobalComponents {
@@ -83,6 +85,8 @@ declare module 'vue' {
     NbSwitch: typeof Switch
     NbTextInput: typeof TextInput
     NbToast: typeof Toast
+    NbTree: typeof Tree
+    NbTreeNode: typeof TreeNode
   }
 }
 
