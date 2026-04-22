@@ -133,6 +133,92 @@ The `#fixedbar` slot renders a non-scrolling bar between the topbar and the main
 </template>
 ```
 
+## Bottom panel
+
+The `#bottom` slot renders a panel pinned to the bottom of the body, between the main content and the browser edge — useful for IDE-like interfaces that need a debug console, logs, a terminal, or a secondary workspace. Like the notification and fixedbar slots, it is only rendered when populated.
+
+Pair it with `NbBottomPanel`, a companion component that provides a header with a title, a toolbar slot, and four size states (`collapsed`, `default`, `half`, `full`). The size can be controlled via `v-model:size`.
+
+<preview>
+  <div style="height: 480px; border: 1px solid var(--nb-c-border, #e8e8f0); border-radius: 8px; overflow: hidden;">
+    <NbShell style="height: 100%">
+      <template #sidebar-logo>
+        <div style="width: 28px; height: 28px; background: #a78bfa; border-radius: 6px;" />
+      </template>
+      <template #topbar-left>
+        <strong>Editor</strong>
+      </template>
+      <p style="margin: 0; color: var(--nb-c-text-secondary, #666);">Main workspace. Use the icon buttons at the right edge of the panel header to switch between collapsed, default, half and full sizes.</p>
+      <template #bottom>
+        <NbBottomPanel v-model:size="panelSize" title="Console">
+          <template #toolbar>
+            <NbButton size="xxs" variant="ghost">Clear</NbButton>
+          </template>
+          <div style="padding: 0.75rem 1rem; font-family: var(--nb-font-mono, monospace); font-size: 0.8125rem; color: var(--nb-c-text-secondary, #666);">
+            <div>› ready in 127ms</div>
+            <div>› watching for file changes…</div>
+          </div>
+        </NbBottomPanel>
+      </template>
+    </NbShell>
+  </div>
+</preview>
+
+```vue
+<template>
+  <NbShell>
+    <template #topbar-left>
+      <strong>Editor</strong>
+    </template>
+    <p>Main workspace.</p>
+    <template #bottom>
+      <NbBottomPanel v-model:size="panelSize" title="Console">
+        <template #toolbar>
+          <NbButton size="xxs" variant="ghost" @click="clear">Clear</NbButton>
+        </template>
+        <pre>{{ logs }}</pre>
+      </NbBottomPanel>
+    </template>
+  </NbShell>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import type { TBottomPanelSize } from '@nubisco/ui'
+const panelSize = ref<TBottomPanelSize>('default')
+</script>
+```
+
+### NbBottomPanel props
+
+| Prop    | Type                                           | Default     | Description                                  |
+| ------- | ---------------------------------------------- | ----------- | -------------------------------------------- |
+| `size`  | `'collapsed' \| 'default' \| 'half' \| 'full'` | `'default'` | Current panel size. Supports `v-model:size`. |
+| `title` | `string`                                       | `''`        | Label shown in the header.                   |
+
+### NbBottomPanel events
+
+| Event         | Payload            | Description                                 |
+| ------------- | ------------------ | ------------------------------------------- |
+| `update:size` | `TBottomPanelSize` | Emitted when the user clicks a size button. |
+
+### NbBottomPanel slots
+
+| Slot      | Description                                                                                     |
+| --------- | ----------------------------------------------------------------------------------------------- |
+| `default` | Panel body. Hidden while `size === 'collapsed'` — only the header remains visible.              |
+| `title`   | Custom title content. Replaces the plain text rendered by the `title` prop when both are given. |
+| `toolbar` | Center slot for actions like filter toggles or clear buttons.                                   |
+
+### Sizes
+
+| Size        | Height                       | Notes                                                                          |
+| ----------- | ---------------------------- | ------------------------------------------------------------------------------ |
+| `collapsed` | Header only (`28px`)         | Body is unmounted — cheap to toggle frequently.                                |
+| `default`   | `30vh` (min `80px`)          | Typical starting size.                                                         |
+| `half`      | `50vh`                       | Roughly half of the body height.                                               |
+| `full`      | Remaining body height (flex) | The main content area is hidden and the panel fills the body below the topbar. |
+
 ## Inspector panel
 
 The inspector is an optional third column controlled by the `inspectorVisible` and `inspectorExpanded` props. It animates in from the right and is typically used for detail views or editing side panels.
@@ -227,6 +313,7 @@ const expanded = ref(false)
 | `topbar-right`   | Right side of the topbar (e.g. actions, user menu)                                                   |
 | `fixedbar`       | Non-scrolling bar between topbar and main content (e.g. tabs, filters). Only rendered when populated |
 | `default`        | Main scrollable content area                                                                         |
+| `bottom`         | Panel pinned to the bottom of the body (typically an `NbBottomPanel`). Only rendered when populated  |
 | `inspector`      | Content for the optional inspector side panel                                                        |
 
 ## CSS Custom Properties
@@ -249,4 +336,5 @@ import { ref } from 'vue'
 const showNotification = ref(true)
 const inspectorOpen = ref(false)
 const inspectorExpanded = ref(false)
+const panelSize = ref('default')
 </script>
