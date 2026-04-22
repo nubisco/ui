@@ -1,3 +1,10 @@
+## [1.13.1](https://github.com/nubisco/ui/compare/v1.13.0...v1.13.1) (2026-04-22)
+
+
+### Bug Fixes
+
+* **shell:** maximize the bottom panel over the main area ([3ef265a](https://github.com/nubisco/ui/commit/3ef265a04eefa1869afc1bd4e07920b22a484704))
+
 # [1.13.0](https://github.com/nubisco/ui/compare/v1.12.1...v1.13.0) (2026-04-21)
 
 
