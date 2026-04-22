@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/nubisco/ui/compare/v1.13.1...v1.14.0) (2026-04-22)
+
+
+### Features
+
+* **components:** add Menu system, MenuBar, and Command Palette ([d370eab](https://github.com/nubisco/ui/commit/d370eab04a294b22291f5255c8fe7484fe6a7225)), closes [#menubar](https://github.com/nubisco/ui/issues/menubar)
+
 ## [1.13.1](https://github.com/nubisco/ui/compare/v1.13.0...v1.13.1) (2026-04-22)
 
 
