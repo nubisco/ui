@@ -1,3 +1,10 @@
+## [1.16.1](https://github.com/nubisco/ui/compare/v1.16.0...v1.16.1) (2026-04-23)
+
+
+### Bug Fixes
+
+* **TreeNode:** toggle expand/collapse on row click, not just chevron ([d0bf506](https://github.com/nubisco/ui/commit/d0bf50612d0f198aff3f590b5d451a95427796d8))
+
 # [1.16.0](https://github.com/nubisco/ui/compare/v1.15.1...v1.16.0) (2026-04-23)
 
 
