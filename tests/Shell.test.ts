@@ -11,9 +11,17 @@ describe('Shell', () => {
     expect(wrapper.find('.nb-shell').exists()).toBe(true)
   })
 
-  it('renders the sidebar', () => {
-    const wrapper = createWrapper()
+  it('renders the sidebar when sidebar slots are used', () => {
+    const wrapper = createWrapper(
+      {},
+      { 'sidebar-logo': '<img src="/logo.svg" />' },
+    )
     expect(wrapper.find('.nb-shell__sidebar').exists()).toBe(true)
+  })
+
+  it('hides the sidebar when no sidebar slots are used', () => {
+    const wrapper = createWrapper()
+    expect(wrapper.find('.nb-shell__sidebar').exists()).toBe(false)
   })
 
   it('renders sidebar-logo slot content', () => {

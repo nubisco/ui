@@ -1,66 +1,89 @@
 <template>
-  <div class="nb-shell">
-    <!-- ═══ SIDEBAR ═══ -->
-    <nav class="nb-shell__sidebar">
-      <div class="nb-shell__sidebar-logo">
-        <slot name="sidebar-logo" />
-      </div>
-
-      <div class="nb-shell__sidebar-nav">
-        <slot name="sidebar-nav" />
-      </div>
-
-      <div class="nb-shell__sidebar-spacer" />
-
-      <div class="nb-shell__sidebar-bottom">
-        <slot name="sidebar-bottom" />
-      </div>
-    </nav>
-
-    <!-- ═══ BODY (topbar + main) ═══ -->
-    <div class="nb-shell__body">
-      <div v-if="$slots.notification" class="nb-shell__notification">
-        <slot name="notification" />
-      </div>
-
-      <div v-if="$slots.menubar" class="nb-shell__menubar">
-        <slot name="menubar" />
-      </div>
-
-      <div class="nb-shell__topbar">
-        <div class="nb-shell__topbar-left">
-          <slot name="topbar-left" />
-        </div>
-        <div class="nb-shell__topbar-right">
-          <slot name="topbar-right" />
-        </div>
-      </div>
-
-      <div v-if="hasFixedbarContent" class="nb-shell__fixedbar">
-        <slot name="fixedbar" />
-      </div>
-
-      <main class="nb-shell__main">
-        <slot />
-      </main>
-
-      <!-- ═══ BOTTOM PANEL (optional) ═══ -->
-      <div v-if="$slots.bottom" class="nb-shell__bottom">
-        <slot name="bottom" />
-      </div>
+  <div class="nb-shell" :class="{ 'nb-shell--no-sidebar': !showSidebar }">
+    <!-- ═══ OUTER LAYOUT: vertical stack ═══
+         outer-menu spans the FULL width (above sidebar + body + inspector).
+         Use for app-level menu bars that need to span everything. -->
+    <div v-if="hasSlotContent('outer-menu')" class="nb-shell__outer-menu">
+      <slot name="outer-menu" />
     </div>
 
-    <!-- ═══ INSPECTOR (optional third column) ═══ -->
-    <aside
-      class="nb-shell__inspector"
-      :class="{
-        'nb-shell__inspector--visible': inspectorVisible,
-        'nb-shell__inspector--expanded': inspectorVisible && inspectorExpanded,
-        [`nb-shell__inspector--${inspectorSize}`]: inspectorVisible,
-      }"
-    >
-      <slot name="inspector" />
-    </aside>
+    <!-- ═══ MIDDLE LAYER: sidebar | (inner-menu + content + inspector) ═══ -->
+    <div class="nb-shell__middle">
+      <!-- ═══ SIDEBAR (auto-hidden when no slots used) ═══ -->
+      <nav v-if="showSidebar" class="nb-shell__sidebar">
+        <div class="nb-shell__sidebar-logo">
+          <slot name="sidebar-logo" />
+        </div>
+        <div class="nb-shell__sidebar-nav">
+          <slot name="sidebar-nav" />
+        </div>
+        <div class="nb-shell__sidebar-spacer" />
+        <div class="nb-shell__sidebar-bottom">
+          <slot name="sidebar-bottom" />
+        </div>
+      </nav>
+
+      <!-- ═══ RIGHT AREA: inner-menu + body + inspector side by side ═══ -->
+      <div class="nb-shell__right">
+        <!-- inner-menu spans body + inspector (but not sidebar) -->
+        <div v-if="hasSlotContent('inner-menu')" class="nb-shell__inner-menu">
+          <slot name="inner-menu" />
+        </div>
+
+        <!-- Content + Inspector row -->
+        <div class="nb-shell__content-row">
+          <!-- ═══ BODY (topbar + main + bottom) ═══ -->
+          <div class="nb-shell__body">
+            <div v-if="$slots.notification" class="nb-shell__notification">
+              <slot name="notification" />
+            </div>
+
+            <!-- Legacy menubar slot (inside body, does NOT span inspector) -->
+            <div v-if="$slots.menubar" class="nb-shell__menubar">
+              <slot name="menubar" />
+            </div>
+
+            <div class="nb-shell__topbar">
+              <div class="nb-shell__topbar-left">
+                <slot name="topbar-left" />
+              </div>
+              <div class="nb-shell__topbar-right">
+                <slot name="topbar-right" />
+              </div>
+            </div>
+
+            <div v-if="hasSlotContent('fixedbar')" class="nb-shell__fixedbar">
+              <slot name="fixedbar" />
+            </div>
+
+            <main
+              class="nb-shell__main"
+              :class="{ 'nb-shell__main--no-padding': !mainPadding }"
+            >
+              <slot />
+            </main>
+
+            <!-- ═══ BOTTOM PANEL (optional) ═══ -->
+            <div v-if="$slots.bottom" class="nb-shell__bottom">
+              <slot name="bottom" />
+            </div>
+          </div>
+
+          <!-- ═══ INSPECTOR (optional column) ═══ -->
+          <aside
+            class="nb-shell__inspector"
+            :class="{
+              'nb-shell__inspector--visible': inspectorVisible,
+              'nb-shell__inspector--expanded':
+                inspectorVisible && inspectorExpanded,
+              [`nb-shell__inspector--${inspectorSize}`]: inspectorVisible,
+            }"
+          >
+            <slot name="inspector" />
+          </aside>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -86,15 +109,27 @@ function hasRenderableContent(nodes: VNode[]): boolean {
   })
 }
 
-const hasFixedbarContent = computed(() => {
-  const content = slots.fixedbar?.()
+/** Check if a named slot has renderable content */
+function hasSlotContent(name: string): boolean {
+  const content = (slots as Record<string, (() => VNode[]) | undefined>)[
+    name
+  ]?.()
   return content ? hasRenderableContent(content) : false
+}
+
+/** Check if any sidebar slot has renderable content */
+const showSidebar = computed(() => {
+  for (const name of ['sidebar-logo', 'sidebar-nav', 'sidebar-bottom']) {
+    if (hasSlotContent(name)) return true
+  }
+  return false
 })
 
 withDefaults(defineProps<IShellProps>(), {
   inspectorVisible: false,
   inspectorExpanded: false,
   inspectorSize: 'md',
+  mainPadding: true,
 })
 </script>
 
@@ -125,9 +160,29 @@ withDefaults(defineProps<IShellProps>(), {
   // ── Layout ────────────────────────────────────────────────────────────────
 
   display: flex;
+  flex-direction: column;
   height: 100vh;
   overflow: hidden;
   background: var(--nb-c-surface-raised);
+}
+
+// ── Outer menu (full width, above everything) ─────────────────────────────────
+
+.nb-shell__outer-menu {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--nb-c-border);
+  background: var(--nb-c-surface);
+  overflow: visible; // menus must expand
+  z-index: 200;
+}
+
+// ── Middle layer (sidebar + right area) ───────────────────────────────────────
+
+.nb-shell__middle {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
 }
 
 // ── Sidebar ────────────────────────────────────────────────────────────────────
@@ -175,6 +230,35 @@ withDefaults(defineProps<IShellProps>(), {
   gap: 2px;
   width: 100%;
   padding: 0 8px 0.5rem;
+}
+
+// ── Right area (inner-menu + content row) ─────────────────────────────────────
+
+.nb-shell__right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+// ── Inner menu (spans body + inspector, but not sidebar) ──────────────────────
+
+.nb-shell__inner-menu {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--nb-c-border);
+  background: var(--nb-c-surface);
+  overflow: visible; // menus must expand
+  z-index: 150;
+}
+
+// ── Content row (body + inspector side by side) ───────────────────────────────
+
+.nb-shell__content-row {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
 }
 
 // ── Body ───────────────────────────────────────────────────────────────────────
@@ -242,6 +326,11 @@ withDefaults(defineProps<IShellProps>(), {
   min-height: 0;
   display: flex;
   flex-direction: column;
+
+  &--no-padding {
+    padding: 0;
+    overflow: hidden;
+  }
 }
 
 // ── Bottom panel ──────────────────────────────────────────────────────────────
@@ -275,7 +364,6 @@ withDefaults(defineProps<IShellProps>(), {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 100%;
   transition:
     width 0.2s ease,
     border-color 0.2s ease;
