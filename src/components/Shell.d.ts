@@ -1,3 +1,5 @@
+type TInspectorSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+
 interface IShellProps {
   /**
    * Whether the inspector column is visible.
@@ -10,6 +12,16 @@ interface IShellProps {
    * @default false
    */
   inspectorExpanded?: boolean
+  /**
+   * Controls the width of the inspector panel.
+   * - xs: 288px
+   * - sm: 360px
+   * - md: 560px (current default, backwards compatible)
+   * - lg: 50vw
+   * - xl: 75vw
+   * @default 'md'
+   */
+  inspectorSize?: TInspectorSize
 }
 
-export { IShellProps }
+export { IShellProps, TInspectorSize }

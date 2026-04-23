@@ -56,6 +56,7 @@
       :class="{
         'nb-shell__inspector--visible': inspectorVisible,
         'nb-shell__inspector--expanded': inspectorVisible && inspectorExpanded,
+        [`nb-shell__inspector--${inspectorSize}`]: inspectorVisible,
       }"
     >
       <slot name="inspector" />
@@ -93,6 +94,7 @@ const hasFixedbarContent = computed(() => {
 withDefaults(defineProps<IShellProps>(), {
   inspectorVisible: false,
   inspectorExpanded: false,
+  inspectorSize: 'md',
 })
 </script>
 
@@ -281,6 +283,26 @@ withDefaults(defineProps<IShellProps>(), {
   &--visible {
     width: var(--nb-shell-inspector-width);
     border-left: var(--nb-shell-inspector-border);
+  }
+
+  &--xs {
+    --nb-shell-inspector-width: 288px;
+  }
+
+  &--sm {
+    --nb-shell-inspector-width: 360px;
+  }
+
+  &--md {
+    --nb-shell-inspector-width: 560px;
+  }
+
+  &--lg {
+    --nb-shell-inspector-width: 50vw;
+  }
+
+  &--xl {
+    --nb-shell-inspector-width: 75vw;
   }
 
   &--expanded {
