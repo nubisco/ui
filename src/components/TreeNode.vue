@@ -54,6 +54,10 @@ function handleClick() {
   if (props.disabled || !tree) return
   tree.select(props.id)
   emit('select', props.id)
+  if (hasChildren.value) {
+    tree.toggle(props.id)
+    emit('toggle', props.id, !isExpanded.value)
+  }
 }
 
 function handleChevronClick(e: Event) {
