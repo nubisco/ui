@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/nubisco/ui/compare/v1.16.1...v1.17.0) (2026-04-23)
+
+
+### Features
+
+* NbShell layout redesign — outer-menu, inner-menu, auto-hide sidebar ([b0a83de](https://github.com/nubisco/ui/commit/b0a83de2946bc231895735ba9e45b49a3c84e964))
+
 ## [1.16.1](https://github.com/nubisco/ui/compare/v1.16.0...v1.16.1) (2026-04-23)
 
 
