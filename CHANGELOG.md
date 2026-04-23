@@ -1,3 +1,10 @@
+## [1.15.1](https://github.com/nubisco/ui/compare/v1.15.0...v1.15.1) (2026-04-23)
+
+
+### Bug Fixes
+
+* **Menu:** clamp max-height to available viewport space ([58f4434](https://github.com/nubisco/ui/commit/58f44341c545bbbe9dfa54a9c944d6fbdad08e7b))
+
 # [1.15.0](https://github.com/nubisco/ui/compare/v1.14.0...v1.15.0) (2026-04-22)
 
 
