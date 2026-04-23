@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/nubisco/ui/compare/v1.17.0...v1.18.0) (2026-04-23)
+
+
+### Features
+
+* add NbShellPanel component, shell docs for menu slots, fix MenuBar toggle and Slider validation ([52e2db4](https://github.com/nubisco/ui/commit/52e2db4db1c3690cd402df8234e58673975765d2)), closes [#bottom](https://github.com/nubisco/ui/issues/bottom)
+
 # [1.17.0](https://github.com/nubisco/ui/compare/v1.16.1...v1.17.0) (2026-04-23)
 
 
