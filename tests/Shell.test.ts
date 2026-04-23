@@ -125,6 +125,30 @@ describe('Shell', () => {
     expect(wrapper.find('.nb-shell__inspector--expanded').exists()).toBe(false)
   })
 
+  it('defaults inspectorSize to md', () => {
+    const wrapper = createWrapper({ inspectorVisible: true })
+    expect(wrapper.find('.nb-shell__inspector--md').exists()).toBe(true)
+  })
+
+  it.each(['xs', 'sm', 'md', 'lg', 'xl'] as const)(
+    'applies inspector size class --%s when visible',
+    (size) => {
+      const wrapper = createWrapper({
+        inspectorVisible: true,
+        inspectorSize: size,
+      })
+      expect(wrapper.find(`.nb-shell__inspector--${size}`).exists()).toBe(true)
+    },
+  )
+
+  it('does not apply inspector size class when not visible', () => {
+    const wrapper = createWrapper({
+      inspectorVisible: false,
+      inspectorSize: 'sm',
+    })
+    expect(wrapper.find('.nb-shell__inspector--sm').exists()).toBe(false)
+  })
+
   it('renders inspector slot content', () => {
     const wrapper = createWrapper(
       { inspectorVisible: true },
