@@ -7,7 +7,7 @@
     :class="{ 'nb-menubar-item--active': isActive }"
     :aria-haspopup="'menu'"
     :aria-expanded="isActive"
-    @click="onTriggerClick"
+    @mousedown="onTriggerMousedown"
     @mouseenter="onTriggerHover"
   >
     <slot name="trigger">{{ label }}</slot>
@@ -90,7 +90,12 @@ function closeMenu() {
   // Handled by NbMenu via the isActive computed
 }
 
-function onTriggerClick() {
+function onTriggerMousedown(e: MouseEvent) {
+  // Stop propagation so the menu's document-level mousedown handler
+  // (onClickOutside) does not see this event and close the menu
+  // before we can toggle it.
+  e.stopPropagation()
+  e.preventDefault()
   if (isActive.value) {
     menubar?.setActiveMenu(null)
   } else {

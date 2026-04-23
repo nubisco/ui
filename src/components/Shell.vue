@@ -344,8 +344,10 @@ withDefaults(defineProps<IShellProps>(), {
 
 // When the bottom panel is maximized, collapse the main area so the panel
 // fills the body below the topbar. `:has()` lets the parent react to the
-// size class set on the child NbBottomPanel.
-.nb-shell__body:has(.nb-bottom-panel.full) {
+// size class set on the child. Scoped to .nb-shell__bottom so that panels
+// placed inside the main content area do not trigger this rule.
+.nb-shell__body:has(> .nb-shell__bottom > .nb-bottom-panel.full),
+.nb-shell__body:has(> .nb-shell__bottom > .nb-shell-panel.full) {
   .nb-shell__main {
     display: none;
   }

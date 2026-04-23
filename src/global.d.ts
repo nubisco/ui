@@ -33,6 +33,7 @@ import PieChart from './components/Charts/PieChart.vue'
 import Radio from './components/Radio.vue'
 import Select from './components/Select.vue'
 import Shell from './components/Shell.vue'
+import ShellPanel from './components/ShellPanel.vue'
 import SidebarLink from './components/SidebarLink.vue'
 import Slider from './components/Slider.vue'
 import Sparkline from './components/Charts/Sparkline.vue'
@@ -78,6 +79,7 @@ declare module 'vue' {
     NbRadio: typeof Radio
     NbSelect: typeof Select
     NbShell: typeof Shell
+    NbShellPanel: typeof ShellPanel
     NbSidebarLink: typeof SidebarLink
     NbSlider: typeof Slider
     NbSparkline: typeof Sparkline

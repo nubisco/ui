@@ -448,25 +448,29 @@ const trackAreaClasses = computed(() => ({
     // justify-content: center;
     // gap: 3px;
 
-    // Colored underline below track for error/warning
-    &--error .nb-slider__track::after {
-      content: '';
-      position: absolute;
-      bottom: -4px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: var(--nb-c-danger);
+    // Validation: recolor the track and fill
+    &--error .nb-slider__track {
+      background: color-mix(in srgb, var(--nb-c-danger) 30%, transparent);
+
+      .nb-slider__track__fill {
+        background: var(--nb-c-danger);
+      }
+
+      .nb-slider__track__handle {
+        background: var(--nb-c-danger);
+      }
     }
 
-    &--warning .nb-slider__track::after {
-      content: '';
-      position: absolute;
-      bottom: -4px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: var(--nb-c-warning);
+    &--warning .nb-slider__track {
+      background: color-mix(in srgb, var(--nb-c-warning) 30%, transparent);
+
+      .nb-slider__track__fill {
+        background: var(--nb-c-warning);
+      }
+
+      .nb-slider__track__handle {
+        background: var(--nb-c-warning);
+      }
     }
   }
 
