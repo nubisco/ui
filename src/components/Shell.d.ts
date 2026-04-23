@@ -22,6 +22,12 @@ interface IShellProps {
    * @default 'md'
    */
   inspectorSize?: TInspectorSize
+  /**
+   * Whether the main content area has padding.
+   * Set to false for full-bleed content like viewports/canvases.
+   * @default true
+   */
+  mainPadding?: boolean
 }
 
 export { IShellProps, TInspectorSize }
