@@ -165,6 +165,9 @@ function adjustPosition() {
   if (rect.bottom > window.innerHeight) {
     position.top = Math.max(8, window.innerHeight - rect.height - 8)
   }
+  // Clamp max-height so the menu never extends beyond the viewport
+  const availableHeight = window.innerHeight - position.top - 8
+  menuRef.value.style.maxHeight = `${availableHeight}px`
 }
 
 watch(
