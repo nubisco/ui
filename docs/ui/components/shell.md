@@ -133,11 +133,9 @@ The `#fixedbar` slot renders a non-scrolling bar between the topbar and the main
 </template>
 ```
 
-## Bottom panel
+## Bottom slot
 
-The `#bottom` slot renders a panel pinned to the bottom of the body, between the main content and the browser edge — useful for IDE-like interfaces that need a debug console, logs, a terminal, or a secondary workspace. Like the notification and fixedbar slots, it is only rendered when populated.
-
-Pair it with `NbBottomPanel`, a companion component that provides a header with a title, a toolbar slot, and four size states (`collapsed`, `default`, `half`, `full`). The size can be controlled via `v-model:size`.
+The `#bottom` slot is an empty region pinned below the main content area. The shell does not provide any built-in controls here; it is simply a layout slot where you can place any component. A common pattern is to drop an `NbShellPanel` (or the legacy `NbBottomPanel`) inside it to get a resizable, collapsible panel with a header and toolbar. See the [Shell Panel](/ui/components/shell-panel) documentation for details on that component.
 
 <preview>
   <div style="height: 480px; border: 1px solid var(--nb-c-border, #e8e8f0); border-radius: 8px; overflow: hidden;">
@@ -148,17 +146,17 @@ Pair it with `NbBottomPanel`, a companion component that provides a header with 
       <template #topbar-left>
         <strong>Editor</strong>
       </template>
-      <p style="margin: 0; color: var(--nb-c-text-secondary, #666);">Main workspace. Use the icon buttons at the right edge of the panel header to switch between collapsed, default, half and full sizes.</p>
+      <p style="margin: 0; color: var(--nb-c-text-secondary, #666);">Main workspace. The panel below is an NbShellPanel placed into the #bottom slot.</p>
       <template #bottom>
-        <NbBottomPanel v-model:size="panelSize" title="Console">
+        <NbShellPanel v-model:size="panelSize" title="Console">
           <template #toolbar>
             <NbButton size="xxs" variant="ghost">Clear</NbButton>
           </template>
           <div style="padding: 0.75rem 1rem; font-family: var(--nb-font-mono, monospace); font-size: 0.8125rem; color: var(--nb-c-text-secondary, #666);">
-            <div>› ready in 127ms</div>
-            <div>› watching for file changes…</div>
+            <div>> ready in 127ms</div>
+            <div>> watching for file changes...</div>
           </div>
-        </NbBottomPanel>
+        </NbShellPanel>
       </template>
     </NbShell>
   </div>
@@ -172,52 +170,140 @@ Pair it with `NbBottomPanel`, a companion component that provides a header with 
     </template>
     <p>Main workspace.</p>
     <template #bottom>
-      <NbBottomPanel v-model:size="panelSize" title="Console">
+      <NbShellPanel v-model:size="panelSize" title="Console">
         <template #toolbar>
           <NbButton size="xxs" variant="ghost" @click="clear">Clear</NbButton>
         </template>
         <pre>{{ logs }}</pre>
-      </NbBottomPanel>
+      </NbShellPanel>
     </template>
   </NbShell>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { TBottomPanelSize } from '@nubisco/ui'
-const panelSize = ref<TBottomPanelSize>('default')
+import type { TShellPanelSize } from '@nubisco/ui'
+const panelSize = ref<TShellPanelSize>('default')
 </script>
 ```
 
-### NbBottomPanel props
+## Outer menu
 
-| Prop    | Type                                           | Default     | Description                                  |
-| ------- | ---------------------------------------------- | ----------- | -------------------------------------------- |
-| `size`  | `'collapsed' \| 'default' \| 'half' \| 'full'` | `'default'` | Current panel size. Supports `v-model:size`. |
-| `title` | `string`                                       | `''`        | Label shown in the header.                   |
+The `#outer-menu` slot renders a full-width menu bar above everything, spanning the sidebar, body, and inspector. It is ideal for application-level menu bars (File, Edit, View, etc.). The area is only rendered when the slot has content, and uses `overflow: visible` so dropdown menus can expand beyond the bar.
 
-### NbBottomPanel events
+<preview>
+  <div style="height: 360px; border: 1px solid var(--nb-c-border, #e8e8f0); border-radius: 8px; overflow: hidden;">
+    <NbShell>
+      <template #outer-menu>
+        <div style="display: flex; gap: 0; padding: 0 8px; font-size: 0.8125rem;">
+          <button style="padding: 4px 10px; background: none; border: none; color: var(--nb-c-text); cursor: pointer;">File</button>
+          <button style="padding: 4px 10px; background: none; border: none; color: var(--nb-c-text); cursor: pointer;">Edit</button>
+          <button style="padding: 4px 10px; background: none; border: none; color: var(--nb-c-text); cursor: pointer;">View</button>
+          <button style="padding: 4px 10px; background: none; border: none; color: var(--nb-c-text); cursor: pointer;">Help</button>
+        </div>
+      </template>
+      <template #sidebar-logo>
+        <div style="width: 28px; height: 28px; background: #a78bfa; border-radius: 6px;" />
+      </template>
+      <template #sidebar-nav>
+        <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.12); border-radius: 8px;" />
+      </template>
+      <template #topbar-left>
+        <strong>Editor</strong>
+      </template>
+      <p style="margin: 0; color: var(--nb-c-text-secondary, #666);">The outer menu spans the full width above the sidebar and body.</p>
+    </NbShell>
+  </div>
+</preview>
 
-| Event         | Payload            | Description                                 |
-| ------------- | ------------------ | ------------------------------------------- |
-| `update:size` | `TBottomPanelSize` | Emitted when the user clicks a size button. |
+```vue
+<template>
+  <NbShell>
+    <template #outer-menu>
+      <NbMenuBar>
+        <NbMenuBarItem label="File">
+          <NbMenuItem label="New" shortcut="Ctrl+N" />
+          <NbMenuItem label="Open" shortcut="Ctrl+O" />
+          <NbMenuDivider />
+          <NbMenuItem label="Save" shortcut="Ctrl+S" />
+        </NbMenuBarItem>
+        <NbMenuBarItem label="Edit">
+          <NbMenuItem label="Undo" shortcut="Ctrl+Z" />
+          <NbMenuItem label="Redo" shortcut="Ctrl+Shift+Z" />
+        </NbMenuBarItem>
+      </NbMenuBar>
+    </template>
+    <!-- ... other slots ... -->
+  </NbShell>
+</template>
+```
 
-### NbBottomPanel slots
+## Inner menu
 
-| Slot      | Description                                                                                     |
-| --------- | ----------------------------------------------------------------------------------------------- |
-| `default` | Panel body. Hidden while `size === 'collapsed'` — only the header remains visible.              |
-| `title`   | Custom title content. Replaces the plain text rendered by the `title` prop when both are given. |
-| `toolbar` | Center slot for actions like filter toggles or clear buttons.                                   |
+The `#inner-menu` slot renders a menu bar that spans the body and inspector columns but not the sidebar. This is useful when your menu should sit alongside the content area but not overlap the sidebar navigation. Like `#outer-menu`, it only renders when populated and uses `overflow: visible` for dropdown menus.
 
-### Sizes
+<preview>
+  <div style="height: 360px; border: 1px solid var(--nb-c-border, #e8e8f0); border-radius: 8px; overflow: hidden;">
+    <NbShell>
+      <template #sidebar-logo>
+        <div style="width: 28px; height: 28px; background: #a78bfa; border-radius: 6px;" />
+      </template>
+      <template #sidebar-nav>
+        <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.12); border-radius: 8px;" />
+      </template>
+      <template #inner-menu>
+        <div style="display: flex; gap: 0; padding: 0 8px; font-size: 0.8125rem;">
+          <button style="padding: 4px 10px; background: none; border: none; color: var(--nb-c-text); cursor: pointer;">File</button>
+          <button style="padding: 4px 10px; background: none; border: none; color: var(--nb-c-text); cursor: pointer;">Edit</button>
+          <button style="padding: 4px 10px; background: none; border: none; color: var(--nb-c-text); cursor: pointer;">View</button>
+        </div>
+      </template>
+      <template #topbar-left>
+        <strong>Dashboard</strong>
+      </template>
+      <p style="margin: 0; color: var(--nb-c-text-secondary, #666);">The inner menu spans body + inspector, but not the sidebar.</p>
+    </NbShell>
+  </div>
+</preview>
 
-| Size        | Height                       | Notes                                                                          |
-| ----------- | ---------------------------- | ------------------------------------------------------------------------------ |
-| `collapsed` | Header only (`28px`)         | Body is unmounted — cheap to toggle frequently.                                |
-| `default`   | `30vh` (min `80px`)          | Typical starting size.                                                         |
-| `half`      | `50vh`                       | Roughly half of the body height.                                               |
-| `full`      | Remaining body height (flex) | The main content area is hidden and the panel fills the body below the topbar. |
+```vue
+<template>
+  <NbShell>
+    <template #inner-menu>
+      <NbMenuBar>
+        <NbMenuBarItem label="File">
+          <NbMenuItem label="New" />
+          <NbMenuItem label="Open" />
+        </NbMenuBarItem>
+        <NbMenuBarItem label="View">
+          <NbMenuItem label="Zoom In" />
+          <NbMenuItem label="Zoom Out" />
+        </NbMenuBarItem>
+      </NbMenuBar>
+    </template>
+    <!-- ... other slots ... -->
+  </NbShell>
+</template>
+```
+
+## Outer menu vs Inner menu
+
+Use `#outer-menu` when the menu should span the entire application width (including the sidebar column). Use `#inner-menu` when the menu should only span the content area to the right of the sidebar. Both slots can be used simultaneously.
+
+```txt
+ ┌──────────────────────────────────────────────────┐
+ │  outer-menu                                      │
+ ├────────┬─────────────────────────────────────────┤
+ │        │  inner-menu                             │
+ │        ├───────────────────────┬─────────────────┤
+ │sidebar │  notification         │                 │
+ │        │  topbar               │                 │
+ │        │  fixedbar             │    inspector    │
+ │        │  main content         │                 │
+ │        │                       │                 │
+ │        │  bottom               │                 │
+ └────────┴───────────────────────┴─────────────────┘
+```
 
 ## Inspector panel
 
@@ -274,6 +360,150 @@ const expanded = ref(false)
 </script>
 ```
 
+## All slots in use
+
+This example shows every slot populated at once, giving a complete picture of how the layout regions fit together. The shell itself is purely structural: it provides named regions, and you fill them with whatever components you need.
+
+<preview>
+  <div style="height: 540px; border: 1px solid var(--nb-c-border, #e8e8f0); border-radius: 8px; overflow: hidden;">
+    <NbShell :inspector-visible="kitchenInspector" style="height: 100%">
+      <template #outer-menu>
+        <div style="display: flex; gap: 0; padding: 0 8px; font-size: 0.8125rem;">
+          <button style="padding: 4px 10px; background: none; border: none; color: var(--nb-c-text); cursor: pointer;">File</button>
+          <button style="padding: 4px 10px; background: none; border: none; color: var(--nb-c-text); cursor: pointer;">Edit</button>
+          <button style="padding: 4px 10px; background: none; border: none; color: var(--nb-c-text); cursor: pointer;">View</button>
+        </div>
+      </template>
+      <template #sidebar-logo>
+        <div style="width: 28px; height: 28px; background: #a78bfa; border-radius: 6px;" />
+      </template>
+      <template #sidebar-nav>
+        <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.12); border-radius: 8px;" />
+        <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.12); border-radius: 8px;" />
+      </template>
+      <template #sidebar-bottom>
+        <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.12); border-radius: 50%;" />
+      </template>
+      <template #inner-menu>
+        <div style="display: flex; gap: 0; padding: 0 8px; font-size: 0.8125rem;">
+          <button style="padding: 4px 10px; background: none; border: none; color: var(--nb-c-text); cursor: pointer;">Scene</button>
+          <button style="padding: 4px 10px; background: none; border: none; color: var(--nb-c-text); cursor: pointer;">Assets</button>
+        </div>
+      </template>
+      <template #notification>
+        <div style="padding: 0.35rem 1rem; background: #fef3c7; color: #92400e; font-size: 0.8125rem; border-bottom: 1px solid #fde68a;">
+          Unsaved changes.
+        </div>
+      </template>
+      <template #topbar-left>
+        <strong>Project</strong>
+      </template>
+      <template #topbar-right>
+        <NbButton size="sm" variant="secondary" @click="kitchenInspector = !kitchenInspector">
+          {{ kitchenInspector ? 'Close' : 'Open' }} Inspector
+        </NbButton>
+      </template>
+      <template #fixedbar>
+        <div style="display: flex; gap: 1rem; padding: 0.35rem 0;">
+          <NbButton size="sm" variant="ghost">All</NbButton>
+          <NbButton size="sm" variant="ghost">Meshes</NbButton>
+          <NbButton size="sm" variant="ghost">Lights</NbButton>
+        </div>
+      </template>
+      <p style="margin: 0; color: var(--nb-c-text-secondary, #666);">Main viewport area.</p>
+      <template #bottom>
+        <NbShellPanel v-model:size="kitchenPanelSize" title="Console">
+          <div style="padding: 0.5rem 1rem; font-family: monospace; font-size: 0.75rem; color: var(--nb-c-text-secondary);">
+            <div>> Build complete.</div>
+          </div>
+        </NbShellPanel>
+      </template>
+      <template #inspector>
+        <div style="padding: 1rem;">
+          <h4 style="margin: 0 0 0.5rem;">Properties</h4>
+          <p style="margin: 0; color: var(--nb-c-text-secondary, #666); font-size: 0.8125rem;">Position, rotation, scale...</p>
+        </div>
+      </template>
+    </NbShell>
+  </div>
+</preview>
+
+```vue
+<template>
+  <NbShell :inspector-visible="inspectorOpen">
+    <template #outer-menu>
+      <NbMenuBar>
+        <NbMenuBarItem label="File"> ... </NbMenuBarItem>
+        <NbMenuBarItem label="Edit"> ... </NbMenuBarItem>
+      </NbMenuBar>
+    </template>
+
+    <template #sidebar-logo> <img src="/logo.svg" /> </template>
+    <template #sidebar-nav> <NbSidebarLink icon="home" to="/" /> </template>
+    <template #sidebar-bottom> <UserAvatar /> </template>
+
+    <template #inner-menu>
+      <NbMenuBar>
+        <NbMenuBarItem label="Scene"> ... </NbMenuBarItem>
+      </NbMenuBar>
+    </template>
+
+    <template #notification>
+      <WarningBanner message="Unsaved changes." />
+    </template>
+
+    <template #topbar-left> <strong>Project</strong> </template>
+    <template #topbar-right>
+      <NbButton @click="inspectorOpen = !inspectorOpen">Inspector</NbButton>
+    </template>
+
+    <template #fixedbar>
+      <NbButton size="sm" variant="ghost">All</NbButton>
+      <NbButton size="sm" variant="ghost">Meshes</NbButton>
+    </template>
+
+    <Viewport />
+
+    <template #bottom>
+      <NbShellPanel v-model:size="panelSize" title="Console">
+        <pre>{{ logs }}</pre>
+      </NbShellPanel>
+    </template>
+
+    <template #inspector>
+      <PropertyEditor :node="selected" />
+    </template>
+  </NbShell>
+</template>
+```
+
+## Layout layering
+
+The shell organizes its regions into a layering system that gives each area the correct stacking context. This matters when menus, tooltips, or dropdowns need to overflow their container without being clipped by adjacent regions.
+
+```
+ z-index
+   200   ┌──────────────────────────────────────┐  outer-menu
+         │  overflow: visible (menus expand)    │
+   ---   ├────────┬─────────────────────────────┤
+   150   │        │  inner-menu                 │  inner-menu
+         │        │  overflow: visible          │
+   ---   │        ├─────────────────────────────┤
+   100   │sidebar │  notification               │  body + inspector
+         │overflow│  topbar                     │
+         │visible │  fixedbar                   │
+         │        │  main (scrollable)          │
+         │        │  bottom                     │
+         └────────┴─────────────────────────────┘
+```
+
+- **`outer-menu` (z-index: 200)**: Sits on top of everything. Dropdown menus from this bar overlay the sidebar, body, and inspector without clipping.
+- **`inner-menu` (z-index: 150)**: Above the body and inspector but below the outer menu. Dropdowns expand over the content row.
+- **`sidebar` (z-index: 100)**: Uses `overflow: visible` so that tooltips on sidebar icons can extend beyond the sidebar edge into the body area.
+- **Body and inspector**: No special z-index. Contained within the content row with `overflow: hidden` on the row itself to keep scrolling behavior predictable.
+
+This layering is automatic. You do not need to set any z-index values yourself. The shell sets them so that interactive elements in higher regions always render above lower regions.
+
 ## Theming
 
 `NbShell` exposes CSS custom properties you can override on the `.nb-shell` selector to theme per-application:
@@ -296,25 +526,30 @@ const expanded = ref(false)
 
 ## Props
 
-| Prop                | Type      | Default | Description                                                                                 |
-| ------------------- | --------- | ------- | ------------------------------------------------------------------------------------------- |
-| `inspectorVisible`  | `boolean` | `false` | Whether the inspector column is visible                                                     |
-| `inspectorExpanded` | `boolean` | `false` | When true the inspector takes ~50% of the viewport width instead of the default fixed width |
+| Prop                | Type                                   | Default | Description                                                                                                 |
+| ------------------- | -------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------- |
+| `inspectorVisible`  | `boolean`                              | `false` | Whether the inspector column is visible                                                                     |
+| `inspectorExpanded` | `boolean`                              | `false` | When true the inspector takes ~50% of the viewport width instead of the default fixed width                 |
+| `inspectorSize`     | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'`  | Controls the width of the inspector panel (xs: 288px, sm: 360px, md: 560px, lg: 50vw, xl: 75vw)             |
+| `mainPadding`       | `boolean`                              | `true`  | Whether the main content area has padding. Set to `false` for full-bleed content like viewports or canvases |
 
 ## Slots
 
-| Slot             | Description                                                                                          |
-| ---------------- | ---------------------------------------------------------------------------------------------------- |
-| `sidebar-logo`   | Logo or brand mark displayed at the top of the sidebar                                               |
-| `sidebar-nav`    | Primary navigation items in the sidebar                                                              |
-| `sidebar-bottom` | Items pinned to the bottom of the sidebar (e.g. settings, user avatar)                               |
-| `notification`   | Full-width area above the topbar for banners and alerts. Only rendered when the slot is provided     |
-| `topbar-left`    | Left side of the topbar (e.g. page title, breadcrumbs)                                               |
-| `topbar-right`   | Right side of the topbar (e.g. actions, user menu)                                                   |
-| `fixedbar`       | Non-scrolling bar between topbar and main content (e.g. tabs, filters). Only rendered when populated |
-| `default`        | Main scrollable content area                                                                         |
-| `bottom`         | Panel pinned to the bottom of the body (typically an `NbBottomPanel`). Only rendered when populated  |
-| `inspector`      | Content for the optional inspector side panel                                                        |
+| Slot             | Description                                                                                                                   |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `outer-menu`     | Full-width menu bar above everything (sidebar + body + inspector). Only rendered when populated. `overflow: visible`          |
+| `sidebar-logo`   | Logo or brand mark displayed at the top of the sidebar                                                                        |
+| `sidebar-nav`    | Primary navigation items in the sidebar                                                                                       |
+| `sidebar-bottom` | Items pinned to the bottom of the sidebar (e.g. settings, user avatar)                                                        |
+| `inner-menu`     | Menu bar spanning body + inspector but not the sidebar. Only rendered when populated. `overflow: visible`                     |
+| `notification`   | Full-width area above the topbar for banners and alerts. Only rendered when the slot is provided                              |
+| `menubar`        | Legacy menubar inside the body (does not span the inspector). Only rendered when populated                                    |
+| `topbar-left`    | Left side of the topbar (e.g. page title, breadcrumbs)                                                                        |
+| `topbar-right`   | Right side of the topbar (e.g. actions, user menu)                                                                            |
+| `fixedbar`       | Non-scrolling bar between topbar and main content (e.g. tabs, filters). Only rendered when populated                          |
+| `default`        | Main scrollable content area                                                                                                  |
+| `bottom`         | Empty region pinned below the main content area. Place any component here (e.g. `NbShellPanel`). Only rendered when populated |
+| `inspector`      | Content for the optional inspector side panel                                                                                 |
 
 ## CSS Custom Properties
 
@@ -337,4 +572,6 @@ const showNotification = ref(true)
 const inspectorOpen = ref(false)
 const inspectorExpanded = ref(false)
 const panelSize = ref('default')
+const kitchenInspector = ref(true)
+const kitchenPanelSize = ref('default')
 </script>

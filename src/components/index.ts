@@ -39,6 +39,7 @@ import NbToast from './Toast.vue'
 import NbTree from './Tree.vue'
 import NbTreeNode from './TreeNode.vue'
 import NbBottomPanel from './BottomPanel.vue'
+import NbShellPanel from './ShellPanel.vue'
 import NbBlueprint from './Blueprint.vue'
 import NbBlueprintCard from './BlueprintCard.vue'
 
@@ -83,6 +84,7 @@ const components = {
   NbTree,
   NbTreeNode,
   NbBottomPanel,
+  NbShellPanel,
   NbBlueprint,
   NbBlueprintCard,
 }
