@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/nubisco/ui/compare/v1.15.1...v1.16.0) (2026-04-23)
+
+
+### Features
+
+* **Shell:** add inspectorSize prop with xs, sm, md, lg, xl variants ([afd6d4e](https://github.com/nubisco/ui/commit/afd6d4e3920b639c5cd239c1b584b08ff0bb9df8))
+
 ## [1.15.1](https://github.com/nubisco/ui/compare/v1.15.0...v1.15.1) (2026-04-23)
 
 
