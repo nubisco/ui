@@ -7,6 +7,7 @@ import NbButton from './Button.vue'
 import NbCheckbox from './Checkbox.vue'
 import NbColorStrip from './ColorStrip.vue'
 import NbFileUploader from './FileUploader.vue'
+import NbGanttChart from './Charts/GanttChart.vue'
 import NbFlag from './Flag.vue'
 import NbForm from './Form.vue'
 import NbGrid from './Grid.vue'
@@ -52,6 +53,7 @@ const components = {
   NbCheckbox,
   NbColorStrip,
   NbFileUploader,
+  NbGanttChart,
   NbFlag,
   NbForm,
   NbGrid,
