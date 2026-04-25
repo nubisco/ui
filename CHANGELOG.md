@@ -1,3 +1,10 @@
+## [1.20.1](https://github.com/nubisco/ui/compare/v1.20.0...v1.20.1) (2026-04-25)
+
+
+### Bug Fixes
+
+* remove inline pin labels, use color-coded dots with tooltips ([0747e39](https://github.com/nubisco/ui/commit/0747e39f5568c3715a5c056abeb240cbafaab6e3))
+
 # [1.20.0](https://github.com/nubisco/ui/compare/v1.19.0...v1.20.0) (2026-04-25)
 
 
