@@ -85,5 +85,118 @@ const padDomain = (
   return [min - pad, max + pad]
 }
 
-export { linear, band, niceTicks, padDomain }
-export type { ILinearScale, IBandScale }
+// ---------------------------------------------------------------------------
+// Time-scale helpers (used by GanttChart)
+// ---------------------------------------------------------------------------
+
+type TTimeUnit = 'day' | 'week' | 'month' | 'quarter' | 'year'
+
+interface ITimelineTick {
+  date: Date
+  label: string
+  x: number
+}
+
+// Return the start of the unit containing `d` (mutates nothing).
+const startOf = (d: Date, unit: TTimeUnit): Date => {
+  const s = new Date(d)
+  s.setHours(0, 0, 0, 0)
+  if (unit === 'day') return s
+  if (unit === 'week') {
+    s.setDate(s.getDate() - s.getDay())
+    return s
+  }
+  s.setDate(1)
+  if (unit === 'month') return s
+  if (unit === 'quarter') {
+    s.setMonth(Math.floor(s.getMonth() / 3) * 3)
+    return s
+  }
+  // year
+  s.setMonth(0)
+  return s
+}
+
+// Advance a date by one unit.
+const advanceBy = (d: Date, unit: TTimeUnit): Date => {
+  const n = new Date(d)
+  if (unit === 'day') n.setDate(n.getDate() + 1)
+  else if (unit === 'week') n.setDate(n.getDate() + 7)
+  else if (unit === 'month') n.setMonth(n.getMonth() + 1)
+  else if (unit === 'quarter') n.setMonth(n.getMonth() + 3)
+  else n.setFullYear(n.getFullYear() + 1)
+  return n
+}
+
+const SHORT_MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+]
+
+const formatTickLabel = (d: Date, unit: TTimeUnit): string => {
+  if (unit === 'day') return `${SHORT_MONTHS[d.getMonth()]} ${d.getDate()}`
+  if (unit === 'week') return `${SHORT_MONTHS[d.getMonth()]} ${d.getDate()}`
+  if (unit === 'month')
+    return `${SHORT_MONTHS[d.getMonth()]} ${d.getFullYear()}`
+  if (unit === 'quarter')
+    return `Q${Math.floor(d.getMonth() / 3) + 1} ${d.getFullYear()}`
+  return String(d.getFullYear())
+}
+
+// Generate timeline tick marks between two dates at the given granularity.
+// `pxPerMs` converts milliseconds to pixel offset from `origin`.
+const timelineTicks = (
+  minDate: Date,
+  maxDate: Date,
+  unit: TTimeUnit,
+  pxPerMs: number,
+  originMs: number,
+): ITimelineTick[] => {
+  const ticks: ITimelineTick[] = []
+  let cursor = startOf(new Date(minDate), unit)
+  // Step back one unit so labels before the visible range still show.
+  cursor = startOf(cursor, unit)
+  const limit = advanceBy(new Date(maxDate), unit).getTime()
+  while (cursor.getTime() <= limit) {
+    ticks.push({
+      date: new Date(cursor),
+      label: formatTickLabel(cursor, unit),
+      x: (cursor.getTime() - originMs) * pxPerMs,
+    })
+    cursor = advanceBy(cursor, unit)
+  }
+  return ticks
+}
+
+// Map a Date (or ISO string) to a pixel x position.
+const dateToX = (
+  date: Date | string,
+  originMs: number,
+  pxPerMs: number,
+): number => {
+  const ms =
+    typeof date === 'string' ? new Date(date).getTime() : date.getTime()
+  return (ms - originMs) * pxPerMs
+}
+
+export {
+  linear,
+  band,
+  niceTicks,
+  padDomain,
+  timelineTicks,
+  dateToX,
+  startOf,
+  advanceBy,
+}
+export type { ILinearScale, IBandScale, ITimelineTick, TTimeUnit }

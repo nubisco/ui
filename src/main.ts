@@ -17,6 +17,16 @@ export { default as NbButton } from './components/Button.vue'
 export { default as NbCheckbox } from './components/Checkbox.vue'
 export { default as NbColorStrip } from './components/ColorStrip.vue'
 export { default as NbFlag } from './components/Flag.vue'
+export { default as NbGanttChart } from './components/Charts/GanttChart.vue'
+export type {
+  IGanttTask,
+  IGanttDependency,
+  IGanttGroup,
+  IGanttChartProps,
+  TGanttTaskStatus,
+  TGanttTimeScale,
+  TDependencyType,
+} from './components/Charts/GanttChart.d'
 export { default as NbGrid } from './components/Grid.vue'
 export { default as NbIcon } from './components/Icon.vue'
 export { default as NbJsonTree } from './components/JsonTree.vue'

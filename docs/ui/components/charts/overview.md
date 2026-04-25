@@ -48,11 +48,12 @@ const series = [
 
 ## Available chart types
 
-| Component     | Use for                                                      |
-| ------------- | ------------------------------------------------------------ |
-| `NbBarChart`  | Comparing discrete categories side by side                   |
-| `NbLineChart` | Showing trends over time or any ordered dimension            |
-| `NbPieChart`  | Communicating part-to-whole relationships across few buckets |
+| Component      | Use for                                                      |
+| -------------- | ------------------------------------------------------------ |
+| `NbBarChart`   | Comparing discrete categories side by side                   |
+| `NbLineChart`  | Showing trends over time or any ordered dimension            |
+| `NbPieChart`   | Communicating part-to-whole relationships across few buckets |
+| `NbGanttChart` | Visualizing project timelines, dependencies, and milestones  |
 
 More chart types (Area, Radar, Bubble, Histogram, Heatmap, Tree, Network, Alluvial) are on the roadmap, see the **Roadmap** tab.
 
@@ -151,6 +152,7 @@ The chart family is being rolled out in phases. The current release ships the th
 | Shipped | Bar        | Vertical, grouped multi-series                                |
 | Shipped | Line       | Linear / smooth / step curves, optional area + points         |
 | Shipped | Pie        | Donut mode via `inner-radius`                                 |
+| Shipped | Gantt      | Dependencies, milestones, status, groups, progress            |
 | Planned | Area       | Will share the line renderer with `area` toggle as a shortcut |
 | Planned | Radar      | Polar grid + polygon series                                   |
 | Planned | Bubble     | Scatter with `z` mapped to point radius                       |
