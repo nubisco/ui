@@ -1,3 +1,10 @@
+# [1.20.0](https://github.com/nubisco/ui/compare/v1.19.0...v1.20.0) (2026-04-25)
+
+
+### Features
+
+* evolve BlueprintCard with typed pins, collapse, status indicator ([d66f2b0](https://github.com/nubisco/ui/commit/d66f2b0dffdec2ee94149f1eb755f584ce86dc80))
+
 # [1.19.0](https://github.com/nubisco/ui/compare/v1.18.0...v1.19.0) (2026-04-25)
 
 
