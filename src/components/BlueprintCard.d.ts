@@ -1,11 +1,33 @@
+/** Data type for a pin (determines shape and color) */
+export type TBlueprintPinDataType =
+  | 'geometry'
+  | 'celestial'
+  | 'lighting'
+  | 'effect'
+  | 'surface'
+  | 'audio'
+  | 'entity'
+  | 'number'
+  | 'vector3'
+  | 'color'
+  | 'asset'
+  | 'any'
+
 export interface IBlueprintPort {
   /** Unique port identifier */
   id: string
-  /** Display label (shown as tooltip) */
+  /** Display label (shown inline on the card) */
   label: string
   /** Port direction */
   type: 'input' | 'output'
+  /** Data type for type-checking and visual styling */
+  dataType?: TBlueprintPinDataType
+  /** Whether this input is required for the node to be valid */
+  required?: boolean
 }
+
+/** Status indicator level */
+export type TBlueprintCardStatus = 'valid' | 'warning' | 'error' | 'none'
 
 export interface IBlueprintCardProps {
   /** Unique card identifier */
@@ -28,4 +50,10 @@ export interface IBlueprintCardProps {
   y?: number
   /** Whether the card can be removed */
   removable?: boolean
+  /** Whether the card is collapsed (shows only title bar) */
+  collapsed?: boolean
+  /** Status indicator (valid, warning, error) */
+  status?: TBlueprintCardStatus
+  /** Compact preview text shown on the card body */
+  preview?: string
 }
