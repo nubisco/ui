@@ -1,3 +1,10 @@
+## [1.21.1](https://github.com/nubisco/ui/compare/v1.21.0...v1.21.1) (2026-04-25)
+
+
+### Bug Fixes
+
+* add Gantt chart to docs sidebar navigation ([c26bfde](https://github.com/nubisco/ui/commit/c26bfdebe14702694aa5f8039ec2ca9c304a420d))
+
 # [1.21.0](https://github.com/nubisco/ui/compare/v1.20.1...v1.21.0) (2026-04-25)
 
 
