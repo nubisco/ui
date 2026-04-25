@@ -183,6 +183,7 @@ export default withMermaid(
                         link: '/ui/components/charts/overview',
                       },
                       { text: 'Bar', link: '/ui/components/charts/bar' },
+                      { text: 'Gantt', link: '/ui/components/charts/gantt' },
                       { text: 'Line', link: '/ui/components/charts/line' },
                       { text: 'Pie', link: '/ui/components/charts/pie' },
                       {
