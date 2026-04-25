@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/nubisco/ui/compare/v1.18.0...v1.19.0) (2026-04-25)
+
+
+### Features
+
+* render command palette shortcuts as individual keycaps, remove namespace pills ([05ca427](https://github.com/nubisco/ui/commit/05ca427717717108efc3404cc7844b8dc842ea28))
+
 # [1.18.0](https://github.com/nubisco/ui/compare/v1.17.0...v1.18.0) (2026-04-23)
 
 
