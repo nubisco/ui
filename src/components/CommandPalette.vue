@@ -60,17 +60,16 @@
                   item.label
                 }}</span>
                 <span
-                  v-if="item.namespace"
-                  class="nb-command-palette__item-namespace"
-                >
-                  {{ item.namespace }}
-                </span>
-                <kbd
                   v-if="item.shortcut"
                   class="nb-command-palette__item-shortcut"
                 >
-                  {{ item.shortcut }}
-                </kbd>
+                  <kbd
+                    v-for="(key, ki) in formatShortcutKeys(item.shortcut)"
+                    :key="ki"
+                    class="nb-command-palette__key"
+                    >{{ key }}</kbd
+                  >
+                </span>
               </div>
             </template>
           </div>
@@ -277,6 +276,23 @@ watch(filteredCommands, (cmds) => {
   }
 })
 
+const keySymbols: Record<string, string> = {
+  cmd: '⌘',
+  meta: '⌘',
+  shift: '⇧',
+  alt: '⌥',
+  option: '⌥',
+  ctrl: '⌃',
+  control: '⌃',
+}
+
+function formatShortcutKeys(shortcut: string): string[] {
+  return shortcut.split('+').map((part) => {
+    const lower = part.trim().toLowerCase()
+    return keySymbols[lower] || part.trim()
+  })
+}
+
 // Global keyboard shortcut
 function parseShortcut(shortcut: string): {
   key: string
@@ -431,26 +447,28 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
-.nb-command-palette__item-namespace {
-  flex-shrink: 0;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--nb-c-text-muted);
-  background: var(--nb-c-layer-hover-3);
-  padding: 2px 6px;
-  border-radius: 3px;
-}
-
 .nb-command-palette__item-shortcut {
   flex-shrink: 0;
-  font-size: 12px;
-  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.nb-command-palette__key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--nb-font-family-sans, sans-serif);
   color: var(--nb-c-text-muted);
   background: var(--nb-c-layer-hover-3);
   border: 1px solid var(--nb-c-layer-border-3);
   border-radius: 4px;
-  padding: 1px 6px;
-  font-family: var(--nb-font-family-sans, sans-serif);
+  box-sizing: border-box;
 }
 
 .nb-command-palette__empty {
