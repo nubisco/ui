@@ -35,13 +35,7 @@
         @mouseup.stop="
           $emit('port-mouseup', { nodeId: id, portId: port.id, type: 'input' })
         "
-      >
-        <span
-          v-if="!collapsed"
-          class="nb-blueprint-card__port-label nb-blueprint-card__port-label--input"
-          >{{ port.label }}</span
-        >
-      </div>
+      ></div>
     </div>
 
     <!-- Card body -->
@@ -131,13 +125,7 @@
         @mouseup.stop="
           $emit('port-mouseup', { nodeId: id, portId: port.id, type: 'output' })
         "
-      >
-        <span
-          v-if="!collapsed"
-          class="nb-blueprint-card__port-label nb-blueprint-card__port-label--output"
-          >{{ port.label }}</span
-        >
-      </div>
+      />
     </div>
   </div>
 </template>
@@ -436,13 +424,13 @@ function pinShape(port: IBlueprintPort): string {
   cursor: crosshair;
   position: relative;
 
-  // Pin shape (the dot/diamond/square)
+  // Pin shape (the dot/diamond/square) -- color-coded by data type
   &::before {
     content: '';
     width: 10px;
     height: 10px;
     flex-shrink: 0;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--pin-color, rgba(255, 255, 255, 0.06));
     border: 1.5px solid var(--pin-color, var(--nb-c-border));
     transition:
       background 0.1s,
@@ -477,16 +465,6 @@ function pinShape(port: IBlueprintPort): string {
   }
 }
 
-.nb-blueprint-card__port-label {
-  font-size: 9px;
-  color: var(--nb-c-text-subtle);
-  white-space: nowrap;
-
-  &--input {
-    order: 1;
-  } // label after pin on left side
-  &--output {
-    order: -1;
-  } // label before pin on right side
-}
+// Port labels removed -- tooltips via :title are sufficient.
+// Pins are color-coded by data type for visual distinction.
 </style>
