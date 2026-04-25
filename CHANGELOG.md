@@ -1,3 +1,10 @@
+# [1.21.0](https://github.com/nubisco/ui/compare/v1.20.1...v1.21.0) (2026-04-25)
+
+
+### Features
+
+* add GanttChart component with dependencies, milestones, and status indicators ([d0af83b](https://github.com/nubisco/ui/commit/d0af83b8cb297e07d633ea34447a739d21e336a7))
+
 ## [1.20.1](https://github.com/nubisco/ui/compare/v1.20.0...v1.20.1) (2026-04-25)
 
 
