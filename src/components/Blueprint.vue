@@ -121,20 +121,6 @@ function setFocus(id: string | null) {
 function setSelection(ids: string[]) {
   selectedIds.value = new Set(ids)
   emit('selection-change', ids)
-  syncSelectionClasses()
-}
-
-function syncSelectionClasses() {
-  if (!containerRef.value) return
-  const cards = containerRef.value.querySelectorAll('.nb-blueprint-card')
-  cards.forEach((card) => {
-    const id = (card as HTMLElement).dataset.cardId
-    if (!id) return
-    card.classList.toggle(
-      'nb-blueprint-card--selected',
-      selectedIds.value.has(id),
-    )
-  })
 }
 
 function selectAll() {
