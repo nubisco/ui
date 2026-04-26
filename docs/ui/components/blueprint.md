@@ -53,8 +53,10 @@ Cards are placed in the default slot and positioned with inline `transform: tran
     </NbBlueprint>
   </div>
   <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
-    <NbButton size="sm" variant="ghost" @click="demoBlueprint?.centerView()">Center view</NbButton>
-    <NbButton size="sm" variant="ghost" @click="resetDemo">Reset</NbButton>
+    <NbButton size="sm" variant="ghost" @click="demoBlueprint?.fitToView()">Fit to view</NbButton>
+    <NbButton size="sm" variant="ghost" @click="demoBlueprint?.centerView()">Center 1x</NbButton>
+    <NbButton size="sm" variant="ghost" @click="demoBlueprint?.resetView()">Reset view</NbButton>
+    <NbButton size="sm" variant="ghost" @click="resetDemo">Reset data</NbButton>
   </div>
 </preview>
 
@@ -104,12 +106,18 @@ The blueprint will only emit `connect` when the two ports belong to different no
 
 Wires automatically pick up the accent color of the source node's card (via the `--nb-card-color` CSS variable). Each wire renders with a soft drop-shadow glow and an animated dashed stroke showing the direction of data flow.
 
-## Centering the view
+## View controls
 
-`centerView()` is exposed on the component instance. It resets the zoom to `1x` and pans so the bounding box of the current cards is centered in the viewport. It's called automatically once on mount.
+Three view methods are exposed on the component instance:
+
+- **`fitToView(padding?)`** scales zoom so all cards fit inside the viewport with optional padding (default 40px), then centers. This is called automatically on mount.
+- **`centerView()`** resets zoom to `1x` and pans so cards are centered (no scaling).
+- **`resetView()`** resets pan to `0, 0` and zoom to `1x` (returns to the origin).
 
 ```vue
-<NbButton @click="blueprint?.centerView()">Center</NbButton>
+<NbButton @click="blueprint?.fitToView()">Fit</NbButton>
+<NbButton @click="blueprint?.centerView()">Center 1x</NbButton>
+<NbButton @click="blueprint?.resetView()">Reset</NbButton>
 ```
 
 ## Sizing
@@ -149,7 +157,9 @@ Access these via a template `ref`.
 
 | Member            | Signature                                                                    | Description                                                                             |
 | ----------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `fitToView`       | `(padding?: number) => void`                                                 | Scale zoom and pan so all cards fit in the viewport. Default padding: 40px.             |
 | `centerView`      | `() => void`                                                                 | Reset zoom to `1x` and pan so all cards are centered.                                   |
+| `resetView`       | `() => void`                                                                 | Reset pan to `0, 0` and zoom to `1x` (return to the origin).                            |
 | `onPortMouseDown` | `(d: { nodeId: string; portId: string; type: 'input' \| 'output' }) => void` | Forward `NbBlueprintCard`'s `port-mousedown` here to start a drag-to-connect operation. |
 | `onPortMouseUp`   | `(d: { nodeId: string; portId: string; type: 'input' \| 'output' }) => void` | Forward `NbBlueprintCard`'s `port-mouseup` here to complete the connection.             |
 | `panX`            | `Ref<number>`                                                                | Current pan offset in pixels.                                                           |
