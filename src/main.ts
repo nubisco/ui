@@ -1,11 +1,13 @@
 import type { App } from 'vue'
 import components from './components/index'
 import directives from './directives/index'
+import { NbCommandPalettePlugin } from './plugins/commandPalette'
 
 export default {
   install(app: App) {
     app.use(components)
     app.use(directives)
+    app.use(NbCommandPalettePlugin)
   },
 }
 

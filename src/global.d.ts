@@ -14,6 +14,7 @@ import CommandPalette from './components/CommandPalette.vue'
 import FileUploader from './components/FileUploader.vue'
 import Flag from './components/Flag.vue'
 import Form from './components/Form.vue'
+import GanttChart from './components/Charts/GanttChart.vue'
 import Grid from './components/Grid.vue'
 import Icon from './components/Icon.vue'
 import ImageCropper from './components/ImageCropper.vue'
@@ -60,6 +61,7 @@ declare module 'vue' {
     NbFileUploader: typeof FileUploader
     NbFlag: typeof Flag
     NbForm: typeof Form
+    NbGanttChart: typeof GanttChart
     NbGrid: typeof Grid
     NbIcon: typeof Icon
     NbImageCropper: typeof ImageCropper
