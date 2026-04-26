@@ -220,19 +220,30 @@ function onWheel(e: WheelEvent) {
   const rect = containerRef.value?.getBoundingClientRect()
   if (!rect) return
 
-  const oldZoom = zoom.value
-  const delta = e.deltaY > 0 ? -0.1 : 0.1
-  const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, oldZoom + delta))
-  if (newZoom === oldZoom) return
+  // On macOS, pinch-to-zoom fires wheel events with ctrlKey = true.
+  // Regular two-finger scroll has ctrlKey = false.
+  if (e.ctrlKey) {
+    // Pinch zoom (or Ctrl+scroll on non-trackpad): focal-point zoom
+    const oldZoom = zoom.value
+    // Pinch gives fine-grained deltaY, so scale proportionally
+    const factor = 1 - e.deltaY * 0.01
+    const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, oldZoom * factor))
+    if (newZoom === oldZoom) return
 
-  const mouseX = e.clientX - rect.left
-  const mouseY = e.clientY - rect.top
-  const canvasX = (mouseX - panX.value) / oldZoom
-  const canvasY = (mouseY - panY.value) / oldZoom
+    const mouseX = e.clientX - rect.left
+    const mouseY = e.clientY - rect.top
+    const canvasX = (mouseX - panX.value) / oldZoom
+    const canvasY = (mouseY - panY.value) / oldZoom
 
-  panX.value = mouseX - canvasX * newZoom
-  panY.value = mouseY - canvasY * newZoom
-  zoom.value = newZoom
+    panX.value = mouseX - canvasX * newZoom
+    panY.value = mouseY - canvasY * newZoom
+    zoom.value = newZoom
+  } else {
+    // Two-finger scroll: pan the canvas
+    panX.value -= e.deltaX
+    panY.value -= e.deltaY
+    wireKey.value++
+  }
 }
 
 // ── Card drag ─────────────────────────────────────────────────────────

@@ -17,9 +17,11 @@ tabs: ['Usage', 'Api']
 | Click on card          | Select card (deselects others) |
 | Shift + click on card  | Toggle card in selection       |
 | Drag a selected card   | Move all selected cards        |
+| Two-finger scroll      | Pan the canvas                 |
 | Middle mouse drag      | Pan the canvas                 |
 | Space + left drag      | Pan the canvas                 |
-| Mouse wheel            | Focal-point zoom (0.2x to 3x)  |
+| Pinch (trackpad)       | Focal-point zoom               |
+| Ctrl + scroll          | Focal-point zoom               |
 | Drag from port to port | Connect two cards              |
 | Click a wire           | Disconnect                     |
 
@@ -179,9 +181,11 @@ Options: `{ gapX?: number, gapY?: number, padding?: number }` (defaults: 80, 40,
 | `centerView()`        | Reset zoom to 1x, center cards                                  |
 | `resetView()`         | Reset pan to 0,0 and zoom to 1x                                 |
 
-## Panning
+## Panning and zooming
 
-Panning uses middle mouse button or **Space + left drag**. This keeps left drag free for marquee selection and card dragging.
+Panning: **two-finger scroll** (trackpad), **middle mouse drag**, or **Space + left drag**. This keeps left drag free for marquee selection and card dragging.
+
+Zooming: **pinch** (trackpad) or **Ctrl + scroll wheel**. Both use focal-point zoom centered on the cursor position, clamped between 0.2x and 3x.
 
 ## Theming
 
