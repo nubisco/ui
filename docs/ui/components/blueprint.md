@@ -48,6 +48,7 @@ Cards are placed in the default slot with `transform: translate(x, y)` positioni
           :color="card.color"
           :ports="card.ports"
           :connected-ports="connectedPortsFor(card.id)"
+          :selected="demoBlueprint?.selectedIds?.has(card.id)"
           :collapsed="!demoBlueprint?.selectedIds?.has(card.id)"
           @port-mousedown="demoBlueprint?.onPortMouseDown($event)"
           @port-mouseup="demoBlueprint?.onPortMouseUp($event)"
@@ -91,6 +92,7 @@ Cards are placed in the default slot with `transform: translate(x, y)` positioni
           :color="card.color"
           :ports="card.ports"
           :connected-ports="connectedPortsFor(card.id)"
+          :selected="blueprint?.selectedIds?.has(card.id)"
           @port-mousedown="blueprint?.onPortMouseDown($event)"
           @port-mouseup="blueprint?.onPortMouseUp($event)"
         />

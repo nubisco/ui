@@ -315,6 +315,7 @@ function pinShape(port: IBlueprintPort): string {
     right: 0;
     height: 2px;
     background: var(--nb-card-color);
+    border-radius: inherit;
     opacity: 0.7;
     z-index: 1;
   }
