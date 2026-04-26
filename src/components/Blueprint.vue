@@ -67,8 +67,33 @@
       <slot />
     </div>
 
-    <!-- Marquee selection overlay (rendered in viewport space) -->
-    <div v-if="marquee" class="nb-blueprint__marquee" :style="marqueeStyle" />
+    <!-- Marquee drag overlay (rendered in viewport space) -->
+    <div
+      v-if="marquee"
+      class="nb-blueprint__marquee nb-blueprint__marquee--dragging"
+      :style="marqueeStyle"
+    />
+
+    <!-- Persistent selection box around selected cards (marching ants, no fill) -->
+    <svg
+      v-if="selectionBox"
+      class="nb-blueprint__selection-box"
+      :style="selectionBox"
+    >
+      <rect
+        x="0.75"
+        y="0.75"
+        :width="`calc(100% - 1.5px)`"
+        :height="`calc(100% - 1.5px)`"
+        rx="4"
+        ry="4"
+        fill="none"
+        :stroke="'var(--nb-blueprint-marquee-border, var(--nb-c-primary, #6366f1))'"
+        stroke-width="1.5"
+        stroke-dasharray="6 4"
+        class="nb-blueprint__selection-ants"
+      />
+    </svg>
   </div>
 </template>
 
@@ -395,6 +420,44 @@ const marqueeStyle = computed(() => {
     top: `${Math.min(y1, y2)}px`,
     width: `${Math.abs(x2 - x1)}px`,
     height: `${Math.abs(y2 - y1)}px`,
+  }
+})
+
+// Persistent selection box: bounding rect of all selected cards (2+ only)
+const selectionBox = computed(() => {
+  void wireKey.value // recompute when cards move
+  if (selectedIds.value.size < 2 || !containerRef.value) return null
+  // Don't show while actively dragging a marquee
+  if (marquee.value) return null
+
+  const containerRect = containerRef.value.getBoundingClientRect()
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity
+  const pad = 8
+
+  for (const id of selectedIds.value) {
+    const el = containerRef.value.querySelector(
+      `[data-card-id="${id}"]`,
+    ) as HTMLElement | null
+    if (!el) continue
+    const cr = el.getBoundingClientRect()
+    const x = cr.left - containerRect.left
+    const y = cr.top - containerRect.top
+    minX = Math.min(minX, x)
+    minY = Math.min(minY, y)
+    maxX = Math.max(maxX, x + cr.width)
+    maxY = Math.max(maxY, y + cr.height)
+  }
+
+  if (minX === Infinity) return null
+
+  return {
+    left: `${minX - pad}px`,
+    top: `${minY - pad}px`,
+    width: `${maxX - minX + pad * 2}px`,
+    height: `${maxY - minY + pad * 2}px`,
   }
 })
 
@@ -1072,9 +1135,30 @@ defineExpose({
   position: absolute;
   border: 1.5px dashed
     var(--nb-blueprint-marquee-border, var(--nb-c-primary, #6366f1));
-  background: var(--nb-blueprint-marquee-bg, rgba(99, 102, 241, 0.08));
-  border-radius: 2px;
+  border-radius: 4px;
   pointer-events: none;
   z-index: 10;
+
+  // While actively dragging: show a light fill
+  &--dragging {
+    background: var(--nb-blueprint-marquee-bg, rgba(99, 102, 241, 0.08));
+  }
+}
+
+.nb-blueprint__selection-box {
+  position: absolute;
+  pointer-events: none;
+  z-index: 10;
+  overflow: visible;
+}
+
+.nb-blueprint__selection-ants {
+  animation: nb-marching-ants 0.6s linear infinite;
+}
+
+@keyframes nb-marching-ants {
+  to {
+    stroke-dashoffset: -10;
+  }
 }
 </style>
