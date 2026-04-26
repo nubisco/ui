@@ -1,3 +1,15 @@
+# [1.26.0](https://github.com/nubisco/ui/compare/v1.25.0...v1.26.0) (2026-04-26)
+
+
+### Bug Fixes
+
+* clip accent bar to card radius, drive selection via prop not DOM ([f87b767](https://github.com/nubisco/ui/commit/f87b767df55e4841e443ed5c97958c30ae0239e7))
+
+
+### Features
+
+* split two-finger scroll (pan) from pinch-to-zoom ([60c9854](https://github.com/nubisco/ui/commit/60c9854dc8c58688c5d5402d8f3745fe9d922b7c))
+
 # [1.25.0](https://github.com/nubisco/ui/compare/v1.24.0...v1.25.0) (2026-04-26)
 
 
