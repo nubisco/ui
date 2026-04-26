@@ -1,3 +1,10 @@
+# [1.27.0](https://github.com/nubisco/ui/compare/v1.26.2...v1.27.0) (2026-04-26)
+
+
+### Features
+
+* persistent marching-ants selection box, cards expand only on focus ([e71ae46](https://github.com/nubisco/ui/commit/e71ae46f3d6935006dce594c712c39747e79a39a))
+
 ## [1.26.2](https://github.com/nubisco/ui/compare/v1.26.1...v1.26.2) (2026-04-26)
 
 
