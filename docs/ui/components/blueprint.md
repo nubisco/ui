@@ -124,11 +124,16 @@ Cards are now draggable directly. When you drag a selected card, all selected ca
 
 On drag end, the blueprint emits `move` with an array of `{ id, x, y }` objects. The consumer should update their data model with these positions so they persist across re-renders.
 
-## Selection
+## Focus and selection
 
-The Blueprint manages selection internally. Access the current selection via the exposed `selectedIds` ref, or listen to the `selection-change` event.
+The Blueprint distinguishes between two concepts:
 
-- **Click** a card to select it (deselects others).
+- **Focused card** (single): the card the user last clicked. Clients use this for inspector panels, property editing, or any single-card context. The `focus` event emits the card ID (or `null`). Access via the exposed `focusedId` ref.
+- **Selected cards** (one or more): the set of cards that move, align, and distribute together. Used for spatial operations. The `selection-change` event emits the full ID array. Access via the exposed `selectedIds` ref.
+
+Clicking a card both focuses and selects it. Shift+click adds or removes cards from the selection without changing focus.
+
+- **Click** a card to focus and select it (deselects others).
 - **Shift+click** to add or remove a card from the selection.
 - **Left-drag on empty canvas** draws a marquee rectangle. Cards intersecting the rectangle are selected.
 - **Shift+marquee** adds to the existing selection.
@@ -197,6 +202,7 @@ The canvas background uses `--nb-c-layer-0`. Ambient gradients are configurable 
 | `connect`          | `IBlueprintConnection` | Emitted when a drag from one port is released on another compatible port. |
 | `disconnect`       | `IBlueprintConnection` | Emitted when an existing wire is clicked.                                 |
 | `move`             | `IBlueprintCardMove[]` | Emitted after cards are dragged, aligned, distributed, or auto-laid out.  |
+| `focus`            | `string \| null`       | Emitted when a card is focused (clicked). `null` when focus is cleared.   |
 | `selection-change` | `string[]`             | Emitted when the set of selected card IDs changes.                        |
 
 ## Slots
@@ -217,13 +223,14 @@ Access via a template `ref`.
 | `centerView` | `() => void`                 | Center cards at 1x zoom.                    |
 | `resetView`  | `() => void`                 | Reset pan to 0,0 and zoom to 1x.            |
 
-### Selection
+### Focus and selection
 
-| Member        | Signature          | Description                     |
-| ------------- | ------------------ | ------------------------------- |
-| `selectedIds` | `Ref<Set<string>>` | Currently selected card IDs.    |
-| `selectAll`   | `() => void`       | Select all cards in the canvas. |
-| `deselectAll` | `() => void`       | Clear the selection.            |
+| Member        | Signature             | Description                                    |
+| ------------- | --------------------- | ---------------------------------------------- |
+| `focusedId`   | `Ref<string \| null>` | The currently focused card ID (for inspector). |
+| `selectedIds` | `Ref<Set<string>>`    | Currently selected card IDs.                   |
+| `selectAll`   | `() => void`          | Select all cards in the canvas.                |
+| `deselectAll` | `() => void`          | Clear selection and focus.                     |
 
 ### Alignment and distribution
 

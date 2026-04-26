@@ -89,6 +89,7 @@ const emit = defineEmits<{
   disconnect: [conn: IBlueprintConnection]
   move: [moves: IBlueprintCardMove[]]
   'selection-change': [ids: string[]]
+  focus: [id: string | null]
 }>()
 
 const containerRef = ref<HTMLDivElement>()
@@ -102,13 +103,24 @@ const MAX_ZOOM = 3.0
 const DRAG_THRESHOLD = 4
 
 // ── Selection state ───────────────────────────────────────────────────
+//
+// Two concepts:
+// - "focused" (single card): the card the user last clicked without shift.
+//   Clients use this for inspector panels. Emitted via the `focus` event.
+// - "selected" (one or more cards): the set of cards that move/align together.
+//   Emitted via `selection-change`.
 
 const selectedIds = ref<Set<string>>(new Set())
+const focusedId = ref<string | null>(null)
+
+function setFocus(id: string | null) {
+  focusedId.value = id
+  emit('focus', id)
+}
 
 function setSelection(ids: string[]) {
   selectedIds.value = new Set(ids)
   emit('selection-change', ids)
-  // Also toggle the selected class on card elements
   syncSelectionClasses()
 }
 
@@ -137,6 +149,7 @@ function selectAll() {
 
 function deselectAll() {
   setSelection([])
+  setFocus(null)
 }
 
 // ── Space key tracking (for pan mode) ─────────────────────────────────
@@ -270,14 +283,20 @@ function onCardMouseDown(e: MouseEvent, cardEl: HTMLElement) {
   dragDidMove = false
   dragStartPositions = new Map()
 
-  // Handle selection
+  // Handle selection and focus
   if (e.shiftKey) {
+    // Shift+click: toggle card in selection (no focus change)
     const next = new Set(selectedIds.value)
     if (next.has(cardId)) next.delete(cardId)
     else next.add(cardId)
     setSelection(Array.from(next))
   } else if (!selectedIds.value.has(cardId)) {
+    // Click on unselected card: select and focus it
     setSelection([cardId])
+    setFocus(cardId)
+  } else {
+    // Click on already-selected card: just set focus
+    setFocus(cardId)
   }
 
   // Record start positions of all selected cards after selection is applied.
@@ -428,7 +447,10 @@ function onMarqueeEnd() {
     Math.abs(x2 - x1) < DRAG_THRESHOLD &&
     Math.abs(y2 - y1) < DRAG_THRESHOLD
   ) {
-    if (!marqueeShift) setSelection([])
+    if (!marqueeShift) {
+      setSelection([])
+      setFocus(null)
+    }
     marquee.value = null
     return
   }
@@ -922,8 +944,9 @@ defineExpose({
   centerView,
   fitToView,
   resetView,
-  // Selection
+  // Selection and focus
   selectedIds,
+  focusedId,
   selectAll,
   deselectAll,
   // Alignment and distribution
@@ -1050,8 +1073,9 @@ defineExpose({
 
 .nb-blueprint__marquee {
   position: absolute;
-  border: 1.5px dashed var(--nb-c-primary, #6366f1);
-  background: rgba(99, 102, 241, 0.08);
+  border: 1.5px dashed
+    var(--nb-blueprint-marquee-border, var(--nb-c-primary, #6366f1));
+  background: var(--nb-blueprint-marquee-bg, rgba(99, 102, 241, 0.08));
   border-radius: 2px;
   pointer-events: none;
   z-index: 10;
