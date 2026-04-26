@@ -1,3 +1,10 @@
+# [1.24.0](https://github.com/nubisco/ui/compare/v1.23.0...v1.24.0) (2026-04-26)
+
+
+### Features
+
+* add card dragging, multi-selection, alignment, distribution, and auto-layout to Blueprint ([ea76c80](https://github.com/nubisco/ui/commit/ea76c80786fbde3a29a940ee25caa530ef299f1d))
+
 # [1.23.0](https://github.com/nubisco/ui/compare/v1.22.1...v1.23.0) (2026-04-26)
 
 
