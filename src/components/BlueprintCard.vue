@@ -286,15 +286,20 @@ function pinShape(port: IBlueprintPort): string {
 <style scoped lang="scss">
 .nb-blueprint-card {
   position: relative;
-  display: flex;
-  align-items: stretch;
   min-width: 160px;
   border-radius: 10px;
-  background: linear-gradient(
-    180deg,
-    var(--nb-c-layer-2, #161922),
-    var(--nb-c-layer-1, #101218)
-  );
+  background:
+    linear-gradient(
+      to bottom,
+      var(--nb-card-color) 0,
+      var(--nb-card-color) 3px,
+      transparent 3px
+    ),
+    linear-gradient(
+      180deg,
+      var(--nb-c-layer-2, #161922),
+      var(--nb-c-layer-1, #101218)
+    );
   border: 1px solid var(--nb-c-border);
   cursor: grab;
   user-select: none;
@@ -302,6 +307,25 @@ function pinShape(port: IBlueprintPort): string {
     transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1),
     border-color 200ms,
     box-shadow 200ms;
+
+  // Radial glow at top
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 80px;
+    background: radial-gradient(
+      ellipse at top,
+      var(--nb-card-glow),
+      transparent 70%
+    );
+    pointer-events: none;
+    opacity: 0.6;
+    z-index: 0;
+  }
 
   &:hover {
     transform: translateY(-1px);
@@ -317,7 +341,7 @@ function pinShape(port: IBlueprintPort): string {
     box-shadow: 0 0 12px -2px var(--nb-card-glow);
 
     // Hide top accent bar when selected (the full border replaces it)
-    .nb-blueprint-card__inner::before {
+    &::before {
       opacity: 0;
     }
 
@@ -339,46 +363,10 @@ function pinShape(port: IBlueprintPort): string {
   }
 }
 
-// ── Inner wrapper (clips accent bar and glow to border-radius) ────────
-
+// Inner wrapper no longer needed for clipping (card itself clips now)
 .nb-blueprint-card__inner {
   position: relative;
-  flex: 1;
   min-width: 0;
-  border-radius: inherit;
-  overflow: hidden;
-
-  // Top accent bar
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--nb-card-color);
-    opacity: 0.7;
-    z-index: 1;
-  }
-
-  // Radial glow at top
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60%;
-    height: 80px;
-    background: radial-gradient(
-      ellipse at top,
-      var(--nb-card-glow),
-      transparent 70%
-    );
-    pointer-events: none;
-    opacity: 0.6;
-    z-index: 0;
-  }
 }
 
 // ── Body ──────────────────────────────────────────────────────────────
@@ -631,23 +619,23 @@ function pinShape(port: IBlueprintPort): string {
   margin-top: 6px;
 }
 
-// ── Ports (semicircles on the card edge) ──────────────────────────────
+// ── Ports (semicircles inside the card, flush with card border) ───────
 
 .nb-blueprint-card__ports {
+  position: absolute;
+  top: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 6px;
-  padding: 4px 0;
-  z-index: 2;
+  z-index: 4;
 
   &--left {
-    margin-left: -6px;
-    align-items: flex-start;
+    left: -1px;
   }
   &--right {
-    margin-right: -6px;
-    align-items: flex-end;
+    right: -1px;
   }
 }
 
@@ -655,7 +643,6 @@ function pinShape(port: IBlueprintPort): string {
   display: flex;
   align-items: center;
   cursor: crosshair;
-  position: relative;
 
   &::before {
     content: '';
@@ -670,16 +657,16 @@ function pinShape(port: IBlueprintPort): string {
       box-shadow 150ms;
   }
 
-  // Left port: semicircle facing left (outward)
+  // Left port: flat on left (flush with card border), rounded on right (inside card)
   &--left::before {
-    border-radius: 7px 0 0 7px;
-    border-right: none;
-  }
-
-  // Right port: semicircle facing right (outward)
-  &--right::before {
     border-radius: 0 7px 7px 0;
     border-left: none;
+  }
+
+  // Right port: flat on right (flush with card border), rounded on left (inside card)
+  &--right::before {
+    border-radius: 7px 0 0 7px;
+    border-right: none;
   }
 
   &--required::before {
