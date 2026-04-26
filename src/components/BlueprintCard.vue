@@ -13,13 +13,13 @@
     }"
     @mousedown="$emit('select', id)"
   >
-    <!-- Input ports (left edge) -->
+    <!-- Input ports (left edge, outside clipping) -->
     <div class="nb-blueprint-card__ports nb-blueprint-card__ports--left">
       <div
         v-for="port in inputPorts"
         :key="port.id"
         :data-port="`${id}:${port.id}`"
-        class="nb-blueprint-card__port"
+        class="nb-blueprint-card__port nb-blueprint-card__port--left"
         :class="[
           `nb-blueprint-card__port--${pinShape(port)}`,
           port.required ? 'nb-blueprint-card__port--required' : '',
@@ -40,115 +40,112 @@
       ></div>
     </div>
 
-    <!-- Card content -->
-    <div class="nb-blueprint-card__body">
-      <!-- Header -->
-      <div class="nb-blueprint-card__header">
-        <!-- Collapse chevron -->
-        <button
-          class="nb-blueprint-card__collapse"
-          :title="collapsed ? 'Expand' : 'Collapse'"
-          @click.stop="$emit('toggle-collapse', id)"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
+    <!-- Inner wrapper (clips accent bar and glow to border-radius) -->
+    <div class="nb-blueprint-card__inner">
+      <div class="nb-blueprint-card__body">
+        <!-- Header -->
+        <div class="nb-blueprint-card__header">
+          <button
+            class="nb-blueprint-card__collapse"
+            :title="collapsed ? 'Expand' : 'Collapse'"
+            @click.stop="$emit('toggle-collapse', id)"
           >
-            <polyline points="4 6 8 10 12 6" />
-          </svg>
-        </button>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <polyline points="4 6 8 10 12 6" />
+            </svg>
+          </button>
 
-        <!-- Title group -->
-        <div class="nb-blueprint-card__title-group">
-          <span class="nb-blueprint-card__name">
-            {{ title }}
-            <!-- Status indicator -->
-            <span
-              v-if="status && status !== 'none'"
-              class="nb-blueprint-card__status"
-              :class="`nb-blueprint-card__status--${status}`"
-            />
-          </span>
-          <span v-if="category" class="nb-blueprint-card__tag">{{
-            displayCategory
-          }}</span>
-        </div>
-
-        <!-- Enable toggle -->
-        <label
-          v-if="enabled !== undefined"
-          class="nb-blueprint-card__toggle"
-          @click.stop
-        >
-          <input
-            type="checkbox"
-            :checked="enabled"
-            @change="
-              $emit('toggle', id, ($event.target as HTMLInputElement).checked)
-            "
-          />
-          <span class="nb-blueprint-card__toggle-track" />
-        </label>
-
-        <!-- Remove button -->
-        <button
-          v-if="removable"
-          class="nb-blueprint-card__remove"
-          title="Remove"
-          @click.stop="$emit('remove', id)"
-        >
-          &times;
-        </button>
-      </div>
-
-      <!-- Body (hidden when collapsed) -->
-      <template v-if="!collapsed">
-        <span v-if="preview" class="nb-blueprint-card__preview">{{
-          preview
-        }}</span>
-
-        <!-- Structured parameter rows -->
-        <div
-          v-if="parameters && parameters.length"
-          class="nb-blueprint-card__params"
-        >
-          <div
-            v-for="param in parameters"
-            :key="param.label"
-            class="nb-blueprint-card__row"
-          >
-            <span class="nb-blueprint-card__row-label">{{ param.label }}</span>
-            <span class="nb-blueprint-card__row-value">
-              {{ param.value }}
-              <em v-if="param.unit" class="nb-blueprint-card__row-unit">{{
-                param.unit
-              }}</em>
+          <div class="nb-blueprint-card__title-group">
+            <span class="nb-blueprint-card__name">
+              {{ title }}
+              <span
+                v-if="status && status !== 'none'"
+                class="nb-blueprint-card__status"
+                :class="`nb-blueprint-card__status--${status}`"
+              />
             </span>
-            <div
-              v-if="param.bar !== undefined"
-              class="nb-blueprint-card__row-bar"
-              :style="{ '--bar-progress': `${param.bar}%` }"
-            />
+            <span v-if="category" class="nb-blueprint-card__tag">{{
+              displayCategory
+            }}</span>
           </div>
+
+          <label
+            v-if="enabled !== undefined"
+            class="nb-blueprint-card__toggle"
+            @click.stop
+          >
+            <input
+              type="checkbox"
+              :checked="enabled"
+              @change="
+                $emit('toggle', id, ($event.target as HTMLInputElement).checked)
+              "
+            />
+            <span class="nb-blueprint-card__toggle-track" />
+          </label>
+
+          <button
+            v-if="removable"
+            class="nb-blueprint-card__remove"
+            title="Remove"
+            @click.stop="$emit('remove', id)"
+          >
+            &times;
+          </button>
         </div>
 
-        <div v-if="$slots.default" class="nb-blueprint-card__content">
-          <slot />
-        </div>
-      </template>
+        <template v-if="!collapsed">
+          <span v-if="preview" class="nb-blueprint-card__preview">{{
+            preview
+          }}</span>
+
+          <div
+            v-if="parameters && parameters.length"
+            class="nb-blueprint-card__params"
+          >
+            <div
+              v-for="param in parameters"
+              :key="param.label"
+              class="nb-blueprint-card__row"
+            >
+              <span class="nb-blueprint-card__row-label">{{
+                param.label
+              }}</span>
+              <span class="nb-blueprint-card__row-value">
+                {{ param.value }}
+                <em v-if="param.unit" class="nb-blueprint-card__row-unit">{{
+                  param.unit
+                }}</em>
+              </span>
+              <div
+                v-if="param.bar !== undefined"
+                class="nb-blueprint-card__row-bar"
+                :style="{ '--bar-progress': `${param.bar}%` }"
+              />
+            </div>
+          </div>
+
+          <div v-if="$slots.default" class="nb-blueprint-card__content">
+            <slot />
+          </div>
+        </template>
+      </div>
     </div>
 
-    <!-- Output ports (right edge) -->
+    <!-- Output ports (right edge, outside clipping) -->
     <div class="nb-blueprint-card__ports nb-blueprint-card__ports--right">
       <div
         v-for="port in outputPorts"
         :key="port.id"
         :data-port="`${id}:${port.id}`"
-        class="nb-blueprint-card__port"
+        class="nb-blueprint-card__port nb-blueprint-card__port--right"
         :class="[
           `nb-blueprint-card__port--${pinShape(port)}`,
           isConnected(port.id) ? 'nb-blueprint-card__port--connected' : '',
@@ -306,6 +303,51 @@ function pinShape(port: IBlueprintPort): string {
     border-color 200ms,
     box-shadow 200ms;
 
+  &:hover {
+    transform: translateY(-1px);
+    border-color: var(--nb-c-text-muted, #2e3447);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.04) inset,
+      0 8px 24px -12px rgba(0, 0, 0, 0.6),
+      0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  &--selected {
+    border-color: var(--nb-card-color);
+    box-shadow: 0 0 12px -2px var(--nb-card-glow);
+
+    // Hide top accent bar when selected (the full border replaces it)
+    .nb-blueprint-card__inner::before {
+      opacity: 0;
+    }
+
+    // Keep accent border color even when hovered
+    &:hover {
+      border-color: var(--nb-card-color);
+    }
+  }
+
+  &--disabled {
+    opacity: 0.55;
+  }
+
+  &--collapsed {
+    min-width: 100px;
+    .nb-blueprint-card__body {
+      padding: 8px 10px;
+    }
+  }
+}
+
+// ── Inner wrapper (clips accent bar and glow to border-radius) ────────
+
+.nb-blueprint-card__inner {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  border-radius: inherit;
+  overflow: hidden;
+
   // Top accent bar
   &::before {
     content: '';
@@ -315,7 +357,6 @@ function pinShape(port: IBlueprintPort): string {
     right: 0;
     height: 2px;
     background: var(--nb-card-color);
-    border-radius: inherit;
     opacity: 0.7;
     z-index: 1;
   }
@@ -338,36 +379,6 @@ function pinShape(port: IBlueprintPort): string {
     opacity: 0.6;
     z-index: 0;
   }
-
-  &:hover {
-    transform: translateY(-1px);
-    border-color: var(--nb-c-text-muted, #2e3447);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.04) inset,
-      0 8px 24px -12px rgba(0, 0, 0, 0.6),
-      0 2px 4px rgba(0, 0, 0, 0.3);
-  }
-
-  &--selected {
-    border-color: var(--nb-card-color);
-    box-shadow: 0 0 12px -2px var(--nb-card-glow);
-
-    // Hide top accent bar when selected (the full border replaces it)
-    &::before {
-      opacity: 0;
-    }
-  }
-
-  &--disabled {
-    opacity: 0.55;
-  }
-
-  &--collapsed {
-    min-width: 100px;
-    .nb-blueprint-card__body {
-      padding: 8px 10px;
-    }
-  }
 }
 
 // ── Body ──────────────────────────────────────────────────────────────
@@ -375,8 +386,7 @@ function pinShape(port: IBlueprintPort): string {
 .nb-blueprint-card__body {
   position: relative;
   z-index: 1;
-  flex: 1;
-  padding: 10px 10px 10px;
+  padding: 10px;
   min-width: 0;
 }
 
@@ -621,13 +631,13 @@ function pinShape(port: IBlueprintPort): string {
   margin-top: 6px;
 }
 
-// ── Ports ─────────────────────────────────────────────────────────────
+// ── Ports (semicircles on the card edge) ──────────────────────────────
 
 .nb-blueprint-card__ports {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
   padding: 4px 0;
   z-index: 2;
 
@@ -649,52 +659,44 @@ function pinShape(port: IBlueprintPort): string {
 
   &::before {
     content: '';
-    width: 12px;
-    height: 12px;
+    width: 6px;
+    height: 14px;
     flex-shrink: 0;
     background: var(--nb-c-layer-1, #101218);
     border: 1.5px solid var(--nb-c-text-muted, #3a4257);
     transition:
       background 150ms,
       border-color 150ms,
-      transform 150ms,
       box-shadow 150ms;
   }
 
-  &--circle::before {
-    border-radius: 50%;
+  // Left port: semicircle facing left (outward)
+  &--left::before {
+    border-radius: 7px 0 0 7px;
+    border-right: none;
   }
-  &--diamond::before {
-    border-radius: 2px;
-    transform: rotate(45deg);
-    width: 10px;
-    height: 10px;
-  }
-  &--square::before {
-    border-radius: 2px;
+
+  // Right port: semicircle facing right (outward)
+  &--right::before {
+    border-radius: 0 7px 7px 0;
+    border-left: none;
   }
 
   &--required::before {
     border-width: 2px;
   }
 
-  // Connected state: filled with accent color + outer ring
+  // Connected state: filled with accent color
   &--connected::before {
-    border-color: var(--pin-color, var(--nb-card-color));
-    background: var(--pin-color, var(--nb-card-color));
-    box-shadow:
-      0 0 0 3px var(--nb-c-layer-1, #101218),
-      0 0 8px var(--nb-card-glow, rgba(139, 124, 255, 0.18));
-  }
-
-  &:hover::before {
-    transform: scale(1.25);
     border-color: var(--pin-color, var(--nb-card-color));
     background: var(--pin-color, var(--nb-card-color));
     box-shadow: 0 0 8px var(--nb-card-glow, rgba(139, 124, 255, 0.18));
   }
-  &--diamond:hover::before {
-    transform: rotate(45deg) scale(1.25);
+
+  &:hover::before {
+    border-color: var(--pin-color, var(--nb-card-color));
+    background: var(--pin-color, var(--nb-card-color));
+    box-shadow: 0 0 8px var(--nb-card-glow, rgba(139, 124, 255, 0.18));
   }
 }
 </style>
