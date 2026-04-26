@@ -263,27 +263,28 @@ function onCardMouseDown(e: MouseEvent, cardEl: HTMLElement) {
   const cardId = cardEl.dataset.cardId
   if (!cardId) return
 
-  // Handle selection
-  if (e.shiftKey) {
-    // Shift+click: toggle card in selection
-    const next = new Set(selectedIds.value)
-    if (next.has(cardId)) next.delete(cardId)
-    else next.add(cardId)
-    setSelection(Array.from(next))
-  } else if (!selectedIds.value.has(cardId)) {
-    // Click on unselected card: select only this card
-    setSelection([cardId])
-  }
-  // If card was already selected (no shift), keep current selection (for multi-drag)
-
-  // Prepare for drag
+  // Record start positions BEFORE changing selection (selection changes can
+  // trigger Vue re-renders that reset wrapper transforms).
   dragMouseStartX = e.clientX
   dragMouseStartY = e.clientY
   dragDidMove = false
   dragStartPositions = new Map()
 
-  // Record start positions of all selected cards
-  if (containerRef.value) {
+  // Handle selection
+  if (e.shiftKey) {
+    const next = new Set(selectedIds.value)
+    if (next.has(cardId)) next.delete(cardId)
+    else next.add(cardId)
+    setSelection(Array.from(next))
+  } else if (!selectedIds.value.has(cardId)) {
+    setSelection([cardId])
+  }
+
+  // Record start positions of all selected cards after selection is applied.
+  // Use nextTick so Vue has finished re-rendering any reactive bindings
+  // (e.g. :collapsed) before we read positions from the DOM.
+  nextTick(() => {
+    if (!containerRef.value) return
     for (const id of selectedIds.value) {
       const el = containerRef.value.querySelector(
         `[data-card-id="${id}"]`,
@@ -292,10 +293,25 @@ function onCardMouseDown(e: MouseEvent, cardEl: HTMLElement) {
         dragStartPositions.set(id, getCardPosition(el))
       }
     }
-  }
+  })
 
   document.addEventListener('mousemove', onCardDragMove)
   document.addEventListener('mouseup', onCardDragEnd)
+}
+
+function emitDragPositions() {
+  if (!containerRef.value) return
+  const moves: IBlueprintCardMove[] = []
+  for (const id of dragStartPositions.keys()) {
+    const el = containerRef.value.querySelector(
+      `[data-card-id="${id}"]`,
+    ) as HTMLElement | null
+    if (el) {
+      const pos = getCardPosition(el)
+      moves.push({ id, x: Math.round(pos.x), y: Math.round(pos.y) })
+    }
+  }
+  if (moves.length) emit('move', moves)
 }
 
 function onCardDragMove(e: MouseEvent) {
@@ -307,7 +323,7 @@ function onCardDragMove(e: MouseEvent) {
     Math.abs(dx * zoom.value) < DRAG_THRESHOLD &&
     Math.abs(dy * zoom.value) < DRAG_THRESHOLD
   ) {
-    return // Haven't moved enough to count as a drag
+    return
   }
 
   isDraggingCards = true
@@ -324,6 +340,10 @@ function onCardDragMove(e: MouseEvent) {
     }
   }
 
+  // Emit move on every frame so the consumer's reactive data stays in sync
+  // with the visual position. This prevents Vue re-renders from resetting
+  // wrapper transforms during drag.
+  emitDragPositions()
   wireKey.value++
 }
 
@@ -331,19 +351,8 @@ function onCardDragEnd() {
   document.removeEventListener('mousemove', onCardDragMove)
   document.removeEventListener('mouseup', onCardDragEnd)
 
-  if (dragDidMove && containerRef.value) {
-    // Emit final positions
-    const moves: IBlueprintCardMove[] = []
-    for (const id of dragStartPositions.keys()) {
-      const el = containerRef.value.querySelector(
-        `[data-card-id="${id}"]`,
-      ) as HTMLElement | null
-      if (el) {
-        const pos = getCardPosition(el)
-        moves.push({ id, x: Math.round(pos.x), y: Math.round(pos.y) })
-      }
-    }
-    if (moves.length) emit('move', moves)
+  if (dragDidMove) {
+    emitDragPositions()
   }
 
   isDraggingCards = false

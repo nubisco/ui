@@ -301,7 +301,6 @@ function pinShape(port: IBlueprintPort): string {
   border: 1px solid var(--nb-c-border);
   cursor: grab;
   user-select: none;
-  overflow: hidden;
   transition:
     transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1),
     border-color 200ms,
