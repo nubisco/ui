@@ -1,3 +1,10 @@
+## [1.26.2](https://github.com/nubisco/ui/compare/v1.26.1...v1.26.2) (2026-04-26)
+
+
+### Bug Fixes
+
+* accent bar via background gradient, inward semicircle ports, selected hover border ([bbf0997](https://github.com/nubisco/ui/commit/bbf09976119d01a6753129bc750d9580ed532a0f))
+
 ## [1.26.1](https://github.com/nubisco/ui/compare/v1.26.0...v1.26.1) (2026-04-26)
 
 
