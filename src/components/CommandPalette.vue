@@ -191,13 +191,19 @@ const groupedResults = computed<ICommandGroup[]>(() => {
     if (!groups.has(ns)) groups.set(ns, [])
     groups.get(ns)!.push(cmd)
   }
-  return Array.from(groups.entries()).map(([namespace, commands]) => ({
-    namespace,
-    commands,
-  }))
+  // Sort groups alphabetically by namespace, commands alphabetically within each group
+  return Array.from(groups.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([namespace, commands]) => ({
+      namespace,
+      commands: commands.sort((a, b) => a.label.localeCompare(b.label)),
+    }))
 })
 
-const flatResults = computed(() => filteredCommands.value)
+// Flat list follows the sorted group order for arrow key navigation
+const flatResults = computed(() =>
+  groupedResults.value.flatMap((g) => g.commands),
+)
 
 function executeCommand(cmd: ICommand) {
   state.close()
