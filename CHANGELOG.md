@@ -1,3 +1,10 @@
+# [1.22.0](https://github.com/nubisco/ui/compare/v1.21.1...v1.22.0) (2026-04-26)
+
+
+### Features
+
+* redesign Blueprint cards with top accent, structured rows, animated wires ([b9e9aec](https://github.com/nubisco/ui/commit/b9e9aec1cf309c8c8aa18719837d08f20f635f9a))
+
 ## [1.21.1](https://github.com/nubisco/ui/compare/v1.21.0...v1.21.1) (2026-04-25)
 
 
