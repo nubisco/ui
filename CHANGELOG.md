@@ -1,3 +1,10 @@
+# [1.23.0](https://github.com/nubisco/ui/compare/v1.22.1...v1.23.0) (2026-04-26)
+
+
+### Features
+
+* add fitToView and resetView to Blueprint, make ambient gradients themeable ([65d2e76](https://github.com/nubisco/ui/commit/65d2e76c4b76bc709ed317f61715752a6271a73b))
+
 ## [1.22.1](https://github.com/nubisco/ui/compare/v1.22.0...v1.22.1) (2026-04-26)
 
 
