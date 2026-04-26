@@ -1,3 +1,10 @@
+## [1.27.1](https://github.com/nubisco/ui/compare/v1.27.0...v1.27.1) (2026-04-26)
+
+
+### Bug Fixes
+
+* sort command palette groups and items alphabetically for consistent arrow-key navigation ([65274f2](https://github.com/nubisco/ui/commit/65274f29bf91c5cff007c7ce3ad810271800ae3c))
+
 # [1.27.0](https://github.com/nubisco/ui/compare/v1.26.2...v1.27.0) (2026-04-26)
 
 
