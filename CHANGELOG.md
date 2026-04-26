@@ -1,3 +1,10 @@
+## [1.26.1](https://github.com/nubisco/ui/compare/v1.26.0...v1.26.1) (2026-04-26)
+
+
+### Bug Fixes
+
+* clip accent bar with inner wrapper, semicircle ports, selected+hover border ([f944d22](https://github.com/nubisco/ui/commit/f944d2277b23b2b11b723b022ebae44082556309))
+
 # [1.26.0](https://github.com/nubisco/ui/compare/v1.25.0...v1.26.0) (2026-04-26)
 
 
