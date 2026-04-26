@@ -1,3 +1,10 @@
+## [1.22.1](https://github.com/nubisco/ui/compare/v1.22.0...v1.22.1) (2026-04-26)
+
+
+### Bug Fixes
+
+* install NbCommandPalettePlugin automatically from the main plugin ([8c8d6b8](https://github.com/nubisco/ui/commit/8c8d6b82c1ed40b32ea1732d64de3ef8ba948651))
+
 # [1.22.0](https://github.com/nubisco/ui/compare/v1.21.1...v1.22.0) (2026-04-26)
 
 
