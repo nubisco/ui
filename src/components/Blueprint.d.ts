@@ -5,6 +5,12 @@ export interface IBlueprintConnection {
   toPort: string
 }
 
+export interface IBlueprintCardMove {
+  id: string
+  x: number
+  y: number
+}
+
 export interface IBlueprintProps {
   /**
    * Wire connections between card ports.

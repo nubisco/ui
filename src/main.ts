@@ -85,7 +85,10 @@ export type { TBottomPanelSize } from './components/BottomPanel.d'
 export { default as NbShellPanel } from './components/ShellPanel.vue'
 export type { TShellPanelSize } from './components/ShellPanel.d'
 export { default as NbBlueprint } from './components/Blueprint.vue'
-export type { IBlueprintConnection } from './components/Blueprint.d'
+export type {
+  IBlueprintConnection,
+  IBlueprintCardMove,
+} from './components/Blueprint.d'
 export { default as NbBlueprintCard } from './components/BlueprintCard.vue'
 export type {
   IBlueprintPort,

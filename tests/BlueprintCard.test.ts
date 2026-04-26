@@ -13,6 +13,11 @@ describe('BlueprintCard', () => {
     expect(w.text()).toContain('Test Card')
   })
 
+  it('sets data-card-id attribute', () => {
+    const w = createWrapper()
+    expect(w.attributes('data-card-id')).toBe('test')
+  })
+
   it('renders category as accent-colored tag', () => {
     const w = createWrapper({ category: 'effect' })
     const tag = w.find('.nb-blueprint-card__tag')
@@ -81,7 +86,7 @@ describe('BlueprintCard', () => {
     expect(ports).toHaveLength(1)
   })
 
-  it('emits select on mousedown', async () => {
+  it('emits select on mousedown (bubbles, no stopPropagation)', async () => {
     const w = createWrapper()
     await w.trigger('mousedown')
     expect(w.emitted('select')?.[0]).toEqual(['test'])

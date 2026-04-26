@@ -6,11 +6,12 @@
       'nb-blueprint-card--disabled': !enabled,
       'nb-blueprint-card--collapsed': collapsed,
     }"
+    :data-card-id="id"
     :style="{
       '--nb-card-color': color || 'var(--nb-c-primary)',
       '--nb-card-glow': cardGlow,
     }"
-    @mousedown.stop="$emit('select', id)"
+    @mousedown="$emit('select', id)"
   >
     <!-- Input ports (left edge) -->
     <div class="nb-blueprint-card__ports nb-blueprint-card__ports--left">
