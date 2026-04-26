@@ -88,6 +88,7 @@ export { default as NbBlueprintCard } from './components/BlueprintCard.vue'
 export type {
   IBlueprintPort,
   IBlueprintCardProps,
+  IBlueprintCardParameter,
 } from './components/BlueprintCard.d'
 
 // Directives
