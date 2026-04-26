@@ -6,16 +6,17 @@ tabs: ['Usage', 'Api']
 
 <doc-tab name="Usage">
 
-`NbBlueprint` is a generic visual node editor canvas. It provides a pannable, zoomable surface on which you place `NbBlueprintCard` nodes and draws bezier wires between their ports. It has no domain logic — connections, card positions, and card state are owned by the parent — so it can be reused for anything from DAG editors to audio routing graphs.
+`NbBlueprint` is a generic visual node editor canvas. It provides a pannable, zoomable surface on which you place `NbBlueprintCard` nodes and draws animated bezier wires between their ports. It has no domain logic: connections, card positions, and card state are owned by the parent.
 
 ## What it gives you
 
 - **Pan** by dragging the canvas background (drags on cards and ports are ignored).
-- **Focal-point zoom** on mouse wheel, clamped between `0.2×` and `3×`.
-- **Wire rendering**: a bezier SVG path is drawn for each entry in the `connections` array, anchored to the DOM positions of the card ports referenced by `fromNode:fromPort` and `toNode:toPort`.
+- **Focal-point zoom** on mouse wheel, clamped between `0.2x` and `3x`.
+- **Animated wire rendering**: bezier SVG paths with a flowing dashed stroke, colored to match the source node's accent. Each wire has a soft drop-shadow glow.
 - **Drag-to-connect**: while the user drags from a port, a dashed preview wire follows the cursor; releasing on a compatible port emits `connect`.
 - **Click-to-disconnect**: clicking an existing wire emits `disconnect`.
 - **Auto re-layout**: a `MutationObserver` watches the DOM inside the canvas so wires re-compute whenever cards are added, removed, or moved.
+- **Ambient canvas**: dot grid with radial fade, plus subtle colored gradients for atmosphere.
 
 ## Basic example
 
@@ -40,8 +41,11 @@ Cards are placed in the default slot and positioned with inline `transform: tran
           :category="card.category"
           :color="card.color"
           :ports="card.ports"
+          :connected-ports="connectedPortsFor(card.id)"
           :selected="demoSelectedId === card.id"
+          :collapsed="demoSelectedId !== card.id"
           @select="demoSelectedId = $event"
+          @toggle-collapse="demoSelectedId = demoSelectedId === $event ? null : $event"
           @port-mousedown="demoBlueprint?.onPortMouseDown($event)"
           @port-mouseup="demoBlueprint?.onPortMouseUp($event)"
         />
@@ -77,7 +81,9 @@ Cards are placed in the default slot and positioned with inline `transform: tran
           :category="card.category"
           :color="card.color"
           :ports="card.ports"
+          :connected-ports="connectedPortsFor(card.id)"
           :selected="selectedId === card.id"
+          :collapsed="selectedId !== card.id"
           @select="selectedId = $event"
           @port-mousedown="blueprint?.onPortMouseDown($event)"
           @port-mouseup="blueprint?.onPortMouseUp($event)"
@@ -86,94 +92,21 @@ Cards are placed in the default slot and positioned with inline `transform: tran
     </NbBlueprint>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import type { IBlueprintConnection, IBlueprintPort } from '@nubisco/ui'
-
-const blueprint = ref<{
-  onPortMouseDown: (d: { nodeId: string; portId: string; type: string }) => void
-  onPortMouseUp: (d: { nodeId: string; portId: string; type: string }) => void
-  centerView: () => void
-}>()
-
-interface ICard {
-  id: string
-  title: string
-  category: string
-  color: string
-  x: number
-  y: number
-  ports: IBlueprintPort[]
-}
-
-const cards = ref<ICard[]>([
-  {
-    id: 'input',
-    title: 'Audio In',
-    category: 'source',
-    color: '#22c55e',
-    x: 40,
-    y: 60,
-    ports: [{ id: 'out', label: 'out', type: 'output' }],
-  },
-  {
-    id: 'filter',
-    title: 'Low-pass',
-    category: 'effect',
-    color: '#a78bfa',
-    x: 240,
-    y: 60,
-    ports: [
-      { id: 'in', label: 'in', type: 'input' },
-      { id: 'out', label: 'out', type: 'output' },
-    ],
-  },
-  {
-    id: 'output',
-    title: 'Speakers',
-    category: 'sink',
-    color: '#f97316',
-    x: 440,
-    y: 60,
-    ports: [{ id: 'in', label: 'in', type: 'input' }],
-  },
-])
-
-const connections = ref<IBlueprintConnection[]>([
-  { fromNode: 'input', fromPort: 'out', toNode: 'filter', toPort: 'in' },
-  { fromNode: 'filter', fromPort: 'out', toNode: 'output', toPort: 'in' },
-])
-
-const selectedId = ref<string | null>(null)
-
-function onConnect(c: IBlueprintConnection) {
-  connections.value.push(c)
-}
-
-function onDisconnect(c: IBlueprintConnection) {
-  connections.value = connections.value.filter(
-    (x) =>
-      !(
-        x.fromNode === c.fromNode &&
-        x.fromPort === c.fromPort &&
-        x.toNode === c.toNode &&
-        x.toPort === c.toPort
-      ),
-  )
-}
-</script>
 ```
 
 ## Wiring up ports
 
-`NbBlueprint` does not know about its cards directly — it only watches the DOM under its canvas for elements with a `data-port="nodeId:portId"` attribute (emitted automatically by `NbBlueprintCard`). To complete the connection lifecycle, forward the card's `port-mousedown` / `port-mouseup` events to the blueprint's exposed handlers through a template ref, as shown above.
+`NbBlueprint` does not know about its cards directly. It watches the DOM for elements with a `data-port="nodeId:portId"` attribute (emitted automatically by `NbBlueprintCard`). To complete the connection lifecycle, forward the card's `port-mousedown` / `port-mouseup` events to the blueprint's exposed handlers through a template ref.
 
 The blueprint will only emit `connect` when the two ports belong to different nodes and are of opposite types (one `input` and one `output`).
 
+## Wire coloring
+
+Wires automatically pick up the accent color of the source node's card (via the `--nb-card-color` CSS variable). Each wire renders with a soft drop-shadow glow and an animated dashed stroke showing the direction of data flow.
+
 ## Centering the view
 
-`centerView()` is exposed on the component instance. It resets the zoom to `1×` and pans so the bounding box of the current cards is centered in the viewport. It's called automatically once on mount.
+`centerView()` is exposed on the component instance. It resets the zoom to `1x` and pans so the bounding box of the current cards is centered in the viewport. It's called automatically once on mount.
 
 ```vue
 <NbButton @click="blueprint?.centerView()">Center</NbButton>
@@ -181,11 +114,11 @@ The blueprint will only emit `connect` when the two ports belong to different no
 
 ## Sizing
 
-The canvas grows to fill its container (`flex: 1` + `overflow: hidden`). Place it inside a block with an explicit height — typically the `#bottom` slot of an [`NbShell`](/ui/components/shell) or a fixed-height card.
+The canvas grows to fill its container (`flex: 1` + `overflow: hidden`). Place it inside a block with an explicit height, typically the `#bottom` slot of an [`NbShell`](/ui/components/shell) or a fixed-height card.
 
 ## Theming
 
-The canvas background uses the layer system (`--nb-c-layer-0`, falling back to `--nb-c-bg`), and the wire color is `--nb-c-primary`. Override these on an ancestor to reskin.
+The canvas background uses the layer system (`--nb-c-layer-0`, falling back to `--nb-c-bg`). Ambient gradients add subtle color atmosphere. The wire colors are derived from each source card's `--nb-card-color`. Override these on an ancestor to reskin.
 
 </doc-tab>
 
@@ -216,12 +149,12 @@ Access these via a template `ref`.
 
 | Member            | Signature                                                                    | Description                                                                             |
 | ----------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `centerView`      | `() => void`                                                                 | Reset zoom to `1×` and pan so all cards are centered.                                   |
+| `centerView`      | `() => void`                                                                 | Reset zoom to `1x` and pan so all cards are centered.                                   |
 | `onPortMouseDown` | `(d: { nodeId: string; portId: string; type: 'input' \| 'output' }) => void` | Forward `NbBlueprintCard`'s `port-mousedown` here to start a drag-to-connect operation. |
 | `onPortMouseUp`   | `(d: { nodeId: string; portId: string; type: 'input' \| 'output' }) => void` | Forward `NbBlueprintCard`'s `port-mouseup` here to complete the connection.             |
 | `panX`            | `Ref<number>`                                                                | Current pan offset in pixels.                                                           |
 | `panY`            | `Ref<number>`                                                                | Current pan offset in pixels.                                                           |
-| `zoom`            | `Ref<number>`                                                                | Current zoom level (`0.2` – `3`).                                                       |
+| `zoom`            | `Ref<number>`                                                                | Current zoom level (`0.2` to `3`).                                                      |
 
 ## Types
 
@@ -244,7 +177,7 @@ interface IBlueprintConnection {
 </doc-tab>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 interface IDemoCard {
   id: string
@@ -270,7 +203,7 @@ const initialDemoCards: IDemoCard[] = [
     id: 'filter',
     title: 'Low-pass',
     category: 'effect',
-    color: '#a78bfa',
+    color: '#a855f7',
     x: 240,
     y: 60,
     ports: [
@@ -325,6 +258,16 @@ const demoCards = ref<IDemoCard[]>(
 )
 const demoConnections = ref([...initialConnections])
 const demoSelectedId = ref<string | null>(null)
+
+// Compute connected port IDs for a given card
+function connectedPortsFor(cardId: string): string[] {
+  const ports = new Set<string>()
+  for (const c of demoConnections.value) {
+    if (c.fromNode === cardId) ports.add(c.fromPort)
+    if (c.toNode === cardId) ports.add(c.toPort)
+  }
+  return Array.from(ports)
+}
 
 function onDemoConnect(c: {
   fromNode: string

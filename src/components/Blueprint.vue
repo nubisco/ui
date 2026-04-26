@@ -5,6 +5,9 @@
     @mousedown="onCanvasMouseDown"
     @wheel.prevent="onWheel"
   >
+    <!-- Ambient gradient overlays -->
+    <div class="nb-blueprint__ambient" />
+
     <!-- Grid background -->
     <div
       class="nb-blueprint__grid"
@@ -27,9 +30,22 @@
           :d="wire.path"
           fill="none"
           :stroke="wire.color"
-          stroke-width="2"
+          stroke-width="1.5"
           class="nb-blueprint__wire"
+          :style="{ filter: `drop-shadow(0 0 6px ${wire.color})` }"
           @click="$emit('disconnect', wire.conn)"
+        />
+        <!-- Animated flow overlay for each wire -->
+        <path
+          v-for="(wire, i) in computedWires"
+          :key="`flow-${i}`"
+          :d="wire.path"
+          fill="none"
+          :stroke="wire.color"
+          stroke-width="1.5"
+          stroke-dasharray="4 8"
+          class="nb-blueprint__wire-flow"
+          pointer-events="none"
         />
         <!-- Active wire being dragged -->
         <path
@@ -190,6 +206,18 @@ function onPortMouseUp(data: { nodeId: string; portId: string; type: string }) {
 
 // ── Wire paths ─────────────────────────────────────────────────────────
 
+function resolveWireColor(fromPortEl: HTMLElement): string {
+  // Walk up to the card and read its accent color
+  const card = fromPortEl.closest('.nb-blueprint-card') as HTMLElement | null
+  if (card) {
+    const color = getComputedStyle(card)
+      .getPropertyValue('--nb-card-color')
+      .trim()
+    if (color && !color.startsWith('var(')) return color
+  }
+  return 'var(--nb-c-primary)'
+}
+
 const computedWires = computed(() => {
   void wireKey.value // reactive dependency for re-computation
   if (!containerRef.value) return []
@@ -215,7 +243,8 @@ const computedWires = computed(() => {
 
       const cpx = Math.abs(tx - fx) * 0.4
       const path = `M ${fx} ${fy} C ${fx + cpx} ${fy}, ${tx - cpx} ${ty}, ${tx} ${ty}`
-      return { path, conn, color: 'var(--nb-c-primary)' }
+      const color = resolveWireColor(fromEl)
+      return { path, conn, color }
     })
     .filter(Boolean) as {
     path: string
@@ -292,6 +321,25 @@ defineExpose({ centerView, onPortMouseDown, onPortMouseUp, panX, panY, zoom })
   }
 }
 
+// Ambient radial gradients for atmosphere
+.nb-blueprint__ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(
+      ellipse 80% 50% at 50% 0%,
+      rgba(139, 124, 255, 0.04),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 80% 100%,
+      rgba(255, 157, 74, 0.03),
+      transparent 60%
+    );
+}
+
 .nb-blueprint__grid {
   position: absolute;
   inset: -2000px;
@@ -300,9 +348,20 @@ defineExpose({ centerView, onPortMouseDown, onPortMouseUp, panX, panY, zoom })
     var(--nb-c-border) 1px,
     transparent 1px
   );
-  background-size: 20px 20px;
+  background-size: 24px 24px;
   pointer-events: none;
   opacity: 0.4;
+  // Fade dots at edges with a radial mask
+  mask-image: radial-gradient(
+    ellipse 80% 80% at 50% 50%,
+    #000 40%,
+    transparent 100%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 80% 80% at 50% 50%,
+    #000 40%,
+    transparent 100%
+  );
 }
 
 .nb-blueprint__canvas {
@@ -327,11 +386,23 @@ defineExpose({ centerView, onPortMouseDown, onPortMouseUp, panX, panY, zoom })
 .nb-blueprint__wire {
   pointer-events: stroke;
   cursor: pointer;
-  transition: opacity 0.1s;
+  opacity: 0.55;
+  transition: opacity 0.15s;
 
   &:hover {
-    opacity: 0.5;
-    stroke-width: 4;
+    opacity: 0.8;
+    stroke-width: 3;
+  }
+}
+
+.nb-blueprint__wire-flow {
+  opacity: 0.55;
+  animation: nb-wire-flow 2.4s linear infinite;
+}
+
+@keyframes nb-wire-flow {
+  to {
+    stroke-dashoffset: -24;
   }
 }
 </style>

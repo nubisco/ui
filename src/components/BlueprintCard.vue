@@ -6,13 +6,13 @@
       'nb-blueprint-card--disabled': !enabled,
       'nb-blueprint-card--collapsed': collapsed,
     }"
-    :style="{ '--nb-card-color': color || 'var(--nb-c-primary)' }"
+    :style="{
+      '--nb-card-color': color || 'var(--nb-c-primary)',
+      '--nb-card-glow': cardGlow,
+    }"
     @mousedown.stop="$emit('select', id)"
   >
-    <!-- Color indicator -->
-    <div class="nb-blueprint-card__indicator" />
-
-    <!-- Input ports (left side) -->
+    <!-- Input ports (left edge) -->
     <div class="nb-blueprint-card__ports nb-blueprint-card__ports--left">
       <div
         v-for="port in inputPorts"
@@ -22,6 +22,7 @@
         :class="[
           `nb-blueprint-card__port--${pinShape(port)}`,
           port.required ? 'nb-blueprint-card__port--required' : '',
+          isConnected(port.id) ? 'nb-blueprint-card__port--connected' : '',
         ]"
         :style="{ '--pin-color': pinColor(port) }"
         :title="port.label"
@@ -38,36 +39,45 @@
       ></div>
     </div>
 
-    <!-- Card body -->
+    <!-- Card content -->
     <div class="nb-blueprint-card__body">
+      <!-- Header -->
       <div class="nb-blueprint-card__header">
-        <!-- Collapse toggle -->
+        <!-- Collapse chevron -->
         <button
           class="nb-blueprint-card__collapse"
           :title="collapsed ? 'Expand' : 'Collapse'"
           @click.stop="$emit('toggle-collapse', id)"
         >
-          <svg width="8" height="8" viewBox="0 0 8 8">
-            <path
-              :d="collapsed ? 'M2 1L6 4L2 7' : 'M1 2L4 6L7 2'"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <polyline points="4 6 8 10 12 6" />
           </svg>
         </button>
 
-        <!-- Status indicator -->
-        <span
-          v-if="status && status !== 'none'"
-          class="nb-blueprint-card__status"
-          :class="`nb-blueprint-card__status--${status}`"
-        />
+        <!-- Title group -->
+        <div class="nb-blueprint-card__title-group">
+          <span class="nb-blueprint-card__name">
+            {{ title }}
+            <!-- Status indicator -->
+            <span
+              v-if="status && status !== 'none'"
+              class="nb-blueprint-card__status"
+              :class="`nb-blueprint-card__status--${status}`"
+            />
+          </span>
+          <span v-if="category" class="nb-blueprint-card__tag">{{
+            displayCategory
+          }}</span>
+        </div>
 
-        <span class="nb-blueprint-card__title">{{ title }}</span>
-
+        <!-- Enable toggle -->
         <label
           v-if="enabled !== undefined"
           class="nb-blueprint-card__toggle"
@@ -82,6 +92,8 @@
           />
           <span class="nb-blueprint-card__toggle-track" />
         </label>
+
+        <!-- Remove button -->
         <button
           v-if="removable"
           class="nb-blueprint-card__remove"
@@ -92,27 +104,54 @@
         </button>
       </div>
 
+      <!-- Body (hidden when collapsed) -->
       <template v-if="!collapsed">
-        <span v-if="category" class="nb-blueprint-card__category">{{
-          category
-        }}</span>
         <span v-if="preview" class="nb-blueprint-card__preview">{{
           preview
         }}</span>
+
+        <!-- Structured parameter rows -->
+        <div
+          v-if="parameters && parameters.length"
+          class="nb-blueprint-card__params"
+        >
+          <div
+            v-for="param in parameters"
+            :key="param.label"
+            class="nb-blueprint-card__row"
+          >
+            <span class="nb-blueprint-card__row-label">{{ param.label }}</span>
+            <span class="nb-blueprint-card__row-value">
+              {{ param.value }}
+              <em v-if="param.unit" class="nb-blueprint-card__row-unit">{{
+                param.unit
+              }}</em>
+            </span>
+            <div
+              v-if="param.bar !== undefined"
+              class="nb-blueprint-card__row-bar"
+              :style="{ '--bar-progress': `${param.bar}%` }"
+            />
+          </div>
+        </div>
+
         <div v-if="$slots.default" class="nb-blueprint-card__content">
           <slot />
         </div>
       </template>
     </div>
 
-    <!-- Output ports (right side) -->
+    <!-- Output ports (right edge) -->
     <div class="nb-blueprint-card__ports nb-blueprint-card__ports--right">
       <div
         v-for="port in outputPorts"
         :key="port.id"
         :data-port="`${id}:${port.id}`"
         class="nb-blueprint-card__port"
-        :class="[`nb-blueprint-card__port--${pinShape(port)}`]"
+        :class="[
+          `nb-blueprint-card__port--${pinShape(port)}`,
+          isConnected(port.id) ? 'nb-blueprint-card__port--connected' : '',
+        ]"
         :style="{ '--pin-color': pinColor(port) }"
         :title="port.label"
         @mousedown.stop="
@@ -144,12 +183,14 @@ const props = withDefaults(defineProps<IBlueprintCardProps>(), {
   selected: false,
   category: '',
   ports: () => [],
+  connectedPorts: () => [],
   x: 0,
   y: 0,
   removable: false,
   collapsed: false,
   status: 'none',
   preview: '',
+  parameters: () => [],
 })
 
 defineEmits<{
@@ -171,6 +212,35 @@ const inputPorts = computed((): IBlueprintPort[] =>
 const outputPorts = computed((): IBlueprintPort[] =>
   props.ports.filter((p) => p.type === 'output'),
 )
+
+// Category display: append " · off" when disabled
+const displayCategory = computed(() => {
+  const base = props.category || ''
+  if (!props.enabled && base) return `${base} \u00b7 off`
+  return base
+})
+
+// Glow color at 18% alpha (derived from the accent color)
+const cardGlow = computed(() => {
+  const c = props.color
+  if (!c || c.startsWith('var(')) return 'rgba(139, 124, 255, 0.18)'
+  // Parse hex to rgba
+  if (c.startsWith('#') && (c.length === 7 || c.length === 4)) {
+    const hex =
+      c.length === 4 ? `#${c[1]}${c[1]}${c[2]}${c[2]}${c[3]}${c[3]}` : c
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    return `rgba(${r}, ${g}, ${b}, 0.18)`
+  }
+  return 'rgba(139, 124, 255, 0.18)'
+})
+
+const connectedSet = computed(() => new Set(props.connectedPorts))
+
+function isConnected(portId: string): boolean {
+  return connectedSet.value.has(portId)
+}
 
 // Pin visual style based on data type
 const PIN_COLORS: Record<TBlueprintPinDataType, string> = {
@@ -217,53 +287,103 @@ function pinShape(port: IBlueprintPort): string {
 
 <style scoped lang="scss">
 .nb-blueprint-card {
+  position: relative;
   display: flex;
   align-items: stretch;
-  min-width: 140px;
-  border-radius: 6px;
-  background: var(--nb-c-surface);
-  border: 1.5px solid var(--nb-c-border);
+  min-width: 160px;
+  border-radius: 10px;
+  background: linear-gradient(
+    180deg,
+    var(--nb-c-layer-2, #161922),
+    var(--nb-c-layer-1, #101218)
+  );
+  border: 1px solid var(--nb-c-border);
   cursor: grab;
   user-select: none;
+  overflow: hidden;
   transition:
-    border-color 0.12s,
-    box-shadow 0.12s;
+    transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 200ms,
+    box-shadow 200ms;
+
+  // Top accent bar
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--nb-card-color);
+    opacity: 0.7;
+    z-index: 1;
+  }
+
+  // Radial glow at top
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 80px;
+    background: radial-gradient(
+      ellipse at top,
+      var(--nb-card-glow),
+      transparent 70%
+    );
+    pointer-events: none;
+    opacity: 0.6;
+    z-index: 0;
+  }
 
   &:hover {
-    border-color: var(--nb-c-text-muted);
+    transform: translateY(-1px);
+    border-color: var(--nb-c-text-muted, #2e3447);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.04) inset,
+      0 8px 24px -12px rgba(0, 0, 0, 0.6),
+      0 2px 4px rgba(0, 0, 0, 0.3);
   }
+
   &--selected {
     border-color: var(--nb-card-color);
-    box-shadow: 0 0 0 1.5px var(--nb-card-color);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.04) inset,
+      0 0 0 1px var(--nb-card-color),
+      0 0 24px -4px var(--nb-card-glow);
   }
+
   &--disabled {
-    opacity: 0.5;
+    opacity: 0.55;
   }
+
   &--collapsed {
     min-width: 100px;
     .nb-blueprint-card__body {
-      padding: 4px 6px;
+      padding: 8px 10px;
     }
   }
 }
 
-.nb-blueprint-card__indicator {
-  width: 4px;
-  flex-shrink: 0;
-  border-radius: 6px 0 0 6px;
-  background: var(--nb-card-color);
-}
+// ── Body ──────────────────────────────────────────────────────────────
 
 .nb-blueprint-card__body {
+  position: relative;
+  z-index: 1;
   flex: 1;
-  padding: 6px 8px;
+  padding: 10px 10px 10px;
   min-width: 0;
 }
 
+// ── Header ────────────────────────────────────────────────────────────
+
 .nb-blueprint-card__header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
 .nb-blueprint-card__collapse {
@@ -272,75 +392,86 @@ function pinShape(port: IBlueprintPort): string {
   color: var(--nb-c-text-muted);
   cursor: pointer;
   padding: 0;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   border-radius: 2px;
+  transition: transform 200ms;
+
+  .nb-blueprint-card--collapsed & {
+    transform: rotate(-90deg);
+  }
 
   &:hover {
     color: var(--nb-c-text);
-    background: rgba(255, 255, 255, 0.06);
   }
 }
+
+.nb-blueprint-card__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nb-blueprint-card__name {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--nb-c-text);
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nb-blueprint-card__tag {
+  font-family: 'Geist Mono', 'Fira Code', 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--nb-card-color);
+  text-transform: uppercase;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+// ── Status indicator ──────────────────────────────────────────────────
 
 .nb-blueprint-card__status {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
+  display: inline-block;
 
   &--valid {
     background: #22c55e;
-    box-shadow: 0 0 4px #22c55e;
+    box-shadow: 0 0 6px #22c55e;
   }
   &--warning {
     background: #f59e0b;
-    box-shadow: 0 0 4px #f59e0b;
+    box-shadow: 0 0 6px #f59e0b;
   }
   &--error {
     background: #ef4444;
-    box-shadow: 0 0 4px #ef4444;
+    box-shadow: 0 0 6px #ef4444;
   }
 }
 
-.nb-blueprint-card__title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--nb-c-text);
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.nb-blueprint-card__category {
-  display: block;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--nb-c-text-subtle);
-  margin-top: 1px;
-}
-
-.nb-blueprint-card__preview {
-  display: block;
-  font-size: 10px;
-  color: var(--nb-c-text-muted);
-  margin-top: 2px;
-  font-family: 'Fira Code', monospace;
-}
-
-.nb-blueprint-card__content {
-  margin-top: 4px;
-}
+// ── Toggle (compact, accent-tinted) ───────────────────────────────────
 
 .nb-blueprint-card__toggle {
   display: flex;
   align-items: center;
   cursor: pointer;
+  flex-shrink: 0;
 
   input {
     position: absolute;
@@ -351,32 +482,43 @@ function pinShape(port: IBlueprintPort): string {
 }
 
 .nb-blueprint-card__toggle-track {
-  width: 24px;
-  height: 14px;
-  border-radius: 7px;
-  background: var(--nb-c-component-inactive);
+  width: 28px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--nb-c-component-inactive, #1d2230);
+  border: 1px solid var(--nb-c-border, #232838);
   position: relative;
-  transition: background 0.15s;
+  transition:
+    background 200ms,
+    border-color 200ms;
 
   &::after {
     content: '';
     position: absolute;
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    background: white;
-    top: 2px;
-    left: 2px;
-    transition: transform 0.15s;
+    background: var(--nb-c-text-muted, #5a6479);
+    top: 1px;
+    left: 1px;
+    transition:
+      transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      background 200ms;
   }
 
   input:checked + & {
-    background: var(--nb-card-color);
+    background: var(--nb-card-glow, rgba(139, 124, 255, 0.22));
+    border-color: color-mix(in srgb, var(--nb-card-color) 50%, transparent);
+
     &::after {
-      transform: translateX(10px);
+      transform: translateX(12px);
+      background: var(--nb-card-color);
+      box-shadow: 0 0 8px var(--nb-card-glow);
     }
   }
 }
+
+// ── Remove button ─────────────────────────────────────────────────────
 
 .nb-blueprint-card__remove {
   border: none;
@@ -396,6 +538,86 @@ function pinShape(port: IBlueprintPort): string {
   }
 }
 
+// ── Preview text ──────────────────────────────────────────────────────
+
+.nb-blueprint-card__preview {
+  display: block;
+  font-size: 10px;
+  color: var(--nb-c-text-muted);
+  margin-top: 4px;
+  font-family: 'Geist Mono', 'Fira Code', monospace;
+}
+
+// ── Parameter rows ────────────────────────────────────────────────────
+
+.nb-blueprint-card__params {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.nb-blueprint-card__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid var(--nb-c-border);
+  border-radius: 6px;
+  font-size: 11.5px;
+}
+
+.nb-blueprint-card__row-label {
+  font-family: 'Geist Mono', 'Fira Code', monospace;
+  font-size: 10.5px;
+  color: var(--nb-c-text-muted);
+  letter-spacing: 0.02em;
+}
+
+.nb-blueprint-card__row-value {
+  font-family: 'Geist Mono', 'Fira Code', monospace;
+  font-size: 11.5px;
+  color: var(--nb-c-text);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  grid-column: 3;
+}
+
+.nb-blueprint-card__row-unit {
+  font-style: normal;
+  color: var(--nb-c-text-muted);
+  font-size: 10px;
+  margin-left: 2px;
+}
+
+.nb-blueprint-card__row-bar {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--nb-c-component-inactive, #1d2230);
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: var(--bar-progress, 0%);
+    background: var(--nb-card-color);
+    border-radius: 999px;
+    opacity: 0.7;
+  }
+}
+
+// ── Custom slot content ───────────────────────────────────────────────
+
+.nb-blueprint-card__content {
+  margin-top: 6px;
+}
+
 // ── Ports ─────────────────────────────────────────────────────────────
 
 .nb-blueprint-card__ports {
@@ -404,15 +626,14 @@ function pinShape(port: IBlueprintPort): string {
   justify-content: center;
   gap: 4px;
   padding: 4px 0;
+  z-index: 2;
 
   &--left {
-    padding-left: 0;
-    margin-left: -5px;
+    margin-left: -6px;
     align-items: flex-start;
   }
   &--right {
-    padding-right: 0;
-    margin-right: -5px;
+    margin-right: -6px;
     align-items: flex-end;
   }
 }
@@ -420,22 +641,21 @@ function pinShape(port: IBlueprintPort): string {
 .nb-blueprint-card__port {
   display: flex;
   align-items: center;
-  gap: 4px;
   cursor: crosshair;
   position: relative;
 
-  // Pin shape (the dot/diamond/square) -- color-coded by data type
   &::before {
     content: '';
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     flex-shrink: 0;
-    background: var(--pin-color, rgba(255, 255, 255, 0.06));
-    border: 1.5px solid var(--pin-color, var(--nb-c-border));
+    background: var(--nb-c-layer-1, #101218);
+    border: 1.5px solid var(--nb-c-text-muted, #3a4257);
     transition:
-      background 0.1s,
-      transform 0.1s,
-      box-shadow 0.1s;
+      background 150ms,
+      border-color 150ms,
+      transform 150ms,
+      box-shadow 150ms;
   }
 
   &--circle::before {
@@ -444,8 +664,8 @@ function pinShape(port: IBlueprintPort): string {
   &--diamond::before {
     border-radius: 2px;
     transform: rotate(45deg);
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
   &--square::before {
     border-radius: 2px;
@@ -455,16 +675,23 @@ function pinShape(port: IBlueprintPort): string {
     border-width: 2px;
   }
 
-  &:hover::before {
+  // Connected state: filled with accent color + outer ring
+  &--connected::before {
+    border-color: var(--pin-color, var(--nb-card-color));
     background: var(--pin-color, var(--nb-card-color));
-    box-shadow: 0 0 6px var(--pin-color, var(--nb-card-color));
-    transform: scale(1.3);
+    box-shadow:
+      0 0 0 3px var(--nb-c-layer-1, #101218),
+      0 0 8px var(--nb-card-glow, rgba(139, 124, 255, 0.18));
+  }
+
+  &:hover::before {
+    transform: scale(1.25);
+    border-color: var(--pin-color, var(--nb-card-color));
+    background: var(--pin-color, var(--nb-card-color));
+    box-shadow: 0 0 8px var(--nb-card-glow, rgba(139, 124, 255, 0.18));
   }
   &--diamond:hover::before {
-    transform: rotate(45deg) scale(1.3);
+    transform: rotate(45deg) scale(1.25);
   }
 }
-
-// Port labels removed -- tooltips via :title are sufficient.
-// Pins are color-coded by data type for visual distinction.
 </style>

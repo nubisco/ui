@@ -29,6 +29,18 @@ export interface IBlueprintPort {
 /** Status indicator level */
 export type TBlueprintCardStatus = 'valid' | 'warning' | 'error' | 'none'
 
+/** Parameter row displayed inside the card body */
+export interface IBlueprintCardParameter {
+  /** Parameter label */
+  label: string
+  /** Display value */
+  value: string | number
+  /** Optional unit suffix (e.g. "blocks", "ms") */
+  unit?: string
+  /** Optional progress bar (0 to 100). When set, a thin bar renders below the row. */
+  bar?: number
+}
+
 export interface IBlueprintCardProps {
   /** Unique card identifier */
   id: string
@@ -44,6 +56,8 @@ export interface IBlueprintCardProps {
   category?: string
   /** Input/output port definitions */
   ports?: IBlueprintPort[]
+  /** IDs of ports that are currently connected (filled style) */
+  connectedPorts?: string[]
   /** Position X on the canvas (in canvas units) */
   x?: number
   /** Position Y on the canvas (in canvas units) */
@@ -56,4 +70,6 @@ export interface IBlueprintCardProps {
   status?: TBlueprintCardStatus
   /** Compact preview text shown on the card body */
   preview?: string
+  /** Structured parameter rows displayed in the card body */
+  parameters?: IBlueprintCardParameter[]
 }
