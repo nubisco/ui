@@ -349,10 +349,12 @@ function pinShape(port: IBlueprintPort): string {
 
   &--selected {
     border-color: var(--nb-card-color);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.04) inset,
-      0 0 0 1px var(--nb-card-color),
-      0 0 24px -4px var(--nb-card-glow);
+    box-shadow: 0 0 12px -2px var(--nb-card-glow);
+
+    // Hide top accent bar when selected (the full border replaces it)
+    &::before {
+      opacity: 0;
+    }
   }
 
   &--disabled {
