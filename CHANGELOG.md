@@ -1,3 +1,15 @@
+# [1.25.0](https://github.com/nubisco/ui/compare/v1.24.0...v1.25.0) (2026-04-26)
+
+
+### Bug Fixes
+
+* card dragging works with Vue reactive re-renders, unclip ports ([eb36db2](https://github.com/nubisco/ui/commit/eb36db2707c97811d8793e9ee7611308614350e1))
+
+
+### Features
+
+* distinguish focus vs selection, themeable marquee, cleaner selected state ([5ccd0ab](https://github.com/nubisco/ui/commit/5ccd0abb7fef114423237d230edaa72a0b529642))
+
 # [1.24.0](https://github.com/nubisco/ui/compare/v1.23.0...v1.24.0) (2026-04-26)
 
 
