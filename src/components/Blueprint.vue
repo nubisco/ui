@@ -2,6 +2,10 @@
   <div
     ref="containerRef"
     class="nb-blueprint"
+    :class="{
+      'is-panning': isPanning,
+      'is-space': spaceHeld,
+    }"
     @mousedown="onCanvasMouseDown"
     @wheel.prevent="onWheel"
   >
@@ -62,12 +66,19 @@
       <!-- Card slots -->
       <slot />
     </div>
+
+    <!-- Marquee selection overlay (rendered in viewport space) -->
+    <div v-if="marquee" class="nb-blueprint__marquee" :style="marqueeStyle" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import type { IBlueprintConnection, IBlueprintProps } from './Blueprint.d'
+import type {
+  IBlueprintConnection,
+  IBlueprintCardMove,
+  IBlueprintProps,
+} from './Blueprint.d'
 
 const props = withDefaults(defineProps<IBlueprintProps>(), {
   connections: () => [],
@@ -76,6 +87,8 @@ const props = withDefaults(defineProps<IBlueprintProps>(), {
 const emit = defineEmits<{
   connect: [conn: IBlueprintConnection]
   disconnect: [conn: IBlueprintConnection]
+  move: [moves: IBlueprintCardMove[]]
+  'selection-change': [ids: string[]]
 }>()
 
 const containerRef = ref<HTMLDivElement>()
@@ -86,20 +99,102 @@ const wireKey = ref(0)
 
 const MIN_ZOOM = 0.2
 const MAX_ZOOM = 3.0
+const DRAG_THRESHOLD = 4
 
-// ── Panning ────────────────────────────────────────────────────────────
+// ── Selection state ───────────────────────────────────────────────────
+
+const selectedIds = ref<Set<string>>(new Set())
+
+function setSelection(ids: string[]) {
+  selectedIds.value = new Set(ids)
+  emit('selection-change', ids)
+  // Also toggle the selected class on card elements
+  syncSelectionClasses()
+}
+
+function syncSelectionClasses() {
+  if (!containerRef.value) return
+  const cards = containerRef.value.querySelectorAll('.nb-blueprint-card')
+  cards.forEach((card) => {
+    const id = (card as HTMLElement).dataset.cardId
+    if (!id) return
+    card.classList.toggle(
+      'nb-blueprint-card--selected',
+      selectedIds.value.has(id),
+    )
+  })
+}
+
+function selectAll() {
+  if (!containerRef.value) return
+  const ids: string[] = []
+  containerRef.value.querySelectorAll('[data-card-id]').forEach((el) => {
+    const id = (el as HTMLElement).dataset.cardId
+    if (id) ids.push(id)
+  })
+  setSelection(ids)
+}
+
+function deselectAll() {
+  setSelection([])
+}
+
+// ── Space key tracking (for pan mode) ─────────────────────────────────
+
+const spaceHeld = ref(false)
+
+function onKeyDown(e: KeyboardEvent) {
+  if (e.code === 'Space' && !e.repeat) {
+    spaceHeld.value = true
+    e.preventDefault()
+  }
+}
+
+function onKeyUp(e: KeyboardEvent) {
+  if (e.code === 'Space') {
+    spaceHeld.value = false
+  }
+}
+
+// ── Canvas mousedown dispatcher ───────────────────────────────────────
 
 let isPanning = false
 let panStartX = 0
 let panStartY = 0
 
 function onCanvasMouseDown(e: MouseEvent) {
-  if (
-    (e.target as HTMLElement).closest(
-      '.nb-blueprint-card, .nb-blueprint-card__port',
-    )
-  )
+  // Port interactions (wire dragging) take priority
+  const portEl = (e.target as HTMLElement).closest('.nb-blueprint-card__port')
+  if (portEl) return
+
+  // Middle mouse button always pans
+  if (e.button === 1) {
+    startPan(e)
     return
+  }
+
+  // Space + left click = pan
+  if (spaceHeld.value) {
+    startPan(e)
+    return
+  }
+
+  // Left click on a card = select + drag
+  const cardEl = (e.target as HTMLElement).closest(
+    '.nb-blueprint-card',
+  ) as HTMLElement | null
+  if (cardEl) {
+    onCardMouseDown(e, cardEl)
+    return
+  }
+
+  // Left click on empty canvas = marquee select
+  startMarquee(e)
+}
+
+// ── Panning ───────────────────────────────────────────────────────────
+
+function startPan(e: MouseEvent) {
   isPanning = true
   panStartX = e.clientX - panX.value
   panStartY = e.clientY - panY.value
@@ -120,7 +215,7 @@ function onPanEnd() {
   document.removeEventListener('mouseup', onPanEnd)
 }
 
-// ── Zoom (focal-point) ─────────────────────────────────────────────────
+// ── Zoom (focal-point) ────────────────────────────────────────────────
 
 function onWheel(e: WheelEvent) {
   const rect = containerRef.value?.getBoundingClientRect()
@@ -141,9 +236,215 @@ function onWheel(e: WheelEvent) {
   zoom.value = newZoom
 }
 
-// ── Wire connections ───────────────────────────────────────────────────
+// ── Card drag ─────────────────────────────────────────────────────────
 
-// Dragging a new wire
+let isDraggingCards = false
+let dragMouseStartX = 0
+let dragMouseStartY = 0
+let dragStartPositions = new Map<string, { x: number; y: number }>()
+let dragDidMove = false
+
+function getCardPosition(cardEl: HTMLElement): { x: number; y: number } {
+  const wrapper = cardEl.parentElement
+  if (!wrapper) return { x: 0, y: 0 }
+  const style = wrapper.style.transform || ''
+  const match = style.match(/translate\(([^,]+)px,\s*([^)]+)px\)/)
+  if (match) return { x: parseFloat(match[1]), y: parseFloat(match[2]) }
+  return { x: wrapper.offsetLeft, y: wrapper.offsetTop }
+}
+
+function setCardPosition(cardEl: HTMLElement, x: number, y: number) {
+  const wrapper = cardEl.parentElement
+  if (!wrapper) return
+  wrapper.style.transform = `translate(${x}px, ${y}px)`
+}
+
+function onCardMouseDown(e: MouseEvent, cardEl: HTMLElement) {
+  const cardId = cardEl.dataset.cardId
+  if (!cardId) return
+
+  // Handle selection
+  if (e.shiftKey) {
+    // Shift+click: toggle card in selection
+    const next = new Set(selectedIds.value)
+    if (next.has(cardId)) next.delete(cardId)
+    else next.add(cardId)
+    setSelection(Array.from(next))
+  } else if (!selectedIds.value.has(cardId)) {
+    // Click on unselected card: select only this card
+    setSelection([cardId])
+  }
+  // If card was already selected (no shift), keep current selection (for multi-drag)
+
+  // Prepare for drag
+  dragMouseStartX = e.clientX
+  dragMouseStartY = e.clientY
+  dragDidMove = false
+  dragStartPositions = new Map()
+
+  // Record start positions of all selected cards
+  if (containerRef.value) {
+    for (const id of selectedIds.value) {
+      const el = containerRef.value.querySelector(
+        `[data-card-id="${id}"]`,
+      ) as HTMLElement | null
+      if (el) {
+        dragStartPositions.set(id, getCardPosition(el))
+      }
+    }
+  }
+
+  document.addEventListener('mousemove', onCardDragMove)
+  document.addEventListener('mouseup', onCardDragEnd)
+}
+
+function onCardDragMove(e: MouseEvent) {
+  const dx = (e.clientX - dragMouseStartX) / zoom.value
+  const dy = (e.clientY - dragMouseStartY) / zoom.value
+
+  if (
+    !isDraggingCards &&
+    Math.abs(dx * zoom.value) < DRAG_THRESHOLD &&
+    Math.abs(dy * zoom.value) < DRAG_THRESHOLD
+  ) {
+    return // Haven't moved enough to count as a drag
+  }
+
+  isDraggingCards = true
+  dragDidMove = true
+
+  if (!containerRef.value) return
+
+  for (const [id, startPos] of dragStartPositions) {
+    const el = containerRef.value.querySelector(
+      `[data-card-id="${id}"]`,
+    ) as HTMLElement | null
+    if (el) {
+      setCardPosition(el, startPos.x + dx, startPos.y + dy)
+    }
+  }
+
+  wireKey.value++
+}
+
+function onCardDragEnd() {
+  document.removeEventListener('mousemove', onCardDragMove)
+  document.removeEventListener('mouseup', onCardDragEnd)
+
+  if (dragDidMove && containerRef.value) {
+    // Emit final positions
+    const moves: IBlueprintCardMove[] = []
+    for (const id of dragStartPositions.keys()) {
+      const el = containerRef.value.querySelector(
+        `[data-card-id="${id}"]`,
+      ) as HTMLElement | null
+      if (el) {
+        const pos = getCardPosition(el)
+        moves.push({ id, x: Math.round(pos.x), y: Math.round(pos.y) })
+      }
+    }
+    if (moves.length) emit('move', moves)
+  }
+
+  isDraggingCards = false
+  dragDidMove = false
+  dragStartPositions = new Map()
+}
+
+// ── Marquee selection ─────────────────────────────────────────────────
+
+const marquee = ref<{
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+} | null>(null)
+
+let marqueeShift = false
+
+const marqueeStyle = computed(() => {
+  if (!marquee.value) return {}
+  const { x1, y1, x2, y2 } = marquee.value
+  return {
+    left: `${Math.min(x1, x2)}px`,
+    top: `${Math.min(y1, y2)}px`,
+    width: `${Math.abs(x2 - x1)}px`,
+    height: `${Math.abs(y2 - y1)}px`,
+  }
+})
+
+function startMarquee(e: MouseEvent) {
+  if (!containerRef.value) return
+  const rect = containerRef.value.getBoundingClientRect()
+  const x = e.clientX - rect.left
+  const y = e.clientY - rect.top
+
+  marqueeShift = e.shiftKey
+
+  // If no shift, deselect all first
+  if (!marqueeShift) {
+    setSelection([])
+  }
+
+  marquee.value = { x1: x, y1: y, x2: x, y2: y }
+  document.addEventListener('mousemove', onMarqueeMove)
+  document.addEventListener('mouseup', onMarqueeEnd)
+}
+
+function onMarqueeMove(e: MouseEvent) {
+  if (!marquee.value || !containerRef.value) return
+  const rect = containerRef.value.getBoundingClientRect()
+  marquee.value.x2 = e.clientX - rect.left
+  marquee.value.y2 = e.clientY - rect.top
+}
+
+function onMarqueeEnd() {
+  document.removeEventListener('mousemove', onMarqueeMove)
+  document.removeEventListener('mouseup', onMarqueeEnd)
+
+  if (!marquee.value || !containerRef.value) {
+    marquee.value = null
+    return
+  }
+
+  const containerRect = containerRef.value.getBoundingClientRect()
+  const { x1, y1, x2, y2 } = marquee.value
+  const mLeft = Math.min(x1, x2)
+  const mTop = Math.min(y1, y2)
+  const mRight = Math.max(x1, x2)
+  const mBottom = Math.max(y1, y2)
+
+  // If the marquee is tiny (a click, not a drag), treat as deselect-all
+  if (
+    Math.abs(x2 - x1) < DRAG_THRESHOLD &&
+    Math.abs(y2 - y1) < DRAG_THRESHOLD
+  ) {
+    if (!marqueeShift) setSelection([])
+    marquee.value = null
+    return
+  }
+
+  // Find cards whose bounding rects intersect the marquee
+  const hitIds: string[] = marqueeShift ? [...selectedIds.value] : []
+  containerRef.value.querySelectorAll('[data-card-id]').forEach((el) => {
+    const cardRect = el.getBoundingClientRect()
+    const cx = cardRect.left - containerRect.left
+    const cy = cardRect.top - containerRect.top
+    const cRight = cx + cardRect.width
+    const cBottom = cy + cardRect.height
+
+    if (cx < mRight && cRight > mLeft && cy < mBottom && cBottom > mTop) {
+      const id = (el as HTMLElement).dataset.cardId
+      if (id && !hitIds.includes(id)) hitIds.push(id)
+    }
+  })
+
+  setSelection(hitIds)
+  marquee.value = null
+}
+
+// ── Wire connections ──────────────────────────────────────────────────
+
 const dragWire = ref<string | null>(null)
 let dragFrom: { nodeId: string; portId: string; type: string } | null = null
 
@@ -204,10 +505,9 @@ function onPortMouseUp(data: { nodeId: string; portId: string; type: string }) {
   dragWire.value = null
 }
 
-// ── Wire paths ─────────────────────────────────────────────────────────
+// ── Wire paths ────────────────────────────────────────────────────────
 
 function resolveWireColor(fromPortEl: HTMLElement): string {
-  // Walk up to the card and read its accent color
   const card = fromPortEl.closest('.nb-blueprint-card') as HTMLElement | null
   if (card) {
     const color = getComputedStyle(card)
@@ -219,7 +519,7 @@ function resolveWireColor(fromPortEl: HTMLElement): string {
 }
 
 const computedWires = computed(() => {
-  void wireKey.value // reactive dependency for re-computation
+  void wireKey.value
   if (!containerRef.value) return []
 
   const rect = containerRef.value.getBoundingClientRect()
@@ -253,9 +553,8 @@ const computedWires = computed(() => {
   }[]
 })
 
-// ── Public API ─────────────────────────────────────────────────────────
+// ── View controls ─────────────────────────────────────────────────────
 
-// Compute the bounding box of all cards in canvas coordinates.
 function getCardsBounds(): {
   minX: number
   minY: number
@@ -263,29 +562,28 @@ function getCardsBounds(): {
   maxY: number
 } | null {
   if (!containerRef.value) return null
-  const cards = containerRef.value.querySelectorAll('.nb-blueprint-card')
+  const cards = containerRef.value.querySelectorAll('[data-card-id]')
   if (cards.length === 0) return null
 
-  const rect = containerRef.value.getBoundingClientRect()
   let minX = Infinity,
     minY = Infinity,
     maxX = -Infinity,
     maxY = -Infinity
 
   cards.forEach((card) => {
-    const cr = card.getBoundingClientRect()
-    const x = (cr.left - rect.left - panX.value) / zoom.value
-    const y = (cr.top - rect.top - panY.value) / zoom.value
-    minX = Math.min(minX, x)
-    minY = Math.min(minY, y)
-    maxX = Math.max(maxX, x + cr.width / zoom.value)
-    maxY = Math.max(maxY, y + cr.height / zoom.value)
+    const el = card as HTMLElement
+    const pos = getCardPosition(el)
+    const w = el.offsetWidth
+    const h = el.offsetHeight
+    minX = Math.min(minX, pos.x)
+    minY = Math.min(minY, pos.y)
+    maxX = Math.max(maxX, pos.x + w)
+    maxY = Math.max(maxY, pos.y + h)
   })
 
   return { minX, minY, maxX, maxY }
 }
 
-// Center the view at 1x zoom so all cards are visible.
 function centerView() {
   zoom.value = 1
   if (!containerRef.value) return
@@ -304,7 +602,6 @@ function centerView() {
   panY.value = rect.height / 2 - cy
 }
 
-// Scale and pan so that all cards fit inside the viewport with padding.
 function fitToView(padding = 40) {
   if (!containerRef.value) return
 
@@ -340,17 +637,256 @@ function fitToView(padding = 40) {
   panY.value = rect.height / 2 - cy * newZoom
 }
 
-// Reset pan and zoom to their initial values (origin at 0,0, zoom 1x).
 function resetView() {
   panX.value = 0
   panY.value = 0
   zoom.value = 1
 }
 
-// Re-compute wires when DOM changes
+// ── Alignment and distribution ────────────────────────────────────────
+
+type TSelectedCardInfo = {
+  id: string
+  el: HTMLElement
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
+function getSelectedCardInfos(): TSelectedCardInfo[] {
+  if (!containerRef.value) return []
+  const infos: TSelectedCardInfo[] = []
+  for (const id of selectedIds.value) {
+    const el = containerRef.value.querySelector(
+      `[data-card-id="${id}"]`,
+    ) as HTMLElement | null
+    if (!el) continue
+    const pos = getCardPosition(el)
+    infos.push({
+      id,
+      el,
+      x: pos.x,
+      y: pos.y,
+      w: el.offsetWidth,
+      h: el.offsetHeight,
+    })
+  }
+  return infos
+}
+
+function applyPositions(infos: TSelectedCardInfo[]) {
+  const moves: IBlueprintCardMove[] = []
+  for (const info of infos) {
+    setCardPosition(info.el, info.x, info.y)
+    moves.push({ id: info.id, x: Math.round(info.x), y: Math.round(info.y) })
+  }
+  if (moves.length) {
+    wireKey.value++
+    emit('move', moves)
+  }
+}
+
+function alignLeft() {
+  const infos = getSelectedCardInfos()
+  if (infos.length < 2) return
+  const target = Math.min(...infos.map((c) => c.x))
+  infos.forEach((c) => (c.x = target))
+  applyPositions(infos)
+}
+
+function alignCenter() {
+  const infos = getSelectedCardInfos()
+  if (infos.length < 2) return
+  const centers = infos.map((c) => c.x + c.w / 2)
+  const target = centers.reduce((a, b) => a + b, 0) / centers.length
+  infos.forEach((c) => (c.x = target - c.w / 2))
+  applyPositions(infos)
+}
+
+function alignRight() {
+  const infos = getSelectedCardInfos()
+  if (infos.length < 2) return
+  const target = Math.max(...infos.map((c) => c.x + c.w))
+  infos.forEach((c) => (c.x = target - c.w))
+  applyPositions(infos)
+}
+
+function alignTop() {
+  const infos = getSelectedCardInfos()
+  if (infos.length < 2) return
+  const target = Math.min(...infos.map((c) => c.y))
+  infos.forEach((c) => (c.y = target))
+  applyPositions(infos)
+}
+
+function alignMiddle() {
+  const infos = getSelectedCardInfos()
+  if (infos.length < 2) return
+  const centers = infos.map((c) => c.y + c.h / 2)
+  const target = centers.reduce((a, b) => a + b, 0) / centers.length
+  infos.forEach((c) => (c.y = target - c.h / 2))
+  applyPositions(infos)
+}
+
+function alignBottom() {
+  const infos = getSelectedCardInfos()
+  if (infos.length < 2) return
+  const target = Math.max(...infos.map((c) => c.y + c.h))
+  infos.forEach((c) => (c.y = target - c.h))
+  applyPositions(infos)
+}
+
+function distributeHorizontally() {
+  const infos = getSelectedCardInfos()
+  if (infos.length < 3) return
+  infos.sort((a, b) => a.x - b.x)
+  const first = infos[0]
+  const last = infos[infos.length - 1]
+  const totalWidth = infos.reduce((sum, c) => sum + c.w, 0)
+  const totalSpace = last.x + last.w - first.x - totalWidth
+  const gap = totalSpace / (infos.length - 1)
+  let cursor = first.x + first.w + gap
+  for (let i = 1; i < infos.length - 1; i++) {
+    infos[i].x = cursor
+    cursor += infos[i].w + gap
+  }
+  applyPositions(infos)
+}
+
+function distributeVertically() {
+  const infos = getSelectedCardInfos()
+  if (infos.length < 3) return
+  infos.sort((a, b) => a.y - b.y)
+  const first = infos[0]
+  const last = infos[infos.length - 1]
+  const totalHeight = infos.reduce((sum, c) => sum + c.h, 0)
+  const totalSpace = last.y + last.h - first.y - totalHeight
+  const gap = totalSpace / (infos.length - 1)
+  let cursor = first.y + first.h + gap
+  for (let i = 1; i < infos.length - 1; i++) {
+    infos[i].y = cursor
+    cursor += infos[i].h + gap
+  }
+  applyPositions(infos)
+}
+
+// ── Auto-layout ───────────────────────────────────────────────────────
+
+function autoLayout(options?: {
+  gapX?: number
+  gapY?: number
+  padding?: number
+}) {
+  if (!containerRef.value) return
+
+  const gapX = options?.gapX ?? 80
+  const gapY = options?.gapY ?? 40
+  const padding = options?.padding ?? 60
+
+  // Collect all cards
+  const allCards: TSelectedCardInfo[] = []
+  containerRef.value.querySelectorAll('[data-card-id]').forEach((el) => {
+    const htmlEl = el as HTMLElement
+    const id = htmlEl.dataset.cardId
+    if (!id) return
+    const pos = getCardPosition(htmlEl)
+    allCards.push({
+      id,
+      el: htmlEl,
+      x: pos.x,
+      y: pos.y,
+      w: htmlEl.offsetWidth,
+      h: htmlEl.offsetHeight,
+    })
+  })
+
+  if (!allCards.length) return
+
+  const cardMap = new Map(allCards.map((c) => [c.id, c]))
+
+  // Build adjacency from connections (directed: from -> to)
+  const outEdges = new Map<string, string[]>()
+  const inDegree = new Map<string, number>()
+  for (const c of allCards) {
+    outEdges.set(c.id, [])
+    inDegree.set(c.id, 0)
+  }
+  for (const conn of props.connections) {
+    if (!cardMap.has(conn.fromNode) || !cardMap.has(conn.toNode)) continue
+    outEdges.get(conn.fromNode)!.push(conn.toNode)
+    inDegree.set(conn.toNode, (inDegree.get(conn.toNode) ?? 0) + 1)
+  }
+
+  // Topological layering (Kahn's algorithm)
+  const layers: string[][] = []
+  const assigned = new Set<string>()
+  const queue: string[] = []
+
+  // Start with nodes that have no incoming edges
+  for (const [id, deg] of inDegree) {
+    if (deg === 0) queue.push(id)
+  }
+
+  while (queue.length > 0) {
+    const layer = [...queue]
+    layers.push(layer)
+    layer.forEach((id) => assigned.add(id))
+    queue.length = 0
+
+    for (const id of layer) {
+      for (const next of outEdges.get(id) ?? []) {
+        const newDeg = (inDegree.get(next) ?? 1) - 1
+        inDegree.set(next, newDeg)
+        if (newDeg === 0 && !assigned.has(next)) {
+          queue.push(next)
+        }
+      }
+    }
+  }
+
+  // Add any remaining cards (cycles or disconnected) to the last layer
+  const unassigned = allCards.filter((c) => !assigned.has(c.id))
+  if (unassigned.length) {
+    layers.push(unassigned.map((c) => c.id))
+  }
+
+  // Compute positions: each layer is a column, cards stacked vertically
+  let cursorX = padding
+  for (const layer of layers) {
+    let maxWidth = 0
+    let cursorY = padding
+
+    // Sort within layer by category (from card DOM) for grouping
+    const sorted = layer.map((id) => cardMap.get(id)!).filter(Boolean)
+    sorted.sort((a, b) => {
+      const catA =
+        a.el.querySelector('.nb-blueprint-card__tag')?.textContent ?? ''
+      const catB =
+        b.el.querySelector('.nb-blueprint-card__tag')?.textContent ?? ''
+      return catA.localeCompare(catB)
+    })
+
+    for (const card of sorted) {
+      card.x = cursorX
+      card.y = cursorY
+      cursorY += card.h + gapY
+      maxWidth = Math.max(maxWidth, card.w)
+    }
+
+    cursorX += maxWidth + gapX
+  }
+
+  // Apply positions
+  applyPositions(allCards)
+}
+
+// ── Lifecycle ─────────────────────────────────────────────────────────
+
 const observer = new MutationObserver(() => {
   wireKey.value++
 })
+
 onMounted(() => {
   if (containerRef.value) {
     observer.observe(containerRef.value, {
@@ -359,17 +895,43 @@ onMounted(() => {
       attributes: true,
     })
   }
+  window.addEventListener('keydown', onKeyDown)
+  window.addEventListener('keyup', onKeyUp)
   nextTick(() => nextTick(fitToView))
 })
-onBeforeUnmount(() => observer.disconnect())
 
-// Expose for external port event wiring
+onBeforeUnmount(() => {
+  observer.disconnect()
+  window.removeEventListener('keydown', onKeyDown)
+  window.removeEventListener('keyup', onKeyUp)
+})
+
+// ── Expose ────────────────────────────────────────────────────────────
+
 defineExpose({
+  // View
   centerView,
   fitToView,
   resetView,
+  // Selection
+  selectedIds,
+  selectAll,
+  deselectAll,
+  // Alignment and distribution
+  alignLeft,
+  alignCenter,
+  alignRight,
+  alignTop,
+  alignMiddle,
+  alignBottom,
+  distributeHorizontally,
+  distributeVertically,
+  // Auto-layout
+  autoLayout,
+  // Ports
   onPortMouseDown,
   onPortMouseUp,
+  // State
   panX,
   panY,
   zoom,
@@ -382,9 +944,13 @@ defineExpose({
   flex: 1;
   overflow: hidden;
   background: var(--nb-c-layer-0, var(--nb-c-bg));
-  cursor: grab;
+  cursor: crosshair;
 
-  &:active {
+  &.is-space {
+    cursor: grab;
+  }
+
+  &.is-panning {
     cursor: grabbing;
   }
 }
@@ -419,7 +985,6 @@ defineExpose({
   background-size: 24px 24px;
   pointer-events: none;
   opacity: 0.4;
-  // Fade dots at edges with a radial mask
   mask-image: radial-gradient(
     ellipse 80% 80% at 50% 50%,
     #000 40%,
@@ -472,5 +1037,14 @@ defineExpose({
   to {
     stroke-dashoffset: -24;
   }
+}
+
+.nb-blueprint__marquee {
+  position: absolute;
+  border: 1.5px dashed var(--nb-c-primary, #6366f1);
+  background: rgba(99, 102, 241, 0.08);
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 10;
 }
 </style>

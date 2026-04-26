@@ -6,21 +6,26 @@ tabs: ['Usage', 'Api']
 
 <doc-tab name="Usage">
 
-`NbBlueprint` is a generic visual node editor canvas. It provides a pannable, zoomable surface on which you place `NbBlueprintCard` nodes and draws animated bezier wires between their ports. It has no domain logic: connections, card positions, and card state are owned by the parent.
+`NbBlueprint` is a visual node editor canvas with built-in card dragging, multi-selection, alignment, distribution, auto-layout, and animated bezier wires. It has no domain logic: the parent owns card data, positions, and connections.
 
-## What it gives you
+## Interaction model
 
-- **Pan** by dragging the canvas background (drags on cards and ports are ignored).
-- **Focal-point zoom** on mouse wheel, clamped between `0.2x` and `3x`.
-- **Animated wire rendering**: bezier SVG paths with a flowing dashed stroke, colored to match the source node's accent. Each wire has a soft drop-shadow glow.
-- **Drag-to-connect**: while the user drags from a port, a dashed preview wire follows the cursor; releasing on a compatible port emits `connect`.
-- **Click-to-disconnect**: clicking an existing wire emits `disconnect`.
-- **Auto re-layout**: a `MutationObserver` watches the DOM inside the canvas so wires re-compute whenever cards are added, removed, or moved.
-- **Ambient canvas**: dot grid with radial fade, plus subtle colored gradients for atmosphere.
+| Action                 | Effect                         |
+| ---------------------- | ------------------------------ |
+| Left drag on canvas    | Marquee (box) select           |
+| Shift + marquee        | Add to selection               |
+| Click on card          | Select card (deselects others) |
+| Shift + click on card  | Toggle card in selection       |
+| Drag a selected card   | Move all selected cards        |
+| Middle mouse drag      | Pan the canvas                 |
+| Space + left drag      | Pan the canvas                 |
+| Mouse wheel            | Focal-point zoom (0.2x to 3x)  |
+| Drag from port to port | Connect two cards              |
+| Click a wire           | Disconnect                     |
 
 ## Basic example
 
-Cards are placed in the default slot and positioned with inline `transform: translate(...)`. The parent keeps the `connections` array and reacts to `connect` / `disconnect`. Try panning the canvas by dragging the background, zooming with the wheel, dragging between ports to connect them, and clicking a wire to disconnect.
+Cards are placed in the default slot with `transform: translate(x, y)` positioning. The parent keeps the `connections` array and reacts to `connect`, `disconnect`, and `move` events.
 
 <preview>
   <div style="height: 360px; border: 1px solid var(--nb-c-border, #e8e8f0); border-radius: 8px; overflow: hidden; display: flex;">
@@ -29,6 +34,7 @@ Cards are placed in the default slot and positioned with inline `transform: tran
       :connections="demoConnections"
       @connect="onDemoConnect"
       @disconnect="onDemoDisconnect"
+      @move="onDemoMove"
     >
       <div
         v-for="card in demoCards"
@@ -42,32 +48,33 @@ Cards are placed in the default slot and positioned with inline `transform: tran
           :color="card.color"
           :ports="card.ports"
           :connected-ports="connectedPortsFor(card.id)"
-          :selected="demoSelectedId === card.id"
-          :collapsed="demoSelectedId !== card.id"
-          @select="demoSelectedId = $event"
-          @toggle-collapse="demoSelectedId = demoSelectedId === $event ? null : $event"
+          :collapsed="!demoBlueprint?.selectedIds?.has(card.id)"
           @port-mousedown="demoBlueprint?.onPortMouseDown($event)"
           @port-mouseup="demoBlueprint?.onPortMouseUp($event)"
         />
       </div>
     </NbBlueprint>
   </div>
-  <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
+  <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end;">
+    <NbButton size="sm" variant="ghost" @click="demoBlueprint?.autoLayout()">Auto layout</NbButton>
     <NbButton size="sm" variant="ghost" @click="demoBlueprint?.fitToView()">Fit to view</NbButton>
-    <NbButton size="sm" variant="ghost" @click="demoBlueprint?.centerView()">Center 1x</NbButton>
-    <NbButton size="sm" variant="ghost" @click="demoBlueprint?.resetView()">Reset view</NbButton>
-    <NbButton size="sm" variant="ghost" @click="resetDemo">Reset data</NbButton>
+    <NbButton size="sm" variant="ghost" @click="demoBlueprint?.selectAll()">Select all</NbButton>
+    <NbButton size="sm" variant="ghost" @click="demoBlueprint?.distributeHorizontally()">Distribute H</NbButton>
+    <NbButton size="sm" variant="ghost" @click="demoBlueprint?.distributeVertically()">Distribute V</NbButton>
+    <NbButton size="sm" variant="ghost" @click="demoBlueprint?.alignTop()">Align top</NbButton>
+    <NbButton size="sm" variant="ghost" @click="resetDemo">Reset</NbButton>
   </div>
 </preview>
 
 ```vue
 <template>
-  <div style="height: 480px; border: 1px solid var(--nb-c-border);">
+  <div style="height: 480px;">
     <NbBlueprint
       ref="blueprint"
       :connections="connections"
       @connect="onConnect"
       @disconnect="onDisconnect"
+      @move="onMove"
     >
       <div
         v-for="card in cards"
@@ -84,9 +91,6 @@ Cards are placed in the default slot and positioned with inline `transform: tran
           :color="card.color"
           :ports="card.ports"
           :connected-ports="connectedPortsFor(card.id)"
-          :selected="selectedId === card.id"
-          :collapsed="selectedId !== card.id"
-          @select="selectedId = $event"
           @port-mousedown="blueprint?.onPortMouseDown($event)"
           @port-mouseup="blueprint?.onPortMouseUp($event)"
         />
@@ -94,39 +98,87 @@ Cards are placed in the default slot and positioned with inline `transform: tran
     </NbBlueprint>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import type { IBlueprintConnection, IBlueprintCardMove } from '@nubisco/ui'
+
+const blueprint = ref()
+
+// Handle card moves (the consumer owns position data)
+function onMove(moves: IBlueprintCardMove[]) {
+  for (const m of moves) {
+    const card = cards.value.find((c) => c.id === m.id)
+    if (card) {
+      card.x = m.x
+      card.y = m.y
+    }
+  }
+}
+</script>
 ```
 
-## Wiring up ports
+## Card dragging
 
-`NbBlueprint` does not know about its cards directly. It watches the DOM for elements with a `data-port="nodeId:portId"` attribute (emitted automatically by `NbBlueprintCard`). To complete the connection lifecycle, forward the card's `port-mousedown` / `port-mouseup` events to the blueprint's exposed handlers through a template ref.
+Cards are now draggable directly. When you drag a selected card, all selected cards move together. When you drag an unselected card, it becomes selected first.
 
-The blueprint will only emit `connect` when the two ports belong to different nodes and are of opposite types (one `input` and one `output`).
+On drag end, the blueprint emits `move` with an array of `{ id, x, y }` objects. The consumer should update their data model with these positions so they persist across re-renders.
 
-## Wire coloring
+## Selection
 
-Wires automatically pick up the accent color of the source node's card (via the `--nb-card-color` CSS variable). Each wire renders with a soft drop-shadow glow and an animated dashed stroke showing the direction of data flow.
+The Blueprint manages selection internally. Access the current selection via the exposed `selectedIds` ref, or listen to the `selection-change` event.
+
+- **Click** a card to select it (deselects others).
+- **Shift+click** to add or remove a card from the selection.
+- **Left-drag on empty canvas** draws a marquee rectangle. Cards intersecting the rectangle are selected.
+- **Shift+marquee** adds to the existing selection.
+- **`selectAll()`** and **`deselectAll()`** are exposed for toolbar buttons or keyboard shortcuts.
+
+## Alignment and distribution
+
+When multiple cards are selected, you can align or distribute them using exposed methods:
+
+| Method                     | Effect                                                |
+| -------------------------- | ----------------------------------------------------- |
+| `alignLeft()`              | Align selected cards to the leftmost edge             |
+| `alignCenter()`            | Align selected cards to the average horizontal center |
+| `alignRight()`             | Align selected cards to the rightmost edge            |
+| `alignTop()`               | Align selected cards to the topmost edge              |
+| `alignMiddle()`            | Align selected cards to the average vertical center   |
+| `alignBottom()`            | Align selected cards to the bottommost edge           |
+| `distributeHorizontally()` | Space selected cards evenly along the X axis          |
+| `distributeVertically()`   | Space selected cards evenly along the Y axis          |
+
+All alignment/distribution methods emit `move` so the consumer can persist the new positions.
+
+## Auto-layout
+
+`autoLayout()` arranges all cards in a layered left-to-right layout based on their connections (topological ordering). Cards within each layer are sorted by category for visual grouping.
+
+```vue
+<NbButton @click="blueprint?.autoLayout()">Auto layout</NbButton>
+<NbButton
+  @click="blueprint?.autoLayout({ gapX: 120, gapY: 60 })"
+>Wider</NbButton>
+```
+
+Options: `{ gapX?: number, gapY?: number, padding?: number }` (defaults: 80, 40, 60).
 
 ## View controls
 
-Three view methods are exposed on the component instance:
+| Method                | Effect                                                          |
+| --------------------- | --------------------------------------------------------------- |
+| `fitToView(padding?)` | Scale zoom so all cards fit the viewport (default 40px padding) |
+| `centerView()`        | Reset zoom to 1x, center cards                                  |
+| `resetView()`         | Reset pan to 0,0 and zoom to 1x                                 |
 
-- **`fitToView(padding?)`** scales zoom so all cards fit inside the viewport with optional padding (default 40px), then centers. This is called automatically on mount.
-- **`centerView()`** resets zoom to `1x` and pans so cards are centered (no scaling).
-- **`resetView()`** resets pan to `0, 0` and zoom to `1x` (returns to the origin).
+## Panning
 
-```vue
-<NbButton @click="blueprint?.fitToView()">Fit</NbButton>
-<NbButton @click="blueprint?.centerView()">Center 1x</NbButton>
-<NbButton @click="blueprint?.resetView()">Reset</NbButton>
-```
-
-## Sizing
-
-The canvas grows to fill its container (`flex: 1` + `overflow: hidden`). Place it inside a block with an explicit height, typically the `#bottom` slot of an [`NbShell`](/ui/components/shell) or a fixed-height card.
+Panning uses middle mouse button or **Space + left drag**. This keeps left drag free for marquee selection and card dragging.
 
 ## Theming
 
-The canvas background uses the layer system (`--nb-c-layer-0`, falling back to `--nb-c-bg`). Ambient gradients add subtle color atmosphere. The wire colors are derived from each source card's `--nb-card-color`. Override these on an ancestor to reskin.
+The canvas background uses `--nb-c-layer-0`. Ambient gradients are configurable via `--nb-blueprint-ambient-1` and `--nb-blueprint-ambient-2` (set to `transparent` to disable). Wire colors are derived from each source card's `--nb-card-color`.
 
 </doc-tab>
 
@@ -140,10 +192,12 @@ The canvas background uses the layer system (`--nb-c-layer-0`, falling back to `
 
 ## Events
 
-| Event        | Payload                | Description                                                               |
-| ------------ | ---------------------- | ------------------------------------------------------------------------- |
-| `connect`    | `IBlueprintConnection` | Emitted when a drag from one port is released on another compatible port. |
-| `disconnect` | `IBlueprintConnection` | Emitted when an existing wire is clicked.                                 |
+| Event              | Payload                | Description                                                               |
+| ------------------ | ---------------------- | ------------------------------------------------------------------------- |
+| `connect`          | `IBlueprintConnection` | Emitted when a drag from one port is released on another compatible port. |
+| `disconnect`       | `IBlueprintConnection` | Emitted when an existing wire is clicked.                                 |
+| `move`             | `IBlueprintCardMove[]` | Emitted after cards are dragged, aligned, distributed, or auto-laid out.  |
+| `selection-change` | `string[]`             | Emitted when the set of selected card IDs changes.                        |
 
 ## Slots
 
@@ -151,20 +205,59 @@ The canvas background uses the layer system (`--nb-c-layer-0`, falling back to `
 | --------- | -------------------------------------------------------------------------------------------------------------- |
 | `default` | Card layer. Place `NbBlueprintCard` instances here, positioned with `transform: translate(x, y)` on a wrapper. |
 
-## Exposed instance methods
+## Exposed instance
 
-Access these via a template `ref`.
+Access via a template `ref`.
 
-| Member            | Signature                                                                    | Description                                                                             |
-| ----------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `fitToView`       | `(padding?: number) => void`                                                 | Scale zoom and pan so all cards fit in the viewport. Default padding: 40px.             |
-| `centerView`      | `() => void`                                                                 | Reset zoom to `1x` and pan so all cards are centered.                                   |
-| `resetView`       | `() => void`                                                                 | Reset pan to `0, 0` and zoom to `1x` (return to the origin).                            |
-| `onPortMouseDown` | `(d: { nodeId: string; portId: string; type: 'input' \| 'output' }) => void` | Forward `NbBlueprintCard`'s `port-mousedown` here to start a drag-to-connect operation. |
-| `onPortMouseUp`   | `(d: { nodeId: string; portId: string; type: 'input' \| 'output' }) => void` | Forward `NbBlueprintCard`'s `port-mouseup` here to complete the connection.             |
-| `panX`            | `Ref<number>`                                                                | Current pan offset in pixels.                                                           |
-| `panY`            | `Ref<number>`                                                                | Current pan offset in pixels.                                                           |
-| `zoom`            | `Ref<number>`                                                                | Current zoom level (`0.2` to `3`).                                                      |
+### View
+
+| Member       | Signature                    | Description                                 |
+| ------------ | ---------------------------- | ------------------------------------------- |
+| `fitToView`  | `(padding?: number) => void` | Scale and center all cards in the viewport. |
+| `centerView` | `() => void`                 | Center cards at 1x zoom.                    |
+| `resetView`  | `() => void`                 | Reset pan to 0,0 and zoom to 1x.            |
+
+### Selection
+
+| Member        | Signature          | Description                     |
+| ------------- | ------------------ | ------------------------------- |
+| `selectedIds` | `Ref<Set<string>>` | Currently selected card IDs.    |
+| `selectAll`   | `() => void`       | Select all cards in the canvas. |
+| `deselectAll` | `() => void`       | Clear the selection.            |
+
+### Alignment and distribution
+
+| Member                   | Signature    | Description                                   |
+| ------------------------ | ------------ | --------------------------------------------- |
+| `alignLeft`              | `() => void` | Align selected cards to the leftmost edge.    |
+| `alignCenter`            | `() => void` | Align to the average horizontal center.       |
+| `alignRight`             | `() => void` | Align to the rightmost edge.                  |
+| `alignTop`               | `() => void` | Align selected cards to the topmost edge.     |
+| `alignMiddle`            | `() => void` | Align to the average vertical center.         |
+| `alignBottom`            | `() => void` | Align to the bottommost edge.                 |
+| `distributeHorizontally` | `() => void` | Space selected cards evenly along the X axis. |
+| `distributeVertically`   | `() => void` | Space selected cards evenly along the Y axis. |
+
+### Auto-layout
+
+| Member       | Signature                                                                | Description                                          |
+| ------------ | ------------------------------------------------------------------------ | ---------------------------------------------------- |
+| `autoLayout` | `(options?: { gapX?: number; gapY?: number; padding?: number }) => void` | Arrange all cards in a layered left-to-right layout. |
+
+### Ports
+
+| Member            | Signature                                                                    | Description                        |
+| ----------------- | ---------------------------------------------------------------------------- | ---------------------------------- |
+| `onPortMouseDown` | `(d: { nodeId: string; portId: string; type: 'input' \| 'output' }) => void` | Start a drag-to-connect operation. |
+| `onPortMouseUp`   | `(d: { nodeId: string; portId: string; type: 'input' \| 'output' }) => void` | Complete the connection.           |
+
+### State
+
+| Member | Signature     | Description              |
+| ------ | ------------- | ------------------------ |
+| `panX` | `Ref<number>` | Current pan offset (px). |
+| `panY` | `Ref<number>` | Current pan offset (px). |
+| `zoom` | `Ref<number>` | Current zoom (0.2 to 3). |
 
 ## Types
 
@@ -175,19 +268,19 @@ interface IBlueprintConnection {
   toNode: string
   toPort: string
 }
+
+interface IBlueprintCardMove {
+  id: string
+  x: number
+  y: number
+}
 ```
-
-## Interaction
-
-- **Pan**: mousedown on empty canvas, drag.
-- **Zoom**: mouse wheel anywhere over the canvas. Zoom focuses on the cursor position.
-- **Connect**: mousedown on a port, drag to a port on another card of opposite type, mouseup.
-- **Disconnect**: click an existing wire path.
 
 </doc-tab>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import type { IBlueprintCardMove } from '../../src/main'
 
 interface IDemoCard {
   id: string
@@ -249,27 +342,13 @@ const initialConnections = [
   { fromNode: 'filter', fromPort: 'out', toNode: 'output', toPort: 'in' },
 ]
 
-const demoBlueprint = ref<{
-  onPortMouseDown: (d: {
-    nodeId: string
-    portId: string
-    type: 'input' | 'output'
-  }) => void
-  onPortMouseUp: (d: {
-    nodeId: string
-    portId: string
-    type: 'input' | 'output'
-  }) => void
-  centerView: () => void
-} | null>(null)
+const demoBlueprint = ref<any>(null)
 
 const demoCards = ref<IDemoCard[]>(
   initialDemoCards.map((c) => ({ ...c, ports: c.ports.map((p) => ({ ...p })) })),
 )
 const demoConnections = ref([...initialConnections])
-const demoSelectedId = ref<string | null>(null)
 
-// Compute connected port IDs for a given card
 function connectedPortsFor(cardId: string): string[] {
   const ports = new Set<string>()
   for (const c of demoConnections.value) {
@@ -312,12 +391,21 @@ function onDemoDisconnect(c: {
   )
 }
 
+function onDemoMove(moves: IBlueprintCardMove[]) {
+  for (const m of moves) {
+    const card = demoCards.value.find((c) => c.id === m.id)
+    if (card) {
+      card.x = m.x
+      card.y = m.y
+    }
+  }
+}
+
 function resetDemo() {
   demoCards.value = initialDemoCards.map((c) => ({
     ...c,
     ports: c.ports.map((p) => ({ ...p })),
   }))
   demoConnections.value = [...initialConnections]
-  demoSelectedId.value = null
 }
 </script>
