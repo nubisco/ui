@@ -255,16 +255,16 @@ const computedWires = computed(() => {
 
 // ── Public API ─────────────────────────────────────────────────────────
 
-function centerView() {
-  zoom.value = 1
-  if (!containerRef.value) return
-
+// Compute the bounding box of all cards in canvas coordinates.
+function getCardsBounds(): {
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+} | null {
+  if (!containerRef.value) return null
   const cards = containerRef.value.querySelectorAll('.nb-blueprint-card')
-  if (cards.length === 0) {
-    panX.value = 0
-    panY.value = 0
-    return
-  }
+  if (cards.length === 0) return null
 
   const rect = containerRef.value.getBoundingClientRect()
   let minX = Infinity,
@@ -282,10 +282,69 @@ function centerView() {
     maxY = Math.max(maxY, y + cr.height / zoom.value)
   })
 
-  const cx = (minX + maxX) / 2
-  const cy = (minY + maxY) / 2
+  return { minX, minY, maxX, maxY }
+}
+
+// Center the view at 1x zoom so all cards are visible.
+function centerView() {
+  zoom.value = 1
+  if (!containerRef.value) return
+
+  const bounds = getCardsBounds()
+  if (!bounds) {
+    panX.value = 0
+    panY.value = 0
+    return
+  }
+
+  const rect = containerRef.value.getBoundingClientRect()
+  const cx = (bounds.minX + bounds.maxX) / 2
+  const cy = (bounds.minY + bounds.maxY) / 2
   panX.value = rect.width / 2 - cx
   panY.value = rect.height / 2 - cy
+}
+
+// Scale and pan so that all cards fit inside the viewport with padding.
+function fitToView(padding = 40) {
+  if (!containerRef.value) return
+
+  const bounds = getCardsBounds()
+  if (!bounds) {
+    resetView()
+    return
+  }
+
+  const rect = containerRef.value.getBoundingClientRect()
+  const contentW = bounds.maxX - bounds.minX
+  const contentH = bounds.maxY - bounds.minY
+
+  if (contentW <= 0 || contentH <= 0) {
+    centerView()
+    return
+  }
+
+  const availW = rect.width - padding * 2
+  const availH = rect.height - padding * 2
+  const scaleX = availW / contentW
+  const scaleY = availH / contentH
+  const newZoom = Math.max(
+    MIN_ZOOM,
+    Math.min(MAX_ZOOM, Math.min(scaleX, scaleY)),
+  )
+
+  const cx = (bounds.minX + bounds.maxX) / 2
+  const cy = (bounds.minY + bounds.maxY) / 2
+
+  zoom.value = newZoom
+  panX.value = rect.width / 2 - cx * newZoom
+  panY.value = rect.height / 2 - cy * newZoom
+}
+
+// Reset pan and zoom to their initial values (origin at 0,0, zoom 1x).
+function resetView() {
+  panX.value = 0
+  panY.value = 0
+  zoom.value = 1
 }
 
 // Re-compute wires when DOM changes
@@ -300,12 +359,21 @@ onMounted(() => {
       attributes: true,
     })
   }
-  nextTick(() => nextTick(centerView))
+  nextTick(() => nextTick(fitToView))
 })
 onBeforeUnmount(() => observer.disconnect())
 
 // Expose for external port event wiring
-defineExpose({ centerView, onPortMouseDown, onPortMouseUp, panX, panY, zoom })
+defineExpose({
+  centerView,
+  fitToView,
+  resetView,
+  onPortMouseDown,
+  onPortMouseUp,
+  panX,
+  panY,
+  zoom,
+})
 </script>
 
 <style scoped lang="scss">
@@ -330,12 +398,12 @@ defineExpose({ centerView, onPortMouseDown, onPortMouseUp, panX, panY, zoom })
   background:
     radial-gradient(
       ellipse 80% 50% at 50% 0%,
-      rgba(139, 124, 255, 0.04),
+      var(--nb-blueprint-ambient-1, rgba(139, 124, 255, 0.04)),
       transparent 60%
     ),
     radial-gradient(
       ellipse 60% 40% at 80% 100%,
-      rgba(255, 157, 74, 0.03),
+      var(--nb-blueprint-ambient-2, rgba(255, 157, 74, 0.03)),
       transparent 60%
     );
 }
