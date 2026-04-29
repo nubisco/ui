@@ -2,6 +2,7 @@ import type { App } from 'vue'
 import NbAiLabel from './AiLabel.vue'
 import NbBadge from './Badge.vue'
 import NbBarChart from './Charts/BarChart.vue'
+import NbBoard from './Board.vue'
 import NbBreadcrumbs from './Breadcrumbs.vue'
 import NbButton from './Button.vue'
 import NbCheckbox from './Checkbox.vue'
@@ -49,6 +50,7 @@ const components = {
   NbAiLabel,
   NbBadge,
   NbBarChart,
+  NbBoard,
   NbBreadcrumbs,
   NbButton,
   NbCheckbox,
