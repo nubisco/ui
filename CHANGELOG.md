@@ -1,3 +1,10 @@
+# [1.28.0](https://github.com/nubisco/ui/compare/v1.27.1...v1.28.0) (2026-04-29)
+
+
+### Features
+
+* add NbInterpolationChart component ([bc490c3](https://github.com/nubisco/ui/commit/bc490c3324474700ad398fd8ed2df7878967d0a5))
+
 ## [1.27.1](https://github.com/nubisco/ui/compare/v1.27.0...v1.27.1) (2026-04-26)
 
 
