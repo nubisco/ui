@@ -11,6 +11,10 @@ interface ISelectProps extends IFieldComponent {
   options?: ISelectOption[]
   /** Allows selecting multiple options simultaneously. */
   multiple?: boolean
+  /** Shows a text input at the bottom of the dropdown so users can create new options. Emits `create` with the entered value. */
+  creatable?: boolean
+  /** Placeholder text for the create input when `creatable` is true. */
+  createPlaceholder?: string
 }
 
 export { ISelectOption, ISelectProps }

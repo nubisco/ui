@@ -192,6 +192,16 @@
       <div v-if="!options || options.length === 0" class="nb-select__empty">
         No options
       </div>
+      <div v-if="creatable" class="nb-select__create" @mousedown.prevent>
+        <input
+          v-model="createValue"
+          type="text"
+          class="nb-select__create-input"
+          :placeholder="createPlaceholder || 'Add new…'"
+          @keydown.enter.prevent="handleCreate"
+          @keydown.stop
+        />
+      </div>
     </div>
   </Teleport>
 </template>
@@ -204,6 +214,8 @@ const props = withDefaults(defineProps<ISelectProps>(), {
   modelValue: null,
   options: () => [],
   multiple: false,
+  creatable: false,
+  createPlaceholder: '',
   variant: 'default',
   size: 'md',
   label: '',
@@ -220,7 +232,17 @@ const props = withDefaults(defineProps<ISelectProps>(), {
 const emit = defineEmits<{
   'update:modelValue': [value: string | number | Array<string | number> | null]
   change: [value: string | number | Array<string | number> | null]
+  create: [value: string]
 }>()
+
+const createValue = ref('')
+
+function handleCreate() {
+  const val = createValue.value.trim()
+  if (!val) return
+  emit('create', val)
+  createValue.value = ''
+}
 
 const isOpen = ref(false)
 const focused = ref(false)
@@ -494,6 +516,34 @@ defineExpose({
   font-size: 14px;
   color: var(--nb-c-text-subtle);
   text-align: center;
+}
+
+.nb-select__create {
+  border-top: 1px solid var(--nb-c-component-plain-border);
+  padding: 8px 12px;
+}
+
+.nb-select__create-input {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed var(--nb-c-component-plain-border);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--nb-c-text);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+
+  &::placeholder {
+    color: var(--nb-c-text-subtle);
+  }
+
+  &:focus {
+    border-color: var(--nb-c-primary);
+    border-style: solid;
+  }
 }
 
 .nb-select {

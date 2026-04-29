@@ -92,27 +92,64 @@ const selected = ref<string[]>([])
 </script>
 ```
 
+## Creatable
+
+Set `:creatable="true"` to show a text input at the bottom of the dropdown. When the user types a value and presses Enter, the `create` event fires with the entered string. You can then add it to your options array.
+
+<preview>
+  <NbSelect v-model="locale" label="Locale" :options="localeOptions" creatable create-placeholder="New locale..." @create="onCreateOption" />
+</preview>
+
+```vue
+<template>
+  <NbSelect
+    v-model="locale"
+    label="Locale"
+    :options="options"
+    creatable
+    create-placeholder="New locale..."
+    @create="onCreate"
+  />
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const locale = ref('en')
+const options = ref([
+  { label: 'English', value: 'en' },
+  { label: 'Portuguese', value: 'pt' },
+])
+
+function onCreate(value: string) {
+  options.value.push({ label: value, value: value.toLowerCase() })
+}
+</script>
+```
+
 </doc-tab>
 
 <doc-tab name="Api">
 
 ## Props
 
-| Prop          | Type                                                | Default     | Description                                 |
-| ------------- | --------------------------------------------------- | ----------- | ------------------------------------------- |
-| `modelValue`  | `string \| number \| Array<string\|number> \| null` | `null`      | Current selection (`v-model`)               |
-| `options`     | `ISelectOption[]`                                   | `[]`        | Array of options                            |
-| `multiple`    | `boolean`                                           | `false`     | Allow multiple selections                   |
-| `variant`     | `'default' \| 'fluid'`                              | `'default'` | Layout variant                              |
-| `label`       | `string`                                            | -           | Label text                                  |
-| `placeholder` | `string`                                            | `'Select…'` | Placeholder when nothing is selected        |
-| `helper`      | `string`                                            | -           | Persistent helper text below the field      |
-| `error`       | `string`                                            | -           | Error message — triggers error state        |
-| `warning`     | `string`                                            | -           | Warning message — triggers warning state    |
-| `disabled`    | `boolean`                                           | `false`     | Disables the select                         |
-| `required`    | `boolean`                                           | `false`     | Marks the field as required (adds `*`)      |
-| `id`          | `string`                                            | auto        | Native input id (auto-generated if omitted) |
-| `name`        | `string`                                            | -           | Native form name                            |
+| Prop                | Type                                                | Default        | Description                                 |
+| ------------------- | --------------------------------------------------- | -------------- | ------------------------------------------- |
+| `modelValue`        | `string \| number \| Array<string\|number> \| null` | `null`         | Current selection (`v-model`)               |
+| `options`           | `ISelectOption[]`                                   | `[]`           | Array of options                            |
+| `multiple`          | `boolean`                                           | `false`        | Allow multiple selections                   |
+| `creatable`         | `boolean`                                           | `false`        | Show a text input for creating new options  |
+| `createPlaceholder` | `string`                                            | `'Add new...'` | Placeholder for the create input            |
+| `variant`           | `'default' \| 'fluid'`                              | `'default'`    | Layout variant                              |
+| `label`             | `string`                                            | -              | Label text                                  |
+| `placeholder`       | `string`                                            | `'Select…'`    | Placeholder when nothing is selected        |
+| `helper`            | `string`                                            | -              | Persistent helper text below the field      |
+| `error`             | `string`                                            | -              | Error message — triggers error state        |
+| `warning`           | `string`                                            | -              | Warning message — triggers warning state    |
+| `disabled`          | `boolean`                                           | `false`        | Disables the select                         |
+| `required`          | `boolean`                                           | `false`        | Marks the field as required (adds `*`)      |
+| `id`                | `string`                                            | auto           | Native input id (auto-generated if omitted) |
+| `name`              | `string`                                            | -              | Native form name                            |
 
 ## Option interface
 
@@ -126,10 +163,11 @@ interface ISelectOption {
 
 ## Events
 
-| Event               | Payload                                             | Description                       |
-| ------------------- | --------------------------------------------------- | --------------------------------- |
-| `update:modelValue` | `string \| number \| Array<string\|number> \| null` | Emitted on every selection change |
-| `change`            | same as above                                       | Also emitted on every change      |
+| Event               | Payload                                             | Description                                                                           |
+| ------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `update:modelValue` | `string \| number \| Array<string\|number> \| null` | Emitted on every selection change                                                     |
+| `change`            | same as above                                       | Also emitted on every change                                                          |
+| `create`            | `string`                                            | Emitted when the user submits a new value via the create input (requires `creatable`) |
 
 ## Exposed
 
@@ -167,6 +205,10 @@ const localeOptions = [
   { label: 'Spanish', value: 'es' },
   { label: 'French', value: 'fr' },
 ]
+
+function onCreateOption(value: string) {
+  localeOptions.push({ label: value, value: value.toLowerCase() })
+}
 
 const availableProps = [
   {
