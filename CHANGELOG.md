@@ -1,3 +1,11 @@
+# [1.29.0](https://github.com/nubisco/ui/compare/v1.28.1...v1.29.0) (2026-04-29)
+
+
+### Features
+
+* add creatable option to NbSelect for user-defined entries ([9e38976](https://github.com/nubisco/ui/commit/9e38976eb3b7f4c1ee3d80fb6c35cd056203ab08))
+* add NbBoard kanban component with drag-and-drop and swim lanes ([4bb1220](https://github.com/nubisco/ui/commit/4bb1220ddc7c96b48e6596ca0eaebf125df5dbab))
+
 ## [1.28.1](https://github.com/nubisco/ui/compare/v1.28.0...v1.28.1) (2026-04-29)
 
 
