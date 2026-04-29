@@ -12,6 +12,7 @@ import NbFlag from './Flag.vue'
 import NbForm from './Form.vue'
 import NbGrid from './Grid.vue'
 import NbIcon from './Icon.vue'
+import NbInterpolationChart from './Charts/InterpolationChart.vue'
 import NbImageCropper from './ImageCropper.vue'
 import NbJsonTree from './JsonTree.vue'
 import NbLineChart from './Charts/LineChart.vue'
@@ -58,6 +59,7 @@ const components = {
   NbForm,
   NbGrid,
   NbIcon,
+  NbInterpolationChart,
   NbImageCropper,
   NbJsonTree,
   NbLabel,
