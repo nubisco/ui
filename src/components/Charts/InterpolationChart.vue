@@ -331,10 +331,12 @@ function onWindowMove(e: MouseEvent) {
   const points = [...sortedPoints.value]
   const idx = draggingIndex.value
 
-  // Clamp input between neighbors (points cannot cross each other)
-  const minInput = idx > 0 ? points[idx - 1].input + 0.1 : props.inputMin
+  // Clamp input between neighbors (points cannot cross each other).
+  // Use the input step as the minimum gap so snapped values stay distinct.
+  const gap = props.inputStep > 0 ? props.inputStep : 0.1
+  const minInput = idx > 0 ? points[idx - 1].input + gap : props.inputMin
   const maxInput =
-    idx < points.length - 1 ? points[idx + 1].input - 0.1 : props.inputMax
+    idx < points.length - 1 ? points[idx + 1].input - gap : props.inputMax
 
   const newInput = round(
     snap(clamp(rawInput, minInput, maxInput), props.inputStep),
