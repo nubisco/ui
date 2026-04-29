@@ -1,3 +1,10 @@
+## [1.28.1](https://github.com/nubisco/ui/compare/v1.28.0...v1.28.1) (2026-04-29)
+
+
+### Bug Fixes
+
+* use input step as minimum gap between neighbor points in InterpolationChart ([c2205d5](https://github.com/nubisco/ui/commit/c2205d5b532fecadc28466973b4ed44e7188c1ff))
+
 # [1.28.0](https://github.com/nubisco/ui/compare/v1.27.1...v1.28.0) (2026-04-29)
 
 
