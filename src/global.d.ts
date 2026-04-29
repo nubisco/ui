@@ -5,6 +5,7 @@ import Badge from './components/Badge.vue'
 import BarChart from './components/Charts/BarChart.vue'
 import Blueprint from './components/Blueprint.vue'
 import BlueprintCard from './components/BlueprintCard.vue'
+import Board from './components/Board.vue'
 import BottomPanel from './components/BottomPanel.vue'
 import Breadcrumbs from './components/Breadcrumbs.vue'
 import Button from './components/Button.vue'
@@ -53,6 +54,7 @@ declare module 'vue' {
     NbBarChart: typeof BarChart
     NbBlueprint: typeof Blueprint
     NbBlueprintCard: typeof BlueprintCard
+    NbBoard: typeof Board
     NbBottomPanel: typeof BottomPanel
     NbBreadcrumbs: typeof Breadcrumbs
     NbButton: typeof Button

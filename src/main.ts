@@ -12,6 +12,14 @@ export default {
 }
 
 // Named exports for tree-shakeable individual imports
+export { default as NbBoard } from './components/Board.vue'
+export type {
+  IBoardColumn,
+  IBoardLane,
+  IBoardItem,
+  IBoardMoveEvent,
+  IBoardProps,
+} from './components/Board.d'
 export { default as NbBreadcrumbs } from './components/Breadcrumbs.vue'
 export { default as NbBadge } from './components/Badge.vue'
 export { default as NbBarChart } from './components/Charts/BarChart.vue'
