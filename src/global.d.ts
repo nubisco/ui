@@ -18,6 +18,7 @@ import GanttChart from './components/Charts/GanttChart.vue'
 import Grid from './components/Grid.vue'
 import Icon from './components/Icon.vue'
 import ImageCropper from './components/ImageCropper.vue'
+import InterpolationChart from './components/Charts/InterpolationChart.vue'
 import JsonTree from './components/JsonTree.vue'
 import Label from './components/Label.vue'
 import LineChart from './components/Charts/LineChart.vue'
@@ -65,6 +66,7 @@ declare module 'vue' {
     NbGrid: typeof Grid
     NbIcon: typeof Icon
     NbImageCropper: typeof ImageCropper
+    NbInterpolationChart: typeof InterpolationChart
     NbJsonTree: typeof JsonTree
     NbLabel: typeof Label
     NbLineChart: typeof LineChart

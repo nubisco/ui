@@ -32,6 +32,11 @@ export type {
 export { default as NbGrid } from './components/Grid.vue'
 export { default as NbIcon } from './components/Icon.vue'
 export { default as NbJsonTree } from './components/JsonTree.vue'
+export { default as NbInterpolationChart } from './components/Charts/InterpolationChart.vue'
+export type {
+  IInterpolationPoint,
+  IInterpolationChartProps,
+} from './components/Charts/InterpolationChart.d'
 export { default as NbLineChart } from './components/Charts/LineChart.vue'
 export { default as NbLabel } from './components/Label.vue'
 export { default as NbMenu } from './components/Menu.vue'

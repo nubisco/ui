@@ -48,12 +48,13 @@ const series = [
 
 ## Available chart types
 
-| Component      | Use for                                                      |
-| -------------- | ------------------------------------------------------------ |
-| `NbBarChart`   | Comparing discrete categories side by side                   |
-| `NbLineChart`  | Showing trends over time or any ordered dimension            |
-| `NbPieChart`   | Communicating part-to-whole relationships across few buckets |
-| `NbGanttChart` | Visualizing project timelines, dependencies, and milestones  |
+| Component              | Use for                                                      |
+| ---------------------- | ------------------------------------------------------------ |
+| `NbBarChart`           | Comparing discrete categories side by side                   |
+| `NbGanttChart`         | Visualizing project timelines, dependencies, and milestones  |
+| `NbInterpolationChart` | Interactive piecewise-linear mapping calibration             |
+| `NbLineChart`          | Showing trends over time or any ordered dimension            |
+| `NbPieChart`           | Communicating part-to-whole relationships across few buckets |
 
 More chart types (Area, Radar, Bubble, Histogram, Heatmap, Tree, Network, Alluvial) are on the roadmap, see the **Roadmap** tab.
 
@@ -147,20 +148,21 @@ For datasets above ~10k points per chart, expect to see render slowdowns, the cu
 
 The chart family is being rolled out in phases. The current release ships the three foundational cartesian and categorical primitives, plus the shared scaffolding (legend, tooltip, palette, scales) that the rest of the family will build on.
 
-| Status  | Chart type | Notes                                                         |
-| ------- | ---------- | ------------------------------------------------------------- |
-| Shipped | Bar        | Vertical, grouped multi-series                                |
-| Shipped | Line       | Linear / smooth / step curves, optional area + points         |
-| Shipped | Pie        | Donut mode via `inner-radius`                                 |
-| Shipped | Gantt      | Dependencies, milestones, status, groups, progress            |
-| Planned | Area       | Will share the line renderer with `area` toggle as a shortcut |
-| Planned | Radar      | Polar grid + polygon series                                   |
-| Planned | Bubble     | Scatter with `z` mapped to point radius                       |
-| Planned | Histogram  | Auto-binning, share Bar's renderer                            |
-| Planned | Heatmap    | Sequential color scale, optional row/column labels            |
-| Planned | Tree       | Hierarchical layout via `d3-hierarchy`                        |
-| Planned | Network    | Force-directed via `d3-force`                                 |
-| Planned | Alluvial   | Sankey via `d3-sankey`                                        |
+| Status  | Chart type    | Notes                                                         |
+| ------- | ------------- | ------------------------------------------------------------- |
+| Shipped | Bar           | Vertical, grouped multi-series                                |
+| Shipped | Line          | Linear / smooth / step curves, optional area + points         |
+| Shipped | Pie           | Donut mode via `inner-radius`                                 |
+| Shipped | Gantt         | Dependencies, milestones, status, groups, progress            |
+| Shipped | Interpolation | Draggable piecewise-linear mapping with v-model               |
+| Planned | Area          | Will share the line renderer with `area` toggle as a shortcut |
+| Planned | Radar         | Polar grid + polygon series                                   |
+| Planned | Bubble        | Scatter with `z` mapped to point radius                       |
+| Planned | Histogram     | Auto-binning, share Bar's renderer                            |
+| Planned | Heatmap       | Sequential color scale, optional row/column labels            |
+| Planned | Tree          | Hierarchical layout via `d3-hierarchy`                        |
+| Planned | Network       | Force-directed via `d3-force`                                 |
+| Planned | Alluvial      | Sankey via `d3-sankey`                                        |
 
 Inspiration for the family taxonomy comes from [IBM Carbon's data-visualization guidelines](https://carbondesignsystem.com/data-visualization/chart-types/).
 
