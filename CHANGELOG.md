@@ -1,3 +1,10 @@
+# [1.30.0](https://github.com/nubisco/ui/compare/v1.29.0...v1.30.0) (2026-04-30)
+
+
+### Features
+
+* add NbCalendar and NbDatePicker components ([0dca105](https://github.com/nubisco/ui/commit/0dca10503462894df8c98acec025fa7463bbb8bd))
+
 # [1.29.0](https://github.com/nubisco/ui/compare/v1.28.1...v1.29.0) (2026-04-29)
 
 
