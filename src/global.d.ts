@@ -9,6 +9,8 @@ import Board from './components/Board.vue'
 import BottomPanel from './components/BottomPanel.vue'
 import Breadcrumbs from './components/Breadcrumbs.vue'
 import Button from './components/Button.vue'
+import Calendar from './components/Calendar.vue'
+import DatePicker from './components/DatePicker.vue'
 import Checkbox from './components/Checkbox.vue'
 import ColorStrip from './components/ColorStrip.vue'
 import CommandPalette from './components/CommandPalette.vue'
@@ -58,6 +60,8 @@ declare module 'vue' {
     NbBottomPanel: typeof BottomPanel
     NbBreadcrumbs: typeof Breadcrumbs
     NbButton: typeof Button
+    NbCalendar: typeof Calendar
+    NbDatePicker: typeof DatePicker
     NbCheckbox: typeof Checkbox
     NbColorStrip: typeof ColorStrip
     NbCommandPalette: typeof CommandPalette

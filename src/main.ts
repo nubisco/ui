@@ -21,9 +21,13 @@ export type {
   IBoardProps,
 } from './components/Board.d'
 export { default as NbBreadcrumbs } from './components/Breadcrumbs.vue'
+export { default as NbCalendar } from './components/Calendar.vue'
+export type { ICalendarEvent, ICalendarProps } from './components/Calendar.d'
 export { default as NbBadge } from './components/Badge.vue'
 export { default as NbBarChart } from './components/Charts/BarChart.vue'
 export { default as NbButton } from './components/Button.vue'
+export { default as NbDatePicker } from './components/DatePicker.vue'
+export type { IDatePickerProps } from './components/DatePicker.d'
 export { default as NbCheckbox } from './components/Checkbox.vue'
 export { default as NbColorStrip } from './components/ColorStrip.vue'
 export { default as NbFlag } from './components/Flag.vue'
