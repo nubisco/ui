@@ -175,6 +175,7 @@ export default withMermaid(
                     text: 'Blueprint Card',
                     link: '/ui/components/blueprint-card',
                   },
+                  { text: 'Calendar', link: '/ui/components/calendar' },
                   { text: 'Button', link: '/ui/components/button/button' },
                   {
                     text: 'Charts',
@@ -203,6 +204,7 @@ export default withMermaid(
                     link: '/ui/components/command-palette',
                   },
                   { text: 'Color Strip', link: '/ui/components/color-strip' },
+                  { text: 'Date Picker', link: '/ui/components/date-picker' },
                   {
                     text: 'File Uploader',
                     link: '/ui/components/file-uploader',

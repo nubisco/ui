@@ -5,6 +5,8 @@ import NbBarChart from './Charts/BarChart.vue'
 import NbBoard from './Board.vue'
 import NbBreadcrumbs from './Breadcrumbs.vue'
 import NbButton from './Button.vue'
+import NbCalendar from './Calendar.vue'
+import NbDatePicker from './DatePicker.vue'
 import NbCheckbox from './Checkbox.vue'
 import NbColorStrip from './ColorStrip.vue'
 import NbFileUploader from './FileUploader.vue'
@@ -53,6 +55,8 @@ const components = {
   NbBoard,
   NbBreadcrumbs,
   NbButton,
+  NbCalendar,
+  NbDatePicker,
   NbCheckbox,
   NbColorStrip,
   NbFileUploader,

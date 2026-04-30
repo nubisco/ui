@@ -153,9 +153,10 @@ const editLink = computed(() => {
 
   &__tab {
     appearance: none;
+    position: relative;
     background: transparent;
     border: none;
-    border-bottom: 2px solid transparent;
+    border-top: 3px solid transparent;
     color: rgba(255, 255, 255, 0.55);
     cursor: pointer;
     font-size: 14px;
@@ -163,14 +164,17 @@ const editLink = computed(() => {
     padding: calc(var(--nb-base-unit) * 2) calc(var(--nb-base-unit) * 2.5);
     transition:
       color 0.15s ease,
+      background 0.15s ease,
       border-color 0.15s ease;
 
     &:hover {
       color: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.06);
     }
 
     &.is-active {
-      border-bottom-color: var(--nb-c-primary, #5856a9);
+      border-top-color: var(--nb-c-primary, #5856a9);
+      background: rgba(255, 255, 255, 0.14);
       color: var(--nb-c-white);
     }
   }
