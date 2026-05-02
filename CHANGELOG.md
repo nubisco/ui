@@ -1,3 +1,10 @@
+# [1.31.0](https://github.com/nubisco/ui/compare/v1.30.0...v1.31.0) (2026-05-02)
+
+
+### Features
+
+* add multi I/O to blueprint card ([621429c](https://github.com/nubisco/ui/commit/621429cd2b339db2e26df844ffed1242c1dde599))
+
 # [1.30.0](https://github.com/nubisco/ui/compare/v1.29.0...v1.30.0) (2026-04-30)
 
 
