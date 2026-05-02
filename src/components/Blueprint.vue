@@ -549,22 +549,11 @@ function onPortMouseDown(data: {
   document.addEventListener('mouseup', onWireDragEnd)
 }
 
-// Look up the DOM element for a port by id. If the exact pin isn't rendered
-// (because its parent bundle is collapsed), fall back to the bundle pin —
-// this lets wires to sub-channels keep rendering across expand/collapse.
 function findPortEl(nodeId: string, portId: string): HTMLElement | null {
   if (!containerRef.value) return null
-  const exact = containerRef.value.querySelector(
+  return containerRef.value.querySelector(
     `[data-port="${nodeId}:${portId}"]`,
   ) as HTMLElement | null
-  if (exact) return exact
-  const slash = portId.indexOf('/')
-  if (slash > 0) {
-    return containerRef.value.querySelector(
-      `[data-port="${nodeId}:${portId.slice(0, slash)}"]`,
-    ) as HTMLElement | null
-  }
-  return null
 }
 
 function onWireDrag(e: MouseEvent) {

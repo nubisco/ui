@@ -5,6 +5,8 @@
       'nb-blueprint-card--selected': selected,
       'nb-blueprint-card--disabled': !enabled,
       'nb-blueprint-card--collapsed': collapsed,
+      'nb-blueprint-card--has-port-labels-left': hasLabelsOnSide.left,
+      'nb-blueprint-card--has-port-labels-right': hasLabelsOnSide.right,
     }"
     :data-card-id="id"
     :style="{
@@ -19,12 +21,10 @@
         v-for="pin in inputPins"
         :key="pin.key"
         :data-port="`${id}:${pin.portId}`"
-        :data-channel-count="pin.channelCount"
         class="nb-blueprint-card__port nb-blueprint-card__port--left"
         :class="[
           `nb-blueprint-card__port--${pinShape(pin.port)}`,
           pin.port.required ? 'nb-blueprint-card__port--required' : '',
-          pin.channelCount ? 'nb-blueprint-card__port--bundle' : '',
           pin.channel ? 'nb-blueprint-card__port--channel' : '',
           isConnected(pin.portId) ? 'nb-blueprint-card__port--connected' : '',
         ]"
@@ -45,29 +45,9 @@
           })
         "
       >
-        <button
-          v-if="pin.canToggleExpand"
-          class="nb-blueprint-card__port-expand"
-          :class="{
-            'nb-blueprint-card__port-expand--open': isExpanded(pin.port.id),
-          }"
-          :title="
-            isExpanded(pin.port.id) ? 'Collapse channels' : 'Expand channels'
-          "
-          @mousedown.stop
-          @click.stop="toggleExpand(pin.port.id)"
-        >
-          <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
-            <polyline
-              points="3 2 6 4.5 3 7"
-              stroke="currentColor"
-              stroke-width="1.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              fill="none"
-            />
-          </svg>
-        </button>
+        <span v-if="pin.showLabel" class="nb-blueprint-card__port-label">{{
+          pinLabel(pin)
+        }}</span>
       </div>
     </div>
 
@@ -176,11 +156,9 @@
         v-for="pin in outputPins"
         :key="pin.key"
         :data-port="`${id}:${pin.portId}`"
-        :data-channel-count="pin.channelCount"
         class="nb-blueprint-card__port nb-blueprint-card__port--right"
         :class="[
           `nb-blueprint-card__port--${pinShape(pin.port)}`,
-          pin.channelCount ? 'nb-blueprint-card__port--bundle' : '',
           pin.channel ? 'nb-blueprint-card__port--channel' : '',
           isConnected(pin.portId) ? 'nb-blueprint-card__port--connected' : '',
         ]"
@@ -201,36 +179,16 @@
           })
         "
       >
-        <button
-          v-if="pin.canToggleExpand"
-          class="nb-blueprint-card__port-expand"
-          :class="{
-            'nb-blueprint-card__port-expand--open': isExpanded(pin.port.id),
-          }"
-          :title="
-            isExpanded(pin.port.id) ? 'Collapse channels' : 'Expand channels'
-          "
-          @mousedown.stop
-          @click.stop="toggleExpand(pin.port.id)"
-        >
-          <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
-            <polyline
-              points="6 2 3 4.5 6 7"
-              stroke="currentColor"
-              stroke-width="1.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              fill="none"
-            />
-          </svg>
-        </button>
+        <span v-if="pin.showLabel" class="nb-blueprint-card__port-label">{{
+          pinLabel(pin)
+        }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 import type {
   IBlueprintCardProps,
   IBlueprintPort,
@@ -252,6 +210,7 @@ const props = withDefaults(defineProps<IBlueprintCardProps>(), {
   status: 'none',
   preview: '',
   parameters: () => [],
+  showPortLabels: false,
 })
 
 defineEmits<{
@@ -267,91 +226,56 @@ defineEmits<{
   ]
 }>()
 
-// ── Bundle expand state (per-port, internal) ──────────────────────────
-//
-// Bundle ports start collapsed unless `port.defaultExpanded` is true. The
-// state lives in the card so consumers don't need to track UI state, but
-// it stays in sync if `defaultExpanded` flips on the source data.
-
-const expandedPortIds = ref<Set<string>>(
-  new Set(props.ports.filter((p) => p.defaultExpanded).map((p) => p.id)),
-)
-
-watch(
-  () =>
-    props.ports.map((p) => `${p.id}:${p.defaultExpanded ? 1 : 0}`).join('|'),
-  () => {
-    const next = new Set(expandedPortIds.value)
-    for (const p of props.ports) {
-      if (!p.channels) {
-        next.delete(p.id)
-      } else if (p.defaultExpanded && !next.has(p.id)) {
-        next.add(p.id)
-      }
-    }
-    expandedPortIds.value = next
-  },
-)
-
-function isExpanded(portId: string): boolean {
-  return expandedPortIds.value.has(portId)
-}
-
-function toggleExpand(portId: string) {
-  const next = new Set(expandedPortIds.value)
-  if (next.has(portId)) next.delete(portId)
-  else next.add(portId)
-  expandedPortIds.value = next
-}
-
 // ── Rendered pin projection ───────────────────────────────────────────
 //
-// A "rendered pin" is one DOM-level pin element. A regular port produces
-// one pin. A bundle port produces either one bundle pin (collapsed) or
-// N sub-pins (expanded), with port ids of the form `${port.id}/${channel.id}`.
+// One IBlueprintPort produces:
+//   - one pin if `channels` is absent, or
+//   - N pins if `channels` is present, one per channel, addressable as
+//     `${port.id}/${channel.id}`.
+// Connections always reference a specific pin id (never a "bundle"); this
+// keeps the wire model unambiguous and makes it visually clear where each
+// line lands.
 
 interface IRenderedPin {
   key: string
   port: IBlueprintPort
   /** The id used in `data-port` and emitted to consumers. */
   portId: string
-  /** Present on collapsed bundle pins (drives the channel-count badge). */
-  channelCount?: number
-  /** Present on sub-pins of an expanded bundle. */
+  /** Present when this pin is one channel of a multi-channel port. */
   channel?: IBlueprintPortChannel
-  /** Whether this pin owns the expand/collapse toggle. */
-  canToggleExpand: boolean
+  /** Whether to render the inline label next to this pin. */
+  showLabel: boolean
+}
+
+function resolveShowLabel(port: IBlueprintPort): boolean {
+  if (port.showLabel !== undefined) return port.showLabel
+  if (props.showPortLabels === 'both') return true
+  if (props.showPortLabels === 'left') return port.type === 'input'
+  if (props.showPortLabels === 'right') return port.type === 'output'
+  return false
 }
 
 function projectPins(direction: 'input' | 'output'): IRenderedPin[] {
   const result: IRenderedPin[] = []
   for (const port of props.ports) {
     if (port.type !== direction) continue
-
-    if (port.channels && port.channels.length > 0 && isExpanded(port.id)) {
-      port.channels.forEach((channel, i) => {
+    const showLabel = resolveShowLabel(port)
+    if (port.channels && port.channels.length > 0) {
+      for (const channel of port.channels) {
         result.push({
           key: `${port.id}/${channel.id}`,
           port,
           portId: `${port.id}/${channel.id}`,
           channel,
-          canToggleExpand: i === 0,
+          showLabel,
         })
-      })
-    } else if (port.channels && port.channels.length > 0) {
-      result.push({
-        key: port.id,
-        port,
-        portId: port.id,
-        channelCount: port.channels.length,
-        canToggleExpand: true,
-      })
+      }
     } else {
       result.push({
         key: port.id,
         port,
         portId: port.id,
-        canToggleExpand: false,
+        showLabel,
       })
     }
   }
@@ -360,6 +284,11 @@ function projectPins(direction: 'input' | 'output'): IRenderedPin[] {
 
 const inputPins = computed((): IRenderedPin[] => projectPins('input'))
 const outputPins = computed((): IRenderedPin[] => projectPins('output'))
+
+const hasLabelsOnSide = computed(() => ({
+  left: inputPins.value.some((p) => p.showLabel),
+  right: outputPins.value.some((p) => p.showLabel),
+}))
 
 // Category display: append " · off" when disabled
 const displayCategory = computed(() => {
@@ -372,7 +301,6 @@ const displayCategory = computed(() => {
 const cardGlow = computed(() => {
   const c = props.color
   if (!c || c.startsWith('var(')) return 'rgba(139, 124, 255, 0.18)'
-  // Parse hex to rgba
   if (c.startsWith('#') && (c.length === 7 || c.length === 4)) {
     const hex =
       c.length === 4 ? `#${c[1]}${c[1]}${c[2]}${c[2]}${c[3]}${c[3]}` : c
@@ -387,24 +315,16 @@ const cardGlow = computed(() => {
 const connectedSet = computed(() => new Set(props.connectedPorts))
 
 function isConnected(portId: string): boolean {
-  if (connectedSet.value.has(portId)) return true
-  // A bundle (collapsed) pin should look connected if any of its sub-channels
-  // are connected; a sub-pin should look connected if the bundle id is.
-  const slash = portId.indexOf('/')
-  if (slash > 0) {
-    return connectedSet.value.has(portId.slice(0, slash))
-  }
-  for (const id of connectedSet.value) {
-    const i = id.indexOf('/')
-    if (i > 0 && id.slice(0, i) === portId) return true
-  }
-  return false
+  return connectedSet.value.has(portId)
 }
 
 function pinTitle(pin: IRenderedPin): string {
   if (pin.channel) return `${pin.port.label} . ${pin.channel.label}`
-  if (pin.channelCount) return `${pin.port.label} (${pin.channelCount} ch)`
   return pin.port.label
+}
+
+function pinLabel(pin: IRenderedPin): string {
+  return pin.channel ? pin.channel.label : pin.port.label
 }
 
 // Pin visual style based on data type
@@ -519,12 +439,10 @@ function pinShape(port: IBlueprintPort): string {
     border-color: var(--nb-card-color);
     box-shadow: 0 0 12px -2px var(--nb-card-glow);
 
-    // Hide top accent bar when selected (the full border replaces it)
     &::before {
       opacity: 0;
     }
 
-    // Keep accent border color even when hovered
     &:hover {
       border-color: var(--nb-card-color);
     }
@@ -540,9 +458,18 @@ function pinShape(port: IBlueprintPort): string {
       padding: 8px 10px;
     }
   }
+
+  // When ports on a side have inline labels, the body needs extra padding
+  // so the title / params / slot don't sit on top of the labels.
+  &--has-port-labels-left .nb-blueprint-card__body {
+    padding-left: 38px;
+  }
+
+  &--has-port-labels-right .nb-blueprint-card__body {
+    padding-right: 38px;
+  }
 }
 
-// Inner wrapper no longer needed for clipping (card itself clips now)
 .nb-blueprint-card__inner {
   position: relative;
   min-width: 0;
@@ -834,8 +761,7 @@ function pinShape(port: IBlueprintPort): string {
     transition:
       background 150ms,
       border-color 150ms,
-      box-shadow 150ms,
-      height 150ms;
+      box-shadow 150ms;
   }
 
   // Left port: flat on left (flush with card border), rounded on right (inside card)
@@ -867,91 +793,34 @@ function pinShape(port: IBlueprintPort): string {
     box-shadow: 0 0 8px var(--nb-card-glow, rgba(139, 124, 255, 0.18));
   }
 
-  // ── Bundle pin (collapsed): taller, with channel-count badge ──────
-  &--bundle::before {
-    height: 22px;
-  }
-
-  &--bundle::after {
-    content: attr(data-channel-count);
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    font-family: 'Geist Mono', 'Fira Code', monospace;
-    font-size: 9px;
-    font-weight: 600;
-    line-height: 1;
-    color: var(--pin-color, var(--nb-c-text-muted));
-    pointer-events: none;
-  }
-
-  &--bundle.nb-blueprint-card__port--left::after {
-    left: 9px;
-  }
-
-  &--bundle.nb-blueprint-card__port--right::after {
-    right: 9px;
-  }
-
-  &--bundle.nb-blueprint-card__port--connected::after {
-    color: var(--nb-c-layer-1, #101218);
-  }
-
-  // ── Sub-pin (expanded channel): shorter pill ──────────────────────
+  // Sub-pin (one channel of a multi-channel port): slightly shorter pill so
+  // a row of channel pins reads as a stack rather than four full-height pins.
   &--channel::before {
     height: 10px;
   }
 }
 
-// ── Expand/collapse toggle for bundle ports ──────────────────────────
+// ── Inline port label (next to the pin, inside the card body) ────────
 
-.nb-blueprint-card__port-expand {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 12px;
-  height: 12px;
-  border: none;
-  background: transparent;
-  color: var(--nb-c-text-muted, #5a6479);
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 2px;
-  opacity: 0;
-  transition:
-    opacity 150ms,
-    color 150ms,
-    transform 150ms;
+.nb-blueprint-card__port-label {
+  font-family: 'Geist Mono', 'Fira Code', 'JetBrains Mono', monospace;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--nb-c-text-muted);
+  white-space: nowrap;
+  pointer-events: none;
+  letter-spacing: 0.02em;
 
-  .nb-blueprint-card:hover & {
-    opacity: 0.7;
-  }
-
-  &:hover {
-    opacity: 1;
-    color: var(--pin-color, var(--nb-card-color));
-  }
-
-  // Position: just inside the card, opposite the card border
+  // Left ports: label sits to the right of the pin, inside the card body.
   .nb-blueprint-card__port--left & {
-    left: 14px;
+    margin-left: 10px;
   }
 
+  // Right ports: label sits to the left of the pin (the .port has its pin
+  // as ::before on its right edge, so we visually order via flex-direction).
   .nb-blueprint-card__port--right & {
-    right: 14px;
-    transform: translateY(-50%) scaleX(-1);
-  }
-
-  &--open {
-    opacity: 0.85;
-    transform: translateY(-50%) rotate(90deg);
-
-    .nb-blueprint-card__port--right & {
-      transform: translateY(-50%) rotate(-90deg);
-    }
+    margin-right: 10px;
+    order: -1;
   }
 }
 </style>

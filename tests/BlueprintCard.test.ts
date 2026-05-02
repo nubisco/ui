@@ -151,11 +151,11 @@ describe('BlueprintCard', () => {
     expect(w.find('.nb-blueprint-card__status--valid').exists()).toBe(true)
   })
 
-  // ── Multi-I/O bundle ports ──────────────────────────────────────────
+  // ── Multi-channel ports ──────────────────────────────────────────────
 
   const stereoPort = {
     id: 'audio-out',
-    label: 'Audio Out',
+    label: 'Stereo Out',
     type: 'output' as const,
     dataType: 'audio:stereo' as const,
     channels: [
@@ -164,56 +164,30 @@ describe('BlueprintCard', () => {
     ],
   }
 
-  it('renders a bundle port as a single pin by default', () => {
+  it('renders one pin per channel for a multi-channel port', () => {
     const w = createWrapper({ ports: [stereoPort] })
-    const pins = w.findAll(
-      '.nb-blueprint-card__ports--right .nb-blueprint-card__port',
-    )
-    expect(pins).toHaveLength(1)
-    expect(pins[0].classes()).toContain('nb-blueprint-card__port--bundle')
-  })
-
-  it('exposes the channel count on the bundle pin via data-channel-count', () => {
-    const w = createWrapper({ ports: [stereoPort] })
-    const pin = w.find('.nb-blueprint-card__port--bundle')
-    expect(pin.attributes('data-channel-count')).toBe('2')
-  })
-
-  it('uses the bundle port id (no channel suffix) when collapsed', () => {
-    const w = createWrapper({ ports: [stereoPort] })
-    const pin = w.find('.nb-blueprint-card__port--bundle')
-    expect(pin.attributes('data-port')).toBe('test:audio-out')
-  })
-
-  it('renders one sub-pin per channel when defaultExpanded is true', () => {
-    const w = createWrapper({
-      ports: [{ ...stereoPort, defaultExpanded: true }],
-    })
     const pins = w.findAll(
       '.nb-blueprint-card__ports--right .nb-blueprint-card__port',
     )
     expect(pins).toHaveLength(2)
-    expect(pins[0].classes()).toContain('nb-blueprint-card__port--channel')
+    for (const p of pins) {
+      expect(p.classes()).toContain('nb-blueprint-card__port--channel')
+    }
+  })
+
+  it('addresses each channel pin as `${port.id}/${channel.id}`', () => {
+    const w = createWrapper({ ports: [stereoPort] })
+    const pins = w.findAll(
+      '.nb-blueprint-card__ports--right .nb-blueprint-card__port',
+    )
     expect(pins[0].attributes('data-port')).toBe('test:audio-out/l')
     expect(pins[1].attributes('data-port')).toBe('test:audio-out/r')
   })
 
-  it('toggles expand state when the chevron is clicked', async () => {
+  it('emits port-mousedown with the channel-suffixed port id', async () => {
     const w = createWrapper({ ports: [stereoPort] })
-    expect(w.findAll('.nb-blueprint-card__port--channel')).toHaveLength(0)
-    await w.find('.nb-blueprint-card__port-expand').trigger('click')
-    expect(w.findAll('.nb-blueprint-card__port--channel')).toHaveLength(2)
-    // click again to collapse
-    await w.find('.nb-blueprint-card__port-expand').trigger('click')
-    expect(w.findAll('.nb-blueprint-card__port--channel')).toHaveLength(0)
-  })
-
-  it('emits port-mousedown with the slashed sub-pin id when expanded', async () => {
-    const w = createWrapper({
-      ports: [{ ...stereoPort, defaultExpanded: true }],
-    })
-    const subpins = w.findAll('.nb-blueprint-card__port--channel')
-    await subpins[1].trigger('mousedown')
+    const pins = w.findAll('.nb-blueprint-card__port--channel')
+    await pins[1].trigger('mousedown')
     const ev = w.emitted('port-mousedown')?.[0]?.[0] as
       | { nodeId: string; portId: string; type: 'input' | 'output' }
       | undefined
@@ -224,31 +198,28 @@ describe('BlueprintCard', () => {
     })
   })
 
-  it('marks the bundle pin as connected when any sub-channel is connected', () => {
+  it('marks a channel pin as connected when its specific id is in connectedPorts', () => {
     const w = createWrapper({
       ports: [stereoPort],
       connectedPorts: ['audio-out/r'],
     })
-    const bundle = w.find('.nb-blueprint-card__port--bundle')
-    expect(bundle.classes()).toContain('nb-blueprint-card__port--connected')
+    const pins = w.findAll('.nb-blueprint-card__port--channel')
+    expect(pins[0].classes()).not.toContain(
+      'nb-blueprint-card__port--connected',
+    )
+    expect(pins[1].classes()).toContain('nb-blueprint-card__port--connected')
   })
 
-  it('marks a sub-pin as connected when the parent bundle id is connected', () => {
-    const w = createWrapper({
-      ports: [{ ...stereoPort, defaultExpanded: true }],
-      connectedPorts: ['audio-out'],
-    })
-    const subpins = w.findAll('.nb-blueprint-card__port--channel')
-    for (const p of subpins) {
-      expect(p.classes()).toContain('nb-blueprint-card__port--connected')
-    }
-  })
-
-  it('does not render an expand chevron on a regular (non-bundle) port', () => {
-    const w = createWrapper({
-      ports: [{ id: 'in', label: 'In', type: 'input', dataType: 'audio' }],
-    })
+  it('does NOT render any expand chevron on multi-channel ports', () => {
+    const w = createWrapper({ ports: [stereoPort] })
     expect(w.find('.nb-blueprint-card__port-expand').exists()).toBe(false)
+  })
+
+  it('renders a tooltip combining port and channel labels', () => {
+    const w = createWrapper({ ports: [stereoPort] })
+    const pins = w.findAll('.nb-blueprint-card__port--channel')
+    expect(pins[0].attributes('title')).toBe('Stereo Out . L')
+    expect(pins[1].attributes('title')).toBe('Stereo Out . R')
   })
 
   it('accepts new pin data types (audio:stereo, midi, control) without errors', () => {
@@ -281,5 +252,82 @@ describe('BlueprintCard', () => {
     )
     expect(left).toHaveLength(2)
     expect(right).toHaveLength(1)
+  })
+
+  // ── Inline port labels ───────────────────────────────────────────────
+
+  it('does not render inline labels by default', () => {
+    const w = createWrapper({
+      ports: [{ id: 'in', label: 'Audio In', type: 'input' }],
+    })
+    expect(w.find('.nb-blueprint-card__port-label').exists()).toBe(false)
+  })
+
+  it('renders an inline label when port.showLabel is true', () => {
+    const w = createWrapper({
+      ports: [
+        { id: 'in', label: 'MIDI In', type: 'input', showLabel: true },
+        { id: 'out', label: 'Out', type: 'output' },
+      ],
+    })
+    const labels = w.findAll('.nb-blueprint-card__port-label')
+    expect(labels).toHaveLength(1)
+    expect(labels[0].text()).toBe('MIDI In')
+  })
+
+  it('respects card-level showPortLabels=left for input ports only', () => {
+    const w = createWrapper({
+      showPortLabels: 'left',
+      ports: [
+        { id: 'in', label: 'In', type: 'input' },
+        { id: 'out', label: 'Out', type: 'output' },
+      ],
+    })
+    const left = w.find(
+      '.nb-blueprint-card__ports--left .nb-blueprint-card__port-label',
+    )
+    const right = w.find(
+      '.nb-blueprint-card__ports--right .nb-blueprint-card__port-label',
+    )
+    expect(left.exists()).toBe(true)
+    expect(right.exists()).toBe(false)
+  })
+
+  it("uses the channel's label (not the port's) for inline text on multi-channel ports", () => {
+    const w = createWrapper({
+      showPortLabels: 'right',
+      ports: [stereoPort],
+    })
+    const labels = w.findAll(
+      '.nb-blueprint-card__ports--right .nb-blueprint-card__port-label',
+    )
+    expect(labels.map((l) => l.text())).toEqual(['L', 'R'])
+  })
+
+  it('per-port showLabel overrides the card-level default', () => {
+    const w = createWrapper({
+      showPortLabels: 'both',
+      ports: [
+        { id: 'in', label: 'Hidden', type: 'input', showLabel: false },
+        { id: 'out', label: 'Shown', type: 'output' },
+      ],
+    })
+    expect(
+      w.findAll('.nb-blueprint-card__port-label').map((l) => l.text()),
+    ).toEqual(['Shown'])
+  })
+
+  it('adds card-level has-port-labels modifier classes when any side has labels', () => {
+    const w = createWrapper({
+      showPortLabels: 'left',
+      ports: [
+        { id: 'in', label: 'In', type: 'input' },
+        { id: 'out', label: 'Out', type: 'output' },
+      ],
+    })
+    expect(w.classes()).toContain('nb-blueprint-card--has-port-labels-left')
+    expect(w.classes()).not.toContain(
+      'nb-blueprint-card--has-port-labels-right',
+    )
   })
 })

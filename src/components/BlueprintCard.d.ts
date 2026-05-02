@@ -33,7 +33,7 @@ export interface IBlueprintPortChannel {
 export interface IBlueprintPort {
   /** Unique port identifier */
   id: string
-  /** Display label (shown inline on the card) */
+  /** Display label (shown in the tooltip and, when showLabel is true, inline) */
   label: string
   /** Port direction */
   type: 'input' | 'output'
@@ -42,17 +42,22 @@ export interface IBlueprintPort {
   /** Whether this input is required for the node to be valid */
   required?: boolean
   /**
-   * Optional list of sub-channels that make up this bundle port.
-   * When set, the port renders as a single bundle pin (with a channel-count
-   * badge) by default. The user can expand the bundle to expose individual
-   * sub-pins, each addressable as `${port.id}/${channel.id}`.
+   * Optional list of sub-channels that make up a multi-channel port.
+   * When set, the port always renders as N discrete pins (one per channel),
+   * each addressable as `${port.id}/${channel.id}`. Useful as a declarative
+   * shorthand for stereo / multi-bus / multi-MIDI ports without writing N
+   * separate port entries by hand.
    *
-   * Connections that reference a sub-channel id remain visible when the
-   * bundle is collapsed; the wire is routed to the bundle pin's center.
+   * The pin's tooltip combines the parent and channel labels
+   * (e.g. "Stereo Out . L"); when inline labels are enabled, the channel
+   * label is what appears next to the pin (e.g. "L").
    */
   channels?: IBlueprintPortChannel[]
-  /** When true, the bundle starts in the expanded state. Default false. */
-  defaultExpanded?: boolean
+  /**
+   * Whether the port's label is rendered inline next to the pin (in addition
+   * to the tooltip). Overrides the card-level `showPortLabels` default.
+   */
+  showLabel?: boolean
 }
 
 /** Status indicator level */
@@ -69,6 +74,13 @@ export interface IBlueprintCardParameter {
   /** Optional progress bar (0 to 100). When set, a thin bar renders below the row. */
   bar?: number
 }
+
+/**
+ * Card-level default for inline port labels. Individual ports can opt in/out
+ * via `IBlueprintPort.showLabel`. Use `'left'` for input-side labels (typical
+ * for an audio interface with named inputs), `'right'` for output-side, etc.
+ */
+export type TBlueprintPortLabelMode = 'left' | 'right' | 'both' | false
 
 export interface IBlueprintCardProps {
   /** Unique card identifier */
@@ -101,4 +113,9 @@ export interface IBlueprintCardProps {
   preview?: string
   /** Structured parameter rows displayed in the card body */
   parameters?: IBlueprintCardParameter[]
+  /**
+   * Default for inline port labels. Per-port `showLabel` always wins.
+   * Default: false (tooltip only).
+   */
+  showPortLabels?: TBlueprintPortLabelMode
 }
