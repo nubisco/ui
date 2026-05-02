@@ -6,12 +6,29 @@ export type TBlueprintPinDataType =
   | 'effect'
   | 'surface'
   | 'audio'
+  | 'audio:mono'
+  | 'audio:stereo'
+  | 'audio:bus'
+  | 'midi'
+  | 'midi:rechannelized'
+  | 'control'
   | 'entity'
   | 'number'
   | 'vector3'
   | 'color'
   | 'asset'
   | 'any'
+
+/** A single sub-channel within a multi-channel bundle port. */
+export interface IBlueprintPortChannel {
+  /**
+   * Unique within the parent port. When the port is expanded, the rendered
+   * pin's data-port attribute and emitted port id is `${port.id}/${channel.id}`.
+   */
+  id: string
+  /** Display label shown in the pin tooltip, e.g. "L", "R", "Ch 3". */
+  label: string
+}
 
 export interface IBlueprintPort {
   /** Unique port identifier */
@@ -24,6 +41,18 @@ export interface IBlueprintPort {
   dataType?: TBlueprintPinDataType
   /** Whether this input is required for the node to be valid */
   required?: boolean
+  /**
+   * Optional list of sub-channels that make up this bundle port.
+   * When set, the port renders as a single bundle pin (with a channel-count
+   * badge) by default. The user can expand the bundle to expose individual
+   * sub-pins, each addressable as `${port.id}/${channel.id}`.
+   *
+   * Connections that reference a sub-channel id remain visible when the
+   * bundle is collapsed; the wire is routed to the bundle pin's center.
+   */
+  channels?: IBlueprintPortChannel[]
+  /** When true, the bundle starts in the expanded state. Default false. */
+  defaultExpanded?: boolean
 }
 
 /** Status indicator level */

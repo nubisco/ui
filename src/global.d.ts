@@ -10,10 +10,10 @@ import BottomPanel from './components/BottomPanel.vue'
 import Breadcrumbs from './components/Breadcrumbs.vue'
 import Button from './components/Button.vue'
 import Calendar from './components/Calendar.vue'
-import DatePicker from './components/DatePicker.vue'
 import Checkbox from './components/Checkbox.vue'
 import ColorStrip from './components/ColorStrip.vue'
 import CommandPalette from './components/CommandPalette.vue'
+import DatePicker from './components/DatePicker.vue'
 import FileUploader from './components/FileUploader.vue'
 import Flag from './components/Flag.vue'
 import Form from './components/Form.vue'
@@ -61,10 +61,10 @@ declare module 'vue' {
     NbBreadcrumbs: typeof Breadcrumbs
     NbButton: typeof Button
     NbCalendar: typeof Calendar
-    NbDatePicker: typeof DatePicker
     NbCheckbox: typeof Checkbox
     NbColorStrip: typeof ColorStrip
     NbCommandPalette: typeof CommandPalette
+    NbDatePicker: typeof DatePicker
     NbFileUploader: typeof FileUploader
     NbFlag: typeof Flag
     NbForm: typeof Form

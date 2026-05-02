@@ -150,4 +150,136 @@ describe('BlueprintCard', () => {
     const w = createWrapper({ status: 'valid' })
     expect(w.find('.nb-blueprint-card__status--valid').exists()).toBe(true)
   })
+
+  // ── Multi-I/O bundle ports ──────────────────────────────────────────
+
+  const stereoPort = {
+    id: 'audio-out',
+    label: 'Audio Out',
+    type: 'output' as const,
+    dataType: 'audio:stereo' as const,
+    channels: [
+      { id: 'l', label: 'L' },
+      { id: 'r', label: 'R' },
+    ],
+  }
+
+  it('renders a bundle port as a single pin by default', () => {
+    const w = createWrapper({ ports: [stereoPort] })
+    const pins = w.findAll(
+      '.nb-blueprint-card__ports--right .nb-blueprint-card__port',
+    )
+    expect(pins).toHaveLength(1)
+    expect(pins[0].classes()).toContain('nb-blueprint-card__port--bundle')
+  })
+
+  it('exposes the channel count on the bundle pin via data-channel-count', () => {
+    const w = createWrapper({ ports: [stereoPort] })
+    const pin = w.find('.nb-blueprint-card__port--bundle')
+    expect(pin.attributes('data-channel-count')).toBe('2')
+  })
+
+  it('uses the bundle port id (no channel suffix) when collapsed', () => {
+    const w = createWrapper({ ports: [stereoPort] })
+    const pin = w.find('.nb-blueprint-card__port--bundle')
+    expect(pin.attributes('data-port')).toBe('test:audio-out')
+  })
+
+  it('renders one sub-pin per channel when defaultExpanded is true', () => {
+    const w = createWrapper({
+      ports: [{ ...stereoPort, defaultExpanded: true }],
+    })
+    const pins = w.findAll(
+      '.nb-blueprint-card__ports--right .nb-blueprint-card__port',
+    )
+    expect(pins).toHaveLength(2)
+    expect(pins[0].classes()).toContain('nb-blueprint-card__port--channel')
+    expect(pins[0].attributes('data-port')).toBe('test:audio-out/l')
+    expect(pins[1].attributes('data-port')).toBe('test:audio-out/r')
+  })
+
+  it('toggles expand state when the chevron is clicked', async () => {
+    const w = createWrapper({ ports: [stereoPort] })
+    expect(w.findAll('.nb-blueprint-card__port--channel')).toHaveLength(0)
+    await w.find('.nb-blueprint-card__port-expand').trigger('click')
+    expect(w.findAll('.nb-blueprint-card__port--channel')).toHaveLength(2)
+    // click again to collapse
+    await w.find('.nb-blueprint-card__port-expand').trigger('click')
+    expect(w.findAll('.nb-blueprint-card__port--channel')).toHaveLength(0)
+  })
+
+  it('emits port-mousedown with the slashed sub-pin id when expanded', async () => {
+    const w = createWrapper({
+      ports: [{ ...stereoPort, defaultExpanded: true }],
+    })
+    const subpins = w.findAll('.nb-blueprint-card__port--channel')
+    await subpins[1].trigger('mousedown')
+    const ev = w.emitted('port-mousedown')?.[0]?.[0] as
+      | { nodeId: string; portId: string; type: 'input' | 'output' }
+      | undefined
+    expect(ev).toEqual({
+      nodeId: 'test',
+      portId: 'audio-out/r',
+      type: 'output',
+    })
+  })
+
+  it('marks the bundle pin as connected when any sub-channel is connected', () => {
+    const w = createWrapper({
+      ports: [stereoPort],
+      connectedPorts: ['audio-out/r'],
+    })
+    const bundle = w.find('.nb-blueprint-card__port--bundle')
+    expect(bundle.classes()).toContain('nb-blueprint-card__port--connected')
+  })
+
+  it('marks a sub-pin as connected when the parent bundle id is connected', () => {
+    const w = createWrapper({
+      ports: [{ ...stereoPort, defaultExpanded: true }],
+      connectedPorts: ['audio-out'],
+    })
+    const subpins = w.findAll('.nb-blueprint-card__port--channel')
+    for (const p of subpins) {
+      expect(p.classes()).toContain('nb-blueprint-card__port--connected')
+    }
+  })
+
+  it('does not render an expand chevron on a regular (non-bundle) port', () => {
+    const w = createWrapper({
+      ports: [{ id: 'in', label: 'In', type: 'input', dataType: 'audio' }],
+    })
+    expect(w.find('.nb-blueprint-card__port-expand').exists()).toBe(false)
+  })
+
+  it('accepts new pin data types (audio:stereo, midi, control) without errors', () => {
+    const ports = [
+      {
+        id: 'a',
+        label: 'A',
+        type: 'input' as const,
+        dataType: 'audio:stereo' as const,
+      },
+      {
+        id: 'b',
+        label: 'B',
+        type: 'input' as const,
+        dataType: 'midi' as const,
+      },
+      {
+        id: 'c',
+        label: 'C',
+        type: 'output' as const,
+        dataType: 'control' as const,
+      },
+    ]
+    const w = createWrapper({ ports })
+    const left = w.findAll(
+      '.nb-blueprint-card__ports--left .nb-blueprint-card__port',
+    )
+    const right = w.findAll(
+      '.nb-blueprint-card__ports--right .nb-blueprint-card__port',
+    )
+    expect(left).toHaveLength(2)
+    expect(right).toHaveLength(1)
+  })
 })

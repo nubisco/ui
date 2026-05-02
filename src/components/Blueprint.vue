@@ -549,15 +549,31 @@ function onPortMouseDown(data: {
   document.addEventListener('mouseup', onWireDragEnd)
 }
 
+// Look up the DOM element for a port by id. If the exact pin isn't rendered
+// (because its parent bundle is collapsed), fall back to the bundle pin —
+// this lets wires to sub-channels keep rendering across expand/collapse.
+function findPortEl(nodeId: string, portId: string): HTMLElement | null {
+  if (!containerRef.value) return null
+  const exact = containerRef.value.querySelector(
+    `[data-port="${nodeId}:${portId}"]`,
+  ) as HTMLElement | null
+  if (exact) return exact
+  const slash = portId.indexOf('/')
+  if (slash > 0) {
+    return containerRef.value.querySelector(
+      `[data-port="${nodeId}:${portId.slice(0, slash)}"]`,
+    ) as HTMLElement | null
+  }
+  return null
+}
+
 function onWireDrag(e: MouseEvent) {
   if (!dragFrom || !containerRef.value) return
   const rect = containerRef.value.getBoundingClientRect()
   const mx = (e.clientX - rect.left - panX.value) / zoom.value
   const my = (e.clientY - rect.top - panY.value) / zoom.value
 
-  const fromEl = containerRef.value.querySelector(
-    `[data-port="${dragFrom.nodeId}:${dragFrom.portId}"]`,
-  ) as HTMLElement
+  const fromEl = findPortEl(dragFrom.nodeId, dragFrom.portId)
   if (!fromEl) return
 
   const fromRect = fromEl.getBoundingClientRect()
@@ -616,12 +632,8 @@ const computedWires = computed(() => {
   const rect = containerRef.value.getBoundingClientRect()
   return props.connections
     .map((conn) => {
-      const fromEl = containerRef.value!.querySelector(
-        `[data-port="${conn.fromNode}:${conn.fromPort}"]`,
-      ) as HTMLElement
-      const toEl = containerRef.value!.querySelector(
-        `[data-port="${conn.toNode}:${conn.toPort}"]`,
-      ) as HTMLElement
+      const fromEl = findPortEl(conn.fromNode, conn.fromPort)
+      const toEl = findPortEl(conn.toNode, conn.toPort)
 
       if (!fromEl || !toEl) return null
 
