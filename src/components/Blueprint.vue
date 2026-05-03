@@ -36,12 +36,16 @@
           :stroke="wire.color"
           stroke-width="1.5"
           class="nb-blueprint__wire"
+          :class="{
+            'nb-blueprint__wire--inactive': wire.conn.active === false,
+          }"
           :style="{ filter: `drop-shadow(0 0 6px ${wire.color})` }"
           @contextmenu.prevent="onWireContextMenu($event, wire.conn)"
         />
-        <!-- Animated flow overlay for each wire -->
+        <!-- Animated flow overlay for each wire (suppressed when inactive) -->
         <path
           v-for="(wire, i) in computedWires"
+          v-show="wire.conn.active !== false"
           :key="`flow-${i}`"
           :d="wire.path"
           fill="none"
@@ -1211,6 +1215,11 @@ defineExpose({
   &:hover {
     opacity: 0.8;
     stroke-width: 3;
+  }
+
+  // Inactive wires stay visible but dim, no flow.
+  &--inactive {
+    opacity: 0.25;
   }
 }
 
