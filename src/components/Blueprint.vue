@@ -36,14 +36,12 @@
           :stroke="wire.color"
           stroke-width="1.5"
           class="nb-blueprint__wire"
-          :data-active="wire.conn.active !== false"
           :style="{ filter: `drop-shadow(0 0 6px ${wire.color})` }"
           @contextmenu.prevent="onWireContextMenu($event, wire.conn)"
         />
-        <!-- Animated flow overlay (only when the wire reports active signal) -->
+        <!-- Animated flow overlay for each wire -->
         <path
           v-for="(wire, i) in computedWires"
-          v-show="wire.conn.active !== false"
           :key="`flow-${i}`"
           :d="wire.path"
           fill="none"
@@ -51,9 +49,6 @@
           stroke-width="1.5"
           stroke-dasharray="4 8"
           class="nb-blueprint__wire-flow"
-          :class="{
-            'nb-blueprint__wire-flow--paused': wire.conn.active === false,
-          }"
           pointer-events="none"
         />
         <!-- Active wire being dragged -->
@@ -1217,12 +1212,6 @@ defineExpose({
     opacity: 0.8;
     stroke-width: 3;
   }
-}
-
-// Inactive wires (no signal flowing): kept visible but visually quieter.
-.nb-blueprint__wire[data-active='false'] {
-  opacity: 0.3;
-  stroke-dasharray: none;
 }
 
 .nb-blueprint__wire-flow {

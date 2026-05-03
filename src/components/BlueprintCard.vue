@@ -27,7 +27,6 @@
           pin.port.required ? 'nb-blueprint-card__port--required' : '',
           pin.channel ? 'nb-blueprint-card__port--channel' : '',
           isConnected(pin.portId) ? 'nb-blueprint-card__port--connected' : '',
-          isActive(pin.portId) ? 'nb-blueprint-card__port--active' : '',
         ]"
         :style="{ '--pin-color': pinColor(pin.port) }"
         :title="pinTitle(pin)"
@@ -154,7 +153,6 @@
           `nb-blueprint-card__port--${pinShape(pin.port)}`,
           pin.channel ? 'nb-blueprint-card__port--channel' : '',
           isConnected(pin.portId) ? 'nb-blueprint-card__port--connected' : '',
-          isActive(pin.portId) ? 'nb-blueprint-card__port--active' : '',
         ]"
         :style="{ '--pin-color': pinColor(pin.port) }"
         :title="pinTitle(pin)"
@@ -190,7 +188,6 @@ const props = withDefaults(defineProps<IBlueprintCardProps>(), {
   category: '',
   ports: () => [],
   connectedPorts: () => [],
-  activePorts: () => [],
   x: 0,
   y: 0,
   removable: false,
@@ -326,14 +323,9 @@ const cardGlow = computed(() => {
 })
 
 const connectedSet = computed(() => new Set(props.connectedPorts))
-const activeSet = computed(() => new Set(props.activePorts))
 
 function isConnected(portId: string): boolean {
   return connectedSet.value.has(portId)
-}
-
-function isActive(portId: string): boolean {
-  return activeSet.value.has(portId)
 }
 
 function pinTitle(pin: IRenderedPin): string {
@@ -805,12 +797,6 @@ function pinShape(port: IBlueprintPort): string {
     box-shadow: 0 0 8px var(--nb-card-glow, rgba(139, 124, 255, 0.18));
   }
 
-  // Active state: signal is flowing through this pin. Pulsing glow on top
-  // of the connected fill draws the eye to the live signal path.
-  &--active::before {
-    animation: nb-port-pulse 1.4s ease-in-out infinite;
-  }
-
   &:hover::before {
     border-color: var(--pin-color, var(--nb-card-color));
     background: var(--pin-color, var(--nb-card-color));
@@ -821,18 +807,6 @@ function pinShape(port: IBlueprintPort): string {
   // a row of channel pins reads as a stack rather than four full-height pins.
   &--channel::before {
     height: 10px;
-  }
-}
-
-@keyframes nb-port-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 6px var(--pin-color, var(--nb-card-color));
-  }
-  50% {
-    box-shadow:
-      0 0 16px var(--pin-color, var(--nb-card-color)),
-      0 0 24px var(--pin-color, var(--nb-card-color));
   }
 }
 
