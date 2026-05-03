@@ -3,6 +3,13 @@ export interface IBlueprintConnection {
   fromPort: string
   toNode: string
   toPort: string
+  /**
+   * Whether signal can currently flow through this wire. When false, the
+   * wire still renders (the path stays visible) but the animated flow
+   * overlay is suppressed and the path is dimmed. Undefined = treated as
+   * active for back-compat with non-audio consumers.
+   */
+  active?: boolean
 }
 
 export interface IBlueprintCardMove {

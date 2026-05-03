@@ -99,6 +99,12 @@ export interface IBlueprintCardProps {
   ports?: IBlueprintPort[]
   /** IDs of ports that are currently connected (filled style) */
   connectedPorts?: string[]
+  /**
+   * IDs of ports currently carrying signal. Active pins keep their
+   * connected fill and add a subtle pulsing glow so the user can trace
+   * the live signal at a glance. Optional for non-audio consumers.
+   */
+  activePorts?: string[]
   /** Position X on the canvas (in canvas units) */
   x?: number
   /** Position Y on the canvas (in canvas units) */
