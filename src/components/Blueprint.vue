@@ -1072,7 +1072,13 @@ onMounted(() => {
     observer.observe(containerRef.value, {
       childList: true,
       subtree: true,
+      // Only watch `style` changes. The observer exists to recompute wire
+      // paths when card wrappers move (their transform lives in the style
+      // attribute). Watching all attributes meant our own SVG-attribute
+      // updates (d, class, data-active) fed back into wireKey++ and pegged
+      // the JS thread when many wires + pins were active.
       attributes: true,
+      attributeFilter: ['style'],
     })
   }
   window.addEventListener('keydown', onKeyDown)
