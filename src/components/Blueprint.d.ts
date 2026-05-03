@@ -3,6 +3,13 @@ export interface IBlueprintConnection {
   fromPort: string
   toNode: string
   toPort: string
+  /**
+   * Whether signal can currently flow through this wire. When false (or
+   * undefined for back-compat), the wire still renders but the animated
+   * "flow" overlay is suppressed. Drives the signal-activity animation
+   * for audio blueprints; non-audio consumers can leave this unset.
+   */
+  active?: boolean
 }
 
 export interface IBlueprintCardMove {
