@@ -10,20 +10,20 @@ tabs: ['Usage', 'Api']
 
 ## Interaction model
 
-| Action                 | Effect                         |
-| ---------------------- | ------------------------------ |
-| Left drag on canvas    | Marquee (box) select           |
-| Shift + marquee        | Add to selection               |
-| Click on card          | Select card (deselects others) |
-| Shift + click on card  | Toggle card in selection       |
-| Drag a selected card   | Move all selected cards        |
-| Two-finger scroll      | Pan the canvas                 |
-| Middle mouse drag      | Pan the canvas                 |
-| Space + left drag      | Pan the canvas                 |
-| Pinch (trackpad)       | Focal-point zoom               |
-| Ctrl + scroll          | Focal-point zoom               |
-| Drag from port to port | Connect two cards              |
-| Click a wire           | Disconnect                     |
+| Action                 | Effect                          |
+| ---------------------- | ------------------------------- |
+| Left drag on canvas    | Marquee (box) select            |
+| Shift + marquee        | Add to selection                |
+| Click on card          | Select card (deselects others)  |
+| Shift + click on card  | Toggle card in selection        |
+| Drag a selected card   | Move all selected cards         |
+| Two-finger scroll      | Pan the canvas                  |
+| Middle mouse drag      | Pan the canvas                  |
+| Space + left drag      | Pan the canvas                  |
+| Pinch (trackpad)       | Focal-point zoom                |
+| Ctrl + scroll          | Focal-point zoom                |
+| Drag from port to port | Connect two cards               |
+| Right-click a wire     | Context menu (Disconnect, etc.) |
 
 ## Basic example
 
@@ -53,8 +53,6 @@ Cards are placed in the default slot with `transform: translate(x, y)` positioni
           :selected="demoBlueprint?.selectedIds?.has(card.id)"
           :focused="demoBlueprint?.focusedId === card.id"
           :collapsed="demoBlueprint?.focusedId !== card.id"
-          @port-mousedown="demoBlueprint?.onPortMouseDown($event)"
-          @port-mouseup="demoBlueprint?.onPortMouseUp($event)"
         />
       </div>
     </NbBlueprint>
@@ -97,8 +95,6 @@ Cards are placed in the default slot with `transform: translate(x, y)` positioni
           :connected-ports="connectedPortsFor(card.id)"
           :selected="blueprint?.selectedIds?.has(card.id)"
           :focused="blueprint?.focusedId === card.id"
-          @port-mousedown="blueprint?.onPortMouseDown($event)"
-          @port-mouseup="blueprint?.onPortMouseUp($event)"
         />
       </div>
     </NbBlueprint>
@@ -122,6 +118,38 @@ function onMove(moves: IBlueprintCardMove[]) {
   }
 }
 </script>
+```
+
+## Drag-to-connect
+
+Cards rendered inside an `NbBlueprint` automatically wire their port
+mousedown/mouseup events to the blueprint via Vue `provide`/`inject`. No
+parent boilerplate needed: drop `NbBlueprintCard` in the default slot, and
+dragging from a port to another compatible port emits `connect` on the
+blueprint.
+
+The card still emits `port-mousedown` and `port-mouseup` so consumers using
+`NbBlueprintCard` outside an `NbBlueprint` (in a docs page, isolated demo,
+etc.) can wire the events manually if needed.
+
+## Wire context menu
+
+Right-clicking a wire opens a small context menu anchored at the cursor.
+The default menu shows a single **Disconnect** action that emits
+`disconnect` on the blueprint with the connection. Esc or a click outside
+closes the menu.
+
+To replace or extend the menu, use the `wire-menu` slot. The slot scope
+exposes the connection plus `close()` and `disconnect()` helpers:
+
+```vue
+<NbBlueprint :connections="connections">
+  <template #wire-menu="{ connection, close, disconnect }">
+    <button @click="disconnect()">Disconnect</button>
+    <button @click="onInsertNode(connection); close()">Insert node…</button>
+  </template>
+  <!-- cards go here -->
+</NbBlueprint>
 ```
 
 ## Card dragging
@@ -205,19 +233,20 @@ The canvas background uses `--nb-c-layer-0`. Ambient gradients are configurable 
 
 ## Events
 
-| Event              | Payload                | Description                                                               |
-| ------------------ | ---------------------- | ------------------------------------------------------------------------- |
-| `connect`          | `IBlueprintConnection` | Emitted when a drag from one port is released on another compatible port. |
-| `disconnect`       | `IBlueprintConnection` | Emitted when an existing wire is clicked.                                 |
-| `move`             | `IBlueprintCardMove[]` | Emitted after cards are dragged, aligned, distributed, or auto-laid out.  |
-| `focus`            | `string \| null`       | Emitted when a card is focused (clicked). `null` when focus is cleared.   |
-| `selection-change` | `string[]`             | Emitted when the set of selected card IDs changes.                        |
+| Event              | Payload                | Description                                                                                   |
+| ------------------ | ---------------------- | --------------------------------------------------------------------------------------------- |
+| `connect`          | `IBlueprintConnection` | Emitted when a drag from one port is released on another compatible port.                     |
+| `disconnect`       | `IBlueprintConnection` | Emitted when the user clicks **Disconnect** in the wire context menu (right-click on a wire). |
+| `move`             | `IBlueprintCardMove[]` | Emitted after cards are dragged, aligned, distributed, or auto-laid out.                      |
+| `focus`            | `string \| null`       | Emitted when a card is focused (clicked). `null` when focus is cleared.                       |
+| `selection-change` | `string[]`             | Emitted when the set of selected card IDs changes.                                            |
 
 ## Slots
 
-| Slot      | Description                                                                                                    |
-| --------- | -------------------------------------------------------------------------------------------------------------- |
-| `default` | Card layer. Place `NbBlueprintCard` instances here, positioned with `transform: translate(x, y)` on a wrapper. |
+| Slot        | Scope props                         | Description                                                                                                    |
+| ----------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `default`   | (none)                              | Card layer. Place `NbBlueprintCard` instances here, positioned with `transform: translate(x, y)` on a wrapper. |
+| `wire-menu` | `{ connection, close, disconnect }` | Replaces the default wire context menu (right-click on a wire). Default content is a single Disconnect button. |
 
 ## Exposed instance
 

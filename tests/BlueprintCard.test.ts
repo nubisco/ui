@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import BlueprintCard from '../src/components/BlueprintCard.vue'
+import { NB_BLUEPRINT_CONTEXT } from '../src/components/Blueprint.context'
 
 describe('BlueprintCard', () => {
   const createWrapper = (props = {}) =>
@@ -329,5 +330,50 @@ describe('BlueprintCard', () => {
     expect(w.classes()).not.toContain(
       'nb-blueprint-card--has-port-labels-right',
     )
+  })
+
+  // ── Provide/inject port handlers ─────────────────────────────────────
+
+  it('calls injected NbBlueprint context handlers when a port is interacted with', async () => {
+    const onPortDown = vi.fn()
+    const onPortUp = vi.fn()
+    const w = mount(BlueprintCard, {
+      props: {
+        id: 'card',
+        title: 'Card',
+        ports: [{ id: 'out', label: 'Out', type: 'output', dataType: 'audio' }],
+      },
+      global: {
+        provide: {
+          [NB_BLUEPRINT_CONTEXT as symbol]: { onPortDown, onPortUp },
+        },
+      },
+    })
+    const port = w.find('.nb-blueprint-card__port')
+    await port.trigger('mousedown')
+    expect(onPortDown).toHaveBeenCalledWith({
+      nodeId: 'card',
+      portId: 'out',
+      type: 'output',
+    })
+    await port.trigger('mouseup')
+    expect(onPortUp).toHaveBeenCalledWith({
+      nodeId: 'card',
+      portId: 'out',
+      type: 'output',
+    })
+  })
+
+  it('still emits port events when used outside an NbBlueprint context', async () => {
+    const w = createWrapper({
+      ports: [{ id: 'in', label: 'In', type: 'input', dataType: 'audio' }],
+    })
+    const port = w.find('.nb-blueprint-card__port')
+    await port.trigger('mousedown')
+    expect(w.emitted('port-mousedown')?.[0]?.[0]).toEqual({
+      nodeId: 'test',
+      portId: 'in',
+      type: 'input',
+    })
   })
 })
