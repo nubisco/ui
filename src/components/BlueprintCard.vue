@@ -31,18 +31,10 @@
         :style="{ '--pin-color': pinColor(pin.port) }"
         :title="pinTitle(pin)"
         @mousedown.stop="
-          $emit('port-mousedown', {
-            nodeId: id,
-            portId: pin.portId,
-            type: 'input',
-          })
+          onPortDown({ nodeId: id, portId: pin.portId, type: 'input' })
         "
         @mouseup.stop="
-          $emit('port-mouseup', {
-            nodeId: id,
-            portId: pin.portId,
-            type: 'input',
-          })
+          onPortUp({ nodeId: id, portId: pin.portId, type: 'input' })
         "
       >
         <span v-if="pin.showLabel" class="nb-blueprint-card__port-label">{{
@@ -165,18 +157,10 @@
         :style="{ '--pin-color': pinColor(pin.port) }"
         :title="pinTitle(pin)"
         @mousedown.stop="
-          $emit('port-mousedown', {
-            nodeId: id,
-            portId: pin.portId,
-            type: 'output',
-          })
+          onPortDown({ nodeId: id, portId: pin.portId, type: 'output' })
         "
         @mouseup.stop="
-          $emit('port-mouseup', {
-            nodeId: id,
-            portId: pin.portId,
-            type: 'output',
-          })
+          onPortUp({ nodeId: id, portId: pin.portId, type: 'output' })
         "
       >
         <span v-if="pin.showLabel" class="nb-blueprint-card__port-label">{{
@@ -188,13 +172,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import type {
   IBlueprintCardProps,
   IBlueprintPort,
   IBlueprintPortChannel,
   TBlueprintPinDataType,
 } from './BlueprintCard.d'
+import { NB_BLUEPRINT_CONTEXT } from './Blueprint.context'
 
 const props = withDefaults(defineProps<IBlueprintCardProps>(), {
   color: undefined,
@@ -213,7 +198,7 @@ const props = withDefaults(defineProps<IBlueprintCardProps>(), {
   showPortLabels: false,
 })
 
-defineEmits<{
+const emit = defineEmits<{
   select: [id: string]
   toggle: [id: string, enabled: boolean]
   remove: [id: string]
@@ -225,6 +210,31 @@ defineEmits<{
     data: { nodeId: string; portId: string; type: 'input' | 'output' },
   ]
 }>()
+
+// When this card is rendered inside an NbBlueprint, the blueprint provides
+// port handlers we call directly. This replaces the manual @port-mousedown
+// / @port-mouseup forwarding that consumers used to need. Cards used
+// outside an NbBlueprint (e.g. in docs or standalone demos) still emit
+// the events so callers can wire them up by hand.
+const blueprintCtx = inject(NB_BLUEPRINT_CONTEXT, null)
+
+function onPortDown(data: {
+  nodeId: string
+  portId: string
+  type: 'input' | 'output'
+}) {
+  emit('port-mousedown', data)
+  blueprintCtx?.onPortDown(data)
+}
+
+function onPortUp(data: {
+  nodeId: string
+  portId: string
+  type: 'input' | 'output'
+}) {
+  emit('port-mouseup', data)
+  blueprintCtx?.onPortUp(data)
+}
 
 // ── Rendered pin projection ───────────────────────────────────────────
 //

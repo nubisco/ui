@@ -15,7 +15,10 @@ export default defineConfig(
     ignores: ['**/*.d.ts'],
     languageOptions: {
       parserOptions: {
-        project: './tsconfig.eslint.json',
+        // Use TypeScript's project service instead of a static project glob.
+        // Robust to lint-staged invocations on newly-added files that the
+        // glob hasn't picked up yet.
+        projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -26,7 +29,7 @@ export default defineConfig(
       parser: vueParser,
       parserOptions: {
         parser: tseslint.parser,
-        project: './tsconfig.eslint.json',
+        projectService: true,
         tsconfigRootDir: import.meta.dirname,
         extraFileExtensions: ['.vue'],
       },

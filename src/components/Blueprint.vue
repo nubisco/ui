@@ -37,7 +37,7 @@
           stroke-width="1.5"
           class="nb-blueprint__wire"
           :style="{ filter: `drop-shadow(0 0 6px ${wire.color})` }"
-          @click="$emit('disconnect', wire.conn)"
+          @contextmenu.prevent="onWireContextMenu($event, wire.conn)"
         />
         <!-- Animated flow overlay for each wire -->
         <path
@@ -94,14 +94,48 @@
         class="nb-blueprint__selection-ants"
       />
     </svg>
+
+    <!-- Wire context menu (right-click on a wire) -->
+    <div
+      v-if="wireMenu"
+      class="nb-blueprint__wire-menu"
+      :style="{ left: `${wireMenu.x}px`, top: `${wireMenu.y}px` }"
+      role="menu"
+      @click.stop
+      @contextmenu.prevent
+    >
+      <slot
+        name="wire-menu"
+        :connection="wireMenu.conn"
+        :close="closeWireMenu"
+        :disconnect="() => disconnectFromMenu(wireMenu!.conn)"
+      >
+        <button
+          type="button"
+          class="nb-blueprint__wire-menu-item"
+          @click="disconnectFromMenu(wireMenu.conn)"
+        >
+          Disconnect
+        </button>
+      </slot>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import {
+  ref,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  provide,
+} from 'vue'
+import { NB_BLUEPRINT_CONTEXT } from './Blueprint.context'
 import type {
   IBlueprintConnection,
   IBlueprintCardMove,
+  IBlueprintCardPortEvent,
   IBlueprintProps,
 } from './Blueprint.d'
 
@@ -549,6 +583,55 @@ function onPortMouseDown(data: {
   document.addEventListener('mouseup', onWireDragEnd)
 }
 
+// ── Provide port handlers so child NbBlueprintCards can self-wire ─────
+//
+// Without this, every consumer of NbBlueprint had to manually forward the
+// `port-mousedown` / `port-mouseup` events from each card to the blueprint's
+// onPortMouseDown / onPortMouseUp methods. With provide/inject, cards
+// nested inside an NbBlueprint pick this up automatically and drag-to-
+// connect works out of the box.
+provide(NB_BLUEPRINT_CONTEXT, {
+  onPortDown: (e: IBlueprintCardPortEvent) => onPortMouseDown(e),
+  onPortUp: (e: IBlueprintCardPortEvent) => onPortMouseUp(e),
+})
+
+// ── Wire context menu (right-click on a wire) ─────────────────────────
+
+const wireMenu = ref<{
+  x: number
+  y: number
+  conn: IBlueprintConnection
+} | null>(null)
+
+function onWireContextMenu(event: MouseEvent, conn: IBlueprintConnection) {
+  if (!containerRef.value) return
+  const rect = containerRef.value.getBoundingClientRect()
+  wireMenu.value = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
+    conn,
+  }
+}
+
+function closeWireMenu() {
+  wireMenu.value = null
+}
+
+function disconnectFromMenu(conn: IBlueprintConnection) {
+  emit('disconnect', conn)
+  closeWireMenu()
+}
+
+function onDocumentMouseDown(e: MouseEvent) {
+  if (!wireMenu.value) return
+  const menu = (e.target as HTMLElement).closest('.nb-blueprint__wire-menu')
+  if (!menu) closeWireMenu()
+}
+
+function onDocumentKeyDown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && wireMenu.value) closeWireMenu()
+}
+
 function findPortEl(nodeId: string, portId: string): HTMLElement | null {
   if (!containerRef.value) return null
   return containerRef.value.querySelector(
@@ -989,6 +1072,8 @@ onMounted(() => {
   }
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
+  document.addEventListener('mousedown', onDocumentMouseDown)
+  document.addEventListener('keydown', onDocumentKeyDown)
   nextTick(() => nextTick(fitToView))
 })
 
@@ -996,6 +1081,8 @@ onBeforeUnmount(() => {
   observer.disconnect()
   window.removeEventListener('keydown', onKeyDown)
   window.removeEventListener('keyup', onKeyUp)
+  document.removeEventListener('mousedown', onDocumentMouseDown)
+  document.removeEventListener('keydown', onDocumentKeyDown)
 })
 
 // ── Expose ────────────────────────────────────────────────────────────
@@ -1160,6 +1247,38 @@ defineExpose({
 @keyframes nb-marching-ants {
   to {
     stroke-dashoffset: -10;
+  }
+}
+
+// ── Wire context menu ──────────────────────────────────────────────────
+
+.nb-blueprint__wire-menu {
+  position: absolute;
+  z-index: 20;
+  min-width: 140px;
+  padding: 4px;
+  background: var(--nb-c-layer-2, #1a1c22);
+  border: 1px solid var(--nb-c-border, #2a2d35);
+  border-radius: 6px;
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nb-blueprint__wire-menu-item {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--nb-c-text);
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--nb-c-layer-3, #232838);
   }
 }
 </style>
