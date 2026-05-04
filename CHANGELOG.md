@@ -1,3 +1,10 @@
+## [1.32.1](https://github.com/nubisco/ui/compare/v1.32.0...v1.32.1) (2026-05-04)
+
+
+### Bug Fixes
+
+* **blueprint:** prevent descendant from moving cards ([f69d3b2](https://github.com/nubisco/ui/commit/f69d3b2854059bd21488421116b30bf8d5d70dc9))
+
 # [1.32.0](https://github.com/nubisco/ui/compare/v1.31.0...v1.32.0) (2026-05-04)
 
 
