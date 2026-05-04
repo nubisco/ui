@@ -107,4 +107,49 @@ describe('Blueprint', () => {
     })
     w.unmount()
   })
+
+  it('interactive card descendants do not start card drag', async () => {
+    const w = mount(Blueprint, {
+      props: { connections: [] },
+      slots: {
+        default: `
+          <div style="position: absolute; left: 0; top: 0; transform: translate(0px, 0px);">
+            <div data-card-id="mixer" class="nb-blueprint-card" style="position: absolute;">
+              <div class="mixer-control" data-no-card-drag>drag me like a knob</div>
+            </div>
+          </div>
+        `,
+      },
+      attachTo: document.body,
+    })
+
+    const control = w.find('.mixer-control')
+    expect(control.exists()).toBe(true)
+
+    await control.trigger('mousedown', {
+      button: 0,
+      clientX: 10,
+      clientY: 10,
+    })
+
+    document.dispatchEvent(
+      new MouseEvent('mousemove', {
+        bubbles: true,
+        clientX: 40,
+        clientY: 40,
+      }),
+    )
+    document.dispatchEvent(
+      new MouseEvent('mouseup', {
+        bubbles: true,
+        clientX: 40,
+        clientY: 40,
+      }),
+    )
+
+    expect(w.emitted('selection-change')?.[0]?.[0]).toEqual(['mixer'])
+    expect(w.emitted('move')).toBeUndefined()
+
+    w.unmount()
+  })
 })

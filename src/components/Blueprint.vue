@@ -224,9 +224,29 @@ let isPanning = false
 let panStartX = 0
 let panStartY = 0
 
+const CARD_DRAG_BLOCK_SELECTOR = [
+  'button',
+  'input',
+  'select',
+  'textarea',
+  'label',
+  'a[href]',
+  '[role="button"]',
+  '[role="slider"]',
+  '[contenteditable="true"]',
+  '[data-no-card-drag]',
+].join(', ')
+
+function isCardDragBlocked(target: EventTarget | null) {
+  const el = target instanceof Element ? target : null
+  return !!el?.closest(CARD_DRAG_BLOCK_SELECTOR)
+}
+
 function onCanvasMouseDown(e: MouseEvent) {
+  const target = e.target instanceof HTMLElement ? e.target : null
+
   // Port interactions (wire dragging) take priority
-  const portEl = (e.target as HTMLElement).closest('.nb-blueprint-card__port')
+  const portEl = target?.closest('.nb-blueprint-card__port')
   if (portEl) return
 
   // Middle mouse button always pans
@@ -242,11 +262,9 @@ function onCanvasMouseDown(e: MouseEvent) {
   }
 
   // Left click on a card = select + drag
-  const cardEl = (e.target as HTMLElement).closest(
-    '.nb-blueprint-card',
-  ) as HTMLElement | null
+  const cardEl = target?.closest('.nb-blueprint-card') as HTMLElement | null
   if (cardEl) {
-    onCardMouseDown(e, cardEl)
+    onCardMouseDown(e, cardEl, !isCardDragBlocked(target))
     return
   }
 
@@ -332,7 +350,7 @@ function setCardPosition(cardEl: HTMLElement, x: number, y: number) {
   wrapper.style.transform = `translate(${x}px, ${y}px)`
 }
 
-function onCardMouseDown(e: MouseEvent, cardEl: HTMLElement) {
+function onCardMouseDown(e: MouseEvent, cardEl: HTMLElement, allowDrag = true) {
   const cardId = cardEl.dataset.cardId
   if (!cardId) return
 
@@ -373,6 +391,8 @@ function onCardMouseDown(e: MouseEvent, cardEl: HTMLElement) {
       }
     }
   })
+
+  if (!allowDrag) return
 
   document.addEventListener('mousemove', onCardDragMove)
   document.addEventListener('mouseup', onCardDragEnd)
