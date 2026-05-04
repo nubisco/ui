@@ -1,3 +1,23 @@
+# [1.32.0](https://github.com/nubisco/ui/compare/v1.31.0...v1.32.0) (2026-05-04)
+
+
+### Bug Fixes
+
+* **blueprint:** tighten MutationObserver to break wire-update feedback loop ([f6d7de5](https://github.com/nubisco/ui/commit/f6d7de5d7e835a8c13370b2df73b9bd1ec34833f))
+
+
+### Features
+
+* **blueprint-card:** always-rendered channel pins and inline port labels ([575f30d](https://github.com/nubisco/ui/commit/575f30da9dc59ba59072dc9d80ea58c5cd3c8500))
+* **blueprint:** re-land per-wire + per-pin signal-activity indicators ([ecc58a8](https://github.com/nubisco/ui/commit/ecc58a8305b6f3608d2710bc2fc28c3997f8a3a1))
+* **blueprint:** self-wiring drag-to-connect + right-click wire menu ([721eb09](https://github.com/nubisco/ui/commit/721eb098aa49f4625651c12840d307656dd34280))
+* **blueprint:** wire + pin signal-activity visualisation ([e209a75](https://github.com/nubisco/ui/commit/e209a75f0bc543ebdc97c5625472b01a5ad77a60))
+
+
+### Reverts
+
+* Revert "feat(blueprint): wire + pin signal-activity visualisation" ([ac0b8f0](https://github.com/nubisco/ui/commit/ac0b8f0e7f045fecd97e8a1a0363788ff2f4b10d))
+
 # [1.31.0](https://github.com/nubisco/ui/compare/v1.30.0...v1.31.0) (2026-05-02)
 
 
