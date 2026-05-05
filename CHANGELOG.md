@@ -1,3 +1,10 @@
+# [1.34.0](https://github.com/nubisco/ui/compare/v1.33.0...v1.34.0) (2026-05-05)
+
+
+### Features
+
+* **blueprint:** wider wire hit-region + marquee no longer steals wire grabs ([7170265](https://github.com/nubisco/ui/commit/71702650e00fdde86093bf9a3ddb1fecdc86d0c4))
+
 # [1.33.0](https://github.com/nubisco/ui/compare/v1.32.1...v1.33.0) (2026-05-05)
 
 
