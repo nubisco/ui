@@ -1,3 +1,10 @@
+# [1.33.0](https://github.com/nubisco/ui/compare/v1.32.1...v1.33.0) (2026-05-05)
+
+
+### Features
+
+* **blueprint:** drag wire endpoints to re-attach without delete ([4d2b110](https://github.com/nubisco/ui/commit/4d2b1104faa5f71755e6f1963ec3c9e73cbc4ee5))
+
 ## [1.32.1](https://github.com/nubisco/ui/compare/v1.32.0...v1.32.1) (2026-05-04)
 
 
