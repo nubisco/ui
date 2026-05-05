@@ -40,6 +40,7 @@
             'nb-blueprint__wire--inactive': wire.conn.active === false,
           }"
           :style="{ filter: `drop-shadow(0 0 6px ${wire.color})` }"
+          @mousedown="onWireMouseDown($event, wire.conn)"
           @contextmenu.prevent="onWireContextMenu($event, wire.conn)"
         />
         <!-- Animated flow overlay for each wire (suppressed when inactive) -->
@@ -596,6 +597,13 @@ function onMarqueeEnd() {
 
 const dragWire = ref<string | null>(null)
 let dragFrom: { nodeId: string; portId: string; type: string } | null = null
+// When non-null, the active drag is a "rewire" of an existing wire's
+// endpoint rather than the creation of a fresh wire. dragFrom holds
+// the FIXED end (the side that stays put); on a successful drop we
+// emit disconnect(original) + connect(new). Reactive so we can hide
+// the original wire while it's being moved.
+const dragRewireOriginal = ref<IBlueprintConnection | null>(null)
+const REWIRE_GRAB_THRESHOLD = 40 // canvas units from endpoint to count as a grab
 
 function onPortMouseDown(data: {
   nodeId: string
@@ -603,6 +611,49 @@ function onPortMouseDown(data: {
   type: string
 }) {
   dragFrom = data
+  dragRewireOriginal.value = null
+  document.addEventListener('mousemove', onWireDrag)
+  document.addEventListener('mouseup', onWireDragEnd)
+}
+
+/** Mousedown on a wire path — if the click landed near one of the
+ *  endpoints, start a rewire drag with the OPPOSITE end as anchor.
+ *  Falls through silently when the click is mid-wire so panning /
+ *  marquee selection still feel right. */
+function onWireMouseDown(event: MouseEvent, conn: IBlueprintConnection) {
+  if (event.button !== 0) return
+  if (!containerRef.value) return
+
+  const rect = containerRef.value.getBoundingClientRect()
+  const cx = (event.clientX - rect.left - panX.value) / zoom.value
+  const cy = (event.clientY - rect.top - panY.value) / zoom.value
+
+  const fromEl = findPortEl(conn.fromNode, conn.fromPort)
+  const toEl = findPortEl(conn.toNode, conn.toPort)
+  if (!fromEl || !toEl) return
+
+  const fr = fromEl.getBoundingClientRect()
+  const tr = toEl.getBoundingClientRect()
+  const fx = (fr.left + fr.width / 2 - rect.left - panX.value) / zoom.value
+  const fy = (fr.top + fr.height / 2 - rect.top - panY.value) / zoom.value
+  const tx = (tr.left + tr.width / 2 - rect.left - panX.value) / zoom.value
+  const ty = (tr.top + tr.height / 2 - rect.top - panY.value) / zoom.value
+
+  const distFrom = Math.hypot(cx - fx, cy - fy)
+  const distTo = Math.hypot(cx - tx, cy - ty)
+  if (Math.min(distFrom, distTo) > REWIRE_GRAB_THRESHOLD) return
+
+  event.stopPropagation()
+  event.preventDefault()
+
+  // Closer end is the one being moved; the other becomes the anchor.
+  const grabFrom = distFrom < distTo
+  const anchor = grabFrom
+    ? { nodeId: conn.toNode, portId: conn.toPort, type: 'input' }
+    : { nodeId: conn.fromNode, portId: conn.fromPort, type: 'output' }
+
+  dragFrom = anchor
+  dragRewireOriginal.value = conn
   document.addEventListener('mousemove', onWireDrag)
   document.addEventListener('mouseup', onWireDragEnd)
 }
@@ -683,7 +734,11 @@ function onWireDrag(e: MouseEvent) {
 }
 
 function onWireDragEnd() {
+  // Drop on empty canvas: cancel everything. If a port handler emitted
+  // a connect/disconnect first it will have already cleared dragFrom,
+  // so this is idempotent.
   dragFrom = null
+  dragRewireOriginal.value = null
   dragWire.value = null
   document.removeEventListener('mousemove', onWireDrag)
   document.removeEventListener('mouseup', onWireDragEnd)
@@ -696,15 +751,32 @@ function onPortMouseUp(data: { nodeId: string; portId: string; type: string }) {
 
   const from = dragFrom.type === 'output' ? dragFrom : data
   const to = dragFrom.type === 'output' ? data : dragFrom
-
-  emit('connect', {
+  const newConn: IBlueprintConnection = {
     fromNode: from.nodeId,
     fromPort: from.portId,
     toNode: to.nodeId,
     toPort: to.portId,
-  })
+  }
+
+  const original = dragRewireOriginal.value
+  if (original) {
+    // Rewiring an existing wire's endpoint. Skip if the user dropped
+    // it back where it came from (no change, no churn for consumers).
+    const sameAsOriginal =
+      original.fromNode === newConn.fromNode &&
+      original.fromPort === newConn.fromPort &&
+      original.toNode === newConn.toNode &&
+      original.toPort === newConn.toPort
+    if (!sameAsOriginal) {
+      emit('disconnect', original)
+      emit('connect', newConn)
+    }
+  } else {
+    emit('connect', newConn)
+  }
 
   dragFrom = null
+  dragRewireOriginal.value = null
   dragWire.value = null
 }
 
@@ -726,7 +798,19 @@ const computedWires = computed(() => {
   if (!containerRef.value) return []
 
   const rect = containerRef.value.getBoundingClientRect()
+  const rewiring = dragRewireOriginal.value
   return props.connections
+    .filter(
+      (c) =>
+        // While the user is dragging an endpoint, suppress the original
+        // wire so only the rubber-band is visible. The wire reappears
+        // on commit (replaced) or cancel (restored).
+        !rewiring ||
+        c.fromNode !== rewiring.fromNode ||
+        c.fromPort !== rewiring.fromPort ||
+        c.toNode !== rewiring.toNode ||
+        c.toPort !== rewiring.toPort,
+    )
     .map((conn) => {
       const fromEl = findPortEl(conn.fromNode, conn.fromPort)
       const toEl = findPortEl(conn.toNode, conn.toPort)
