@@ -28,21 +28,39 @@
     >
       <!-- Wire SVG layer -->
       <svg class="nb-blueprint__wires">
-        <path
+        <!-- One <g> per wire so the visible stroke and its invisible
+             14 px hit-region stay siblings. The hit-region catches
+             pointer events (cursor + mousedown + right-click); the
+             visible stroke is decorative (pointer-events: none). The
+             generous hit width makes endpoint-grab / right-click easy
+             without thickening the drawn line. -->
+        <g
           v-for="(wire, i) in computedWires"
           :key="i"
-          :d="wire.path"
-          fill="none"
-          :stroke="wire.color"
-          stroke-width="1.5"
-          class="nb-blueprint__wire"
-          :class="{
-            'nb-blueprint__wire--inactive': wire.conn.active === false,
-          }"
-          :style="{ filter: `drop-shadow(0 0 6px ${wire.color})` }"
-          @mousedown="onWireMouseDown($event, wire.conn)"
-          @contextmenu.prevent="onWireContextMenu($event, wire.conn)"
-        />
+          class="nb-blueprint__wire-group"
+        >
+          <path
+            :d="wire.path"
+            fill="none"
+            stroke="transparent"
+            stroke-width="14"
+            class="nb-blueprint__wire-hitregion"
+            @mousedown="onWireMouseDown($event, wire.conn)"
+            @contextmenu.prevent="onWireContextMenu($event, wire.conn)"
+          />
+          <path
+            :d="wire.path"
+            fill="none"
+            :stroke="wire.color"
+            stroke-width="1.5"
+            class="nb-blueprint__wire"
+            :class="{
+              'nb-blueprint__wire--inactive': wire.conn.active === false,
+            }"
+            :style="{ filter: `drop-shadow(0 0 6px ${wire.color})` }"
+            pointer-events="none"
+          />
+        </g>
         <!-- Animated flow overlay for each wire (suppressed when inactive) -->
         <path
           v-for="(wire, i) in computedWires"
@@ -618,10 +636,15 @@ function onPortMouseDown(data: {
 
 /** Mousedown on a wire path — if the click landed near one of the
  *  endpoints, start a rewire drag with the OPPOSITE end as anchor.
- *  Falls through silently when the click is mid-wire so panning /
- *  marquee selection still feel right. */
+ *  Mid-wire clicks do nothing, but we still stopPropagation so a
+ *  marquee selection doesn't start from inside a wire (the wire IS an
+ *  interactive element; the user shouldn't get marquee-rectangle
+ *  feedback while trying to grab it). */
 function onWireMouseDown(event: MouseEvent, conn: IBlueprintConnection) {
   if (event.button !== 0) return
+  // Always halt the canvas's marquee/pan path. The wire owns this
+  // mousedown — even if we don't end up starting a rewire below.
+  event.stopPropagation()
   if (!containerRef.value) return
 
   const rect = containerRef.value.getBoundingClientRect()
@@ -643,7 +666,8 @@ function onWireMouseDown(event: MouseEvent, conn: IBlueprintConnection) {
   const distTo = Math.hypot(cx - tx, cy - ty)
   if (Math.min(distFrom, distTo) > REWIRE_GRAB_THRESHOLD) return
 
-  event.stopPropagation()
+  // Already stopped propagation above; preventDefault here so the
+  // browser doesn't try to start a text-selection drag.
   event.preventDefault()
 
   // Closer end is the one being moved; the other becomes the anchor.
@@ -1311,19 +1335,33 @@ defineExpose({
 }
 
 .nb-blueprint__wire {
-  pointer-events: stroke;
-  cursor: pointer;
+  // Visible stroke is now decorative only; the sibling hit-region
+  // path catches all pointer events. Hover styling moves to the
+  // hit-region so the visual still reacts when the user mouses near
+  // the wire.
+  pointer-events: none;
   opacity: 0.55;
   transition: opacity 0.15s;
-
-  &:hover {
-    opacity: 0.8;
-    stroke-width: 3;
-  }
 
   // Inactive wires stay visible but dim, no flow.
   &--inactive {
     opacity: 0.25;
+  }
+}
+
+.nb-blueprint__wire-hitregion {
+  // Generous 14 px transparent stroke makes the wire easy to grab
+  // with a mouse / trackpad. Keeps the visible wire skinny while
+  // the interaction surface is comfortable.
+  pointer-events: stroke;
+  cursor: pointer;
+
+  // Hover sibling-target: when the hit-region is hovered, the
+  // corresponding visible wire (next sibling in source order) bumps
+  // its width / opacity for tactile feedback.
+  &:hover + .nb-blueprint__wire {
+    opacity: 0.85;
+    stroke-width: 3;
   }
 }
 
