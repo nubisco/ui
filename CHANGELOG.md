@@ -1,3 +1,10 @@
+## [1.35.1](https://github.com/nubisco/ui/compare/v1.35.0...v1.35.1) (2026-05-06)
+
+
+### Bug Fixes
+
+* **blueprint-card:** top/bottom gutter on port pin column ([42fc0bc](https://github.com/nubisco/ui/commit/42fc0bc137c5aeb04997077fced1d9a6737c09b6))
+
 # [1.35.0](https://github.com/nubisco/ui/compare/v1.34.0...v1.35.0) (2026-05-06)
 
 
