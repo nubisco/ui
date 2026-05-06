@@ -785,8 +785,14 @@ function pinShape(port: IBlueprintPort): string {
 
 .nb-blueprint-card__ports {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  // Top / bottom inset gives the pins a comfortable gutter against
+  // the card chrome — without it, plugins with many pins (e.g.
+  // Youlean Loudness Meter, surround processors) push pins right
+  // up against the card's top/bottom edges and they read as part
+  // of the border. 12 px clears the title strip's drop shadow on
+  // top and the rounded corner on the bottom.
+  top: 12px;
+  bottom: 12px;
   display: flex;
   flex-direction: column;
   justify-content: center;
