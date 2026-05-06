@@ -15,8 +15,22 @@
     }"
     @mousedown="$emit('select', id)"
   >
-    <!-- Input ports (left edge, outside clipping) -->
+    <!-- Input ports (left edge, outside clipping). When the card is
+         collapsed, the individual pins still render (so wires can
+         locate their target via [data-port]) but they're visually
+         flattened and a single "combined" pin overlays them — the
+         user sees one connection point per side, the wire layer still
+         has per-port positions to draw to. -->
     <div class="nb-blueprint-card__ports nb-blueprint-card__ports--left">
+      <div
+        v-if="collapsed && inputPins.length > 0"
+        class="nb-blueprint-card__port-combined nb-blueprint-card__port-combined--left"
+        :class="{
+          'nb-blueprint-card__port-combined--connected': anyInputConnected,
+          'nb-blueprint-card__port-combined--active': anyInputActive,
+        }"
+        :title="`${inputPins.length} input${inputPins.length === 1 ? '' : 's'}`"
+      />
       <div
         v-for="pin in inputPins"
         :key="pin.key"
@@ -145,6 +159,15 @@
 
     <!-- Output ports (right edge, outside clipping) -->
     <div class="nb-blueprint-card__ports nb-blueprint-card__ports--right">
+      <div
+        v-if="collapsed && outputPins.length > 0"
+        class="nb-blueprint-card__port-combined nb-blueprint-card__port-combined--right"
+        :class="{
+          'nb-blueprint-card__port-combined--connected': anyOutputConnected,
+          'nb-blueprint-card__port-combined--active': anyOutputActive,
+        }"
+        :title="`${outputPins.length} output${outputPins.length === 1 ? '' : 's'}`"
+      />
       <div
         v-for="pin in outputPins"
         :key="pin.key"
@@ -335,6 +358,21 @@ function isConnected(portId: string): boolean {
 function isActive(portId: string): boolean {
   return activeSet.value.has(portId)
 }
+
+// Used by the collapsed-card combined-pin overlay so it lights up
+// when ANY of the underlying pins is connected / active.
+const anyInputConnected = computed(() =>
+  inputPins.value.some((p) => connectedSet.value.has(p.portId)),
+)
+const anyInputActive = computed(() =>
+  inputPins.value.some((p) => activeSet.value.has(p.portId)),
+)
+const anyOutputConnected = computed(() =>
+  outputPins.value.some((p) => connectedSet.value.has(p.portId)),
+)
+const anyOutputActive = computed(() =>
+  outputPins.value.some((p) => activeSet.value.has(p.portId)),
+)
 
 function pinTitle(pin: IRenderedPin): string {
   if (pin.channel) return `${pin.port.label} . ${pin.channel.label}`
@@ -823,6 +861,61 @@ function pinShape(port: IBlueprintPort): string {
   // a row of channel pins reads as a stack rather than four full-height pins.
   &--channel::before {
     height: 10px;
+  }
+}
+
+// Collapsed mode: the per-port pins still exist in DOM (so the wire
+// layer can resolve their position via [data-port]) but their boxes
+// flatten to zero height and the visible pip goes invisible. With
+// flex `gap: 0`, every individual pin shares the same Y, so any
+// wire targeting the card visually converges to one point. The
+// `__port-combined` overlay below renders the single pin the user
+// sees.
+.nb-blueprint-card--collapsed {
+  .nb-blueprint-card__ports {
+    gap: 0;
+  }
+  .nb-blueprint-card__port {
+    height: 0;
+    overflow: visible;
+    &::before {
+      opacity: 0;
+    }
+  }
+}
+
+.nb-blueprint-card__port-combined {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 16px;
+  background: var(--nb-c-layer-1, #101218);
+  border: 1.5px solid var(--nb-c-text-muted, #3a4257);
+  pointer-events: none;
+  z-index: 5;
+  transition:
+    background 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+
+  &--left {
+    left: -1px;
+    border-radius: 0 8px 8px 0;
+    border-left: none;
+  }
+  &--right {
+    right: -1px;
+    border-radius: 8px 0 0 8px;
+    border-right: none;
+  }
+  &--connected {
+    border-color: var(--nb-card-color);
+    background: var(--nb-card-color);
+    box-shadow: 0 0 8px var(--nb-card-glow, rgba(139, 124, 255, 0.18));
+  }
+  &--active {
+    animation: nb-port-pulse 1.4s ease-in-out infinite;
   }
 }
 
