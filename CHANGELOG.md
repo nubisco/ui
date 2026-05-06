@@ -1,3 +1,10 @@
+# [1.35.0](https://github.com/nubisco/ui/compare/v1.34.0...v1.35.0) (2026-05-06)
+
+
+### Features
+
+* **blueprint-card:** collapsed cards merge port pins into one combined pin ([9292364](https://github.com/nubisco/ui/commit/9292364fe2ea92cfb3c7e111b418a207aa8b9cd2))
+
 # [1.34.0](https://github.com/nubisco/ui/compare/v1.33.0...v1.34.0) (2026-05-05)
 
 
