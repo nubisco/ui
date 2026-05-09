@@ -35,6 +35,7 @@
         v-for="pin in inputPins"
         :key="pin.key"
         :data-port="`${id}:${pin.portId}`"
+        :data-port-data-type="pin.port.dataType ?? 'any'"
         class="nb-blueprint-card__port nb-blueprint-card__port--left"
         :class="[
           `nb-blueprint-card__port--${pinShape(pin.port)}`,
@@ -172,6 +173,7 @@
         v-for="pin in outputPins"
         :key="pin.key"
         :data-port="`${id}:${pin.portId}`"
+        :data-port-data-type="pin.port.dataType ?? 'any'"
         class="nb-blueprint-card__port nb-blueprint-card__port--right"
         :class="[
           `nb-blueprint-card__port--${pinShape(pin.port)}`,

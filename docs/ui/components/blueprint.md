@@ -217,6 +217,29 @@ Panning: **two-finger scroll** (trackpad), **middle mouse drag**, or **Space + l
 
 Zooming: **pinch** (trackpad) or **Ctrl + scroll wheel**. Both use focal-point zoom centered on the cursor position, clamped between 0.2x and 3x.
 
+The `wheelMode` prop overrides what plain wheel events do without affecting the pinch-to-zoom path:
+
+- `'auto'` (default): plain wheel pans, pinch zooms. Matches the gestures above.
+- `'zoom'`: every wheel event becomes a cursor-anchored zoom. Right for node-editor surfaces where panning has its own gesture (e.g. **Space + drag**) and the wheel is the natural zoom verb.
+- `'pan'`: every wheel event pans, never zooms. Use when zoom should be exclusively gesture-driven.
+
+## Wire animation modes
+
+Wires can be static, always-animating, or signal-driven. Pick a policy with `animateConnections`:
+
+- `'never'` (default) — static wires; no flow overlay, no colour shift. Cheapest option; right for graphs that don't carry signal.
+- `'always'` — every wire animates continuously. Visual cue that the graph is "live" without per-wire bookkeeping.
+- `'on-activity'` — animate iff `connection.active === true`. Inactive wires stay visible but dim and don't animate. Matches an audio host where the parent ships a per-wire boolean that flips when peak crosses a threshold.
+- `'levels'` — same activity gating as `'on-activity'`, plus audio wires colour-shift green → yellow → red based on `connection.level` (0..1). MIDI wires (or wires whose `level` is undefined) keep their card-accent colour and behave like `'on-activity'`.
+
+The `level` field is a linear amplitude in `[0, 1]`. Level 0 maps to green, 0.5 to yellow, 1.0 to red, with linear blending between anchors. The host owns the smoothing — typically a peak meter with capacitor decay produces stable, readable levels at 16–60 Hz update rates.
+
+## Drop-on-wire
+
+A single-card drag that ends with the cursor over a wire's hit-region fires `drop-on-wire` with the dragged card id and the wire's connection. Multi-card drags never fire this event — the gesture is "pick up THIS card and drop it on a wire", not "move a selection over a wire".
+
+The component only emits the gesture; the host decides what to do with it. The typical handler splices the dragged card into the wire (channel-matched for parallel bundles, e.g. L+R), but other interpretations (e.g. attach a probe, branch a tap) are valid too.
+
 ## Theming
 
 The canvas background uses `--nb-c-layer-0`. Ambient gradients are configurable via `--nb-blueprint-ambient-1` and `--nb-blueprint-ambient-2` (set to `transparent` to disable). Wire colors are derived from each source card's `--nb-card-color`.
@@ -227,19 +250,22 @@ The canvas background uses `--nb-c-layer-0`. Ambient gradients are configurable 
 
 ## Props
 
-| Prop          | Type                     | Default | Description                                                   |
-| ------------- | ------------------------ | ------- | ------------------------------------------------------------- |
-| `connections` | `IBlueprintConnection[]` | `[]`    | Wires to draw between card ports. The parent owns this array. |
+| Prop                 | Type                                               | Default   | Description                                                                                                 |
+| -------------------- | -------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
+| `connections`        | `IBlueprintConnection[]`                           | `[]`      | Wires to draw between card ports. The parent owns this array.                                               |
+| `animateConnections` | `'never' \| 'always' \| 'on-activity' \| 'levels'` | `'never'` | Wire animation policy. See [Wire animation modes](#wire-animation-modes).                                   |
+| `wheelMode`          | `'auto' \| 'zoom' \| 'pan'`                        | `'auto'`  | What plain wheel events do. Pinch always zooms regardless. See [Panning and zooming](#panning-and-zooming). |
 
 ## Events
 
-| Event              | Payload                | Description                                                                                   |
-| ------------------ | ---------------------- | --------------------------------------------------------------------------------------------- |
-| `connect`          | `IBlueprintConnection` | Emitted when a drag from one port is released on another compatible port.                     |
-| `disconnect`       | `IBlueprintConnection` | Emitted when the user clicks **Disconnect** in the wire context menu (right-click on a wire). |
-| `move`             | `IBlueprintCardMove[]` | Emitted after cards are dragged, aligned, distributed, or auto-laid out.                      |
-| `focus`            | `string \| null`       | Emitted when a card is focused (clicked). `null` when focus is cleared.                       |
-| `selection-change` | `string[]`             | Emitted when the set of selected card IDs changes.                                            |
+| Event              | Payload                                        | Description                                                                                          |
+| ------------------ | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `connect`          | `IBlueprintConnection`                         | Emitted when a drag from one port is released on another compatible port.                            |
+| `disconnect`       | `IBlueprintConnection`                         | Emitted when the user clicks **Disconnect** in the wire context menu (right-click on a wire).        |
+| `move`             | `IBlueprintCardMove[]`                         | Emitted after cards are dragged, aligned, distributed, or auto-laid out.                             |
+| `focus`            | `string \| null`                               | Emitted when a card is focused (clicked). `null` when focus is cleared.                              |
+| `selection-change` | `string[]`                                     | Emitted when the set of selected card IDs changes.                                                   |
+| `drop-on-wire`     | `(cardId: string, conn: IBlueprintConnection)` | Emitted when a single-card drag ends with the cursor over a wire. See [Drop-on-wire](#drop-on-wire). |
 
 ## Slots
 
@@ -311,6 +337,13 @@ interface IBlueprintConnection {
   fromPort: string
   toNode: string
   toPort: string
+  /** Whether signal can currently flow. Gates animation under
+   *  'on-activity' / 'levels'. Undefined = treated as active. */
+  active?: boolean
+  /** Linear amplitude (0..1) for 'levels' mode. Audio wires
+   *  colour-shift green → yellow → red as level rises. Ignored
+   *  for non-levels modes and for MIDI wires. */
+  level?: number
 }
 
 interface IBlueprintCardMove {
