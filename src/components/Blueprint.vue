@@ -237,8 +237,25 @@ function deselectAll() {
 
 const spaceHeld = ref(false)
 
+/** True when the focused element is a text-entry surface (input,
+ *  textarea, contenteditable). Space is a legitimate character there
+ *  and must NOT be intercepted for canvas pan-mode — even though the
+ *  keydown bubbles up to window-level. */
+function isTextEntryFocused(): boolean {
+  const el = document.activeElement
+  if (!el) return false
+  const tag = el.tagName
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return true
+  return (el as HTMLElement).isContentEditable === true
+}
+
 function onKeyDown(e: KeyboardEvent) {
   if (e.code === 'Space' && !e.repeat) {
+    // Don't steal Space from inputs — typing " " in a sibling text
+    // field (e.g. an inspector panel rendered alongside the canvas)
+    // must keep working. Without this guard, every text input on a
+    // page that hosts an NbBlueprint silently dropped spaces.
+    if (isTextEntryFocused()) return
     spaceHeld.value = true
     e.preventDefault()
   }
