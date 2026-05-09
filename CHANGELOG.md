@@ -1,3 +1,10 @@
+# [1.36.0](https://github.com/nubisco/ui/compare/v1.35.1...v1.36.0) (2026-05-09)
+
+
+### Features
+
+* **blueprint:** wheelMode, levels animation, drop-on-wire gesture ([4e845d8](https://github.com/nubisco/ui/commit/4e845d807ad31614a42ff9db8fb83a2a2107d4ee))
+
 ## [1.35.1](https://github.com/nubisco/ui/compare/v1.35.0...v1.35.1) (2026-05-06)
 
 
