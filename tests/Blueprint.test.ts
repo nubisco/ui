@@ -277,4 +277,117 @@ describe('Blueprint', () => {
 
     w.unmount()
   })
+
+  it('wheelMode="zoom" zooms on a plain wheel event (cursor-anchored)', async () => {
+    const w = mount(Blueprint, {
+      props: { connections: [], wheelMode: 'zoom' },
+      attachTo: document.body,
+    })
+    const root = w.find('.nb-blueprint').element as HTMLElement
+    // Stub the container rect so the cursor → canvas-coord math is
+    // deterministic. Container origin at (0,0), 1000x1000.
+    root.getBoundingClientRect = () =>
+      ({
+        left: 0,
+        top: 0,
+        right: 1000,
+        bottom: 1000,
+        width: 1000,
+        height: 1000,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }) as DOMRect
+
+    // Read the canvas style before/after to verify the transform changed.
+    const canvas = w.find('.nb-blueprint__canvas').element as HTMLElement
+    const before = canvas.style.transform
+    expect(before).toContain('scale(1)')
+
+    // Wheel up at (300, 300). deltaY < 0 → factor > 1 → zoom in.
+    const event = new WheelEvent('wheel', {
+      deltaY: -100,
+      clientX: 300,
+      clientY: 300,
+      bubbles: true,
+      cancelable: true,
+    })
+    root.dispatchEvent(event)
+    await w.vm.$nextTick()
+
+    const after = canvas.style.transform
+    expect(after).not.toEqual(before)
+    expect(after).toMatch(/scale\((?!1\))/) // scale != 1 now
+    w.unmount()
+  })
+
+  it('animateConnections="levels" mounts and accepts a level field without throwing', () => {
+    const w = mount(Blueprint, {
+      props: {
+        animateConnections: 'levels',
+        connections: [
+          {
+            fromNode: 'a',
+            fromPort: 'out',
+            toNode: 'b',
+            toPort: 'in',
+            active: true,
+            level: 0.7,
+          },
+        ],
+      },
+    })
+    // Structural assertion only — JSDOM doesn't lay out SVG paths so
+    // we can't assert on the resolved stroke colour. The rendered
+    // wire layer just needs to mount cleanly under the new mode.
+    expect(w.find('.nb-blueprint__wires').exists()).toBe(true)
+    w.unmount()
+  })
+
+  it('drop-on-wire is not emitted for multi-card drags', async () => {
+    const w = mount(Blueprint, {
+      props: { connections: [] },
+      slots: {
+        default: `
+          <div style="position: absolute; left: 0; top: 0; transform: translate(0px, 0px);">
+            <div data-card-id="a" class="nb-blueprint-card" style="position: absolute;">A</div>
+          </div>
+          <div style="position: absolute; left: 100px; top: 0; transform: translate(100px, 0px);">
+            <div data-card-id="b" class="nb-blueprint-card" style="position: absolute;">B</div>
+          </div>
+        `,
+      },
+      attachTo: document.body,
+    })
+
+    // Select both cards (shift-click), then drag.
+    const a = w.find('[data-card-id="a"]')
+    const b = w.find('[data-card-id="b"]')
+    await a.trigger('mousedown', { button: 0, clientX: 0, clientY: 0 })
+    document.dispatchEvent(
+      new MouseEvent('mouseup', { bubbles: true, clientX: 0, clientY: 0 }),
+    )
+    await b.trigger('mousedown', {
+      button: 0,
+      shiftKey: true,
+      clientX: 100,
+      clientY: 0,
+    })
+    document.dispatchEvent(
+      new MouseEvent('mouseup', { bubbles: true, clientX: 100, clientY: 0 }),
+    )
+
+    // Drag both via the second card.
+    await b.trigger('mousedown', { button: 0, clientX: 100, clientY: 0 })
+    document.dispatchEvent(
+      new MouseEvent('mousemove', { bubbles: true, clientX: 200, clientY: 50 }),
+    )
+    document.dispatchEvent(
+      new MouseEvent('mouseup', { bubbles: true, clientX: 200, clientY: 50 }),
+    )
+
+    // No wires exist + multi-card drag — drop-on-wire MUST NOT fire.
+    expect(w.emitted('drop-on-wire')).toBeUndefined()
+    w.unmount()
+  })
 })

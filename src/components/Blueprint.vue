@@ -45,6 +45,7 @@
             stroke="transparent"
             stroke-width="14"
             class="nb-blueprint__wire-hitregion"
+            :data-wire-index="i"
             @mousedown="onWireMouseDown($event, wire.conn)"
             @contextmenu.prevent="onWireContextMenu($event, wire.conn)"
           />
@@ -61,10 +62,13 @@
             pointer-events="none"
           />
         </g>
-        <!-- Animated flow overlay for each wire (suppressed when inactive) -->
+        <!-- Animated flow overlay for each wire. Visibility comes from
+             `shouldFlow` so 'never' / 'always' / 'on-activity' /
+             'levels' all share one rule (instead of the template having
+             to know about every mode). -->
         <path
           v-for="(wire, i) in computedWires"
-          v-show="wire.conn.active !== false"
+          v-show="shouldFlow(wire.conn)"
           :key="`flow-${i}`"
           :d="wire.path"
           fill="none"
@@ -164,6 +168,8 @@ import type {
 
 const props = withDefaults(defineProps<IBlueprintProps>(), {
   connections: () => [],
+  animateConnections: 'never',
+  wheelMode: 'auto',
 })
 
 const emit = defineEmits<{
@@ -172,6 +178,13 @@ const emit = defineEmits<{
   move: [moves: IBlueprintCardMove[]]
   'selection-change': [ids: string[]]
   focus: [id: string | null]
+  /**
+   * Fired when a card drag ends with the cursor over a wire's hit
+   * region. The host decides what to do (typical: splice the dragged
+   * card into the wire, channel-matched). Only emitted for single-
+   * card drags — multi-card moves never fire this event.
+   */
+  'drop-on-wire': [cardId: string, conn: IBlueprintConnection]
 }>()
 
 const containerRef = ref<HTMLDivElement>()
@@ -316,30 +329,45 @@ function onPanEnd() {
 
 // ── Zoom (focal-point) ────────────────────────────────────────────────
 
+/** Cursor-anchored zoom: re-applies zoom such that the canvas point
+ *  under the cursor stays under the cursor. `factor` > 1 zooms in. */
+function zoomAt(clientX: number, clientY: number, factor: number) {
+  const rect = containerRef.value?.getBoundingClientRect()
+  if (!rect) return
+  const oldZoom = zoom.value
+  const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, oldZoom * factor))
+  if (newZoom === oldZoom) return
+  const mouseX = clientX - rect.left
+  const mouseY = clientY - rect.top
+  const canvasX = (mouseX - panX.value) / oldZoom
+  const canvasY = (mouseY - panY.value) / oldZoom
+  panX.value = mouseX - canvasX * newZoom
+  panY.value = mouseY - canvasY * newZoom
+  zoom.value = newZoom
+}
+
 function onWheel(e: WheelEvent) {
   const rect = containerRef.value?.getBoundingClientRect()
   if (!rect) return
 
-  // On macOS, pinch-to-zoom fires wheel events with ctrlKey = true.
-  // Regular two-finger scroll has ctrlKey = false.
-  if (e.ctrlKey) {
-    // Pinch zoom (or Ctrl+scroll on non-trackpad): focal-point zoom
-    const oldZoom = zoom.value
-    // Pinch gives fine-grained deltaY, so scale proportionally
+  // Pinch-to-zoom on macOS reports as a wheel event with ctrlKey = true.
+  // The wheelMode prop decides what plain wheel events do; pinch always
+  // zooms regardless of wheelMode (otherwise pinching would scroll on
+  // wheelMode='pan', which is never what users want).
+  const isPinch = e.ctrlKey
+  let mode: 'zoom' | 'pan'
+  if (isPinch) mode = 'zoom'
+  else if (props.wheelMode === 'zoom') mode = 'zoom'
+  else if (props.wheelMode === 'pan') mode = 'pan'
+  else mode = 'pan' // 'auto' default: plain wheel pans, pinch zooms
+
+  if (mode === 'zoom') {
+    // Pinch deltaY is fine-grained; mouse-wheel deltaY is coarser. Same
+    // formula either way — the resulting factor is roughly proportional
+    // to the rotation, which is what users expect.
     const factor = 1 - e.deltaY * 0.01
-    const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, oldZoom * factor))
-    if (newZoom === oldZoom) return
-
-    const mouseX = e.clientX - rect.left
-    const mouseY = e.clientY - rect.top
-    const canvasX = (mouseX - panX.value) / oldZoom
-    const canvasY = (mouseY - panY.value) / oldZoom
-
-    panX.value = mouseX - canvasX * newZoom
-    panY.value = mouseY - canvasY * newZoom
-    zoom.value = newZoom
+    zoomAt(e.clientX, e.clientY, factor)
   } else {
-    // Two-finger scroll: pan the canvas
     panX.value -= e.deltaX
     panY.value -= e.deltaY
     wireKey.value++
@@ -465,12 +493,57 @@ function onCardDragMove(e: MouseEvent) {
   wireKey.value++
 }
 
-function onCardDragEnd() {
+/** Find the wire whose hit-region sits under the given client point.
+ *  Uses SVG `isPointInStroke` per path so the dragged card overlapping
+ *  the cursor doesn't shadow the wire (which `elementsFromPoint` would
+ *  hit-test in DOM stack order). Returns the connection or null. */
+function wireUnderPoint(
+  clientX: number,
+  clientY: number,
+): IBlueprintConnection | null {
+  if (!containerRef.value) return null
+  const hitRegions = containerRef.value.querySelectorAll<SVGPathElement>(
+    '.nb-blueprint__wire-hitregion',
+  )
+  for (const path of hitRegions) {
+    const svg = path.ownerSVGElement
+    if (!svg) continue
+    // Translate client → SVG-local coords using the SVG's CTM.
+    const ctm = svg.getScreenCTM()
+    if (!ctm) continue
+    const inv = ctm.inverse()
+    const pt = svg.createSVGPoint()
+    pt.x = clientX
+    pt.y = clientY
+    const local = pt.matrixTransform(inv)
+    if (path.isPointInStroke(local)) {
+      const idx = parseInt(path.getAttribute('data-wire-index') ?? '-1', 10)
+      const wire = idx >= 0 ? computedWires.value[idx] : undefined
+      if (wire) return wire.conn
+    }
+  }
+  return null
+}
+
+function onCardDragEnd(e?: MouseEvent) {
   document.removeEventListener('mousemove', onCardDragMove)
   document.removeEventListener('mouseup', onCardDragEnd)
 
   if (dragDidMove) {
     emitDragPositions()
+
+    // Drop-on-wire: only fire for single-card drags. Multi-card moves
+    // are deliberately excluded — the gesture is "pick up THIS card and
+    // drop it on a wire to splice", not "move a selection over a wire".
+    // Host decides what to do with the event (typical: splice via
+    // its existing wire-bundle / planSplice helpers).
+    if (e && dragStartPositions.size === 1) {
+      const [draggedId] = dragStartPositions.keys()
+      if (draggedId) {
+        const conn = wireUnderPoint(e.clientX, e.clientY)
+        if (conn) emit('drop-on-wire', draggedId, conn)
+      }
+    }
   }
 
   isDraggingCards = false
@@ -817,6 +890,39 @@ function resolveWireColor(fromPortEl: HTMLElement): string {
   return 'var(--nb-c-primary)'
 }
 
+/** True iff the port carries MIDI data. Used by `'levels'` mode to skip
+ *  the level → colour gradient on MIDI wires (they should still animate
+ *  on activity but stay their card-accent colour). */
+function isMidiPort(portEl: HTMLElement): boolean {
+  const dt = portEl.getAttribute('data-port-data-type') ?? ''
+  return dt === 'midi' || dt.startsWith('midi:')
+}
+
+/** Map a level (0..1) to a colour on the green → yellow → red ramp.
+ *  Level <= 0.5 interpolates green → yellow; > 0.5 interpolates yellow
+ *  → red. Uses simple linear RGB blending; the perceptual gradient that
+ *  meter UIs draw is busy enough to make this look right without going
+ *  to OKLCh. */
+function levelToColor(level: number): string {
+  const l = Math.max(0, Math.min(1, level))
+  // Anchors: green (#22c55e) → yellow (#facc15) → red (#ef4444).
+  const green = [34, 197, 94]
+  const yellow = [250, 204, 21]
+  const red = [239, 68, 68]
+  let r: number[], g: number[], t: number
+  if (l <= 0.5) {
+    r = green
+    g = yellow
+    t = l * 2
+  } else {
+    r = yellow
+    g = red
+    t = (l - 0.5) * 2
+  }
+  const mix = (a: number, b: number) => Math.round(a + (b - a) * t)
+  return `rgb(${mix(r[0]!, g[0]!)}, ${mix(r[1]!, g[1]!)}, ${mix(r[2]!, g[2]!)})`
+}
+
 const computedWires = computed(() => {
   void wireKey.value
   if (!containerRef.value) return []
@@ -850,15 +956,38 @@ const computedWires = computed(() => {
 
       const cpx = Math.abs(tx - fx) * 0.4
       const path = `M ${fx} ${fy} C ${fx + cpx} ${fy}, ${tx - cpx} ${ty}, ${tx} ${ty}`
-      const color = resolveWireColor(fromEl)
-      return { path, conn, color }
+      const baseColor = resolveWireColor(fromEl)
+      // Levels-mode colour overlay: only audio wires shift; MIDI keeps
+      // its accent. Activity gating still applies — an inactive wire
+      // ignores `level` (the flow overlay is hidden anyway).
+      const isMidi = isMidiPort(fromEl)
+      let color = baseColor
+      if (
+        props.animateConnections === 'levels' &&
+        conn.active !== false &&
+        !isMidi &&
+        typeof conn.level === 'number'
+      ) {
+        color = levelToColor(conn.level)
+      }
+      return { path, conn, color, isMidi }
     })
     .filter(Boolean) as {
     path: string
     conn: IBlueprintConnection
     color: string
+    isMidi: boolean
   }[]
 })
+
+/** Should the flow overlay run for this wire under the current
+ *  animation policy? Centralised so the template stays compact. */
+function shouldFlow(conn: IBlueprintConnection): boolean {
+  if (props.animateConnections === 'never') return false
+  if (props.animateConnections === 'always') return true
+  // 'on-activity' and 'levels' both gate on the active flag.
+  return conn.active !== false
+}
 
 // ── View controls ─────────────────────────────────────────────────────
 
