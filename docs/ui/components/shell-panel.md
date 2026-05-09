@@ -248,10 +248,11 @@ Panels can be placed in any region of `NbShell`. Stack them in the main area, th
 
 ## Props
 
-| Prop    | Type                                 | Default     | Description                                  |
-| ------- | ------------------------------------ | ----------- | -------------------------------------------- |
-| `size`  | `'collapsed' \| 'default' \| 'full'` | `'default'` | Current panel size. Supports `v-model:size`. |
-| `title` | `string`                             | `''`        | Label shown in the header.                   |
+| Prop    | Type                                 | Default     | Description                                                                                                                                                                                                                                 |
+| ------- | ------------------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `size`  | `'collapsed' \| 'default' \| 'full'` | `'default'` | Current panel size. Supports `v-model:size`.                                                                                                                                                                                                |
+| `title` | `string`                             | `''`        | Label shown in the header.                                                                                                                                                                                                                  |
+| `fluid` | `boolean`                            | `false`     | When true, a `default`-sized panel sizes to its content (`flex: 0 0 auto`) instead of sharing column space equally with siblings (`flex: 1 1 0%`). Right for inspectors with several unrelated sections. See [Fluid sizing](#fluid-sizing). |
 
 ## Events
 
@@ -270,11 +271,28 @@ Panels can be placed in any region of `NbShell`. Stack them in the main area, th
 
 ## Sizes
 
-| Size        | Behavior                               | Notes                                                               |
-| ----------- | -------------------------------------- | ------------------------------------------------------------------- |
-| `collapsed` | Header only, does not grow             | Content is unmounted, cheap to toggle frequently.                   |
-| `default`   | `flex: 1`, shares space with siblings  | Two panels in default mode each take half. Three take a third. Etc. |
-| `full`      | `flex: 1`, siblings collapse to header | Sibling coordination is automatic via CSS `:has()`.                 |
+| Size        | Behavior                               | Notes                                                                                                                                                     |
+| ----------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `collapsed` | Header only, does not grow             | Content is unmounted, cheap to toggle frequently.                                                                                                         |
+| `default`   | Sizing follows the `fluid` prop        | `fluid: false` (default) → `flex: 1 1 0%` (equal share with siblings). `fluid: true` → `flex: 0 0 auto` (content-fit). See [Fluid sizing](#fluid-sizing). |
+| `full`      | `flex: 1`, siblings collapse to header | Sibling coordination is automatic via CSS `:has()`. `fluid` is ignored — `full` always fills.                                                             |
+
+## Fluid sizing
+
+`flex: 1 1 0%` (the back-compat default for `default`-size panels) makes every default panel take an equal slice of the column, no matter what's inside. That's right for tooling pages where every section roughly matches the others in length, but wrong for inspectors that mix short and long sections — a panel with two rows ends up the same height as a panel with twenty, and the long one then needs its own internal scrollbar inside its undersized share.
+
+Set `fluid` on each panel where you want content-driven height. The panel then uses `flex: 0 0 auto`, taking only the height its content needs. The parent column should scroll when the total exceeds the available space.
+
+```vue
+<NbShellPanel title="Properties" fluid>
+  <!-- two rows of inputs — short panel, doesn't waste vertical space -->
+</NbShellPanel>
+<NbShellPanel title="Bindings" fluid>
+  <!-- long list — grows as needed, the inspector column scrolls -->
+</NbShellPanel>
+```
+
+`fluid` only changes how `default` is sized. `collapsed` is always header-only; `full` always fills (and a single `full` panel still collapses its `fluid` siblings to header-only via the `:has()` rule).
 
 ## Visual design
 

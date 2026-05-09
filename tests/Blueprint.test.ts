@@ -390,4 +390,58 @@ describe('Blueprint', () => {
     expect(w.emitted('drop-on-wire')).toBeUndefined()
     w.unmount()
   })
+
+  it('does not preventDefault Space when an input has focus (typing space works)', async () => {
+    const w = mount(Blueprint, {
+      props: { connections: [] },
+      attachTo: document.body,
+    })
+
+    // Place a real text input in the DOM and focus it. Without the
+    // guard, NbBlueprint's window-level keydown listener would
+    // preventDefault Space and the input would never see the char.
+    const input = document.createElement('input')
+    input.type = 'text'
+    document.body.appendChild(input)
+    input.focus()
+
+    const ev = new KeyboardEvent('keydown', {
+      code: 'Space',
+      key: ' ',
+      bubbles: true,
+      cancelable: true,
+    })
+    window.dispatchEvent(ev)
+    // The handler must NOT call preventDefault when an input is focused —
+    // the canvas pan-mode (Space + drag) is reserved for canvas focus only.
+    expect(ev.defaultPrevented).toBe(false)
+
+    document.body.removeChild(input)
+    w.unmount()
+  })
+
+  it('still preventDefaults Space when no text input is focused', async () => {
+    const w = mount(Blueprint, {
+      props: { connections: [] },
+      attachTo: document.body,
+    })
+    // No input focus — make sure activeElement is the body (which is
+    // not a text-entry surface). Vitest / JSDOM defaults to <body> when
+    // nothing else is focused.
+    if (
+      document.activeElement &&
+      (document.activeElement as HTMLElement).blur
+    ) {
+      ;(document.activeElement as HTMLElement).blur()
+    }
+    const ev = new KeyboardEvent('keydown', {
+      code: 'Space',
+      key: ' ',
+      bubbles: true,
+      cancelable: true,
+    })
+    window.dispatchEvent(ev)
+    expect(ev.defaultPrevented).toBe(true)
+    w.unmount()
+  })
 })

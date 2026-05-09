@@ -215,6 +215,8 @@ Options: `{ gapX?: number, gapY?: number, padding?: number }` (defaults: 80, 40,
 
 Panning: **two-finger scroll** (trackpad), **middle mouse drag**, or **Space + left drag**. This keeps left drag free for marquee selection and card dragging.
 
+The Space + drag gesture is suspended whenever a text input, textarea, or `contenteditable` element has focus elsewhere on the page — typing a space into an inspector field next to the canvas keeps working. Click on the canvas (or anywhere outside a text-entry surface) to re-enable Space-drag pan.
+
 Zooming: **pinch** (trackpad) or **Ctrl + scroll wheel**. Both use focal-point zoom centered on the cursor position, clamped between 0.2x and 3x.
 
 The `wheelMode` prop overrides what plain wheel events do without affecting the pinch-to-zoom path:

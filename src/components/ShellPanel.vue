@@ -1,5 +1,8 @@
 <template>
-  <div class="nb-shell-panel" :class="currentSize">
+  <div
+    class="nb-shell-panel"
+    :class="[currentSize, { 'nb-shell-panel--fluid': fluid }]"
+  >
     <!-- ═══ HEADER ═══ -->
     <div class="nb-shell-panel__header">
       <div class="nb-shell-panel__header-left">
@@ -99,6 +102,7 @@ import type { TShellPanelSize, IShellPanelProps } from './ShellPanel.d'
 const props = withDefaults(defineProps<IShellPanelProps>(), {
   size: 'default',
   title: '',
+  fluid: false,
 })
 
 const emit = defineEmits<{
@@ -147,6 +151,17 @@ defineExpose({ setSize })
 
   &.full {
     flex: 1 1 0%;
+  }
+
+  // Fluid mode: a default-sized panel takes only the height its
+  // content needs. Right for multi-panel inspectors where each
+  // section has its own length and forcing them to share the column
+  // makes short panels too tall and long panels too short. The
+  // sibling-coordination rule (further down, unscoped) still wins —
+  // a `.full` panel will collapse `.fluid` siblings to header-only,
+  // which is the same behaviour non-fluid panels get.
+  &--fluid.default {
+    flex: 0 0 auto;
   }
 }
 
