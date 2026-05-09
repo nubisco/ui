@@ -1,3 +1,10 @@
+## [1.36.1](https://github.com/nubisco/ui/compare/v1.36.0...v1.36.1) (2026-05-09)
+
+
+### Bug Fixes
+
+* **blueprint:** don't preventDefault Space when a text input is focused ([3ef806d](https://github.com/nubisco/ui/commit/3ef806dd6611727fabbee6b991e1d5a1f94eb2f2))
+
 # [1.36.0](https://github.com/nubisco/ui/compare/v1.35.1...v1.36.0) (2026-05-09)
 
 
