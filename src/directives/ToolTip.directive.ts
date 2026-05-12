@@ -294,6 +294,21 @@ const positionTooltip = (
       break
   }
 
+  // Viewport clamp. Without this a tooltip near the edge of the
+  // window can render half-offscreen — the directive uses `position:
+  // fixed` so once `top`/`left` exceed the viewport bounds, the
+  // overflowing portion is just clipped. Push the box back inside
+  // with a small inset so it doesn't kiss the chrome.
+  if (tooltipWidth > 0 && tooltipHeight > 0) {
+    const inset = 4
+    const maxLeft = window.innerWidth - tooltipWidth - inset
+    const maxTop = window.innerHeight - tooltipHeight - inset
+    if (left > maxLeft) left = maxLeft
+    if (left < inset) left = inset
+    if (top > maxTop) top = maxTop
+    if (top < inset) top = inset
+  }
+
   if (tooltip) {
     tooltip.style.top = `${top}px`
     tooltip.style.left = `${left}px`
