@@ -1,3 +1,10 @@
+# [1.37.0](https://github.com/nubisco/ui/compare/v1.36.1...v1.37.0) (2026-05-12)
+
+
+### Features
+
+* **blueprint:** wire-mouseover / wire-mouseout events for hover tooltips ([75966ee](https://github.com/nubisco/ui/commit/75966ee313ceb5efba6ace361ae8926f72232da6))
+
 ## [1.36.1](https://github.com/nubisco/ui/compare/v1.36.0...v1.36.1) (2026-05-09)
 
 
