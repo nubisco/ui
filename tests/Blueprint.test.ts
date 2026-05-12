@@ -321,6 +321,104 @@ describe('Blueprint', () => {
     w.unmount()
   })
 
+  it('wheel passes through to card-internal controls (slider role) — canvas does not pan/zoom', async () => {
+    const w = mount(Blueprint, {
+      props: { connections: [], wheelMode: 'zoom' },
+      attachTo: document.body,
+      slots: {
+        default: `
+          <div style="position:absolute;left:0;top:0;transform:translate(0px,0px);">
+            <div data-card-id="a" class="nb-blueprint-card" style="position:absolute;">
+              <div role="slider" data-testid="knob" tabindex="0" style="width:40px;height:40px;"></div>
+            </div>
+          </div>
+        `,
+      },
+    })
+
+    const root = w.find('.nb-blueprint').element as HTMLElement
+    root.getBoundingClientRect = () =>
+      ({
+        left: 0,
+        top: 0,
+        right: 1000,
+        bottom: 1000,
+        width: 1000,
+        height: 1000,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }) as DOMRect
+    const canvas = w.find('.nb-blueprint__canvas').element as HTMLElement
+    const before = canvas.style.transform
+
+    const knob = w.find('[data-testid="knob"]').element as HTMLElement
+    const event = new WheelEvent('wheel', {
+      deltaY: -100,
+      clientX: 20,
+      clientY: 20,
+      bubbles: true,
+      cancelable: true,
+    })
+    knob.dispatchEvent(event)
+    await w.vm.$nextTick()
+
+    // Canvas transform must be unchanged — the wheel belongs to the
+    // knob, not the blueprint.
+    expect(canvas.style.transform).toEqual(before)
+    // The canvas must NOT have preventDefaulted, so the knob is free
+    // to consume the event.
+    expect(event.defaultPrevented).toBe(false)
+    w.unmount()
+  })
+
+  it('pinch (wheel + ctrlKey) always zooms canvas, even over a passthrough control', async () => {
+    const w = mount(Blueprint, {
+      props: { connections: [] },
+      attachTo: document.body,
+      slots: {
+        default: `
+          <div style="position:absolute;left:0;top:0;transform:translate(0px,0px);">
+            <div data-card-id="a" class="nb-blueprint-card" style="position:absolute;">
+              <div role="slider" data-testid="knob" tabindex="0" style="width:40px;height:40px;"></div>
+            </div>
+          </div>
+        `,
+      },
+    })
+
+    const root = w.find('.nb-blueprint').element as HTMLElement
+    root.getBoundingClientRect = () =>
+      ({
+        left: 0,
+        top: 0,
+        right: 1000,
+        bottom: 1000,
+        width: 1000,
+        height: 1000,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }) as DOMRect
+    const canvas = w.find('.nb-blueprint__canvas').element as HTMLElement
+    const before = canvas.style.transform
+
+    const knob = w.find('[data-testid="knob"]').element as HTMLElement
+    const event = new WheelEvent('wheel', {
+      deltaY: -100,
+      clientX: 20,
+      clientY: 20,
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    })
+    knob.dispatchEvent(event)
+    await w.vm.$nextTick()
+
+    expect(canvas.style.transform).not.toEqual(before)
+    w.unmount()
+  })
+
   it('animateConnections="levels" mounts and accepts a level field without throwing', () => {
     const w = mount(Blueprint, {
       props: {

@@ -7,7 +7,7 @@
       'is-space': spaceHeld,
     }"
     @mousedown="onCanvasMouseDown"
-    @wheel.prevent="onWheel"
+    @wheel="onWheel"
   >
     <!-- Ambient gradient overlays -->
     <div class="nb-blueprint__ambient" />
@@ -321,6 +321,57 @@ function isCardDragBlocked(target: EventTarget | null) {
   return !!el?.closest(CARD_DRAG_BLOCK_SELECTOR)
 }
 
+// ── Wheel passthrough ────────────────────────────────────────────────
+//
+// The canvas listens to `wheel` to pan / zoom. That blanket capture
+// fights with controls inside cards that have their own wheel
+// semantics (a knob users scroll to fine-tune, a scrollable inspector
+// panel, an <input type=number> that increments on wheel, a popover
+// list that scrolls). For each of those cases, panning the canvas
+// underneath is the wrong outcome — the gesture clearly belongs to
+// the control under the cursor.
+//
+// AAA rule: if a card-internal element either opts in explicitly
+// (`[data-canvas-wheel-passthrough]`) or matches a known interactive
+// role, OR if any ancestor between the target and the canvas root is
+// actually scrollable AT this scroll position, the wheel event passes
+// through. Pinch-zoom (wheel + ctrlKey) is always reserved for the
+// canvas — the platform sends pinch as wheel+ctrl regardless of where
+// the cursor sits, and "pinch zooms the inner control instead of the
+// canvas" would be deeply surprising.
+const CANVAS_WHEEL_PASSTHROUGH_SELECTOR = [
+  '[role="slider"]',
+  '[role="spinbutton"]',
+  '[role="listbox"]',
+  '[data-canvas-wheel-passthrough]',
+  'input[type="range"]',
+  'input[type="number"]',
+].join(', ')
+
+function isWheelPassthrough(target: EventTarget | null): boolean {
+  const el = target instanceof Element ? target : null
+  if (!el) return false
+  if (el.closest(CANVAS_WHEEL_PASSTHROUGH_SELECTOR)) return true
+  // Walk ancestors looking for a node that scrolls AT THIS POSITION.
+  // We check both axes since either a horizontal or vertical scroll
+  // container should consume the event.
+  let cur: Element | null = el
+  while (cur && cur !== containerRef.value) {
+    const cs = window.getComputedStyle(cur)
+    const oy = cs.overflowY
+    const ox = cs.overflowX
+    const scrollsY =
+      (oy === 'auto' || oy === 'scroll' || oy === 'overlay') &&
+      cur.scrollHeight > cur.clientHeight
+    const scrollsX =
+      (ox === 'auto' || ox === 'scroll' || ox === 'overlay') &&
+      cur.scrollWidth > cur.clientWidth
+    if (scrollsY || scrollsX) return true
+    cur = cur.parentElement
+  }
+  return false
+}
+
 function onCanvasMouseDown(e: MouseEvent) {
   const target = e.target instanceof HTMLElement ? e.target : null
 
@@ -402,6 +453,18 @@ function onWheel(e: WheelEvent) {
   // zooms regardless of wheelMode (otherwise pinching would scroll on
   // wheelMode='pan', which is never what users want).
   const isPinch = e.ctrlKey
+
+  // Plain wheel inside a card-internal control (knob, slider, number
+  // input, scrollable popover, opt-in element) belongs to the control
+  // — do NOT preventDefault and do NOT pan/zoom the canvas. Pinch
+  // always stays with the canvas regardless of target.
+  if (!isPinch && isWheelPassthrough(e.target)) return
+
+  // The canvas is going to handle this event; suppress the browser's
+  // default (page scroll, pinch zoom of the document, history nav on
+  // horizontal wheel) only now that we've decided we're consuming.
+  e.preventDefault()
+
   let mode: 'zoom' | 'pan'
   if (isPinch) mode = 'zoom'
   else if (props.wheelMode === 'zoom') mode = 'zoom'
