@@ -48,6 +48,8 @@
             :data-wire-index="i"
             @mousedown="onWireMouseDown($event, wire.conn)"
             @contextmenu.prevent="onWireContextMenu($event, wire.conn)"
+            @mousemove="onWireMouseMove($event, wire.conn)"
+            @mouseleave="onWireMouseLeave(wire.conn)"
           />
           <path
             :d="wire.path"
@@ -194,6 +196,25 @@ const emit = defineEmits<{
    * cheap to subscribe to.
    */
   'wire-hover': [cardId: string, conn: IBlueprintConnection | null]
+  /**
+   * Fires when the cursor moves over a wire's hit-region (independent
+   * of any drag in progress). Use to render a tooltip showing
+   * wire-level metadata (e.g. dBFS, name, channel). Payload includes
+   * the wire and the screen coordinates so the host can position its
+   * own tooltip without a second hit-test. Throttled by the native
+   * mousemove cadence; subscribers should keep their handler cheap
+   * (e.g. just update a ref the template reads).
+   */
+  'wire-mouseover': [
+    conn: IBlueprintConnection,
+    clientX: number,
+    clientY: number,
+  ]
+  /** Cursor left the wire (or moved to a different one). Payload
+   *  identifies the wire that lost the cursor so the host can decide
+   *  whether to dismiss its tooltip (e.g. don't dismiss if the
+   *  cursor moved straight to another wire). */
+  'wire-mouseout': [conn: IBlueprintConnection]
 }>()
 
 const containerRef = ref<HTMLDivElement>()
@@ -838,6 +859,18 @@ function onWireContextMenu(event: MouseEvent, conn: IBlueprintConnection) {
     y: event.clientY - rect.top,
     conn,
   }
+}
+
+function onWireMouseMove(event: MouseEvent, conn: IBlueprintConnection) {
+  // Fires per native mousemove tick. Cheap — just forward; the host
+  // decides whether to render a tooltip and at what cadence. Throttle
+  // there if needed; do not throttle here (subscribers like an
+  // active-position readout WANT the per-frame updates).
+  emit('wire-mouseover', conn, event.clientX, event.clientY)
+}
+
+function onWireMouseLeave(conn: IBlueprintConnection) {
+  emit('wire-mouseout', conn)
 }
 
 function closeWireMenu() {
