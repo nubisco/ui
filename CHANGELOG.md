@@ -1,3 +1,10 @@
+# [1.38.0](https://github.com/nubisco/ui/compare/v1.37.0...v1.38.0) (2026-05-12)
+
+
+### Features
+
+* **blueprint:** wheel passes through to card-internal controls ([0703caa](https://github.com/nubisco/ui/commit/0703caa6ca2fa803e325b928394681437d23a067))
+
 # [1.37.0](https://github.com/nubisco/ui/compare/v1.36.1...v1.37.0) (2026-05-12)
 
 
