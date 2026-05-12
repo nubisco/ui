@@ -1,3 +1,10 @@
+## [1.38.1](https://github.com/nubisco/ui/compare/v1.38.0...v1.38.1) (2026-05-12)
+
+
+### Bug Fixes
+
+* **tooltip:** clamp position to viewport so chips don't render offscreen ([f347e59](https://github.com/nubisco/ui/commit/f347e59f4ae1506a599b782bbcf09a8c02ba43ce))
+
 # [1.38.0](https://github.com/nubisco/ui/compare/v1.37.0...v1.38.0) (2026-05-12)
 
 
