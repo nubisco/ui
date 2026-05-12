@@ -185,6 +185,15 @@ const emit = defineEmits<{
    * card drags — multi-card moves never fire this event.
    */
   'drop-on-wire': [cardId: string, conn: IBlueprintConnection]
+  /**
+   * Fires DURING a single-card drag whenever the cursor enters / exits
+   * / changes a wire. `conn` is the wire under the cursor (or null
+   * when the cursor isn't over a wire). Host can use this to show a
+   * "drop here to splice" tooltip, highlight the wire, etc. Fires at
+   * most once per state transition — not per mousemove — so it's
+   * cheap to subscribe to.
+   */
+  'wire-hover': [cardId: string, conn: IBlueprintConnection | null]
 }>()
 
 const containerRef = ref<HTMLDivElement>()
@@ -394,6 +403,10 @@ function onWheel(e: WheelEvent) {
 // ── Card drag ─────────────────────────────────────────────────────────
 
 let isDraggingCards = false
+// Most recent wire under the cursor during a card drag. Used to
+// de-dup wire-hover events: we only emit when the value transitions
+// (null → conn, conn → other, conn → null), not on every mousemove.
+let lastHoverWireKey: string | null = null
 let dragMouseStartX = 0
 let dragMouseStartY = 0
 let dragStartPositions = new Map<string, { x: number; y: number }>()
@@ -508,6 +521,24 @@ function onCardDragMove(e: MouseEvent) {
   // wrapper transforms during drag.
   emitDragPositions()
   wireKey.value++
+
+  // Single-card drag → also probe wire-under-cursor so the host can
+  // preview a splice. Multi-card moves never fire wire-hover (same
+  // gate as drop-on-wire below). De-duped by composite key so we emit
+  // only on transitions, not on every mousemove tick.
+  if (dragStartPositions.size === 1) {
+    const [draggedId] = dragStartPositions.keys()
+    if (draggedId) {
+      const conn = wireUnderPoint(e.clientX, e.clientY)
+      const key = conn
+        ? `${conn.fromNode}/${conn.fromPort}|${conn.toNode}/${conn.toPort}`
+        : null
+      if (key !== lastHoverWireKey) {
+        lastHoverWireKey = key
+        emit('wire-hover', draggedId, conn)
+      }
+    }
+  }
 }
 
 /** Find the wire whose hit-region sits under the given client point.
@@ -566,6 +597,13 @@ function onCardDragEnd(e?: MouseEvent) {
   isDraggingCards = false
   dragDidMove = false
   dragStartPositions = new Map()
+  // Final wire-hover null so the host can clear any preview UI (a
+  // tooltip / wire highlight) it surfaced during the drag.
+  if (lastHoverWireKey !== null) {
+    const [draggedId] = dragStartPositions.keys()
+    if (draggedId) emit('wire-hover', draggedId, null)
+    lastHoverWireKey = null
+  }
 }
 
 // ── Marquee selection ─────────────────────────────────────────────────

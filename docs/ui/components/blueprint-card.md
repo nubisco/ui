@@ -437,24 +437,60 @@ interface IBlueprintCardParameter {
 
 | `dataType`           | Color     | Shape   | Typical use                                      |
 | -------------------- | --------- | ------- | ------------------------------------------------ |
-| `audio`              | `#22c55e` | circle  | Generic mono audio.                              |
-| `audio:mono`         | `#22c55e` | circle  | Single-channel audio (semantic alias).           |
-| `audio:stereo`       | `#10b981` | circle  | Stereo pair (declare with `channels: [L, R]`).   |
-| `audio:bus`          | `#059669` | circle  | N-channel audio bus (any channel count).         |
+| `audio`              | `#22c55e` | pill    | Generic mono audio.                              |
+| `audio:mono`         | `#22c55e` | pill    | Single-channel audio (semantic alias).           |
+| `audio:stereo`       | `#10b981` | pill    | Stereo pair (declare with `channels: [L, R]`).   |
+| `audio:bus`          | `#059669` | pill    | N-channel audio bus (any channel count).         |
 | `midi`               | `#a855f7` | diamond | MIDI stream.                                     |
 | `midi:rechannelized` | `#9333ea` | diamond | MIDI duplicated across channels (GP-style).      |
 | `control`            | `#94a3b8` | diamond | Control-rate signal (parameter automation, OSC). |
-| `geometry`           | `#6366f1` | circle  | Geometric data.                                  |
-| `celestial`          | `#f97316` | circle  | Celestial / scene-graph data.                    |
-| `lighting`           | `#f59e0b` | circle  | Lighting data.                                   |
-| `effect`             | `#a855f7` | circle  | Effect-graph data.                               |
-| `surface`            | `#3b82f6` | circle  | Surface / mesh data.                             |
-| `entity`             | `#ec4899` | circle  | Entity / actor reference.                        |
+| `geometry`           | `#6366f1` | pill    | Geometric data.                                  |
+| `celestial`          | `#f97316` | pill    | Celestial / scene-graph data.                    |
+| `lighting`           | `#f59e0b` | pill    | Lighting data.                                   |
+| `effect`             | `#a855f7` | pill    | Effect-graph data.                               |
+| `surface`            | `#3b82f6` | pill    | Surface / mesh data.                             |
+| `entity`             | `#ec4899` | pill    | Entity / actor reference.                        |
 | `number`             | `#94a3b8` | diamond | Scalar number.                                   |
 | `vector3`            | `#38bdf8` | diamond | 3-component vector.                              |
 | `color`              | `#fb923c` | square  | Color value.                                     |
 | `asset`              | `#a78bfa` | square  | Asset reference (texture, sample, plugin).       |
-| `any`                | `#64748b` | circle  | Untyped / wildcard.                              |
+| `any`                | `#64748b` | pill    | Untyped / wildcard.                              |
+
+## Per-port style overrides
+
+Three optional fields on `IBlueprintPort` override the `dataType`-derived defaults when two ports of the same dataType need to look different (typical example: a "bypass" control input that should read distinctly from other control ports).
+
+| Field   | Type                                          | Effect                                                                             |
+| ------- | --------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `shape` | `'pill' \| 'diamond' \| 'square' \| 'circle'` | Beats the `dataType`-derived shape.                                                |
+| `color` | CSS color string                              | Beats the `dataType`-derived color. Wires drawn from / to this pin inherit it.     |
+| `size`  | `'sm' \| 'md' \| 'lg'`                        | `'md'` is the default. `'sm'` de-emphasises secondary ports; `'lg'` flags primary. |
+
+```ts
+const ports: IBlueprintPort[] = [
+  // A primary stereo audio input — emphasise it.
+  {
+    id: 'in',
+    label: 'Audio In',
+    type: 'input',
+    dataType: 'audio:stereo',
+    size: 'lg',
+  },
+  // A control input styled distinctly from MIDI / parameter ports
+  // even though it shares dataType: 'control'.
+  {
+    id: 'bypass-in',
+    label: 'Bypass',
+    type: 'input',
+    dataType: 'control',
+    shape: 'circle',
+    color: '#94a3b8',
+    size: 'sm',
+  },
+]
+```
+
+Shapes render at consistent layout positions — overriding shape doesn't change where wires anchor. Sub-pins (sub-channels of a multi-channel port) keep their compact 10px height regardless of `size`.
 
 ## CSS custom properties
 

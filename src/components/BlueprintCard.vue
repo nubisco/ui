@@ -39,6 +39,7 @@
         class="nb-blueprint-card__port nb-blueprint-card__port--left"
         :class="[
           `nb-blueprint-card__port--${pinShape(pin.port)}`,
+          `nb-blueprint-card__port--size-${pinSize(pin.port)}`,
           pin.port.required ? 'nb-blueprint-card__port--required' : '',
           pin.channel ? 'nb-blueprint-card__port--channel' : '',
           isConnected(pin.portId) ? 'nb-blueprint-card__port--connected' : '',
@@ -177,6 +178,7 @@
         class="nb-blueprint-card__port nb-blueprint-card__port--right"
         :class="[
           `nb-blueprint-card__port--${pinShape(pin.port)}`,
+          `nb-blueprint-card__port--size-${pinSize(pin.port)}`,
           pin.channel ? 'nb-blueprint-card__port--channel' : '',
           isConnected(pin.portId) ? 'nb-blueprint-card__port--connected' : '',
           isActive(pin.portId) ? 'nb-blueprint-card__port--active' : '',
@@ -205,6 +207,7 @@ import type {
   IBlueprintPort,
   IBlueprintPortChannel,
   TBlueprintPinDataType,
+  TBlueprintPortShape,
 } from './BlueprintCard.d'
 import { NB_BLUEPRINT_CONTEXT } from './Blueprint.context'
 
@@ -407,36 +410,47 @@ const PIN_COLORS: Record<TBlueprintPinDataType, string> = {
   any: '#64748b',
 }
 
-const PIN_SHAPES: Record<
-  TBlueprintPinDataType,
-  'circle' | 'diamond' | 'square'
-> = {
-  geometry: 'circle',
-  celestial: 'circle',
-  lighting: 'circle',
-  effect: 'circle',
-  surface: 'circle',
-  audio: 'circle',
-  'audio:mono': 'circle',
-  'audio:stereo': 'circle',
-  'audio:bus': 'circle',
+// Default shape per dataType. The card looks up this map when a port
+// doesn't provide an explicit `shape` override. Audio / general-flow
+// types get the canonical pill (signal connectors); MIDI and control
+// types get diamonds (event / sideband connectors); typed-data types
+// (colour, asset) get sharp squares.
+const PIN_SHAPES: Record<TBlueprintPinDataType, TBlueprintPortShape> = {
+  geometry: 'pill',
+  celestial: 'pill',
+  lighting: 'pill',
+  effect: 'pill',
+  surface: 'pill',
+  audio: 'pill',
+  'audio:mono': 'pill',
+  'audio:stereo': 'pill',
+  'audio:bus': 'pill',
   midi: 'diamond',
   'midi:rechannelized': 'diamond',
   control: 'diamond',
-  entity: 'circle',
+  entity: 'pill',
   number: 'diamond',
   vector3: 'diamond',
   color: 'square',
   asset: 'square',
-  any: 'circle',
+  any: 'pill',
 }
 
+/** Resolved colour for a single pin. Per-port `color` override beats
+ *  the `dataType`-derived default. */
 function pinColor(port: IBlueprintPort): string {
-  return PIN_COLORS[port.dataType ?? 'any'] ?? PIN_COLORS.any
+  return port.color ?? PIN_COLORS[port.dataType ?? 'any'] ?? PIN_COLORS.any
 }
 
+/** Resolved shape for a single pin. Per-port `shape` override beats
+ *  the `dataType`-derived default. */
 function pinShape(port: IBlueprintPort): string {
-  return PIN_SHAPES[port.dataType ?? 'any'] ?? 'circle'
+  return port.shape ?? PIN_SHAPES[port.dataType ?? 'any'] ?? 'pill'
+}
+
+/** Resolved size for a single pin. Default `'md'`. */
+function pinSize(port: IBlueprintPort): string {
+  return port.size ?? 'md'
 }
 </script>
 
@@ -869,6 +883,78 @@ function pinShape(port: IBlueprintPort): string {
   // a row of channel pins reads as a stack rather than four full-height pins.
   &--channel::before {
     height: 10px;
+  }
+
+  // ── Shape variants ─────────────────────────────────────────────
+  // The default rendering above is a 6x14 rounded pill. The variants
+  // below override the ::before geometry so a port can look like a
+  // diamond, square, or small circle without changing its position
+  // in the layout. Wires still anchor to the same pin centre.
+
+  // Diamond: rotated square. ~10x10 visual footprint. Used for MIDI
+  // / control / event-style ports where the user expects "discrete
+  // signal" rather than "continuous flow".
+  &--diamond::before {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    transform: rotate(45deg);
+    // The border-radius shaving on left/right halves above doesn't
+    // make sense for a rotated square; reset both edges.
+    border: 1.5px solid var(--nb-c-text-muted, #3a4257);
+  }
+  &--left.nb-blueprint-card__port--diamond::before {
+    margin-left: -2px;
+  }
+  &--right.nb-blueprint-card__port--diamond::before {
+    margin-right: -2px;
+  }
+
+  // Square: sharp 10x10. For typed-data ports (colour, asset).
+  &--square::before {
+    width: 10px;
+    height: 10px;
+    border-radius: 0;
+    border: 1.5px solid var(--nb-c-text-muted, #3a4257);
+  }
+  &--left.nb-blueprint-card__port--square::before {
+    margin-left: -2px;
+  }
+  &--right.nb-blueprint-card__port--square::before {
+    margin-right: -2px;
+  }
+
+  // Circle: small dot. For boolean / single-bit ports.
+  &--circle::before {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1.5px solid var(--nb-c-text-muted, #3a4257);
+  }
+  &--left.nb-blueprint-card__port--circle::before {
+    margin-left: -1px;
+  }
+  &--right.nb-blueprint-card__port--circle::before {
+    margin-right: -1px;
+  }
+
+  // ── Size variants ──────────────────────────────────────────────
+  // sm / md (default) / lg scale the pill / diamond / square / circle
+  // uniformly. Channels (sub-pins of a multi-channel port) keep their
+  // 10px height regardless of size; the size override applies to the
+  // root pin only.
+  &--size-sm::before {
+    transform: scale(0.75);
+  }
+  &--size-lg::before {
+    transform: scale(1.25);
+  }
+  // Diamond's existing rotate(45deg) needs to compose with size scale.
+  &--diamond.nb-blueprint-card__port--size-sm::before {
+    transform: scale(0.75) rotate(45deg);
+  }
+  &--diamond.nb-blueprint-card__port--size-lg::before {
+    transform: scale(1.25) rotate(45deg);
   }
 }
 

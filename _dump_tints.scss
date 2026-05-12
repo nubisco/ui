@@ -1,0 +1,20 @@
+@use 'src/styles/variables/colors' as colors;
+
+$tints:
+  100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800,
+  850, 900;
+$names:
+  'grape-hyacinth', 'plain-black', 'plain-white', 'french-gray',
+  'emerald-reflection', 'the-blues-brothers', 'phoenix-flames', 'chicken-comb',
+  'nouveau-gray';
+
+:root {
+  @each $name in $names {
+    @each $tint in $tints {
+      --#{$name}-#{$tint}: #{colors.get-color($name, $tint)};
+      --#{$name}-#{$tint}-a11y: #{colors.color-contrast(
+          colors.get-color($name, $tint)
+        )};
+    }
+  }
+}

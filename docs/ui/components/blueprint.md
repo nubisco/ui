@@ -242,6 +242,16 @@ A single-card drag that ends with the cursor over a wire's hit-region fires `dro
 
 The component only emits the gesture; the host decides what to do with it. The typical handler splices the dragged card into the wire (channel-matched for parallel bundles, e.g. L+R), but other interpretations (e.g. attach a probe, branch a tap) are valid too.
 
+To give the user a live hint before the drop, subscribe to `wire-hover`. It fires DURING a single-card drag whenever the wire under the cursor changes (entry, exit, or transition to a different wire). The payload is the dragged card id plus the new wire (or `null` when the cursor leaves the last wire). The event is de-duped — it fires on transitions, not on every mousemove tick — so subscribers can put expensive work (e.g. a splice-preview tooltip) in the handler without watching for performance.
+
+```vue
+<NbBlueprint
+  :connections="connections"
+  @drop-on-wire="onSplice"
+  @wire-hover="(cardId, conn) => (hoverWire = conn)"
+/>
+```
+
 ## Theming
 
 The canvas background uses `--nb-c-layer-0`. Ambient gradients are configurable via `--nb-blueprint-ambient-1` and `--nb-blueprint-ambient-2` (set to `transparent` to disable). Wire colors are derived from each source card's `--nb-card-color`.
@@ -260,14 +270,15 @@ The canvas background uses `--nb-c-layer-0`. Ambient gradients are configurable 
 
 ## Events
 
-| Event              | Payload                                        | Description                                                                                          |
-| ------------------ | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `connect`          | `IBlueprintConnection`                         | Emitted when a drag from one port is released on another compatible port.                            |
-| `disconnect`       | `IBlueprintConnection`                         | Emitted when the user clicks **Disconnect** in the wire context menu (right-click on a wire).        |
-| `move`             | `IBlueprintCardMove[]`                         | Emitted after cards are dragged, aligned, distributed, or auto-laid out.                             |
-| `focus`            | `string \| null`                               | Emitted when a card is focused (clicked). `null` when focus is cleared.                              |
-| `selection-change` | `string[]`                                     | Emitted when the set of selected card IDs changes.                                                   |
-| `drop-on-wire`     | `(cardId: string, conn: IBlueprintConnection)` | Emitted when a single-card drag ends with the cursor over a wire. See [Drop-on-wire](#drop-on-wire). |
+| Event              | Payload                                                | Description                                                                                                                    |
+| ------------------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `connect`          | `IBlueprintConnection`                                 | Emitted when a drag from one port is released on another compatible port.                                                      |
+| `disconnect`       | `IBlueprintConnection`                                 | Emitted when the user clicks **Disconnect** in the wire context menu (right-click on a wire).                                  |
+| `move`             | `IBlueprintCardMove[]`                                 | Emitted after cards are dragged, aligned, distributed, or auto-laid out.                                                       |
+| `focus`            | `string \| null`                                       | Emitted when a card is focused (clicked). `null` when focus is cleared.                                                        |
+| `selection-change` | `string[]`                                             | Emitted when the set of selected card IDs changes.                                                                             |
+| `drop-on-wire`     | `(cardId: string, conn: IBlueprintConnection)`         | Emitted when a single-card drag ends with the cursor over a wire. See [Drop-on-wire](#drop-on-wire).                           |
+| `wire-hover`       | `(cardId: string, conn: IBlueprintConnection \| null)` | Emitted during a single-card drag when the wire under the cursor changes. `null` payload when the cursor leaves the last wire. |
 
 ## Slots
 

@@ -30,6 +30,34 @@ export interface IBlueprintPortChannel {
   label: string
 }
 
+/**
+ * Visual shape for a single pin. Independent of `dataType` so an
+ * `audio` port can render as a square (e.g. for an aux send) without
+ * forcing the dataType taxonomy to grow new variants. When unset, the
+ * shape is derived from `dataType` (see PIN_SHAPES inside
+ * BlueprintCard.vue).
+ *
+ *   - `'pill'` (default for most dataTypes): a 6x14 rounded pill —
+ *     the canonical Blueprint connector tab.
+ *   - `'diamond'`: rotated square, ~10x10. Reads as "control / event"
+ *     rather than "audio / signal flow". MIDI and `control` ports
+ *     default to this.
+ *   - `'square'`: sharp 10x10 box. Good for typed-data ports
+ *     (`color`, `asset`).
+ *   - `'circle'`: small 8x8 dot. Good for boolean / single-bit
+ *     ports where the smaller hit area visually de-emphasises the
+ *     port relative to audio pins.
+ */
+export type TBlueprintPortShape = 'pill' | 'diamond' | 'square' | 'circle'
+
+/**
+ * Visual size for a single pin. Independent of shape. `'md'` is the
+ * default — `'sm'` shrinks the pin (good for secondary / metadata
+ * ports), `'lg'` enlarges (good for primary audio ins / outs that
+ * need to be visually emphasised).
+ */
+export type TBlueprintPortSize = 'sm' | 'md' | 'lg'
+
 export interface IBlueprintPort {
   /** Unique port identifier */
   id: string
@@ -58,6 +86,26 @@ export interface IBlueprintPort {
    * to the tooltip). Overrides the card-level `showPortLabels` default.
    */
   showLabel?: boolean
+  /**
+   * Explicit shape override. Beats the `dataType`-derived default.
+   * Use when two ports of the same dataType need to look different
+   * (e.g. a "trigger" output styled distinctly from a "value"
+   * output, both `dataType: 'control'`).
+   */
+  shape?: TBlueprintPortShape
+  /**
+   * Explicit color override (any CSS color). Beats the
+   * `dataType`-derived default. Use when a single card carries
+   * multiple ports of the same type that need to be told apart at
+   * a glance (e.g. red bypass-input vs green bypass-output).
+   */
+  color?: string
+  /**
+   * Explicit size override. Default `'md'`. Use `'sm'` to
+   * de-emphasise a metadata port; use `'lg'` to flag a primary
+   * connection.
+   */
+  size?: TBlueprintPortSize
 }
 
 /** Status indicator level */
