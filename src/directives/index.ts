@@ -13,3 +13,9 @@ export default {
     })
   },
 }
+
+// Re-export the tooltip's imperative dismiss API so consumers can
+// nuke every visible tooltip on a view / route change (helpful in
+// SPAs that don't use vue-router and so don't get the directive's
+// built-in beforeEach cleanup).
+export { dismissAllTooltips } from './ToolTip.directive'

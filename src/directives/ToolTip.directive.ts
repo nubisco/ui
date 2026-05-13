@@ -140,7 +140,13 @@ const tooltipDirective = (app: App) => {
     },
 
     unmounted(el: TTooltipEl) {
+      // Belt-and-braces: cancel the show-timer FIRST so a pending
+      // show doesn't append a tooltip after the anchor's gone.
+      // hideTooltip below also clears it, but doing it explicitly
+      // here guards against any reordering inside hideTooltip.
+      clearTimeout(el.__showTimer__)
       hideTooltip(el, true)
+      registeredTooltips.delete(el)
       if (el.__showHandler__)
         el.removeEventListener('mouseenter', el.__showHandler__)
       if (el.__hideHandler__)
@@ -248,59 +254,150 @@ const updateTooltip = (
   }
 }
 
+type TSide = 'top' | 'bottom' | 'left' | 'right' | 'cursor'
+
+function placeFor(
+  side: TSide,
+  rect: DOMRect,
+  tooltipWidth: number,
+  tooltipHeight: number,
+  gap: number,
+  scrollTop: number,
+  scrollLeft: number,
+  mouseX: number,
+  mouseY: number,
+): { top: number; left: number } {
+  switch (side) {
+    case 'top':
+      return {
+        top: rect.top - (tooltipHeight + gap * 2) - scrollTop,
+        left:
+          rect.left +
+          rect.width / 2 -
+          (tooltipWidth / 2 + gap / 2) -
+          scrollLeft,
+      }
+    case 'bottom':
+      return {
+        top: rect.bottom + gap - scrollTop,
+        left:
+          rect.left +
+          rect.width / 2 -
+          (tooltipWidth / 2 + gap / 2) -
+          scrollLeft,
+      }
+    case 'left':
+      return {
+        top: rect.top + rect.height / 2 - tooltipHeight / 2 - scrollTop,
+        left: rect.left - (tooltipWidth + gap * 2) - scrollLeft,
+      }
+    case 'right':
+      return {
+        top: rect.top + rect.height / 2 - tooltipHeight / 2 - scrollTop,
+        left: rect.right + gap - scrollLeft,
+      }
+    case 'cursor':
+    default:
+      return { top: mouseY + gap, left: mouseX + gap }
+  }
+}
+
+function fitsViewport(
+  top: number,
+  left: number,
+  w: number,
+  h: number,
+  inset: number,
+): boolean {
+  return (
+    left >= inset &&
+    top >= inset &&
+    left + w <= window.innerWidth - inset &&
+    top + h <= window.innerHeight - inset
+  )
+}
+
+const OPPOSITE: Record<TSide, TSide> = {
+  top: 'bottom',
+  bottom: 'top',
+  left: 'right',
+  right: 'left',
+  cursor: 'cursor',
+}
+
 const positionTooltip = (
   el: TTooltipEl,
   tooltip: HTMLSpanElement | undefined,
   position: ITooltipOptions['position'],
 ) => {
+  if (!tooltip) return
   const gap = 4
+  const inset = 6
   const rect = el.getBoundingClientRect()
-  const tooltipRect = tooltip?.getBoundingClientRect()
-  const tooltipWidth = tooltipRect?.width || 0
-  const tooltipHeight = tooltipRect?.height || 0
-  const parentScrollTop = el.scrollTop
-  const parentScrollLeft = el.scrollLeft
-  let top, left
+  const tooltipRect = tooltip.getBoundingClientRect()
+  const tooltipWidth = tooltipRect.width || 0
+  const tooltipHeight = tooltipRect.height || 0
+  const scrollTop = el.scrollTop
+  const scrollLeft = el.scrollLeft
+  const mouseX = el.__mouseX__ ?? 0
+  const mouseY = el.__mouseY__ ?? 0
 
-  switch (position) {
-    case 'top':
-      top = rect.top - (tooltipHeight + gap * 2) - parentScrollTop // space for "arrow" which is 7.6 px
-      left =
-        rect.left +
-        rect.width / 2 -
-        (tooltipWidth / 2 + gap / 2) -
-        parentScrollLeft
-      break
-    case 'bottom':
-      top = rect.bottom + gap - parentScrollTop
-      left =
-        rect.left +
-        rect.width / 2 -
-        (tooltipWidth / 2 + gap / 2) -
-        parentScrollLeft
-      break
-    case 'left':
-      top = rect.top + rect.height / 2 - tooltipHeight / 2 - parentScrollTop
-      left = rect.left - (tooltipWidth + gap * 2) - parentScrollLeft
-      break
-    case 'right':
-      top = rect.top + rect.height / 2 - tooltipHeight / 2 - parentScrollTop
-      left = rect.right + gap - parentScrollLeft
-      break
-    case 'cursor':
-    default:
-      top = (el.__mouseY__ ?? 0) + gap
-      left = (el.__mouseX__ ?? 0) + gap
-      break
+  // Auto-flip: if the requested side would overflow the viewport,
+  // try the opposite side first. Mirrors how every other tooltip
+  // engine (Floating UI, popper) handles edge cases. Pretty rare in
+  // practice but the diagonal corners of the canvas need it.
+  const initialSide = (position ?? 'cursor') as TSide
+  let placed = placeFor(
+    initialSide,
+    rect,
+    tooltipWidth,
+    tooltipHeight,
+    gap,
+    scrollTop,
+    scrollLeft,
+    mouseX,
+    mouseY,
+  )
+  let chosenSide: TSide = initialSide
+
+  if (
+    tooltipWidth > 0 &&
+    tooltipHeight > 0 &&
+    !fitsViewport(placed.top, placed.left, tooltipWidth, tooltipHeight, inset)
+  ) {
+    const flipped = OPPOSITE[initialSide]
+    if (flipped !== initialSide) {
+      const flipPlaced = placeFor(
+        flipped,
+        rect,
+        tooltipWidth,
+        tooltipHeight,
+        gap,
+        scrollTop,
+        scrollLeft,
+        mouseX,
+        mouseY,
+      )
+      if (
+        fitsViewport(
+          flipPlaced.top,
+          flipPlaced.left,
+          tooltipWidth,
+          tooltipHeight,
+          inset,
+        )
+      ) {
+        placed = flipPlaced
+        chosenSide = flipped
+      }
+    }
   }
 
-  // Viewport clamp. Without this a tooltip near the edge of the
-  // window can render half-offscreen — the directive uses `position:
-  // fixed` so once `top`/`left` exceed the viewport bounds, the
-  // overflowing portion is just clipped. Push the box back inside
-  // with a small inset so it doesn't kiss the chrome.
+  // Final viewport clamp on whichever side won. Acts as a backstop
+  // when even the flip can't fit (tiny windows, very long tooltip
+  // content). Without it the chip would render half-offscreen.
+  let { top, left } = placed
   if (tooltipWidth > 0 && tooltipHeight > 0) {
-    const inset = 4
     const maxLeft = window.innerWidth - tooltipWidth - inset
     const maxTop = window.innerHeight - tooltipHeight - inset
     if (left > maxLeft) left = maxLeft
@@ -309,10 +406,39 @@ const positionTooltip = (
     if (top < inset) top = inset
   }
 
-  if (tooltip) {
-    tooltip.style.top = `${top}px`
-    tooltip.style.left = `${left}px`
+  // Update the side-suffix class so the arrow swap matches the new
+  // placement. Cheap: strip any nb-tooltip-{side} classes already on
+  // the element and add the chosen one. (Pinch: this only touches
+  // the position classes; flavour / extra classes stay untouched.)
+  if (chosenSide !== initialSide && chosenSide !== 'cursor') {
+    for (const s of ['top', 'bottom', 'left', 'right'] as const) {
+      tooltip.classList.remove(`nb-tooltip-${s}`)
+    }
+    tooltip.classList.add(`nb-tooltip-${chosenSide}`)
   }
+
+  tooltip.style.top = `${top}px`
+  tooltip.style.left = `${left}px`
+}
+
+/** Dismiss every currently-visible tooltip. Useful for view switches
+ *  in single-page apps where the trigger element gets unmounted by a
+ *  reactive `v-if` and the cleanup race (show-timer still pending,
+ *  tooltip element about to be appended) leaves orphan chips behind.
+ *  Call from the host on route / view change.
+ *
+ *  Exposed via `useTooltip()` (composable) and `Tooltip.dismissAll`
+ *  (named export) so consumers don't need to dig through registered
+ *  state directly. */
+export function dismissAllTooltips() {
+  for (const el of Array.from(registeredTooltips)) {
+    ;(el as TTooltipEl).__hideTooltip__?.(0)
+  }
+  registeredTooltips.clear()
+  // Belt-and-braces: nuke any stray nb-tooltip nodes that somehow
+  // detached from their registered anchor (cancelled show timer
+  // races, slotted children whose unmount fired before the timer).
+  document.querySelectorAll('span.nb-tooltip').forEach((n) => n.remove())
 }
 
 export default tooltipDirective
