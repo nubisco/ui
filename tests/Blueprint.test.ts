@@ -442,6 +442,97 @@ describe('Blueprint', () => {
     w.unmount()
   })
 
+  it('dragging one selected card emits move for every selected card', async () => {
+    // Three cards arranged in a row. After shift-click selecting all
+    // three, a mousedown on the middle card and a drag MUST emit a
+    // `move` event whose payload covers every selected card translated
+    // by the same delta. Regression guard for "marquee selection
+    // works but can't drag the group" reports — the Blueprint code
+    // path that records start positions for every selectedId via
+    // nextTick is fragile, and a future edit could accidentally limit
+    // the loop to the focused card.
+    //
+    // We assert the EMITTED payload rather than DOM transforms
+    // because Blueprint's drag is host-driven: it mutates DOM as a
+    // preview AND emits `move`; the host reacts by updating its
+    // reactive position state which feeds back into the slot's
+    // :style binding. In a test without a reactive host the slot's
+    // static styles are reapplied by Vue's diff on the next render
+    // and clobber the preview, but the emit (the actual contract)
+    // carries the right data.
+    const w = mount(Blueprint, {
+      props: { connections: [] },
+      slots: {
+        default: `
+          <div style="position:absolute;transform:translate(0px,0px);">
+            <div data-card-id="a" class="nb-blueprint-card" style="position:absolute;width:60px;height:40px;">A</div>
+          </div>
+          <div style="position:absolute;transform:translate(100px,0px);">
+            <div data-card-id="b" class="nb-blueprint-card" style="position:absolute;width:60px;height:40px;">B</div>
+          </div>
+          <div style="position:absolute;transform:translate(200px,0px);">
+            <div data-card-id="c" class="nb-blueprint-card" style="position:absolute;width:60px;height:40px;">C</div>
+          </div>
+        `,
+      },
+      attachTo: document.body,
+    })
+
+    // Select all three: click A, shift-click B, shift-click C.
+    await w.get('[data-card-id="a"]').trigger('mousedown', {
+      button: 0,
+      clientX: 30,
+      clientY: 20,
+    })
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    await w.get('[data-card-id="b"]').trigger('mousedown', {
+      button: 0,
+      shiftKey: true,
+      clientX: 130,
+      clientY: 20,
+    })
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    await w.get('[data-card-id="c"]').trigger('mousedown', {
+      button: 0,
+      shiftKey: true,
+      clientX: 230,
+      clientY: 20,
+    })
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+
+    // Confirm the Blueprint knows about all three before we drag.
+    const selChanges = w.emitted('selection-change') as Array<[string[]]>
+    expect(selChanges.at(-1)?.[0]).toEqual(['a', 'b', 'c'])
+
+    // Mousedown on B (already selected, no shift => selection
+    // preserved). Drag by (+50, +30) and release.
+    await w.get('[data-card-id="b"]').trigger('mousedown', {
+      button: 0,
+      clientX: 130,
+      clientY: 20,
+    })
+    await w.vm.$nextTick()
+    document.dispatchEvent(
+      new MouseEvent('mousemove', { bubbles: true, clientX: 180, clientY: 50 }),
+    )
+    document.dispatchEvent(
+      new MouseEvent('mouseup', { bubbles: true, clientX: 180, clientY: 50 }),
+    )
+
+    // Final move payload covers every selected card.
+    const moves = w.emitted('move') as Array<
+      [Array<{ id: string; x: number; y: number }>]
+    >
+    const last = moves.at(-1)?.[0]
+    expect(last).toBeTruthy()
+    const byId = new Map(last!.map((m) => [m.id, m]))
+    expect(byId.get('a')).toEqual({ id: 'a', x: 50, y: 30 })
+    expect(byId.get('b')).toEqual({ id: 'b', x: 150, y: 30 })
+    expect(byId.get('c')).toEqual({ id: 'c', x: 250, y: 30 })
+
+    w.unmount()
+  })
+
   it('drop-on-wire is not emitted for multi-card drags', async () => {
     const w = mount(Blueprint, {
       props: { connections: [] },
