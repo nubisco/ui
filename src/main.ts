@@ -117,6 +117,7 @@ export type {
 
 // Directives
 export { default as nbTooltipDirective } from './directives/ToolTip.directive'
+export { dismissAllTooltips } from './directives/ToolTip.directive'
 
 // Composables
 export { useCommandPalette } from './composables/useCommandPalette.composable'
