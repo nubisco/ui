@@ -6,9 +6,6 @@ on:
   schedule:
     - cron: '31 12 * * 5'
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   analyze:
     name: Analyze
@@ -23,7 +20,7 @@ jobs:
         language: [javascript-typescript]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
