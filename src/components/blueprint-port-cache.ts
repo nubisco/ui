@@ -75,3 +75,27 @@ export function createPortCache(
 
   return { get, prune, clear, size }
 }
+
+/** Class name of the panned/zoomed canvas div that directly contains
+ *  the slotted card position wrappers. */
+export const BLUEPRINT_CANVAS_CLASS = 'nb-blueprint__canvas'
+
+/**
+ * True iff a style mutation on `target` should be treated as a card
+ * having moved (and therefore a wire recompute is warranted).
+ *
+ * Only the card POSITION WRAPPER moves ports: it's a direct child of
+ * the canvas (`.nb-blueprint__canvas`), and its left/top is what
+ * setCardPosition writes. A style mutation deeper inside a card — a
+ * fader writing its fill percentage on every drag tick, a meter bar
+ * animating, a knob rotating — changes layout *within* the card but
+ * does not move its ports, so it must NOT trigger a wire recompute.
+ * Without this filter, interacting with any in-card control re-runs
+ * the whole graph's wire geometry every frame.
+ */
+export function isCardPositionMutation(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false
+  return (
+    target.parentElement?.classList.contains(BLUEPRINT_CANVAS_CLASS) ?? false
+  )
+}

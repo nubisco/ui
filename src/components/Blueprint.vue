@@ -160,7 +160,7 @@ import {
   provide,
 } from 'vue'
 import { NB_BLUEPRINT_CONTEXT } from './Blueprint.context'
-import { createPortCache } from './blueprint-port-cache'
+import { createPortCache, isCardPositionMutation } from './blueprint-port-cache'
 import type {
   IBlueprintConnection,
   IBlueprintCardMove,
@@ -1562,19 +1562,30 @@ const observer = new MutationObserver((mutations) => {
   // mutations (card mount/unmount) blow the whole position cache
   // since we can't trace removed subtrees back to their cardId.
   let topologyChanged = false
+  let positionChanged = false
   for (const m of mutations) {
     if (m.type === 'childList') {
       topologyChanged = true
       continue
     }
-    const card = (m.target as Element).closest?.(
-      '[data-card-id]',
-    ) as HTMLElement | null
+    // CRITICAL: only style mutations on a card POSITION WRAPPER move
+    // ports. The wrapper is a direct child of `.nb-blueprint__canvas`
+    // (that's where the slotted cards live and where setCardPosition
+    // writes left/top). A style mutation deeper inside a card — a
+    // fader writing its fill/cap percentage on every drag tick, a
+    // meter animating its bar, a knob rotating — does NOT move ports,
+    // so it must be ignored. Without this guard, interacting with any
+    // in-card control recomputes every wire in the graph each frame,
+    // which is exactly the "faders are slow as hell" symptom.
+    if (!isCardPositionMutation(m.target)) continue
+    positionChanged = true
+    const card = (m.target as HTMLElement).querySelector('[data-card-id]')
     const cardId = card?.getAttribute('data-card-id')
     if (cardId) invalidatePortPositionsForCard(cardId)
   }
   if (topologyChanged) clearAllPortPositions()
-  wireKey.value++
+  // Only repaint wires when something that actually affects them changed.
+  if (topologyChanged || positionChanged) wireKey.value++
 })
 
 onMounted(() => {
