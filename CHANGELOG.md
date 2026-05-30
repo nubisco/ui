@@ -1,3 +1,10 @@
+## [1.38.5](https://github.com/nubisco/ui/compare/v1.38.4...v1.38.5) (2026-05-30)
+
+
+### Performance Improvements
+
+* **Blueprint:** GPU-promote the canvas during pan/zoom ([1cc3968](https://github.com/nubisco/ui/commit/1cc3968211993923ad1fd6b31e0aaacd7892c798))
+
 ## [1.38.4](https://github.com/nubisco/ui/compare/v1.38.3...v1.38.4) (2026-05-30)
 
 
