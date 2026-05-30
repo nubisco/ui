@@ -91,8 +91,31 @@
         />
       </svg>
 
-      <!-- Card slots -->
-      <slot />
+      <!-- Card layer.
+           Windowed API (`cards` prop): Blueprint owns the v-for and the
+           absolute position wrappers and renders each card through the
+           `#card` scoped slot, mounting only `visibleCards`. The wrapper is
+           a direct child of the canvas (so the MutationObserver's
+           position-mutation filter and get/setCardPosition keep working)
+           and its left/top is bound reactively (the same move-every-frame
+           contract the legacy path relies on keeps it in sync with drag).
+           Legacy API (no `cards`): render the default slot verbatim; the
+           host owns layout and there is no windowing. -->
+      <template v-if="props.cards">
+        <div
+          v-for="card in visibleCards"
+          :key="card.id"
+          class="nb-blueprint__card-wrapper"
+          :style="{
+            position: 'absolute',
+            left: `${card.x}px`,
+            top: `${card.y}px`,
+          }"
+        >
+          <slot name="card" :card="card" />
+        </div>
+      </template>
+      <slot v-else />
     </div>
 
     <!-- Marquee drag overlay (rendered in viewport space) -->
@@ -160,9 +183,14 @@ import {
   provide,
 } from 'vue'
 import { NB_BLUEPRINT_CONTEXT } from './Blueprint.context'
-import { createPortCache, isCardPositionMutation } from './blueprint-port-cache'
+import {
+  createPortCache,
+  isCardPositionMutation,
+  BLUEPRINT_CANVAS_CLASS,
+} from './blueprint-port-cache'
 import type {
   IBlueprintConnection,
+  IBlueprintCard,
   IBlueprintCardMove,
   IBlueprintCardPortEvent,
   IBlueprintProps,
@@ -222,6 +250,10 @@ const panX = ref(0)
 const panY = ref(0)
 const zoom = ref(1)
 const wireKey = ref(0)
+// Container size in screen px, kept reactive so the card-windowing cull
+// (visibleCards) re-runs on resize, not only on pan/zoom. Seeded on mount
+// and maintained by a ResizeObserver.
+const viewportSize = ref({ w: 0, h: 0 })
 
 // Self-healing port-element cache: turns per-wire `querySelector` in
 // computedWires / drag handlers / endpoint resolution from O(N) into
@@ -279,6 +311,26 @@ const MIN_ZOOM = 0.2
 const MAX_ZOOM = 3.0
 const DRAG_THRESHOLD = 4
 
+// Wire culling: how far (in screen px) outside the visible frame a wire's
+// bounding box may sit and still be rendered. The band absorbs the gap
+// between a fast pan moving the canvas and the next computedWires re-run,
+// so wires never flash in at the edge. Converted to local units (÷ zoom)
+// at use so the band is a constant ~this many on-screen pixels at any zoom.
+const WIRE_CULL_MARGIN_PX = 240
+
+// Card windowing: overscan band (screen px) around the viewport within
+// which cards are kept mounted. Wider than the wire band because mounting
+// a card is heavier than a path and a card popping in is more jarring than
+// a wire; the slack means a fast pan reveals already-mounted cards rather
+// than a frame of blanks.
+const CARD_OVERSCAN_PX = 400
+
+// Fallback card box used by the windowing cull when a card omits
+// width/height and no `cardSizeEstimate` is supplied. Deliberately on the
+// generous side: over-estimating size only renders a few extra edge cards,
+// whereas under-estimating could cull a card that's actually peeking in.
+const DEFAULT_CARD_SIZE = { width: 260, height: 200 }
+
 // ── Selection state ───────────────────────────────────────────────────
 //
 // Two concepts:
@@ -301,6 +353,13 @@ function setSelection(ids: string[]) {
 }
 
 function selectAll() {
+  // Windowed mode: the DOM only holds on-screen cards, so select from the
+  // authoritative `cards` prop instead, otherwise Ctrl+A would silently
+  // skip everything scrolled off.
+  if (props.cards) {
+    setSelection(props.cards.map((c) => c.id))
+    return
+  }
   if (!containerRef.value) return
   const ids: string[] = []
   containerRef.value.querySelectorAll('[data-card-id]').forEach((el) => {
@@ -468,12 +527,12 @@ function onPanMove(e: MouseEvent) {
   if (!isPanning) return
   panX.value = e.clientX - panStartX
   panY.value = e.clientY - panStartY
-  // No wireKey++: the wires SVG lives inside the panned-and-zoomed
-  // canvas div, so the parent CSS transform updates wire positions
-  // visually with zero JS work. computedWires's math is already
-  // pan/zoom-independent (subtracts panX/panY and divides by zoom),
-  // so a recompute here would do strictly redundant work and pay the
-  // querySelector / getBoundingClientRect bill per wire per frame.
+  // No wireKey++: the wires SVG lives inside the panned-and-zoomed canvas
+  // div, so the parent CSS transform repositions every wire visually with
+  // zero per-wire JS. computedWires does still re-run on pan (it reads
+  // panX/panY/zoom for the viewport cull), but that pass only rebuilds the
+  // on-screen wires from cached endpoints, it does not move them, the CSS
+  // transform does. Bumping wireKey on top would add nothing.
 }
 
 function onPanEnd() {
@@ -554,8 +613,23 @@ let dragMouseStartY = 0
 let dragStartPositions = new Map<string, { x: number; y: number }>()
 let dragDidMove = false
 
+/** The position wrapper for a card is the element whose left/top places
+ *  it on the canvas: the direct child of `.nb-blueprint__canvas` that
+ *  contains the card. Walk up to find it rather than assuming
+ *  `parentElement`, so it's correct for both the windowed API (Blueprint
+ *  renders the wrapper) and the legacy slot API (host renders it),
+ *  regardless of any extra nesting the host's `#card` template adds. */
+function positionWrapperOf(cardEl: HTMLElement): HTMLElement | null {
+  let el: HTMLElement | null = cardEl
+  while (el?.parentElement) {
+    if (el.parentElement.classList.contains(BLUEPRINT_CANVAS_CLASS)) return el
+    el = el.parentElement
+  }
+  return cardEl.parentElement
+}
+
 function getCardPosition(cardEl: HTMLElement): { x: number; y: number } {
-  const wrapper = cardEl.parentElement
+  const wrapper = positionWrapperOf(cardEl)
   if (!wrapper) return { x: 0, y: 0 }
   // New: cards position via left/top so they don't become per-card
   // GPU layers (which would force re-rasterization of every card on
@@ -571,7 +645,7 @@ function getCardPosition(cardEl: HTMLElement): { x: number; y: number } {
 }
 
 function setCardPosition(cardEl: HTMLElement, x: number, y: number) {
-  const wrapper = cardEl.parentElement
+  const wrapper = positionWrapperOf(cardEl)
   if (!wrapper) return
   // Use left/top instead of transform so cards don't become per-card
   // GPU layers. On an absolute-positioned sibling, the layout cost is
@@ -1158,6 +1232,24 @@ const computedWires = computed(() => {
   if (!containerRef.value) return []
 
   const rect = containerRef.value.getBoundingClientRect()
+
+  // Viewport cull. Reading pan/zoom here deliberately opts the wire pass
+  // back into pan/zoom reactivity (the inverse of the pure-CSS pan fast
+  // path, see onPanMove) so the rendered set updates as the frame moves.
+  // The trade is worth it past a few hundred wires: an off-screen wire
+  // costs zero DOM nodes instead of three <path>s the browser must still
+  // lay out and composite. Endpoint lookups are cached (portPositions), so
+  // the per-frame cost on a pan is an O(M) arithmetic bbox test plus path
+  // building for only the on-screen wires. The visible region is expressed
+  // in pre-transform local coords to match what getPortCenter returns:
+  // local = (screen − pan) / zoom.
+  const z = zoom.value
+  const margin = WIRE_CULL_MARGIN_PX / z
+  const visMinX = (0 - panX.value) / z - margin
+  const visMaxX = (rect.width - panX.value) / z + margin
+  const visMinY = (0 - panY.value) / z - margin
+  const visMaxY = (rect.height - panY.value) / z + margin
+
   const rewiring = dragRewireOriginal.value
   return props.connections
     .filter(
@@ -1172,22 +1264,44 @@ const computedWires = computed(() => {
         c.toPort !== rewiring.toPort,
     )
     .map((conn) => {
-      // Element + position resolution both hit caches: element via
-      // portCache (data-port → HTMLElement, O(1) after first miss),
-      // position via portPositions (port centre in pre-transform local
-      // coords, invalidated per-card on MutationObserver ticks).
+      // Position resolution hits the portPositions cache (port centre in
+      // pre-transform local coords, invalidated per-card on MutationObserver
+      // ticks); element resolution via portCache is deferred until after the
+      // cull so off-screen wires skip it entirely.
       const from = getPortCenter(conn.fromNode, conn.fromPort, rect)
       const to = getPortCenter(conn.toNode, conn.toPort, rect)
       if (!from || !to) return null
-      const fromEl = findPortEl(conn.fromNode, conn.fromPort)
-      if (!fromEl) return null
       const fx = from.x
       const fy = from.y
       const tx = to.x
       const ty = to.y
 
+      // The cubic stays within the bbox of its four control points
+      // (P0, P1=(fx+cpx,fy), P2=(tx−cpx,ty), P3); test that against the
+      // padded viewport. The control points share the endpoints' y, so
+      // the y extent is just [min,max](fy,ty).
       const cpx = Math.abs(tx - fx) * 0.4
-      const path = `M ${fx} ${fy} C ${fx + cpx} ${fy}, ${tx - cpx} ${ty}, ${tx} ${ty}`
+      const c1x = fx + cpx
+      const c2x = tx - cpx
+      const wMinX = Math.min(fx, c1x, c2x, tx)
+      const wMaxX = Math.max(fx, c1x, c2x, tx)
+      const wMinY = fy < ty ? fy : ty
+      const wMaxY = fy < ty ? ty : fy
+      if (
+        wMaxX < visMinX ||
+        wMinX > visMaxX ||
+        wMaxY < visMinY ||
+        wMinY > visMaxY
+      ) {
+        return null
+      }
+
+      // Element resolution hits portCache (data-port → HTMLElement, O(1)
+      // after first miss); only on-screen wires reach here.
+      const fromEl = findPortEl(conn.fromNode, conn.fromPort)
+      if (!fromEl) return null
+
+      const path = `M ${fx} ${fy} C ${c1x} ${fy}, ${c2x} ${ty}, ${tx} ${ty}`
       const baseColor = resolveWireColor(fromEl)
       // Levels-mode colour overlay: only audio wires shift; MIDI keeps
       // its accent. Activity gating still applies — an inactive wire
@@ -1212,6 +1326,79 @@ const computedWires = computed(() => {
   }[]
 })
 
+// ── Card windowing ────────────────────────────────────────────────────
+//
+// When the host drives cards through the `cards` prop (+ `#card` slot),
+// Blueprint owns the v-for and mounts only the cards that matter for the
+// current frame: those whose box intersects the padded viewport, plus the
+// endpoint cards of any wire that crosses it (so a wire never vanishes
+// mid-canvas just because one end scrolled off, see the note below). Far
+// off-screen cards are never instantiated. Reading pan/zoom/viewportSize
+// makes this re-run as the frame moves, exactly like the wire cull.
+
+const cardSize = (c: IBlueprintCard): { w: number; h: number } => {
+  const est = props.cardSizeEstimate ?? DEFAULT_CARD_SIZE
+  return { w: c.width ?? est.width, h: c.height ?? est.height }
+}
+
+const visibleCards = computed<IBlueprintCard[]>(() => {
+  const list = props.cards
+  if (!list || list.length === 0) return []
+
+  const z = zoom.value
+  const margin = CARD_OVERSCAN_PX / z
+  const visMinX = (0 - panX.value) / z - margin
+  const visMaxX = (viewportSize.value.w - panX.value) / z + margin
+  const visMinY = (0 - panY.value) / z - margin
+  const visMaxY = (viewportSize.value.h - panY.value) / z + margin
+
+  const intersects = (
+    aMinX: number,
+    aMinY: number,
+    aMaxX: number,
+    aMaxY: number,
+  ): boolean =>
+    aMaxX >= visMinX && aMinX <= visMaxX && aMaxY >= visMinY && aMinY <= visMaxY
+
+  const byId = new Map<string, IBlueprintCard>()
+  const mounted = new Set<string>()
+  for (const c of list) {
+    byId.set(c.id, c)
+    const { w, h } = cardSize(c)
+    if (intersects(c.x, c.y, c.x + w, c.y + h)) mounted.add(c.id)
+  }
+
+  // Keep wires whole across the viewport edge. A wire's rendered path uses
+  // precise port DOM (computedWires), which only exists once both endpoint
+  // cards are mounted; so if a wire's *approximate* path (output = right-
+  // edge midpoint, input = left-edge midpoint, same bezier as the renderer)
+  // crosses the viewport, force both its cards to mount. This is bounded by
+  // the number of on-screen wires, not the total card count.
+  for (const conn of props.connections) {
+    const a = byId.get(conn.fromNode)
+    const b = byId.get(conn.toNode)
+    if (!a || !b) continue
+    if (mounted.has(a.id) && mounted.has(b.id)) continue
+    const sa = cardSize(a)
+    const sb = cardSize(b)
+    const fx = a.x + sa.w
+    const fy = a.y + sa.h / 2
+    const tx = b.x
+    const ty = b.y + sb.h / 2
+    const cpx = Math.abs(tx - fx) * 0.4
+    const wMinX = Math.min(fx, fx + cpx, tx - cpx, tx)
+    const wMaxX = Math.max(fx, fx + cpx, tx - cpx, tx)
+    const wMinY = fy < ty ? fy : ty
+    const wMaxY = fy < ty ? ty : fy
+    if (intersects(wMinX, wMinY, wMaxX, wMaxY)) {
+      mounted.add(a.id)
+      mounted.add(b.id)
+    }
+  }
+
+  return list.filter((c) => mounted.has(c.id))
+})
+
 /** Should the flow overlay run for this wire under the current
  *  animation policy? Centralised so the template stays compact. */
 function shouldFlow(conn: IBlueprintConnection): boolean {
@@ -1229,14 +1416,29 @@ function getCardsBounds(): {
   maxX: number
   maxY: number
 } | null {
-  if (!containerRef.value) return null
-  const cards = containerRef.value.querySelectorAll('[data-card-id]')
-  if (cards.length === 0) return null
-
   let minX = Infinity,
     minY = Infinity,
     maxX = -Infinity,
     maxY = -Infinity
+
+  // Windowed mode: measure the full graph from the `cards` prop, not the
+  // DOM (which only holds on-screen cards), since fit/center must frame every
+  // card, not just the visible ones.
+  if (props.cards) {
+    if (props.cards.length === 0) return null
+    for (const c of props.cards) {
+      const { w, h } = cardSize(c)
+      minX = Math.min(minX, c.x)
+      minY = Math.min(minY, c.y)
+      maxX = Math.max(maxX, c.x + w)
+      maxY = Math.max(maxY, c.y + h)
+    }
+    return { minX, minY, maxX, maxY }
+  }
+
+  if (!containerRef.value) return null
+  const cards = containerRef.value.querySelectorAll('[data-card-id]')
+  if (cards.length === 0) return null
 
   cards.forEach((card) => {
     const el = card as HTMLElement
@@ -1315,7 +1517,11 @@ function resetView() {
 
 type TSelectedCardInfo = {
   id: string
-  el: HTMLElement
+  // Null when the card isn't currently mounted (windowed mode, scrolled
+  // off): we still emit its move so the host repositions it, we just can't
+  // write the DOM for it. Alignment always has a live el (you select what
+  // you can see); auto-layout over the whole graph may not.
+  el: HTMLElement | null
   x: number
   y: number
   w: number
@@ -1346,7 +1552,11 @@ function getSelectedCardInfos(): TSelectedCardInfo[] {
 function applyPositions(infos: TSelectedCardInfo[]) {
   const moves: IBlueprintCardMove[] = []
   for (const info of infos) {
-    setCardPosition(info.el, info.x, info.y)
+    // Write the DOM only for mounted cards; unmounted ones (windowed mode)
+    // are repositioned purely through the emitted move, which the host
+    // folds back into `cards`, and the wrapper picks up the new left/top
+    // when (if) the card scrolls back into view.
+    if (info.el) setCardPosition(info.el, info.x, info.y)
     moves.push({ id: info.id, x: Math.round(info.x), y: Math.round(info.y) })
   }
   if (moves.length) {
@@ -1452,22 +1662,42 @@ function autoLayout(options?: {
   const gapY = options?.gapY ?? 40
   const padding = options?.padding ?? 60
 
-  // Collect all cards
+  // Collect all cards. Windowed mode: drive the layout from the `cards`
+  // prop (the DOM only holds on-screen cards) and use measured size for any
+  // card that happens to be mounted, falling back to declared/estimated
+  // size otherwise. Legacy mode: read every card straight from the DOM.
   const allCards: TSelectedCardInfo[] = []
-  containerRef.value.querySelectorAll('[data-card-id]').forEach((el) => {
-    const htmlEl = el as HTMLElement
-    const id = htmlEl.dataset.cardId
-    if (!id) return
-    const pos = getCardPosition(htmlEl)
-    allCards.push({
-      id,
-      el: htmlEl,
-      x: pos.x,
-      y: pos.y,
-      w: htmlEl.offsetWidth,
-      h: htmlEl.offsetHeight,
+  if (props.cards) {
+    for (const c of props.cards) {
+      const el = containerRef.value.querySelector(
+        `[data-card-id="${c.id}"]`,
+      ) as HTMLElement | null
+      const { w, h } = cardSize(c)
+      allCards.push({
+        id: c.id,
+        el,
+        x: c.x,
+        y: c.y,
+        w: c.width ?? el?.offsetWidth ?? w,
+        h: c.height ?? el?.offsetHeight ?? h,
+      })
+    }
+  } else {
+    containerRef.value.querySelectorAll('[data-card-id]').forEach((el) => {
+      const htmlEl = el as HTMLElement
+      const id = htmlEl.dataset.cardId
+      if (!id) return
+      const pos = getCardPosition(htmlEl)
+      allCards.push({
+        id,
+        el: htmlEl,
+        x: pos.x,
+        y: pos.y,
+        w: htmlEl.offsetWidth,
+        h: htmlEl.offsetHeight,
+      })
     })
-  })
+  }
 
   if (!allCards.length) return
 
@@ -1528,10 +1758,12 @@ function autoLayout(options?: {
     // Sort within layer by category (from card DOM) for grouping
     const sorted = layer.map((id) => cardMap.get(id)!).filter(Boolean)
     sorted.sort((a, b) => {
+      // Category lives in the card DOM; unmounted cards (windowed mode)
+      // contribute '' and simply sort first within their layer.
       const catA =
-        a.el.querySelector('.nb-blueprint-card__tag')?.textContent ?? ''
+        a.el?.querySelector('.nb-blueprint-card__tag')?.textContent ?? ''
       const catB =
-        b.el.querySelector('.nb-blueprint-card__tag')?.textContent ?? ''
+        b.el?.querySelector('.nb-blueprint-card__tag')?.textContent ?? ''
       return catA.localeCompare(catB)
     })
 
@@ -1588,8 +1820,23 @@ const observer = new MutationObserver((mutations) => {
   if (topologyChanged || positionChanged) wireKey.value++
 })
 
+// Track container size for the card-windowing cull. Guarded because
+// ResizeObserver isn't present in every test/SSR environment; the seed
+// from getBoundingClientRect covers the common case and pan/zoom re-runs
+// the cull regardless, so a missing observer only means "no live resize".
+let resizeObserver: ResizeObserver | null = null
+
 onMounted(() => {
   if (containerRef.value) {
+    const r = containerRef.value.getBoundingClientRect()
+    viewportSize.value = { w: r.width, h: r.height }
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver((entries) => {
+        const cr = entries[0]?.contentRect
+        if (cr) viewportSize.value = { w: cr.width, h: cr.height }
+      })
+      resizeObserver.observe(containerRef.value)
+    }
     observer.observe(containerRef.value, {
       childList: true,
       subtree: true,
@@ -1611,6 +1858,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   observer.disconnect()
+  resizeObserver?.disconnect()
   window.removeEventListener('keydown', onKeyDown)
   window.removeEventListener('keyup', onKeyUp)
   document.removeEventListener('mousedown', onDocumentMouseDown)
