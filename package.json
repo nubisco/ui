@@ -3,13 +3,6 @@
   "version": "1.39.5",
   "description": "Vue 3 UI component library",
   "packageManager": "pnpm@11.0.8",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@parcel/watcher",
-      "esbuild",
-      "simple-git-hooks"
-    ]
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nubisco/ui.git"
