@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { createPortCache } from '../src/components/blueprint-port-cache'
+import {
+  createPortCache,
+  isCardPositionMutation,
+  BLUEPRINT_CANVAS_CLASS,
+} from '../src/components/blueprint-port-cache'
 
 function makePort(nodeId: string, portId: string): HTMLElement {
   const el = document.createElement('div')
@@ -118,5 +122,51 @@ describe('createPortCache', () => {
       const i = n % 200
       expect(cache.get(`n${i}`, 'out')).not.toBeNull()
     }
+  })
+})
+
+describe('isCardPositionMutation', () => {
+  let canvas: HTMLElement
+
+  beforeEach(() => {
+    canvas = document.createElement('div')
+    canvas.className = BLUEPRINT_CANVAS_CLASS
+    document.body.replaceChildren(canvas)
+  })
+
+  it('returns false for null / non-Element targets', () => {
+    expect(isCardPositionMutation(null)).toBe(false)
+    expect(isCardPositionMutation(document.createTextNode('x'))).toBe(false)
+  })
+
+  it('returns true for a card wrapper (direct child of the canvas)', () => {
+    const wrapper = document.createElement('div')
+    canvas.appendChild(wrapper)
+    expect(isCardPositionMutation(wrapper)).toBe(true)
+  })
+
+  it('returns false for an element deep inside a card (e.g. a fader fill)', () => {
+    const wrapper = document.createElement('div')
+    canvas.appendChild(wrapper)
+    const card = document.createElement('div')
+    card.setAttribute('data-card-id', 'mixer-1')
+    wrapper.appendChild(card)
+    const faderFill = document.createElement('div')
+    faderFill.className = 'sw-fader__fill'
+    card.appendChild(faderFill)
+    // This is the exact element a fader mutates every drag tick. It must
+    // NOT count as a card move, or in-card control interaction recomputes
+    // every wire.
+    expect(isCardPositionMutation(faderFill)).toBe(false)
+  })
+
+  it('returns false for the canvas element itself', () => {
+    // canvas.parentElement is <body>, not another canvas.
+    expect(isCardPositionMutation(canvas)).toBe(false)
+  })
+
+  it('returns false for a detached element', () => {
+    const orphan = document.createElement('div')
+    expect(isCardPositionMutation(orphan)).toBe(false)
   })
 })
