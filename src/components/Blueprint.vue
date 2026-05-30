@@ -231,6 +231,50 @@ const wireKey = ref(0)
 // MutationObserver tick so detached entries don't pile up.
 const portCache = createPortCache(() => containerRef.value)
 
+// Port-position cache: stores each port's center in pre-transform
+// container-local coords plus the cardId it belongs to. computedWires
+// (the wire-rendering hot path) previously did 2 × N
+// getBoundingClientRect calls per recompute — gBCR was the #2 leaf in
+// the profile (8.6 %) after querySelector. With this cache, dragging
+// one card only invalidates that card's port positions; every other
+// wire's endpoint is served from cache. The MutationObserver below
+// drives per-card invalidation: each mutation's target carries us to
+// the affected data-card-id, and we drop only that card's entries.
+const portPositions = new Map<
+  string,
+  { cardId: string; x: number; y: number }
+>()
+function invalidatePortPositionsForCard(cardId: string) {
+  for (const [k, v] of portPositions) {
+    if (v.cardId === cardId) portPositions.delete(k)
+  }
+}
+function clearAllPortPositions() {
+  portPositions.clear()
+}
+/** Resolve a port's centre in pre-transform local coords. Caches
+ *  result; reads are free; only the first hit pays gBCR. Returns
+ *  null if the port element can't be resolved. */
+function getPortCenter(
+  nodeId: string,
+  portId: string,
+  containerRect: DOMRect,
+): { x: number; y: number } | null {
+  const key = `${nodeId}:${portId}`
+  const hit = portPositions.get(key)
+  if (hit) return { x: hit.x, y: hit.y }
+  const el = portCache.get(nodeId, portId)
+  if (!el) return null
+  const r = el.getBoundingClientRect()
+  const x =
+    (r.left + r.width / 2 - containerRect.left - panX.value) / zoom.value
+  const y = (r.top + r.height / 2 - containerRect.top - panY.value) / zoom.value
+  const card = el.closest('[data-card-id]') as HTMLElement | null
+  const cardId = card?.getAttribute('data-card-id') ?? ''
+  portPositions.set(key, { cardId, x, y })
+  return { x, y }
+}
+
 const MIN_ZOOM = 0.2
 const MAX_ZOOM = 3.0
 const DRAG_THRESHOLD = 4
@@ -1104,17 +1148,19 @@ const computedWires = computed(() => {
         c.toPort !== rewiring.toPort,
     )
     .map((conn) => {
+      // Element + position resolution both hit caches: element via
+      // portCache (data-port → HTMLElement, O(1) after first miss),
+      // position via portPositions (port centre in pre-transform local
+      // coords, invalidated per-card on MutationObserver ticks).
+      const from = getPortCenter(conn.fromNode, conn.fromPort, rect)
+      const to = getPortCenter(conn.toNode, conn.toPort, rect)
+      if (!from || !to) return null
       const fromEl = findPortEl(conn.fromNode, conn.fromPort)
-      const toEl = findPortEl(conn.toNode, conn.toPort)
-
-      if (!fromEl || !toEl) return null
-
-      const fr = fromEl.getBoundingClientRect()
-      const tr = toEl.getBoundingClientRect()
-      const fx = (fr.left + fr.width / 2 - rect.left - panX.value) / zoom.value
-      const fy = (fr.top + fr.height / 2 - rect.top - panY.value) / zoom.value
-      const tx = (tr.left + tr.width / 2 - rect.left - panX.value) / zoom.value
-      const ty = (tr.top + tr.height / 2 - rect.top - panY.value) / zoom.value
+      if (!fromEl) return null
+      const fx = from.x
+      const fy = from.y
+      const tx = to.x
+      const ty = to.y
 
       const cpx = Math.abs(tx - fx) * 0.4
       const path = `M ${fx} ${fy} C ${fx + cpx} ${fy}, ${tx - cpx} ${ty}, ${tx} ${ty}`
@@ -1481,12 +1527,29 @@ function autoLayout(options?: {
 
 // ── Lifecycle ─────────────────────────────────────────────────────────
 
-const observer = new MutationObserver(() => {
+const observer = new MutationObserver((mutations) => {
   // Cards can come and go (added/removed by the host); evict any
   // cached port refs whose elements are no longer attached, so the
   // cache doesn't grow stale and the next findPortEl miss does a
   // fresh querySelector instead of returning a detached node.
   portCache.prune()
+  // Drop port positions for only the cards whose style actually
+  // changed (typically just the one being dragged). Childlist
+  // mutations (card mount/unmount) blow the whole position cache
+  // since we can't trace removed subtrees back to their cardId.
+  let topologyChanged = false
+  for (const m of mutations) {
+    if (m.type === 'childList') {
+      topologyChanged = true
+      continue
+    }
+    const card = (m.target as Element).closest?.(
+      '[data-card-id]',
+    ) as HTMLElement | null
+    const cardId = card?.getAttribute('data-card-id')
+    if (cardId) invalidatePortPositionsForCard(cardId)
+  }
+  if (topologyChanged) clearAllPortPositions()
   wireKey.value++
 })
 
