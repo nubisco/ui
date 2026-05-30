@@ -106,14 +106,16 @@ export type { TShellPanelSize } from './components/ShellPanel.d'
 export { default as NbBlueprint } from './components/Blueprint.vue'
 export type {
   IBlueprintConnection,
+  IBlueprintCard,
   IBlueprintCardMove,
-} from './components/Blueprint.d'
+  IBlueprintProps,
+} from './components/Blueprint.types'
 export { default as NbBlueprintCard } from './components/BlueprintCard.vue'
 export type {
   IBlueprintPort,
   IBlueprintCardProps,
   IBlueprintCardParameter,
-} from './components/BlueprintCard.d'
+} from './components/BlueprintCard.types'
 
 // Directives
 export { default as nbTooltipDirective } from './directives/ToolTip.directive'

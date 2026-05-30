@@ -194,7 +194,7 @@ import type {
   IBlueprintCardMove,
   IBlueprintCardPortEvent,
   IBlueprintProps,
-} from './Blueprint.d'
+} from './Blueprint.types'
 
 const props = withDefaults(defineProps<IBlueprintProps>(), {
   connections: () => [],
