@@ -1,5 +1,5 @@
 import type { InjectionKey } from 'vue'
-import type { IBlueprintCardContext } from './Blueprint.d'
+import type { IBlueprintCardContext } from './Blueprint.types'
 
 /**
  * Inject key NbBlueprint provides so its child cards can drive wire dragging

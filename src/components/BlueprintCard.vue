@@ -208,7 +208,7 @@ import type {
   IBlueprintPortChannel,
   TBlueprintPinDataType,
   TBlueprintPortShape,
-} from './BlueprintCard.d'
+} from './BlueprintCard.types'
 import { NB_BLUEPRINT_CONTEXT } from './Blueprint.context'
 
 const props = withDefaults(defineProps<IBlueprintCardProps>(), {
