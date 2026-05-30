@@ -60,7 +60,6 @@
             :class="{
               'nb-blueprint__wire--inactive': wire.conn.active === false,
             }"
-            :style="{ filter: `drop-shadow(0 0 6px ${wire.color})` }"
             pointer-events="none"
           />
         </g>
