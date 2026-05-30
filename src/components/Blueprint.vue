@@ -15,7 +15,10 @@
     <!-- Grid background -->
     <div
       class="nb-blueprint__grid"
-      :style="{ transform: `translate(${panX}px, ${panY}px) scale(${zoom})` }"
+      :style="{
+        transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
+        willChange: isTransforming ? 'transform' : undefined,
+      }"
     />
 
     <!-- Panned + zoomed canvas -->
@@ -24,6 +27,7 @@
       :style="{
         transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
         transformOrigin: '0 0',
+        willChange: isTransforming ? 'transform' : undefined,
       }"
     >
       <!-- Wire SVG layer -->
@@ -250,6 +254,26 @@ const panX = ref(0)
 const panY = ref(0)
 const zoom = ref(1)
 const wireKey = ref(0)
+
+// Pan/zoom live inside a single root compositing layer, so without a hint
+// every pan or zoom frame re-rasterizes the whole canvas (all cards + the
+// wire SVG) instead of just re-compositing it — the dominant cost on a busy
+// graph. We promote the panned/zoomed canvas to its own GPU layer ONLY while
+// a gesture is in flight (via `will-change: transform`), then drop the layer
+// shortly after the gesture settles so it costs no memory at rest. `isTransforming`
+// drives that hint; `markTransforming()` is called from every pan/zoom path.
+const isTransforming = ref(false)
+let transformIdleTimer: ReturnType<typeof setTimeout> | undefined
+function markTransforming() {
+  isTransforming.value = true
+  if (transformIdleTimer) clearTimeout(transformIdleTimer)
+  // Keep the layer alive a beat past the last pan/zoom frame so a continuous
+  // gesture (or wheel-momentum) never demotes mid-flight; 220ms is below the
+  // threshold where idle memory matters but above typical inter-frame gaps.
+  transformIdleTimer = setTimeout(() => {
+    isTransforming.value = false
+  }, 220)
+}
 // Container size in screen px, kept reactive so the card-windowing cull
 // (visibleCards) re-runs on resize, not only on pan/zoom. Seeded on mount
 // and maintained by a ResizeObserver.
@@ -525,6 +549,7 @@ function startPan(e: MouseEvent) {
 
 function onPanMove(e: MouseEvent) {
   if (!isPanning) return
+  markTransforming()
   panX.value = e.clientX - panStartX
   panY.value = e.clientY - panStartY
   // No wireKey++: the wires SVG lives inside the panned-and-zoomed canvas
@@ -580,6 +605,9 @@ function onWheel(e: WheelEvent) {
   // default (page scroll, pinch zoom of the document, history nav on
   // horizontal wheel) only now that we've decided we're consuming.
   e.preventDefault()
+  // Promote the canvas to its own layer for the duration of the gesture so
+  // wheel-pan / pinch-zoom re-composite instead of repaint.
+  markTransforming()
 
   let mode: 'zoom' | 'pan'
   if (isPinch) mode = 'zoom'
@@ -1859,6 +1887,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   observer.disconnect()
   resizeObserver?.disconnect()
+  if (transformIdleTimer) clearTimeout(transformIdleTimer)
   window.removeEventListener('keydown', onKeyDown)
   window.removeEventListener('keyup', onKeyUp)
   document.removeEventListener('mousedown', onDocumentMouseDown)
