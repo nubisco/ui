@@ -557,6 +557,13 @@ let dragDidMove = false
 function getCardPosition(cardEl: HTMLElement): { x: number; y: number } {
   const wrapper = cardEl.parentElement
   if (!wrapper) return { x: 0, y: 0 }
+  // New: cards position via left/top so they don't become per-card
+  // GPU layers (which would force re-rasterization of every card on
+  // zoom). Fall back to the legacy translate(x,y) for consumers that
+  // still position via transform.
+  const lx = parseFloat(wrapper.style.left)
+  const ly = parseFloat(wrapper.style.top)
+  if (!Number.isNaN(lx) && !Number.isNaN(ly)) return { x: lx, y: ly }
   const style = wrapper.style.transform || ''
   const match = style.match(/translate\(([^,]+)px,\s*([^)]+)px\)/)
   if (match) return { x: parseFloat(match[1]), y: parseFloat(match[2]) }
@@ -566,7 +573,12 @@ function getCardPosition(cardEl: HTMLElement): { x: number; y: number } {
 function setCardPosition(cardEl: HTMLElement, x: number, y: number) {
   const wrapper = cardEl.parentElement
   if (!wrapper) return
-  wrapper.style.transform = `translate(${x}px, ${y}px)`
+  // Use left/top instead of transform so cards don't become per-card
+  // GPU layers. On an absolute-positioned sibling, the layout cost is
+  // incremental (no flow effect on other cards) and the visible
+  // result during drag is indistinguishable from transform-based.
+  wrapper.style.left = `${x}px`
+  wrapper.style.top = `${y}px`
 }
 
 function onCardMouseDown(e: MouseEvent, cardEl: HTMLElement, allowDrag = true) {
