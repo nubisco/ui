@@ -81,7 +81,37 @@ const renderTooltipContent = (
   return ''
 }
 
+// Document-wide dismiss listeners. Installed once at app boot.
+// Without these, a user who hovers a tooltip-bearing element and
+// then clicks another control (an input, a button, ANY interactive
+// surface) leaves the tooltip stuck on screen: mouseleave never
+// fires because the cursor still sits over the anchor when focus
+// jumps, and the anchor's own listeners never get a "user is done
+// reading this" signal. Result is an orphan chip until the user
+// happens to mouse away from the original anchor.
+//
+// Pointerdown anywhere = "user moved on, dismiss everything". Same
+// for window.blur (Tab away, ⌘Tab, click into another app), which
+// catches the case where the user reads the tooltip and then
+// switches windows — the chip would otherwise stay on the
+// re-foregrounded view.
+let documentDismissInstalled = false
+const installDocumentDismiss = () => {
+  if (documentDismissInstalled || typeof document === 'undefined') return
+  documentDismissInstalled = true
+  const dismiss = () => {
+    if (registeredTooltips.size === 0) return
+    dismissAllTooltips()
+  }
+  // capture: true so we run before the click handler that might
+  // re-open a tooltip (button hover-states etc.), and so a stopPropagation
+  // call on the click target doesn't prevent dismissal.
+  document.addEventListener('pointerdown', dismiss, true)
+  window.addEventListener('blur', dismiss)
+}
+
 const tooltipDirective = (app: App) => {
+  installDocumentDismiss()
   const router = app.config.globalProperties.$router
 
   if (router) {
@@ -162,13 +192,20 @@ const createTooltipContent = ({
   body = '',
   tip = '',
 }: Partial<Pick<ITooltipOptions, 'header' | 'body' | 'tip'>>) => {
-  return `
-    <div class="nb-tooltip-content">
-      <div class="nb-tooltip-header">${renderTooltipContent(header)}</div>
-      <div class="nb-tooltip-body">${renderTooltipContent(body)}</div>
-      <div class="nb-tooltip-tip">${renderTooltipContent(tip)}</div>
-    </div>
-  `
+  // No surrounding whitespace between the wrapper and the children.
+  // When `.nb-tooltip-content` is `display: flex` (or any layout that
+  // creates anonymous-text-node flex items), the indentation between
+  // sibling divs becomes a visible flex child and inflates the chip's
+  // height. Emitting tight HTML avoids that anonymous-item trap and
+  // also makes empty header/body/tip divs cleanly match `:empty`
+  // selectors for hide-on-empty rules.
+  return (
+    `<div class="nb-tooltip-content">` +
+    `<div class="nb-tooltip-header">${renderTooltipContent(header)}</div>` +
+    `<div class="nb-tooltip-body">${renderTooltipContent(body)}</div>` +
+    `<div class="nb-tooltip-tip">${renderTooltipContent(tip)}</div>` +
+    `</div>`
+  )
 }
 
 const showTooltip = (
@@ -317,12 +354,16 @@ function fitsViewport(
   )
 }
 
-const OPPOSITE: Record<TSide, TSide> = {
-  top: 'bottom',
-  bottom: 'top',
-  left: 'right',
-  right: 'left',
-  cursor: 'cursor',
+// Order in which we try side fallbacks when the requested side
+// doesn't fit. We always start with the opposite (top↔bottom or
+// left↔right) since that's the most visually-consistent fallback,
+// then walk the orthogonal pair. Used by the auto-flip pass below.
+const FALLBACK_ORDER: Record<TSide, readonly TSide[]> = {
+  top: ['bottom', 'right', 'left'],
+  bottom: ['top', 'right', 'left'],
+  left: ['right', 'top', 'bottom'],
+  right: ['left', 'top', 'bottom'],
+  cursor: [],
 }
 
 const positionTooltip = (
@@ -332,7 +373,10 @@ const positionTooltip = (
 ) => {
   if (!tooltip) return
   const gap = 4
-  const inset = 6
+  // 16 px keeps the chip clear of native window chrome (macOS resize
+  // grips, scrollbar gutters) and feels less cramped than the previous
+  // 6 px which dropped the chip right against the viewport edge.
+  const inset = 16
   const rect = el.getBoundingClientRect()
   const tooltipRect = tooltip.getBoundingClientRect()
   const tooltipWidth = tooltipRect.width || 0
@@ -342,22 +386,27 @@ const positionTooltip = (
   const mouseX = el.__mouseX__ ?? 0
   const mouseY = el.__mouseY__ ?? 0
 
-  // Auto-flip: if the requested side would overflow the viewport,
-  // try the opposite side first. Mirrors how every other tooltip
-  // engine (Floating UI, popper) handles edge cases. Pretty rare in
-  // practice but the diagonal corners of the canvas need it.
+  // Auto-flip: requested side first, then opposite, then orthogonals.
+  // The original implementation only tried the opposite, which left
+  // tooltips in viewport corners (where BOTH the requested and the
+  // opposite axis overflow) stuck on the requested side with their
+  // contents clamped off-anchor. Walking all four sides finds a fit
+  // whenever one exists.
   const initialSide = (position ?? 'cursor') as TSide
-  let placed = placeFor(
-    initialSide,
-    rect,
-    tooltipWidth,
-    tooltipHeight,
-    gap,
-    scrollTop,
-    scrollLeft,
-    mouseX,
-    mouseY,
-  )
+  const tryPlace = (side: TSide) =>
+    placeFor(
+      side,
+      rect,
+      tooltipWidth,
+      tooltipHeight,
+      gap,
+      scrollTop,
+      scrollLeft,
+      mouseX,
+      mouseY,
+    )
+
+  let placed = tryPlace(initialSide)
   let chosenSide: TSide = initialSide
 
   if (
@@ -365,30 +414,20 @@ const positionTooltip = (
     tooltipHeight > 0 &&
     !fitsViewport(placed.top, placed.left, tooltipWidth, tooltipHeight, inset)
   ) {
-    const flipped = OPPOSITE[initialSide]
-    if (flipped !== initialSide) {
-      const flipPlaced = placeFor(
-        flipped,
-        rect,
-        tooltipWidth,
-        tooltipHeight,
-        gap,
-        scrollTop,
-        scrollLeft,
-        mouseX,
-        mouseY,
-      )
+    for (const candidate of FALLBACK_ORDER[initialSide]) {
+      const candidatePlaced = tryPlace(candidate)
       if (
         fitsViewport(
-          flipPlaced.top,
-          flipPlaced.left,
+          candidatePlaced.top,
+          candidatePlaced.left,
           tooltipWidth,
           tooltipHeight,
           inset,
         )
       ) {
-        placed = flipPlaced
-        chosenSide = flipped
+        placed = candidatePlaced
+        chosenSide = candidate
+        break
       }
     }
   }
@@ -415,6 +454,34 @@ const positionTooltip = (
       tooltip.classList.remove(`nb-tooltip-${s}`)
     }
     tooltip.classList.add(`nb-tooltip-${chosenSide}`)
+  }
+
+  // Arrow re-aim: the base CSS positions the arrow at the chip's 50%
+  // center. After viewport clamping, the chip and the anchor are no
+  // longer centre-aligned, so a fixed 50% arrow points into empty
+  // space. Compute where the anchor's centre sits relative to the
+  // clamped chip and expose it as `--nb-tooltip-arrow-offset` (a
+  // percentage). The SCSS uses this var to position the `:before`
+  // pseudo so the arrow still meets the anchor.
+  if (tooltipWidth > 0 && tooltipHeight > 0 && chosenSide !== 'cursor') {
+    const anchorCenterX = rect.left + rect.width / 2
+    const anchorCenterY = rect.top + rect.height / 2
+    const arrowMargin = 8 // keep the arrow this many px inside the chip
+    if (chosenSide === 'top' || chosenSide === 'bottom') {
+      const offsetPx = Math.max(
+        arrowMargin,
+        Math.min(tooltipWidth - arrowMargin, anchorCenterX - left),
+      )
+      const offsetPct = (offsetPx / tooltipWidth) * 100
+      tooltip.style.setProperty('--nb-tooltip-arrow-offset', `${offsetPct}%`)
+    } else {
+      const offsetPx = Math.max(
+        arrowMargin,
+        Math.min(tooltipHeight - arrowMargin, anchorCenterY - top),
+      )
+      const offsetPct = (offsetPx / tooltipHeight) * 100
+      tooltip.style.setProperty('--nb-tooltip-arrow-offset', `${offsetPct}%`)
+    }
   }
 
   tooltip.style.top = `${top}px`
