@@ -1,6 +1,6 @@
 {
   "name": "@nubisco/ui",
-  "version": "1.39.5",
+  "version": "1.38.2",
   "description": "Vue 3 UI component library",
   "packageManager": "pnpm@11.0.8",
   "repository": {
