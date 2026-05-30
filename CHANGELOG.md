@@ -1,3 +1,10 @@
+## [1.38.3](https://github.com/nubisco/ui/compare/v1.38.2...v1.38.3) (2026-05-30)
+
+
+### Performance Improvements
+
+* **Blueprint:** cull off-screen wires and add windowed card rendering ([cc6c3ca](https://github.com/nubisco/ui/commit/cc6c3ca51d5caf6904d9e201382ab20dd5e84a96))
+
 ## [1.38.2](https://github.com/nubisco/ui/compare/v1.38.1...v1.38.2) (2026-05-30)
 
 
