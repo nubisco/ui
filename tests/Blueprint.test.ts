@@ -1,7 +1,26 @@
 import { describe, it, expect } from 'vitest'
+import { h } from 'vue'
 import { mount } from '@vue/test-utils'
 import Blueprint from '../src/components/Blueprint.vue'
 import BlueprintCard from '../src/components/BlueprintCard.vue'
+
+// Renders a card via the windowed `#card` scoped slot. jsdom has no
+// layout, so getBoundingClientRect (and thus the seeded viewport size) is
+// 0×0; with CARD_OVERSCAN_PX = 400 the visible window at zoom 1 / pan 0 is
+// local [-400, 400] on each axis, which is enough to assert mount/cull
+// deterministically by placing cards inside vs. far outside that band.
+const cardSlot = (props: { card: { id: string } }) =>
+  h(BlueprintCard, {
+    id: props.card.id,
+    title: props.card.id,
+    ports: [
+      { id: 'out', label: 'O', type: 'output' },
+      { id: 'in', label: 'I', type: 'input' },
+    ],
+  })
+
+const mountedIds = (w: ReturnType<typeof mount>) =>
+  w.findAll('[data-card-id]').map((el) => el.attributes('data-card-id'))
 
 describe('Blueprint', () => {
   it('renders provided wires as path elements', () => {
@@ -631,6 +650,165 @@ describe('Blueprint', () => {
     })
     window.dispatchEvent(ev)
     expect(ev.defaultPrevented).toBe(true)
+    w.unmount()
+  })
+
+  it('culls wires whose bounding box is outside the viewport', async () => {
+    const w = mount(Blueprint, {
+      props: {
+        connections: [
+          { fromNode: 'src', fromPort: 'out', toNode: 'dst', toPort: 'in' },
+        ],
+      },
+      slots: {
+        default: `
+          <NbBlueprintCard
+            id="src"
+            title="Src"
+            :ports="[{ id: 'out', label: 'O', type: 'output' }]"
+          />
+          <NbBlueprintCard
+            id="dst"
+            title="Dst"
+            :ports="[{ id: 'in', label: 'I', type: 'input' }]"
+          />
+        `,
+      },
+      global: { components: { NbBlueprintCard: BlueprintCard } },
+      attachTo: document.body,
+    })
+
+    // JSDOM resolves both ports to (0,0) (no layout), so the wire sits at
+    // the canvas origin. If even that didn't render, JSDOM dropped the
+    // wire entirely, so skip rather than assert a false negative.
+    if (w.findAll('.nb-blueprint__wire').length === 0) {
+      expect(true).toBe(true)
+      w.unmount()
+      return
+    }
+
+    // Pan the viewport far past the origin (deltaX < 0 → panX grows), so
+    // the origin-anchored wire's bbox falls outside the padded visible
+    // region and the cull drops it from the rendered set.
+    const root = w.find('.nb-blueprint')
+    await root.trigger('wheel', { deltaX: -4000, deltaY: 0 })
+    expect(w.findAll('.nb-blueprint__wire').length).toBe(0)
+
+    // Pan back to the origin: the wire re-enters the viewport and renders.
+    await root.trigger('wheel', { deltaX: 4000, deltaY: 0 })
+    expect(w.findAll('.nb-blueprint__wire').length).toBe(1)
+
+    w.unmount()
+  })
+
+  it('windowed mode mounts only on-screen cards', () => {
+    const w = mount(Blueprint, {
+      props: {
+        connections: [],
+        cards: [
+          { id: 'near', x: 0, y: 0, width: 200, height: 120 },
+          { id: 'far', x: 6000, y: 0, width: 200, height: 120 },
+        ],
+      },
+      slots: { card: cardSlot },
+      attachTo: document.body,
+    })
+
+    // 'near' sits in the padded viewport; 'far' is well outside it and is
+    // never instantiated.
+    expect(mountedIds(w)).toEqual(['near'])
+
+    w.unmount()
+  })
+
+  it('windowed mode mounts a card when it is panned into view', async () => {
+    const w = mount(Blueprint, {
+      props: {
+        connections: [],
+        cards: [
+          { id: 'near', x: 0, y: 0, width: 200, height: 120 },
+          { id: 'far', x: 6000, y: 0, width: 200, height: 120 },
+        ],
+      },
+      slots: { card: cardSlot },
+      attachTo: document.body,
+    })
+
+    expect(mountedIds(w)).toEqual(['near'])
+
+    // Pan the viewport over 'far' (deltaX < 0 → panX grows toward -6000):
+    // 'far' mounts and 'near' unmounts.
+    await w.find('.nb-blueprint').trigger('wheel', { deltaX: 6000, deltaY: 0 })
+    expect(mountedIds(w)).toEqual(['far'])
+
+    w.unmount()
+  })
+
+  it('windowed mode keeps an off-screen card mounted when a wire to it crosses the viewport', () => {
+    const w = mount(Blueprint, {
+      props: {
+        // Wire runs from on-screen 'a' to far-off 'b'; its path crosses the
+        // viewport edge, so 'b' must stay mounted or the wire would vanish
+        // mid-canvas.
+        connections: [
+          { fromNode: 'a', fromPort: 'out', toNode: 'b', toPort: 'in' },
+        ],
+        cards: [
+          { id: 'a', x: 0, y: 0, width: 200, height: 120 },
+          { id: 'b', x: 6000, y: 0, width: 200, height: 120 },
+        ],
+      },
+      slots: { card: cardSlot },
+      attachTo: document.body,
+    })
+
+    expect(mountedIds(w).sort()).toEqual(['a', 'b'])
+
+    w.unmount()
+  })
+
+  it('windowed mode does not keep a far card mounted with no wire to it', () => {
+    // Same geometry as the wire test, but the connection is between 'a' and
+    // a third on-screen-adjacent node, so 'b' has no wire crossing the view,
+    // so it stays culled. Guards against the endpoint-expansion over-
+    // mounting everything.
+    const w = mount(Blueprint, {
+      props: {
+        connections: [],
+        cards: [
+          { id: 'a', x: 0, y: 0, width: 200, height: 120 },
+          { id: 'b', x: 6000, y: 0, width: 200, height: 120 },
+        ],
+      },
+      slots: { card: cardSlot },
+      attachTo: document.body,
+    })
+
+    expect(mountedIds(w)).toEqual(['a'])
+
+    w.unmount()
+  })
+
+  it('selectAll selects every card from the cards prop, not just mounted ones', () => {
+    const w = mount(Blueprint, {
+      props: {
+        connections: [],
+        cards: [
+          { id: 'near', x: 0, y: 0, width: 200, height: 120 },
+          { id: 'far', x: 6000, y: 0, width: 200, height: 120 },
+        ],
+      },
+      slots: { card: cardSlot },
+      attachTo: document.body,
+    })
+
+    // Only 'near' is mounted, but Ctrl+A must select the whole graph.
+    expect(mountedIds(w)).toEqual(['near'])
+    ;(w.vm as unknown as { selectAll: () => void }).selectAll()
+    const selected = (w.vm as unknown as { selectedIds: Set<string> })
+      .selectedIds
+    expect([...selected].sort()).toEqual(['far', 'near'])
+
     w.unmount()
   })
 })

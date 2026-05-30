@@ -120,6 +120,84 @@ function onMove(moves: IBlueprintCardMove[]) {
 </script>
 ```
 
+## Windowed rendering (large graphs)
+
+The basic example above hands cards to the default slot, so every card is
+mounted all the time. That is fine up to a hundred or so cards. Past that,
+the layout, paint, and compositing cost of all those off-screen DOM
+subtrees starts to show up as sluggish panning and dragging.
+
+For large graphs, pass card geometry as the `cards` prop and render each
+card through the `#card` scoped slot instead. Blueprint then owns the
+`v-for` and the position wrappers, and only mounts the cards whose box (or a
+wire crossing the viewport) is actually on screen. Off-screen cards are
+never instantiated, so render cost tracks what's visible, not the total
+node count.
+
+```vue
+<template>
+  <div style="height: 480px;">
+    <NbBlueprint
+      ref="blueprint"
+      :cards="cards"
+      :connections="connections"
+      @move="onMove"
+    >
+      <template #card="{ card }">
+        <NbBlueprintCard
+          :id="card.id"
+          :title="card.title"
+          :ports="card.ports"
+          :selected="blueprint?.selectedIds?.has(card.id)"
+          :focused="blueprint?.focusedId === card.id"
+        />
+      </template>
+    </NbBlueprint>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import type { IBlueprintCard, IBlueprintCardMove } from '@nubisco/ui'
+
+// Cards carry their own geometry. Width/height are optional but make the
+// off-screen cull tighter; extra fields (title, ports, ...) ride along and
+// come back through the #card slot untouched.
+const cards = ref<IBlueprintCard[]>([
+  { id: 'osc', x: 40, y: 60, width: 220, height: 160 /* , title, ports */ },
+  // ...
+])
+
+function onMove(moves: IBlueprintCardMove[]) {
+  for (const m of moves) {
+    const card = cards.value.find((c) => c.id === m.id)
+    if (card) {
+      card.x = m.x
+      card.y = m.y
+    }
+  }
+}
+</script>
+```
+
+Notes:
+
+- **Mutually exclusive with the default slot.** When `cards` is set, the
+  default slot is ignored. Use one API or the other.
+- **You still own card data and positions.** Handle `move` and fold it back
+  into `cards` exactly as in the default-slot API. That round trip is what
+  keeps a dragged card glued to the cursor.
+- **Wires never vanish mid-canvas.** A wire whose path crosses the viewport
+  keeps both its endpoint cards mounted even when one end is scrolled far
+  off, so the visible part of the wire still draws.
+- **Sizing.** Give `width`/`height` when you know them for the tightest
+  cull. Otherwise `cardSizeEstimate` (or a built-in default) is used; the
+  overscan band means a loose estimate just mounts a few extra edge cards
+  rather than dropping visible ones.
+- **`fitToView`, `centerView`, `autoLayout`, and `selectAll`** operate over
+  the full `cards` prop, not just the mounted subset, so they behave the
+  same as in the non-windowed API.
+
 ## Drag-to-connect
 
 Cards rendered inside an `NbBlueprint` automatically wire their port
@@ -262,11 +340,13 @@ The canvas background uses `--nb-c-layer-0`. Ambient gradients are configurable 
 
 ## Props
 
-| Prop                 | Type                                               | Default   | Description                                                                                                 |
-| -------------------- | -------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
-| `connections`        | `IBlueprintConnection[]`                           | `[]`      | Wires to draw between card ports. The parent owns this array.                                               |
-| `animateConnections` | `'never' \| 'always' \| 'on-activity' \| 'levels'` | `'never'` | Wire animation policy. See [Wire animation modes](#wire-animation-modes).                                   |
-| `wheelMode`          | `'auto' \| 'zoom' \| 'pan'`                        | `'auto'`  | What plain wheel events do. Pinch always zooms regardless. See [Panning and zooming](#panning-and-zooming). |
+| Prop                 | Type                                               | Default   | Description                                                                                                                                                                |
+| -------------------- | -------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `connections`        | `IBlueprintConnection[]`                           | `[]`      | Wires to draw between card ports. The parent owns this array.                                                                                                              |
+| `cards`              | `IBlueprintCard[]`                                 | (none)    | Card geometry for windowed rendering. When set, render cards via the `#card` slot; only on-screen cards mount. See [Windowed rendering](#windowed-rendering-large-graphs). |
+| `cardSizeEstimate`   | `{ width: number; height: number }`                | ~one card | Fallback card box for the windowing cull when a card omits `width`/`height`. Only affects how tightly off-screen cards are culled.                                         |
+| `animateConnections` | `'never' \| 'always' \| 'on-activity' \| 'levels'` | `'never'` | Wire animation policy. See [Wire animation modes](#wire-animation-modes).                                                                                                  |
+| `wheelMode`          | `'auto' \| 'zoom' \| 'pan'`                        | `'auto'`  | What plain wheel events do. Pinch always zooms regardless. See [Panning and zooming](#panning-and-zooming).                                                                |
 
 ## Events
 
@@ -284,10 +364,11 @@ The canvas background uses `--nb-c-layer-0`. Ambient gradients are configurable 
 
 ## Slots
 
-| Slot        | Scope props                         | Description                                                                                                    |
-| ----------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `default`   | (none)                              | Card layer. Place `NbBlueprintCard` instances here, positioned with `transform: translate(x, y)` on a wrapper. |
-| `wire-menu` | `{ connection, close, disconnect }` | Replaces the default wire context menu (right-click on a wire). Default content is a single Disconnect button. |
+| Slot        | Scope props                         | Description                                                                                                                                                                                                              |
+| ----------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `default`   | (none)                              | Card layer (non-windowed). Place `NbBlueprintCard` instances here, positioned with `transform: translate(x, y)` on a wrapper. Ignored when `cards` is set.                                                               |
+| `card`      | `{ card: IBlueprintCard }`          | Per-card template for windowed rendering (used when the `cards` prop is set). Blueprint owns the position wrapper; render one `NbBlueprintCard` from `card`. See [Windowed rendering](#windowed-rendering-large-graphs). |
+| `wire-menu` | `{ connection, close, disconnect }` | Replaces the default wire context menu (right-click on a wire). Default content is a single Disconnect button.                                                                                                           |
 
 ## Exposed instance
 
@@ -365,6 +446,19 @@ interface IBlueprintCardMove {
   id: string
   x: number
   y: number
+}
+
+interface IBlueprintCard {
+  /** Stable identity; matches the NbBlueprintCard id and connection nodes. */
+  id: string
+  /** Canvas-space position (same units as connections and `move`). */
+  x: number
+  y: number
+  /** Optional box size; tightens the off-screen cull when provided. */
+  width?: number
+  height?: number
+  // Extra host fields (title, ports, ...) are preserved and handed back
+  // through the #card slot.
 }
 ```
 
