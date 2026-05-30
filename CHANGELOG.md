@@ -1,3 +1,10 @@
+## [1.38.4](https://github.com/nubisco/ui/compare/v1.38.3...v1.38.4) (2026-05-30)
+
+
+### Bug Fixes
+
+* **Blueprint:** export IBlueprintCard/IBlueprintProps and ship interface modules ([c05738c](https://github.com/nubisco/ui/commit/c05738c502d49640673610c5489f60381c6d0fa1)), closes [#card](https://github.com/nubisco/ui/issues/card)
+
 ## [1.38.3](https://github.com/nubisco/ui/compare/v1.38.2...v1.38.3) (2026-05-30)
 
 
