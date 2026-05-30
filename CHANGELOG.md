@@ -1,3 +1,21 @@
+## [1.38.2](https://github.com/nubisco/ui/compare/v1.38.1...v1.38.2) (2026-05-30)
+
+
+### Bug Fixes
+
+* **ci:** move build-script approval to pnpm-workspace.yaml ([4ba58e5](https://github.com/nubisco/ui/commit/4ba58e5fd3db385693ea680721b66ace02dc5fa1))
+* **tooltip:** dismiss orphans, flip across all sides, re-aim arrow ([cf1eb2d](https://github.com/nubisco/ui/commit/cf1eb2d3b36bb76606c889d144c65d77ab73361c))
+
+
+### Performance Improvements
+
+* **Blueprint:** cache port centre positions, invalidate per-card ([dbc6afb](https://github.com/nubisco/ui/commit/dbc6afbd0942c9d6ae66eeff152f2781d383bb65)), closes [#2](https://github.com/nubisco/ui/issues/2)
+* **Blueprint:** cache port DOM lookups + skip wireKey++ on pan ([e13f5a3](https://github.com/nubisco/ui/commit/e13f5a39c531c72af195e40e8e80032c3dca6224))
+* **Blueprint:** cache resolveWireColor per port element ([5470549](https://github.com/nubisco/ui/commit/5470549e4d5bc35ae2f3069e70373c5a7f118ef6))
+* **Blueprint:** drop per-wire drop-shadow filter ([c278f7f](https://github.com/nubisco/ui/commit/c278f7f3fe000d614b0ff548de1c5a4c46ad52d8))
+* **Blueprint:** ignore in-card style mutations in the wire observer ([dc153e6](https://github.com/nubisco/ui/commit/dc153e6e65bbeeb6729cc648fa34a282e54d1505))
+* **Blueprint:** position cards via left/top, not transform ([cf356e3](https://github.com/nubisco/ui/commit/cf356e36fcdc04fbfa2921a261660f9290db9bbf))
+
 ## [1.38.1](https://github.com/nubisco/ui/compare/v1.38.0...v1.38.1) (2026-05-12)
 
 
