@@ -1085,15 +1085,27 @@ function onPortMouseUp(data: { nodeId: string; portId: string; type: string }) {
 
 // ── Wire paths ────────────────────────────────────────────────────────
 
+// resolveWireColor was the third remaining hot path after the cache +
+// position fixes: it ran `getComputedStyle().getPropertyValue(...)` per
+// wire per recompute, which forced a style flush. Profiles showed
+// getPropertyValue at 2 % and trim at 2.5 % of leaf samples. Cache by
+// port element — the card's accent color is per-card and effectively
+// static, and the cache invalidates naturally when the port element
+// detaches (WeakMap entry GC'd).
+const wireColorCache = new WeakMap<HTMLElement, string>()
 function resolveWireColor(fromPortEl: HTMLElement): string {
+  const cached = wireColorCache.get(fromPortEl)
+  if (cached) return cached
   const card = fromPortEl.closest('.nb-blueprint-card') as HTMLElement | null
+  let color = 'var(--nb-c-primary)'
   if (card) {
-    const color = getComputedStyle(card)
+    const raw = getComputedStyle(card)
       .getPropertyValue('--nb-card-color')
       .trim()
-    if (color && !color.startsWith('var(')) return color
+    if (raw && !raw.startsWith('var(')) color = raw
   }
-  return 'var(--nb-c-primary)'
+  wireColorCache.set(fromPortEl, color)
+  return color
 }
 
 /** True iff the port carries MIDI data. Used by `'levels'` mode to skip
