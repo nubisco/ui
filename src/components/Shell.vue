@@ -1,5 +1,11 @@
 <template>
-  <div class="nb-shell" :class="{ 'nb-shell--no-sidebar': !showSidebar }">
+  <div
+    class="nb-shell"
+    :class="[
+      { 'nb-shell--no-sidebar': !showSidebar },
+      showSidebar ? `nb-shell--sidebar-${sidebarVariant}` : null,
+    ]"
+  >
     <!-- ═══ OUTER LAYOUT: vertical stack ═══
          outer-menu spans the FULL width (above sidebar + body + inspector).
          Use for app-level menu bars that need to span everything. -->
@@ -88,7 +94,16 @@
 </template>
 
 <script setup lang="ts">
-import { Comment, Fragment, Text, computed, useSlots, type VNode } from 'vue'
+import {
+  Comment,
+  Fragment,
+  Text,
+  computed,
+  provide,
+  toRef,
+  useSlots,
+  type VNode,
+} from 'vue'
 import { IShellProps } from './Shell.d'
 
 const slots = useSlots()
@@ -125,12 +140,19 @@ const showSidebar = computed(() => {
   return false
 })
 
-withDefaults(defineProps<IShellProps>(), {
+const props = withDefaults(defineProps<IShellProps>(), {
   inspectorVisible: false,
   inspectorExpanded: false,
   inspectorSize: 'md',
   mainPadding: true,
+  sidebarVariant: 'compact',
 })
+
+// Provided so descendants of the `sidebar-*` slots (NbSidebarMenu,
+// NbSidebarMenuItem, NbSidebarMenuGroup, NbSidebarBrand) can adapt their
+// presentation to the active variant. Exposed as a reactive ref so switching
+// at runtime "just works".
+provide('nb-shell-sidebar-variant', toRef(props, 'sidebarVariant'))
 </script>
 
 <style scoped lang="scss">
@@ -217,10 +239,21 @@ withDefaults(defineProps<IShellProps>(), {
   gap: 4px;
   width: 100%;
   padding: 0 8px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  // Tooltips and flyouts from items still need to escape the rail; that is
+  // handled by teleporting them to <body>, not by overflow: visible here.
+  scrollbar-width: thin;
 }
 
 .nb-shell__sidebar-spacer {
-  flex: 1;
+  // The nav now grows on its own (`flex: 1`); the spacer is no longer needed
+  // but kept as a zero-size element so the layout DOM order is unchanged.
+  flex: 0 0 0;
+  width: 0;
+  height: 0;
 }
 
 .nb-shell__sidebar-bottom {
@@ -397,6 +430,43 @@ withDefaults(defineProps<IShellProps>(), {
 
   &--expanded {
     width: var(--nb-shell-inspector-expanded-width);
+  }
+}
+
+// ── Sidebar variants ──────────────────────────────────────────────────────────
+//
+// The default (compact) variant keeps the legacy 56px icon rail. The verbose
+// variant widens the sidebar and switches its children to stretch alignment so
+// full-width rows from NbSidebarMenu render correctly. CSS variables can still
+// be overridden by consumers on the `.nb-shell` selector.
+
+.nb-shell--sidebar-verbose {
+  --nb-shell-sidebar-width: 240px;
+
+  .nb-shell__sidebar {
+    align-items: stretch;
+    padding: 0.75rem 0;
+  }
+
+  .nb-shell__sidebar-logo {
+    width: auto;
+    height: auto;
+    margin: 0 0 1rem;
+    padding: 0 0.875rem;
+    justify-content: flex-start;
+  }
+
+  .nb-shell__sidebar-nav,
+  .nb-shell__sidebar-bottom {
+    align-items: stretch;
+    padding: 0 0.75rem;
+    gap: 2px;
+  }
+
+  // Leave room below the last menu item so it isn't pressed against the
+  // bottom edge when the nav is scrolled fully down.
+  .nb-shell__sidebar-nav {
+    padding-bottom: 0.5rem;
   }
 }
 </style>

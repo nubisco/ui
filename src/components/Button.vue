@@ -1,6 +1,6 @@
 <template>
   <component
-    :is="to ? 'a' : href ? 'a' : 'button'"
+    :is="linkTag"
     :class="[
       'nb-button',
       `nb-button--${variant}`,
@@ -9,12 +9,15 @@
       { 'nb-button--loading': loading },
       { 'nb-button--icon-only': isIconOnly },
     ]"
-    :href="to ? (typeof to === 'string' ? to : undefined) : (href ?? undefined)"
-    :target="href ? target : undefined"
-    :rel="href ? rel : undefined"
-    :disabled="!href && !to ? disabled || loading : undefined"
-    :aria-disabled="(href || to) && (disabled || loading) ? true : undefined"
-    :type="!href && !to ? type : undefined"
+    :to="useRouter ? to : undefined"
+    :href="linkTag === 'a' ? resolvedHref : undefined"
+    :target="linkTag === 'a' ? target : undefined"
+    :rel="linkTag === 'a' ? rel : undefined"
+    :disabled="linkTag === 'button' ? disabled || loading : undefined"
+    :aria-disabled="
+      linkTag !== 'button' && (disabled || loading) ? true : undefined
+    "
+    :type="linkTag === 'button' ? type : undefined"
     @click="disabled || loading ? undefined : $emit('click', $event)"
   >
     <slot />
@@ -31,10 +34,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useSlots } from 'vue'
+import { computed, useSlots, type Component } from 'vue'
 import { ESizeShort } from '@/types/Size.d'
 import { EButtonType, IButtonProps } from './Button.d'
 import NbIcon from './Icon.vue'
+import { useRouterLink } from '@/composables/useRouterLink.composable'
 
 const props = withDefaults(defineProps<IButtonProps>(), {
   variant: undefined,
@@ -56,6 +60,24 @@ const slots = useSlots()
 const isIconOnly = computed(
   () => !slots.default && !!(props.icon || props.loading),
 )
+
+// Render a real <RouterLink> when vue-router is installed and `to` is set;
+// otherwise a string `to`/`href` becomes a plain <a> and an object `to` (which
+// needs a router) falls back to a <button>.
+const routerLink = useRouterLink()
+const useRouter = computed(() => props.to != null && !!routerLink.value)
+
+const resolvedHref = computed<string | undefined>(() => {
+  if (typeof props.to === 'string') return props.to
+  if (props.href) return props.href
+  return undefined
+})
+
+const linkTag = computed<string | Component>(() => {
+  if (useRouter.value) return routerLink.value as Component
+  if (resolvedHref.value) return 'a'
+  return 'button'
+})
 
 const iconSizeMap: Record<string, number> = {
   xxs: 10,

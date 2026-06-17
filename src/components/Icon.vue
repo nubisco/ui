@@ -18,6 +18,10 @@ import kebab2camel from '@/utils/kebab2camel.helper'
 import { ESize } from '@/types/Size.d'
 import { EAnimationMode, EWeight, EIconSize, IIconProps } from './Icon.d'
 import { useStableId } from '@/composables/useStableId.composable'
+import {
+  getRegisteredIcon,
+  type ICustomIconWeights,
+} from '@/composables/iconRegistry'
 
 const props = withDefaults(defineProps<IIconProps>(), {
   size: ESize.Medium,
@@ -53,6 +57,14 @@ const attributes = computed(() => {
 })
 
 const iconComponent = computed(() => {
+  // Check the app-level registry first so consumers can supply custom icons
+  // (or override built-ins) without rebuilding the library.
+  const custom = getRegisteredIcon(
+    props.name,
+    props.weight as keyof ICustomIconWeights,
+  )
+  if (custom) return custom
+
   const iconKey = kebab2camel(`i-${props.name}`)
   const iconSet = (icons as Record<string, any>)[iconKey]
   return iconSet?.[props.weight] || iconSet?.regular

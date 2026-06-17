@@ -55,6 +55,7 @@ export default defineConfig(
       'no-undef': 'off',
       semi: 'off',
       'vue/multi-word-component-names': 'off',
+      'vue/block-order': ['error', { order: ['template', 'script', 'style'] }],
       '@typescript-eslint/naming-convention': [
         'error',
         { selector: 'interface', format: ['PascalCase'], prefix: ['I'] },

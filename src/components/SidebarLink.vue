@@ -1,15 +1,16 @@
 <template>
   <component
-    :is="to || href ? 'a' : 'button'"
+    :is="linkTag"
     class="nb-sidebar-link"
     :class="{
       'nb-sidebar-link--active': active,
       'nb-sidebar-link--danger': danger,
       'nb-sidebar-link--disabled': disabled,
     }"
-    :href="to ? (typeof to === 'string' ? to : undefined) : (href ?? undefined)"
-    :disabled="!to && !href ? disabled || undefined : undefined"
-    :aria-disabled="(to || href) && disabled ? true : undefined"
+    :to="useRouter ? to : undefined"
+    :href="linkTag === 'a' ? resolvedHref : undefined"
+    :disabled="linkTag === 'button' ? disabled || undefined : undefined"
+    :aria-disabled="linkTag !== 'button' && disabled ? true : undefined"
     :data-tooltip="tooltip || undefined"
     @click="disabled ? undefined : $emit('click', $event)"
   >
@@ -18,9 +19,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed, type Component } from 'vue'
 import { ISidebarLinkProps } from './SidebarLink.d'
+import { useRouterLink } from '@/composables/useRouterLink.composable'
 
-withDefaults(defineProps<ISidebarLinkProps>(), {
+const props = withDefaults(defineProps<ISidebarLinkProps>(), {
   to: undefined,
   href: undefined,
   tooltip: undefined,
@@ -30,6 +33,24 @@ withDefaults(defineProps<ISidebarLinkProps>(), {
 })
 
 defineEmits<{ click: [event: MouseEvent] }>()
+
+// Render a real <RouterLink> when vue-router is installed and `to` is set;
+// otherwise a string `to`/`href` becomes a plain <a> and an object `to` (which
+// needs a router) falls back to a <button>.
+const routerLink = useRouterLink()
+const useRouter = computed(() => props.to != null && !!routerLink.value)
+
+const resolvedHref = computed<string | undefined>(() => {
+  if (typeof props.to === 'string') return props.to
+  if (props.href) return props.href
+  return undefined
+})
+
+const linkTag = computed<string | Component>(() => {
+  if (useRouter.value) return routerLink.value as Component
+  if (resolvedHref.value) return 'a'
+  return 'button'
+})
 </script>
 
 <style scoped lang="scss">
