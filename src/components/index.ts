@@ -35,7 +35,11 @@ import NbPieChart from './Charts/PieChart.vue'
 import NbRadio from './Radio.vue'
 import NbSelect from './Select.vue'
 import NbShell from './Shell.vue'
+import NbSidebarBrand from './SidebarBrand.vue'
 import NbSidebarLink from './SidebarLink.vue'
+import NbSidebarMenu from './SidebarMenu.vue'
+import NbSidebarMenuGroup from './SidebarMenuGroup.vue'
+import NbSidebarMenuItem from './SidebarMenuItem.vue'
 import NbSlider from './Slider.vue'
 import NbSparkline from './Charts/Sparkline.vue'
 import NbSwitch from './Switch.vue'
@@ -85,7 +89,11 @@ const components = {
   NbRadio,
   NbSelect,
   NbShell,
+  NbSidebarBrand,
   NbSidebarLink,
+  NbSidebarMenu,
+  NbSidebarMenuGroup,
+  NbSidebarMenuItem,
   NbSlider,
   NbSparkline,
   NbSwitch,

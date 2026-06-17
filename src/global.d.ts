@@ -39,7 +39,12 @@ import Radio from './components/Radio.vue'
 import Select from './components/Select.vue'
 import Shell from './components/Shell.vue'
 import ShellPanel from './components/ShellPanel.vue'
+import SidebarBrand from './components/SidebarBrand.vue'
 import SidebarLink from './components/SidebarLink.vue'
+import SidebarMenu from './components/SidebarMenu.vue'
+import SidebarMenuGroup from './components/SidebarMenuGroup.vue'
+import SidebarMenuItem from './components/SidebarMenuItem.vue'
+import SidebarVariantScope from './components/SidebarVariantScope.vue'
 import Slider from './components/Slider.vue'
 import Sparkline from './components/Charts/Sparkline.vue'
 import Submenu from './components/Submenu.vue'
@@ -90,7 +95,12 @@ declare module 'vue' {
     NbSelect: typeof Select
     NbShell: typeof Shell
     NbShellPanel: typeof ShellPanel
+    NbSidebarBrand: typeof SidebarBrand
     NbSidebarLink: typeof SidebarLink
+    NbSidebarMenu: typeof SidebarMenu
+    NbSidebarMenuGroup: typeof SidebarMenuGroup
+    NbSidebarMenuItem: typeof SidebarMenuItem
+    NbSidebarVariantScope: typeof SidebarVariantScope
     NbSlider: typeof Slider
     NbSparkline: typeof Sparkline
     NbSubmenu: typeof Submenu

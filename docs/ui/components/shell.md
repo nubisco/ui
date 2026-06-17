@@ -52,6 +52,259 @@ tabs: ['Usage', 'Api']
 </template>
 ```
 
+## Verbose sidebar
+
+By default the sidebar is a narrow 56px icon rail filled with `NbSidebarLink` components. For navigation-heavy applications (admin consoles, multi-module SaaS) that need labels, section grouping and multi-level submenus, set `sidebar-variant="verbose"`. The sidebar widens to 240px and its children switch to full-width rows.
+
+The verbose variant is fully backwards compatible: the prop defaults to `'compact'`, so existing applications keep their current rail without changes.
+
+Use `NbSidebarMenu` as the container and `NbSidebarMenuItem` for rows. Wrap related items in `NbSidebarMenuGroup` to add a labelled (optionally collapsible) section. Sub-items are nested by placing `NbSidebarMenuItem` instances inside another item's default slot, recursively, to any depth.
+
+<preview>
+  <div style="height: 480px; border: 1px solid var(--nb-c-border, #e8e8f0); border-radius: 8px; overflow: hidden;">
+    <NbShell sidebar-variant="verbose" style="height: 100%">
+      <template #sidebar-logo>
+        <NbSidebarBrand icon="shield-check" title="Product Name" subtitle="Workspace" />
+      </template>
+      <template #sidebar-nav>
+        <NbSidebarMenu>
+          <NbSidebarMenuItem icon="house" label="Dashboard" to="/" active />
+          <NbSidebarMenuItem icon="package" label="Products" default-expanded>
+            <NbSidebarMenuItem label="Catalog" to="/products/catalog" />
+            <NbSidebarMenuItem label="Inventory" to="/products/inventory" />
+            <NbSidebarMenuItem label="Categories" to="/products/categories" />
+            <NbSidebarMenuItem label="Suppliers" to="/products/suppliers" />
+          </NbSidebarMenuItem>
+          <NbSidebarMenuItem icon="file-text" label="Orders" to="/orders" badge="42" />
+          <NbSidebarMenuItem icon="sparkle" label="Insights" to="/insights" badge="AI" badge-variant="accent" />
+          <NbSidebarMenuItem icon="users" label="Customers" to="/customers" />
+          <NbSidebarMenuGroup label="Workspace" collapsible>
+            <NbSidebarMenuItem icon="chart-line" label="Reports" to="/reports" badge="3" badge-variant="success" />
+            <NbSidebarMenuItem icon="chat-circle" label="Messages" to="/messages" />
+            <NbSidebarMenuItem icon="bell" label="Notifications" to="/notifications" />
+          </NbSidebarMenuGroup>
+          <NbSidebarMenuGroup label="Account">
+            <NbSidebarMenuItem icon="gear" label="Settings" to="/settings" />
+            <NbSidebarMenuItem icon="credit-card" label="Billing" to="/billing" />
+          </NbSidebarMenuGroup>
+        </NbSidebarMenu>
+      </template>
+      <template #topbar-left>
+        <strong>Dashboard</strong>
+      </template>
+      <p style="margin: 0; color: var(--nb-c-text-secondary, #666);">
+        A verbose sidebar with grouping, badges and a nested submenu. Click "Products" to collapse, click the "Workspace" heading to collapse that group.
+      </p>
+    </NbShell>
+  </div>
+</preview>
+
+```vue
+<template>
+  <NbShell sidebar-variant="verbose">
+    <template #sidebar-logo>
+      <NbSidebarBrand
+        icon="shield-check"
+        title="Product Name"
+        subtitle="Workspace"
+      />
+    </template>
+    <template #sidebar-nav>
+      <NbSidebarMenu>
+        <NbSidebarMenuItem icon="house" label="Dashboard" to="/" active />
+
+        <NbSidebarMenuItem icon="package" label="Products">
+          <NbSidebarMenuItem label="Catalog" to="/products/catalog" />
+          <NbSidebarMenuItem label="Inventory" to="/products/inventory" />
+          <NbSidebarMenuItem label="Categories" to="/products/categories" />
+        </NbSidebarMenuItem>
+
+        <NbSidebarMenuItem
+          icon="file-text"
+          label="Orders"
+          to="/orders"
+          badge="42"
+        />
+        <NbSidebarMenuItem
+          icon="sparkle"
+          label="Insights"
+          to="/insights"
+          badge="AI"
+          badge-variant="accent"
+        />
+        <NbSidebarMenuItem icon="users" label="Customers" to="/customers" />
+
+        <NbSidebarMenuGroup label="Workspace" collapsible>
+          <NbSidebarMenuItem
+            icon="chart-line"
+            label="Reports"
+            to="/reports"
+            badge="3"
+            badge-variant="success"
+          />
+          <NbSidebarMenuItem
+            icon="chat-circle"
+            label="Messages"
+            to="/messages"
+          />
+        </NbSidebarMenuGroup>
+
+        <NbSidebarMenuGroup label="Account">
+          <NbSidebarMenuItem icon="gear" label="Settings" to="/settings" />
+        </NbSidebarMenuGroup>
+      </NbSidebarMenu>
+    </template>
+
+    <template #topbar-left><strong>Dashboard</strong></template>
+    <p>Main content area.</p>
+  </NbShell>
+</template>
+```
+
+### Navigation
+
+`NbSidebarMenuItem` adapts how it renders to your routing setup:
+
+- **With vue-router** (the app called `app.use(router)`): pass `to` and the row renders as a `<RouterLink>`. `to` accepts anything valid for RouterLink, either a string path (`to="/orders"`) or a location object (`:to="{ name: 'orders' }"`). Client-side navigation and the router's active class work as usual.
+- **Without vue-router**: a string `to` (or `href`) renders a plain `<a>`; use `href` for external links. An object `to` has no meaning without a router, so the row gracefully falls back to a `<button>` that emits `click` (no broken anchor is produced).
+- **Items with sub-items** never navigate. In verbose mode the row is a `<button>` that toggles the submenu; in compact mode it opens the hover flyout. Any `to`/`href` on a parent item is ignored.
+
+Mark the current route with `active`. Listen for `@click` to drive navigation manually when you are not using `to`.
+
+```vue
+<!-- router-driven -->
+<NbSidebarMenuItem icon="file-text" label="Orders" :to="{ name: 'orders' }" />
+<!-- plain href -->
+<NbSidebarMenuItem icon="book" label="Docs" href="https://example.com/docs" />
+<!-- manual handling -->
+<NbSidebarMenuItem icon="gear" label="Settings" @click="openSettings" />
+```
+
+### Switching between compact and verbose at runtime
+
+`sidebarVariant` is a regular prop, so toggling between modes is just a state change. Because the same `NbSidebarMenu` / `NbSidebarMenuItem` / `NbSidebarMenuGroup` tree adapts to either variant, the application data model does not change.
+
+In compact mode:
+
+- `NbSidebarBrand` renders only its icon (title and subtitle are hidden).
+- `NbSidebarMenuItem` collapses to a 40×40 icon button. Hovering reveals a flyout with the label, badge, and any child items.
+- `NbSidebarMenuGroup` becomes a thin separator (the group label is dropped visually but kept for screen readers).
+- Badges with a `badgeVariant` become a small coloured dot in the icon's corner.
+
+```vue
+<template>
+  <NbShell :sidebar-variant="collapsed ? 'compact' : 'verbose'">
+    <template #sidebar-logo>
+      <NbSidebarBrand
+        icon="shield-check"
+        title="Product"
+        subtitle="Workspace"
+      />
+    </template>
+    <template #sidebar-nav>
+      <NbSidebarMenu>
+        <!-- same tree, both modes render correctly -->
+        <NbSidebarMenuItem icon="house" label="Dashboard" to="/" active />
+        <NbSidebarMenuItem icon="package" label="Products">
+          <NbSidebarMenuItem label="Catalog" to="/products/catalog" />
+          <NbSidebarMenuItem label="Inventory" to="/products/inventory" />
+        </NbSidebarMenuItem>
+      </NbSidebarMenu>
+    </template>
+    <template #topbar-right>
+      <NbButton size="sm" variant="ghost" @click="collapsed = !collapsed">
+        {{ collapsed ? 'Expand' : 'Collapse' }} sidebar
+      </NbButton>
+    </template>
+  </NbShell>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+const collapsed = ref(false)
+</script>
+```
+
+Persist `collapsed` in `localStorage` (or compute it from `window.matchMedia`) to make the choice survive reloads and adapt to viewport changes.
+
+### Brand block (logo + title)
+
+In the verbose variant, the `#sidebar-logo` slot has room for more than just a mark. Use `NbSidebarBrand` to render an icon, a primary title, and an optional subtitle on a second line (useful for "Product Name / Workspace", "Acme / Production", etc.). For a fully custom mark, use the component's `#icon` slot:
+
+```vue
+<template #sidebar-logo>
+  <NbSidebarBrand title="Acme" subtitle="Production">
+    <template #icon>
+      <img src="/brand/acme-mark.svg" alt="" width="24" height="24" />
+    </template>
+  </NbSidebarBrand>
+</template>
+```
+
+### Badge variants
+
+`NbSidebarMenuItem` accepts a `badge` (string or number) plus an optional `badge-variant`:
+
+| Variant             | When to use                               |
+| ------------------- | ----------------------------------------- |
+| `neutral` (default) | Counts and quiet status (unread, pending) |
+| `accent`            | Feature flags: "AI", "BETA", "NEW", "PRO" |
+| `success`           | Healthy state or positive count           |
+| `warning`           | Attention needed but not urgent           |
+| `danger`            | Errors or required action                 |
+
+### Registering custom icons
+
+The library ships with the Phosphor icon set baked in at build time. Applications often need extra icons (a brand logo, domain-specific glyphs) without forking the library. Register them at app bootstrap with `registerIcons`:
+
+```ts
+import { createApp } from 'vue'
+import NubiscoUI, { registerIcons } from '@nubisco/ui'
+import App from './App.vue'
+import BrandShield from './icons/BrandShield.vue'
+import RamoAuto from './icons/RamoAuto.vue'
+
+const app = createApp(App)
+app.use(NubiscoUI)
+
+registerIcons({
+  'brand-shield': BrandShield,
+  'ramo-auto': RamoAuto,
+})
+
+app.mount('#app')
+```
+
+After registration, the names work anywhere `NbIcon` (or any component that takes an `icon` prop, including `NbSidebarBrand` and `NbSidebarMenuItem`) is used:
+
+```vue
+<NbSidebarBrand icon="brand-shield" title="..." />
+<NbSidebarMenuItem icon="ramo-auto" label="..." />
+```
+
+Custom icons take precedence over the bundled catalog, so an app can override a built-in by registering the same name. To supply per-weight variants, pass an object instead of a single component:
+
+```ts
+registerIcons({
+  'brand-shield': {
+    regular: BrandShieldRegular,
+    bold: BrandShieldBold,
+    fill: BrandShieldFill,
+  },
+})
+```
+
+### Choosing the variant
+
+| Use the compact variant when…                            | Use the verbose variant when…                                |
+| -------------------------------------------------------- | ------------------------------------------------------------ |
+| Top-level navigation is short (≤ 8 destinations)         | Navigation has many destinations or natural groupings        |
+| Screen real estate matters more than discoverability     | Discoverability matters more than horizontal space           |
+| Users learn the icons quickly (developer tools, editors) | Users are domain-focused and prefer labels (LOB apps, admin) |
+| Mobile/tablet form factors dominate                      | Desktop-first dashboards                                     |
+
+Both variants share the same CSS variables for theming (`--nb-shell-sidebar-bg`, `--nb-shell-sidebar-link-*`), so the brand stays consistent.
+
 ## Notification slot
 
 Use the `#notification` slot to show important banners above the topbar. The area is only rendered when the slot is provided, so there is zero overhead when unused.
@@ -481,7 +734,7 @@ This example shows every slot populated at once, giving a complete picture of ho
 
 The shell organizes its regions into a layering system that gives each area the correct stacking context. This matters when menus, tooltips, or dropdowns need to overflow their container without being clipped by adjacent regions.
 
-```
+```text
  z-index
    200   ┌──────────────────────────────────────┐  outer-menu
          │  overflow: visible (menus expand)    │
@@ -526,12 +779,13 @@ This layering is automatic. You do not need to set any z-index values yourself. 
 
 ## Props
 
-| Prop                | Type                                   | Default | Description                                                                                                 |
-| ------------------- | -------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------- |
-| `inspectorVisible`  | `boolean`                              | `false` | Whether the inspector column is visible                                                                     |
-| `inspectorExpanded` | `boolean`                              | `false` | When true the inspector takes ~50% of the viewport width instead of the default fixed width                 |
-| `inspectorSize`     | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'`  | Controls the width of the inspector panel (xs: 288px, sm: 360px, md: 560px, lg: 50vw, xl: 75vw)             |
-| `mainPadding`       | `boolean`                              | `true`  | Whether the main content area has padding. Set to `false` for full-bleed content like viewports or canvases |
+| Prop                | Type                                   | Default     | Description                                                                                                                                                                                                                                          |
+| ------------------- | -------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `inspectorVisible`  | `boolean`                              | `false`     | Whether the inspector column is visible                                                                                                                                                                                                              |
+| `inspectorExpanded` | `boolean`                              | `false`     | When true the inspector takes ~50% of the viewport width instead of the default fixed width                                                                                                                                                          |
+| `inspectorSize`     | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'`      | Controls the width of the inspector panel (xs: 288px, sm: 360px, md: 560px, lg: 50vw, xl: 75vw)                                                                                                                                                      |
+| `mainPadding`       | `boolean`                              | `true`      | Whether the main content area has padding. Set to `false` for full-bleed content like viewports or canvases                                                                                                                                          |
+| `sidebarVariant`    | `'compact' \| 'verbose'`               | `'compact'` | Sidebar presentation mode. `'compact'` keeps the legacy 56px icon rail (use with `NbSidebarLink`). `'verbose'` widens the sidebar to 240px for grouped, multi-level navigation (use with `NbSidebarMenu`, `NbSidebarMenuGroup`, `NbSidebarMenuItem`) |
 
 ## Slots
 

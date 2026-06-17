@@ -22,7 +22,12 @@ interface IButtonProps {
   target?: string
   /** Forwarded to the `<a>` element. Only used when `href` is set. */
   rel?: string
-  /** When provided the component renders as a `<RouterLink>`. Accepts any value valid for RouterLink's `to` prop. */
+  /**
+   * Target route. When vue-router is installed, the button renders as a
+   * `<RouterLink>` and accepts any value valid for its `to` prop (string path or
+   * location object). Without vue-router, a string `to` falls back to a plain
+   * `<a>` and an object `to` falls back to a `<button>` that emits `click`.
+   */
   to?: string | Record<string, unknown>
 }
 

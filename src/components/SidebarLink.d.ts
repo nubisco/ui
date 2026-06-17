@@ -1,10 +1,12 @@
 interface ISidebarLinkProps {
   /**
-   * When provided the component renders as an `<a>` element.
-   * Accepts any string valid for `href` / RouterLink's `to`.
+   * Target route. When vue-router is installed, the link renders as a
+   * `<RouterLink>` and accepts any value valid for its `to` prop (string path or
+   * location object). Without vue-router, a string `to` falls back to a plain
+   * `<a>` and an object `to` falls back to a `<button>` that emits `click`.
    */
   to?: string | Record<string, unknown>
-  /** External href — renders as `<a>`. Takes lower precedence than `to`. */
+  /** External href — renders as a plain `<a>`. Used when `to` is not set. */
   href?: string
   /** Tooltip text shown to the right of the sidebar on hover. */
   tooltip?: string

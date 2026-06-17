@@ -258,6 +258,11 @@ export default withMermaid(
               },
             ],
           },
+          {
+            text: 'Labs',
+            collapsed: false,
+            items: [{ text: 'Spreadsheet', link: '/ui/labs/spreadsheet' }],
+          },
         ],
       },
       socialLinks: [{ icon: 'github', link: 'https://github.com/nubisco/ui' }],
