@@ -1,3 +1,17 @@
+<template>
+  <ul
+    ref="treeRef"
+    role="tree"
+    class="nb-tree"
+    :class="{
+      'nb-tree--compact': compact || size === 'sm',
+    }"
+    @keydown="onKeydown"
+  >
+    <slot />
+  </ul>
+</template>
+
 <script setup lang="ts">
 import { provide, reactive, ref } from 'vue'
 import type {
@@ -170,20 +184,6 @@ function onKeydown(e: KeyboardEvent) {
 
 defineExpose({ expandIds, collapseAll })
 </script>
-
-<template>
-  <ul
-    ref="treeRef"
-    role="tree"
-    class="nb-tree"
-    :class="{
-      'nb-tree--compact': compact || size === 'sm',
-    }"
-    @keydown="onKeydown"
-  >
-    <slot />
-  </ul>
-</template>
 
 <style lang="scss" scoped>
 .nb-tree {

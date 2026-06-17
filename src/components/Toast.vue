@@ -1,3 +1,45 @@
+<template>
+  <div
+    :class="['nb-toast', `nb-toast--${variant}`]"
+    role="alert"
+    :aria-live="variant === 'error' ? 'assertive' : 'polite'"
+    @mouseenter="pauseProgress"
+    @mouseleave="resumeProgress"
+  >
+    <div class="nb-toast__icon">
+      <NbIcon :name="iconMap[variant!]" :size="16" />
+    </div>
+    <div class="nb-toast__body">
+      <p v-if="title" class="nb-toast__title">{{ title }}</p>
+      <p class="nb-toast__message">{{ message }}</p>
+      <button
+        v-if="cta"
+        class="nb-toast__cta"
+        @click="
+          () => {
+            cta && cta.action()
+            emit('close')
+          }
+        "
+      >
+        {{ cta.label }}
+      </button>
+    </div>
+    <button class="nb-toast__close" aria-label="Close" @click="emit('close')">
+      <NbIcon name="x" :size="14" />
+    </button>
+    <div
+      v-if="duration"
+      ref="progressRef"
+      class="nb-toast__progress"
+      :style="{
+        animationDuration: `${duration}ms`,
+        animationPlayState: paused ? 'paused' : 'running',
+      }"
+    />
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import NbIcon from './Icon.vue'
@@ -73,48 +115,6 @@ watch(
   },
 )
 </script>
-
-<template>
-  <div
-    :class="['nb-toast', `nb-toast--${variant}`]"
-    role="alert"
-    :aria-live="variant === 'error' ? 'assertive' : 'polite'"
-    @mouseenter="pauseProgress"
-    @mouseleave="resumeProgress"
-  >
-    <div class="nb-toast__icon">
-      <NbIcon :name="iconMap[variant!]" :size="16" />
-    </div>
-    <div class="nb-toast__body">
-      <p v-if="title" class="nb-toast__title">{{ title }}</p>
-      <p class="nb-toast__message">{{ message }}</p>
-      <button
-        v-if="cta"
-        class="nb-toast__cta"
-        @click="
-          () => {
-            cta && cta.action()
-            emit('close')
-          }
-        "
-      >
-        {{ cta.label }}
-      </button>
-    </div>
-    <button class="nb-toast__close" aria-label="Close" @click="emit('close')">
-      <NbIcon name="x" :size="14" />
-    </button>
-    <div
-      v-if="duration"
-      ref="progressRef"
-      class="nb-toast__progress"
-      :style="{
-        animationDuration: `${duration}ms`,
-        animationPlayState: paused ? 'paused' : 'running',
-      }"
-    />
-  </div>
-</template>
 
 <style scoped lang="scss">
 .nb-toast {
