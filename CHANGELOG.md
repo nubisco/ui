@@ -1,3 +1,10 @@
+# [1.39.0](https://github.com/nubisco/ui/compare/v1.38.5...v1.39.0) (2026-06-17)
+
+
+### Features
+
+* add labs Spreadsheet, verbose Shell sidebar, icon registry, RouterLink support ([a687126](https://github.com/nubisco/ui/commit/a687126775f5b4c7cd8ff262a2ebea8b8aee72c2))
+
 ## [1.38.5](https://github.com/nubisco/ui/compare/v1.38.4...v1.38.5) (2026-05-30)
 
 
