@@ -11,6 +11,12 @@ export default {
   },
 }
 
+export { registerIcons, unregisterIcon } from './composables/iconRegistry'
+export type {
+  TCustomIcon,
+  ICustomIconWeights,
+} from './composables/iconRegistry'
+
 // Named exports for tree-shakeable individual imports
 export { default as NbBoard } from './components/Board.vue'
 export type {
@@ -77,8 +83,16 @@ export { default as NbModal } from './components/Modal.vue'
 export { default as NbPanel } from './components/Panel.vue'
 export { default as NbPieChart } from './components/Charts/PieChart.vue'
 export { default as NbShell } from './components/Shell.vue'
-export type { TInspectorSize } from './components/Shell.d'
+export type { TInspectorSize, TSidebarVariant } from './components/Shell.d'
+export { default as NbSidebarBrand } from './components/SidebarBrand.vue'
+export type { ISidebarBrandProps } from './components/SidebarBrand.d'
 export { default as NbSidebarLink } from './components/SidebarLink.vue'
+export { default as NbSidebarMenu } from './components/SidebarMenu.vue'
+export type { ISidebarMenuProps } from './components/SidebarMenu.d'
+export { default as NbSidebarMenuGroup } from './components/SidebarMenuGroup.vue'
+export type { ISidebarMenuGroupProps } from './components/SidebarMenuGroup.d'
+export { default as NbSidebarMenuItem } from './components/SidebarMenuItem.vue'
+export type { ISidebarMenuItemProps } from './components/SidebarMenuItem.d'
 export { default as NbToast } from './components/Toast.vue'
 export type { TToastVariant, IToastCta } from './components/Toast.vue'
 export { default as NbRadio } from './components/Radio.vue'
@@ -130,3 +144,17 @@ export { NbCommandPalettePlugin } from './plugins/commandPalette'
 
 // Labs plugin (experimental components)
 export { default as NubiscoUILabs } from './labs'
+export { default as NbSpreadsheet } from './components/labs/Spreadsheet.vue'
+export type {
+  ISpreadsheetProps,
+  ISpreadsheetColumn,
+  ISpreadsheetRow,
+  ISpreadsheetCellAttrs,
+  ISpreadsheetChange,
+  ISpreadsheetSelection,
+  TSpreadsheetCellType,
+  TSpreadsheetAlign,
+  TSpreadsheetPinCol,
+  TSpreadsheetPinRow,
+  TSpreadsheetSortDir,
+} from './components/labs/Spreadsheet.d'

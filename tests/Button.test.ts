@@ -132,4 +132,31 @@ describe('Button', () => {
     expect(wrapper.attributes('target')).toBe('_blank')
     expect(wrapper.attributes('rel')).toBe('noopener')
   })
+
+  it('renders an anchor for a string `to` when vue-router is absent', () => {
+    const wrapper = createWrapper({ to: '/dashboard' })
+    expect(wrapper.element.tagName.toLowerCase()).toBe('a')
+    expect(wrapper.attributes('href')).toBe('/dashboard')
+  })
+
+  it('falls back to a button (no dead anchor) for an object `to` without vue-router', () => {
+    const wrapper = createWrapper({ to: { name: 'home' } })
+    expect(wrapper.element.tagName.toLowerCase()).toBe('button')
+    expect(wrapper.attributes('href')).toBeUndefined()
+  })
+
+  it('renders a RouterLink and passes `to` through when vue-router is installed', () => {
+    const RouterLink = {
+      name: 'RouterLink',
+      props: { to: { type: [String, Object], required: true } },
+      template: '<a class="rl" :data-to="JSON.stringify(to)"><slot /></a>',
+    }
+    const wrapper = mount(Button, {
+      props: { to: { name: 'home' } },
+      global: { stubs: { NbIcon: NbIconStub }, components: { RouterLink } },
+    })
+    const link = wrapper.find('.rl')
+    expect(link.exists()).toBe(true)
+    expect(link.attributes('data-to')).toBe(JSON.stringify({ name: 'home' }))
+  })
 })
