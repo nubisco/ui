@@ -1,3 +1,79 @@
+<template>
+  <li
+    role="treeitem"
+    tabindex="-1"
+    :draggable="isDraggable || undefined"
+    :aria-expanded="hasChildren ? isExpanded : undefined"
+    :aria-selected="isSelected"
+    :aria-disabled="disabled || undefined"
+    :aria-grabbed="isDraggable ? isDragging : undefined"
+    class="nb-tree-node"
+    :class="{
+      'nb-tree-node--selected': isSelected,
+      'nb-tree-node--disabled': disabled,
+      'nb-tree-node--branch': hasChildren,
+      'nb-tree-node--leaf': !hasChildren,
+      'nb-tree-node--dragging': isDragging,
+      'nb-tree-node--drop-before': dropPosition === 'before',
+      'nb-tree-node--drop-after': dropPosition === 'after',
+      'nb-tree-node--drop-inside': dropPosition === 'inside',
+    }"
+    @click.stop="handleClick"
+    @dblclick.stop="handleDblClick"
+    @contextmenu.prevent="handleContextMenu"
+    @keydown="onKeydown"
+    @dragstart="onDragStart"
+    @dragover="onDragOver"
+    @dragleave="onDragLeave"
+    @drop="onDrop"
+    @dragend="onDragEnd"
+  >
+    <div
+      class="nb-tree-node__label"
+      :style="{ minHeight: rowHeight, paddingInlineStart: indentPx }"
+    >
+      <!-- Chevron toggle (branches only) -->
+      <span
+        v-if="hasChildren"
+        class="nb-tree-node__toggle"
+        @click="handleChevronClick"
+      >
+        <NbIcon
+          name="caret-right"
+          size="xs"
+          class="nb-tree-node__toggle-icon"
+          :class="{ 'nb-tree-node__toggle-icon--expanded': isExpanded }"
+        />
+      </span>
+
+      <!-- Leaf spacer (aligns text with branch siblings) -->
+      <span v-else class="nb-tree-node__toggle-spacer" />
+
+      <!-- Icon -->
+      <NbIcon v-if="icon" :name="icon" size="sm" class="nb-tree-node__icon" />
+
+      <!-- Label text -->
+      <span class="nb-tree-node__label-text">
+        <slot name="label">{{ label }}</slot>
+      </span>
+
+      <!-- Actions slot (right side, visible on hover/selected) -->
+      <span v-if="$slots.actions" class="nb-tree-node__actions">
+        <slot name="actions" />
+      </span>
+    </div>
+
+    <!-- Children (expanded branches only) -->
+    <ul
+      v-if="hasChildren && isExpanded"
+      role="group"
+      class="nb-tree-node__children"
+    >
+      <slot />
+    </ul>
+  </li>
+</template>
+
 <script setup lang="ts">
 import { inject, computed, provide, useSlots } from 'vue'
 import NbIcon from './Icon.vue'
@@ -149,82 +225,6 @@ function onKeydown(e: KeyboardEvent) {
   }
 }
 </script>
-
-<template>
-  <li
-    role="treeitem"
-    tabindex="-1"
-    :draggable="isDraggable || undefined"
-    :aria-expanded="hasChildren ? isExpanded : undefined"
-    :aria-selected="isSelected"
-    :aria-disabled="disabled || undefined"
-    :aria-grabbed="isDraggable ? isDragging : undefined"
-    class="nb-tree-node"
-    :class="{
-      'nb-tree-node--selected': isSelected,
-      'nb-tree-node--disabled': disabled,
-      'nb-tree-node--branch': hasChildren,
-      'nb-tree-node--leaf': !hasChildren,
-      'nb-tree-node--dragging': isDragging,
-      'nb-tree-node--drop-before': dropPosition === 'before',
-      'nb-tree-node--drop-after': dropPosition === 'after',
-      'nb-tree-node--drop-inside': dropPosition === 'inside',
-    }"
-    @click.stop="handleClick"
-    @dblclick.stop="handleDblClick"
-    @contextmenu.prevent="handleContextMenu"
-    @keydown="onKeydown"
-    @dragstart="onDragStart"
-    @dragover="onDragOver"
-    @dragleave="onDragLeave"
-    @drop="onDrop"
-    @dragend="onDragEnd"
-  >
-    <div
-      class="nb-tree-node__label"
-      :style="{ minHeight: rowHeight, paddingInlineStart: indentPx }"
-    >
-      <!-- Chevron toggle (branches only) -->
-      <span
-        v-if="hasChildren"
-        class="nb-tree-node__toggle"
-        @click="handleChevronClick"
-      >
-        <NbIcon
-          name="caret-right"
-          size="xs"
-          class="nb-tree-node__toggle-icon"
-          :class="{ 'nb-tree-node__toggle-icon--expanded': isExpanded }"
-        />
-      </span>
-
-      <!-- Leaf spacer (aligns text with branch siblings) -->
-      <span v-else class="nb-tree-node__toggle-spacer" />
-
-      <!-- Icon -->
-      <NbIcon v-if="icon" :name="icon" size="sm" class="nb-tree-node__icon" />
-
-      <!-- Label text -->
-      <span class="nb-tree-node__label-text">
-        <slot name="label">{{ label }}</slot>
-      </span>
-
-      <!-- Actions slot (right side, visible on hover/selected) -->
-      <span v-if="$slots.actions" class="nb-tree-node__actions">
-        <slot name="actions" />
-      </span>
-    </div>
-
-    <!-- Children (expanded branches only) -->
-    <ul
-      v-if="hasChildren && isExpanded"
-      role="group"
-      class="nb-tree-node__children"
-    >
-      <slot />
-    </ul>
-  </li>
-</template>
 
 <style lang="scss" scoped>
 .nb-tree-node {
