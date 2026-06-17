@@ -1,4 +1,5 @@
 type TInspectorSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+type TSidebarVariant = 'compact' | 'verbose'
 
 interface IShellProps {
   /**
@@ -28,6 +29,16 @@ interface IShellProps {
    * @default true
    */
   mainPadding?: boolean
+  /**
+   * Sidebar presentation mode.
+   * - 'compact': narrow icon-only rail (56px). Use with NbSidebarLink. This is
+   *   the default and matches the legacy behaviour.
+   * - 'verbose': wider sidebar (240px) with full-width rows. Use with
+   *   NbSidebarMenu, NbSidebarMenuGroup and NbSidebarMenuItem to render
+   *   grouped, multi-level navigation with icons and labels.
+   * @default 'compact'
+   */
+  sidebarVariant?: TSidebarVariant
 }
 
-export { IShellProps, TInspectorSize }
+export { IShellProps, TInspectorSize, TSidebarVariant }
