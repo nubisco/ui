@@ -6,6 +6,7 @@ import BarChart from './components/Charts/BarChart.vue'
 import Blueprint from './components/Blueprint.vue'
 import BlueprintCard from './components/BlueprintCard.vue'
 import BlueprintDomRenderer from './components/BlueprintDomRenderer.vue'
+import BlueprintPixiRenderer from './components/BlueprintPixiRenderer.vue'
 import Board from './components/Board.vue'
 import BottomPanel from './components/BottomPanel.vue'
 import Breadcrumbs from './components/Breadcrumbs.vue'
@@ -63,6 +64,7 @@ declare module 'vue' {
     NbBlueprint: typeof Blueprint
     NbBlueprintCard: typeof BlueprintCard
     NbBlueprintDomRenderer: typeof BlueprintDomRenderer
+    NbBlueprintPixiRenderer: typeof BlueprintPixiRenderer
     NbBoard: typeof Board
     NbBottomPanel: typeof BottomPanel
     NbBreadcrumbs: typeof Breadcrumbs

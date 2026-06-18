@@ -41,6 +41,30 @@
         <slot />
       </template>
     </BlueprintDomRenderer>
+    <BlueprintPixiRenderer
+      v-else
+      :pan-x="panX"
+      :pan-y="panY"
+      :zoom="zoom"
+      :is-transforming="isTransforming"
+      :wires="computedWires"
+      :windowed="!!props.cards"
+      :visible-cards="visibleCards"
+      :drag-wire="dragWire"
+      :should-flow="shouldFlow"
+      @wire-mousedown="onWireMouseDown"
+      @wire-contextmenu="onWireContextMenu"
+      @wire-mousemove="onWireMouseMove"
+      @wire-mouseleave="onWireMouseLeave"
+      @unavailable="onPixiUnavailable"
+    >
+      <template #card="{ card }">
+        <slot name="card" :card="card" />
+      </template>
+      <template #default>
+        <slot />
+      </template>
+    </BlueprintPixiRenderer>
 
     <!-- Marquee drag overlay (rendered in viewport space) -->
     <div
@@ -116,6 +140,7 @@ import {
   BLUEPRINT_CANVAS_CLASS,
 } from './blueprint-port-cache'
 import BlueprintDomRenderer from './BlueprintDomRenderer.vue'
+import BlueprintPixiRenderer from './BlueprintPixiRenderer.vue'
 import type {
   IBlueprintConnection,
   IBlueprintCard,
@@ -132,31 +157,61 @@ const props = withDefaults(defineProps<IBlueprintProps>(), {
   renderer: 'auto',
 })
 
-// Which renderer actually draws the scene. The PixiJS (WebGL) renderer
-// arrives in a later phase; until then `auto`/`pixi` resolve to the DOM
-// renderer. Kept as a computed so flipping PIXI_RENDERER_AVAILABLE (and
-// adding the `pixi` branch in the template) is the only change Phase 1
-// needs here. The public API is identical across renderers.
-const PIXI_RENDERER_AVAILABLE = false
-const resolvedRenderer = computed<'dom' | 'pixi'>(() => {
-  if (
-    props.renderer !== 'dom' &&
-    PIXI_RENDERER_AVAILABLE &&
-    typeof window !== 'undefined'
-  ) {
-    return 'pixi'
+// Which renderer actually draws the scene. The DOM renderer is always
+// available and is the synchronous default; the PixiJS (WebGL) renderer is
+// detected asynchronously on mount (WebGL support + the optional `pixi.js`
+// peer dependency loading), so the first frame is DOM and it swaps to Pixi
+// once `pixiAvailable` flips. `pixiFailed` forces DOM permanently if Pixi
+// reports it could not initialise. The public API is identical across both.
+const pixiAvailable = ref(false)
+const pixiFailed = ref(false)
+const resolvedRenderer = computed<'dom' | 'pixi'>(() =>
+  props.renderer !== 'dom' && pixiAvailable.value && !pixiFailed.value
+    ? 'pixi'
+    : 'dom',
+)
+
+function hasWebGL(): boolean {
+  try {
+    const c = document.createElement('canvas')
+    return !!(
+      c.getContext('webgl2') ||
+      c.getContext('webgl') ||
+      c.getContext('experimental-webgl')
+    )
+  } catch {
+    return false
   }
-  return 'dom'
+}
+
+function warnPixiUnavailable(detail: string) {
+  if (props.renderer === 'pixi') {
+    console.warn(
+      `[NubiscoUI] Blueprint renderer="pixi" unavailable (${detail}); using the DOM renderer.`,
+    )
+  }
+}
+
+onMounted(async () => {
+  if (props.renderer === 'dom' || typeof window === 'undefined') return
+  if (!hasWebGL()) {
+    warnPixiUnavailable('no WebGL')
+    return
+  }
+  try {
+    // Preload the peer dependency so the swap to the Pixi renderer doesn't
+    // flash a frame without a scene. A missing optional peer dep lands here.
+    await import('pixi.js')
+    pixiAvailable.value = true
+  } catch {
+    warnPixiUnavailable('pixi.js not installed')
+  }
 })
 
-if (
-  typeof window !== 'undefined' &&
-  props.renderer === 'pixi' &&
-  !PIXI_RENDERER_AVAILABLE
-) {
-  console.warn(
-    '[NubiscoUI] Blueprint renderer="pixi" is not available yet; using the DOM renderer.',
-  )
+// The Pixi renderer reports here if WebGL/context init fails after mount.
+function onPixiUnavailable(reason: unknown) {
+  pixiFailed.value = true
+  warnPixiUnavailable(reason instanceof Error ? reason.message : 'init failed')
 }
 
 const emit = defineEmits<{

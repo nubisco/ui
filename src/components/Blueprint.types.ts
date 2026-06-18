@@ -1,4 +1,8 @@
 import type { Ref } from 'vue'
+import type {
+  IBlueprintPort,
+  TBlueprintCardStatus,
+} from './BlueprintCard.types'
 
 export interface IBlueprintConnection {
   fromNode: string
@@ -52,6 +56,17 @@ export interface IBlueprintCard {
   /** Canvas-space top. */
   y: number
   /**
+   * Visual data for the PixiJS renderer's native card painter. The DOM
+   * renderer ignores this (it renders the real `#card` slot). The PixiJS
+   * renderer draws cards natively while panning/zooming and at far zoom,
+   * where it cannot run the Vue `#card` component; it reads this descriptor
+   * (or, as a fallback, well-known top-level fields `title`/`color`/`ports`
+   * on the card object) to paint a faithful card. Omit it and far/gesture
+   * cards render as a plain accent-colored box with the id. See
+   * [IBlueprintCardPaint].
+   */
+  paint?: IBlueprintCardPaint
+  /**
    * Card box size in canvas units. Optional: when omitted the windowing
    * test falls back to `cardSizeEstimate`. Providing real sizes makes the
    * off-screen cull tighter (a tall card won't be dropped a frame early)
@@ -59,6 +74,32 @@ export interface IBlueprintCard {
    */
   width?: number
   height?: number
+}
+
+/**
+ * Visual descriptor the PixiJS renderer's native card painter draws from
+ * (see `IBlueprintCard.paint`). A structured subset of the NbBlueprintCard
+ * props: enough to paint a faithful card at far zoom and during gestures
+ * without running the Vue component. All fields optional; the painter falls
+ * back to an accent box when a field is missing.
+ */
+export interface IBlueprintCardPaint {
+  /** Card title drawn in the header. */
+  title?: string
+  /** Accent color (CSS color string); drives the top bar and outline. */
+  color?: string
+  /** Category label under the title. */
+  category?: string
+  /** Status dot (valid / warning / error / none). */
+  status?: TBlueprintCardStatus
+  /** Whether the card is collapsed (header only). */
+  collapsed?: boolean
+  /** Port definitions; the painter places pins on the left/right edges. */
+  ports?: IBlueprintPort[]
+  /** Ids of ports drawn as connected (filled). */
+  connectedPorts?: string[]
+  /** Ids of ports drawn as active (glow). */
+  activePorts?: string[]
 }
 
 /** How NbBlueprint should pick a renderer. `'auto'` resolves to `'pixi'`

@@ -42,8 +42,11 @@ export default defineConfig(({ command }) => ({
     },
     cssCodeSplit: false,
     rollupOptions: {
-      // Externalize deps that shouldn't be bundled
-      external: ['vue', 'fs', 'path', 'vite'],
+      // Externalize deps that shouldn't be bundled. `pixi.js` is an
+      // optional peer dependency, dynamically imported only by the Blueprint
+      // PixiJS renderer, so it must stay external (never bundled): consumers
+      // who use that renderer install it themselves.
+      external: ['vue', 'fs', 'path', 'vite', 'pixi.js'],
       output: {
         // Provide global variables to use in the UMD build
         // for externalized deps
