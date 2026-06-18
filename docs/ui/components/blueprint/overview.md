@@ -342,7 +342,52 @@ Blueprint draws the camera-transformed scene (grid, wires, cards) through a swap
 <NbBlueprint :cards="cards" :connections="connections" renderer="auto" />
 ```
 
-The DOM/SVG renderer is the default today. The PixiJS renderer is a work in progress aimed at large graphs (thousands of cards) where DOM/SVG pan and zoom become the bottleneck; until it ships, `'auto'` and `'pixi'` resolve to the DOM renderer. Because the contract is shared, adopting it later is a single prop change.
+### PixiJS renderer
+
+The PixiJS renderer targets large graphs (thousands of cards) where DOM/SVG pan and zoom become the bottleneck. It moves the grid, wires, and card visuals onto a single WebGL canvas, so a pan or zoom is a camera-matrix update plus GPU compositing instead of re-rasterizing a large DOM layer.
+
+It is an **opt-in optional peer dependency**. Install PixiJS v8 to use it:
+
+```sh
+pnpm add pixi.js
+```
+
+Without `pixi.js` installed (or without WebGL, or during SSR), `'auto'` and `'pixi'` resolve to the DOM renderer; an explicit `renderer="pixi"` logs a one-time console warning and falls back. So the default `'auto'` is always safe.
+
+How it behaves:
+
+- **At rest and at readable zoom**, the real DOM cards (your `#card` slot) are shown and fully interactive: drag, multi-select, marquee, wire hover/menu all work exactly as in the DOM renderer. PixiJS draws the grid and wires behind them.
+- **While panning/zooming, and at far zoom**, the DOM card layer is hidden and PixiJS paints the whole scene (grid, wires, and cards). This is where the gesture stays smooth on big graphs.
+
+Because interaction always happens on the DOM cards, every existing event and the `useBlueprint()` controller behave identically. One consequence of the level-of-detail design: below the far-zoom threshold individual cards are painted by PixiJS and are not separately clickable (zoom in to interact); marquee selection and panning still work at any zoom.
+
+#### Native card painting (`paint`)
+
+PixiJS cannot run your Vue `#card` component on the GPU, so for the during-gesture and far-zoom view it paints cards itself from a structured descriptor. In the windowed (`cards`) API, give each card an optional `paint` field (or set the well-known fields `title`, `color`, `ports` directly on the card object) so the painter can draw a faithful card:
+
+```ts
+import type { IBlueprintCard, IBlueprintCardPaint } from '@nubisco/ui'
+
+const cards: IBlueprintCard[] = [
+  {
+    id: 'osc',
+    x: 40,
+    y: 60,
+    width: 220,
+    height: 160,
+    paint: {
+      title: 'Oscillator',
+      color: '#a855f7',
+      ports: [
+        { id: 'out', label: 'out', type: 'output' },
+        { id: 'sync', label: 'sync', type: 'input' },
+      ],
+    } satisfies IBlueprintCardPaint,
+  },
+]
+```
+
+If `paint` (and the loose fallbacks) are omitted, far/gesture cards render as a plain accent-colored box with no text. The DOM card (your `#card` slot) is always the source of truth at readable zoom, so `paint` only affects the zoomed-out and in-motion view.
 
 ## Theming
 
