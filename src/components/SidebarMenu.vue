@@ -25,7 +25,7 @@ withDefaults(defineProps<ISidebarMenuProps>(), {
   flex-direction: column;
   gap: 1px;
   width: 100%;
-  color: var(--nb-shell-sidebar-link-color, rgba(255, 255, 255, 0.7));
+  color: var(--nb-shell-sidebar-link-color);
   font-size: 0.8125rem;
 }
 </style>

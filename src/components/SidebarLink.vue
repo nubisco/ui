@@ -62,7 +62,7 @@ const linkTag = computed<string | Component>(() => {
   justify-content: center;
   border-radius: 8px;
   text-decoration: none;
-  color: var(--nb-shell-sidebar-link-color, rgba(255, 255, 255, 0.55));
+  color: var(--nb-shell-sidebar-link-color);
   background: none;
   border: none;
   cursor: pointer;
@@ -105,7 +105,7 @@ const linkTag = computed<string | Component>(() => {
       --nb-shell-sidebar-link-hover-bg,
       rgba(255, 255, 255, 0.08)
     );
-    color: var(--nb-shell-sidebar-link-hover-color, rgba(255, 255, 255, 0.9));
+    color: var(--nb-shell-sidebar-link-hover-color);
   }
 
   &--active {
@@ -113,7 +113,7 @@ const linkTag = computed<string | Component>(() => {
       --nb-shell-sidebar-link-active-bg,
       rgba(124, 58, 237, 0.25)
     );
-    color: var(--nb-shell-sidebar-link-active-color, #a78bfa);
+    color: var(--nb-shell-sidebar-link-active-color);
   }
 
   &--danger:hover:not(&--disabled) {

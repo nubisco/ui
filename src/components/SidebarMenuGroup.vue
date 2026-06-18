@@ -95,13 +95,13 @@ const collapsed = ref(props.collapsible && props.defaultCollapsed)
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--nb-shell-sidebar-link-color, rgba(255, 255, 255, 0.45));
+  color: var(--nb-shell-sidebar-link-color);
   opacity: 0.75;
 }
 
 .nb-sidebar-menu-group__caret {
   transition: transform 0.15s ease;
-  color: var(--nb-shell-sidebar-link-color, rgba(255, 255, 255, 0.45));
+  color: var(--nb-shell-sidebar-link-color);
 
   &--collapsed {
     transform: rotate(-90deg);
@@ -120,7 +120,7 @@ const collapsed = ref(props.collapsible && props.defaultCollapsed)
 .nb-sidebar-menu-group__divider {
   height: 1px;
   border: 0;
-  background: var(--nb-shell-sidebar-link-hover-bg, rgba(255, 255, 255, 0.08));
+  background: var(--nb-shell-sidebar-link-hover-bg);
   margin: 0.5rem 0.625rem;
 }
 </style>

@@ -89,8 +89,8 @@ defineExpose({ el: itemRef })
 
 <style lang="scss">
 .nb-menu-item {
-  --nb-menu-item-h: 40px;
-
+  // --nb-menu-item-h base default lives at :root in styles/_theme.scss; the
+  // .nb-menu--xs/sm/md/lg variants below override it (state, kept local).
   display: flex;
   align-items: center;
   gap: 8px;
