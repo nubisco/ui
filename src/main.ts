@@ -126,6 +126,8 @@ export type {
   IBlueprintController,
   IBlueprintCanvasPoint,
   IBlueprintScreenPoint,
+  IBlueprintCardPaint,
+  TBlueprintRenderer,
 } from './components/Blueprint.types'
 export {
   NB_BLUEPRINT_CONTEXT,

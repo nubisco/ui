@@ -103,8 +103,9 @@ describe('Blueprint renderer resolution', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const w = mount(Blueprint, { props: { renderer: 'pixi' } })
     expect(w.findComponent(BlueprintDomRenderer).exists()).toBe(true)
+    // jsdom has no WebGL, so the async availability check warns and stays DOM.
     expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('renderer="pixi" is not available'),
+      expect.stringContaining('renderer="pixi" unavailable'),
     )
   })
 
