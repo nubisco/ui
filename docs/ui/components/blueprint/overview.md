@@ -389,6 +389,23 @@ const cards: IBlueprintCard[] = [
 
 If `paint` (and the loose fallbacks) are omitted, far/gesture cards render as a plain accent-colored box with no text. The DOM card (your `#card` slot) is always the source of truth at readable zoom, so `paint` only affects the zoomed-out and in-motion view.
 
+## Background
+
+The canvas pattern is set with the `background` prop: `'dots'` (default), `'lines'`, or `'none'`. Color and spacing are themable with CSS variables, so changing the look is a one-liner:
+
+```vue
+<NbBlueprint :cards="cards" background="lines" />
+```
+
+```css
+.nb-blueprint {
+  --nb-blueprint-grid-color: rgba(255, 255, 255, 0.06);
+  --nb-blueprint-grid-gap: 32px;
+}
+```
+
+The setting applies to both renderers (the DOM renderer draws a CSS pattern; the PixiJS renderer draws a tiled texture).
+
 ## Theming
 
 The canvas background uses `--nb-c-layer-0`. Ambient gradients are configurable via `--nb-blueprint-ambient-1` and `--nb-blueprint-ambient-2` (set to `transparent` to disable). Wire colors are derived from each source card's `--nb-card-color`.
@@ -408,6 +425,7 @@ The canvas background uses `--nb-c-layer-0`. Ambient gradients are configurable 
 | `wheelMode`          | `'auto' \| 'zoom' \| 'pan'`                        | `'auto'`  | What plain wheel events do. Pinch always zooms regardless. See [Panning and zooming](#panning-and-zooming).                                                                                                                                                                         |
 | `editable`           | `boolean`                                          | `false`   | Advisory edit-mode flag, surfaced through [`useBlueprint()`](#the-useblueprint-composable) as `isEditMode` so optional chrome (a controls toolbar, etc.) can show itself only while editing. Does not change pan/zoom/selection, which are always interactive.                      |
 | `renderer`           | `'auto' \| 'dom' \| 'pixi'`                        | `'auto'`  | Rendering backend. `'auto'` uses the PixiJS (WebGL) renderer when available, else the DOM/SVG renderer; `'dom'` forces DOM/SVG; `'pixi'` forces WebGL (falls back to DOM with a warning when unavailable). The public API is identical across renderers. See [Renderer](#renderer). |
+| `background`         | `'dots' \| 'lines' \| 'none'`                      | `'dots'`  | Canvas background pattern. Themable via `--nb-blueprint-grid-color` and `--nb-blueprint-grid-gap`. See [Background](#background).                                                                                                                                                   |
 
 ## Events
 
@@ -425,11 +443,12 @@ The canvas background uses `--nb-c-layer-0`. Ambient gradients are configurable 
 
 ## Slots
 
-| Slot        | Scope props                         | Description                                                                                                                                                                                                              |
-| ----------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `default`   | (none)                              | Card layer (non-windowed). Place `NbBlueprintCard` instances here, positioned with `transform: translate(x, y)` on a wrapper. Ignored when `cards` is set.                                                               |
-| `card`      | `{ card: IBlueprintCard }`          | Per-card template for windowed rendering (used when the `cards` prop is set). Blueprint owns the position wrapper; render one `NbBlueprintCard` from `card`. See [Windowed rendering](#windowed-rendering-large-graphs). |
-| `wire-menu` | `{ connection, close, disconnect }` | Replaces the default wire context menu (right-click on a wire). Default content is a single Disconnect button.                                                                                                           |
+| Slot        | Scope props                         | Description                                                                                                                                                                                                                    |
+| ----------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `default`   | (none)                              | Card layer (non-windowed). Place `NbBlueprintCard` instances here, positioned with `transform: translate(x, y)` on a wrapper. Ignored when `cards` is set.                                                                     |
+| `card`      | `{ card: IBlueprintCard }`          | Per-card template for windowed rendering (used when the `cards` prop is set). Blueprint owns the position wrapper; render one `NbBlueprintCard` from `card`. See [Windowed rendering](#windowed-rendering-large-graphs).       |
+| `wire-menu` | `{ connection, close, disconnect }` | Replaces the default wire context menu (right-click on a wire). Default content is a single Disconnect button.                                                                                                                 |
+| `chrome`    | (none)                              | Viewport-space overlay layer, rendered in both the windowed and legacy APIs. Place `NbBlueprintControls`, `NbBlueprintMinimap`, or any host overlay here; children are positioned in screen space and opt into pointer events. |
 
 ## Exposed instance
 
@@ -507,12 +526,12 @@ import { useBlueprint } from '@nubisco/ui'
 
 const bp = useBlueprint()
 
-function zoomIn() {
-  bp.zoom.value = Math.min(3, bp.zoom.value * 1.2)
-}
+bp.zoomIn() // center-anchored; also bp.zoomOut()
 // bp.fitToView(), bp.centerView(), bp.resetView()
 // bp.isEditMode.value, bp.selectedIds.value, bp.screenToCanvas(x, y)
 ```
+
+Most of this is already wrapped by [`NbBlueprintControls`](/ui/components/blueprint/controls) and [`NbBlueprintMinimap`](/ui/components/blueprint/minimap); reach for `useBlueprint()` directly when building custom chrome.
 
 The returned `IBlueprintController` is a superset of the exposed instance above, plus coordinate transforms and an edit-mode flag:
 
@@ -522,6 +541,8 @@ The returned `IBlueprintController` is a superset of the exposed instance above,
 | `selectedIds`, `focusedId`                                                                                                                   | `Ref<Set<string>>`, `Ref<string \| null>`        | Live selection and focus.                                    |
 | `selectAll`, `deselectAll`                                                                                                                   | `() => void`                                     | Selection commands.                                          |
 | `centerView`, `fitToView`, `resetView`                                                                                                       | `() => void` / `(padding?: number) => void`      | View commands.                                               |
+| `zoomIn`, `zoomOut`                                                                                                                          | `() => void`                                     | Step zoom, anchored at the viewport center.                  |
+| `viewportSize`                                                                                                                               | `Ref<{ w: number; h: number }>`                  | Live container size in screen px (used by the minimap).      |
 | `alignLeft`/`alignCenter`/`alignRight`/`alignTop`/`alignMiddle`/`alignBottom`, `distributeHorizontally`/`distributeVertically`, `autoLayout` | `() => void`                                     | Alignment, distribution, and auto-layout.                    |
 | `screenToCanvas`                                                                                                                             | `(clientX: number, clientY: number) => { x; y }` | Convert viewport (client) coordinates to canvas coordinates. |
 | `canvasToScreen`                                                                                                                             | `(x: number, y: number) => { clientX; clientY }` | Convert canvas coordinates to viewport (client) coordinates. |
