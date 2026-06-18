@@ -123,9 +123,8 @@ defineExpose({ setSize })
 
 <style scoped lang="scss">
 .nb-shell-panel {
-  --nb-shell-panel-header-height: 28px;
-  --nb-shell-panel-gap: 1px;
-
+  // --nb-shell-panel-* defaults live at :root in styles/_theme.scss so consumer
+  // apps can override them on :root without fighting scoped-style specificity.
   display: flex;
   flex-direction: column;
   background: var(--nb-c-surface);

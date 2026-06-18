@@ -346,6 +346,63 @@
     --nb-c-warning: #{colors.get-color('phoenix-flames', 500)};
     --nb-c-danger: #{colors.get-color('chicken-comb', 500)};
     --nb-c-component-plain: #{colors.get-color('nouveau-gray', 500)};
+
+    // Shell — emitted at :root so consumer apps can override on :root
+    // without fighting Shell.vue's scoped-style specificity.
+    // Dark chrome derived from the brand: a near-black tint of --nb-c-primary so
+    // rebranding the primary colour re-tints the sidebar too (semantic, not a
+    // raw palette tint).
+    --nb-shell-sidebar-bg: color-mix(
+      in srgb,
+      var(--nb-c-primary) 20%,
+      var(--nb-c-black)
+    );
+    --nb-shell-sidebar-width: calc(var(--nb-base-unit) * 7); // 56px
+    --nb-shell-sidebar-link-color: color-mix(
+      in srgb,
+      var(--nb-c-white) 55%,
+      transparent
+    );
+    --nb-shell-sidebar-link-hover-bg: color-mix(
+      in srgb,
+      var(--nb-c-white) 8%,
+      transparent
+    );
+    --nb-shell-sidebar-link-hover-color: color-mix(
+      in srgb,
+      var(--nb-c-white) 90%,
+      transparent
+    );
+    --nb-shell-sidebar-link-active-bg: color-mix(
+      in srgb,
+      var(--nb-c-primary) 25%,
+      transparent
+    );
+    // Light tint of --nb-c-primary: keeps the accent on-brand and rebrandable
+    // while staying legible (~6:1) on the dark rail, where --nb-c-primary itself
+    // is too dark (~2.5:1).
+    --nb-shell-sidebar-link-active-color: color-mix(
+      in srgb,
+      var(--nb-c-primary) 60%,
+      var(--nb-c-white)
+    );
+    --nb-shell-topbar-height: calc(var(--nb-base-unit) * 6.25); // 50px
+    --nb-shell-inspector-width: calc(var(--nb-base-unit) * 70); // 560px
+    --nb-shell-inspector-expanded-width: 50vw;
+    --nb-shell-inspector-border: 1px solid var(--nb-c-border);
+    --nb-shell-inspector-bg: var(--nb-c-surface);
+
+    // Panels — emitted at :root so consumer apps can override on :root without
+    // fighting the components' scoped-style specificity.
+    --nb-shell-panel-header-height: calc(var(--nb-base-unit) * 3.5); // 28px
+    --nb-shell-panel-gap: 1px; // hairline separator, not a spacing step
+    --nb-bottom-panel-header-height: calc(var(--nb-base-unit) * 3.5); // 28px
+    --nb-bottom-panel-bg: var(--nb-c-layer-0, var(--nb-c-bg));
+    --nb-bottom-panel-border: var(--nb-c-border);
+
+    // Menu — base item height. The .nb-menu--xs/sm/md/lg size variants override
+    // this on top (state-scoped, kept in MenuItem.vue).
+    --nb-menu-item-h: calc(var(--nb-base-unit) * 5); // 40px
   }
 }
 

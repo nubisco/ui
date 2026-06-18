@@ -274,7 +274,7 @@ function onFlyoutLeave() {
   border-radius: 6px;
   border: none;
   background: none;
-  color: var(--nb-shell-sidebar-link-color, rgba(255, 255, 255, 0.7));
+  color: var(--nb-shell-sidebar-link-color);
   text-decoration: none;
   text-align: left;
   font: inherit;
@@ -288,7 +288,7 @@ function onFlyoutLeave() {
       --nb-shell-sidebar-link-hover-bg,
       rgba(255, 255, 255, 0.08)
     );
-    color: var(--nb-shell-sidebar-link-hover-color, rgba(255, 255, 255, 0.95));
+    color: var(--nb-shell-sidebar-link-hover-color);
   }
 
   &--active {
@@ -296,7 +296,7 @@ function onFlyoutLeave() {
       --nb-shell-sidebar-link-active-bg,
       rgba(124, 58, 237, 0.25)
     );
-    color: var(--nb-shell-sidebar-link-active-color, #a78bfa);
+    color: var(--nb-shell-sidebar-link-active-color);
   }
 
   &--disabled {
@@ -335,15 +335,15 @@ function onFlyoutLeave() {
   letter-spacing: 0.02em;
   padding: 1px 8px;
   border-radius: 999px;
-  background: var(--nb-shell-sidebar-link-hover-bg, rgba(255, 255, 255, 0.12));
-  color: var(--nb-shell-sidebar-link-hover-color, rgba(255, 255, 255, 0.85));
+  background: var(--nb-shell-sidebar-link-hover-bg);
+  color: var(--nb-shell-sidebar-link-hover-color);
 
   &--accent {
     background: var(
       --nb-shell-sidebar-link-active-bg,
       rgba(124, 58, 237, 0.25)
     );
-    color: var(--nb-shell-sidebar-link-active-color, #a78bfa);
+    color: var(--nb-shell-sidebar-link-active-color);
   }
   &--success {
     background: color-mix(
@@ -379,10 +379,10 @@ function onFlyoutLeave() {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--nb-shell-sidebar-link-active-color, #a78bfa);
+  background: var(--nb-shell-sidebar-link-active-color);
 
   &--accent {
-    background: var(--nb-shell-sidebar-link-active-color, #a78bfa);
+    background: var(--nb-shell-sidebar-link-active-color);
   }
   &--success {
     background: var(--nb-c-success, #22c55e);
@@ -412,8 +412,7 @@ function onFlyoutLeave() {
   display: flex;
   flex-direction: column;
   gap: 1px;
-  border-left: 1px solid
-    var(--nb-shell-sidebar-link-hover-bg, rgba(255, 255, 255, 0.08));
+  border-left: 1px solid var(--nb-shell-sidebar-link-hover-bg);
   margin-left: 0.875rem;
 }
 </style>
@@ -426,12 +425,11 @@ function onFlyoutLeave() {
   min-width: 200px;
   max-width: 280px;
   padding: 6px;
-  background: var(--nb-shell-sidebar-bg, #1a1a2e);
-  border: 1px solid
-    var(--nb-shell-sidebar-link-hover-bg, rgba(255, 255, 255, 0.08));
+  background: var(--nb-shell-sidebar-bg);
+  border: 1px solid var(--nb-shell-sidebar-link-hover-bg);
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  color: var(--nb-shell-sidebar-link-color, rgba(255, 255, 255, 0.85));
+  color: var(--nb-shell-sidebar-link-color);
   font-size: 0.8125rem;
 }
 
@@ -445,15 +443,14 @@ function onFlyoutLeave() {
 
 .nb-sidebar-menu-item__flyout-label {
   font-weight: 600;
-  color: var(--nb-shell-sidebar-link-hover-color, rgba(255, 255, 255, 0.95));
+  color: var(--nb-shell-sidebar-link-hover-color);
 }
 
 .nb-sidebar-menu-item__flyout-children {
   list-style: none;
   margin: 0;
   padding: 4px 0 0;
-  border-top: 1px solid
-    var(--nb-shell-sidebar-link-hover-bg, rgba(255, 255, 255, 0.08));
+  border-top: 1px solid var(--nb-shell-sidebar-link-hover-bg);
   display: flex;
   flex-direction: column;
   gap: 1px;

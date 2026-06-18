@@ -37,7 +37,7 @@ const variant = computed(() => variantRef.value)
   align-items: center;
   gap: 0.625rem;
   width: 100%;
-  color: var(--nb-shell-sidebar-link-hover-color, rgba(255, 255, 255, 0.95));
+  color: var(--nb-shell-sidebar-link-hover-color);
 
   &--compact {
     justify-content: center;
@@ -50,7 +50,7 @@ const variant = computed(() => variantRef.value)
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--nb-shell-sidebar-link-active-color, #a78bfa);
+  color: var(--nb-shell-sidebar-link-active-color);
 }
 
 .nb-sidebar-brand__text {
@@ -64,7 +64,7 @@ const variant = computed(() => variantRef.value)
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.02em;
-  color: var(--nb-shell-sidebar-link-active-color, #a78bfa);
+  color: var(--nb-shell-sidebar-link-active-color);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -75,7 +75,7 @@ const variant = computed(() => variantRef.value)
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--nb-shell-sidebar-link-color, rgba(255, 255, 255, 0.55));
+  color: var(--nb-shell-sidebar-link-color);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
