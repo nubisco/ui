@@ -156,29 +156,11 @@ provide('nb-shell-sidebar-variant', toRef(props, 'sidebarVariant'))
 </script>
 
 <style scoped lang="scss">
-// ── CSS variables — override on `.nb-shell` to theme per-app ──────────────────
+// Shell-level CSS variables (--nb-shell-*) are declared at :root in
+// styles/_theme.scss so consuming apps can override them on :root without
+// fighting scoped-style specificity. Only layout rules live here.
 
 .nb-shell {
-  // Sidebar
-  --nb-shell-sidebar-bg: #1a1a2e;
-  --nb-shell-sidebar-width: 56px;
-
-  // Sidebar links (consumed by NbSidebarLink via inheritance)
-  --nb-shell-sidebar-link-color: rgba(255, 255, 255, 0.55);
-  --nb-shell-sidebar-link-hover-bg: rgba(255, 255, 255, 0.08);
-  --nb-shell-sidebar-link-hover-color: rgba(255, 255, 255, 0.9);
-  --nb-shell-sidebar-link-active-bg: rgba(124, 58, 237, 0.25);
-  --nb-shell-sidebar-link-active-color: #a78bfa;
-
-  // Topbar
-  --nb-shell-topbar-height: calc(var(--nb-base-unit) * 6.25);
-
-  // Inspector
-  --nb-shell-inspector-width: 560px;
-  --nb-shell-inspector-expanded-width: 50vw;
-  --nb-shell-inspector-border: 1px solid var(--nb-c-border);
-  --nb-shell-inspector-bg: var(--nb-c-surface);
-
   // ── Layout ────────────────────────────────────────────────────────────────
 
   display: flex;
@@ -409,15 +391,15 @@ provide('nb-shell-sidebar-variant', toRef(props, 'sidebarVariant'))
   }
 
   &--xs {
-    --nb-shell-inspector-width: 288px;
+    --nb-shell-inspector-width: calc(var(--nb-base-unit) * 36); // 288px
   }
 
   &--sm {
-    --nb-shell-inspector-width: 360px;
+    --nb-shell-inspector-width: calc(var(--nb-base-unit) * 45); // 360px
   }
 
   &--md {
-    --nb-shell-inspector-width: 560px;
+    --nb-shell-inspector-width: calc(var(--nb-base-unit) * 70); // 560px
   }
 
   &--lg {
@@ -437,11 +419,12 @@ provide('nb-shell-sidebar-variant', toRef(props, 'sidebarVariant'))
 //
 // The default (compact) variant keeps the legacy 56px icon rail. The verbose
 // variant widens the sidebar and switches its children to stretch alignment so
-// full-width rows from NbSidebarMenu render correctly. CSS variables can still
-// be overridden by consumers on the `.nb-shell` selector.
+// full-width rows from NbSidebarMenu render correctly. The base
+// --nb-shell-sidebar-width default lives at :root in styles/_theme.scss;
+// this state-level override only fires when the verbose variant is active.
 
 .nb-shell--sidebar-verbose {
-  --nb-shell-sidebar-width: 240px;
+  --nb-shell-sidebar-width: calc(var(--nb-base-unit) * 30); // 240px
 
   .nb-shell__sidebar {
     align-items: stretch;

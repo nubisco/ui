@@ -135,10 +135,8 @@ defineExpose({ setSize })
 
 <style scoped lang="scss">
 .nb-bottom-panel {
-  --nb-bottom-panel-header-height: 28px;
-  --nb-bottom-panel-bg: var(--nb-c-layer-0, var(--nb-c-bg));
-  --nb-bottom-panel-border: var(--nb-c-border);
-
+  // --nb-bottom-panel-* defaults live at :root in styles/_theme.scss so consumer
+  // apps can override them on :root without fighting scoped-style specificity.
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
