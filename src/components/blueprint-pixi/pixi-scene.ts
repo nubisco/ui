@@ -11,7 +11,7 @@
 // this module statically, and those are erased at build time.
 
 import type * as PIXI from 'pixi.js'
-import type { IBlueprintCard } from '../Blueprint.types'
+import type { IBlueprintCard, TBlueprintBackground } from '../Blueprint.types'
 import type { IBlueprintWire } from '../Blueprint.renderer'
 import { makeColorResolver } from './pixi-color'
 import { CardNode, type ICardTheme, type TCardLod } from './card-paint'
@@ -28,6 +28,7 @@ export interface IPixiSceneOptions {
   width: number
   height: number
   resolution: number
+  background: TBlueprintBackground
 }
 
 interface IFlowWire {
@@ -48,6 +49,9 @@ export class PixiScene {
   private flowWires: IFlowWire[] = []
   private flowPhase = 0
   private destroyed = false
+  private background: TBlueprintBackground = 'dots'
+  private gridColor = 0x2a2a38
+  private gridTexture!: PIXI.Texture
 
   private constructor(private readonly Pixi: typeof PIXI) {
     this.app = new Pixi.Application()
@@ -88,6 +92,11 @@ export class PixiScene {
       connected: this.resolveColor('var(--nb-c-primary)', 0x6366f1),
     }
 
+    this.background = opts.background
+    this.gridColor = this.resolveColor(
+      'var(--nb-blueprint-grid-color, var(--nb-c-border))',
+      this.theme.border,
+    )
     this.grid = this.buildGrid(opts.width, opts.height)
     this.app.stage.addChild(this.grid)
 
@@ -103,32 +112,57 @@ export class PixiScene {
   }
 
   private buildGrid(width: number, height: number): PIXI.TilingSprite {
-    // One dot rendered to a small texture, tiled across the screen. The grid
-    // lives in stage (screen) space; panning/zooming maps to the tiling
-    // sprite's tilePosition/tileScale, which is far cheaper than redrawing a
-    // world-space dot field every camera change.
-    const dot = new this.Pixi.Graphics()
-      .circle(1, 1, 1)
-      .fill({ color: this.theme.border, alpha: 1 })
-    const texture = this.app.renderer.generateTexture(dot)
-    dot.destroy()
+    // A GRID_TILE-sized pattern tile, tiled across the screen. The grid lives
+    // in stage (screen) space; panning/zooming maps to the tiling sprite's
+    // tilePosition/tileScale (= zoom), which is far cheaper than redrawing a
+    // world-space pattern every camera change.
+    this.gridTexture = this.makeGridTexture(this.background)
     const sprite = new this.Pixi.TilingSprite({
-      texture,
+      texture: this.gridTexture,
       width,
       height,
     })
-    sprite.tileScale.set(GRID_TILE / texture.width)
     sprite.alpha = 0.4
+    sprite.visible = this.background !== 'none'
     return sprite
+  }
+
+  private makeGridTexture(bg: TBlueprintBackground): PIXI.Texture {
+    // A transparent full-tile rect fixes the texture size to GRID_TILE; the
+    // pattern (dot, or top+left edge lines) is drawn over it so tiling yields
+    // an evenly spaced grid.
+    const g = new this.Pixi.Graphics()
+    g.rect(0, 0, GRID_TILE, GRID_TILE).fill({ color: 0xffffff, alpha: 0 })
+    if (bg === 'dots') {
+      g.circle(1, 1, 1).fill({ color: this.gridColor, alpha: 1 })
+    } else if (bg === 'lines') {
+      g.rect(0, 0, GRID_TILE, 1).fill({ color: this.gridColor, alpha: 1 })
+      g.rect(0, 0, 1, GRID_TILE).fill({ color: this.gridColor, alpha: 1 })
+    }
+    const texture = this.app.renderer.generateTexture(g)
+    g.destroy()
+    return texture
+  }
+
+  /** Switch the background pattern at runtime. */
+  setBackground(bg: TBlueprintBackground): void {
+    if (this.destroyed || bg === this.background) return
+    this.background = bg
+    const old = this.gridTexture
+    this.gridTexture = this.makeGridTexture(bg)
+    this.grid.texture = this.gridTexture
+    this.grid.visible = bg !== 'none'
+    old?.destroy(true)
   }
 
   setCamera(panX: number, panY: number, zoom: number): void {
     if (this.destroyed) return
     this.world.position.set(panX, panY)
     this.world.scale.set(zoom)
-    // Grid follows the camera: dots scale with zoom and slide with pan.
+    // Grid follows the camera: the GRID_TILE-sized pattern scales with zoom
+    // and slides with pan.
     this.grid.tilePosition.set(panX, panY)
-    this.grid.tileScale.set((GRID_TILE * zoom) / GRID_TILE) // = zoom
+    this.grid.tileScale.set(zoom)
   }
 
   /** Redraw the static wire layer and rebuild the flow set. */

@@ -51,6 +51,8 @@ import NbBottomPanel from './BottomPanel.vue'
 import NbShellPanel from './ShellPanel.vue'
 import NbBlueprint from './Blueprint.vue'
 import NbBlueprintCard from './BlueprintCard.vue'
+import NbBlueprintControls from './BlueprintControls.vue'
+import NbBlueprintMinimap from './BlueprintMinimap.vue'
 
 const components = {
   NbAiLabel,
@@ -105,6 +107,8 @@ const components = {
   NbShellPanel,
   NbBlueprint,
   NbBlueprintCard,
+  NbBlueprintControls,
+  NbBlueprintMinimap,
 }
 
 export default {

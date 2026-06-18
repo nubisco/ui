@@ -1,8 +1,13 @@
 <template>
   <!-- Grid background. Camera-transformed so it pans/zooms with the
        scene. Default transform-origin (centre) is intentional: the tiled
-       radial pattern reads the same regardless of pan. -->
-  <div class="nb-blueprint__grid" :style="gridStyle" />
+       pattern reads the same regardless of pan. -->
+  <div
+    v-if="background !== 'none'"
+    class="nb-blueprint__grid"
+    :class="`nb-blueprint__grid--${background}`"
+    :style="gridStyle"
+  />
 
   <!-- Panned + zoomed canvas: the scene root. -->
   <div class="nb-blueprint__canvas" :style="canvasStyle">
@@ -123,14 +128,12 @@ const canvasStyle = computed(() => ({
 
 <style scoped lang="scss">
 .nb-blueprint__grid {
+  --nb-blueprint-grid-gap: 24px;
+  --_grid-color: var(--nb-blueprint-grid-color, var(--nb-c-border));
+
   position: absolute;
   inset: -2000px;
-  background-image: radial-gradient(
-    circle,
-    var(--nb-c-border) 1px,
-    transparent 1px
-  );
-  background-size: 24px 24px;
+  background-size: var(--nb-blueprint-grid-gap) var(--nb-blueprint-grid-gap);
   pointer-events: none;
   opacity: 0.4;
   mask-image: radial-gradient(
@@ -143,6 +146,20 @@ const canvasStyle = computed(() => ({
     #000 40%,
     transparent 100%
   );
+
+  &--dots {
+    background-image: radial-gradient(
+      circle,
+      var(--_grid-color) 1px,
+      transparent 1px
+    );
+  }
+
+  &--lines {
+    background-image:
+      linear-gradient(to right, var(--_grid-color) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--_grid-color) 1px, transparent 1px);
+  }
 }
 
 .nb-blueprint__canvas {

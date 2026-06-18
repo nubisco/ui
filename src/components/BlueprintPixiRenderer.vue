@@ -155,6 +155,7 @@ async function initScene(): Promise<void> {
       width,
       height,
       resolution: window.devicePixelRatio || 1,
+      background: props.background,
     })
     // Component may have unmounted during the async init.
     if (!canvasRef.value) {
@@ -202,6 +203,10 @@ watch([() => props.visibleCards, cardLod], ([cards, lod]) =>
   scene?.setCards(cards, lod),
 )
 watch(domVisible, (v) => scene?.setCardLayerVisible(!v))
+watch(
+  () => props.background,
+  (bg) => scene?.setBackground(bg),
+)
 
 onMounted(initScene)
 onBeforeUnmount(() => {
