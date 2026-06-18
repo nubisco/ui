@@ -106,6 +106,10 @@ export interface IBlueprintCardPaint {
  *  when a WebGL-capable client renderer is available, else `'dom'`. */
 export type TBlueprintRenderer = 'auto' | 'dom' | 'pixi'
 
+/** Built-in canvas background pattern. Color and spacing are themable via
+ *  `--nb-blueprint-grid-color` and `--nb-blueprint-grid-gap`. */
+export type TBlueprintBackground = 'dots' | 'lines' | 'none'
+
 export interface IBlueprintProps {
   /**
    * Wire connections between card ports.
@@ -177,6 +181,12 @@ export interface IBlueprintProps {
    * renderers; only the draw layer changes.
    */
   renderer?: TBlueprintRenderer
+  /**
+   * Canvas background pattern. `'dots'` (default) is the standard dot grid,
+   * `'lines'` a ruled grid, `'none'` an empty canvas. Color and spacing are
+   * themable via `--nb-blueprint-grid-color` and `--nb-blueprint-grid-gap`.
+   */
+  background?: TBlueprintBackground
 }
 
 /** A point in canvas space (the same units as card `x`/`y` and the
@@ -222,6 +232,10 @@ export interface IBlueprintController {
   fitToView: (padding?: number) => void
   /** Reset pan to 0,0 and zoom to 1. */
   resetView: () => void
+  /** Zoom in one step, anchored at the viewport center. */
+  zoomIn: () => void
+  /** Zoom out one step, anchored at the viewport center. */
+  zoomOut: () => void
   alignLeft: () => void
   alignCenter: () => void
   alignRight: () => void
@@ -237,6 +251,9 @@ export interface IBlueprintController {
   canvasToScreen: (x: number, y: number) => IBlueprintScreenPoint
   /** Live edit-mode flag, derived from the `editable` prop. */
   isEditMode: Ref<boolean>
+  /** Live viewport size in screen px (the blueprint container). Used by the
+   *  minimap to draw the visible-area rectangle. */
+  viewportSize: Ref<{ w: number; h: number }>
   /** Forwarded port handlers (same as the narrow card context). */
   onPortDown: (event: IBlueprintCardPortEvent) => void
   onPortUp: (event: IBlueprintCardPortEvent) => void

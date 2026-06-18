@@ -93,6 +93,7 @@ describe('BlueprintPixiRenderer DOM contract', () => {
     visibleCards: [],
     dragWire: null,
     shouldFlow: () => false,
+    background: 'dots' as const,
   }
   const conn = { fromNode: 'a', fromPort: 'out', toNode: 'b', toPort: 'in' }
   const wire = {

@@ -29,6 +29,7 @@
       :visible-cards="visibleCards"
       :drag-wire="dragWire"
       :should-flow="shouldFlow"
+      :background="background"
       @wire-mousedown="onWireMouseDown"
       @wire-contextmenu="onWireContextMenu"
       @wire-mousemove="onWireMouseMove"
@@ -52,6 +53,7 @@
       :visible-cards="visibleCards"
       :drag-wire="dragWire"
       :should-flow="shouldFlow"
+      :background="background"
       @wire-mousedown="onWireMouseDown"
       @wire-contextmenu="onWireContextMenu"
       @wire-mousemove="onWireMouseMove"
@@ -118,6 +120,15 @@
         </button>
       </slot>
     </div>
+
+    <!-- Viewport-space chrome layer: optional NubiscoUI blueprint chrome
+         (controls toolbar, minimap) and any host overlay. Rendered in both
+         the windowed and legacy APIs (unlike the camera-transformed card
+         slots), and positioned in screen space. Children opt back into
+         pointer events; the layer itself is transparent to canvas gestures. -->
+    <div class="nb-blueprint__chrome">
+      <slot name="chrome" />
+    </div>
   </div>
 </template>
 
@@ -155,6 +166,7 @@ const props = withDefaults(defineProps<IBlueprintProps>(), {
   wheelMode: 'auto',
   editable: false,
   renderer: 'auto',
+  background: 'dots',
 })
 
 // Which renderer actually draws the scene. The DOM renderer is always
@@ -591,6 +603,23 @@ function zoomAt(clientX: number, clientY: number, factor: number) {
   panX.value = mouseX - canvasX * newZoom
   panY.value = mouseY - canvasY * newZoom
   zoom.value = newZoom
+}
+
+// Zoom by a step anchored at the viewport center. Used by the controls
+// toolbar (and exposed on the controller) so a zoom button keeps the middle
+// of the canvas put, the way a user expects, rather than zooming toward the
+// origin.
+const ZOOM_STEP = 1.2
+function zoomAtCenter(factor: number) {
+  const rect = containerRef.value?.getBoundingClientRect()
+  if (!rect) return
+  zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, factor)
+}
+function zoomIn() {
+  zoomAtCenter(ZOOM_STEP)
+}
+function zoomOut() {
+  zoomAtCenter(1 / ZOOM_STEP)
 }
 
 function onWheel(e: WheelEvent) {
@@ -1130,6 +1159,8 @@ provide(NB_BLUEPRINT_CONTROLLER, {
   centerView,
   fitToView,
   resetView,
+  zoomIn,
+  zoomOut,
   alignLeft,
   alignCenter,
   alignRight,
@@ -1142,6 +1173,7 @@ provide(NB_BLUEPRINT_CONTROLLER, {
   screenToCanvas,
   canvasToScreen,
   isEditMode,
+  viewportSize,
   onPortDown: (e: IBlueprintCardPortEvent) => onPortMouseDown(e),
   onPortUp: (e: IBlueprintCardPortEvent) => onPortMouseUp(e),
 })
@@ -1969,6 +2001,8 @@ defineExpose({
   centerView,
   fitToView,
   resetView,
+  zoomIn,
+  zoomOut,
   // Selection and focus
   selectedIds,
   focusedId,
@@ -2013,6 +2047,18 @@ defineExpose({
 }
 
 // Ambient radial gradients for atmosphere
+.nb-blueprint__chrome {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+
+  // Chrome children (toolbar, minimap) opt back into pointer events.
+  :deep(> *) {
+    pointer-events: auto;
+  }
+}
+
 .nb-blueprint__ambient {
   position: absolute;
   inset: 0;

@@ -128,7 +128,15 @@ export type {
   IBlueprintScreenPoint,
   IBlueprintCardPaint,
   TBlueprintRenderer,
+  TBlueprintBackground,
 } from './components/Blueprint.types'
+export { default as NbBlueprintControls } from './components/BlueprintControls.vue'
+export type {
+  IBlueprintControlsProps,
+  TBlueprintChromePosition,
+} from './components/BlueprintControls.d'
+export { default as NbBlueprintMinimap } from './components/BlueprintMinimap.vue'
+export type { IBlueprintMinimapProps } from './components/BlueprintMinimap.d'
 export {
   NB_BLUEPRINT_CONTEXT,
   NB_BLUEPRINT_CONTROLLER,

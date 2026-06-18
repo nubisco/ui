@@ -1,4 +1,8 @@
-import type { IBlueprintCard, IBlueprintConnection } from './Blueprint.types'
+import type {
+  IBlueprintCard,
+  IBlueprintConnection,
+  TBlueprintBackground,
+} from './Blueprint.types'
 
 export type { TBlueprintRenderer } from './Blueprint.types'
 
@@ -60,6 +64,8 @@ export interface IBlueprintRendererProps {
    *  Centralises the `animateConnections` policy in NbBlueprint so renderers
    *  stay policy-free. */
   shouldFlow: (conn: IBlueprintConnection) => boolean
+  /** Background pattern to draw behind the scene. */
+  background: TBlueprintBackground
 }
 
 /**

@@ -30,6 +30,7 @@ const baseProps = {
   visibleCards: [],
   dragWire: null,
   shouldFlow: () => false,
+  background: 'dots' as const,
 }
 
 afterEach(() => {
@@ -58,6 +59,17 @@ describe('BlueprintDomRenderer', () => {
     // payload is [MouseEvent, conn] (Vue wraps the prop in a reactive
     // proxy, so compare by value, not identity)
     expect(ev![0][1]).toEqual(conn)
+  })
+
+  it('renders the grid with the chosen background variant', () => {
+    const dots = mount(BlueprintDomRenderer, {
+      props: { ...baseProps, wires: [], background: 'lines' as const },
+    })
+    expect(dots.find('.nb-blueprint__grid--lines').exists()).toBe(true)
+    const none = mount(BlueprintDomRenderer, {
+      props: { ...baseProps, wires: [], background: 'none' as const },
+    })
+    expect(none.find('.nb-blueprint__grid').exists()).toBe(false)
   })
 
   it('applies the camera transform to the canvas', () => {
