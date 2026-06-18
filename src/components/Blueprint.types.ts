@@ -1,3 +1,5 @@
+import type { Ref } from 'vue'
+
 export interface IBlueprintConnection {
   fromNode: string
   fromPort: string
@@ -59,6 +61,10 @@ export interface IBlueprintCard {
   height?: number
 }
 
+/** How NbBlueprint should pick a renderer. `'auto'` resolves to `'pixi'`
+ *  when a WebGL-capable client renderer is available, else `'dom'`. */
+export type TBlueprintRenderer = 'auto' | 'dom' | 'pixi'
+
 export interface IBlueprintProps {
   /**
    * Wire connections between card ports.
@@ -108,6 +114,91 @@ export interface IBlueprintProps {
    *   - `'pan'`: every wheel event pans, never zooms.
    */
   wheelMode?: 'auto' | 'zoom' | 'pan'
+  /**
+   * Whether the blueprint is in edit mode. Surfaced through the injected
+   * controller as `isEditMode` so optional chrome (a controls toolbar,
+   * etc.) can show itself only while editing. Purely advisory: it does not
+   * change pan/zoom/selection behaviour, which are always interactive.
+   * Default false.
+   */
+  editable?: boolean
+  /**
+   * Which rendering backend to draw the scene with.
+   *
+   *   - `'auto'` (default): use the PixiJS (WebGL) renderer when a
+   *     WebGL-capable client renderer is available, else fall back to the
+   *     DOM/SVG renderer. SSR always uses DOM.
+   *   - `'dom'`: force the DOM/SVG renderer (today's behaviour).
+   *   - `'pixi'`: force the PixiJS renderer; falls back to DOM with a
+   *     dev-time warning when it is not available.
+   *
+   * The public API (props, events, exposed methods) is identical across
+   * renderers; only the draw layer changes.
+   */
+  renderer?: TBlueprintRenderer
+}
+
+/** A point in canvas space (the same units as card `x`/`y` and the
+ *  `move` event payload). */
+export interface IBlueprintCanvasPoint {
+  x: number
+  y: number
+}
+
+/** A point in viewport space (client pixels, e.g. `MouseEvent.clientX/Y`). */
+export interface IBlueprintScreenPoint {
+  clientX: number
+  clientY: number
+}
+
+/**
+ * The full controller NbBlueprint provides via `inject` (key
+ * `NB_BLUEPRINT_CONTROLLER`). It is a superset of
+ * `IBlueprintCardContext`: child cards keep injecting the narrow card
+ * context for port dragging, while sibling chrome (background, minimap,
+ * controls toolbar) and host apps reach the camera, selection, view
+ * actions, and coordinate transforms through this richer surface. Mirror
+ * of `defineExpose` plus coordinate helpers and an edit-mode flag.
+ *
+ * Obtain it from inside a NbBlueprint subtree with `useBlueprint()`.
+ */
+export interface IBlueprintController {
+  /** Live, writable horizontal pan offset (screen px). */
+  panX: Ref<number>
+  /** Live, writable vertical pan offset (screen px). */
+  panY: Ref<number>
+  /** Live, writable zoom factor (1 = 100%). */
+  zoom: Ref<number>
+  /** Live set of selected card ids. */
+  selectedIds: Ref<Set<string>>
+  /** Live focused card id (single-card inspector target), or null. */
+  focusedId: Ref<string | null>
+  selectAll: () => void
+  deselectAll: () => void
+  /** Reset zoom to 1 and centre the graph in the viewport. */
+  centerView: () => void
+  /** Zoom/pan so the whole graph fits, with optional padding (px). */
+  fitToView: (padding?: number) => void
+  /** Reset pan to 0,0 and zoom to 1. */
+  resetView: () => void
+  alignLeft: () => void
+  alignCenter: () => void
+  alignRight: () => void
+  alignTop: () => void
+  alignMiddle: () => void
+  alignBottom: () => void
+  distributeHorizontally: () => void
+  distributeVertically: () => void
+  autoLayout: () => void
+  /** Convert viewport (client) coordinates to canvas coordinates. */
+  screenToCanvas: (clientX: number, clientY: number) => IBlueprintCanvasPoint
+  /** Convert canvas coordinates to viewport (client) coordinates. */
+  canvasToScreen: (x: number, y: number) => IBlueprintScreenPoint
+  /** Live edit-mode flag, derived from the `editable` prop. */
+  isEditMode: Ref<boolean>
+  /** Forwarded port handlers (same as the narrow card context). */
+  onPortDown: (event: IBlueprintCardPortEvent) => void
+  onPortUp: (event: IBlueprintCardPortEvent) => void
 }
 
 /**

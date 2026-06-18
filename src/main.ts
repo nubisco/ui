@@ -123,7 +123,14 @@ export type {
   IBlueprintCard,
   IBlueprintCardMove,
   IBlueprintProps,
+  IBlueprintController,
+  IBlueprintCanvasPoint,
+  IBlueprintScreenPoint,
 } from './components/Blueprint.types'
+export {
+  NB_BLUEPRINT_CONTEXT,
+  NB_BLUEPRINT_CONTROLLER,
+} from './components/Blueprint.context'
 export { default as NbBlueprintCard } from './components/BlueprintCard.vue'
 export type {
   IBlueprintPort,
@@ -138,6 +145,7 @@ export { dismissAllTooltips } from './directives/ToolTip.directive'
 // Composables
 export { useCommandPalette } from './composables/useCommandPalette.composable'
 export { useContextMenu } from './composables/useContextMenu.composable'
+export { useBlueprint } from './composables/useBlueprint.composable'
 
 // Plugins
 export { NbCommandPalettePlugin } from './plugins/commandPalette'
