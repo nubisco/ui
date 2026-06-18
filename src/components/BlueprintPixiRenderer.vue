@@ -113,8 +113,13 @@ let resizeObserver: ResizeObserver | undefined
 // transform tracks the camera at all times so port positions stay correct
 // for NbBlueprint's wire computation even while hidden (cheap: a transform
 // on a hidden layer is not composited).
+// In legacy (non-windowed) mode the host owns arbitrary card DOM that Pixi
+// cannot paint, so the DOM overlay stays visible at all times (Pixi only
+// accelerates the grid and wires there). In windowed mode Pixi paints the
+// visible cards, so the DOM overlay can hide during gestures / at far zoom.
 const domVisible = computed(
-  () => !props.isTransforming && props.zoom >= DOM_ZOOM_MIN,
+  () =>
+    !props.windowed || (!props.isTransforming && props.zoom >= DOM_ZOOM_MIN),
 )
 const cardLod = computed<TCardLod>(() =>
   props.zoom >= DOM_ZOOM_MIN ? 'full' : 'box',
