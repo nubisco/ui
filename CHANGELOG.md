@@ -1,3 +1,10 @@
+## [1.39.1](https://github.com/nubisco/ui/compare/v1.39.0...v1.39.1) (2026-06-18)
+
+
+### Bug Fixes
+
+* **theme:** make component theme tokens overridable from :root and system-derived ([daf4c5e](https://github.com/nubisco/ui/commit/daf4c5e80c1c17612bdd536438853ffe33ce7f2c))
+
 # [1.39.0](https://github.com/nubisco/ui/compare/v1.38.5...v1.39.0) (2026-06-17)
 
 
