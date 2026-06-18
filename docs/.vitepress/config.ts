@@ -178,6 +178,14 @@ export default withMermaid(
                         link: '/ui/components/blueprint/overview',
                       },
                       { text: 'Card', link: '/ui/components/blueprint/card' },
+                      {
+                        text: 'Controls',
+                        link: '/ui/components/blueprint/controls',
+                      },
+                      {
+                        text: 'Minimap',
+                        link: '/ui/components/blueprint/minimap',
+                      },
                     ],
                   },
                   { text: 'Calendar', link: '/ui/components/calendar' },
