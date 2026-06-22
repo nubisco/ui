@@ -1,3 +1,10 @@
+import type { Ref } from 'vue'
+import type {
+  IBlueprintPort,
+  TBlueprintCardStatus,
+} from './BlueprintCard.types'
+import type { BlueprintLiveData } from './blueprint-pixi/live-data'
+
 export interface IBlueprintConnection {
   fromNode: string
   fromPort: string
@@ -50,6 +57,17 @@ export interface IBlueprintCard {
   /** Canvas-space top. */
   y: number
   /**
+   * Visual data for the PixiJS renderer's native card painter. The DOM
+   * renderer ignores this (it renders the real `#card` slot). The PixiJS
+   * renderer draws cards natively while panning/zooming and at far zoom,
+   * where it cannot run the Vue `#card` component; it reads this descriptor
+   * (or, as a fallback, well-known top-level fields `title`/`color`/`ports`
+   * on the card object) to paint a faithful card. Omit it and far/gesture
+   * cards render as a plain accent-colored box with the id. See
+   * [IBlueprintCardPaint].
+   */
+  paint?: IBlueprintCardPaint
+  /**
    * Card box size in canvas units. Optional: when omitted the windowing
    * test falls back to `cardSizeEstimate`. Providing real sizes makes the
    * off-screen cull tighter (a tall card won't be dropped a frame early)
@@ -57,7 +75,69 @@ export interface IBlueprintCard {
    */
   width?: number
   height?: number
+  /**
+   * GPU-rendered live meters for this card. The PixiJS renderer draws these
+   * on the GPU (one batched layer for the whole graph) from the non-reactive
+   * live channel, so a card full of audio meters animates without any Vue
+   * re-render or per-element DOM/CSS write. Geometry is in card-local px (the
+   * meter's box relative to the card's top-left). The DOM renderer ignores it.
+   */
+  meters?: IBlueprintMeter[]
 }
+
+/**
+ * One GPU-drawn live meter on a card. Its `value` is read each render tick from
+ * the blueprint's live channel under `id` (0..1) and drawn as a fill that grows
+ * from the bottom, coloured green -> yellow -> red by level. No Vue, no per-frame
+ * DOM write: the cost is a sprite scale + tint on the GPU.
+ */
+export interface IBlueprintMeter {
+  /** Key into the live channel for this meter's current value (0..1). */
+  id: string
+  /** Meter box in card-local px (relative to the card's top-left). */
+  x: number
+  y: number
+  w: number
+  h: number
+  /** `bar` = solid fill; `ladder` = solid fill behind static segment gaps. */
+  kind?: 'bar' | 'ladder'
+  /** Segment count for `ladder` (ignored for `bar`). Default 16. */
+  segments?: number
+}
+
+/**
+ * Visual descriptor the PixiJS renderer's native card painter draws from
+ * (see `IBlueprintCard.paint`). A structured subset of the NbBlueprintCard
+ * props: enough to paint a faithful card at far zoom and during gestures
+ * without running the Vue component. All fields optional; the painter falls
+ * back to an accent box when a field is missing.
+ */
+export interface IBlueprintCardPaint {
+  /** Card title drawn in the header. */
+  title?: string
+  /** Accent color (CSS color string); drives the top bar and outline. */
+  color?: string
+  /** Category label under the title. */
+  category?: string
+  /** Status dot (valid / warning / error / none). */
+  status?: TBlueprintCardStatus
+  /** Whether the card is collapsed (header only). */
+  collapsed?: boolean
+  /** Port definitions; the painter places pins on the left/right edges. */
+  ports?: IBlueprintPort[]
+  /** Ids of ports drawn as connected (filled). */
+  connectedPorts?: string[]
+  /** Ids of ports drawn as active (glow). */
+  activePorts?: string[]
+}
+
+/** How NbBlueprint should pick a renderer. `'auto'` resolves to `'pixi'`
+ *  when a WebGL-capable client renderer is available, else `'dom'`. */
+export type TBlueprintRenderer = 'auto' | 'dom' | 'pixi'
+
+/** Built-in canvas background pattern. Color and spacing are themable via
+ *  `--nb-blueprint-grid-color` and `--nb-blueprint-grid-gap`. */
+export type TBlueprintBackground = 'dots' | 'lines' | 'none'
 
 export interface IBlueprintProps {
   /**
@@ -108,6 +188,113 @@ export interface IBlueprintProps {
    *   - `'pan'`: every wheel event pans, never zooms.
    */
   wheelMode?: 'auto' | 'zoom' | 'pan'
+  /**
+   * Whether the blueprint is in edit mode. Surfaced through the injected
+   * controller as `isEditMode` so optional chrome (a controls toolbar,
+   * etc.) can show itself only while editing. Purely advisory: it does not
+   * change pan/zoom/selection behaviour, which are always interactive.
+   * Default false.
+   */
+  editable?: boolean
+  /**
+   * Which rendering backend to draw the scene with.
+   *
+   *   - `'auto'` (default): use the PixiJS (WebGL) renderer when a
+   *     WebGL-capable client renderer is available, else fall back to the
+   *     DOM/SVG renderer. SSR always uses DOM.
+   *   - `'dom'`: force the DOM/SVG renderer (today's behaviour).
+   *   - `'pixi'`: force the PixiJS renderer; falls back to DOM with a
+   *     dev-time warning when it is not available.
+   *
+   * The public API (props, events, exposed methods) is identical across
+   * renderers; only the draw layer changes.
+   */
+  renderer?: TBlueprintRenderer
+  /**
+   * Canvas background pattern. `'dots'` (default) is the standard dot grid,
+   * `'lines'` a ruled grid, `'none'` an empty canvas. Color and spacing are
+   * themable via `--nb-blueprint-grid-color` and `--nb-blueprint-grid-gap`.
+   */
+  background?: TBlueprintBackground
+}
+
+/** A point in canvas space (the same units as card `x`/`y` and the
+ *  `move` event payload). */
+export interface IBlueprintCanvasPoint {
+  x: number
+  y: number
+}
+
+/** A point in viewport space (client pixels, e.g. `MouseEvent.clientX/Y`). */
+export interface IBlueprintScreenPoint {
+  clientX: number
+  clientY: number
+}
+
+/**
+ * The full controller NbBlueprint provides via `inject` (key
+ * `NB_BLUEPRINT_CONTROLLER`). It is a superset of
+ * `IBlueprintCardContext`: child cards keep injecting the narrow card
+ * context for port dragging, while sibling chrome (background, minimap,
+ * controls toolbar) and host apps reach the camera, selection, view
+ * actions, and coordinate transforms through this richer surface. Mirror
+ * of `defineExpose` plus coordinate helpers and an edit-mode flag.
+ *
+ * Obtain it from inside a NbBlueprint subtree with `useBlueprint()`.
+ */
+export interface IBlueprintController {
+  /** Live, writable horizontal pan offset (screen px). */
+  panX: Ref<number>
+  /** Live, writable vertical pan offset (screen px). */
+  panY: Ref<number>
+  /** Live, writable zoom factor (1 = 100%). */
+  zoom: Ref<number>
+  /** Live set of selected card ids. */
+  selectedIds: Ref<Set<string>>
+  /** Live focused card id (single-card inspector target), or null. */
+  focusedId: Ref<string | null>
+  selectAll: () => void
+  deselectAll: () => void
+  /** Reset zoom to 1 and centre the graph in the viewport. */
+  centerView: () => void
+  /** Zoom/pan so the whole graph fits, with optional padding (px). */
+  fitToView: (padding?: number) => void
+  /** Reset pan to 0,0 and zoom to 1. */
+  resetView: () => void
+  /** Zoom in one step, anchored at the viewport center. */
+  zoomIn: () => void
+  /** Zoom out one step, anchored at the viewport center. */
+  zoomOut: () => void
+  alignLeft: () => void
+  alignCenter: () => void
+  alignRight: () => void
+  alignTop: () => void
+  alignMiddle: () => void
+  alignBottom: () => void
+  distributeHorizontally: () => void
+  distributeVertically: () => void
+  autoLayout: () => void
+  /** Convert viewport (client) coordinates to canvas coordinates. */
+  screenToCanvas: (clientX: number, clientY: number) => IBlueprintCanvasPoint
+  /** Convert canvas coordinates to viewport (client) coordinates. */
+  canvasToScreen: (x: number, y: number) => IBlueprintScreenPoint
+  /** Live edit-mode flag, derived from the `editable` prop. */
+  isEditMode: Ref<boolean>
+  /** Live viewport size in screen px (the blueprint container). Used by the
+   *  minimap to draw the visible-area rectangle. */
+  viewportSize: Ref<{ w: number; h: number }>
+  /** True while a pan/zoom gesture is in flight (drops ~220ms after the last
+   *  gesture frame). A host can read this to pause expensive per-card content
+   *  (live meters) during a gesture, so the cards stay static and cheap to
+   *  composite while moving. */
+  isTransforming: Ref<boolean>
+  /** Forwarded port handlers (same as the narrow card context). */
+  onPortDown: (event: IBlueprintCardPortEvent) => void
+  onPortUp: (event: IBlueprintCardPortEvent) => void
+  /** Non-reactive live-value channel. Write high-frequency values (wire levels
+   *  keyed `from|fromPort|to|toPort`, 0..1) here at audio rate with zero Vue
+   *  cost; the PixiJS renderer reads them on its throttled GPU tick. */
+  live: BlueprintLiveData
 }
 
 /**

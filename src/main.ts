@@ -123,7 +123,25 @@ export type {
   IBlueprintCard,
   IBlueprintCardMove,
   IBlueprintProps,
+  IBlueprintController,
+  IBlueprintCanvasPoint,
+  IBlueprintScreenPoint,
+  IBlueprintCardPaint,
+  TBlueprintRenderer,
+  TBlueprintBackground,
 } from './components/Blueprint.types'
+export { default as NbBlueprintControls } from './components/BlueprintControls.vue'
+export type {
+  IBlueprintControlsProps,
+  TBlueprintChromePosition,
+} from './components/BlueprintControls.d'
+export { default as NbBlueprintMinimap } from './components/BlueprintMinimap.vue'
+export type { IBlueprintMinimapProps } from './components/BlueprintMinimap.d'
+export {
+  NB_BLUEPRINT_CONTEXT,
+  NB_BLUEPRINT_CONTROLLER,
+} from './components/Blueprint.context'
+export { BlueprintLiveData } from './components/blueprint-pixi/live-data'
 export { default as NbBlueprintCard } from './components/BlueprintCard.vue'
 export type {
   IBlueprintPort,
@@ -138,6 +156,7 @@ export { dismissAllTooltips } from './directives/ToolTip.directive'
 // Composables
 export { useCommandPalette } from './composables/useCommandPalette.composable'
 export { useContextMenu } from './composables/useContextMenu.composable'
+export { useBlueprint } from './composables/useBlueprint.composable'
 
 // Plugins
 export { NbCommandPalettePlugin } from './plugins/commandPalette'
