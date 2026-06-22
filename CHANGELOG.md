@@ -1,3 +1,10 @@
+# [1.41.0](https://github.com/nubisco/ui/compare/v1.40.0...v1.41.0) (2026-06-22)
+
+
+### Features
+
+* **styles:** self-host default fonts via a configurable fonts() plugin ([a05a2a9](https://github.com/nubisco/ui/commit/a05a2a9e78e32c10de89777455e0a72bc941c21f))
+
 # [1.40.0](https://github.com/nubisco/ui/compare/v1.39.1...v1.40.0) (2026-06-22)
 
 
