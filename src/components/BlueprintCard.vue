@@ -68,6 +68,7 @@
           <button
             class="nb-blueprint-card__collapse"
             :title="collapsed ? 'Expand' : 'Collapse'"
+            @mousedown.stop
             @click.stop="$emit('toggle-collapse', id)"
           >
             <svg
@@ -99,6 +100,7 @@
           <label
             v-if="enabled !== undefined"
             class="nb-blueprint-card__toggle"
+            @mousedown.stop
             @click.stop
           >
             <input
@@ -115,6 +117,7 @@
             v-if="removable"
             class="nb-blueprint-card__remove"
             title="Remove"
+            @mousedown.stop
             @click.stop="$emit('remove', id)"
           >
             &times;
