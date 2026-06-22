@@ -1,3 +1,10 @@
+# [1.40.0](https://github.com/nubisco/ui/compare/v1.39.1...v1.40.0) (2026-06-22)
+
+
+### Features
+
+* **blueprint:** WebGL render-on-demand renderer, controls/minimap, live-data channel ([#3](https://github.com/nubisco/ui/issues/3)) ([161e281](https://github.com/nubisco/ui/commit/161e281bcf2af7d6e3ec89442e973cc6ead0f7a1)), closes [hi#frequency](https://github.com/hi/issues/frequency)
+
 ## [1.39.1](https://github.com/nubisco/ui/compare/v1.39.0...v1.39.1) (2026-06-18)
 
 
