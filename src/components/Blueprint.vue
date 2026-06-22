@@ -12,115 +12,62 @@
     <!-- Ambient gradient overlays -->
     <div class="nb-blueprint__ambient" />
 
-    <!-- Grid background -->
-    <div
-      class="nb-blueprint__grid"
-      :style="{
-        transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
-        willChange: isTransforming ? 'transform' : undefined,
-      }"
-    />
-
-    <!-- Panned + zoomed canvas -->
-    <div
-      class="nb-blueprint__canvas"
-      :style="{
-        transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
-        transformOrigin: '0 0',
-        willChange: isTransforming ? 'transform' : undefined,
-      }"
+    <!-- Scene renderer. The DOM/SVG renderer draws the camera-transformed
+         grid, wires, and cards today; a PixiJS (WebGL) renderer slots in as
+         a sibling branch (chosen by `resolvedRenderer`) in a later phase.
+         NbBlueprint keeps all gesture / selection / drag / event logic and
+         feeds the renderer a pre-computed, already-culled scene, then
+         forwards the `#card` (windowed) and default (legacy) slots. -->
+    <BlueprintDomRenderer
+      v-if="resolvedRenderer === 'dom'"
+      :pan-x="panX"
+      :pan-y="panY"
+      :zoom="zoom"
+      :is-transforming="isTransforming"
+      :wires="computedWires"
+      :windowed="!!props.cards"
+      :visible-cards="visibleCards"
+      :drag-wire="dragWire"
+      :should-flow="shouldFlow"
+      :background="background"
+      @wire-mousedown="onWireMouseDown"
+      @wire-contextmenu="onWireContextMenu"
+      @wire-mousemove="onWireMouseMove"
+      @wire-mouseleave="onWireMouseLeave"
     >
-      <!-- Wire SVG layer -->
-      <svg class="nb-blueprint__wires">
-        <!-- One <g> per wire so the visible stroke and its invisible
-             14 px hit-region stay siblings. The hit-region catches
-             pointer events (cursor + mousedown + right-click); the
-             visible stroke is decorative (pointer-events: none). The
-             generous hit width makes endpoint-grab / right-click easy
-             without thickening the drawn line. -->
-        <g
-          v-for="(wire, i) in computedWires"
-          :key="i"
-          class="nb-blueprint__wire-group"
-        >
-          <path
-            :d="wire.path"
-            fill="none"
-            stroke="transparent"
-            stroke-width="14"
-            class="nb-blueprint__wire-hitregion"
-            :data-wire-index="i"
-            @mousedown="onWireMouseDown($event, wire.conn)"
-            @contextmenu.prevent="onWireContextMenu($event, wire.conn)"
-            @mousemove="onWireMouseMove($event, wire.conn)"
-            @mouseleave="onWireMouseLeave(wire.conn)"
-          />
-          <path
-            :d="wire.path"
-            fill="none"
-            :stroke="wire.color"
-            stroke-width="1.5"
-            class="nb-blueprint__wire"
-            :class="{
-              'nb-blueprint__wire--inactive': wire.conn.active === false,
-            }"
-            pointer-events="none"
-          />
-        </g>
-        <!-- Animated flow overlay for each wire. Visibility comes from
-             `shouldFlow` so 'never' / 'always' / 'on-activity' /
-             'levels' all share one rule (instead of the template having
-             to know about every mode). -->
-        <path
-          v-for="(wire, i) in computedWires"
-          v-show="shouldFlow(wire.conn)"
-          :key="`flow-${i}`"
-          :d="wire.path"
-          fill="none"
-          :stroke="wire.color"
-          stroke-width="1.5"
-          stroke-dasharray="4 8"
-          class="nb-blueprint__wire-flow"
-          pointer-events="none"
-        />
-        <!-- Active wire being dragged -->
-        <path
-          v-if="dragWire"
-          :d="dragWire"
-          fill="none"
-          stroke="var(--nb-c-primary)"
-          stroke-width="2"
-          stroke-dasharray="6 3"
-          opacity="0.6"
-        />
-      </svg>
-
-      <!-- Card layer.
-           Windowed API (`cards` prop): Blueprint owns the v-for and the
-           absolute position wrappers and renders each card through the
-           `#card` scoped slot, mounting only `visibleCards`. The wrapper is
-           a direct child of the canvas (so the MutationObserver's
-           position-mutation filter and get/setCardPosition keep working)
-           and its left/top is bound reactively (the same move-every-frame
-           contract the legacy path relies on keeps it in sync with drag).
-           Legacy API (no `cards`): render the default slot verbatim; the
-           host owns layout and there is no windowing. -->
-      <template v-if="props.cards">
-        <div
-          v-for="card in visibleCards"
-          :key="card.id"
-          class="nb-blueprint__card-wrapper"
-          :style="{
-            position: 'absolute',
-            left: `${card.x}px`,
-            top: `${card.y}px`,
-          }"
-        >
-          <slot name="card" :card="card" />
-        </div>
+      <template #card="{ card }">
+        <slot name="card" :card="card" />
       </template>
-      <slot v-else />
-    </div>
+      <template #default>
+        <slot />
+      </template>
+    </BlueprintDomRenderer>
+    <BlueprintPixiRenderer
+      v-else
+      :pan-x="panX"
+      :pan-y="panY"
+      :zoom="zoom"
+      :is-transforming="isTransforming"
+      :wires="computedWires"
+      :windowed="!!props.cards"
+      :visible-cards="visibleCards"
+      :drag-wire="dragWire"
+      :should-flow="shouldFlow"
+      :background="background"
+      :live-data="liveData"
+      @wire-mousedown="onWireMouseDown"
+      @wire-contextmenu="onWireContextMenu"
+      @wire-mousemove="onWireMouseMove"
+      @wire-mouseleave="onWireMouseLeave"
+      @unavailable="onPixiUnavailable"
+    >
+      <template #card="{ card }">
+        <slot name="card" :card="card" />
+      </template>
+      <template #default>
+        <slot />
+      </template>
+    </BlueprintPixiRenderer>
 
     <!-- Marquee drag overlay (rendered in viewport space) -->
     <div
@@ -174,6 +121,15 @@
         </button>
       </slot>
     </div>
+
+    <!-- Viewport-space chrome layer: optional NubiscoUI blueprint chrome
+         (controls toolbar, minimap) and any host overlay. Rendered in both
+         the windowed and legacy APIs (unlike the camera-transformed card
+         slots), and positioned in screen space. Children opt back into
+         pointer events; the layer itself is transparent to canvas gestures. -->
+    <div class="nb-blueprint__chrome">
+      <slot name="chrome" />
+    </div>
   </div>
 </template>
 
@@ -181,17 +137,24 @@
 import {
   ref,
   computed,
+  watch,
   onMounted,
   onBeforeUnmount,
   nextTick,
   provide,
 } from 'vue'
-import { NB_BLUEPRINT_CONTEXT } from './Blueprint.context'
+import {
+  NB_BLUEPRINT_CONTEXT,
+  NB_BLUEPRINT_CONTROLLER,
+} from './Blueprint.context'
 import {
   createPortCache,
   isCardPositionMutation,
   BLUEPRINT_CANVAS_CLASS,
 } from './blueprint-port-cache'
+import BlueprintDomRenderer from './BlueprintDomRenderer.vue'
+import BlueprintPixiRenderer from './BlueprintPixiRenderer.vue'
+import { BlueprintLiveData } from './blueprint-pixi/live-data'
 import type {
   IBlueprintConnection,
   IBlueprintCard,
@@ -204,7 +167,67 @@ const props = withDefaults(defineProps<IBlueprintProps>(), {
   connections: () => [],
   animateConnections: 'never',
   wheelMode: 'auto',
+  editable: false,
+  renderer: 'auto',
+  background: 'dots',
 })
+
+// Which renderer actually draws the scene. The DOM renderer is always
+// available and is the synchronous default; the PixiJS (WebGL) renderer is
+// detected asynchronously on mount (WebGL support + the optional `pixi.js`
+// peer dependency loading), so the first frame is DOM and it swaps to Pixi
+// once `pixiAvailable` flips. `pixiFailed` forces DOM permanently if Pixi
+// reports it could not initialise. The public API is identical across both.
+const pixiAvailable = ref(false)
+const pixiFailed = ref(false)
+const resolvedRenderer = computed<'dom' | 'pixi'>(() =>
+  props.renderer !== 'dom' && pixiAvailable.value && !pixiFailed.value
+    ? 'pixi'
+    : 'dom',
+)
+
+function hasWebGL(): boolean {
+  try {
+    const c = document.createElement('canvas')
+    return !!(
+      c.getContext('webgl2') ||
+      c.getContext('webgl') ||
+      c.getContext('experimental-webgl')
+    )
+  } catch {
+    return false
+  }
+}
+
+function warnPixiUnavailable(detail: string) {
+  if (props.renderer === 'pixi') {
+    console.warn(
+      `[NubiscoUI] Blueprint renderer="pixi" unavailable (${detail}); using the DOM renderer.`,
+    )
+  }
+}
+
+onMounted(async () => {
+  if (props.renderer === 'dom' || typeof window === 'undefined') return
+  if (!hasWebGL()) {
+    warnPixiUnavailable('no WebGL')
+    return
+  }
+  try {
+    // Preload the peer dependency so the swap to the Pixi renderer doesn't
+    // flash a frame without a scene. A missing optional peer dep lands here.
+    await import('pixi.js')
+    pixiAvailable.value = true
+  } catch {
+    warnPixiUnavailable('pixi.js not installed')
+  }
+})
+
+// The Pixi renderer reports here if WebGL/context init fails after mount.
+function onPixiUnavailable(reason: unknown) {
+  pixiFailed.value = true
+  warnPixiUnavailable(reason instanceof Error ? reason.message : 'init failed')
+}
 
 const emit = defineEmits<{
   connect: [conn: IBlueprintConnection]
@@ -255,6 +278,13 @@ const panY = ref(0)
 const zoom = ref(1)
 const wireKey = ref(0)
 
+// Non-reactive live-value channel. The host writes high-frequency values (wire
+// levels, ...) into this at audio rate with zero Vue reactivity; the PixiJS
+// renderer reads it on its throttled, render-on-demand tick. Created once and
+// stable for the component's life, so the host can grab it from the controller
+// and keep a reference.
+const liveData = new BlueprintLiveData()
+
 // Pan/zoom live inside a single root compositing layer, so without a hint
 // every pan or zoom frame re-rasterizes the whole canvas (all cards + the
 // wire SVG) instead of just re-compositing it — the dominant cost on a busy
@@ -274,6 +304,47 @@ function markTransforming() {
     isTransforming.value = false
   }, 220)
 }
+
+// ── Settled camera (the core of the perf model) ───────────────────────
+//
+// The live camera (panX/panY/zoom) drives ONLY the GPU transform of the
+// canvas, so panning/zooming is a pure composite at 60fps with zero per-wire
+// or per-card JS. The expensive passes (card windowing + wire culling) instead
+// read this *settled* camera, which tracks the live one but updates at most
+// ~10x/sec during a gesture and snaps exactly when the gesture ends. So the
+// work that actually costs (mounting card subtrees, rebuilding the visible wire
+// set) runs at a bounded rate, never per frame, which is what keeps a heavy
+// graph from freezing while you drag. A generous overscan (see windowing)
+// covers the gap so cards/wires are already mounted before they scroll in.
+const settledPanX = ref(0)
+const settledPanY = ref(0)
+const settledZoom = ref(1)
+const SETTLE_THROTTLE_MS = 100
+let lastSettleTs = 0
+
+function snapSettledCamera() {
+  settledPanX.value = panX.value
+  settledPanY.value = panY.value
+  settledZoom.value = zoom.value
+  lastSettleTs = performance.now()
+}
+
+watch([panX, panY, zoom], () => {
+  // Programmatic / settled move (no gesture in flight): apply at once so view
+  // fit, zoom buttons, etc. take effect immediately.
+  if (!isTransforming.value) {
+    snapSettledCamera()
+    return
+  }
+  // During a gesture: leading-edge throttle, so a long continuous pan still
+  // mounts cards / re-culls wires ~10x/sec (never per frame). The exact final
+  // position is captured by the isTransforming watch when the gesture settles.
+  if (performance.now() - lastSettleTs >= SETTLE_THROTTLE_MS)
+    snapSettledCamera()
+})
+watch(isTransforming, (t: boolean) => {
+  if (!t) snapSettledCamera()
+})
 // Container size in screen px, kept reactive so the card-windowing cull
 // (visibleCards) re-runs on resize, not only on pan/zoom. Seeded on mount
 // and maintained by a ResizeObserver.
@@ -583,6 +654,23 @@ function zoomAt(clientX: number, clientY: number, factor: number) {
   panX.value = mouseX - canvasX * newZoom
   panY.value = mouseY - canvasY * newZoom
   zoom.value = newZoom
+}
+
+// Zoom by a step anchored at the viewport center. Used by the controls
+// toolbar (and exposed on the controller) so a zoom button keeps the middle
+// of the canvas put, the way a user expects, rather than zooming toward the
+// origin.
+const ZOOM_STEP = 1.2
+function zoomAtCenter(factor: number) {
+  const rect = containerRef.value?.getBoundingClientRect()
+  if (!rect) return
+  zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, factor)
+}
+function zoomIn() {
+  zoomAtCenter(ZOOM_STEP)
+}
+function zoomOut() {
+  zoomAtCenter(1 / ZOOM_STEP)
 }
 
 function onWheel(e: WheelEvent) {
@@ -1078,6 +1166,71 @@ provide(NB_BLUEPRINT_CONTEXT, {
   onPortUp: (e: IBlueprintCardPortEvent) => onPortMouseUp(e),
 })
 
+// ── Coordinate transforms ─────────────────────────────────────────────
+// Shared by sibling chrome (minimap pan, controls "zoom to point") and
+// host apps. Viewport space is client px (MouseEvent.clientX/Y); canvas
+// space is the units cards and connection endpoints use. The math mirrors
+// zoomAt's focal-point conversion: canvas = (client - containerOrigin -
+// pan) / zoom.
+function screenToCanvas(clientX: number, clientY: number) {
+  const rect = containerRef.value?.getBoundingClientRect()
+  const ox = rect?.left ?? 0
+  const oy = rect?.top ?? 0
+  return {
+    x: (clientX - ox - panX.value) / zoom.value,
+    y: (clientY - oy - panY.value) / zoom.value,
+  }
+}
+
+function canvasToScreen(x: number, y: number) {
+  const rect = containerRef.value?.getBoundingClientRect()
+  const ox = rect?.left ?? 0
+  const oy = rect?.top ?? 0
+  return {
+    clientX: x * zoom.value + panX.value + ox,
+    clientY: y * zoom.value + panY.value + oy,
+  }
+}
+
+// Advisory edit-mode flag for optional chrome (controls toolbar). Does not
+// gate pan/zoom/selection, which are always interactive.
+const isEditMode = computed(() => props.editable)
+
+// Full controller for sibling chrome (background, minimap, controls) and
+// host apps, consumed via `useBlueprint()`. Superset of the card context
+// above; cards keep using the narrow NB_BLUEPRINT_CONTEXT for port drags.
+provide(NB_BLUEPRINT_CONTROLLER, {
+  panX,
+  panY,
+  zoom,
+  selectedIds,
+  focusedId,
+  selectAll,
+  deselectAll,
+  centerView,
+  fitToView,
+  resetView,
+  zoomIn,
+  zoomOut,
+  alignLeft,
+  alignCenter,
+  alignRight,
+  alignTop,
+  alignMiddle,
+  alignBottom,
+  distributeHorizontally,
+  distributeVertically,
+  autoLayout,
+  screenToCanvas,
+  canvasToScreen,
+  isEditMode,
+  viewportSize,
+  isTransforming,
+  live: liveData,
+  onPortDown: (e: IBlueprintCardPortEvent) => onPortMouseDown(e),
+  onPortUp: (e: IBlueprintCardPortEvent) => onPortMouseUp(e),
+})
+
 // ── Wire context menu (right-click on a wire) ─────────────────────────
 
 const wireMenu = ref<{
@@ -1271,12 +1424,16 @@ const computedWires = computed(() => {
   // building for only the on-screen wires. The visible region is expressed
   // in pre-transform local coords to match what getPortCenter returns:
   // local = (screen − pan) / zoom.
-  const z = zoom.value
+  // Cull against the *settled* camera, not the live one, so the visible wire
+  // set is rebuilt at a bounded rate (never per pan frame). The wires move with
+  // the canvas's CSS/WebGL transform meanwhile; only the membership lags, and
+  // the cull margin covers the gap until the next settle.
+  const z = settledZoom.value
   const margin = WIRE_CULL_MARGIN_PX / z
-  const visMinX = (0 - panX.value) / z - margin
-  const visMaxX = (rect.width - panX.value) / z + margin
-  const visMinY = (0 - panY.value) / z - margin
-  const visMaxY = (rect.height - panY.value) / z + margin
+  const visMinX = (0 - settledPanX.value) / z - margin
+  const visMaxX = (rect.width - settledPanX.value) / z + margin
+  const visMinY = (0 - settledPanY.value) / z - margin
+  const visMaxY = (rect.height - settledPanY.value) / z + margin
 
   const rewiring = dragRewireOriginal.value
   return props.connections
@@ -1373,12 +1530,16 @@ const visibleCards = computed<IBlueprintCard[]>(() => {
   const list = props.cards
   if (!list || list.length === 0) return []
 
-  const z = zoom.value
+  // Window against the *settled* camera so card subtrees mount/unmount at a
+  // bounded rate instead of every pan frame (mounting a heavy card mid-gesture
+  // is what froze the canvas). The overscan keeps soon-to-be-visible cards
+  // mounted ahead of the settle.
+  const z = settledZoom.value
   const margin = CARD_OVERSCAN_PX / z
-  const visMinX = (0 - panX.value) / z - margin
-  const visMaxX = (viewportSize.value.w - panX.value) / z + margin
-  const visMinY = (0 - panY.value) / z - margin
-  const visMaxY = (viewportSize.value.h - panY.value) / z + margin
+  const visMinX = (0 - settledPanX.value) / z - margin
+  const visMaxX = (viewportSize.value.w - settledPanX.value) / z + margin
+  const visMinY = (0 - settledPanY.value) / z - margin
+  const visMaxY = (viewportSize.value.h - settledPanY.value) / z + margin
 
   const intersects = (
     aMinX: number,
@@ -1901,6 +2062,8 @@ defineExpose({
   centerView,
   fitToView,
   resetView,
+  zoomIn,
+  zoomOut,
   // Selection and focus
   selectedIds,
   focusedId,
@@ -1924,6 +2087,9 @@ defineExpose({
   panX,
   panY,
   zoom,
+  isTransforming,
+  // Live-value channel (wire levels, ...)
+  live: liveData,
 })
 </script>
 
@@ -1945,6 +2111,18 @@ defineExpose({
 }
 
 // Ambient radial gradients for atmosphere
+.nb-blueprint__chrome {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+
+  // Chrome children (toolbar, minimap) opt back into pointer events.
+  :deep(> *) {
+    pointer-events: auto;
+  }
+}
+
 .nb-blueprint__ambient {
   position: absolute;
   inset: 0;
@@ -1963,89 +2141,9 @@ defineExpose({
     );
 }
 
-.nb-blueprint__grid {
-  position: absolute;
-  inset: -2000px;
-  background-image: radial-gradient(
-    circle,
-    var(--nb-c-border) 1px,
-    transparent 1px
-  );
-  background-size: 24px 24px;
-  pointer-events: none;
-  opacity: 0.4;
-  mask-image: radial-gradient(
-    ellipse 80% 80% at 50% 50%,
-    #000 40%,
-    transparent 100%
-  );
-  -webkit-mask-image: radial-gradient(
-    ellipse 80% 80% at 50% 50%,
-    #000 40%,
-    transparent 100%
-  );
-}
-
-.nb-blueprint__canvas {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-
-  > * {
-    pointer-events: auto;
-  }
-}
-
-.nb-blueprint__wires {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  overflow: visible;
-}
-
-.nb-blueprint__wire {
-  // Visible stroke is now decorative only; the sibling hit-region
-  // path catches all pointer events. Hover styling moves to the
-  // hit-region so the visual still reacts when the user mouses near
-  // the wire.
-  pointer-events: none;
-  opacity: 0.55;
-  transition: opacity 0.15s;
-
-  // Inactive wires stay visible but dim, no flow.
-  &--inactive {
-    opacity: 0.25;
-  }
-}
-
-.nb-blueprint__wire-hitregion {
-  // Generous 14 px transparent stroke makes the wire easy to grab
-  // with a mouse / trackpad. Keeps the visible wire skinny while
-  // the interaction surface is comfortable.
-  pointer-events: stroke;
-  cursor: pointer;
-
-  // Hover sibling-target: when the hit-region is hovered, the
-  // corresponding visible wire (next sibling in source order) bumps
-  // its width / opacity for tactile feedback.
-  &:hover + .nb-blueprint__wire {
-    opacity: 0.85;
-    stroke-width: 3;
-  }
-}
-
-.nb-blueprint__wire-flow {
-  opacity: 0.55;
-  animation: nb-wire-flow 2.4s linear infinite;
-}
-
-@keyframes nb-wire-flow {
-  to {
-    stroke-dashoffset: -24;
-  }
-}
+// Camera-transformed scene styles (grid, canvas, wires) live with the
+// renderer in BlueprintDomRenderer.vue. The styles below are NbBlueprint's
+// own viewport-space chrome (ambient, marquee, selection box, wire menu).
 
 .nb-blueprint__marquee {
   position: absolute;

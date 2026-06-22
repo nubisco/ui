@@ -170,10 +170,23 @@ export default withMermaid(
                   { text: 'AI Label', link: '/ui/components/ai-label' },
                   { text: 'Badge', link: '/ui/components/badge' },
                   { text: 'Board', link: '/ui/components/board' },
-                  { text: 'Blueprint', link: '/ui/components/blueprint' },
                   {
-                    text: 'Blueprint Card',
-                    link: '/ui/components/blueprint-card',
+                    text: 'Blueprint',
+                    items: [
+                      {
+                        text: 'Overview',
+                        link: '/ui/components/blueprint/overview',
+                      },
+                      { text: 'Card', link: '/ui/components/blueprint/card' },
+                      {
+                        text: 'Controls',
+                        link: '/ui/components/blueprint/controls',
+                      },
+                      {
+                        text: 'Minimap',
+                        link: '/ui/components/blueprint/minimap',
+                      },
+                    ],
                   },
                   { text: 'Calendar', link: '/ui/components/calendar' },
                   { text: 'Button', link: '/ui/components/button/button' },
