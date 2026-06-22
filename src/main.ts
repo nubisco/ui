@@ -141,6 +141,7 @@ export {
   NB_BLUEPRINT_CONTEXT,
   NB_BLUEPRINT_CONTROLLER,
 } from './components/Blueprint.context'
+export { BlueprintLiveData } from './components/blueprint-pixi/live-data'
 export { default as NbBlueprintCard } from './components/BlueprintCard.vue'
 export type {
   IBlueprintPort,

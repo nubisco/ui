@@ -1,15 +1,13 @@
 <template>
-  <!-- PixiJS scene canvas. Sits behind the interactive DOM overlay and draws
-       the grid, wires, flow, and (while panning/zooming or at far zoom) the
-       natively-painted cards. pointer-events: none so the root container
+  <!-- PixiJS scene canvas. Sits behind the interactive DOM and draws the grid,
+       wires, and flow on the GPU. pointer-events: none so the root container
        still receives canvas-level gestures (marquee, pan). -->
   <canvas ref="canvasRef" class="nb-blueprint-pixi__canvas" />
 
-  <!-- Interactive DOM overlay. Carries the real cards (the `#card` slot) and
-       the transparent wire hit-regions, so every existing NbBlueprint
-       interaction (drag, marquee, wire hover/menu) works unchanged. It is
-       camera-transformed to stay aligned with the Pixi scene, and hidden
-       (visibility) during gestures / far zoom, when Pixi shows the scene. -->
+  <!-- The real cards live here as DOM, always: there is no painted/snapshot
+       substitute. The layer is camera-transformed (live pan/zoom) so it rides
+       the GPU compositor during a gesture, exactly like the wires beneath it,
+       and the card content stays real and interactive at all times. -->
   <div
     ref="overlayRef"
     class="nb-blueprint__canvas nb-blueprint-pixi__overlay"
@@ -83,11 +81,6 @@ import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import type { IBlueprintConnection } from './Blueprint.types'
 import type { IBlueprintRendererProps } from './Blueprint.renderer'
 import type { PixiScene as PixiSceneType } from './blueprint-pixi/pixi-scene'
-import type { TCardLod } from './blueprint-pixi/card-paint'
-
-// Below this zoom the DOM cards are hidden and Pixi paints them: they are too
-// small to read or interact with precisely, so the cheap painted tier wins.
-const DOM_ZOOM_MIN = 0.5
 
 const props = defineProps<IBlueprintRendererProps>()
 
@@ -108,27 +101,14 @@ const pixiReady = ref(false)
 let scene: PixiSceneType | null = null
 let resizeObserver: ResizeObserver | undefined
 
-// The DOM overlay (real cards) is shown at rest and readable zoom; hidden
-// during gestures and far zoom, when Pixi shows the scene. The overlay
-// transform tracks the camera at all times so port positions stay correct
-// for NbBlueprint's wire computation even while hidden (cheap: a transform
-// on a hidden layer is not composited).
-// In legacy (non-windowed) mode the host owns arbitrary card DOM that Pixi
-// cannot paint, so the DOM overlay stays visible at all times (Pixi only
-// accelerates the grid and wires there). In windowed mode Pixi paints the
-// visible cards, so the DOM overlay can hide during gestures / at far zoom.
-const domVisible = computed(
-  () =>
-    !props.windowed || (!props.isTransforming && props.zoom >= DOM_ZOOM_MIN),
-)
-const cardLod = computed<TCardLod>(() =>
-  props.zoom >= DOM_ZOOM_MIN ? 'full' : 'box',
-)
-
+// The card layer tracks the live camera so it composites in lock-step with the
+// Pixi scene. will-change promotes it to its own GPU layer while a gesture is
+// in flight (so panning re-composites instead of repainting), then drops back
+// to auto at rest so it costs no memory.
 const overlayStyle = computed(() => ({
   transform: `translate(${props.panX}px, ${props.panY}px) scale(${props.zoom})`,
   transformOrigin: '0 0',
-  visibility: domVisible.value ? ('visible' as const) : ('hidden' as const),
+  willChange: props.isTransforming ? ('transform' as const) : ('auto' as const),
 }))
 
 function sizeOf(): { width: number; height: number } {
@@ -156,6 +136,7 @@ async function initScene(): Promise<void> {
       height,
       resolution: window.devicePixelRatio || 1,
       background: props.background,
+      liveData: props.liveData,
     })
     // Component may have unmounted during the async init.
     if (!canvasRef.value) {
@@ -176,8 +157,7 @@ function pushAll(): void {
   if (!scene) return
   scene.setCamera(props.panX, props.panY, props.zoom)
   scene.setWires(props.wires, props.shouldFlow)
-  scene.setCards(props.visibleCards, cardLod.value)
-  scene.setCardLayerVisible(!domVisible.value)
+  scene.setMeters(props.visibleCards)
 }
 
 function observeResize(): void {
@@ -199,10 +179,10 @@ watch(
   () => props.wires,
   (w) => scene?.setWires(w, props.shouldFlow),
 )
-watch([() => props.visibleCards, cardLod], ([cards, lod]) =>
-  scene?.setCards(cards, lod),
+watch(
+  () => props.visibleCards,
+  (cards) => scene?.setMeters(cards),
 )
-watch(domVisible, (v) => scene?.setCardLayerVisible(!v))
 watch(
   () => props.background,
   (bg) => scene?.setBackground(bg),

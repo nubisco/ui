@@ -3,6 +3,7 @@ import type {
   IBlueprintConnection,
   TBlueprintBackground,
 } from './Blueprint.types'
+import type { BlueprintLiveData } from './blueprint-pixi/live-data'
 
 export type { TBlueprintRenderer } from './Blueprint.types'
 
@@ -66,6 +67,10 @@ export interface IBlueprintRendererProps {
   shouldFlow: (conn: IBlueprintConnection) => boolean
   /** Background pattern to draw behind the scene. */
   background: TBlueprintBackground
+  /** Non-reactive live-value channel (wire levels, ...) the host writes at
+   *  audio rate; the PixiJS renderer reads it on its throttled render tick. The
+   *  DOM renderer ignores it. */
+  liveData?: BlueprintLiveData
 }
 
 /**

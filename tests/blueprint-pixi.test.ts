@@ -14,7 +14,6 @@ import {
   cubicAt,
   sampleCubic,
 } from '../src/components/blueprint-pixi/wire-path'
-import { resolveCardPaint } from '../src/components/blueprint-pixi/card-paint'
 import BlueprintPixiRenderer from '../src/components/BlueprintPixiRenderer.vue'
 import BlueprintCard from '../src/components/BlueprintCard.vue'
 import type { IBlueprintCard } from '../src/components/Blueprint.types'
@@ -53,33 +52,6 @@ describe('wire-path', () => {
   it('samples segments+1 points', () => {
     const b = parseCubicPath('M 0 0 C 0 10, 10 10, 10 0')!
     expect(sampleCubic(b, 8)).toHaveLength(9)
-  })
-})
-
-describe('resolveCardPaint', () => {
-  it('prefers an explicit paint descriptor', () => {
-    const card: IBlueprintCard = {
-      id: 'a',
-      x: 0,
-      y: 0,
-      paint: { title: 'Explicit', color: '#f00' },
-    }
-    expect(resolveCardPaint(card).title).toBe('Explicit')
-  })
-
-  it('falls back to well-known top-level fields', () => {
-    const card = {
-      id: 'a',
-      x: 0,
-      y: 0,
-      title: 'Loose',
-      color: '#0f0',
-      ports: [{ id: 'o', label: 'o', type: 'output' }],
-    } as IBlueprintCard
-    const paint = resolveCardPaint(card)
-    expect(paint.title).toBe('Loose')
-    expect(paint.color).toBe('#0f0')
-    expect(paint.ports).toHaveLength(1)
   })
 })
 
