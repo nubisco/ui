@@ -68,6 +68,19 @@ export default defineConfig({
 })
 ```
 
+Then add the matching CSS import to your application entry, once. `unplugin-fonts` does not inject it automatically:
+
+```ts
+// src/main.ts (or your equivalent entry)
+import 'unfonts.css'
+```
+
+TypeScript users may need to declare the module in their `env.d.ts`:
+
+```ts
+declare module 'unfonts.css'
+```
+
 Called with no arguments, `fonts()` loads the library defaults: Plus Jakarta Sans (weights 400/500/600/700) and Fira Code (400/600), `normal` styles, `font-display: swap`. Because these match the declared `--nb-font-family-*` defaults, you do **not** need to touch any CSS variable.
 
 To load different families or weights, pass options (they fully replace the defaults). Any provider `unplugin-fonts` supports works, including `custom` for your own self-hosted woff2 files:
