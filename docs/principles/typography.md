@@ -10,7 +10,7 @@ Typography in Nubisco is built on three layers: a **raw scale** of discrete size
 
 ## Typefaces
 
-Nubisco ships with two typefaces, both served via the font plugin.
+Nubisco declares two typefaces as its defaults: **Plus Jakarta Sans** for all UI text and **Fira Code** for code. These are the values of `--nb-font-family-sans` and `--nb-font-family-mono`. They are **not** bundled or loaded automatically: until you load them (or override the two variables), text falls back to the system stack. See [Loading the fonts](#loading-the-fonts) below.
 
 ### Plus Jakarta Sans — sans-serif
 
@@ -31,6 +31,78 @@ Used exclusively for code, JSON viewers, technical values, and keyboard shortcut
   <span style="font-size: 16px; font-weight: 400; line-height: 1.5;">0123456789 => != !== === >= <= -> <-</span>
   <span style="font-size: 13px; font-weight: 400; line-height: 1.5; color: var(--nb-c-text-muted);">Fira Code — Regular — var(--nb-font-family-mono)</span>
 </div>
+
+## Loading the fonts
+
+NubiscoUI references `--nb-font-family-sans` and `--nb-font-family-mono` everywhere, but it does **not** ship or auto-load any font files. This keeps the bundle free of fonts you may not want: consumers who already serve their own typefaces pay zero cost. There are two ways to get real fonts on the page.
+
+### Option A: override the family variables (bring your own)
+
+If your app already loads fonts (its own `@font-face`, a bundler plugin, an `@fontsource/*` package, etc.), just point the two variables at them on `:root`. You load the files; NubiscoUI uses them.
+
+```css
+/* main.css or App.vue <style>: load Inter + JetBrains Mono yourself, then: */
+:root {
+  --nb-font-family-sans: 'Inter', system-ui, sans-serif;
+  --nb-font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+```
+
+Every type set resolves its family through these two variables. `body`, `label`, `code`, `heading`, and `display` all re-point automatically the moment the variables change. There is nothing else to override.
+
+### Option B: use the bundled defaults via the fonts plugin
+
+NubiscoUI exports a Vite plugin that self-hosts the default Plus Jakarta Sans + Fira Code (via [Fontsource](https://fontsource.org), no third-party CDN, RGPD-friendly). Install the source packages and add the plugin:
+
+```bash
+pnpm add -D @fontsource/plus-jakarta-sans @fontsource/fira-code
+```
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite'
+import { fonts } from '@nubisco/ui/plugins/fonts'
+
+export default defineConfig({
+  plugins: [fonts()],
+})
+```
+
+Called with no arguments, `fonts()` loads the library defaults: Plus Jakarta Sans (weights 400/500/600/700) and Fira Code (400/600), `normal` styles, `font-display: swap`. Because these match the declared `--nb-font-family-*` defaults, you do **not** need to touch any CSS variable.
+
+To load different families or weights, pass options (they fully replace the defaults). Any provider `unplugin-fonts` supports works, including `custom` for your own self-hosted woff2 files:
+
+```ts
+fonts({
+  fontsource: {
+    families: [
+      { name: 'Inter', weights: [400, 600], styles: ['normal'] },
+      { name: 'JetBrains Mono', weights: [400], styles: ['normal'] },
+    ],
+  },
+})
+```
+
+The name passed to each family must match the value used in `--nb-font-family-sans` / `--nb-font-family-mono` exactly, including the quoting around multi-word names like `'JetBrains Mono'`. Fontsource emits the `@font-face` under that exact family name, so if the override does not match, the browser falls through to the next fallback in the stack.
+
+Then set `--nb-font-family-sans` / `--nb-font-family-mono` (Option A) so NubiscoUI uses the family names you just loaded.
+
+> **Not on Vite?** The plugin is a convenience, not a requirement. Load the fonts however your toolchain prefers (hand-written `@font-face`, your own bundler plugin, etc.), then use Option A to wire them into NubiscoUI.
+
+### Preloading critical weight
+
+Fontsource sets `font-display: swap`, so text never blocks render. For first-paint LCP screens (login, dashboard landing), preloading the single weight that `body-md` uses removes the flash-of-fallback-text:
+
+```html
+<!-- path is the hashed woff2 your bundler emits for the 400 weight -->
+<link
+  rel="preload"
+  href="/path/to/your-body-weight.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+```
 
 ## The scale
 
