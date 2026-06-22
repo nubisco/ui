@@ -120,6 +120,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@fontsource/fira-code": "^5.2.7",
+    "@fontsource/plus-jakarta-sans": "^5.2.8",
     "@phosphor-icons/core": "^2.1.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
