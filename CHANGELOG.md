@@ -1,3 +1,10 @@
+## [1.41.1](https://github.com/nubisco/ui/compare/v1.41.0...v1.41.1) (2026-06-22)
+
+
+### Bug Fixes
+
+* **styles:** declare unplugin-fonts as an optional peer dependency ([4c4ea26](https://github.com/nubisco/ui/commit/4c4ea269afcea1c0f0dbcfdede7e87d289ef0660))
+
 # [1.41.0](https://github.com/nubisco/ui/compare/v1.40.0...v1.41.0) (2026-06-22)
 
 
