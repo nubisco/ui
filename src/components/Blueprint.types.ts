@@ -3,6 +3,7 @@ import type {
   IBlueprintPort,
   TBlueprintCardStatus,
 } from './BlueprintCard.types'
+import type { BlueprintLiveData } from './blueprint-pixi/live-data'
 
 export interface IBlueprintConnection {
   fromNode: string
@@ -74,6 +75,34 @@ export interface IBlueprintCard {
    */
   width?: number
   height?: number
+  /**
+   * GPU-rendered live meters for this card. The PixiJS renderer draws these
+   * on the GPU (one batched layer for the whole graph) from the non-reactive
+   * live channel, so a card full of audio meters animates without any Vue
+   * re-render or per-element DOM/CSS write. Geometry is in card-local px (the
+   * meter's box relative to the card's top-left). The DOM renderer ignores it.
+   */
+  meters?: IBlueprintMeter[]
+}
+
+/**
+ * One GPU-drawn live meter on a card. Its `value` is read each render tick from
+ * the blueprint's live channel under `id` (0..1) and drawn as a fill that grows
+ * from the bottom, coloured green -> yellow -> red by level. No Vue, no per-frame
+ * DOM write: the cost is a sprite scale + tint on the GPU.
+ */
+export interface IBlueprintMeter {
+  /** Key into the live channel for this meter's current value (0..1). */
+  id: string
+  /** Meter box in card-local px (relative to the card's top-left). */
+  x: number
+  y: number
+  w: number
+  h: number
+  /** `bar` = solid fill; `ladder` = solid fill behind static segment gaps. */
+  kind?: 'bar' | 'ladder'
+  /** Segment count for `ladder` (ignored for `bar`). Default 16. */
+  segments?: number
 }
 
 /**
@@ -254,9 +283,18 @@ export interface IBlueprintController {
   /** Live viewport size in screen px (the blueprint container). Used by the
    *  minimap to draw the visible-area rectangle. */
   viewportSize: Ref<{ w: number; h: number }>
+  /** True while a pan/zoom gesture is in flight (drops ~220ms after the last
+   *  gesture frame). A host can read this to pause expensive per-card content
+   *  (live meters) during a gesture, so the cards stay static and cheap to
+   *  composite while moving. */
+  isTransforming: Ref<boolean>
   /** Forwarded port handlers (same as the narrow card context). */
   onPortDown: (event: IBlueprintCardPortEvent) => void
   onPortUp: (event: IBlueprintCardPortEvent) => void
+  /** Non-reactive live-value channel. Write high-frequency values (wire levels
+   *  keyed `from|fromPort|to|toPort`, 0..1) here at audio rate with zero Vue
+   *  cost; the PixiJS renderer reads them on its throttled GPU tick. */
+  live: BlueprintLiveData
 }
 
 /**

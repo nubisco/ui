@@ -54,6 +54,7 @@
       :drag-wire="dragWire"
       :should-flow="shouldFlow"
       :background="background"
+      :live-data="liveData"
       @wire-mousedown="onWireMouseDown"
       @wire-contextmenu="onWireContextMenu"
       @wire-mousemove="onWireMouseMove"
@@ -136,6 +137,7 @@
 import {
   ref,
   computed,
+  watch,
   onMounted,
   onBeforeUnmount,
   nextTick,
@@ -152,6 +154,7 @@ import {
 } from './blueprint-port-cache'
 import BlueprintDomRenderer from './BlueprintDomRenderer.vue'
 import BlueprintPixiRenderer from './BlueprintPixiRenderer.vue'
+import { BlueprintLiveData } from './blueprint-pixi/live-data'
 import type {
   IBlueprintConnection,
   IBlueprintCard,
@@ -275,6 +278,13 @@ const panY = ref(0)
 const zoom = ref(1)
 const wireKey = ref(0)
 
+// Non-reactive live-value channel. The host writes high-frequency values (wire
+// levels, ...) into this at audio rate with zero Vue reactivity; the PixiJS
+// renderer reads it on its throttled, render-on-demand tick. Created once and
+// stable for the component's life, so the host can grab it from the controller
+// and keep a reference.
+const liveData = new BlueprintLiveData()
+
 // Pan/zoom live inside a single root compositing layer, so without a hint
 // every pan or zoom frame re-rasterizes the whole canvas (all cards + the
 // wire SVG) instead of just re-compositing it — the dominant cost on a busy
@@ -294,6 +304,47 @@ function markTransforming() {
     isTransforming.value = false
   }, 220)
 }
+
+// ── Settled camera (the core of the perf model) ───────────────────────
+//
+// The live camera (panX/panY/zoom) drives ONLY the GPU transform of the
+// canvas, so panning/zooming is a pure composite at 60fps with zero per-wire
+// or per-card JS. The expensive passes (card windowing + wire culling) instead
+// read this *settled* camera, which tracks the live one but updates at most
+// ~10x/sec during a gesture and snaps exactly when the gesture ends. So the
+// work that actually costs (mounting card subtrees, rebuilding the visible wire
+// set) runs at a bounded rate, never per frame, which is what keeps a heavy
+// graph from freezing while you drag. A generous overscan (see windowing)
+// covers the gap so cards/wires are already mounted before they scroll in.
+const settledPanX = ref(0)
+const settledPanY = ref(0)
+const settledZoom = ref(1)
+const SETTLE_THROTTLE_MS = 100
+let lastSettleTs = 0
+
+function snapSettledCamera() {
+  settledPanX.value = panX.value
+  settledPanY.value = panY.value
+  settledZoom.value = zoom.value
+  lastSettleTs = performance.now()
+}
+
+watch([panX, panY, zoom], () => {
+  // Programmatic / settled move (no gesture in flight): apply at once so view
+  // fit, zoom buttons, etc. take effect immediately.
+  if (!isTransforming.value) {
+    snapSettledCamera()
+    return
+  }
+  // During a gesture: leading-edge throttle, so a long continuous pan still
+  // mounts cards / re-culls wires ~10x/sec (never per frame). The exact final
+  // position is captured by the isTransforming watch when the gesture settles.
+  if (performance.now() - lastSettleTs >= SETTLE_THROTTLE_MS)
+    snapSettledCamera()
+})
+watch(isTransforming, (t: boolean) => {
+  if (!t) snapSettledCamera()
+})
 // Container size in screen px, kept reactive so the card-windowing cull
 // (visibleCards) re-runs on resize, not only on pan/zoom. Seeded on mount
 // and maintained by a ResizeObserver.
@@ -1174,6 +1225,8 @@ provide(NB_BLUEPRINT_CONTROLLER, {
   canvasToScreen,
   isEditMode,
   viewportSize,
+  isTransforming,
+  live: liveData,
   onPortDown: (e: IBlueprintCardPortEvent) => onPortMouseDown(e),
   onPortUp: (e: IBlueprintCardPortEvent) => onPortMouseUp(e),
 })
@@ -1371,12 +1424,16 @@ const computedWires = computed(() => {
   // building for only the on-screen wires. The visible region is expressed
   // in pre-transform local coords to match what getPortCenter returns:
   // local = (screen − pan) / zoom.
-  const z = zoom.value
+  // Cull against the *settled* camera, not the live one, so the visible wire
+  // set is rebuilt at a bounded rate (never per pan frame). The wires move with
+  // the canvas's CSS/WebGL transform meanwhile; only the membership lags, and
+  // the cull margin covers the gap until the next settle.
+  const z = settledZoom.value
   const margin = WIRE_CULL_MARGIN_PX / z
-  const visMinX = (0 - panX.value) / z - margin
-  const visMaxX = (rect.width - panX.value) / z + margin
-  const visMinY = (0 - panY.value) / z - margin
-  const visMaxY = (rect.height - panY.value) / z + margin
+  const visMinX = (0 - settledPanX.value) / z - margin
+  const visMaxX = (rect.width - settledPanX.value) / z + margin
+  const visMinY = (0 - settledPanY.value) / z - margin
+  const visMaxY = (rect.height - settledPanY.value) / z + margin
 
   const rewiring = dragRewireOriginal.value
   return props.connections
@@ -1473,12 +1530,16 @@ const visibleCards = computed<IBlueprintCard[]>(() => {
   const list = props.cards
   if (!list || list.length === 0) return []
 
-  const z = zoom.value
+  // Window against the *settled* camera so card subtrees mount/unmount at a
+  // bounded rate instead of every pan frame (mounting a heavy card mid-gesture
+  // is what froze the canvas). The overscan keeps soon-to-be-visible cards
+  // mounted ahead of the settle.
+  const z = settledZoom.value
   const margin = CARD_OVERSCAN_PX / z
-  const visMinX = (0 - panX.value) / z - margin
-  const visMaxX = (viewportSize.value.w - panX.value) / z + margin
-  const visMinY = (0 - panY.value) / z - margin
-  const visMaxY = (viewportSize.value.h - panY.value) / z + margin
+  const visMinX = (0 - settledPanX.value) / z - margin
+  const visMaxX = (viewportSize.value.w - settledPanX.value) / z + margin
+  const visMinY = (0 - settledPanY.value) / z - margin
+  const visMaxY = (viewportSize.value.h - settledPanY.value) / z + margin
 
   const intersects = (
     aMinX: number,
@@ -2026,6 +2087,9 @@ defineExpose({
   panX,
   panY,
   zoom,
+  isTransforming,
+  // Live-value channel (wire levels, ...)
+  live: liveData,
 })
 </script>
 
