@@ -6,7 +6,7 @@ tabs: ['Usage', 'Api']
 
 <doc-tab name="Usage">
 
-`NbBlueprintCard` is a node card designed to live inside an [`NbBlueprint`](/ui/components/blueprint) canvas. It renders a card with a top accent bar, typed input/output ports, a category tag, an optional enable toggle, and an optional remove button. It is presentational: the parent owns the card's position and the connections between cards.
+`NbBlueprintCard` is a node card designed to live inside an [`NbBlueprint`](/ui/components/blueprint/overview) canvas. It renders a card with a top accent bar, typed input/output ports, a category tag, an optional enable toggle, and an optional remove button. It is presentational: the parent owns the card's position and the connections between cards.
 
 ## Basic card
 
@@ -334,7 +334,7 @@ Anything placed in the default slot renders inside the card body, below the para
 
 ## Inside a blueprint
 
-For a complete example wiring cards and ports into an `NbBlueprint` canvas, see the [Blueprint](/ui/components/blueprint) docs.
+For a complete example wiring cards and ports into an `NbBlueprint` canvas, see the [Blueprint](/ui/components/blueprint/overview) docs.
 
 </doc-tab>
 
