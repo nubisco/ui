@@ -1,3 +1,10 @@
+# [1.44.0](https://github.com/nubisco/ui/compare/v1.43.0...v1.44.0) (2026-07-07)
+
+
+### Features
+
+* **modal:** size now caps height as well as width, scale shifted up ([60ac86d](https://github.com/nubisco/ui/commit/60ac86dd73ff3bb8c5c7fdcc1b1028d909100b2e))
+
 # [1.43.0](https://github.com/nubisco/ui/compare/v1.42.0...v1.43.0) (2026-07-07)
 
 
