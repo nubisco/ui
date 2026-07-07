@@ -98,17 +98,18 @@ describe('Modal', () => {
     expect(wrapper.find('.nb-modal--header').exists()).toBe(false)
   })
 
-  it('applies correct max-width for each size', () => {
-    const sizesMap: Record<string, string> = {
-      sm: '400px',
-      md: '520px',
-      lg: '720px',
-      xl: '960px',
-    }
-    for (const [size, maxWidth] of Object.entries(sizesMap)) {
+  it('defaults to the md size class', () => {
+    const wrapper = createWrapper({ open: true })
+    expect(wrapper.find('.nb-modal--content').classes()).toContain(
+      'nb-modal--content--md',
+    )
+  })
+
+  it('applies the size class for each size', () => {
+    for (const size of ['sm', 'md', 'lg']) {
       const wrapper = createWrapper({ open: true, size })
-      expect(wrapper.find('.nb-modal--content').attributes('style')).toContain(
-        maxWidth,
+      expect(wrapper.find('.nb-modal--content').classes()).toContain(
+        `nb-modal--content--${size}`,
       )
     }
   })
