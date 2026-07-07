@@ -74,15 +74,49 @@ Use the `#footer` slot with a `NbPanel` to create a proper action bar.
 </template>
 ```
 
+## Sizes
+
+`size` caps both dimensions of the dialog: `sm` (520px wide, up to 72% of the
+viewport height), `md` (720px, 84%) and `lg` (960px, 96%). Height stays
+content-driven below the cap, so short dialogs never show empty space; long
+content scrolls inside the body once the cap is reached.
+
+<preview>
+  <NbGrid dir="row" gap="sm">
+    <NbButton @click="openSize = 'sm'">Small</NbButton>
+    <NbButton @click="openSize = 'md'">Medium</NbButton>
+    <NbButton @click="openSize = 'lg'">Large</NbButton>
+  </NbGrid>
+  <NbModal :open="!!openSize" :size="openSize || 'md'" :title="`Size: ${openSize}`" @close="openSize = null">
+    <p v-for="n in 30" :key="n" style="margin: 0 0 12px">
+      Scrollable body content line {{ n }}.
+    </p>
+    <template #footer>
+      <NbButton size="lg" @click="openSize = null">Close</NbButton>
+    </template>
+  </NbModal>
+</preview>
+
+```vue
+<template>
+  <NbModal :open="open" size="lg" title="Large dialog" @close="open = false">
+    <p>Long content scrolls inside the body.</p>
+  </NbModal>
+</template>
+```
+
 </doc-tab>
 
 <doc-tab name="Api">
 
 ## Props
 
-| Prop   | Type      | Default | Description                        |
-| ------ | --------- | ------- | ---------------------------------- |
-| `open` | `boolean` | `false` | Controls whether the modal is open |
+| Prop             | Type                   | Default     | Description                                     |
+| ---------------- | ---------------------- | ----------- | ----------------------------------------------- |
+| `open`           | `boolean`              | `false`     | Controls whether the modal is open              |
+| `title`          | `string`               | `undefined` | Header title, alternative to the `#header` slot |
+| `size`           | `'sm' \| 'md' \| 'lg'` | `'md'`      | Caps the dialog width and height (see Sizes)    |
+| `closeOnOverlay` | `boolean`              | `true`      | Emits `close` when the backdrop is clicked      |
 
 ## Slots
 
@@ -94,7 +128,11 @@ Use the `#footer` slot with a `NbPanel` to create a proper action bar.
 
 ## Events
 
-`NbModal` does not emit close events directly. Closing is handled by updating the `:open` binding from the parent (e.g. in a button's `@click` handler).
+| Event   | Payload | Description                                                                                           |
+| ------- | ------- | ----------------------------------------------------------------------------------------------------- |
+| `close` | none    | Emitted by the close button, the Escape key, and backdrop clicks (unless `closeOnOverlay` is `false`) |
+
+The modal is controlled: listen for `close` and set your `:open` binding to `false`.
 
 ## Z-index
 
@@ -106,4 +144,5 @@ The modal uses `--nb-zindex-modal` from the design system token stack. Component
 import { ref } from 'vue'
 const openBasic = ref(false)
 const openActions = ref(false)
+const openSize = ref<'sm' | 'md' | 'lg' | null>(null)
 </script>

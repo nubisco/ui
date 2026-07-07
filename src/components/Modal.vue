@@ -3,10 +3,9 @@
     <Transition name="nb-modal">
       <div v-if="open" class="nb-modal--overlay" @click.self="onOverlayClick">
         <div
-          class="nb-modal--content"
+          :class="['nb-modal--content', `nb-modal--content--${size}`]"
           role="dialog"
           aria-modal="true"
-          :style="{ maxWidth: sizes[size] }"
           @click.stop
         >
           <header v-if="$slots.header || title" class="nb-modal--header">
@@ -53,8 +52,6 @@ const props = withDefaults(defineProps<IModalProps>(), {
 
 const emit = defineEmits<{ close: [] }>()
 
-const sizes = { sm: '400px', md: '520px', lg: '720px', xl: '960px' }
-
 function onOverlayClick() {
   if (props.closeOnOverlay) emit('close')
 }
@@ -99,12 +96,35 @@ onUnmounted(() => {
   background: var(--nb-c-surface);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   width: 100%;
-  max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 
   --parent-radius: 8px;
+}
+
+// Size caps for both dimensions: height stays content-driven up to the cap
+// (percentages resolve against the padded overlay). Ratios follow Carbon.
+$modal-sizes: (
+  sm: (
+    520px,
+    72%,
+  ),
+  md: (
+    720px,
+    84%,
+  ),
+  lg: (
+    960px,
+    96%,
+  ),
+);
+
+@each $name, $dims in $modal-sizes {
+  .nb-modal--content--#{$name} {
+    max-width: nth($dims, 1);
+    max-height: nth($dims, 2);
+  }
 }
 
 .nb-modal--header {
