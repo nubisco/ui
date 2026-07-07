@@ -1,3 +1,10 @@
+# [1.43.0](https://github.com/nubisco/ui/compare/v1.42.0...v1.43.0) (2026-07-07)
+
+
+### Features
+
+* **progress-bar:** add NbProgressBar following Carbon guidelines ([444a7d1](https://github.com/nubisco/ui/commit/444a7d1ba1b7f3119bb0d6d5d9f9981f026e766b))
+
 # [1.42.0](https://github.com/nubisco/ui/compare/v1.41.1...v1.42.0) (2026-07-07)
 
 
