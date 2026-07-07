@@ -33,6 +33,7 @@ import NbModal from './Modal.vue'
 import NbNumberInput from './NumberInput.vue'
 import NbPanel from './Panel.vue'
 import NbPieChart from './Charts/PieChart.vue'
+import NbProgressBar from './ProgressBar.vue'
 import NbRadio from './Radio.vue'
 import NbSelect from './Select.vue'
 import NbShell from './Shell.vue'
@@ -90,6 +91,7 @@ const components = {
   NbNumberInput,
   NbPanel,
   NbPieChart,
+  NbProgressBar,
   NbRadio,
   NbSelect,
   NbShell,

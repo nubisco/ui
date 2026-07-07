@@ -237,6 +237,10 @@ export default withMermaid(
                   { text: 'Modal', link: '/ui/components/modal' },
                   { text: 'Number Input', link: '/ui/components/number-input' },
                   { text: 'Panel', link: '/ui/components/panel' },
+                  {
+                    text: 'Progress Bar',
+                    link: '/ui/components/progress-bar',
+                  },
                   { text: 'Radio', link: '/ui/components/radio' },
                   { text: 'Select', link: '/ui/components/select' },
                   { text: 'Shell', link: '/ui/components/shell' },

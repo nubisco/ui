@@ -40,6 +40,7 @@ import Modal from './components/Modal.vue'
 import NumberInput from './components/NumberInput.vue'
 import Panel from './components/Panel.vue'
 import PieChart from './components/Charts/PieChart.vue'
+import ProgressBar from './components/ProgressBar.vue'
 import Radio from './components/Radio.vue'
 import Select from './components/Select.vue'
 import Shell from './components/Shell.vue'
@@ -101,6 +102,7 @@ declare module 'vue' {
     NbNumberInput: typeof NumberInput
     NbPanel: typeof Panel
     NbPieChart: typeof PieChart
+    NbProgressBar: typeof ProgressBar
     NbRadio: typeof Radio
     NbSelect: typeof Select
     NbShell: typeof Shell
