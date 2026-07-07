@@ -1,10 +1,10 @@
 <template>
-  <label :class="['nb-checkbox', { 'nb-checkbox--disabled': disabled }]">
+  <label :class="['nb-checkbox', { 'nb-checkbox--disabled': isDisabled }]">
     <span class="nb-checkbox__control">
       <input
         type="checkbox"
         :checked="modelValue"
-        :disabled="disabled"
+        :disabled="isDisabled"
         :indeterminate="indeterminate"
         class="nb-checkbox__input"
         @change="handleChange"
@@ -33,7 +33,9 @@
 </template>
 
 <script setup lang="ts">
+import { computed, inject } from 'vue'
 import { ICheckboxProps } from './Checkbox.d'
+import { NB_CHECKBOX_GROUP_CONTEXT } from './CheckboxGroup.context'
 
 const props = withDefaults(defineProps<ICheckboxProps>(), {
   id: 'checkbox',
@@ -44,8 +46,12 @@ const props = withDefaults(defineProps<ICheckboxProps>(), {
 
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>()
 
+// Group-level disabled cascades to every child without prop-drilling
+const group = inject(NB_CHECKBOX_GROUP_CONTEXT, null)
+const isDisabled = computed(() => props.disabled || !!group?.disabled.value)
+
 function handleChange(e: Event) {
-  if (!props.disabled) {
+  if (!isDisabled.value) {
     emit('update:modelValue', (e.target as HTMLInputElement).checked)
   }
 }
@@ -54,19 +60,24 @@ function handleChange(e: Event) {
 <style scoped lang="scss">
 .nb-checkbox {
   display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  // Top-align so the box stays on the first line of multi-line labels
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 20px;
   cursor: pointer;
   user-select: none;
+  font-family: var(--nb-font-family-sans);
 
   &--disabled {
-    opacity: 0.5;
+    opacity: var(--nb-field-disabled-opacity, 0.45);
     cursor: not-allowed;
   }
 
   &__control {
     position: relative;
     flex-shrink: 0;
+    // Centers the 16px box against the first 20px text line
+    margin-top: 2px;
   }
 
   &__input {
@@ -83,13 +94,13 @@ function handleChange(e: Event) {
     justify-content: center;
     width: 16px;
     height: 16px;
-    border: 1.5px solid var(--nb-c-border);
-    border-radius: 4px;
+    border: 1px solid var(--nb-c-field-border);
+    border-radius: 0;
     transition:
       background 0.15s,
       border-color 0.15s,
       box-shadow 0.15s;
-    color: var(--nb-c-white);
+    color: var(--nb-c-bg);
   }
 
   &__check {
@@ -99,13 +110,12 @@ function handleChange(e: Event) {
 
   &__dash {
     width: 8px;
-    height: 1.5px;
+    height: 2px;
     background: currentColor;
-    border-radius: 1px;
   }
 
   &__label {
-    font-size: 13px;
+    font-size: var(--nb-font-size-14);
     color: var(--nb-c-text);
     line-height: 1.4;
   }
@@ -113,14 +123,13 @@ function handleChange(e: Event) {
   /* Checked / indeterminate state */
   &__input:checked ~ &__box,
   &__input:indeterminate ~ &__box {
-    background: var(--nb-c-primary);
-    border-color: var(--nb-c-primary);
+    background: var(--nb-c-contrast);
+    border-color: var(--nb-c-contrast);
   }
 
   /* Focus ring */
   &__input:focus-visible ~ &__box {
-    box-shadow: 0 0 0 3px
-      color-mix(in srgb, var(--nb-c-primary) 30%, transparent);
+    box-shadow: 0 0 0 2px var(--nb-c-focus-ring);
   }
 
   &:hover:not(.nb-checkbox--disabled) &__box {

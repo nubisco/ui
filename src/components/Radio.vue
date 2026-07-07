@@ -83,7 +83,7 @@ function optionClasses(option: IRadioOption) {
 .nb-radio {
   display: inline-flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   font-family: var(--nb-font-family-sans);
 
   // ── Group label ─────────────────────────────────────────────────────────────
@@ -92,7 +92,7 @@ function optionClasses(option: IRadioOption) {
   // ── Options group ───────────────────────────────────────────────────────────
   &__group {
     display: flex;
-    gap: 4px;
+    gap: 6px;
 
     &--vertical {
       flex-direction: column;
@@ -101,18 +101,19 @@ function optionClasses(option: IRadioOption) {
     &--horizontal {
       flex-direction: row;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 16px;
     }
   }
 
   // ── Single option row ────────────────────────────────────────────────────────
   &__option {
     display: inline-flex;
-    align-items: center;
+    // Top-align so the circle stays on the first line of multi-line labels
+    align-items: flex-start;
     gap: 10px;
     cursor: pointer;
     user-select: none;
-    min-height: 28px;
+    min-height: 20px;
 
     &--disabled {
       opacity: var(--nb-field-disabled-opacity, 0.45);
@@ -133,6 +134,8 @@ function optionClasses(option: IRadioOption) {
     display: flex;
     align-items: center;
     justify-content: center;
+    // Centers the 18px circle against the first 20px text line
+    margin-top: 1px;
   }
 
   // Native input: hidden but still focusable
@@ -151,17 +154,17 @@ function optionClasses(option: IRadioOption) {
     justify-content: center;
     width: 18px;
     height: 18px;
-    border: 1.5px solid var(--nb-c-field-border);
+    border: 1px solid var(--nb-c-field-border);
     border-radius: 50%;
     transition:
       border-color 0.15s,
       box-shadow 0.15s;
   }
 
-  // ── Dot (selected indicator) ──────────────────────────────────────────────────
+  // ── Dot (selected indicator): half the circle diameter ───────────────────────
   &__dot {
-    width: 8px;
-    height: 8px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
     background: var(--nb-c-contrast);
     animation: nb-radio-pop 0.12s ease;
@@ -186,7 +189,7 @@ function optionClasses(option: IRadioOption) {
 
   // ── Focus ring ────────────────────────────────────────────────────────────────
   &__input:focus-visible ~ &__circle {
-    box-shadow: 0 0 0 2px var(--nb-c-primary);
+    box-shadow: 0 0 0 2px var(--nb-c-focus-ring);
   }
 
   // ── Checked: dark border + dark dot ──────────────────────────────────────────

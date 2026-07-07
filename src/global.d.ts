@@ -15,6 +15,7 @@ import Breadcrumbs from './components/Breadcrumbs.vue'
 import Button from './components/Button.vue'
 import Calendar from './components/Calendar.vue'
 import Checkbox from './components/Checkbox.vue'
+import CheckboxGroup from './components/CheckboxGroup.vue'
 import ColorStrip from './components/ColorStrip.vue'
 import CommandPalette from './components/CommandPalette.vue'
 import DatePicker from './components/DatePicker.vue'
@@ -75,6 +76,7 @@ declare module 'vue' {
     NbButton: typeof Button
     NbCalendar: typeof Calendar
     NbCheckbox: typeof Checkbox
+    NbCheckboxGroup: typeof CheckboxGroup
     NbColorStrip: typeof ColorStrip
     NbCommandPalette: typeof CommandPalette
     NbDatePicker: typeof DatePicker
