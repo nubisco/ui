@@ -1,3 +1,10 @@
+# [1.42.0](https://github.com/nubisco/ui/compare/v1.41.1...v1.42.0) (2026-07-07)
+
+
+### Features
+
+* **checkbox:** align checkbox and radio with Carbon specs, add NbCheckboxGroup ([9819c16](https://github.com/nubisco/ui/commit/9819c1691716628a40f49c3f56842002f09a228a))
+
 ## [1.41.1](https://github.com/nubisco/ui/compare/v1.41.0...v1.41.1) (2026-06-22)
 
 
