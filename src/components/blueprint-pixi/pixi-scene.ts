@@ -68,6 +68,15 @@ interface IMeterNode {
   sig: string
 }
 
+// One drawn card: a Graphics holding its chrome (frame / border / accent bar /
+// port pins), redrawn only when its signature (geometry / colour / ports)
+// changes. This is the native card painter that lets the DOM overlay drop to
+// just the focused card, collapsing N composited DOM layers to one GPU surface.
+interface ICardNode {
+  gfx: PIXI.Graphics
+  sig: string
+}
+
 // One wire drawn once (geometry baked, stroked white) and recoloured by `tint`.
 // Animating the level colour is then a uniform change, NOT a re-tessellation,
 // which is what eliminates the per-frame GPU-geometry churn (and its GC spikes).
@@ -101,6 +110,14 @@ export class PixiScene {
   private pendingMeters: IMeterGeom[] = []
   private metersDirty = false
   private trackColor = 0x16161e
+  // Card chrome layer: one Graphics per painted card. Reconciled on a
+  // visible-set / geometry change, never per animation frame.
+  private cardLayer!: PIXI.Container
+  private cardNodes = new Map<string, ICardNode>()
+  private pendingCards: IBlueprintCard[] = []
+  private cardsDirty = false
+  private cardBg = 0x101218
+  private cardBorder = 0x2a2a38
   private resolveColor!: ReturnType<typeof makeColorResolver>
   // Fallback colour for a wire whose own colour does not resolve.
   private connectedColor = 0x6366f1
@@ -170,6 +187,8 @@ export class PixiScene {
 
     this.resolveColor = makeColorResolver(this.Pixi, opts.el)
     this.connectedColor = this.resolveColor('var(--nb-c-primary)', 0x6366f1)
+    this.cardBg = this.resolveColor('var(--nb-c-layer-1)', 0x101218)
+    this.cardBorder = this.resolveColor('var(--nb-c-border)', 0x2a2a38)
 
     this.liveData = opts.liveData
     if (this.liveData) {
@@ -192,11 +211,17 @@ export class PixiScene {
     this.world = new this.Pixi.Container()
     this.app.stage.addChild(this.world)
 
+    this.cardLayer = new this.Pixi.Container()
     this.wireLayer = new this.Pixi.Container()
     this.meterLayer = new this.Pixi.Container()
     this.flowLayer = new this.Pixi.Container()
-    // Order: wires (back) -> meters (over the card area) -> flow dots (top).
-    this.world.addChild(this.wireLayer, this.meterLayer, this.flowLayer)
+    // Order: cards (bottom) -> wires -> meters (over cards) -> flow dots (top).
+    this.world.addChild(
+      this.cardLayer,
+      this.wireLayer,
+      this.meterLayer,
+      this.flowLayer,
+    )
     this.dotTexture = this.makeDotTexture()
     this.trackColor = this.resolveColor('var(--nb-c-layer-2)', 0x16161e)
     // Stop Pixi's shared ticker for good measure; rendering is fully on-demand.
@@ -446,6 +471,79 @@ export class PixiScene {
     }
   }
 
+  /** Stash the cards to paint natively (chrome). Excludes the focused card,
+   *  which the host keeps as a real interactive DOM overlay. Reconciled on a
+   *  visible-set / geometry change, not per frame. */
+  setCards(cards: IBlueprintCard[], focusedId: string | null): void {
+    if (this.destroyed) return
+    this.pendingCards = focusedId
+      ? cards.filter((c) => c.id !== focusedId)
+      : cards
+    this.cardsDirty = true
+    this.ensureRaf()
+  }
+
+  /** Reconcile per-card chrome Graphics against the pending set. Redraws a card
+   *  only when its signature (geometry / colour / port count) changes. */
+  private reconcileCardChrome(): void {
+    this.cardsDirty = false
+    const seen = new Set<string>()
+    for (const card of this.pendingCards) {
+      seen.add(card.id)
+      const w = card.width ?? 200
+      const h = card.height ?? 120
+      const ports = card.paint?.ports
+      const ins = ports?.filter((p) => p.type === 'input').length ?? 0
+      const outs = ports?.filter((p) => p.type === 'output').length ?? 0
+      const sig = `${Math.round(card.x)},${Math.round(card.y)},${Math.round(w)},${Math.round(h)},${card.paint?.color ?? ''},${card.paint?.collapsed ? 1 : 0},${ins},${outs}`
+      let node = this.cardNodes.get(card.id)
+      if (!node) {
+        const gfx = new this.Pixi.Graphics()
+        this.cardLayer.addChild(gfx)
+        node = { gfx, sig: '' }
+        this.cardNodes.set(card.id, node)
+      }
+      if (node.sig !== sig) {
+        node.sig = sig
+        this.drawCardChrome(node.gfx, card, w, h, ins, outs)
+      }
+    }
+    for (const [id, node] of this.cardNodes) {
+      if (seen.has(id)) continue
+      node.gfx.destroy()
+      this.cardNodes.delete(id)
+    }
+  }
+
+  /** Draw one card's chrome: rounded frame + border, a top accent bar in the
+   *  card colour, and port pins evenly distributed down the left/right edges. */
+  private drawCardChrome(
+    gfx: PIXI.Graphics,
+    card: IBlueprintCard,
+    w: number,
+    h: number,
+    ins: number,
+    outs: number,
+  ): void {
+    const { x, y } = card
+    const accent = card.paint?.color
+      ? this.resolveColor(card.paint.color, this.connectedColor)
+      : this.connectedColor
+    gfx.clear()
+    gfx
+      .roundRect(x, y, w, h, 10)
+      .fill({ color: this.cardBg })
+      .stroke({ width: 1, color: this.cardBorder, alignment: 1 })
+    gfx.roundRect(x, y, w, 3, 2).fill({ color: accent })
+    const HEADER = 30
+    const spread = (n: number, i: number) =>
+      y + HEADER + ((h - HEADER) * (i + 1)) / (n + 1)
+    for (let i = 0; i < ins; i++)
+      gfx.circle(x, spread(ins, i), 3).fill({ color: this.cardBorder })
+    for (let i = 0; i < outs; i++)
+      gfx.circle(x + w, spread(outs, i), 3).fill({ color: this.cardBorder })
+  }
+
   /** A small white dot, tinted per flow wire. Built once. */
   private makeDotTexture(): PIXI.Texture {
     const g = new this.Pixi.Graphics()
@@ -498,6 +596,10 @@ export class PixiScene {
     // Meter geometry reconciles when the visible set / a card moves (infrequent,
     // not throttled); values animate from the live channel on the same throttled
     // cadence as wire colours.
+    if (this.cardsDirty) {
+      this.reconcileCardChrome()
+      render = true
+    }
     if (this.metersDirty) {
       this.reconcileMeters()
       this.updateMeterValues()
