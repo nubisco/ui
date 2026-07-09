@@ -878,26 +878,31 @@ function pinSize(port: IBlueprintPort): string {
   // Animating box-shadow directly (the old `nb-port-pulse`) forced a full-layer
   // repaint every frame and pinned the whole back canvas at ~5fps — see
   // docs/BUGS.md "animated box-shadow on connected ports".
+  // Signal ping: a thin ring that expands out of the pin and fades, like a
+  // radar/sonar ping, in a distinct signal colour (NOT the connected green).
+  // It is a solid-border ring promoted to its own layer (will-change), so it is
+  // rasterised ONCE and only transform + opacity animate — pure compositor work,
+  // no per-frame blur re-raster (the old scaled box-shadow re-blurred every
+  // frame and pinned the canvas at ~9fps when many ports were live).
   &--active::after {
     content: '';
     position: absolute;
     top: 50%;
-    margin-top: -7px;
-    width: 6px;
+    width: 14px;
     height: 14px;
-    border-radius: 3px;
-    box-shadow:
-      0 0 16px var(--pin-color, var(--nb-card-color)),
-      0 0 24px var(--pin-color, var(--nb-card-color));
-    animation: nb-port-glow 1.4s ease-in-out infinite;
-    will-change: opacity, transform;
+    margin-top: -7px;
+    border-radius: 50%;
+    border: 1.5px solid var(--nb-port-signal-color, #38e0ff);
+    transform-origin: center;
+    animation: nb-port-ping 1s ease-out infinite;
+    will-change: transform, opacity;
     pointer-events: none;
   }
   &--left.nb-blueprint-card__port--active::after {
-    left: 0;
+    left: -4px;
   }
   &--right.nb-blueprint-card__port--active::after {
-    right: 0;
+    right: -4px;
   }
 
   &:hover::before {
@@ -1035,37 +1040,39 @@ function pinSize(port: IBlueprintPort): string {
     background: var(--nb-card-color);
     // No glow when merely wired; the glow means live signal (--active).
   }
-  // Compositor-only glow layer (see the per-port note above): static shadow,
-  // pulsed by opacity + scale, no per-frame box-shadow repaint.
+  // Signal ping (see the per-port note above): a thin ring expanding out of the
+  // combined pin and fading, compositor-only (no box-shadow blur).
   &--active::after {
     content: '';
     position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    box-shadow:
-      0 0 16px var(--pin-color, var(--nb-card-color)),
-      0 0 24px var(--pin-color, var(--nb-card-color));
-    animation: nb-port-glow 1.4s ease-in-out infinite;
-    will-change: opacity, transform;
+    top: 50%;
+    left: 50%;
+    width: 18px;
+    height: 18px;
+    margin: -9px 0 0 -9px;
+    border-radius: 50%;
+    border: 1.5px solid var(--nb-port-signal-color, #38e0ff);
+    transform-origin: center;
+    animation: nb-port-ping 1s ease-out infinite;
+    will-change: transform, opacity;
     pointer-events: none;
   }
 }
 
-// Compositor-accelerated glow pulse: only `opacity` and `transform` change, so
-// the pre-rendered shadow layer is composited (not repainted) each frame. This
-// replaced `nb-port-pulse`, which animated `box-shadow` and repainted the layer
-// every frame — the dominant cause of the back canvas running at ~5fps.
-// scale peaks at 1 (native raster, crisp); the 0.72 trough + 0.35 opacity
-// reproduce the old glow's swell-in / recede look without the paint cost.
-@keyframes nb-port-glow {
-  0%,
-  100% {
-    opacity: 0.35;
-    transform: scale(0.72);
+// Signal ping: the ring starts small and bright at the pin, then expands and
+// fades (radar/sonar). Only transform + opacity change on a promoted layer, so
+// it is composited, never repainted — no blur, no per-frame raster.
+@keyframes nb-port-ping {
+  0% {
+    transform: scale(0.35);
+    opacity: 0.9;
   }
-  50% {
-    opacity: 1;
-    transform: scale(1);
+  70% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
   }
 }
 
@@ -1079,17 +1086,22 @@ function pinSize(port: IBlueprintPort): string {
   white-space: nowrap;
   pointer-events: none;
   letter-spacing: 0.02em;
+  // Equal-width digits so a 1- vs 2-digit label is the same width.
+  font-variant-numeric: tabular-nums;
 
   // Left ports: label sits to the right of the pin, inside the card body.
   .nb-blueprint-card__port--left & {
     margin-left: 10px;
   }
 
-  // Right ports: label sits to the left of the pin (the .port has its pin
-  // as ::before on its right edge, so we visually order via flex-direction).
+  // Right ports: label sits to the left of the pin. Give it a fixed min-width
+  // and right-align it, so a 2-digit channel number (10+) can't push the pin
+  // further out than the 1-digit ones — the pins stay in a straight column.
   .nb-blueprint-card__port--right & {
     margin-right: 10px;
     order: -1;
+    min-width: 1.6em;
+    text-align: right;
   }
 }
 </style>
