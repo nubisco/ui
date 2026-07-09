@@ -85,7 +85,14 @@ interface IWireNode {
   dim: boolean
   flows: boolean
   key: string
+  /** True while this wire's geometry is being re-stroked by the 'vibrate'
+   *  activity style, so it can be restored to the straight base stroke when it
+   *  stops carrying signal. */
+  vibrating?: boolean
 }
+
+/** How the 'activity' wire mode animates a live wire. */
+export type TWireActivityStyle = 'flow' | 'pulse' | 'vibrate'
 
 export class PixiScene {
   private app: PIXI.Application
@@ -124,6 +131,8 @@ export class PixiScene {
   // from "is live data present", because 'activity' mode also streams levels
   // (to gate flow) but must NOT colour wires. See setLevelColoring.
   private colorByLevel = false
+  // How 'activity' mode animates a live wire (flow comet / pulse / vibrate).
+  private activityStyle: TWireActivityStyle = 'flow'
   // Live wire levels (host writes at audio rate, bypassing Vue). `levelsDirty`
   // is set when a write lands; the frame loop recolours wires on the throttled
   // animation cadence, then idles when the host stops writing.
@@ -388,6 +397,18 @@ export class PixiScene {
     this.ensureRaf()
   }
 
+  /** Choose how 'activity' animates a live wire. Forces a geometry + colour
+   *  reconcile so any per-frame mutation from the previous style (vibrate's
+   *  re-stroked path, pulse's alpha) is reset to the clean base first. */
+  setActivityStyle(style: TWireActivityStyle): void {
+    if (this.destroyed || this.activityStyle === style) return
+    this.activityStyle = style
+    this.clearFlow()
+    this.wiresDrawnOnce = false
+    this.wiresDirty = true
+    this.ensureRaf()
+  }
+
   /** Recolour every wire by tint only (no re-tessellation). Cheap enough to run
    *  on every level tick. */
   private applyWireColors(): void {
@@ -529,11 +550,15 @@ export class PixiScene {
       this.updateMeterValues()
       render = true
     }
-    // Flow dots: advance + reposition pooled sprites on the anim cadence.
+    // Activity animation: advance the shared phase + render the chosen style on
+    // the anim cadence. Only wires actually carrying signal animate (gated per
+    // style on the live level); the rest stay static.
     if (this.flowNodes.length && animWindow) {
       const dt = this.lastAnimMs ? ts - this.lastAnimMs : ANIM_FRAME_MS
       this.flowPhase = (this.flowPhase + FLOW_SPEED * (dt / 1000)) % 1
-      this.drawFlow()
+      if (this.activityStyle === 'pulse') this.drawPulse()
+      else if (this.activityStyle === 'vibrate') this.drawVibrate()
+      else this.drawFlow()
       render = true
     }
     if (animWindow) this.lastAnimMs = ts
@@ -554,31 +579,107 @@ export class PixiScene {
 
   /** Position a pooled, tinted dot sprite on each flowing wire. Reuses sprites
    *  (no per-frame geometry/allocation), so flow animation does not churn. */
+  /** 'flow': a directional comet (a short fading trail of dots) travels each
+   *  active wire source -> destination. Cheap: pooled sprites, no geometry. */
   private drawFlow(): void {
     const scale = FLOW_DOT_R / Math.max(this.zoom, 0.01) / 8
+    const COMET = 5 // dots per wire
+    const GAP = 0.06 // phase spacing between trail dots
     let i = 0
     for (const node of this.flowNodes) {
-      // Gate on REAL signal: skip wires not carrying signal above the noise
-      // floor, so the animation traces the live path and stops where it stops.
       const level = this.liveData ? this.liveData.get(node.key) : 0
       if (level <= ACTIVITY_THRESHOLD) continue
-      const [x, y] = cubicAt(node.bezier, this.flowPhase)
-      let sprite = this.flowSprites[i]
-      if (!sprite) {
-        sprite = new this.Pixi.Sprite(this.dotTexture)
-        sprite.anchor.set(0.5)
-        sprite.alpha = 0.9
-        this.flowLayer.addChild(sprite)
-        this.flowSprites[i] = sprite
+      const color = this.wireColorFor(node)
+      for (let k = 0; k < COMET; k++) {
+        let ph = this.flowPhase - k * GAP
+        if (ph < 0) ph += 1
+        const [x, y] = cubicAt(node.bezier, ph)
+        let sprite = this.flowSprites[i]
+        if (!sprite) {
+          sprite = new this.Pixi.Sprite(this.dotTexture)
+          sprite.anchor.set(0.5)
+          this.flowLayer.addChild(sprite)
+          this.flowSprites[i] = sprite
+        }
+        sprite.visible = true
+        sprite.position.set(x, y)
+        sprite.scale.set(scale * (1 - k * 0.12))
+        sprite.alpha = 0.9 * (1 - k / COMET) // lead bright, trail fades
+        sprite.tint = color
+        i++
       }
-      sprite.visible = true
-      sprite.position.set(x, y)
-      sprite.scale.set(scale)
-      sprite.tint = this.wireColorFor(node)
-      i++
     }
     for (; i < this.flowSprites.length; i++)
       this.flowSprites[i]!.visible = false
+  }
+
+  /** 'pulse': the whole active wire brightens and dims (shared phase). No
+   *  sprites, no geometry — just a per-wire alpha, so it is essentially free. */
+  private drawPulse(): void {
+    const pulse = 0.4 + 0.6 * Math.abs(Math.sin(this.flowPhase * Math.PI * 2))
+    for (const node of this.flowNodes) {
+      const level = this.liveData ? this.liveData.get(node.key) : 0
+      node.gfx.alpha =
+        level > ACTIVITY_THRESHOLD ? pulse : node.dim ? 0.25 : 0.55
+    }
+  }
+
+  /** 'vibrate': the active wire oscillates like a plucked string. Re-strokes the
+   *  wire's geometry each frame with a perpendicular sine (enveloped to zero at
+   *  the endpoints), only for wires carrying signal. Restores the straight base
+   *  stroke when a wire goes silent. Costs a per-frame re-tessellation of the
+   *  ACTIVE wires only. */
+  private drawVibrate(): void {
+    const amp = 2.5 / Math.max(this.zoom, 0.01) // ~constant screen amplitude
+    for (const node of this.flowNodes) {
+      const level = this.liveData ? this.liveData.get(node.key) : 0
+      if (level <= ACTIVITY_THRESHOLD) {
+        if (node.vibrating) {
+          this.strokeBase(node)
+          node.vibrating = false
+        }
+        continue
+      }
+      node.vibrating = true
+      this.strokeVibrated(node, amp)
+    }
+  }
+
+  /** Re-stroke a wire's straight base bezier (undoes a vibrate). */
+  private strokeBase(node: IWireNode): void {
+    const b = node.bezier
+    node.gfx
+      .clear()
+      .moveTo(b.p0[0], b.p0[1])
+      .bezierCurveTo(b.c1[0], b.c1[1], b.c2[0], b.c2[1], b.p3[0], b.p3[1])
+      .stroke({ width: 1, pixelLine: true, color: 0xffffff })
+  }
+
+  /** Re-stroke a wire as a vibrating string: sample the bezier and offset each
+   *  sample perpendicular to the local tangent by an enveloped travelling sine. */
+  private strokeVibrated(node: IWireNode, amp: number): void {
+    const b = node.bezier
+    const M = 16
+    const g = node.gfx
+    g.clear()
+    for (let s = 0; s <= M; s++) {
+      const t = s / M
+      const [x, y] = cubicAt(b, t)
+      const [x2, y2] = cubicAt(b, Math.min(1, t + 0.01))
+      let dx = x2 - x
+      let dy = y2 - y
+      const len = Math.hypot(dx, dy) || 1
+      dx /= len
+      dy /= len
+      const env = Math.sin(t * Math.PI) // 0 at ends, 1 at middle
+      const off =
+        Math.sin(t * Math.PI * 3 + this.flowPhase * Math.PI * 2) * amp * env
+      const ox = x + -dy * off
+      const oy = y + dx * off
+      if (s === 0) g.moveTo(ox, oy)
+      else g.lineTo(ox, oy)
+    }
+    g.stroke({ width: 1, pixelLine: true, color: 0xffffff })
   }
 
   private clearFlow(): void {

@@ -4,6 +4,8 @@ import type {
   TBlueprintCardStatus,
 } from './BlueprintCard.types'
 import type { BlueprintLiveData } from './blueprint-pixi/live-data'
+import type { TWireActivityStyle } from './blueprint-pixi/pixi-scene'
+export type { TWireActivityStyle } from './blueprint-pixi/pixi-scene'
 
 export interface IBlueprintConnection {
   fromNode: string
@@ -176,6 +178,13 @@ export interface IBlueprintProps {
    *     `level` field) keep their card-accent colour.
    */
   animateConnections?: 'never' | 'always' | 'on-activity' | 'levels'
+  /**
+   * How the 'on-activity' animation represents a live wire: 'flow' (a
+   * directional comet), 'pulse' (brightness), or 'vibrate' (a plucked-string
+   * oscillation). Defaults to 'flow'. Only wires actually carrying signal
+   * animate (the renderer gates on live level).
+   */
+  activityStyle?: TWireActivityStyle
   /**
    * Wheel-event policy for the canvas:
    *
