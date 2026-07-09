@@ -2101,6 +2101,25 @@ defineExpose({
   background: var(--nb-c-layer-0, var(--nb-c-bg));
   cursor: crosshair;
 
+  // The canvas is a drag surface, not a document: card titles, the collapse
+  // caret, port labels etc. are chrome, not selectable text. Without this a
+  // marquee or a port-to-port connect drag paints the browser's blue text /
+  // element selection over the cards. `user-select` inherits, so this also
+  // covers slotted card content. The `-webkit-` prefix is REQUIRED — WKWebView
+  // (the app's engine) ignores the unprefixed property, so selection leaked
+  // through in the shipped app even though Chrome honoured it.
+  user-select: none;
+  -webkit-user-select: none;
+
+  // Genuine text fields stay selectable / editable, including slotted (app-owned)
+  // card inputs that carry no scope attribute — hence :deep.
+  :deep(input),
+  :deep(textarea),
+  :deep([contenteditable='true']) {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
   &.is-space {
     cursor: grab;
   }
