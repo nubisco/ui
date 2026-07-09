@@ -4,6 +4,8 @@ import type {
   TBlueprintBackground,
 } from './Blueprint.types'
 import type { BlueprintLiveData } from './blueprint-pixi/live-data'
+import type { TWireActivityStyle } from './blueprint-pixi/pixi-scene'
+export type { TWireActivityStyle } from './blueprint-pixi/pixi-scene'
 
 export type { TBlueprintRenderer } from './Blueprint.types'
 
@@ -69,6 +71,8 @@ export interface IBlueprintRendererProps {
    *  even though live data may still stream (activity gates flow on level but
    *  keeps wires at base colour, so colour and motion stay separate). */
   levelColoring?: boolean
+  /** How 'activity' animates a live wire: 'flow' | 'pulse' | 'vibrate'. */
+  activityStyle?: TWireActivityStyle
   /** Background pattern to draw behind the scene. */
   background: TBlueprintBackground
   /** Non-reactive live-value channel (wire levels, ...) the host writes at
