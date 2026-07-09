@@ -20,6 +20,8 @@ import { makeColorResolver } from './pixi-color'
 import { parseCubicPath, cubicAt, type ICubicBezier } from './wire-path'
 import { levelToColorNumber } from './level-color'
 import type { BlueprintLiveData } from './live-data'
+import { CardContentPainter, type IBuiltContent } from './card-content-painter'
+import type { TCardPrimitive } from '../blueprint-card-content'
 
 const GRID_TILE = 24
 const FLOW_SPEED = 0.45 // fraction of a wire traversed per second
@@ -121,6 +123,17 @@ export class PixiScene {
   private cardBg = 0x101218
   private cardBorder = 0x2a2a38
   private cardText = 0xf5f5f5
+  // Card-content layer: the GPU-drawn inner controls (faders, knobs, meters,
+  // labels...) of every painted card. Built by CardContentPainter, reconciled by
+  // a per-card content signature; static primitives cost nothing at rest, live
+  // ones (`liveContent`) update on the throttled animation tick.
+  private contentLayer!: PIXI.Container
+  private contentNodes = new Map<
+    string,
+    { built: IBuiltContent; sig: string }
+  >()
+  private liveContent: IBuiltContent['live'] = []
+  private contentPainter!: CardContentPainter
   private resolveColor!: ReturnType<typeof makeColorResolver>
   // Fallback colour for a wire whose own colour does not resolve.
   private connectedColor = 0x6366f1
@@ -216,18 +229,26 @@ export class PixiScene {
     this.app.stage.addChild(this.world)
 
     this.cardLayer = new this.Pixi.Container()
+    this.contentLayer = new this.Pixi.Container()
     this.wireLayer = new this.Pixi.Container()
     this.meterLayer = new this.Pixi.Container()
     this.flowLayer = new this.Pixi.Container()
-    // Order: cards (bottom) -> wires -> meters (over cards) -> flow dots (top).
+    // Order: card chrome -> card content -> wires -> meters -> flow dots (top).
     this.world.addChild(
       this.cardLayer,
+      this.contentLayer,
       this.wireLayer,
       this.meterLayer,
       this.flowLayer,
     )
     this.dotTexture = this.makeDotTexture()
     this.trackColor = this.resolveColor('var(--nb-c-layer-2)', 0x16161e)
+    this.contentPainter = new CardContentPainter(
+      this.Pixi,
+      this.resolveColor,
+      this.trackColor,
+      this.liveData,
+    )
     // Stop Pixi's shared ticker for good measure; rendering is fully on-demand.
     this.app.ticker.stop()
   }
@@ -579,6 +600,50 @@ export class PixiScene {
     node.label.position.set(card.x + 10, card.y + 8)
   }
 
+  /** Reconcile each painted card's inner content (faders, knobs, meters, ...)
+   *  against its descriptor. A card is rebuilt only when its content signature
+   *  changes; a pure move just repositions the existing container. Live
+   *  primitives across all cards are collected into `liveContent` for the tick
+   *  updater. Runs with the chrome reconcile (visible-set / edit change). */
+  private reconcileContent(): void {
+    const seen = new Set<string>()
+    const live: IBuiltContent['live'] = []
+    for (const card of this.pendingCards) {
+      const content =
+        card.paint?.content ??
+        (card as unknown as { content?: TCardPrimitive[] }).content
+      if (!content || !content.length) continue
+      seen.add(card.id)
+      const sig = JSON.stringify(content)
+      let node = this.contentNodes.get(card.id)
+      if (!node || node.sig !== sig) {
+        node?.built.container.destroy({ children: true })
+        const built = this.contentPainter.build(content, card.x, card.y)
+        this.contentLayer.addChild(built.container)
+        node = { built, sig }
+        this.contentNodes.set(card.id, node)
+      } else {
+        // Unchanged content, possibly moved: keep the drawn objects, reposition.
+        node.built.container.position.set(card.x, card.y)
+      }
+      for (const l of node.built.live) live.push(l)
+    }
+    for (const [id, node] of this.contentNodes) {
+      if (seen.has(id)) continue
+      node.built.container.destroy({ children: true })
+      this.contentNodes.delete(id)
+    }
+    this.liveContent = live
+  }
+
+  /** Push the live channel into every card's live primitives (meters, needles).
+   *  Cheap: a sprite scale / position / tint per object, no rebuild. Runs on the
+   *  throttled animation tick alongside wire colours + meters. */
+  private updateLiveContent(): void {
+    if (!this.liveContent.length || !this.liveData) return
+    for (const l of this.liveContent) l.apply(this.liveData.get(l.key))
+  }
+
   /** A small white dot, tinted per flow wire. Built once. */
   private makeDotTexture(): PIXI.Texture {
     const g = new this.Pixi.Graphics()
@@ -633,6 +698,7 @@ export class PixiScene {
     // cadence as wire colours.
     if (this.cardsDirty) {
       this.reconcileCardChrome()
+      this.reconcileContent()
       render = true
     }
     if (this.metersDirty) {
@@ -644,6 +710,7 @@ export class PixiScene {
       this.levelsDirty = false
       this.applyWireColors()
       this.updateMeterValues()
+      this.updateLiveContent()
       render = true
     }
     // Flow dots: advance + reposition pooled sprites on the anim cadence.
@@ -709,6 +776,8 @@ export class PixiScene {
     this.flowSprites = []
     this.flowNodes = []
     this.meterNodes.clear()
+    this.contentNodes.clear()
+    this.liveContent = []
     // removeView:false — the <canvas> is Vue-owned and unmounts with the
     // component; we only tear down the GPU scene + textures.
     this.app.destroy({ removeView: false }, { children: true, texture: true })

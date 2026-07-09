@@ -4,6 +4,8 @@ import type {
   TBlueprintCardStatus,
 } from './BlueprintCard.types'
 import type { BlueprintLiveData } from './blueprint-pixi/live-data'
+import type { TCardPrimitive } from './blueprint-card-content'
+export type { TCardPrimitive } from './blueprint-card-content'
 
 export interface IBlueprintConnection {
   fromNode: string
@@ -129,6 +131,14 @@ export interface IBlueprintCardPaint {
   connectedPorts?: string[]
   /** Ids of ports drawn as active (glow). */
   activePorts?: string[]
+  /**
+   * The card's inner controls as GPU-drawable primitives in card-local px
+   * (faders, knobs, meters, labels, curves). The Pixi renderer paints these on
+   * one surface so every unfocused card shows its real body without a per-card
+   * DOM layer; the focused card still swaps to the live Vue `#card` slot. See
+   * [TCardPrimitive]. Omit for a chrome-only (header + ports) card.
+   */
+  content?: TCardPrimitive[]
 }
 
 /** How NbBlueprint should pick a renderer. `'auto'` resolves to `'pixi'`
