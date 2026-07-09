@@ -156,6 +156,7 @@ async function initScene(): Promise<void> {
 function pushAll(): void {
   if (!scene) return
   scene.setCamera(props.panX, props.panY, props.zoom)
+  scene.setLevelColoring(props.levelColoring ?? false)
   scene.setWires(props.wires, props.shouldFlow)
   scene.setMeters(props.visibleCards)
 }
@@ -182,6 +183,10 @@ watch(
 watch(
   () => props.visibleCards,
   (cards) => scene?.setMeters(cards),
+)
+watch(
+  () => props.levelColoring,
+  (on) => scene?.setLevelColoring(on ?? false),
 )
 watch(
   () => props.background,
