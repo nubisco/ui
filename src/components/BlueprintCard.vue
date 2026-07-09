@@ -476,7 +476,10 @@ function pinSize(port: IBlueprintPort): string {
     );
   border: 1px solid var(--nb-c-border);
   cursor: grab;
+  // `-webkit-` prefix REQUIRED for WKWebView (Safari), which ignores the
+  // unprefixed property — the card was silently still selectable in the app.
   user-select: none;
+  -webkit-user-select: none;
   transition:
     transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1),
     border-color 200ms,
