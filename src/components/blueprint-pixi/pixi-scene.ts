@@ -75,6 +75,7 @@ interface IMeterNode {
 // just the focused card, collapsing N composited DOM layers to one GPU surface.
 interface ICardNode {
   gfx: PIXI.Graphics
+  label?: PIXI.Text
   sig: string
 }
 
@@ -119,6 +120,7 @@ export class PixiScene {
   private cardsDirty = false
   private cardBg = 0x101218
   private cardBorder = 0x2a2a38
+  private cardText = 0xf5f5f5
   private resolveColor!: ReturnType<typeof makeColorResolver>
   // Fallback colour for a wire whose own colour does not resolve.
   private connectedColor = 0x6366f1
@@ -190,6 +192,7 @@ export class PixiScene {
     this.connectedColor = this.resolveColor('var(--nb-c-primary)', 0x6366f1)
     this.cardBg = this.resolveColor('var(--nb-c-layer-1)', 0x101218)
     this.cardBorder = this.resolveColor('var(--nb-c-border)', 0x2a2a38)
+    this.cardText = this.resolveColor('var(--nb-c-text)', 0xf5f5f5)
 
     this.liveData = opts.liveData
     if (this.liveData) {
@@ -495,7 +498,9 @@ export class PixiScene {
       const h = card.height ?? 120
       const color =
         card.paint?.color ?? (card as unknown as { color?: string }).color ?? ''
-      const sig = `${Math.round(card.x)},${Math.round(card.y)},${Math.round(w)},${Math.round(h)},${color},${cardPorts(card).length}`
+      const title =
+        card.paint?.title ?? (card as unknown as { title?: string }).title ?? ''
+      const sig = `${Math.round(card.x)},${Math.round(card.y)},${Math.round(w)},${Math.round(h)},${color},${cardPorts(card).length},${title}`
       let node = this.cardNodes.get(card.id)
       if (!node) {
         const gfx = new this.Pixi.Graphics()
@@ -506,11 +511,13 @@ export class PixiScene {
       if (node.sig !== sig) {
         node.sig = sig
         this.drawCardChrome(node.gfx, card, w, h)
+        this.updateCardLabel(node, card, title)
       }
     }
     for (const [id, node] of this.cardNodes) {
       if (seen.has(id)) continue
       node.gfx.destroy()
+      node.label?.destroy()
       this.cardNodes.delete(id)
     }
   }
@@ -541,6 +548,35 @@ export class PixiScene {
       if (local)
         gfx.circle(x + local.x, y + local.y, 3).fill({ color: this.cardBorder })
     }
+  }
+
+  /** Create / update / remove a painted card's title text (cached per card). */
+  private updateCardLabel(
+    node: ICardNode,
+    card: IBlueprintCard,
+    title: string,
+  ): void {
+    if (!title) {
+      node.label?.destroy()
+      node.label = undefined
+      return
+    }
+    if (!node.label) {
+      node.label = new this.Pixi.Text({
+        text: title,
+        style: {
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          fontSize: 12,
+          fontWeight: '600',
+          fill: this.cardText,
+        },
+        resolution: 2,
+      })
+      this.cardLayer.addChild(node.label)
+    } else {
+      node.label.text = title
+    }
+    node.label.position.set(card.x + 10, card.y + 8)
   }
 
   /** A small white dot, tinted per flow wire. Built once. */

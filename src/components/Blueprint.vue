@@ -623,8 +623,36 @@ function onCanvasMouseDown(e: MouseEvent) {
     return
   }
 
+  // Left click on a natively-painted (non-DOM) card: focus it so it becomes a
+  // real interactive DOM card for editing; the others stay GPU-painted.
+  const paintedId = paintedCardAt(e)
+  if (paintedId) {
+    setSelection([paintedId])
+    setFocus(paintedId)
+    return
+  }
+
   // Left click on empty canvas = marquee select
   startMarquee(e)
+}
+
+/** Hit-test the click against card boxes (canvas-local) for cards the Pixi
+ *  renderer paints natively (no DOM element to catch the click). Returns the id
+ *  of the topmost painted card under the pointer, or null. */
+function paintedCardAt(e: MouseEvent): string | null {
+  const rect = containerRef.value?.getBoundingClientRect()
+  if (!rect) return null
+  const lx = (e.clientX - rect.left - panX.value) / zoom.value
+  const ly = (e.clientY - rect.top - panY.value) / zoom.value
+  const list = props.cards ?? []
+  for (let i = list.length - 1; i >= 0; i--) {
+    const c = list[i]
+    if (!c || c.id === focusedId.value) continue
+    const w = c.width ?? 200
+    const h = c.height ?? 120
+    if (lx >= c.x && lx <= c.x + w && ly >= c.y && ly <= c.y + h) return c.id
+  }
+  return null
 }
 
 // ── Panning ───────────────────────────────────────────────────────────
