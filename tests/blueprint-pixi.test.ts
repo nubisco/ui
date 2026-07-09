@@ -94,19 +94,26 @@ describe('BlueprintPixiRenderer DOM contract', () => {
     expect(ev![0][1]).toEqual(conn)
   })
 
-  it('renders cards via the #card slot in windowed mode', () => {
+  it('mounts only the focused card as DOM in windowed mode (others are GPU-painted)', () => {
     const w = mount(BlueprintPixiRenderer, {
       props: {
         ...baseProps,
         wires: [],
         windowed: true,
-        visibleCards: [{ id: 'n1', x: 0, y: 0 }],
+        visibleCards: [
+          { id: 'n1', x: 0, y: 0 },
+          { id: 'n2', x: 200, y: 0 },
+        ],
+        focusedId: 'n1',
       },
       slots: {
         card: ({ card }: { card: { id: string } }) =>
           h(BlueprintCard, { id: card.id, title: card.id }),
       },
     })
+    // The focused card is real interactive DOM; the rest are painted natively on
+    // the GPU (one composited surface instead of a DOM layer per card).
     expect(w.find('[data-card-id="n1"]').exists()).toBe(true)
+    expect(w.find('[data-card-id="n2"]').exists()).toBe(false)
   })
 })

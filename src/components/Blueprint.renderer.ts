@@ -71,6 +71,11 @@ export interface IBlueprintRendererProps {
    *  audio rate; the PixiJS renderer reads it on its throttled render tick. The
    *  DOM renderer ignores it. */
   liveData?: BlueprintLiveData
+  /** The currently focused/edited card id, or null. The PixiJS renderer mounts
+   *  only this card as real interactive DOM and paints the rest natively on the
+   *  GPU (one composited surface instead of N DOM layers). The DOM renderer
+   *  ignores it (it always mounts every card). */
+  focusedId?: string | null
 }
 
 /**
