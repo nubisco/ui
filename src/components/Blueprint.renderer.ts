@@ -73,6 +73,10 @@ export interface IBlueprintRendererProps {
   levelColoring?: boolean
   /** How 'activity' animates a live wire: 'flow' | 'pulse' | 'vibrate'. */
   activityStyle?: TWireActivityStyle
+  /** The active animation policy. Passed so the renderer can force a wire
+   *  reconcile when the mode changes (re-evaluates shouldFlow and resets any
+   *  per-frame geometry, e.g. a 'vibrate' shape, back to straight). */
+  animateConnections?: 'never' | 'always' | 'on-activity' | 'levels'
   /** Background pattern to draw behind the scene. */
   background: TBlueprintBackground
   /** Non-reactive live-value channel (wire levels, ...) the host writes at
