@@ -194,6 +194,13 @@ watch(
   (s) => scene?.setActivityStyle(s ?? 'flow'),
 )
 watch(
+  // Mode change: re-push wires so the scene re-evaluates shouldFlow (rebuilds
+  // the flow set) and its reconcile resets any per-frame geometry (e.g. a
+  // 'vibrate' shape) back to straight.
+  () => props.animateConnections,
+  () => scene?.setWires(props.wires, props.shouldFlow),
+)
+watch(
   () => props.background,
   (bg) => scene?.setBackground(bg),
 )
