@@ -868,12 +868,32 @@ function pinSize(port: IBlueprintPort): string {
     box-shadow: 0 0 8px var(--nb-card-glow, rgba(139, 124, 255, 0.18));
   }
 
-  // Active: signal is flowing. Pulsing glow on top of the connected fill
-  // draws the eye to the live signal path. Pure CSS animation, no
-  // per-frame DOM mutations, so this is safe under our MutationObserver
-  // setup (which only watches `style` changes).
-  &--active::before {
-    animation: nb-port-pulse 1.4s ease-in-out infinite;
+  // Active: signal is flowing. A pulsing glow draws the eye to the live signal
+  // path. The glow is a SEPARATE layer carrying a STATIC box-shadow, pulsed via
+  // opacity + scale (both compositor-only) so it never repaints per frame.
+  // Animating box-shadow directly (the old `nb-port-pulse`) forced a full-layer
+  // repaint every frame and pinned the whole back canvas at ~5fps — see
+  // docs/BUGS.md "animated box-shadow on connected ports".
+  &--active::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    margin-top: -7px;
+    width: 6px;
+    height: 14px;
+    border-radius: 3px;
+    box-shadow:
+      0 0 16px var(--pin-color, var(--nb-card-color)),
+      0 0 24px var(--pin-color, var(--nb-card-color));
+    animation: nb-port-glow 1.4s ease-in-out infinite;
+    will-change: opacity, transform;
+    pointer-events: none;
+  }
+  &--left.nb-blueprint-card__port--active::after {
+    left: 0;
+  }
+  &--right.nb-blueprint-card__port--active::after {
+    right: 0;
   }
 
   &:hover::before {
@@ -1011,20 +1031,37 @@ function pinSize(port: IBlueprintPort): string {
     background: var(--nb-card-color);
     box-shadow: 0 0 8px var(--nb-card-glow, rgba(139, 124, 255, 0.18));
   }
-  &--active {
-    animation: nb-port-pulse 1.4s ease-in-out infinite;
-  }
-}
-
-@keyframes nb-port-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 6px var(--pin-color, var(--nb-card-color));
-  }
-  50% {
+  // Compositor-only glow layer (see the per-port note above): static shadow,
+  // pulsed by opacity + scale, no per-frame box-shadow repaint.
+  &--active::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
     box-shadow:
       0 0 16px var(--pin-color, var(--nb-card-color)),
       0 0 24px var(--pin-color, var(--nb-card-color));
+    animation: nb-port-glow 1.4s ease-in-out infinite;
+    will-change: opacity, transform;
+    pointer-events: none;
+  }
+}
+
+// Compositor-accelerated glow pulse: only `opacity` and `transform` change, so
+// the pre-rendered shadow layer is composited (not repainted) each frame. This
+// replaced `nb-port-pulse`, which animated `box-shadow` and repainted the layer
+// every frame — the dominant cause of the back canvas running at ~5fps.
+// scale peaks at 1 (native raster, crisp); the 0.72 trough + 0.35 opacity
+// reproduce the old glow's swell-in / recede look without the paint cost.
+@keyframes nb-port-glow {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.72);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
