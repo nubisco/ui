@@ -29,6 +29,7 @@
       :visible-cards="visibleCards"
       :drag-wire="dragWire"
       :should-flow="shouldFlow"
+      :level-coloring="animateConnections === 'levels'"
       :background="background"
       @wire-mousedown="onWireMouseDown"
       @wire-contextmenu="onWireContextMenu"
@@ -53,6 +54,7 @@
       :visible-cards="visibleCards"
       :drag-wire="dragWire"
       :should-flow="shouldFlow"
+      :level-coloring="animateConnections === 'levels'"
       :background="background"
       :live-data="liveData"
       @wire-mousedown="onWireMouseDown"
@@ -1593,7 +1595,12 @@ const visibleCards = computed<IBlueprintCard[]>(() => {
 function shouldFlow(conn: IBlueprintConnection): boolean {
   if (props.animateConnections === 'never') return false
   if (props.animateConnections === 'always') return true
-  // 'on-activity' and 'levels' both gate on the active flag.
+  // 'levels' colours wires by signal level but does NOT animate flow — the two
+  // are kept separate (level = colour, activity = motion).
+  if (props.animateConnections === 'levels') return false
+  // 'on-activity': a wire is only a flow CANDIDATE when connected/enabled; the
+  // Pixi layer further gates the motion on real live signal (level above a
+  // threshold), so muted / silent / disconnected-upstream wires don't animate.
   return conn.active !== false
 }
 
