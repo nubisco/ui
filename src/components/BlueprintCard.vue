@@ -864,11 +864,12 @@ function pinSize(port: IBlueprintPort): string {
     border-width: 2px;
   }
 
-  // Connected state: filled with accent color
+  // Connected state: filled with accent color. NO glow here — a glow means
+  // "this port is carrying signal" (the --active state, driven by real level),
+  // not merely "this port is wired". A wired-but-silent port is a filled pin.
   &--connected::before {
     border-color: var(--pin-color, var(--nb-card-color));
     background: var(--pin-color, var(--nb-card-color));
-    box-shadow: 0 0 8px var(--nb-card-glow, rgba(139, 124, 255, 0.18));
   }
 
   // Active: signal is flowing. A pulsing glow draws the eye to the live signal
@@ -1032,7 +1033,7 @@ function pinSize(port: IBlueprintPort): string {
   &--connected {
     border-color: var(--nb-card-color);
     background: var(--nb-card-color);
-    box-shadow: 0 0 8px var(--nb-card-glow, rgba(139, 124, 255, 0.18));
+    // No glow when merely wired; the glow means live signal (--active).
   }
   // Compositor-only glow layer (see the per-port note above): static shadow,
   // pulsed by opacity + scale, no per-frame box-shadow repaint.
