@@ -134,6 +134,19 @@ export type {
   TBlueprintRenderer,
   TBlueprintBackground,
 } from './components/Blueprint.types'
+export type {
+  TCardPrimitive,
+  ICardRect,
+  ICardText,
+  ICardBar,
+  ICardKnob,
+  ICardLed,
+  ICardNeedle,
+  ICardPoly,
+  ICardIcon,
+  TCardValue,
+  TCardIcon,
+} from './components/blueprint-card-content'
 export { default as NbBlueprintControls } from './components/BlueprintControls.vue'
 export type {
   IBlueprintControlsProps,
