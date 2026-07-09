@@ -23,6 +23,11 @@ import type { BlueprintLiveData } from './live-data'
 const GRID_TILE = 24
 const FLOW_SPEED = 0.45 // fraction of a wire traversed per second
 const FLOW_DOT_R = 2.5
+// A flow candidate only animates when its live signal exceeds this (linear
+// peak, ~-48 dBFS): low enough to trace inaudible-but-present signal, high
+// enough to ignore the noise floor, so activity shows the real signal path and
+// visibly stops where the signal stops (muted / no-input / silent wires).
+const ACTIVITY_THRESHOLD = 0.004
 // Wire/flow geometry lives in the zoomed `world`. A normal world-space stroke
 // shrinks on screen as you zoom out (wires vanish at far zoom); `pixelLine`
 // renders a crisp screen-space line instead, constant at every zoom, so the
@@ -115,6 +120,10 @@ export class PixiScene {
   private needsRender = false
   private rafId = 0
   private lastAnimMs = 0
+  // Colour wires by live level ('levels' mode) vs keep base colour. Distinct
+  // from "is live data present", because 'activity' mode also streams levels
+  // (to gate flow) but must NOT colour wires. See setLevelColoring.
+  private colorByLevel = false
   // Live wire levels (host writes at audio rate, bypassing Vue). `levelsDirty`
   // is set when a write lands; the frame loop recolours wires on the throttled
   // animation cadence, then idles when the host stops writing.
@@ -358,14 +367,25 @@ export class PixiScene {
     }
   }
 
-  /** The current colour of a wire: its live level (audio, active, non-MIDI) or
-   *  its base accent. Applied as a cheap tint, no geometry rebuild. */
+  /** The current colour of a wire: its live level (only in level-colouring /
+   *  'levels' mode) or its base accent. In 'activity' mode wires keep their base
+   *  colour (activity is motion, not colour — the two are separate). */
   private wireColorFor(node: IWireNode): number {
-    if (this.liveData && !node.isMidi && !node.dim) {
+    if (this.colorByLevel && this.liveData && !node.isMidi && !node.dim) {
       const level = this.liveData.get(node.key)
       if (level > 0) return levelToColorNumber(level)
     }
     return node.baseColor
+  }
+
+  /** Colour wires by their live level ('levels' mode) vs keep base colour
+   *  ('activity'/'simple'). Live data may still be streaming in 'activity' for
+   *  the flow gate, so this flag, not the presence of data, decides colouring. */
+  setLevelColoring(on: boolean): void {
+    if (this.destroyed || this.colorByLevel === on) return
+    this.colorByLevel = on
+    this.levelsDirty = true
+    this.ensureRaf()
   }
 
   /** Recolour every wire by tint only (no re-tessellation). Cheap enough to run
@@ -538,6 +558,10 @@ export class PixiScene {
     const scale = FLOW_DOT_R / Math.max(this.zoom, 0.01) / 8
     let i = 0
     for (const node of this.flowNodes) {
+      // Gate on REAL signal: skip wires not carrying signal above the noise
+      // floor, so the animation traces the live path and stops where it stops.
+      const level = this.liveData ? this.liveData.get(node.key) : 0
+      if (level <= ACTIVITY_THRESHOLD) continue
       const [x, y] = cubicAt(node.bezier, this.flowPhase)
       let sprite = this.flowSprites[i]
       if (!sprite) {

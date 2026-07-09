@@ -65,6 +65,10 @@ export interface IBlueprintRendererProps {
    *  Centralises the `animateConnections` policy in NbBlueprint so renderers
    *  stay policy-free. */
   shouldFlow: (conn: IBlueprintConnection) => boolean
+  /** Colour wires by their live level ('levels' mode). Off in 'activity'/'simple'
+   *  even though live data may still stream (activity gates flow on level but
+   *  keeps wires at base colour, so colour and motion stay separate). */
+  levelColoring?: boolean
   /** Background pattern to draw behind the scene. */
   background: TBlueprintBackground
   /** Non-reactive live-value channel (wire levels, ...) the host writes at
