@@ -60,7 +60,7 @@
 
     <template v-if="windowed">
       <div
-        v-for="card in visibleCards"
+        v-for="card in domCards"
         :key="card.id"
         class="nb-blueprint__card-wrapper"
         :style="{
@@ -97,6 +97,15 @@ const emit = defineEmits<{
 const canvasRef = ref<HTMLCanvasElement>()
 const overlayRef = ref<HTMLDivElement>()
 const pixiReady = ref(false)
+
+// Mount as real interactive DOM only the focused card; every other visible card
+// is painted natively on the GPU (scene.setCards), collapsing N composited DOM
+// layers to one surface. With nothing focused, all cards are painted.
+const domCards = computed(() =>
+  props.focusedId
+    ? props.visibleCards.filter((c) => c.id === props.focusedId)
+    : [],
+)
 
 let scene: PixiSceneType | null = null
 let resizeObserver: ResizeObserver | undefined
@@ -158,6 +167,7 @@ function pushAll(): void {
   scene.setCamera(props.panX, props.panY, props.zoom)
   scene.setWires(props.wires, props.shouldFlow)
   scene.setMeters(props.visibleCards)
+  scene.setCards(props.visibleCards, props.focusedId ?? null)
 }
 
 function observeResize(): void {
@@ -181,7 +191,14 @@ watch(
 )
 watch(
   () => props.visibleCards,
-  (cards) => scene?.setMeters(cards),
+  (cards) => {
+    scene?.setMeters(cards)
+    scene?.setCards(cards, props.focusedId ?? null)
+  },
+)
+watch(
+  () => props.focusedId,
+  (f) => scene?.setCards(props.visibleCards, f ?? null),
 )
 watch(
   () => props.background,

@@ -15,6 +15,7 @@
 import type * as PIXI from 'pixi.js'
 import type { IBlueprintCard, TBlueprintBackground } from '../Blueprint.types'
 import type { IBlueprintWire } from '../Blueprint.renderer'
+import { cardPorts, portLocalCenter } from '../blueprint-port-geometry'
 import { makeColorResolver } from './pixi-color'
 import { parseCubicPath, cubicAt, type ICubicBezier } from './wire-path'
 import { levelToColorNumber } from './level-color'
@@ -492,10 +493,9 @@ export class PixiScene {
       seen.add(card.id)
       const w = card.width ?? 200
       const h = card.height ?? 120
-      const ports = card.paint?.ports
-      const ins = ports?.filter((p) => p.type === 'input').length ?? 0
-      const outs = ports?.filter((p) => p.type === 'output').length ?? 0
-      const sig = `${Math.round(card.x)},${Math.round(card.y)},${Math.round(w)},${Math.round(h)},${card.paint?.color ?? ''},${card.paint?.collapsed ? 1 : 0},${ins},${outs}`
+      const color =
+        card.paint?.color ?? (card as unknown as { color?: string }).color ?? ''
+      const sig = `${Math.round(card.x)},${Math.round(card.y)},${Math.round(w)},${Math.round(h)},${color},${cardPorts(card).length}`
       let node = this.cardNodes.get(card.id)
       if (!node) {
         const gfx = new this.Pixi.Graphics()
@@ -505,7 +505,7 @@ export class PixiScene {
       }
       if (node.sig !== sig) {
         node.sig = sig
-        this.drawCardChrome(node.gfx, card, w, h, ins, outs)
+        this.drawCardChrome(node.gfx, card, w, h)
       }
     }
     for (const [id, node] of this.cardNodes) {
@@ -522,12 +522,12 @@ export class PixiScene {
     card: IBlueprintCard,
     w: number,
     h: number,
-    ins: number,
-    outs: number,
   ): void {
     const { x, y } = card
-    const accent = card.paint?.color
-      ? this.resolveColor(card.paint.color, this.connectedColor)
+    const colorStr =
+      card.paint?.color ?? (card as unknown as { color?: string }).color
+    const accent = colorStr
+      ? this.resolveColor(colorStr, this.connectedColor)
       : this.connectedColor
     gfx.clear()
     gfx
@@ -535,13 +535,12 @@ export class PixiScene {
       .fill({ color: this.cardBg })
       .stroke({ width: 1, color: this.cardBorder, alignment: 1 })
     gfx.roundRect(x, y, w, 3, 2).fill({ color: accent })
-    const HEADER = 30
-    const spread = (n: number, i: number) =>
-      y + HEADER + ((h - HEADER) * (i + 1)) / (n + 1)
-    for (let i = 0; i < ins; i++)
-      gfx.circle(x, spread(ins, i), 3).fill({ color: this.cardBorder })
-    for (let i = 0; i < outs; i++)
-      gfx.circle(x + w, spread(outs, i), 3).fill({ color: this.cardBorder })
+    // Port pins, placed by the shared geometry so wire endpoints line up.
+    for (const p of cardPorts(card)) {
+      const local = portLocalCenter(card, p.id)
+      if (local)
+        gfx.circle(x + local.x, y + local.y, 3).fill({ color: this.cardBorder })
+    }
   }
 
   /** A small white dot, tinted per flow wire. Built once. */

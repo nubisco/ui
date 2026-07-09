@@ -55,6 +55,7 @@
       :should-flow="shouldFlow"
       :background="background"
       :live-data="liveData"
+      :focused-id="focusedId"
       @wire-mousedown="onWireMouseDown"
       @wire-contextmenu="onWireContextMenu"
       @wire-mousemove="onWireMouseMove"
@@ -154,6 +155,7 @@ import {
 } from './blueprint-port-cache'
 import BlueprintDomRenderer from './BlueprintDomRenderer.vue'
 import BlueprintPixiRenderer from './BlueprintPixiRenderer.vue'
+import { portLocalCenter } from './blueprint-port-geometry'
 import { BlueprintLiveData } from './blueprint-pixi/live-data'
 import type {
   IBlueprintConnection,
@@ -382,6 +384,13 @@ function clearAllPortPositions() {
 /** Resolve a port's centre in pre-transform local coords. Caches
  *  result; reads are free; only the first hit pays gBCR. Returns
  *  null if the port element can't be resolved. */
+// Card lookup by id, for resolving painted-card port geometry (no DOM pin).
+const cardsById = computed(() => {
+  const m = new Map<string, IBlueprintCard>()
+  for (const c of props.cards ?? []) m.set(c.id, c)
+  return m
+})
+
 function getPortCenter(
   nodeId: string,
   portId: string,
@@ -391,7 +400,17 @@ function getPortCenter(
   const hit = portPositions.get(key)
   if (hit) return { x: hit.x, y: hit.y }
   const el = portCache.get(nodeId, portId)
-  if (!el) return null
+  if (!el) {
+    // Painted card (no DOM pin element to measure): resolve the port centre
+    // from card geometry so the wire endpoint matches where the Pixi painter
+    // drew the pin. Not cached in portPositions (it moves with the card).
+    const card = cardsById.value.get(nodeId)
+    if (card) {
+      const local = portLocalCenter(card, portId)
+      if (local) return { x: card.x + local.x, y: card.y + local.y }
+    }
+    return null
+  }
   const r = el.getBoundingClientRect()
   const x =
     (r.left + r.width / 2 - containerRect.left - panX.value) / zoom.value
