@@ -315,6 +315,16 @@ export class PixiScene {
   private reconcileWireGeometry(): void {
     this.wiresDirty = false
     this.wiresDrawnOnce = true
+    // A style / mode change forces a reconcile: drop any 'vibrate' geometry back
+    // to the straight base first, so switching to another style (flow / pulse)
+    // or mode (levels / simple) resets the wire shape. If still in 'vibrate' the
+    // next frame re-applies it to the wires actually carrying signal.
+    for (const node of this.wireNodes.values()) {
+      if (node.vibrating) {
+        this.strokeBase(node)
+        node.vibrating = false
+      }
+    }
     const seen = new Set<string>()
     const flow: IWireNode[] = []
     for (const wire of this.pendingWires) {
@@ -659,21 +669,27 @@ export class PixiScene {
    *  sample perpendicular to the local tangent by an enveloped travelling sine. */
   private strokeVibrated(node: IWireNode, amp: number): void {
     const b = node.bezier
-    const M = 16
+    // Tight, fast string: many short waves along the wire (WAVES) and a quick
+    // temporal shimmer (TEMPORAL, integer multiple so the phase wraps
+    // seamlessly). M is kept at ~4 samples per wave so the high spatial
+    // frequency stays smooth without aliasing.
+    const WAVES = 12
+    const TEMPORAL = 6
+    const M = 48
+    const temporal = this.flowPhase * Math.PI * 2 * TEMPORAL
     const g = node.gfx
     g.clear()
     for (let s = 0; s <= M; s++) {
       const t = s / M
       const [x, y] = cubicAt(b, t)
-      const [x2, y2] = cubicAt(b, Math.min(1, t + 0.01))
+      const [x2, y2] = cubicAt(b, Math.min(1, t + 0.005))
       let dx = x2 - x
       let dy = y2 - y
       const len = Math.hypot(dx, dy) || 1
       dx /= len
       dy /= len
       const env = Math.sin(t * Math.PI) // 0 at ends, 1 at middle
-      const off =
-        Math.sin(t * Math.PI * 3 + this.flowPhase * Math.PI * 2) * amp * env
+      const off = Math.sin(t * Math.PI * WAVES + temporal) * amp * env
       const ox = x + -dy * off
       const oy = y + dx * off
       if (s === 0) g.moveTo(ox, oy)
