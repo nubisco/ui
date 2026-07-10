@@ -1,3 +1,10 @@
+## [1.45.1](https://github.com/nubisco/ui/compare/v1.45.0...v1.45.1) (2026-07-10)
+
+
+### Bug Fixes
+
+* **blueprint:** require pixi.js peer + shape the port ping like the pin ([38c33f7](https://github.com/nubisco/ui/commit/38c33f7c006a66b84ee3c125e5c07a93e4ed2d19))
+
 # [1.45.0](https://github.com/nubisco/ui/compare/v1.44.0...v1.45.0) (2026-07-10)
 
 
