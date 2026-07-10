@@ -115,9 +115,6 @@
     "vue-i18n": "^11.3.0"
   },
   "peerDependenciesMeta": {
-    "pixi.js": {
-      "optional": true
-    },
     "unplugin-fonts": {
       "optional": true
     }
