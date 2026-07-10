@@ -898,11 +898,16 @@ function pinSize(port: IBlueprintPort): string {
     will-change: transform, opacity;
     pointer-events: none;
   }
+  // Shape the ping like the pin it radiates from: flat on the outer (card-edge)
+  // side, rounded on the inner side, so it reads as a semicircle sonar ping out
+  // of the pin rather than a full circle floating over the card border.
   &--left.nb-blueprint-card__port--active::after {
     left: -4px;
+    border-radius: 0 50% 50% 0;
   }
   &--right.nb-blueprint-card__port--active::after {
     right: -4px;
+    border-radius: 50% 0 0 50%;
   }
 
   &:hover::before {
