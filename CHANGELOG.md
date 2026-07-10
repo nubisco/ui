@@ -1,3 +1,20 @@
+# [1.45.0](https://github.com/nubisco/ui/compare/v1.44.0...v1.45.0) (2026-07-10)
+
+
+### Bug Fixes
+
+* **blueprint:** activity gated on real signal; separate levels from activity ([3b2e803](https://github.com/nubisco/ui/commit/3b2e803b91e11834910eb405a47b093b70becee3))
+* **blueprint:** compositor-only port glow (was animating box-shadow) ([6a27fce](https://github.com/nubisco/ui/commit/6a27fce078132126b347c2314ec3fcd82b54e26c))
+* **blueprint:** port signal = compositor-only ping (not box-shadow); align >9-port labels ([2e2b8ec](https://github.com/nubisco/ui/commit/2e2b8ec8b9f2c4c97a9fbb981bfab0eeaacaa91e))
+* **blueprint:** stop text/element selection on the canvas ([cf67759](https://github.com/nubisco/ui/commit/cf6775978cf6bf1b154bc7dd0f2bf2b8a98db56e))
+* **blueprint:** tighter/faster vibrate; reset wire shape on style/mode switch ([daa4b8e](https://github.com/nubisco/ui/commit/daa4b8e2c09b8c9700cfa190d93972aa7a718d6b))
+
+
+### Features
+
+* **blueprint:** port glow means live signal, not just connected ([31bb53d](https://github.com/nubisco/ui/commit/31bb53d038e2ff714d232cb188fc84e2f1bb55ab))
+* **blueprint:** selectable activity styles (flow / pulse / vibrate) ([83af833](https://github.com/nubisco/ui/commit/83af8333de5b1c4239552ec02bb49c9933a90fcd))
+
 # [1.44.0](https://github.com/nubisco/ui/compare/v1.43.0...v1.44.0) (2026-07-07)
 
 
