@@ -161,6 +161,11 @@ import {
 import BlueprintDomRenderer from './BlueprintDomRenderer.vue'
 import BlueprintPixiRenderer from './BlueprintPixiRenderer.vue'
 import { BlueprintLiveData } from './blueprint-pixi/live-data'
+import {
+  computeAutoLayout,
+  type IAutoLayoutCard,
+  type IAutoLayoutEdge,
+} from './blueprint-autolayout'
 import type {
   IBlueprintConnection,
   IBlueprintCard,
@@ -1858,7 +1863,6 @@ function autoLayout(options?: {
 }) {
   if (!containerRef.value) return
 
-  const gapX = options?.gapX ?? 80
   const gapY = options?.gapY ?? 40
   const padding = options?.padding ?? 60
 
@@ -1903,78 +1907,41 @@ function autoLayout(options?: {
 
   const cardMap = new Map(allCards.map((c) => [c.id, c]))
 
-  // Build adjacency from connections (directed: from -> to)
-  const outEdges = new Map<string, string[]>()
-  const inDegree = new Map<string, number>()
-  for (const c of allCards) {
-    outEdges.set(c.id, [])
-    inDegree.set(c.id, 0)
-  }
+  // Delegate the actual layout to the pure, DOM-free `computeAutoLayout`
+  // (signal-flow subsystem banding). It is unit-tested + measured in
+  // isolation; here we just feed it card sizes + classified wires and
+  // apply the positions it returns.
+  const layoutCards: IAutoLayoutCard[] = allCards.map((c) => ({
+    id: c.id,
+    w: c.w,
+    h: c.h,
+  }))
+  const classify = props.layoutEdgeKind
+  const layoutEdges: IAutoLayoutEdge[] = []
   for (const conn of props.connections) {
     if (!cardMap.has(conn.fromNode) || !cardMap.has(conn.toNode)) continue
-    outEdges.get(conn.fromNode)!.push(conn.toNode)
-    inDegree.set(conn.toNode, (inDegree.get(conn.toNode) ?? 0) + 1)
-  }
-
-  // Topological layering (Kahn's algorithm)
-  const layers: string[][] = []
-  const assigned = new Set<string>()
-  const queue: string[] = []
-
-  // Start with nodes that have no incoming edges
-  for (const [id, deg] of inDegree) {
-    if (deg === 0) queue.push(id)
-  }
-
-  while (queue.length > 0) {
-    const layer = [...queue]
-    layers.push(layer)
-    layer.forEach((id) => assigned.add(id))
-    queue.length = 0
-
-    for (const id of layer) {
-      for (const next of outEdges.get(id) ?? []) {
-        const newDeg = (inDegree.get(next) ?? 1) - 1
-        inDegree.set(next, newDeg)
-        if (newDeg === 0 && !assigned.has(next)) {
-          queue.push(next)
-        }
-      }
-    }
-  }
-
-  // Add any remaining cards (cycles or disconnected) to the last layer
-  const unassigned = allCards.filter((c) => !assigned.has(c.id))
-  if (unassigned.length) {
-    layers.push(unassigned.map((c) => c.id))
-  }
-
-  // Compute positions: each layer is a column, cards stacked vertically
-  let cursorX = padding
-  for (const layer of layers) {
-    let maxWidth = 0
-    let cursorY = padding
-
-    // Sort within layer by category (from card DOM) for grouping
-    const sorted = layer.map((id) => cardMap.get(id)!).filter(Boolean)
-    sorted.sort((a, b) => {
-      // Category lives in the card DOM; unmounted cards (windowed mode)
-      // contribute '' and simply sort first within their layer.
-      const catA =
-        a.el?.querySelector('.nb-blueprint-card__tag')?.textContent ?? ''
-      const catB =
-        b.el?.querySelector('.nb-blueprint-card__tag')?.textContent ?? ''
-      return catA.localeCompare(catB)
+    layoutEdges.push({
+      from: conn.fromNode,
+      to: conn.toNode,
+      kind: classify ? classify(conn) : 'signal',
     })
+  }
 
-    for (const card of sorted) {
-      card.x = cursorX
-      card.y = cursorY
-      cursorY += card.h + gapY
-      maxWidth = Math.max(maxWidth, card.w)
-    }
+  const positions = computeAutoLayout(layoutCards, layoutEdges, {
+    // The public gaps map onto the banding's inter-column / inter-row gaps;
+    // padding is the origin. `gapX` (if a caller passes one) overrides the
+    // column gap; otherwise `colGap`/`bandGap` keep their tuned defaults.
+    colGap: options?.gapX,
+    rowGap: gapY,
+    originX: padding,
+    originY: padding,
+  })
 
-    cursorX += maxWidth + gapX
+  for (const card of allCards) {
+    const p = positions.get(card.id)
+    if (!p) continue
+    card.x = p.x
+    card.y = p.y
   }
 
   // Apply positions

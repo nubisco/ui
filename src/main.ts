@@ -134,6 +134,16 @@ export type {
   TBlueprintRenderer,
   TBlueprintBackground,
 } from './components/Blueprint.types'
+// The signal-flow auto-layout as a standalone pure function, for hosts that
+// want to compute card positions without mounting the canvas (or to reuse the
+// banding elsewhere). NbBlueprint.autoLayout() calls this internally.
+export { computeAutoLayout } from './components/blueprint-autolayout'
+export type {
+  IAutoLayoutCard,
+  IAutoLayoutEdge,
+  IAutoLayoutOptions,
+  TAutoLayoutEdgeKind,
+} from './components/blueprint-autolayout'
 export { default as NbBlueprintControls } from './components/BlueprintControls.vue'
 export type {
   IBlueprintControlsProps,
