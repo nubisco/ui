@@ -1,3 +1,10 @@
+# [1.46.0](https://github.com/nubisco/ui/compare/v1.45.1...v1.46.0) (2026-07-11)
+
+
+### Features
+
+* **blueprint:** port signal-flow auto-layout into the library ([9410b62](https://github.com/nubisco/ui/commit/9410b62c02c8230eea6d365455c03a9bcf7983f8))
+
 ## [1.45.1](https://github.com/nubisco/ui/compare/v1.45.0...v1.45.1) (2026-07-10)
 
 
