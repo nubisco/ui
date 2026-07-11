@@ -225,6 +225,18 @@ export interface IBlueprintProps {
    * themable via `--nb-blueprint-grid-color` and `--nb-blueprint-grid-gap`.
    */
   background?: TBlueprintBackground
+  /**
+   * Per-wire classifier for `autoLayout()`'s signal-flow banding. The layout
+   * groups cards into subsystems along the signal path, so it needs to tell
+   * the primary signal wires (drive depth + adjacency) from control / side-chain
+   * hints (the source card simply joins the target's lane) and from wires to
+   * skip entirely (e.g. MIDI). Return `'signal'`, `'control'`, or `'ignore'`
+   * per connection. Defaults to treating every wire as `'signal'`, which
+   * reproduces plain signal-flow banding.
+   */
+  layoutEdgeKind?: (
+    conn: IBlueprintConnection,
+  ) => 'signal' | 'control' | 'ignore'
 }
 
 /** A point in canvas space (the same units as card `x`/`y` and the
