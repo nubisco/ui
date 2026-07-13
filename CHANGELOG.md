@@ -1,3 +1,10 @@
+# [1.47.0](https://github.com/nubisco/ui/compare/v1.46.0...v1.47.0) (2026-07-13)
+
+
+### Features
+
+* **date-picker:** align with Carbon date picker guidelines ([0d33ff2](https://github.com/nubisco/ui/commit/0d33ff242a1a0f2d6b6abd2ca026a77e910eaf45))
+
 # [1.46.0](https://github.com/nubisco/ui/compare/v1.45.1...v1.46.0) (2026-07-11)
 
 
