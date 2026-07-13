@@ -4,7 +4,7 @@
     <template v-if="variant === 'default'">
       <slot v-if="$slots.label" name="label" />
       <NbLabel
-        v-else-if="label"
+        v-else-if="label && !perFieldLabels"
         :for="inputId"
         :required="required"
         :disabled="disabled"
@@ -18,93 +18,118 @@
         class="nb-date-picker__fields"
       >
         <!-- Start / single date input -->
-        <div class="nb-date-picker__input-wrapper" :class="wrapperClasses">
-          <input
-            :id="inputId"
-            ref="inputRef"
-            v-bind="$attrs"
-            type="text"
-            class="nb-date-picker__field"
-            :value="displayValue"
-            :placeholder="placeholder || dateFormatHint"
+        <div class="nb-date-picker__col">
+          <NbLabel
+            v-if="perFieldLabels && label"
+            :for="inputId"
+            :required="required"
             :disabled="disabled"
-            :readonly="readonly"
-            :name="name"
-            :aria-describedby="helperId"
-            @input="onTextInput($event)"
-            @focus="onFocus"
-            @blur="onBlur"
-            @keydown="onInputKeydown"
-          />
-          <button
-            v-if="type !== 'simple'"
-            type="button"
-            class="nb-date-picker__icon"
-            :disabled="disabled"
-            tabindex="-1"
-            :aria-label="
-              modelValue
-                ? `Change date, ${formatForDisplay(modelValue)}`
-                : 'Choose date'
-            "
-            @click="toggleCalendar"
           >
-            <NbIcon name="calendar" :size="16" />
-          </button>
+            {{ label }}
+          </NbLabel>
+          <div
+            class="nb-date-picker__input-wrapper"
+            :class="startWrapperClasses"
+          >
+            <input
+              :id="inputId"
+              ref="inputRef"
+              v-bind="$attrs"
+              type="text"
+              class="nb-date-picker__field"
+              :value="displayValue"
+              :placeholder="placeholder || dateFormatHint"
+              :disabled="disabled"
+              :readonly="readonly"
+              :required="required"
+              :name="name"
+              :aria-invalid="error ? true : undefined"
+              :aria-describedby="startDescribedBy"
+              @input="onTextInput($event)"
+              @focus="onFocus"
+              @blur="onBlur"
+              @keydown="onInputKeydown"
+            />
+            <button
+              v-if="type !== 'simple'"
+              type="button"
+              class="nb-date-picker__icon"
+              :disabled="disabled || readonly"
+              tabindex="-1"
+              :aria-label="
+                modelValue
+                  ? `Change date, ${formatForDisplay(modelValue)}`
+                  : 'Choose date'
+              "
+              @click="toggleCalendar"
+            >
+              <NbIcon name="calendar" :size="16" />
+            </button>
+          </div>
         </div>
 
         <!-- End date input (range only) -->
-        <div
-          v-if="type === 'range'"
-          class="nb-date-picker__input-wrapper"
-          :class="wrapperClasses"
-        >
-          <input
-            ref="endInputRef"
-            type="text"
-            class="nb-date-picker__field"
-            :value="endDisplayValue"
-            :placeholder="endPlaceholder || dateFormatHint"
+        <div v-if="type === 'range'" class="nb-date-picker__col">
+          <NbLabel
+            v-if="perFieldLabels"
+            :for="endInputId"
+            :required="required"
             :disabled="disabled"
-            :readonly="readonly"
-            @input="onEndTextInput($event)"
-            @focus="onFocus"
-            @blur="onBlur"
-            @keydown="onInputKeydown"
-          />
-          <button
-            type="button"
-            class="nb-date-picker__icon"
-            :disabled="disabled"
-            tabindex="-1"
-            :aria-label="
-              endValue
-                ? `Change end date, ${formatForDisplay(endValue)}`
-                : 'Choose end date'
-            "
-            @click="toggleCalendar"
           >
-            <NbIcon name="calendar" :size="16" />
-          </button>
+            {{ endLabel }}
+          </NbLabel>
+          <div class="nb-date-picker__input-wrapper" :class="endWrapperClasses">
+            <input
+              :id="endInputId"
+              ref="endInputRef"
+              type="text"
+              class="nb-date-picker__field"
+              :value="endDisplayValue"
+              :placeholder="endPlaceholder || dateFormatHint"
+              :disabled="disabled"
+              :readonly="readonly"
+              :required="required"
+              :aria-invalid="endError ? true : undefined"
+              :aria-describedby="endDescribedBy"
+              @input="onEndTextInput($event)"
+              @focus="onFocus"
+              @blur="onBlur"
+              @keydown="onInputKeydown"
+            />
+            <button
+              type="button"
+              class="nb-date-picker__icon"
+              :disabled="disabled || readonly"
+              tabindex="-1"
+              :aria-label="
+                endValue
+                  ? `Change end date, ${formatForDisplay(endValue)}`
+                  : 'Choose end date'
+              "
+              @click="toggleCalendar"
+            >
+              <NbIcon name="calendar" :size="16" />
+            </button>
+          </div>
         </div>
       </NbGrid>
 
       <NbMessage
-        v-if="error"
-        :id="helperId"
-        variant="error"
+        v-if="startMessage"
+        :id="startMsgId"
+        :variant="startMessage.variant"
         class="nb-date-picker__message"
-        >{{ error }}</NbMessage
+        >{{ startMessage.text }}</NbMessage
       >
       <NbMessage
-        v-else-if="warning"
-        :id="helperId"
-        variant="warning"
+        v-if="endMessage"
+        :id="endMsgId"
+        :variant="endMessage.variant"
         class="nb-date-picker__message"
-        >{{ warning }}</NbMessage
+        >{{ endMessage.text }}</NbMessage
       >
       <NbMessage
-        v-else-if="helper"
+        v-if="!startMessage && !endMessage && helper"
         :id="helperId"
         variant="helper"
         class="nb-date-picker__message"
@@ -121,10 +146,10 @@
       >
         <div
           class="nb-date-picker__input-wrapper nb-date-picker__input-wrapper--fluid"
-          :class="wrapperClasses"
+          :class="startWrapperClasses"
         >
           <div
-            v-if="label || $slots.label"
+            v-if="label || $slots.label || startFluidMessage"
             class="nb-date-picker__inner-header"
           >
             <slot v-if="$slots.label" name="label" />
@@ -137,6 +162,14 @@
                 >*</span
               >
             </label>
+            <NbMessage
+              v-if="startFluidMessage"
+              :variant="startFluidMessage.variant"
+              icon-only
+              class="nb-date-picker__inner-message"
+            >
+              {{ startFluidMessage.text }}
+            </NbMessage>
           </div>
           <div class="nb-date-picker__fluid-row">
             <input
@@ -149,8 +182,9 @@
               :placeholder="placeholder || dateFormatHint"
               :disabled="disabled"
               :readonly="readonly"
+              :required="required"
               :name="name"
-              :aria-describedby="helperId"
+              :aria-invalid="error ? true : undefined"
               @input="onTextInput($event)"
               @focus="onFocus"
               @blur="onBlur"
@@ -160,7 +194,7 @@
               v-if="type !== 'simple'"
               type="button"
               class="nb-date-picker__icon"
-              :disabled="disabled"
+              :disabled="disabled || readonly"
               tabindex="-1"
               :aria-label="
                 modelValue
@@ -177,15 +211,33 @@
         <div
           v-if="type === 'range'"
           class="nb-date-picker__input-wrapper nb-date-picker__input-wrapper--fluid"
-          :class="wrapperClasses"
+          :class="endWrapperClasses"
         >
-          <div v-if="endPlaceholder" class="nb-date-picker__inner-header">
-            <label class="nb-date-picker__inner-label">{{
-              endPlaceholder
-            }}</label>
+          <div
+            v-if="endFluidLabel || endMessage"
+            class="nb-date-picker__inner-header"
+          >
+            <label :for="endInputId" class="nb-date-picker__inner-label">
+              {{ endFluidLabel }}
+              <span
+                v-if="required"
+                class="nb-date-picker__asterisk"
+                aria-hidden="true"
+                >*</span
+              >
+            </label>
+            <NbMessage
+              v-if="endMessage"
+              :variant="endMessage.variant"
+              icon-only
+              class="nb-date-picker__inner-message"
+            >
+              {{ endMessage.text }}
+            </NbMessage>
           </div>
           <div class="nb-date-picker__fluid-row">
             <input
+              :id="endInputId"
               ref="endInputRef"
               type="text"
               class="nb-date-picker__field"
@@ -193,6 +245,8 @@
               :placeholder="endPlaceholder || dateFormatHint"
               :disabled="disabled"
               :readonly="readonly"
+              :required="required"
+              :aria-invalid="endError ? true : undefined"
               @input="onEndTextInput($event)"
               @focus="onFocus"
               @blur="onBlur"
@@ -201,7 +255,7 @@
             <button
               type="button"
               class="nb-date-picker__icon"
-              :disabled="disabled"
+              :disabled="disabled || readonly"
               tabindex="-1"
               :aria-label="
                 endValue
@@ -215,21 +269,6 @@
           </div>
         </div>
       </NbGrid>
-
-      <NbMessage
-        v-if="error"
-        :id="helperId"
-        variant="error"
-        class="nb-date-picker__message"
-        >{{ error }}</NbMessage
-      >
-      <NbMessage
-        v-else-if="warning"
-        :id="helperId"
-        variant="warning"
-        class="nb-date-picker__message"
-        >{{ warning }}</NbMessage
-      >
     </template>
   </div>
 
@@ -248,6 +287,14 @@
     >
       <!-- Calendar header -->
       <div class="nb-date-picker__cal-header">
+        <button
+          type="button"
+          class="nb-date-picker__cal-nav"
+          aria-label="Previous year"
+          @click="prevYear"
+        >
+          <NbIcon name="caret-double-left" :size="16" />
+        </button>
         <button
           type="button"
           class="nb-date-picker__cal-nav"
@@ -270,6 +317,14 @@
           @click="nextMonth"
         >
           <NbIcon name="caret-right" :size="16" />
+        </button>
+        <button
+          type="button"
+          class="nb-date-picker__cal-nav"
+          aria-label="Next year"
+          @click="nextYear"
+        >
+          <NbIcon name="caret-double-right" :size="16" />
         </button>
       </div>
 
@@ -349,14 +404,18 @@ const props = withDefaults(defineProps<IDatePickerProps>(), {
   label: '',
   placeholder: '',
   endPlaceholder: '',
+  endLabel: '',
   helper: '',
   error: '',
   warning: '',
+  endError: '',
+  endWarning: '',
   disabled: false,
   required: false,
   readonly: false,
   min: undefined,
   max: undefined,
+  disabledDates: undefined,
   weekStart: 1,
   locale: undefined,
   id: undefined,
@@ -371,10 +430,14 @@ const emit = defineEmits<{
 
 const autoId = `nb-date-picker-${useId()}`
 const inputId = computed(() => props.id ?? autoId)
+const endInputId = computed(() => `${inputId.value}-end`)
 const helperId = computed(() => `${inputId.value}-helper`)
+const startMsgId = computed(() => `${inputId.value}-message`)
+const endMsgId = computed(() => `${inputId.value}-end-message`)
 const calTitleId = computed(() => `${inputId.value}-cal-title`)
 
-const focused = ref(false)
+const focusedField = ref<'start' | 'end' | null>(null)
+const focused = computed(() => focusedField.value !== null)
 const calendarOpen = ref(false)
 const focusedDate = ref<string>(toIso(new Date()))
 const rootRef = ref<HTMLElement | null>(null)
@@ -429,6 +492,65 @@ function formatDayLabel(iso: string): string {
 const displayValue = computed(() => formatForDisplay(props.modelValue ?? null))
 const endDisplayValue = computed(() => formatForDisplay(props.endValue ?? null))
 
+// ── Validation messages ────────────────────────────────────
+// Range fields validate independently: `error`/`warning` mark only the
+// start field, `endError`/`endWarning` only the end field, so users can
+// tell which of the two needs correction.
+interface IFieldMessage {
+  variant: 'error' | 'warning' | 'helper'
+  text: string
+}
+
+const startMessage = computed<IFieldMessage | null>(() => {
+  if (props.error) return { variant: 'error', text: props.error }
+  if (props.warning) return { variant: 'warning', text: props.warning }
+  return null
+})
+
+const endMessage = computed<IFieldMessage | null>(() => {
+  if (props.type !== 'range') return null
+  if (props.endError) return { variant: 'error', text: props.endError }
+  if (props.endWarning) return { variant: 'warning', text: props.endWarning }
+  return null
+})
+
+// Fluid variant surfaces messages as an icon-only NbMessage inside the
+// field header, matching NbTextInput's fluid behaviour.
+const startFluidMessage = computed<IFieldMessage | null>(() => {
+  if (startMessage.value) return startMessage.value
+  if (props.helper) return { variant: 'helper', text: props.helper }
+  return null
+})
+
+const startDescribedBy = computed(() => {
+  if (props.variant !== 'default') return undefined
+  if (startMessage.value) return startMsgId.value
+  return props.helper ? helperId.value : undefined
+})
+
+const endDescribedBy = computed(() => {
+  if (props.variant !== 'default') return undefined
+  if (endMessage.value) return endMsgId.value
+  return props.helper ? helperId.value : undefined
+})
+
+// Range with an explicit endLabel renders one label per field
+const perFieldLabels = computed(
+  () => props.type === 'range' && !!props.endLabel,
+)
+
+const endFluidLabel = computed(() => props.endLabel || props.endPlaceholder)
+
+// ── Date constraints ───────────────────────────────────────
+function isDateDisabled(iso: string): boolean {
+  if (props.min != null && iso < props.min) return true
+  if (props.max != null && iso > props.max) return true
+  if (!props.disabledDates) return false
+  return typeof props.disabledDates === 'function'
+    ? props.disabledDates(iso)
+    : props.disabledDates.includes(iso)
+}
+
 function parseInput(text: string): string | null {
   const trimmed = text.trim()
   if (!trimmed) return null
@@ -446,6 +568,7 @@ function parseInput(text: string): string | null {
 function onTextInput(e: Event) {
   const text = (e.target as HTMLInputElement).value
   const parsed = parseInput(text)
+  if (parsed && isDateDisabled(parsed)) return
   if (parsed || text === '') {
     emit('update:modelValue', parsed)
     emit('change', parsed)
@@ -455,29 +578,31 @@ function onTextInput(e: Event) {
 function onEndTextInput(e: Event) {
   const text = (e.target as HTMLInputElement).value
   const parsed = parseInput(text)
+  if (parsed && isDateDisabled(parsed)) return
   if (parsed || text === '') {
     emit('update:endValue', parsed)
   }
 }
 
 function onFocus(e: FocusEvent) {
-  focused.value = true
-  if (props.type !== 'simple') {
-    if (e.target === endInputRef.value) {
-      rangeTarget.value = 'end'
+  focusedField.value = e.target === endInputRef.value ? 'end' : 'start'
+  if (props.type !== 'simple' && !props.readonly) {
+    rangeTarget.value = focusedField.value
+    if (calendarOpen.value) {
+      // Already open: re-anchor the calendar under the newly focused field
+      updateCalendarPosition()
     } else {
-      rangeTarget.value = 'start'
+      openCalendar()
     }
-    openCalendar()
   }
 }
 
 function onBlur() {
-  focused.value = false
+  focusedField.value = null
 }
 
 function onInputKeydown(e: KeyboardEvent) {
-  if (props.type === 'simple') return
+  if (props.type === 'simple' || props.readonly) return
 
   switch (e.key) {
     case 'Escape':
@@ -505,8 +630,15 @@ function onInputKeydown(e: KeyboardEvent) {
 
 // ── Calendar open/close ────────────────────────────────────
 function updateCalendarPosition() {
-  const wrapper = rootRef.value?.querySelector('.nb-date-picker__input-wrapper')
-  if (!wrapper) return
+  // Anchor to the active field: the end wrapper when picking the range end
+  const wrappers = rootRef.value?.querySelectorAll(
+    '.nb-date-picker__input-wrapper',
+  )
+  if (!wrappers?.length) return
+  const wrapper =
+    rangeTarget.value === 'end' && wrappers.length > 1
+      ? wrappers[1]
+      : wrappers[0]
   const rect = wrapper.getBoundingClientRect()
   calendarStyle.value = {
     position: 'fixed',
@@ -517,7 +649,7 @@ function updateCalendarPosition() {
 }
 
 function openCalendar() {
-  if (props.disabled || props.type === 'simple') return
+  if (props.disabled || props.readonly || props.type === 'simple') return
   if (calendarOpen.value) return
 
   calendarOpen.value = true
@@ -569,6 +701,7 @@ function focusDayInGrid() {
 }
 
 function selectDay(dateStr: string) {
+  if (isDateDisabled(dateStr)) return
   if (props.type === 'range') {
     if (rangeTarget.value === 'start') {
       emit('update:modelValue', dateStr)
@@ -681,7 +814,8 @@ function moveFocusToMonth(current: Date, monthDelta: number) {
 
 function setFocusedDate(d: Date) {
   const iso = toIso(d)
-  // Check min/max constraints
+  // Focus stays within min/max bounds; individually disabled dates remain
+  // focusable (but not selectable) so keyboard users can traverse them
   if (props.min != null && iso < props.min) return
   if (props.max != null && iso > props.max) return
 
@@ -726,30 +860,12 @@ onBeforeUnmount(() => {
 const calYear = ref(new Date().getFullYear())
 const calMonth = ref(new Date().getMonth())
 
-function prevMonth() {
-  if (calMonth.value === 0) {
-    calMonth.value = 11
-    calYear.value--
-  } else calMonth.value--
-  // Move focused date to the same day in the new month
-  const next = new Date(
-    calYear.value,
-    calMonth.value,
-    new Date(focusedDate.value + 'T00:00:00').getDate(),
-  )
-  const lastDay = new Date(calYear.value, calMonth.value + 1, 0).getDate()
-  if (next.getDate() > lastDay) next.setDate(lastDay)
-  focusedDate.value = toIso(
-    new Date(calYear.value, calMonth.value, Math.min(next.getDate(), lastDay)),
-  )
-  focusDayInGrid()
-}
-
-function nextMonth() {
-  if (calMonth.value === 11) {
-    calMonth.value = 0
-    calYear.value++
-  } else calMonth.value++
+// Move the visible month by a delta, keeping the focused day-of-month
+// (clamped to the target month's length)
+function shiftCalendar(monthDelta: number) {
+  const total = calYear.value * 12 + calMonth.value + monthDelta
+  calYear.value = Math.floor(total / 12)
+  calMonth.value = ((total % 12) + 12) % 12
   const curDay = new Date(focusedDate.value + 'T00:00:00').getDate()
   const lastDay = new Date(calYear.value, calMonth.value + 1, 0).getDate()
   focusedDate.value = toIso(
@@ -757,6 +873,11 @@ function nextMonth() {
   )
   focusDayInGrid()
 }
+
+const prevMonth = () => shiftCalendar(-1)
+const nextMonth = () => shiftCalendar(1)
+const prevYear = () => shiftCalendar(-12)
+const nextYear = () => shiftCalendar(12)
 
 const calMonthLabel = computed(() => {
   const d = new Date(calYear.value, calMonth.value, 1)
@@ -821,9 +942,6 @@ const calCells = computed<ICalDay[]>(() => {
 
   function makeCell(d: Date, inMonth: boolean): ICalDay {
     const dateStr = toIso(d)
-    const isDisabled =
-      (props.min != null && dateStr < props.min) ||
-      (props.max != null && dateStr > props.max)
     return {
       key: dateStr,
       date: dateStr,
@@ -838,7 +956,7 @@ const calCells = computed<ICalDay[]>(() => {
         dateStr < rangeEnd,
       isRangeStart: dateStr === rangeStart && rangeEnd != null,
       isRangeEnd: dateStr === rangeEnd && rangeStart != null,
-      isDisabled,
+      isDisabled: isDateDisabled(dateStr),
     }
   }
 
@@ -880,17 +998,31 @@ const rootClasses = computed(() => [
   {
     'nb-date-picker--focused': focused.value,
     'nb-date-picker--open': calendarOpen.value,
-    'nb-date-picker--error': !!props.error,
-    'nb-date-picker--warning': !props.error && !!props.warning,
+    'nb-date-picker--error': !!props.error || !!props.endError,
+    'nb-date-picker--warning':
+      !props.error &&
+      !props.endError &&
+      (!!props.warning || !!props.endWarning),
     'nb-date-picker--disabled': props.disabled,
+    'nb-date-picker--readonly': props.readonly,
   },
 ])
 
-const wrapperClasses = computed(() => ({
-  'nb-date-picker__input-wrapper--focused': focused.value,
+const startWrapperClasses = computed(() => ({
+  'nb-date-picker__input-wrapper--focused': focusedField.value === 'start',
   'nb-date-picker__input-wrapper--error': !!props.error,
   'nb-date-picker__input-wrapper--warning': !props.error && !!props.warning,
   'nb-date-picker__input-wrapper--disabled': props.disabled,
+  'nb-date-picker__input-wrapper--readonly': props.readonly,
+}))
+
+const endWrapperClasses = computed(() => ({
+  'nb-date-picker__input-wrapper--focused': focusedField.value === 'end',
+  'nb-date-picker__input-wrapper--error': !!props.endError,
+  'nb-date-picker__input-wrapper--warning':
+    !props.endError && !!props.endWarning,
+  'nb-date-picker__input-wrapper--disabled': props.disabled,
+  'nb-date-picker__input-wrapper--readonly': props.readonly,
 }))
 
 defineExpose({
@@ -924,6 +1056,14 @@ defineExpose({
   flex: 1;
 }
 
+.nb-date-picker__col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
 .nb-date-picker__input-wrapper {
   position: relative;
   display: flex;
@@ -955,6 +1095,10 @@ defineExpose({
     cursor: not-allowed;
   }
 
+  &--readonly {
+    background: transparent;
+  }
+
   &--fluid {
     flex-direction: column;
     align-items: stretch;
@@ -983,6 +1127,10 @@ defineExpose({
 
   &:disabled {
     cursor: not-allowed;
+  }
+
+  &:read-only {
+    cursor: default;
   }
 
   .nb-date-picker__input-wrapper--fluid & {
