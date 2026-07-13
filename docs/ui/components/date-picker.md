@@ -12,6 +12,8 @@ tabs: ['Usage', 'Api']
 
 A text-only field for manually entering dates without a calendar dropdown. Useful for memorable dates like birthdays or expiration dates.
 
+Always communicate the expected date format with the `label` or `helper` prop. Placeholder text disappears as soon as the user starts typing, so never rely on it alone.
+
 <preview>
   <NbDatePicker
     v-model="simpleDate"
@@ -97,9 +99,33 @@ const end = ref<string | null>(null)
 </script>
 ```
 
+### Per-field labels
+
+Give each range field its own label with `endLabel`. When set, `label` sits above the start field and `endLabel` above the end field, so screen readers announce each input unambiguously.
+
+<preview>
+  <NbDatePicker
+    v-model="labeledStart"
+    v-model:end-value="labeledEnd"
+    type="range"
+    label="Start date"
+    end-label="End date"
+  />
+</preview>
+
+```vue
+<NbDatePicker
+  v-model="start"
+  v-model:end-value="end"
+  type="range"
+  label="Start date"
+  end-label="End date"
+/>
+```
+
 ## Min and Max Dates
 
-Constrain the selectable date range. Dates outside the bounds are visually dimmed and cannot be selected.
+Constrain the selectable date range. Dates outside the bounds are visually dimmed in the calendar and cannot be selected, and dates typed into the field are rejected when they fall outside the bounds.
 
 <preview>
   <NbDatePicker
@@ -119,9 +145,44 @@ Constrain the selectable date range. Dates outside the bounds are visually dimme
 />
 ```
 
+## Disabled Dates
+
+Beyond `min`/`max`, individual dates can be blocked with `disabledDates`: either an array of ISO strings or a predicate function. Use it for holidays, weekends, or fully booked days. Disabled dates stay keyboard-focusable so their labels remain discoverable, but they cannot be selected.
+
+<preview>
+  <NbDatePicker
+    v-model="blockedDate"
+    label="Delivery date"
+    helper="Weekends are unavailable"
+    :disabled-dates="isWeekend"
+  />
+</preview>
+
+```vue
+<template>
+  <NbDatePicker
+    v-model="date"
+    label="Delivery date"
+    helper="Weekends are unavailable"
+    :disabled-dates="isWeekend"
+  />
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const date = ref<string | null>(null)
+
+function isWeekend(iso: string): boolean {
+  const day = new Date(iso + 'T00:00:00').getDay()
+  return day === 0 || day === 6
+}
+</script>
+```
+
 ## Validation States
 
-Use `error` or `warning` props to display validation feedback below the field.
+Use `error` or `warning` props to display validation feedback below the field. `error` takes precedence over `warning`, which takes precedence over `helper`.
 
 <preview>
   <NbGrid dir="col" gap="md">
@@ -148,6 +209,32 @@ Use `error` or `warning` props to display validation feedback below the field.
   v-model="date"
   label="Return"
   warning="This date falls on a holiday"
+/>
+```
+
+### Per-field validation (range)
+
+In a range picker each field validates independently, so users can see exactly which field needs correction. `error`/`warning` mark only the start field; `endError`/`endWarning` mark only the end field.
+
+<preview>
+  <NbDatePicker
+    v-model="rangeErrStart"
+    v-model:end-value="rangeErrEnd"
+    type="range"
+    label="Start date"
+    end-label="End date"
+    end-error="End date must be after the start date"
+  />
+</preview>
+
+```vue
+<NbDatePicker
+  v-model="start"
+  v-model:end-value="end"
+  type="range"
+  label="Start date"
+  end-label="End date"
+  end-error="End date must be after the start date"
 />
 ```
 
@@ -185,29 +272,39 @@ Three sizes matching the rest of the design system: `sm` (32px), `md` (40px, def
 
 ## Disabled and Read-only
 
+A disabled field cannot be interacted with at all. A read-only field remains focusable and its value can be copied, but it cannot be edited and the calendar does not open.
+
 <preview>
   <NbGrid dir="col" gap="md">
     <NbDatePicker model-value="2026-04-15" label="Disabled" disabled />
-    <NbDatePicker model-value="2026-04-15" label="Read-only" readonly type="simple" />
+    <NbDatePicker model-value="2026-04-15" label="Read-only" readonly />
   </NbGrid>
 </preview>
 
 ```vue
 <NbDatePicker v-model="date" label="Disabled" disabled />
-<NbDatePicker v-model="date" label="Read-only" readonly type="simple" />
+<NbDatePicker v-model="date" label="Read-only" readonly />
 ```
 
 ## Fluid Variant
 
-The fluid variant places the label inside the field, matching other fluid-style form controls.
+The fluid variant places the label inside the field, matching other fluid-style form controls. Validation feedback appears as an icon in the field header (hover it for the full message), the same behaviour as the fluid `NbTextInput`.
 
 <preview>
-  <NbDatePicker
-    v-model="fluidDate"
-    variant="fluid"
-    label="Delivery date"
-    placeholder="dd/mm/yyyy"
-  />
+  <NbGrid dir="col" gap="md">
+    <NbDatePicker
+      v-model="fluidDate"
+      variant="fluid"
+      label="Delivery date"
+      placeholder="dd/mm/yyyy"
+    />
+    <NbDatePicker
+      v-model="fluidErrDate"
+      variant="fluid"
+      label="Delivery date"
+      error="A valid date is required"
+    />
+  </NbGrid>
 </preview>
 
 ```vue
@@ -216,6 +313,12 @@ The fluid variant places the label inside the field, matching other fluid-style 
   variant="fluid"
   label="Delivery date"
   placeholder="dd/mm/yyyy"
+/>
+<NbDatePicker
+  v-model="date"
+  variant="fluid"
+  label="Delivery date"
+  error="A valid date is required"
 />
 ```
 
@@ -259,34 +362,40 @@ The calendar dropdown follows the [WAI-ARIA Date Picker Dialog](https://www.w3.o
 | `Escape`          | Close the calendar without selecting             |
 | `Tab`             | Close the calendar and return focus to the input |
 
+The calendar header also provides clickable previous/next month (single caret) and previous/next year (double caret) buttons.
+
 </doc-tab>
 
 <doc-tab name="Api">
 
 ## Props
 
-| Prop             | Type                              | Default        | Description                                                |
-| ---------------- | --------------------------------- | -------------- | ---------------------------------------------------------- |
-| `modelValue`     | `string \| null`                  | `null`         | Selected date as ISO string (YYYY-MM-DD)                   |
-| `type`           | `'simple' \| 'single' \| 'range'` | `'single'`     | Picker variant                                             |
-| `endValue`       | `string \| null`                  | `null`         | End date for range type (v-model:end-value)                |
-| `label`          | `string`                          | `''`           | Label text                                                 |
-| `placeholder`    | `string`                          | locale hint    | Placeholder text (defaults to locale date format hint)     |
-| `endPlaceholder` | `string`                          | `''`           | Placeholder for the end date input (range only)            |
-| `variant`        | `'default' \| 'fluid'`            | `'default'`    | Presentation variant                                       |
-| `size`           | `'sm' \| 'md' \| 'lg'`            | `'md'`         | Field height: 32px, 40px, or 48px                          |
-| `min`            | `string`                          | `undefined`    | Minimum selectable date (ISO YYYY-MM-DD)                   |
-| `max`            | `string`                          | `undefined`    | Maximum selectable date (ISO YYYY-MM-DD)                   |
-| `weekStart`      | `0 \| 1`                          | `1`            | First day of the week: 0 = Sunday, 1 = Monday              |
-| `locale`         | `string`                          | browser locale | BCP 47 locale tag for month/weekday labels and format hint |
-| `helper`         | `string`                          | `''`           | Helper text below the field                                |
-| `error`          | `string`                          | `''`           | Error message (takes precedence over warning and helper)   |
-| `warning`        | `string`                          | `''`           | Warning message (shown when no error)                      |
-| `disabled`       | `boolean`                         | `false`        | Disables the input and calendar                            |
-| `readonly`       | `boolean`                         | `false`        | Makes the field read-only                                  |
-| `required`       | `boolean`                         | `false`        | Marks the field as required                                |
-| `name`           | `string`                          | `''`           | HTML name attribute                                        |
-| `id`             | `string`                          | auto-generated | Explicit element id                                        |
+| Prop             | Type                                    | Default        | Description                                                                                          |
+| ---------------- | --------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------- |
+| `modelValue`     | `string \| null`                        | `null`         | Selected date as ISO string (YYYY-MM-DD)                                                             |
+| `type`           | `'simple' \| 'single' \| 'range'`       | `'single'`     | Picker variant                                                                                       |
+| `endValue`       | `string \| null`                        | `null`         | End date for range type (v-model:end-value)                                                          |
+| `label`          | `string`                                | `''`           | Label text                                                                                           |
+| `placeholder`    | `string`                                | locale hint    | Placeholder text (defaults to locale date format hint)                                               |
+| `endPlaceholder` | `string`                                | `''`           | Placeholder for the end date input (range only)                                                      |
+| `endLabel`       | `string`                                | `''`           | Label for the end field (range only); when set, `label` and `endLabel` render above their own fields |
+| `variant`        | `'default' \| 'fluid'`                  | `'default'`    | Presentation variant                                                                                 |
+| `size`           | `'sm' \| 'md' \| 'lg'`                  | `'md'`         | Field height: 32px, 40px, or 48px                                                                    |
+| `min`            | `string`                                | `undefined`    | Minimum selectable date (ISO YYYY-MM-DD)                                                             |
+| `max`            | `string`                                | `undefined`    | Maximum selectable date (ISO YYYY-MM-DD)                                                             |
+| `disabledDates`  | `string[] \| (date: string) => boolean` | `undefined`    | Individual unselectable dates: ISO string array or predicate                                         |
+| `weekStart`      | `0 \| 1`                                | `1`            | First day of the week: 0 = Sunday, 1 = Monday                                                        |
+| `locale`         | `string`                                | browser locale | BCP 47 locale tag for month/weekday labels and format hint                                           |
+| `helper`         | `string`                                | `''`           | Helper text below the field                                                                          |
+| `error`          | `string`                                | `''`           | Error message for the start field (takes precedence over warning and helper)                         |
+| `warning`        | `string`                                | `''`           | Warning message for the start field (shown when no error)                                            |
+| `endError`       | `string`                                | `''`           | Error message for the end field (range only)                                                         |
+| `endWarning`     | `string`                                | `''`           | Warning message for the end field (range only, shown when no `endError`)                             |
+| `disabled`       | `boolean`                               | `false`        | Disables the input and calendar                                                                      |
+| `readonly`       | `boolean`                               | `false`        | Read-only: focusable and copyable, but not editable and the calendar does not open                   |
+| `required`       | `boolean`                               | `false`        | Marks the field as required                                                                          |
+| `name`           | `string`                                | `''`           | HTML name attribute                                                                                  |
+| `id`             | `string`                                | auto-generated | Explicit element id                                                                                  |
 
 ## Events
 
@@ -313,13 +422,24 @@ const simpleDate = ref<string | null>(null)
 const singleDate = ref<string | null>(null)
 const rangeStart = ref<string | null>(null)
 const rangeEnd = ref<string | null>(null)
+const labeledStart = ref<string | null>(null)
+const labeledEnd = ref<string | null>(null)
 const constrainedDate = ref<string | null>(null)
+const blockedDate = ref<string | null>(null)
 const errorDate = ref<string | null>(null)
 const warningDate = ref<string | null>(null)
+const rangeErrStart = ref<string | null>('2026-04-20')
+const rangeErrEnd = ref<string | null>('2026-04-12')
 const helperDate = ref<string | null>(null)
 const smDate = ref<string | null>(null)
 const mdDate = ref<string | null>(null)
 const lgDate = ref<string | null>(null)
 const fluidDate = ref<string | null>(null)
+const fluidErrDate = ref<string | null>(null)
 const sundayDate = ref<string | null>(null)
+
+function isWeekend(iso: string): boolean {
+  const day = new Date(iso + 'T00:00:00').getDay()
+  return day === 0 || day === 6
+}
 </script>

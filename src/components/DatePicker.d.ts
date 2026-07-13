@@ -25,6 +25,26 @@ interface IDatePickerProps extends IReadableFieldComponent {
   locale?: string
   /** Placeholder for the end date input (range type only). */
   endPlaceholder?: string
+  /**
+   * Label for the end date field (range type only).
+   * When set, each field renders its own label: `label` above the start
+   * field and `endLabel` above the end field.
+   */
+  endLabel?: string
+  /**
+   * Validation error for the end date field (range type only).
+   * Marks only the end field as invalid, so users can tell which of the
+   * two fields needs correction. Takes precedence over `endWarning`.
+   */
+  endError?: string
+  /** Non-blocking caution message for the end date field (range type only). */
+  endWarning?: string
+  /**
+   * Dates that cannot be selected, in addition to `min`/`max`:
+   * either an array of ISO strings (YYYY-MM-DD) or a predicate that
+   * receives an ISO string and returns true when the date is disabled.
+   */
+  disabledDates?: string[] | ((date: string) => boolean)
 }
 
 export type { IDatePickerProps }
