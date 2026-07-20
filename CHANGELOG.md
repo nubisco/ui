@@ -1,3 +1,10 @@
+# [1.48.0](https://github.com/nubisco/ui/compare/v1.47.1...v1.48.0) (2026-07-20)
+
+
+### Features
+
+* **user-menu:** standardized ecosystem user menu ([693ed7f](https://github.com/nubisco/ui/commit/693ed7f21018f7fb03ca7cdc5392af41fbfe8dfe))
+
 ## [1.47.1](https://github.com/nubisco/ui/compare/v1.47.0...v1.47.1) (2026-07-20)
 
 
