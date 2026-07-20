@@ -34,6 +34,13 @@ export { default as NbBarChart } from './components/Charts/BarChart.vue'
 export { default as NbButton } from './components/Button.vue'
 export { default as NbDatePicker } from './components/DatePicker.vue'
 export type { IDatePickerProps } from './components/DatePicker.d'
+export { default as NbUserMenu } from './components/UserMenu.vue'
+export type {
+  IUserMenuProps,
+  IUserMenuUser,
+  IUserMenuAccount,
+  TUserMenuPlacement,
+} from './components/UserMenu.d'
 export { default as NbCheckbox } from './components/Checkbox.vue'
 export { default as NbCheckboxGroup } from './components/CheckboxGroup.vue'
 export type { ICheckboxGroupProps } from './components/CheckboxGroup.d'

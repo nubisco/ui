@@ -49,6 +49,7 @@ import NbTextInput from './TextInput.vue'
 import NbToast from './Toast.vue'
 import NbTree from './Tree.vue'
 import NbTreeNode from './TreeNode.vue'
+import NbUserMenu from './UserMenu.vue'
 import NbBottomPanel from './BottomPanel.vue'
 import NbShellPanel from './ShellPanel.vue'
 import NbBlueprint from './Blueprint.vue'
@@ -107,6 +108,7 @@ const components = {
   NbToast,
   NbTree,
   NbTreeNode,
+  NbUserMenu,
   NbBottomPanel,
   NbShellPanel,
   NbBlueprint,
