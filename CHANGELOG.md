@@ -1,3 +1,10 @@
+## [1.47.1](https://github.com/nubisco/ui/compare/v1.47.0...v1.47.1) (2026-07-20)
+
+
+### Bug Fixes
+
+* **blueprint:** keep selection box glued to cards during pan/zoom ([b454160](https://github.com/nubisco/ui/commit/b454160039a8e0ebba8816915b01e0bf51051ed6))
+
 # [1.47.0](https://github.com/nubisco/ui/compare/v1.46.0...v1.47.0) (2026-07-13)
 
 
