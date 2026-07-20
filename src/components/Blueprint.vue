@@ -983,9 +983,23 @@ const marqueeStyle = computed(() => {
   }
 })
 
-// Persistent selection box: bounding rect of all selected cards (2+ only)
-const selectionBox = computed(() => {
-  void wireKey.value // recompute when cards move
+// Persistent selection box: bounding rect of all selected cards (2+ only).
+//
+// NOT a computed: the box is positioned in viewport space from live DOM
+// rects, and those rects only move AFTER the canvas layer's pan/zoom
+// transform is patched into the DOM. A computed re-evaluating in the
+// same reactive flush reads the PRE-pan layout and freezes the box at
+// its old screen position while the cards travel (the "stranded marquee"
+// bug). A post-flush watcher runs after the DOM update, so the rects it
+// measures already reflect the new camera.
+const selectionBox = ref<{
+  left: string
+  top: string
+  width: string
+  height: string
+} | null>(null)
+
+function computeSelectionBox() {
   if (selectedIds.value.size < 2 || !containerRef.value) return null
   // Don't show while actively dragging a marquee
   if (marquee.value) return null
@@ -1019,7 +1033,17 @@ const selectionBox = computed(() => {
     width: `${maxX - minX + pad * 2}px`,
     height: `${maxY - minY + pad * 2}px`,
   }
-})
+}
+
+watch(
+  // Camera (pan / zoom), card moves (wireKey), selection and marquee
+  // state all reposition the box.
+  [panX, panY, zoom, wireKey, selectedIds, marquee],
+  () => {
+    selectionBox.value = computeSelectionBox()
+  },
+  { flush: 'post', immediate: true },
+)
 
 function startMarquee(e: MouseEvent) {
   if (!containerRef.value) return
