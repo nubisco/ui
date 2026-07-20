@@ -59,6 +59,7 @@ import TextInput from './components/TextInput.vue'
 import Toast from './components/Toast.vue'
 import Tree from './components/Tree.vue'
 import TreeNode from './components/TreeNode.vue'
+import UserMenu from './components/UserMenu.vue'
 
 declare module 'vue' {
   interface IGlobalComponents {
@@ -121,6 +122,7 @@ declare module 'vue' {
     NbToast: typeof Toast
     NbTree: typeof Tree
     NbTreeNode: typeof TreeNode
+    NbUserMenu: typeof UserMenu
   }
 }
 
