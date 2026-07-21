@@ -10,6 +10,8 @@ import NbDatePicker from './DatePicker.vue'
 import NbCheckbox from './Checkbox.vue'
 import NbCheckboxGroup from './CheckboxGroup.vue'
 import NbColorStrip from './ColorStrip.vue'
+import NbDataTable from './DataTable.vue'
+import NbPagination from './Pagination.vue'
 import NbFileUploader from './FileUploader.vue'
 import NbGanttChart from './Charts/GanttChart.vue'
 import NbFlag from './Flag.vue'
@@ -69,6 +71,8 @@ const components = {
   NbCheckbox,
   NbCheckboxGroup,
   NbColorStrip,
+  NbDataTable,
+  NbPagination,
   NbFileUploader,
   NbGanttChart,
   NbFlag,
