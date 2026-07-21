@@ -133,6 +133,49 @@ Contextual feedback with `NbMessage`, compact labels with `NbLabel`, and count i
 
 ---
 
+## Data Tables
+
+`NbDataTable` is a presentational, data-driven table for read-mostly application lists, modeled on the Carbon Design System. It ships full `<table>` semantics with controlled sorting (`aria-sort`), row selection, loading / empty / error states, density, a sticky header, and a companion `NbPagination` footer. It is not an editable spreadsheet, reach for `NbSpreadsheet` when cells need in-place editing.
+
+<preview>
+  <NbDataTable
+    :columns="tableColumns"
+    :rows="pagedRows"
+    row-key="id"
+    title="Team members"
+    description="Sortable, selectable, paginated."
+    selectable="multiple"
+    :sort-state="sortState"
+    v-model:selected="selectedIds"
+    style="width: 100%"
+    @sort="onSort"
+  >
+    <template #toolbar-actions>
+      <NbButton variant="primary" size="sm" icon="plus">Add</NbButton>
+    </template>
+    <template #batch-actions="{ clear }">
+      <NbButton variant="danger" size="sm" @click="clear">Delete</NbButton>
+    </template>
+    <template #cell-status="{ value }">
+      <NbBadge>{{ value }}</NbBadge>
+    </template>
+    <template #row-actions>
+      <NbButton variant="ghost" size="sm" icon="dots-three-vertical" />
+    </template>
+    <template #footer>
+      <NbPagination
+        :page="page"
+        :page-size="pageSize"
+        :total="sortedRows.length"
+        v-model:page="page"
+        @update:page-size="pageSize = $event"
+      />
+    </template>
+  </NbDataTable>
+</preview>
+
+---
+
 ## Icons
 
 Over 9,000 icons from the [Phosphor](https://phosphoricons.com) set, available in 6 weights. Icons are loaded as async Vue components via a Vite virtual module. Only the icons you reference end up in your bundle.
@@ -187,7 +230,7 @@ No SCSS required for consumers. No rebuilding the library. No hunting for hardco
 [Explore the theming system →](/theming)
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 const firstName = ref('')
 const lastName = ref('')
@@ -211,4 +254,44 @@ function clearForm() {
   role.value = null
   agreed.value = false
 }
+
+// ── Data Table demo ──────────────────────────────────────
+const tableColumns = [
+  { key: 'name', header: 'Name', sortable: true },
+  { key: 'role', header: 'Role', sortable: true },
+  { key: 'status', header: 'Status', align: 'center' },
+]
+
+const tableRows = [
+  { id: 1, name: 'Ada Lovelace', role: 'Engineer', status: 'Active' },
+  { id: 2, name: 'Grace Hopper', role: 'Admiral', status: 'Active' },
+  { id: 3, name: 'Alan Turing', role: 'Researcher', status: 'Away' },
+  { id: 4, name: 'Katherine Johnson', role: 'Mathematician', status: 'Active' },
+  { id: 5, name: 'Margaret Hamilton', role: 'Engineer', status: 'Away' },
+  { id: 6, name: 'Hedy Lamarr', role: 'Inventor', status: 'Active' },
+]
+
+const selectedIds = ref([])
+const sortState = ref({ key: 'name', direction: 'asc' })
+const page = ref(1)
+const pageSize = ref(5)
+
+function onSort(state) {
+  sortState.value = state
+  page.value = 1
+}
+
+const sortedRows = computed(() => {
+  const { key, direction } = sortState.value
+  if (direction === 'none') return tableRows
+  return [...tableRows].sort((a, b) => {
+    const cmp = String(a[key]).localeCompare(String(b[key]))
+    return direction === 'asc' ? cmp : -cmp
+  })
+})
+
+const pagedRows = computed(() => {
+  const start = (page.value - 1) * pageSize.value
+  return sortedRows.value.slice(start, start + pageSize.value)
+})
 </script>
