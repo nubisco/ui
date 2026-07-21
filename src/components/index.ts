@@ -9,6 +9,8 @@ import NbCalendar from './Calendar.vue'
 import NbDatePicker from './DatePicker.vue'
 import NbCheckbox from './Checkbox.vue'
 import NbColorStrip from './ColorStrip.vue'
+import NbDataTable from './DataTable.vue'
+import NbPagination from './Pagination.vue'
 import NbFileUploader from './FileUploader.vue'
 import NbGanttChart from './Charts/GanttChart.vue'
 import NbFlag from './Flag.vue'
@@ -65,6 +67,8 @@ const components = {
   NbDatePicker,
   NbCheckbox,
   NbColorStrip,
+  NbDataTable,
+  NbPagination,
   NbFileUploader,
   NbGanttChart,
   NbFlag,

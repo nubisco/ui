@@ -38,6 +38,22 @@ export { default as NbCheckbox } from './components/Checkbox.vue'
 export { default as NbSwitch } from './components/Switch.vue'
 export type { ISwitchProps } from './components/Switch.d'
 export { default as NbColorStrip } from './components/ColorStrip.vue'
+export { default as NbDataTable } from './components/DataTable.vue'
+export type {
+  IDataTableColumn,
+  IDataTableProps,
+  IDataTableSortState,
+  IDataTableEmits,
+  TColumnAlign,
+  TSortDirection,
+  TDataTableSelectable,
+  TRowKey,
+} from './components/DataTable.d'
+export { default as NbPagination } from './components/Pagination.vue'
+export type {
+  IPaginationProps,
+  IPaginationEmits,
+} from './components/Pagination.d'
 export { default as NbFlag } from './components/Flag.vue'
 export { default as NbGanttChart } from './components/Charts/GanttChart.vue'
 export type {
