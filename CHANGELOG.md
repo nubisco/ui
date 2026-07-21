@@ -1,3 +1,10 @@
+## [1.48.1](https://github.com/nubisco/ui/compare/v1.48.0...v1.48.1) (2026-07-21)
+
+
+### Bug Fixes
+
+* **blueprint:** run the vibrate wire wave source-to-dest at a fixed wavelength ([9c4d406](https://github.com/nubisco/ui/commit/9c4d406e6e0e66582f3d20dce5e2bd2c4133f239))
+
 # [1.48.0](https://github.com/nubisco/ui/compare/v1.47.1...v1.48.0) (2026-07-20)
 
 
