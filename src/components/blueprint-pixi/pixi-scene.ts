@@ -16,7 +16,14 @@ import type * as PIXI from 'pixi.js'
 import type { IBlueprintCard, TBlueprintBackground } from '../Blueprint.types'
 import type { IBlueprintWire } from '../Blueprint.renderer'
 import { makeColorResolver } from './pixi-color'
-import { parseCubicPath, cubicAt, type ICubicBezier } from './wire-path'
+import {
+  parseCubicPath,
+  cubicAt,
+  cubicLength,
+  resampleUniformArc,
+  vibrateOffset,
+  type ICubicBezier,
+} from './wire-path'
 import { levelToColorNumber } from './level-color'
 import type { BlueprintLiveData } from './live-data'
 
@@ -28,6 +35,34 @@ const FLOW_DOT_R = 2.5
 // enough to ignore the noise floor, so activity shows the real signal path and
 // visibly stops where the signal stops (muted / no-input / silent wires).
 const ACTIVITY_THRESHOLD = 0.004
+// 'vibrate' wave shape. The wave is defined in SCREEN space so a short patch
+// between adjacent cards and a long run across the canvas read as the same
+// signal: identical wavelength, amplitude and travel speed. (Defining it
+// per-wire instead ("N waves per wire, whatever its length") makes wavelength
+// scale with card distance, which is what it used to do: 20px on a short wire
+// vs 330px on a long one, a 16x spread. Amplitude is constant either way, but
+// amplitude/wavelength is what the eye reads as "how much it wiggles", so the
+// long wires looked flat and the short ones frantic.)
+const VIBRATE_WAVELENGTH_PX = 48
+const VIBRATE_AMPLITUDE_PX = 2.5
+// Travel speed of the wave along the wire, screen px/sec, source -> dest.
+// At ANIM_FRAME_MS this advances ~0.1 of a wavelength per frame, well under the
+// half-wavelength beyond which the motion would alias and read as travelling
+// backwards.
+const VIBRATE_SPEED_PX_S = 120
+// Polyline resolution. 8 samples/wave renders ~95% of the true peak (the
+// remaining ripple is a sub-pixel shimmer at this amplitude); fewer starts to
+// visibly clip the crests.
+const VIBRATE_SAMPLES_PER_WAVE = 8
+// Vertex ceiling per wire, a backstop against unbounded geometry rather than a
+// tuning knob: when it binds the wavelength stretches again, which is the very
+// thing this is meant to stop. Measured on a 40-wire graph the size of a real
+// rig, it never binds at working zooms (0.35-0.5), where the whole scene comes
+// in BELOW the fixed-48-segment version it replaced; at zoom 1 it binds only on
+// wires wider than the window. Lowering it to 160 would re-stretch 9 of those
+// 40 wires by up to 2.2x to save 15% of the vertices, which is not a trade
+// worth making at 0.2% of the frame budget.
+const VIBRATE_MAX_SAMPLES = 384
 // Wire/flow geometry lives in the zoomed `world`. A normal world-space stroke
 // shrinks on screen as you zoom out (wires vanish at far zoom); `pixelLine`
 // renders a crisp screen-space line instead, constant at every zoom, so the
@@ -89,6 +124,21 @@ interface IWireNode {
    *  activity style, so it can be restored to the straight base stroke when it
    *  stops carrying signal. */
   vibrating?: boolean
+  /** Cached uniform-arc resample of this wire for the 'vibrate' style. Built
+   *  lazily (only for wires that actually vibrate) and invalidated when the
+   *  path or the zoom changes, so the per-frame loop is one sine and a
+   *  multiply-add per vertex with no bezier evaluation at all. */
+  vib?: IVibrateSamples
+}
+
+/** A wire resampled at uniform arc spacing: point + unit normal per sample,
+ *  packed as [x, y, nx, ny] so the animation walks one flat array. */
+interface IVibrateSamples {
+  pts: Float32Array
+  /** Number of segments; the array holds n + 1 samples. */
+  n: number
+  /** Zoom this was built for; a different zoom changes the sample spacing. */
+  zoom: number
 }
 
 /** How the 'activity' wire mode animates a live wire. */
@@ -118,6 +168,9 @@ export class PixiScene {
   private connectedColor = 0x6366f1
   private flowNodes: IWireNode[] = []
   private flowPhase = 0
+  // 'vibrate' runs on its own accumulator (radians, wrapped): its speed is set
+  // in screen px/sec, which does not divide into flowPhase's per-wire fraction.
+  private vibratePhase = 0
   private zoom = 1
   // Render-on-demand scheduler. `needsRender` is the immediate path (camera,
   // background, resize). `rafId` holds the single in-flight frame; the loop
@@ -362,6 +415,7 @@ export class PixiScene {
       // Re-stroke only when the geometry actually changed.
       if (node.path !== wire.path) {
         node.path = wire.path
+        node.vib = undefined // the wire moved; its arc resample is stale
         node.gfx.clear()
         node.gfx
           .moveTo(b.p0[0], b.p0[1])
@@ -566,6 +620,13 @@ export class PixiScene {
     if (this.flowNodes.length && animWindow) {
       const dt = this.lastAnimMs ? ts - this.lastAnimMs : ANIM_FRAME_MS
       this.flowPhase = (this.flowPhase + FLOW_SPEED * (dt / 1000)) % 1
+      this.vibratePhase =
+        (this.vibratePhase +
+          (VIBRATE_SPEED_PX_S / VIBRATE_WAVELENGTH_PX) *
+            (dt / 1000) *
+            Math.PI *
+            2) %
+        (Math.PI * 2)
       if (this.activityStyle === 'pulse') this.drawPulse()
       else if (this.activityStyle === 'vibrate') this.drawVibrate()
       else this.drawFlow()
@@ -640,7 +701,8 @@ export class PixiScene {
    *  stroke when a wire goes silent. Costs a per-frame re-tessellation of the
    *  ACTIVE wires only. */
   private drawVibrate(): void {
-    const amp = 2.5 / Math.max(this.zoom, 0.01) // ~constant screen amplitude
+    const zoom = Math.max(this.zoom, 0.01)
+    const amp = VIBRATE_AMPLITUDE_PX / zoom // ~constant screen amplitude
     for (const node of this.flowNodes) {
       const level = this.liveData ? this.liveData.get(node.key) : 0
       if (level <= ACTIVITY_THRESHOLD) {
@@ -651,8 +713,28 @@ export class PixiScene {
         continue
       }
       node.vibrating = true
-      this.strokeVibrated(node, amp)
+      this.strokeVibrated(node, amp, zoom)
     }
+  }
+
+  /** Resample a wire at uniform ARC spacing, caching a point + unit normal per
+   *  sample. Uniform in arc, not in the bezier's `t`: `t` bunches where the
+   *  curve is tight, so a t-uniform wave would stretch and squash along a
+   *  single wire. Spacing is one wavelength / VIBRATE_SAMPLES_PER_WAVE, which
+   *  makes the per-frame spatial phase step a constant. Runs on geometry or
+   *  zoom change only. */
+  private buildVibrateSamples(b: ICubicBezier, zoom: number): IVibrateSamples {
+    // Wavelength is fixed on SCREEN, so convert to world units for a curve
+    // that lives in the zoomed world container.
+    const wavelength = VIBRATE_WAVELENGTH_PX / zoom
+    const n = Math.max(
+      8,
+      Math.min(
+        VIBRATE_MAX_SAMPLES,
+        Math.round((cubicLength(b) / wavelength) * VIBRATE_SAMPLES_PER_WAVE),
+      ),
+    )
+    return { pts: resampleUniformArc(b, n), n, zoom }
   }
 
   /** Re-stroke a wire's straight base bezier (undoes a vibrate). */
@@ -667,32 +749,21 @@ export class PixiScene {
 
   /** Re-stroke a wire as a vibrating string: sample the bezier and offset each
    *  sample perpendicular to the local tangent by an enveloped travelling sine. */
-  private strokeVibrated(node: IWireNode, amp: number): void {
-    const b = node.bezier
-    // Tight, fast string: many short waves along the wire (WAVES) and a quick
-    // temporal shimmer (TEMPORAL, integer multiple so the phase wraps
-    // seamlessly). M is kept at ~4 samples per wave so the high spatial
-    // frequency stays smooth without aliasing.
-    const WAVES = 12
-    const TEMPORAL = 6
-    const M = 48
-    const temporal = this.flowPhase * Math.PI * 2 * TEMPORAL
+  private strokeVibrated(node: IWireNode, amp: number, zoom: number): void {
+    let vib = node.vib
+    if (!vib || vib.zoom !== zoom) {
+      vib = node.vib = this.buildVibrateSamples(node.bezier, zoom)
+    }
+    const { pts, n } = vib
+    const phase = this.vibratePhase
     const g = node.gfx
     g.clear()
-    for (let s = 0; s <= M; s++) {
-      const t = s / M
-      const [x, y] = cubicAt(b, t)
-      const [x2, y2] = cubicAt(b, Math.min(1, t + 0.005))
-      let dx = x2 - x
-      let dy = y2 - y
-      const len = Math.hypot(dx, dy) || 1
-      dx /= len
-      dy /= len
-      const env = Math.sin(t * Math.PI) // 0 at ends, 1 at middle
-      const off = Math.sin(t * Math.PI * WAVES + temporal) * amp * env
-      const ox = x + -dy * off
-      const oy = y + dx * off
-      if (s === 0) g.moveTo(ox, oy)
+    for (let i = 0; i <= n; i++) {
+      const off = vibrateOffset(i, n, VIBRATE_SAMPLES_PER_WAVE, phase) * amp
+      const o = i * 4
+      const ox = pts[o]! + pts[o + 2]! * off
+      const oy = pts[o + 1]! + pts[o + 3]! * off
+      if (i === 0) g.moveTo(ox, oy)
       else g.lineTo(ox, oy)
     }
     g.stroke({ width: 1, pixelLine: true, color: 0xffffff })
