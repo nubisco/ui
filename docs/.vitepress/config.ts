@@ -217,6 +217,7 @@ export default withMermaid(
                     link: '/ui/components/command-palette',
                   },
                   { text: 'Color Strip', link: '/ui/components/color-strip' },
+                  { text: 'Data Table', link: '/ui/components/data-table' },
                   { text: 'Date Picker', link: '/ui/components/date-picker' },
                   {
                     text: 'File Uploader',
@@ -236,6 +237,7 @@ export default withMermaid(
                   { text: 'Message', link: '/ui/components/message' },
                   { text: 'Modal', link: '/ui/components/modal' },
                   { text: 'Number Input', link: '/ui/components/number-input' },
+                  { text: 'Pagination', link: '/ui/components/pagination' },
                   { text: 'Panel', link: '/ui/components/panel' },
                   {
                     text: 'Progress Bar',

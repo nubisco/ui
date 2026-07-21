@@ -18,6 +18,7 @@ import Checkbox from './components/Checkbox.vue'
 import CheckboxGroup from './components/CheckboxGroup.vue'
 import ColorStrip from './components/ColorStrip.vue'
 import CommandPalette from './components/CommandPalette.vue'
+import DataTable from './components/DataTable.vue'
 import DatePicker from './components/DatePicker.vue'
 import FileUploader from './components/FileUploader.vue'
 import Flag from './components/Flag.vue'
@@ -38,6 +39,7 @@ import MenuItem from './components/MenuItem.vue'
 import Message from './components/Message.vue'
 import Modal from './components/Modal.vue'
 import NumberInput from './components/NumberInput.vue'
+import Pagination from './components/Pagination.vue'
 import Panel from './components/Panel.vue'
 import PieChart from './components/Charts/PieChart.vue'
 import ProgressBar from './components/ProgressBar.vue'
@@ -81,6 +83,7 @@ declare module 'vue' {
     NbCheckboxGroup: typeof CheckboxGroup
     NbColorStrip: typeof ColorStrip
     NbCommandPalette: typeof CommandPalette
+    NbDataTable: typeof DataTable
     NbDatePicker: typeof DatePicker
     NbFileUploader: typeof FileUploader
     NbFlag: typeof Flag
@@ -101,6 +104,7 @@ declare module 'vue' {
     NbMessage: typeof Message
     NbModal: typeof Modal
     NbNumberInput: typeof NumberInput
+    NbPagination: typeof Pagination
     NbPanel: typeof Panel
     NbPieChart: typeof PieChart
     NbProgressBar: typeof ProgressBar
