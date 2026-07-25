@@ -2,6 +2,10 @@ import type { App, DirectiveBinding } from 'vue'
 import { escapeHtml } from '@/utils/escapeHtml.helper'
 import type { IComponentContent } from '@/types/ContentRenderer'
 
+type TTooltipChip = HTMLSpanElement & {
+  __removeTimer__?: ReturnType<typeof setTimeout>
+}
+
 type TTooltipEl = HTMLElement & {
   __showTooltip__?: () => void
   __hideTooltip__?: (delay?: number) => void
@@ -12,7 +16,20 @@ type TTooltipEl = HTMLElement & {
   __mouseY__?: number
   __tooltipBinding__?: ITooltipOptions
   __showTimer__?: ReturnType<typeof setTimeout>
-  tooltipElement?: HTMLSpanElement
+  __hideTimer__?: ReturnType<typeof setTimeout>
+  // Every chip this anchor has ever put in <body> and not yet reaped.
+  // Tracking the whole set (not just the latest) is what makes hide /
+  // unmount able to remove chips a retriggered show would otherwise
+  // orphan. Invariant: at most one entry, enforced by showTooltip.
+  __chips__?: Set<TTooltipChip>
+  // Signature of the content last written into the live chip, so the
+  // `updated` hook can short-circuit without touching layout.
+  __lastContent__?: string
+  __watchdogTimer__?: ReturnType<typeof setTimeout>
+  __watchdogMisses__?: number
+  // The currently-live chip (the one `updated` repositions). Always a
+  // member of `__chips__` while set.
+  tooltipElement?: TTooltipChip
 }
 
 export interface ITooltipOptions {
@@ -108,6 +125,89 @@ const installDocumentDismiss = () => {
   // call on the click target doesn't prevent dismissal.
   document.addEventListener('pointerdown', dismiss, true)
   window.addEventListener('blur', dismiss)
+  // Pointer left the document entirely (out of the window, onto native
+  // chrome). mouseleave on the anchor does not always fire for that
+  // exit path, so without this the chip can stay up indefinitely.
+  document.addEventListener('mouseleave', dismiss)
+}
+
+// How long the exit animation runs before the node is detached. Must
+// match the tooltipDisappear duration below so the chip is not ripped
+// out mid-animation.
+const HIDE_ANIMATION_MS = 200
+
+// Self-life for a shown chip. Every tick re-verifies that the anchor is
+// still in the document and still hovered; N consecutive misses reap
+// the chip. This is what makes the directive self-sufficient: no user
+// gesture, no route change and no host call is required for a chip to
+// stop existing. Two ticks of grace keeps a legitimately hovered chip
+// safe from a single transient miss.
+const WATCHDOG_INTERVAL_MS = 1000
+const WATCHDOG_MISSES_TO_HIDE = 2
+
+const isAnchorHovered = (el: TTooltipEl): boolean => {
+  if (!el.isConnected) return false
+  try {
+    return el.matches(':hover')
+  } catch {
+    // Engine without :hover selector support: assume hovered so the
+    // watchdog can never hide a legitimately visible tooltip. The
+    // disconnect check above still reaps orphaned anchors.
+    return true
+  }
+}
+
+const stopWatchdog = (el: TTooltipEl) => {
+  clearTimeout(el.__watchdogTimer__)
+  el.__watchdogTimer__ = undefined
+  el.__watchdogMisses__ = 0
+}
+
+const startWatchdog = (el: TTooltipEl) => {
+  stopWatchdog(el)
+  const tick = () => {
+    if (!el.__chips__?.size) {
+      stopWatchdog(el)
+      return
+    }
+    if (isAnchorHovered(el)) {
+      el.__watchdogMisses__ = 0
+    } else {
+      el.__watchdogMisses__ = (el.__watchdogMisses__ ?? 0) + 1
+      if (!el.isConnected || el.__watchdogMisses__ >= WATCHDOG_MISSES_TO_HIDE) {
+        // Detached anchor: nothing left to animate against, drop it now.
+        hideTooltip(el, !el.isConnected)
+        return
+      }
+    }
+    el.__watchdogTimer__ = setTimeout(tick, WATCHDOG_INTERVAL_MS)
+  }
+  el.__watchdogTimer__ = setTimeout(tick, WATCHDOG_INTERVAL_MS)
+}
+
+const removeChip = (el: TTooltipEl, chip: TTooltipChip, immediate: boolean) => {
+  el.__chips__?.delete(chip)
+  clearTimeout(chip.__removeTimer__)
+  chip.__removeTimer__ = undefined
+  if (immediate) {
+    chip.remove()
+    return
+  }
+  chip.style.animation = `tooltipDisappear ${HIDE_ANIMATION_MS}ms ease-in-out forwards`
+  chip.__removeTimer__ = setTimeout(() => {
+    chip.__removeTimer__ = undefined
+    chip.remove()
+  }, HIDE_ANIMATION_MS)
+}
+
+/** Reap every chip this anchor owns, not just the memoized latest. */
+const removeAllChips = (el: TTooltipEl, immediate: boolean) => {
+  if (el.__chips__) {
+    for (const chip of Array.from(el.__chips__)) removeChip(el, chip, immediate)
+  }
+  el.tooltipElement = undefined
+  el.__lastContent__ = undefined
+  stopWatchdog(el)
 }
 
 const tooltipDirective = (app: App) => {
@@ -123,16 +223,17 @@ const tooltipDirective = (app: App) => {
 
   app.directive('nb-tooltip', {
     mounted(el: TTooltipEl, binding: DirectiveBinding<ITooltipOptions>) {
-      let hideTimer: ReturnType<typeof setTimeout> | undefined = undefined
-
       el.__showTooltip__ = () => {
-        clearTimeout(hideTimer)
+        clearTimeout(el.__hideTimer__)
+        el.__hideTimer__ = undefined
         if (el.__tooltipBinding__) showTooltip(el, el.__tooltipBinding__)
       }
 
       el.__hideTooltip__ = (delay = 150) => {
         // set optimal hide delay by default (150ms)
-        hideTimer = setTimeout(() => {
+        clearTimeout(el.__hideTimer__)
+        el.__hideTimer__ = setTimeout(() => {
+          el.__hideTimer__ = undefined
           hideTooltip(el, delay <= 0)
         }, delay)
       }
@@ -161,12 +262,27 @@ const tooltipDirective = (app: App) => {
     },
 
     updated(el: TTooltipEl, binding: DirectiveBinding<ITooltipOptions>) {
+      const previous = el.__tooltipBinding__
       el.__tooltipBinding__ = binding.value
+
       if (!binding.value) {
         hideTooltip(el, true)
-      } else if (el.tooltipElement) {
-        updateTooltip(el, binding.value)
+        return
       }
+      // Nothing on screen: never touch layout on a host re-render.
+      if (!el.tooltipElement) return
+      // Same options object as last render: cannot have changed.
+      if (previous === binding.value) return
+      // Content-equal re-render (inline object literal, new identity,
+      // identical effective content). Comparing the rendered signature
+      // is pure string work; the expensive part (innerHTML rewrite plus
+      // getBoundingClientRect, i.e. a forced synchronous layout of the
+      // whole document) only runs when something actually changed.
+      const signature = contentSignature(binding.value)
+      if (signature === el.__lastContent__) return
+
+      el.__lastContent__ = signature
+      updateTooltip(el, binding.value)
     },
 
     unmounted(el: TTooltipEl) {
@@ -175,12 +291,19 @@ const tooltipDirective = (app: App) => {
       // hideTooltip below also clears it, but doing it explicitly
       // here guards against any reordering inside hideTooltip.
       clearTimeout(el.__showTimer__)
+      el.__showTimer__ = undefined
+      clearTimeout(el.__hideTimer__)
+      el.__hideTimer__ = undefined
+      // immediate: the anchor is gone, so every chip it created goes
+      // with it right now rather than after an exit animation.
       hideTooltip(el, true)
       registeredTooltips.delete(el)
       if (el.__showHandler__)
         el.removeEventListener('mouseenter', el.__showHandler__)
       if (el.__hideHandler__)
         el.removeEventListener('mouseleave', el.__hideHandler__)
+      if (el.__mouseMove__)
+        el.removeEventListener('mousemove', el.__mouseMove__ as EventListener)
       if (el.__hideHandler__)
         window.removeEventListener('scroll', el.__hideHandler__)
     },
@@ -208,9 +331,13 @@ const createTooltipContent = ({
   )
 }
 
-const showTooltip = (
-  el: TTooltipEl,
-  {
+/** Everything that decides what a chip looks like, as a comparable
+ *  string. Pure string work: no DOM reads, no layout. */
+const contentSignature = (options: ITooltipOptions): string =>
+  `${options.position ?? ''}|${options.flavor ?? ''}|${createTooltipContent(options)}`
+
+const showTooltip = (el: TTooltipEl, options: ITooltipOptions) => {
+  const {
     header,
     body,
     tip,
@@ -220,13 +347,15 @@ const showTooltip = (
     position,
     overflowOnly,
     classExtra,
-  }: ITooltipOptions,
-) => {
-  // Check if tooltip already exists, and remove it if it does
-  const existingTooltip = el.tooltipElement
-  if (existingTooltip) {
-    existingTooltip.remove()
-  }
+  } = options
+
+  // One chip per anchor, always. Cancel any show still pending (its
+  // chip would be created behind our back and immediately orphaned by
+  // the tooltipElement overwrite below) and reap anything already on
+  // screen before scheduling a replacement.
+  clearTimeout(el.__showTimer__)
+  el.__showTimer__ = undefined
+  removeAllChips(el, true)
 
   if (overflowOnly) {
     const rect = el.getBoundingClientRect()
@@ -241,37 +370,34 @@ const showTooltip = (
   }
 
   el.__showTimer__ = setTimeout(() => {
-    const tooltip = document.createElement('span')
+    el.__showTimer__ = undefined
+    // Nothing to anchor to any more (anchor unmounted while the show
+    // was pending): do not append an instantly-orphaned chip.
+    if (!el.isConnected) return
+
+    const tooltip = document.createElement('span') as TTooltipChip
     tooltip.style.transition = `opacity ${animationTime}ms ease-in-out`
     tooltip.className = `nb-tooltip nb-tooltip-${position} ${flavor ? `nb-tooltip-flavor-${flavor}` : ''} ${classExtra || ''}`
     tooltip.innerHTML = createTooltipContent({ header, body, tip })
     tooltip.style.animation = `tooltipAppear ${animationTime}ms ease-in-out forwards`
 
     el.tooltipElement = tooltip
+    ;(el.__chips__ ??= new Set()).add(tooltip)
+    el.__lastContent__ = contentSignature(options)
     registeredTooltips.add(el) // Register active tooltip
 
     document.body.appendChild(tooltip)
     positionTooltip(el, tooltip, position)
+    startWatchdog(el)
   }, delay) // ← optimal show delay (400ms)
 }
 
 const hideTooltip = (el: TTooltipEl, immediate = false) => {
-  // Retrieve tooltip element from the memoized property
-  const tooltip = el.tooltipElement
-
   clearTimeout(el.__showTimer__)
-
-  if (tooltip) {
-    if (immediate) {
-      tooltip.remove()
-    } else {
-      tooltip.style.animation = `tooltipDisappear 200ms ease-in-out forwards`
-      setTimeout(() => {
-        tooltip.remove()
-      }, 200)
-    }
-    registeredTooltips.delete(el) // Remove from active tooltips
-  }
+  el.__showTimer__ = undefined
+  // Reap EVERY chip this anchor owns, not just the memoized latest.
+  removeAllChips(el, immediate)
+  registeredTooltips.delete(el) // Remove from active tooltips
 }
 
 const updateTooltip = (
