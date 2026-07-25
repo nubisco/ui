@@ -1,3 +1,10 @@
+## [1.48.2](https://github.com/nubisco/ui/compare/v1.48.1...v1.48.2) (2026-07-25)
+
+
+### Bug Fixes
+
+* **tooltip:** stop orphan chips and per-render forced layout ([167d244](https://github.com/nubisco/ui/commit/167d244e7c1adc6646c3c02cfe3b160c480856f9))
+
 ## [1.48.1](https://github.com/nubisco/ui/compare/v1.48.0...v1.48.1) (2026-07-21)
 
 
