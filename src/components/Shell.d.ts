@@ -24,6 +24,22 @@ interface IShellProps {
    */
   inspectorSize?: TInspectorSize
   /**
+   * Allow the user to resize the inspector by dragging its left edge, clamped
+   * between the `inspectorSize` width (the floor) and 50% of the viewport.
+   * Double-clicking the handle resets to the `inspectorSize` default. Pair with
+   * `v-model:inspector-width` to persist the chosen width.
+   * @default false
+   */
+  resizable?: boolean
+  /**
+   * The user-chosen inspector width in pixels when `resizable` is on, as a
+   * v-model (`v-model:inspector-width`). `null` (the default / reset state)
+   * means "use the `inspectorSize` width". The component emits
+   * `update:inspectorWidth` on drag and on double-click reset; the consumer
+   * owns persistence.
+   */
+  inspectorWidth?: number | null
+  /**
    * Whether the main content area has padding.
    * Set to false for full-bleed content like viewports/canvases.
    * @default true
