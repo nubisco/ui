@@ -81,6 +81,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use 'sass:list';
+
 .nb-modal--overlay {
   position: fixed;
   inset: 0;
@@ -122,8 +124,8 @@ $modal-sizes: (
 
 @each $name, $dims in $modal-sizes {
   .nb-modal--content--#{$name} {
-    max-width: nth($dims, 1);
-    max-height: nth($dims, 2);
+    max-width: list.nth($dims, 1);
+    max-height: list.nth($dims, 2);
   }
 }
 
