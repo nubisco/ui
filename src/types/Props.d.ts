@@ -54,8 +54,13 @@ interface IWithFieldAppearance {
    * - `fluid`   — label and status icon inside the field box.
    */
   variant?: 'default' | 'fluid'
-  /** Control size. */
-  size?: 'sm' | 'md' | 'lg'
+  /**
+   * Control size. `xs` is the compact size for dense surfaces (inspectors,
+   * toolbars); `md` is the baseline for standalone forms. Every value here
+   * is backed by a real style rule — an unknown size no longer falls back
+   * silently.
+   */
+  size?: 'xs' | 'sm' | 'md' | 'lg'
 }
 // #endregion IWithFieldAppearance
 
