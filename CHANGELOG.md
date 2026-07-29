@@ -1,3 +1,15 @@
+# [1.50.0](https://github.com/nubisco/ui/compare/v1.49.0...v1.50.0) (2026-07-29)
+
+
+### Bug Fixes
+
+* **data-table:** align with Carbon, drop invented controls, stop reflow ([ed7e16e](https://github.com/nubisco/ui/commit/ed7e16e875d232972d11eb892b5de3e86e3d248a))
+
+
+### Features
+
+* **data-table:** add NbDataTable and NbPagination components ([c889ec7](https://github.com/nubisco/ui/commit/c889ec752b946ba54f7335a071189f3be2b41f46))
+
 # [1.49.0](https://github.com/nubisco/ui/compare/v1.48.2...v1.49.0) (2026-07-29)
 
 
