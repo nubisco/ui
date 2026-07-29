@@ -613,6 +613,53 @@ const expanded = ref(false)
 </script>
 ```
 
+### Resizable inspector
+
+Set `resizable` to let the user drag the inspector's **left edge** to widen it, clamped between the `inspectorSize` width (the floor) and 50% of the viewport. **Double-click** the handle to reset. Bind `v-model:inspector-width` to persist the chosen width (`null` = the size default).
+
+<preview>
+  <div style="height: 360px; border: 1px solid var(--nb-c-border, #e8e8f0); border-radius: 8px; overflow: hidden;">
+    <NbShell resizable :inspector-visible="true" inspector-size="xs" v-model:inspector-width="inspectorWidth">
+      <template #sidebar-logo>
+        <div style="width: 28px; height: 28px; background: #a78bfa; border-radius: 6px;" />
+      </template>
+      <template #topbar-left>
+        <strong>Layers</strong>
+      </template>
+      <p style="margin: 0; color: var(--nb-c-text-secondary, #666);">Drag the inspector's left edge to resize it. Double-click the handle to reset. Width: {{ inspectorWidth ? inspectorWidth + 'px' : 'default (xs)' }}.</p>
+      <template #inspector>
+        <div style="padding: 1rem;">
+          <h4 style="margin: 0 0 0.5rem;">Properties</h4>
+          <p style="margin: 0; color: var(--nb-c-text-secondary, #666); font-size: 0.875rem;">Grab my left edge and drag.</p>
+        </div>
+      </template>
+    </NbShell>
+  </div>
+</preview>
+
+```vue
+<template>
+  <NbShell
+    resizable
+    :inspector-visible="true"
+    inspector-size="xs"
+    v-model:inspector-width="inspectorWidth"
+  >
+    <template #inspector>
+      <div class="detail-view">Drag my left edge to resize.</div>
+    </template>
+    <p>Main content.</p>
+  </NbShell>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+// null = use the inspector-size default. Persist this value (e.g. in app
+// settings) to remember the user's chosen width across sessions.
+const inspectorWidth = ref<number | null>(null)
+</script>
+```
+
 ## All slots in use
 
 This example shows every slot populated at once, giving a complete picture of how the layout regions fit together. The shell itself is purely structural: it provides named regions, and you fill them with whatever components you need.
@@ -784,6 +831,8 @@ This layering is automatic. You do not need to set any z-index values yourself. 
 | `inspectorVisible`  | `boolean`                              | `false`     | Whether the inspector column is visible                                                                                                                                                                                                              |
 | `inspectorExpanded` | `boolean`                              | `false`     | When true the inspector takes ~50% of the viewport width instead of the default fixed width                                                                                                                                                          |
 | `inspectorSize`     | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'`      | Controls the width of the inspector panel (xs: 288px, sm: 360px, md: 560px, lg: 50vw, xl: 75vw)                                                                                                                                                      |
+| `resizable`         | `boolean`                              | `false`     | Let the user resize the inspector by dragging a handle on its left edge, clamped between the size width (floor) and 50% of the viewport. Double-clicking the handle resets to the size default. Pair with `v-model:inspector-width` to persist it    |
+| `inspectorWidth`    | `number \| null`                       | `null`      | v-model (`v-model:inspector-width`) for the user-chosen width in px when `resizable` is on. `null` means "use `inspectorSize`". Emits `update:inspectorWidth` on drag and on double-click reset; the consumer owns persistence                       |
 | `mainPadding`       | `boolean`                              | `true`      | Whether the main content area has padding. Set to `false` for full-bleed content like viewports or canvases                                                                                                                                          |
 | `sidebarVariant`    | `'compact' \| 'verbose'`               | `'compact'` | Sidebar presentation mode. `'compact'` keeps the legacy 56px icon rail (use with `NbSidebarLink`). `'verbose'` widens the sidebar to 240px for grouped, multi-level navigation (use with `NbSidebarMenu`, `NbSidebarMenuGroup`, `NbSidebarMenuItem`) |
 
@@ -825,6 +874,7 @@ import { ref } from 'vue'
 const showNotification = ref(true)
 const inspectorOpen = ref(false)
 const inspectorExpanded = ref(false)
+const inspectorWidth = ref<number | null>(null)
 const panelSize = ref('default')
 const kitchenInspector = ref(true)
 const kitchenPanelSize = ref('default')

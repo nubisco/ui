@@ -77,14 +77,24 @@
 
           <!-- ═══ INSPECTOR (optional column) ═══ -->
           <aside
+            ref="inspectorRef"
             class="nb-shell__inspector"
             :class="{
               'nb-shell__inspector--visible': inspectorVisible,
               'nb-shell__inspector--expanded':
                 inspectorVisible && inspectorExpanded,
               [`nb-shell__inspector--${inspectorSize}`]: inspectorVisible,
+              'nb-shell__inspector--resizing': isResizing,
             }"
+            :style="inspectorStyle"
           >
+            <div
+              v-if="resizable && inspectorVisible"
+              class="nb-shell__inspector-resize"
+              title="Drag to resize, double-click to reset"
+              @mousedown="onResizeStart"
+              @dblclick="onResizeReset"
+            />
             <slot name="inspector" />
           </aside>
         </div>
@@ -99,7 +109,9 @@ import {
   Fragment,
   Text,
   computed,
+  onBeforeUnmount,
   provide,
+  ref,
   toRef,
   useSlots,
   type VNode,
@@ -144,6 +156,7 @@ const props = withDefaults(defineProps<IShellProps>(), {
   inspectorVisible: false,
   inspectorExpanded: false,
   inspectorSize: 'md',
+  resizable: false,
   mainPadding: true,
   sidebarVariant: 'compact',
 })
@@ -153,6 +166,64 @@ const props = withDefaults(defineProps<IShellProps>(), {
 // presentation to the active variant. Exposed as a reactive ref so switching
 // at runtime "just works".
 provide('nb-shell-sidebar-variant', toRef(props, 'sidebarVariant'))
+
+// ── Resizable inspector ───────────────────────────────────────────────────────
+// When `resizable`, a handle on the inspector's left edge drags its width,
+// clamped between the size floor (xs = 288px) and half the viewport. The chosen
+// width is emitted via `v-model:inspector-width` so the consumer can persist it;
+// double-clicking the handle resets to the size default (emits null).
+const emit = defineEmits<{ 'update:inspectorWidth': [width: number | null] }>()
+
+const inspectorRef = ref<HTMLElement | null>(null)
+const isResizing = ref(false)
+const RESIZE_FLOOR_PX = 288 // xs inspector width (base-unit * 36)
+
+const inspectorStyle = computed(() => {
+  if (
+    !props.resizable ||
+    !props.inspectorVisible ||
+    props.inspectorWidth == null
+  ) {
+    return undefined
+  }
+  const maxW =
+    typeof window !== 'undefined'
+      ? window.innerWidth * 0.5
+      : props.inspectorWidth
+  const w = Math.max(RESIZE_FLOOR_PX, Math.min(props.inspectorWidth, maxW))
+  return { '--nb-shell-inspector-width': `${w}px` }
+})
+
+function onResizeMove(e: MouseEvent) {
+  const el = inspectorRef.value
+  if (!el) return
+  const right = el.getBoundingClientRect().right
+  const maxW = window.innerWidth * 0.5
+  const w = Math.round(
+    Math.max(RESIZE_FLOOR_PX, Math.min(maxW, right - e.clientX)),
+  )
+  emit('update:inspectorWidth', w)
+}
+
+function onResizeEnd() {
+  isResizing.value = false
+  window.removeEventListener('mousemove', onResizeMove)
+  window.removeEventListener('mouseup', onResizeEnd)
+}
+
+function onResizeStart(e: MouseEvent) {
+  if (!props.resizable) return
+  e.preventDefault()
+  isResizing.value = true
+  window.addEventListener('mousemove', onResizeMove)
+  window.addEventListener('mouseup', onResizeEnd)
+}
+
+function onResizeReset() {
+  emit('update:inspectorWidth', null)
+}
+
+onBeforeUnmount(onResizeEnd)
 </script>
 
 <style scoped lang="scss">
@@ -375,6 +446,7 @@ provide('nb-shell-sidebar-variant', toRef(props, 'sidebarVariant'))
 
 .nb-shell__inspector {
   width: 0;
+  position: relative;
   flex-shrink: 0;
   background: var(--nb-shell-inspector-bg);
   border-left: 0 solid transparent;
@@ -412,6 +484,50 @@ provide('nb-shell-sidebar-variant', toRef(props, 'sidebarVariant'))
 
   &--expanded {
     width: var(--nb-shell-inspector-expanded-width);
+  }
+
+  // No width transition while dragging the handle, so the panel tracks the
+  // cursor instead of lagging behind it.
+  &--resizing {
+    transition: none;
+    user-select: none;
+  }
+}
+
+// Resize handle on the inspector's left edge (rendered only when `resizable`).
+// Drag to resize, double-click to reset to the size default. An 8px hit area
+// with a grab-line that is faint at rest and brightens to the accent on hover,
+// with hard-coded fallbacks so it stays visible even where theme tokens are not
+// loaded.
+.nb-shell__inspector-resize {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 8px;
+  cursor: ew-resize;
+  z-index: 5;
+
+  // A grab-line that is always visible (accent-tinted so it reads on any
+  // ground) and brightens + widens on hover / while dragging. Accent colour
+  // is hard-coded as a fallback so it never depends on a theme token being
+  // loaded.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: var(--nb-c-primary, #8b6cff);
+    opacity: 0.4;
+    transition:
+      opacity 0.12s ease,
+      width 0.12s ease;
+  }
+
+  &:hover::before,
+  .nb-shell__inspector--resizing &::before {
+    width: 4px;
+    opacity: 1;
   }
 }
 
