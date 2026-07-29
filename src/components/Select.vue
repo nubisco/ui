@@ -554,6 +554,10 @@ defineExpose({
   font-family: var(--nb-font-family-sans, sans-serif);
   --field-h: var(--nb-field-height-md);
 
+  &--xs {
+    --field-h: var(--nb-field-height-xs);
+    --nb-field-font-size: var(--nb-font-size-13);
+  }
   &--sm {
     --field-h: var(--nb-field-height-sm);
   }

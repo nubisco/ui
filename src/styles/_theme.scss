@@ -203,6 +203,10 @@
     // Form field tokens: heights and padding relative to --nb-base-unit (8px)
     --nb-c-field-bg: var(--nb-c-french-gray-100);
     --nb-c-field-border: var(--nb-c-french-gray-500);
+    // xs is the compact size for dense surfaces (inspectors, toolbars).
+    // Distinctly smaller than sm; pair with a 13px field font. See the
+    // "Building an inspector" guide in the docs before reaching for it.
+    --nb-field-height-xs: calc(var(--nb-base-unit) * 3.5);
     --nb-field-height-sm: calc(var(--nb-base-unit) * 4);
     --nb-field-height-md: calc(var(--nb-base-unit) * 5);
     --nb-field-height-lg: calc(var(--nb-base-unit) * 6);
