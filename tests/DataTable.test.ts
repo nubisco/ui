@@ -136,6 +136,70 @@ describe('NbDataTable', () => {
       expect(wrapper.emitted('update:selected')![0]).toEqual([[1]])
     })
 
+    describe('shift-range selection', () => {
+      // The checkbox emits no original event, so the component reads the
+      // modifier off the pointer/key event on the cell. Mirror that here.
+      const toggle = async (
+        wrapper: ReturnType<typeof mountTable>,
+        index: number,
+        shift = false,
+      ) => {
+        const cells = wrapper.findAll('tbody .nb-data-table__select-cell')
+        const input = cells[index].find('input[type="checkbox"]')
+        await cells[index].trigger('mousedown', { shiftKey: shift })
+        // Flip it: setValue to the value it already holds emits nothing.
+        await input.setValue(!(input.element as HTMLInputElement).checked)
+      }
+
+      const lastEmit = (wrapper: ReturnType<typeof mountTable>) => {
+        const events = wrapper.emitted('update:selected')!
+        return events[events.length - 1][0] as number[]
+      }
+
+      it('extends the selection from the anchor to the shift-clicked row', async () => {
+        const wrapper = mountTable({ selectable: 'multiple', selected: [] })
+        await toggle(wrapper, 0)
+        expect(lastEmit(wrapper)).toEqual([1])
+
+        await wrapper.setProps({ selected: [1] })
+        await toggle(wrapper, 2, true)
+        expect(lastEmit(wrapper).sort()).toEqual([1, 2, 3])
+      })
+
+      it('shift-clicking a selected row clears the whole span', async () => {
+        const wrapper = mountTable({
+          selectable: 'multiple',
+          selected: [1, 2, 3],
+        })
+        // Anchor on row 1 without changing the selection state around it.
+        await toggle(wrapper, 0)
+        await wrapper.setProps({ selected: [2, 3] })
+        await toggle(wrapper, 2, true)
+        // Row 1 was the anchor and row 3 was selected, so 1..3 all clear.
+        expect(lastEmit(wrapper)).toEqual([])
+      })
+
+      it('re-ranges from the same anchor on a second shift-click', async () => {
+        const wrapper = mountTable({ selectable: 'multiple', selected: [] })
+        await toggle(wrapper, 0)
+        await wrapper.setProps({ selected: [1] })
+
+        await toggle(wrapper, 2, true)
+        expect(lastEmit(wrapper).sort()).toEqual([1, 2, 3])
+
+        // A shift-click nearer the anchor ranges 1..2, not 3..2.
+        await wrapper.setProps({ selected: [1, 2, 3] })
+        await toggle(wrapper, 1, true)
+        expect(lastEmit(wrapper).sort()).toEqual([3])
+      })
+
+      it('falls back to a plain toggle with no anchor', async () => {
+        const wrapper = mountTable({ selectable: 'multiple', selected: [] })
+        await toggle(wrapper, 2, true)
+        expect(lastEmit(wrapper)).toEqual([3])
+      })
+    })
+
     it('select-all adds every page row key', async () => {
       const wrapper = mountTable({ selectable: 'multiple', selected: [] })
       const selectAll = wrapper.find(
@@ -180,6 +244,27 @@ describe('NbDataTable', () => {
       expect(wrapper.find('.nb-data-table__state--empty').text()).toContain(
         'Nothing here',
       )
+    })
+
+    it('keeps the error cell a real table-cell so it centres like the empty state', () => {
+      // Regression: the flex row used to sit on the <td> itself. A table
+      // cell set to `display: flex` leaves the table layout algorithm, so
+      // its colspan stops stretching it and the content centres against a
+      // shrink-to-fit box while the empty state centres across the table.
+      const error = mountTable({ error: 'Boom' }).find(
+        '.nb-data-table__state--error',
+      )
+      const empty = mountTable({ rows: [] }).find(
+        '.nb-data-table__state--empty',
+      )
+
+      // The flex row lives on an inner wrapper, never on the cell.
+      expect(error.find('.nb-data-table__state-inner').exists()).toBe(true)
+
+      // Both states present an identical cell to the table layout.
+      expect(error.element.tagName).toBe('TD')
+      expect(empty.element.tagName).toBe('TD')
+      expect(error.attributes('colspan')).toBe(empty.attributes('colspan'))
     })
 
     it('prefers the error state over the empty state', () => {
@@ -254,5 +339,43 @@ describe('NbDataTable', () => {
     )
     expect(wrapper.find('.nb-data-table__batch').text()).toContain('2 selected')
     expect(wrapper.find('.del').exists()).toBe(true)
+  })
+
+  it('keeps the toolbar mounted under the batch bar so nothing reflows', async () => {
+    // Regression: the batch bar used to REPLACE the toolbar's contents. A
+    // title + description toolbar is taller than the bar, so ticking the
+    // first checkbox resized the toolbar and shifted every row (measured at
+    // 50px), moving the next checkbox out from under the pointer. The bar is
+    // now an overlay and the heading stays mounted, just inert.
+    const wrapper = mountTable(
+      {
+        selectable: 'multiple',
+        selected: [],
+        title: 'Team members',
+        description: 'People with access',
+      },
+      { slots: { 'batch-actions': () => h('button', 'Delete') } },
+    )
+    expect(wrapper.find('.nb-data-table__title').exists()).toBe(true)
+
+    await wrapper.setProps({ selected: [1] })
+
+    const heading = wrapper.find('.nb-data-table__toolbar-heading')
+    expect(wrapper.find('.nb-data-table__batch').exists()).toBe(true)
+    // Still rendered (so the toolbar keeps its height) but out of reach.
+    expect(wrapper.find('.nb-data-table__title').text()).toBe('Team members')
+    expect(heading.attributes('inert')).toBeDefined()
+    expect(heading.attributes('aria-hidden')).toBe('true')
+  })
+
+  it('reserves the toolbar strip when batch actions exist but no toolbar content does', () => {
+    // Without this the toolbar would appear only once a row is selected,
+    // growing the table by the strip's height and reflowing every row.
+    const wrapper = mountTable(
+      { selectable: 'multiple', selected: [] },
+      { slots: { 'batch-actions': () => h('button', 'Delete') } },
+    )
+    expect(wrapper.find('.nb-data-table__toolbar').exists()).toBe(true)
+    expect(wrapper.find('.nb-data-table__batch').exists()).toBe(false)
   })
 })
