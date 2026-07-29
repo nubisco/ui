@@ -454,13 +454,17 @@ const trackAreaClasses = computed(() => ({
 
   &__input {
     flex: 0 0 auto;
-    width: 160px;
+    // Readout width is a knob so dense containers (e.g. .nb-inspector) can make
+    // it compact or content-sized without a specificity fight.
+    width: var(--nb-slider-readout-width, 160px);
   }
 
   // Track area: fills remaining space
   &__track-area {
     // flex: 1;
-    min-width: 80px;
+    // Knob so a narrow container can let the track shrink instead of the row
+    // overflowing (default keeps a comfortable minimum).
+    min-width: var(--nb-slider-track-min-width, 80px);
     // display: flex;
     // flex-direction: column;
     // justify-content: center;

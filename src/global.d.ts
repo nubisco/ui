@@ -20,6 +20,7 @@ import ColorStrip from './components/ColorStrip.vue'
 import CommandPalette from './components/CommandPalette.vue'
 import DataTable from './components/DataTable.vue'
 import DatePicker from './components/DatePicker.vue'
+import Field from './components/Field.vue'
 import FileUploader from './components/FileUploader.vue'
 import Flag from './components/Flag.vue'
 import Form from './components/Form.vue'
@@ -85,6 +86,7 @@ declare module 'vue' {
     NbCommandPalette: typeof CommandPalette
     NbDataTable: typeof DataTable
     NbDatePicker: typeof DatePicker
+    NbField: typeof Field
     NbFileUploader: typeof FileUploader
     NbFlag: typeof Flag
     NbForm: typeof Form
