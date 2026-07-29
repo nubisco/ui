@@ -1,3 +1,11 @@
+# [1.49.0](https://github.com/nubisco/ui/compare/v1.48.2...v1.49.0) (2026-07-29)
+
+
+### Features
+
+* **fields:** add xs size for dense surfaces ([089b5d0](https://github.com/nubisco/ui/commit/089b5d0ad71d1f582c50f5021b360372a2b27e16))
+* **shell-panel:** dim the header of collapsed panels ([062df98](https://github.com/nubisco/ui/commit/062df9869ee3969a1ecf053f924a6e59767042f1))
+
 ## [1.48.2](https://github.com/nubisco/ui/compare/v1.48.1...v1.48.2) (2026-07-25)
 
 
