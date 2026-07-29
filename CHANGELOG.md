@@ -1,3 +1,17 @@
+# [1.52.0](https://github.com/nubisco/ui/compare/v1.51.0...v1.52.0) (2026-07-29)
+
+
+### Bug Fixes
+
+* **shell-panel:** dim panels squeezed to header-only by a maximized sibling ([803fba8](https://github.com/nubisco/ui/commit/803fba8ecc52a33a6e5f265d496023fa7d14b3d8))
+* **styles:** scope .nb-inspector two-column rows to labeled fields ([876f8f5](https://github.com/nubisco/ui/commit/876f8f5a16004777644f68499ff55a7b7951f15f))
+
+
+### Features
+
+* **shell:** resizable inspector ([121a6b6](https://github.com/nubisco/ui/commit/121a6b65e269ab0ef18eb98475c827dc512c9ba2))
+* **slider:** round the readout to the step precision ([9cb8d34](https://github.com/nubisco/ui/commit/9cb8d34a60687eab47eb1e81e7b0d349dc276ea3))
+
 # [1.51.0](https://github.com/nubisco/ui/compare/v1.50.0...v1.51.0) (2026-07-29)
 
 
