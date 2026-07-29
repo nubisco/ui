@@ -1,12 +1,18 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import Pagination from '../src/components/Pagination.vue'
+import NbSelect from '../src/components/Select.vue'
 
 function mountPagination(props: Record<string, unknown> = {}) {
   return mount(Pagination, {
     props: { page: 1, pageSize: 10, total: 95, ...props },
   })
 }
+
+// The page-size control is an NbSelect (a button-based combobox with a
+// teleported list), so assert against its contract rather than <option> DOM.
+const pageSizeSelect = (wrapper: ReturnType<typeof mountPagination>) =>
+  wrapper.findComponent(NbSelect)
 
 describe('NbPagination', () => {
   it('renders the item range and page-of read-out', () => {
@@ -51,16 +57,40 @@ describe('NbPagination', () => {
   })
 
   it('renders the page-size options', () => {
-    const wrapper = mountPagination({ pageSizeOptions: [5, 25] })
-    const opts = wrapper.findAll('.nb-pagination__select option')
-    expect(opts.map((o) => o.text())).toEqual(['5', '25'])
+    const wrapper = mountPagination({ pageSize: 5, pageSizeOptions: [5, 25] })
+    expect(pageSizeSelect(wrapper).props('options')).toEqual([
+      { label: '5', value: 5 },
+      { label: '25', value: 25 },
+    ])
+  })
+
+  it('folds an out-of-list pageSize into the options so the select is never blank', () => {
+    // A pageSize the host set outside the option list (saved preference,
+    // deep link) left the old native select on selectedIndex -1, rendering
+    // an empty control with just a caret. The bound value must always have
+    // a matching option.
+    const wrapper = mountPagination({ pageSize: 10, pageSizeOptions: [5, 25] })
+    const select = pageSizeSelect(wrapper)
+    const options = select.props('options') as { value: number }[]
+
+    expect(options.map((o) => o.value)).toEqual([5, 10, 25])
+    expect(options.some((o) => o.value === select.props('modelValue'))).toBe(
+      true,
+    )
   })
 
   it('emits update:pageSize and resets to page 1 on page-size change', async () => {
     const wrapper = mountPagination({ page: 3, pageSize: 10 })
-    await wrapper.find('.nb-pagination__select').setValue('20')
+    await pageSizeSelect(wrapper).vm.$emit('update:modelValue', 20)
     expect(wrapper.emitted('update:pageSize')![0]).toEqual([20])
     expect(wrapper.emitted('update:page')![0]).toEqual([1])
+  })
+
+  it('ignores a page-size change that does not change the value', async () => {
+    const wrapper = mountPagination({ page: 3, pageSize: 10 })
+    await pageSizeSelect(wrapper).vm.$emit('update:modelValue', 10)
+    expect(wrapper.emitted('update:pageSize')).toBeUndefined()
+    expect(wrapper.emitted('update:page')).toBeUndefined()
   })
 
   it('applies the size modifier class', () => {

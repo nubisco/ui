@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import Select from '../src/components/Select.vue'
 
@@ -174,6 +174,61 @@ describe('Select', () => {
       modelValue: ['apple', 'banana', 'cherry'],
     })
     expect(wrapper.find('.nb-select__value').text()).toBe('3 selected')
+  })
+
+  describe('dropdown placement', () => {
+    // Patching a prototype accessor leaks across tests if left in place.
+    afterEach(() => {
+      delete (HTMLElement.prototype as Partial<HTMLElement>).offsetHeight
+    })
+
+    // jsdom has no layout, so drive the two inputs the placement decision
+    // reads: the trigger's viewport rect and the dropdown's rendered height.
+    const withGeometry = async (triggerTop: number, dropdownHeight: number) => {
+      const wrapper = createWrapper()
+      const trigger = wrapper.find('.nb-select__trigger')
+
+      trigger.element.getBoundingClientRect = () =>
+        ({
+          top: triggerTop,
+          bottom: triggerTop + 32,
+          left: 0,
+          width: 200,
+        }) as DOMRect
+      Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
+        configurable: true,
+        get() {
+          return this.classList?.contains('nb-select__dropdown')
+            ? dropdownHeight
+            : 0
+        },
+      })
+
+      await trigger.trigger('click')
+      await wrapper.vm.$nextTick()
+      return wrapper
+    }
+
+    const dropdownTop = (wrapper: ReturnType<typeof createWrapper>) =>
+      (wrapper.find('.nb-select__dropdown').element as HTMLElement).style.top
+
+    it('drops down when there is room below', async () => {
+      // window.innerHeight is 768 in jsdom: 200px of list fits under a
+      // trigger whose bottom sits at 132.
+      const wrapper = await withGeometry(100, 200)
+      expect(dropdownTop(wrapper)).toBe('132px')
+    })
+
+    it('flips above the trigger when the list does not fit below', async () => {
+      // Trigger bottom at 732 leaves 36px below but 700px above.
+      const wrapper = await withGeometry(700, 200)
+      expect(dropdownTop(wrapper)).toBe('500px')
+    })
+
+    it('stays below when neither side fits but below has more room', async () => {
+      const wrapper = await withGeometry(300, 900)
+      expect(dropdownTop(wrapper)).toBe('332px')
+    })
   })
 
   it('shows disabled option as disabled', async () => {

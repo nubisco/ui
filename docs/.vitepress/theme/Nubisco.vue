@@ -209,7 +209,12 @@ const editLink = computed(() => {
       margin-bottom: 0.5em;
     }
 
-    :deep(table) {
+    /* Prose tables only. Component demos render their own tables (NbDataTable,
+       NbSpreadsheet) whose scoped rules lose to this one on specificity
+       (0,2,2 vs 0,2,0), which silently overrode their cell padding and made
+       every density look identical. Anything carrying an `nb-` class styles
+       itself. */
+    :deep(table:not([class*='nb-'])) {
       width: 100%;
       border-collapse: collapse;
       margin-top: 1.5em;
