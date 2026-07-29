@@ -1,3 +1,10 @@
+# [1.51.0](https://github.com/nubisco/ui/compare/v1.50.0...v1.51.0) (2026-07-29)
+
+
+### Features
+
+* **styles:** add .nb-inspector pattern for two-column inspectors ([feb2648](https://github.com/nubisco/ui/commit/feb26487661d0f2dccd81c25dab479561ff31309))
+
 # [1.50.0](https://github.com/nubisco/ui/compare/v1.49.0...v1.50.0) (2026-07-29)
 
 
