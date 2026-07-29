@@ -310,6 +310,10 @@ const wrapperClasses = computed(() => ({
 .nb-text-input {
   font-family: var(--nb-font-family-sans);
   --field-h: var(--nb-field-height-md);
+  // A field fills and shrinks to its container; it never forces the container
+  // wider. Without this a multiline field's textarea uses its intrinsic
+  // (cols-based) width and overflows a narrow cell (e.g. in an inspector).
+  min-width: 0;
 
   &--xs {
     --field-h: var(--nb-field-height-xs);
@@ -363,7 +367,16 @@ const wrapperClasses = computed(() => ({
 
     &--multiline {
       align-items: stretch;
+      min-width: 0;
+      max-width: 100%;
     }
+  }
+
+  // A multiline field's textarea fills its wrapper rather than using its
+  // intrinsic cols-based width, so it never overflows a narrow container.
+  &--multiline &__field {
+    width: 100%;
+    max-width: 100%;
   }
 
   // ─── Native input / textarea (normal mode) ────────────────
