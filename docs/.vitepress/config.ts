@@ -156,6 +156,12 @@ export default withMermaid(
             ],
           },
           {
+            text: 'Patterns',
+            items: [
+              { text: 'Building an inspector', link: '/patterns/inspectors' },
+            ],
+          },
+          {
             text: 'Code Conventions',
             items: [
               { text: 'Types, Interfaces & Enums', link: '/conventions/types' },
