@@ -1,3 +1,15 @@
+# [1.53.0](https://github.com/nubisco/ui/compare/v1.52.0...v1.53.0) (2026-07-29)
+
+
+### Bug Fixes
+
+* **text-input:** keep a multiline field within its container ([b52a3b4](https://github.com/nubisco/ui/commit/b52a3b4b9576ce584eccf413123b739f6aacf853))
+
+
+### Features
+
+* **field:** add NbField labeled-row primitive + inspector treatment ([62a8064](https://github.com/nubisco/ui/commit/62a8064154c4fb167b7a48936e244962266bd71d))
+
 # [1.52.0](https://github.com/nubisco/ui/compare/v1.51.0...v1.52.0) (2026-07-29)
 
 
