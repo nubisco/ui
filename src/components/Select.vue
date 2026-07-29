@@ -313,9 +313,21 @@ function selectOption(option: ISelectOption) {
 function updateDropdownPosition() {
   if (!triggerRef.value) return
   const rect = triggerRef.value.getBoundingClientRect()
+
+  // Flip above the trigger when the list genuinely does not fit below and
+  // there is more room above (a select near the bottom of the viewport, e.g.
+  // the page-size control in a table footer). Height is 0 on the very first
+  // call because the dropdown has not rendered yet; openDropdown re-runs this
+  // on nextTick, which lands before paint, so there is no visible jump.
+  const dropdownHeight = dropdownRef.value?.offsetHeight ?? 0
+  const spaceBelow = window.innerHeight - rect.bottom
+  const spaceAbove = rect.top
+  const dropUp =
+    dropdownHeight > 0 && spaceBelow < dropdownHeight && spaceAbove > spaceBelow
+
   dropdownStyle.value = {
     position: 'fixed',
-    top: `${rect.bottom}px`,
+    top: dropUp ? `${rect.top - dropdownHeight}px` : `${rect.bottom}px`,
     left: `${rect.left}px`,
     width: `${rect.width}px`,
     zIndex: '9999',
@@ -334,7 +346,11 @@ function openDropdown() {
           opts.findIndex((o) => o.value === selectedValues.value[0]),
         )
       : -1
-  nextTick(scrollToHighlighted)
+  // Re-measure once the list exists so a near-the-bottom select can flip up.
+  nextTick(() => {
+    updateDropdownPosition()
+    scrollToHighlighted()
+  })
 }
 
 function closeDropdown() {

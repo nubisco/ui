@@ -146,7 +146,7 @@ The `toolbar` region hosts a `title` / `description`, a `#search` slot, and a `#
       <NbButton variant="primary" size="sm" icon="plus">Add member</NbButton>
     </template>
     <template #batch-actions="{ selectedKeys, clear }">
-      <NbButton variant="danger" size="sm" @click="clear">
+      <NbButton variant="ghost" icon="trash" @click="clear">
         Delete {{ selectedKeys.length }}
       </NbButton>
     </template>
@@ -173,7 +173,7 @@ The `toolbar` region hosts a `title` / `description`, a `#search` slot, and a `#
     <NbButton variant="primary" size="sm" icon="plus">Add member</NbButton>
   </template>
   <template #batch-actions="{ selectedKeys, clear }">
-    <NbButton variant="danger" size="sm" @click="clear">
+    <NbButton variant="ghost" icon="trash" @click="clear">
       Delete {{ selectedKeys.length }}
     </NbButton>
   </template>

@@ -7,8 +7,37 @@
       { 'nb-data-table--sticky': stickyHeader },
     ]"
   >
-    <!-- Toolbar -->
+    <!-- Toolbar. The heading and tools stay mounted while rows are selected
+         and the batch bar covers them as an overlay. Swapping the toolbar's
+         contents instead would resize it (a title + description toolbar is
+         taller than the bar), shifting every row down the moment the first
+         checkbox is ticked and moving the next checkbox out from under the
+         user's cursor. -->
     <div v-if="showToolbar" class="nb-data-table__toolbar">
+      <div
+        class="nb-data-table__toolbar-heading"
+        :inert="showBatchBar || undefined"
+        :aria-hidden="showBatchBar || undefined"
+      >
+        <slot name="toolbar" :selected-count="selectedCount">
+          <div v-if="title || description">
+            <h2 v-if="title" class="nb-data-table__title">{{ title }}</h2>
+            <p v-if="description" class="nb-data-table__description">
+              {{ description }}
+            </p>
+          </div>
+        </slot>
+      </div>
+      <div
+        v-if="$slots.search || $slots['toolbar-actions']"
+        class="nb-data-table__toolbar-tools"
+        :inert="showBatchBar || undefined"
+        :aria-hidden="showBatchBar || undefined"
+      >
+        <slot name="search" />
+        <slot name="toolbar-actions" />
+      </div>
+
       <!-- Batch action bar, shown over the toolbar while rows are selected -->
       <div
         v-if="showBatchBar"
@@ -26,34 +55,15 @@
             :clear="clearSelection"
           />
         </div>
-        <button
-          type="button"
+        <NbButton
           class="nb-data-table__batch-cancel"
+          variant="ghost"
+          :size="controlSize"
           @click="clearSelection"
         >
           Cancel
-        </button>
+        </NbButton>
       </div>
-
-      <template v-else>
-        <div class="nb-data-table__toolbar-heading">
-          <slot name="toolbar" :selected-count="selectedCount">
-            <div v-if="title || description">
-              <h2 v-if="title" class="nb-data-table__title">{{ title }}</h2>
-              <p v-if="description" class="nb-data-table__description">
-                {{ description }}
-              </p>
-            </div>
-          </slot>
-        </div>
-        <div
-          v-if="$slots.search || $slots['toolbar-actions']"
-          class="nb-data-table__toolbar-tools"
-        >
-          <slot name="search" />
-          <slot name="toolbar-actions" />
-        </div>
-      </template>
     </div>
 
     <!-- Scroll container: horizontal scroll for wide tables, vertical for sticky header -->
@@ -170,8 +180,20 @@
               class="nb-data-table__state nb-data-table__state--error"
             >
               <slot name="error" :error="error">
-                <NbIcon name="warning-circle-fill" aria-hidden="true" />
-                <span>{{ error }}</span>
+                <!-- The flex row lives on an inner NbGrid, never on the <td>.
+                     A table cell set to `display: flex` drops out of the table
+                     layout algorithm, so its colspan stops stretching it and
+                     the content centres against the wrong box. -->
+                <NbGrid
+                  is="span"
+                  align="center"
+                  justify="center"
+                  gap="xs"
+                  class="nb-data-table__state-inner"
+                >
+                  <NbIcon name="warning-circle-fill" aria-hidden="true" />
+                  <span>{{ error }}</span>
+                </NbGrid>
               </slot>
             </td>
           </tr>
@@ -207,12 +229,14 @@
                 v-if="hasSelectColumn"
                 class="nb-data-table__td nb-data-table__select-cell"
                 @click.stop
+                @mousedown="noteRangeModifier"
+                @keydown="noteRangeModifier"
               >
                 <NbCheckbox
                   v-if="selectable === 'multiple'"
                   :model-value="isSelected(row)"
                   :aria-label="`Select row ${rowIndex + 1}`"
-                  @update:model-value="toggleRow(row)"
+                  @update:model-value="toggleRow(row, rowIndex)"
                 />
                 <input
                   v-else
@@ -281,8 +305,10 @@
 import {
   computed,
   getCurrentInstance,
+  ref,
   useId,
   useSlots,
+  watch,
   type FunctionalComponent,
 } from 'vue'
 import { ESizeShort } from '@/types/Size.d'
@@ -294,6 +320,8 @@ import type {
 } from './DataTable.d'
 import NbCheckbox from './Checkbox.vue'
 import NbIcon from './Icon.vue'
+import NbButton from './Button.vue'
+import NbGrid from './Grid.vue'
 
 const props = withDefaults(defineProps<IDataTableProps<T>>(), {
   size: ESizeShort.Medium,
@@ -319,6 +347,11 @@ const emit = defineEmits<{
 
 const slots = useSlots()
 const radioName = `nb-data-table-select-${useId()}`
+
+// `size` is published as the enum OR its raw literals for ergonomics. Both
+// carry the same runtime values, so narrow once for children that type their
+// own prop as the enum.
+const controlSize = computed(() => props.size as ESizeShort)
 
 // #region columns
 const visibleColumns = computed(() =>
@@ -394,11 +427,50 @@ const someSelected = computed(
     !allSelected.value && pageKeys.value.some((k) => selectedSet.value.has(k)),
 )
 
-function toggleRow(row: T) {
+// Anchor for shift-range selection: the last row toggled WITHOUT shift.
+// It deliberately survives shift-clicks so repeated shift-clicks re-range
+// from the same origin, the way file lists behave.
+const rangeAnchor = ref<number | null>(null)
+// Whether the interaction currently in flight had shift held. Captured from
+// the pointer/key event because NbCheckbox's update:model-value carries no
+// original event.
+let rangeExtend = false
+
+function noteRangeModifier(event: MouseEvent | KeyboardEvent) {
+  rangeExtend = event.shiftKey
+}
+
+// A page change invalidates row indices, so drop the anchor with it.
+watch(pageKeys, () => {
+  rangeAnchor.value = null
+})
+
+function toggleRow(row: T, rowIndex: number) {
   const key = keyFor(row)
   const next = new Set(props.selected)
-  if (next.has(key)) next.delete(key)
-  else next.add(key)
+  // The clicked row decides the direction; the range follows it, so
+  // shift-clicking a selected row clears the whole span.
+  const selecting = !next.has(key)
+  const anchor = rangeAnchor.value
+
+  const apply = (target: string | number) => {
+    if (selecting) next.add(target)
+    else next.delete(target)
+  }
+
+  if (rangeExtend && anchor !== null && anchor !== rowIndex) {
+    const from = Math.min(anchor, rowIndex)
+    const to = Math.max(anchor, rowIndex)
+    for (let i = from; i <= to; i++) {
+      const target = props.rows[i]
+      if (target) apply(keyFor(target))
+    }
+  } else {
+    apply(key)
+    rangeAnchor.value = rowIndex
+  }
+
+  rangeExtend = false
   emit('update:selected', [...next])
 }
 
@@ -421,11 +493,13 @@ function clearSelection() {
   emit('update:selected', [])
 }
 
+// Whether this table can EVER raise the batch bar, regardless of the current
+// selection. Used to reserve the toolbar strip up front.
+const canShowBatchBar = computed(
+  () => props.selectable !== 'none' && !!slots['batch-actions'],
+)
 const showBatchBar = computed(
-  () =>
-    props.selectable !== 'none' &&
-    selectedCount.value > 0 &&
-    !!slots['batch-actions'],
+  () => canShowBatchBar.value && selectedCount.value > 0,
 )
 // #endregion
 
@@ -438,8 +512,12 @@ const hasToolbarContent = computed(
     !!slots.search ||
     !!slots['toolbar-actions'],
 )
+// `canShowBatchBar`, not `showBatchBar`: a table with batch actions but no
+// toolbar content would otherwise grow a toolbar strip the moment the first
+// row is selected, reintroducing exactly the reflow the overlay avoids.
+// Reserving the strip up front keeps the geometry identical in both states.
 const showToolbar = computed(
-  () => hasToolbarContent.value || showBatchBar.value,
+  () => hasToolbarContent.value || canShowBatchBar.value,
 )
 // #endregion
 
@@ -503,7 +581,6 @@ function onRowClick(row: T, rowIndex: number) {
   background: var(--nb-c-surface);
   color: var(--nb-c-text);
   border: 1px solid var(--nb-c-border);
-  border-radius: 6px;
   overflow: hidden;
   font-size: var(--nb-dt-font-size);
 
@@ -520,6 +597,7 @@ function onRowClick(row: T, rowIndex: number) {
 
   // ── Toolbar ──────────────────────────────────────────────
   &__toolbar {
+    position: relative; // containing block for the batch overlay
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -553,19 +631,26 @@ function onRowClick(row: T, rowIndex: number) {
     flex-shrink: 0;
   }
 
-  // Batch action bar (selection mode)
+  // Batch action bar (selection mode). Carbon overlays the toolbar with a
+  // solid brand-filled bar and inverse content, so selection mode is
+  // unmistakable. The bar owns the toolbar's inline padding because it
+  // bleeds to both edges.
+  // Overlay, not a sibling in flow: covering the toolbar leaves its height
+  // (and therefore every row below it) exactly where it was.
   &__batch {
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
     gap: calc(var(--nb-base-unit) * 2);
-    width: 100%;
-    height: 100%;
+    padding-inline: var(--nb-dt-cell-pad-x);
+    background: var(--nb-c-primary);
     color: var(--nb-c-primary-a11y);
   }
 
   &__batch-count {
     font-weight: 600;
-    color: var(--nb-c-primary);
+    color: inherit;
   }
 
   &__batch-actions {
@@ -575,22 +660,14 @@ function onRowClick(row: T, rowIndex: number) {
     flex: 1;
   }
 
-  &__batch-cancel {
-    border: none;
-    background: transparent;
-    color: var(--nb-c-primary);
-    font: inherit;
-    font-weight: 500;
-    cursor: pointer;
-    padding: calc(var(--nb-base-unit) / 2) var(--nb-base-unit);
-    border-radius: 4px;
+  // Ghost-on-brand: inherit the bar's inverse foreground rather than the
+  // ghost variant's default text colour, which is tuned for the surface.
+  &__batch-cancel,
+  &__batch-actions :deep(.nb-button--ghost) {
+    color: inherit;
 
-    &:hover {
-      background: var(--nb-c-surface-hover);
-    }
-    &:focus-visible {
-      outline: 1px solid var(--nb-c-focus-ring);
-      outline-offset: -1px;
+    &:hover:not(:disabled) {
+      background: var(--nb-c-primary-hover, rgb(255 255 255 / 0.16));
     }
   }
 
@@ -708,11 +785,20 @@ function onRowClick(row: T, rowIndex: number) {
       cursor: pointer;
     }
 
+    // Neutral, not a brand tint. A 10% --nb-c-primary wash read as an
+    // unexplained violet; selection is already signalled by the checkbox and
+    // the batch bar, so the row only needs to sit one layer proud of the
+    // surface. Selected+hover goes one neutral step further using
+    // --nb-c-contrast (black/white per theme) so it stays hue-free.
     &--selected .nb-data-table__td {
+      background: var(--nb-c-bg-soft);
+    }
+
+    &--selected:hover .nb-data-table__td {
       background: color-mix(
         in srgb,
-        var(--nb-c-primary) 10%,
-        var(--nb-c-surface)
+        var(--nb-c-contrast) 6%,
+        var(--nb-c-bg-soft)
       );
     }
   }
@@ -779,11 +865,13 @@ function onRowClick(row: T, rowIndex: number) {
 
     &--error {
       color: var(--nb-c-danger);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--nb-base-unit);
     }
+  }
+
+  // Inline so the cell's `text-align: center` still centres it, and the
+  // cell itself stays a real table-cell honouring its colspan.
+  &__state-inner {
+    display: inline-flex;
   }
 
   // ── Skeleton loading ─────────────────────────────────────
@@ -792,7 +880,6 @@ function onRowClick(row: T, rowIndex: number) {
     height: 12px;
     width: 100%;
     max-width: 180px;
-    border-radius: 4px;
     background: linear-gradient(
       90deg,
       var(--nb-c-bg-soft) 25%,

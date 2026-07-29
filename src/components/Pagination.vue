@@ -4,21 +4,18 @@
     :aria-label="'Pagination'"
   >
     <div class="nb-pagination__left">
+      <!-- <label> wrapping the control: NbSelect's trigger is a <button>,
+           which is a labelable element, so the visible text names it without
+           a duplicate aria-label. -->
       <label class="nb-pagination__page-size">
         <span class="nb-pagination__label">{{ pageSizeLabel }}</span>
-        <span class="nb-pagination__select-wrap">
-          <select
-            class="nb-pagination__select"
-            :value="pageSize"
-            :disabled="disabled"
-            @change="onPageSizeChange"
-          >
-            <option v-for="opt in pageSizeOptions" :key="opt" :value="opt">
-              {{ opt }}
-            </option>
-          </select>
-          <NbIcon name="caret-down" class="nb-pagination__select-caret" />
-        </span>
+        <NbSelect
+          size="xs"
+          :model-value="pageSize"
+          :options="pageSizeSelectOptions"
+          :disabled="disabled"
+          @update:model-value="onPageSizeChange"
+        />
       </label>
       <span class="nb-pagination__range" aria-live="polite">
         {{ rangeStart }}–{{ rangeEnd }} of {{ total }} {{ itemLabel }}
@@ -29,24 +26,24 @@
       <span class="nb-pagination__page-of">
         Page {{ currentPage }} of {{ totalPages }}
       </span>
-      <button
-        type="button"
+      <NbButton
         class="nb-pagination__nav"
+        variant="ghost"
+        :size="controlSize"
+        icon="caret-left"
         :disabled="disabled || currentPage <= 1"
         aria-label="Previous page"
         @click="goTo(currentPage - 1)"
-      >
-        <NbIcon name="caret-left" />
-      </button>
-      <button
-        type="button"
+      />
+      <NbButton
         class="nb-pagination__nav"
+        variant="ghost"
+        :size="controlSize"
+        icon="caret-right"
         :disabled="disabled || currentPage >= totalPages"
         aria-label="Next page"
         @click="goTo(currentPage + 1)"
-      >
-        <NbIcon name="caret-right" />
-      </button>
+      />
     </div>
   </nav>
 </template>
@@ -55,7 +52,9 @@
 import { computed } from 'vue'
 import { ESizeShort } from '@/types/Size.d'
 import { IPaginationProps } from './Pagination.d'
-import NbIcon from './Icon.vue'
+import type { ISelectOption } from './Select.d'
+import NbButton from './Button.vue'
+import NbSelect from './Select.vue'
 
 const props = withDefaults(defineProps<IPaginationProps>(), {
   pageSizeOptions: () => [10, 20, 30, 40, 50],
@@ -69,6 +68,28 @@ const emit = defineEmits<{
   'update:page': [page: number]
   'update:pageSize': [pageSize: number]
 }>()
+
+// `size` is published as the enum OR its raw literals for ergonomics. Both
+// carry the same runtime values, so narrow once for children that type their
+// own prop as the enum.
+const controlSize = computed(() => props.size as ESizeShort)
+
+// A `pageSize` the host set outside `pageSizeOptions` (a saved preference, a
+// deep link, a smaller last page) has no matching <option>, which leaves the
+// native select with selectedIndex -1 and renders a blank control. Fold the
+// live value into the list so the select always shows what is actually in use.
+const resolvedPageSizeOptions = computed(() =>
+  props.pageSizeOptions.includes(props.pageSize)
+    ? props.pageSizeOptions
+    : [...props.pageSizeOptions, props.pageSize].sort((a, b) => a - b),
+)
+
+const pageSizeSelectOptions = computed<ISelectOption[]>(() =>
+  resolvedPageSizeOptions.value.map((value) => ({
+    label: String(value),
+    value,
+  })),
+)
 
 const totalPages = computed(() =>
   Math.max(1, Math.ceil(props.total / Math.max(1, props.pageSize))),
@@ -90,8 +111,9 @@ function goTo(page: number) {
   if (next !== props.page) emit('update:page', next)
 }
 
-function onPageSizeChange(e: Event) {
-  const next = Number((e.target as HTMLSelectElement).value)
+function onPageSizeChange(value: unknown) {
+  const next = Number(value)
+  if (!Number.isFinite(next) || next === props.pageSize) return
   emit('update:pageSize', next)
   // Reset to the first page so the range stays valid (Carbon behaviour).
   if (props.page !== 1) emit('update:page', 1)
@@ -100,6 +122,12 @@ function onPageSizeChange(e: Event) {
 
 <style scoped lang="scss">
 .nb-pagination {
+  // Single source of truth for the bar's height: the nav controls are
+  // squares of exactly this size. Deriving their width from a stretched
+  // height instead (aspect-ratio) sizes them after flex has already
+  // allocated the smaller intrinsic width, so they overflow the bar.
+  --nb-pg-bar-h: calc(var(--nb-base-unit) * 6);
+
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -109,8 +137,9 @@ function onPageSizeChange(e: Event) {
   background: var(--nb-c-surface);
   color: var(--nb-c-text);
   font-size: var(--nb-font-size-13);
-  padding-inline: calc(var(--nb-base-unit) * 2);
-  min-height: calc(var(--nb-base-unit) * 6);
+  // No trailing inset: the nav controls run flush to the bar's end edge.
+  padding-inline: calc(var(--nb-base-unit) * 2) 0;
+  min-height: var(--nb-pg-bar-h);
 
   &__left,
   &__right {
@@ -119,11 +148,31 @@ function onPageSizeChange(e: Event) {
     gap: calc(var(--nb-base-unit) * 2);
   }
 
+  &__right {
+    // stretch so the nav controls can take the bar's full height, and no
+    // gap so their dividers sit flush against each other. `align-self`
+    // opts this group out of the bar's own `align-items: center`, which
+    // would otherwise shrink-wrap it and leave nothing to stretch into.
+    align-self: stretch;
+    align-items: stretch;
+    gap: 0;
+  }
+
   &__page-size {
     display: inline-flex;
     align-items: center;
     gap: var(--nb-base-unit);
     cursor: pointer;
+
+    // NbSelect has a fragment root (field + teleported dropdown), so Vue
+    // skips attribute inheritance and a class on the component never lands.
+    // Reach it from here instead. It only needs to shrink to its content:
+    // this is a dense strip, not a form, so the field's default block width
+    // would leave a wide empty trigger.
+    :deep(.nb-select) {
+      width: auto;
+      min-width: calc(var(--nb-base-unit) * 9);
+    }
   }
 
   &__label {
@@ -131,42 +180,12 @@ function onPageSizeChange(e: Event) {
     white-space: nowrap;
   }
 
-  &__select-wrap {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-  }
-
+  // The page-size control is an NbSelect (xs). It only needs to shrink to
+  // its content here: the bar is a dense strip, not a form, so the field's
+  // default full-width block sizing would leave a wide empty trigger.
   &__select {
-    appearance: none;
-    font: inherit;
-    color: var(--nb-c-text);
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    padding: 2px calc(var(--nb-base-unit) * 2.5) 2px var(--nb-base-unit);
-    cursor: pointer;
-    outline: none;
-
-    &:hover:not(:disabled) {
-      background: var(--nb-c-surface-hover);
-    }
-    &:focus-visible {
-      outline: 1px solid var(--nb-c-focus-ring);
-      outline-offset: -1px;
-    }
-    &:disabled {
-      cursor: not-allowed;
-      opacity: var(--nb-field-disabled-opacity);
-    }
-  }
-
-  &__select-caret {
-    position: absolute;
-    right: calc(var(--nb-base-unit) / 2);
-    pointer-events: none;
-    font-size: var(--nb-font-size-12);
-    color: var(--nb-c-text-muted);
+    width: auto;
+    min-width: calc(var(--nb-base-unit) * 8);
   }
 
   &__range {
@@ -175,44 +194,32 @@ function onPageSizeChange(e: Event) {
   }
 
   &__page-of {
-    color: var(--nb-c-text-muted);
-    white-space: nowrap;
-  }
-
-  &__nav {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: calc(var(--nb-base-unit) * 4);
-    height: calc(var(--nb-base-unit) * 4);
-    padding: 0;
-    border: none;
-    border-radius: 4px;
-    background: transparent;
-    color: var(--nb-c-text);
-    cursor: pointer;
-    transition: background 0.15s;
+    color: var(--nb-c-text-muted);
+    white-space: nowrap;
+    padding-inline-end: calc(var(--nb-base-unit) * 2);
+  }
 
-    &:hover:not(:disabled) {
-      background: var(--nb-c-surface-hover);
-    }
-    &:focus-visible {
-      outline: 1px solid var(--nb-c-focus-ring);
-      outline-offset: -1px;
-    }
-    &:disabled {
-      color: var(--nb-c-text-subtle);
-      cursor: not-allowed;
-    }
+  // Nav controls are NbButton (ghost, icon-only); only the bar-specific
+  // geometry lives here. Square, bar-height and divider-led, so they read
+  // as part of the bar rather than as floating buttons. Chained classes so
+  // this outranks NbButton's own per-size `height` and icon-only `width`
+  // rules, which otherwise tie on specificity and win on source order.
+  &__nav.nb-button.nb-button--icon-only {
+    width: var(--nb-pg-bar-h);
+    height: var(--nb-pg-bar-h);
+    border-inline-start: 1px solid var(--nb-c-border);
   }
 
   // Density
   &--sm {
+    --nb-pg-bar-h: calc(var(--nb-base-unit) * 5);
+
     font-size: var(--nb-font-size-12);
-    min-height: calc(var(--nb-base-unit) * 5);
   }
   &--lg {
-    min-height: calc(var(--nb-base-unit) * 7);
+    --nb-pg-bar-h: calc(var(--nb-base-unit) * 7);
   }
 }
 </style>
