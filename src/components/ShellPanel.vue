@@ -142,6 +142,17 @@ defineExpose({ setSize })
 
   &.collapsed {
     flex: 0 0 auto;
+
+    // Dim the header so a put-away panel reads as "collapsed" at a glance
+    // instead of looking identical to an expanded one. Hovering restores
+    // full contrast so its size controls stay easy to find and click.
+    .nb-shell-panel__header {
+      opacity: 0.6;
+      transition: opacity 0.12s ease;
+    }
+    .nb-shell-panel__header:hover {
+      opacity: 1;
+    }
   }
 
   &.default {
