@@ -264,5 +264,17 @@ defineExpose({ setSize })
   > .nb-shell-panel__content {
     display: none !important;
   }
+
+  // A panel squeezed to header-only by a maximized sibling is, visually,
+  // collapsed too — so dim its header the same way an explicitly collapsed
+  // panel is. "Showing only a header" always reads the same, regardless of
+  // whether the user collapsed it or a sibling was maximized.
+  > .nb-shell-panel__header {
+    opacity: 0.6;
+    transition: opacity 0.12s ease;
+  }
+  > .nb-shell-panel__header:hover {
+    opacity: 1;
+  }
 }
 </style>
