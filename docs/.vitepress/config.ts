@@ -225,6 +225,7 @@ export default withMermaid(
                   { text: 'Color Strip', link: '/ui/components/color-strip' },
                   { text: 'Data Table', link: '/ui/components/data-table' },
                   { text: 'Date Picker', link: '/ui/components/date-picker' },
+                  { text: 'Field', link: '/ui/components/field' },
                   {
                     text: 'File Uploader',
                     link: '/ui/components/file-uploader',
