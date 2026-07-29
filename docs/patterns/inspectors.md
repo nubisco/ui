@@ -39,6 +39,42 @@ unknown one, but the lesson stands: if a control looks the wrong size,
 check that the size you passed is one the component actually styles.
 :::
 
+## Reach for `.nb-inspector`
+
+Do not restyle a sidebar by hand, and do not invent a new one per view. Wrap
+your stacked `NbShellPanel`s in a `.nb-inspector` container and the whole
+treatment comes for free:
+
+```vue
+<div class="nb-inspector">
+  <NbShellPanel title="Properties" fluid v-model:size="a"> … </NbShellPanel>
+  <NbShellPanel title="MIDI" fluid v-model:size="b"> … </NbShellPanel>
+</div>
+```
+
+You get:
+
+- **Two-column rows.** Every `NbTextInput` / `NbSelect` inside becomes
+  **label-left / value-right**, so all values share one edge you scan straight
+  down and each field is half as tall. This is the biggest density and
+  scannability win, and it is what UE5, Photoshop, Blender, and Figma all do.
+  The components are converted in place, no per-field markup change.
+- **Flat, capped sections.** Panels sit flush (no vertical space wasted on card
+  gaps); each section is separated by a strong tinted **header cap**, the way
+  dense pro-tool inspectors mark sections.
+- **Muted structural headers**, so the values stay the loudest thing.
+
+Tune the label column with `--nb-inspector-label-width` (default `96px`) when
+labels run long, and keep the labels short (`Send host`, not
+`Send to host address`).
+
+::: tip One inspector, everywhere
+Every sidebar-of-sections surface, a node inspector, a control inspector, a
+settings panel, is the same pattern. Use `.nb-inspector` for all of them
+rather than hand-rolling a bespoke aside per view; that is how the look stays
+consistent and the fixes land once.
+:::
+
 ## Hierarchy: one three-step text ramp
 
 Use the text tokens you already have. Do not pin everything to
@@ -51,11 +87,11 @@ Use the text tokens you already have. Do not pin everything to
 | **Help / hint** (the fine print)  | `--nb-c-text-subtle` | 11px, the quietest             |
 | **Panel header** (structure)      | `--nb-c-text-muted`  | 11px, a divider, not content   |
 
-Labels should be **quiet**: muted, small, letter-spaced caps sitting
-just above their field. If a label is as loud as its value, the eye has
-to work to find the value. Help text is quieter still, and always aligns
-to the same left edge as the field above it, a stray indent on one hint
-reads as a bug.
+Field labels should be **quiet**: muted and small, sitting in the left column
+beside their value (sentence case, not the uppercase reserved for the header
+caps). If a label is as loud as its value, the eye has to work to find the
+value. Help text is quieter still, and aligns to the same edge as the fields,
+a stray indent on one hint reads as a bug.
 
 ## Structure: `ShellPanel` per section
 
