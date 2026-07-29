@@ -32,9 +32,12 @@
   }
 
   // Two-column rows: label left (quiet), control right, so every value shares
-  // one left edge you scan straight down and each field is half as tall.
-  .nb-text-input,
-  .nb-select {
+  // one left edge you scan straight down and each field is half as tall. Only
+  // fields that HAVE a label get the two-column grid; a label-less input (e.g.
+  // a bare list of text inputs) stays full width instead of gaining a phantom
+  // empty label column.
+  .nb-text-input:has(> .nb-label),
+  .nb-select:has(> .nb-label) {
     display: grid;
     grid-template-columns: var(--nb-inspector-label-width) minmax(0, 1fr);
     align-items: center;
@@ -52,5 +55,25 @@
     color: var(--nb-c-text-muted);
     text-transform: none;
     letter-spacing: 0;
+  }
+
+  // Sliders take the same two-column shape. The default variant's field-box is
+  // display:contents, so override it to a block to make it the value cell, and
+  // let the track shrink into the narrower column beside its readout.
+  .nb-slider:has(> .nb-slider__label) {
+    display: grid;
+    grid-template-columns: var(--nb-inspector-label-width) minmax(0, 1fr);
+    align-items: center;
+    column-gap: 10px;
+
+    .nb-slider__label {
+      font-size: var(--nb-font-size-11, 11px);
+      line-height: 1.2;
+      color: var(--nb-c-text-muted);
+    }
+    .nb-slider__field-box {
+      display: block;
+      min-width: 0;
+    }
   }
 }
