@@ -84,7 +84,7 @@
         <NbNumberInput
           v-if="showInput"
           :size="variant === 'fluid' ? 'sm' : size"
-          :model-value="range ? highValue : singleValue"
+          :model-value="readoutValue"
           :min="range ? lowValue : min"
           :max="max"
           :step="step"
@@ -165,6 +165,24 @@ const highValue = computed<number>(() => {
   if (!props.range || !Array.isArray(props.modelValue)) return props.max ?? 100
   return (props.modelValue as [number, number])[1] ?? props.max ?? 100
 })
+
+// Decimal precision implied by `step` (0.01 -> 2), used to round the numeric
+// readout so an off-grid value like 0.35433 shows as 0.35 instead of
+// overflowing the field. The slider position keeps the exact value.
+const stepDecimals = computed<number>(() => {
+  const s = props.step ?? 1
+  if (!isFinite(s) || s <= 0) return 0
+  const str = String(s)
+  const dot = str.indexOf('.')
+  return dot === -1 ? 0 : str.length - dot - 1
+})
+function roundToStep(v: number): number {
+  const d = stepDecimals.value
+  return d > 0 ? Number(v.toFixed(d)) : Math.round(v)
+}
+const readoutValue = computed<number>(() =>
+  roundToStep(props.range ? highValue.value : singleValue.value),
+)
 
 // Track helpers
 function valueToPercent(v: number): number {
