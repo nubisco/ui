@@ -42,31 +42,44 @@ check that the size you passed is one the component actually styles.
 ## Reach for `.nb-inspector`
 
 Do not restyle a sidebar by hand, and do not invent a new one per view. Wrap
-your stacked `NbShellPanel`s in a `.nb-inspector` container and the whole
-treatment comes for free:
+your stacked `NbShellPanel`s in a `.nb-inspector` container, and put each row in
+an [`NbField`](/ui/components/field). The row is a real component (label +
+control on one grid), so alignment is **structural** — no `:has()` coercion, no
+per-field CSS:
 
 ```vue
 <div class="nb-inspector">
-  <NbShellPanel title="Properties" fluid v-model:size="a"> … </NbShellPanel>
+  <NbShellPanel title="Properties" fluid v-model:size="a">
+    <NbField label="Name"><NbTextInput v-model="name" size="xs" /></NbField>
+    <NbField label="Locked" control="fit"><NbSwitch v-model="locked" /></NbField>
+    <NbField label="Drag threshold (px)"><NbSlider v-model="t" :min="0" :max="20" size="xs" /></NbField>
+  </NbShellPanel>
   <NbShellPanel title="MIDI" fluid v-model:size="b"> … </NbShellPanel>
 </div>
 ```
 
 You get:
 
-- **Two-column rows.** Every `NbTextInput` / `NbSelect` inside becomes
-  **label-left / value-right**, so all values share one edge you scan straight
-  down and each field is half as tall. This is the biggest density and
-  scannability win, and it is what UE5, Photoshop, Blender, and Figma all do.
-  The components are converted in place, no per-field markup change.
-- **Flat, capped sections.** Panels sit flush (no vertical space wasted on card
-  gaps); each section is separated by a strong tinted **header cap**, the way
-  dense pro-tool inspectors mark sections.
+- **One spine.** Every `NbField` shares `--nb-field-label-width`, so labels and
+  values line up on a single edge you scan straight down — the biggest density
+  and scannability win, and what UE5, Photoshop, Blender, and Figma all do.
+- **Sliders stack** with a full-width track and a compact readout, so the track
+  stays usable at any inspector width (a two-column slider collapses when the
+  column is narrow).
+- **Toggle rows** (`control="fit"`) let the label run wide and push the switch
+  to the right edge, so a long toggle label never truncates.
+- **Compact numerics.** Slider readouts and number steppers shrink for the dense
+  rows, via the components' own CSS-var knobs (no specificity fights).
+- **Cards with breathing room.** Panels are inset from the edges and separated
+  by a small gap; each section carries a tinted **header cap**, and the panel
+  under the pointer (or being edited) tints its top and bottom edges.
 - **Muted structural headers**, so the values stay the loudest thing.
 
-Tune the label column with `--nb-inspector-label-width` (default `96px`) when
-labels run long, and keep the labels short (`Send host`, not
-`Send to host address`).
+Tune the label column with `--nb-field-label-width` when labels run long, and
+keep labels short (`Send host`, not `Send to host address`). A bare labeled
+field dropped straight into `.nb-inspector` without an `NbField` wrapper is
+still converted in place for backward compatibility, but new inspectors should
+use `NbField`.
 
 ::: tip One inspector, everywhere
 Every sidebar-of-sections surface, a node inspector, a control inspector, a
