@@ -97,6 +97,10 @@ Hide the companion input when screen space is tight or the precise value is not 
 - Drag a handle with mouse or touch.
 - Edit the value directly in the `NbNumberInput`; the handle snaps to the new value.
 - Values are always snapped to the nearest `step` increment.
+- The number readout is rounded to the precision implied by `step` (a `step`
+  of `0.01` shows two decimals), so an off-grid value passed in from outside,
+  e.g. `0.35433`, reads as `0.35` instead of overflowing the field. The handle
+  position still reflects the exact value.
 - In range mode, the lower handle cannot cross the upper handle.
 
 </doc-tab>
