@@ -7,6 +7,7 @@
 @use 'theme';
 @use 'typography';
 @use 'utils';
+@use 'patterns/inspector';
 
 @include theme.base;
 @include theme.classes;
