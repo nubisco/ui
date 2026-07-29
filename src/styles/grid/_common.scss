@@ -1,6 +1,7 @@
 @use 'sass:list';
 @use 'sass:meta';
 @use 'sass:math';
+@use 'sass:string';
 @use '../variables/grid';
 
 @function generate-list($value) {
@@ -17,11 +18,11 @@ $var-columns: generate-list(grid.$grid-columns) !default;
   $result: null;
 
   @if meta.type-of($index) != number {
-    @warn "$index: #{quote($index)} is not a number for `remove-nth`.";
+    @warn "$index: #{string.quote($index)} is not a number for `remove-nth`.";
   } @else if $index == 0 {
     @warn "List index 0 must be a non-zero integer for `remove-nth`.";
   } @else if math.abs($index) > list.length($list) {
-    @warn "List index is #{$index} but list is only #{length($list)} item long for `remove-nth`.";
+    @warn "List index is #{$index} but list is only #{list.length($list)} item long for `remove-nth`.";
   } @else {
     $result: ();
     @if $index < 0 {
