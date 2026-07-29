@@ -23,6 +23,7 @@ import NbImageCropper from './ImageCropper.vue'
 import NbJsonTree from './JsonTree.vue'
 import NbLineChart from './Charts/LineChart.vue'
 import NbLabel from './Label.vue'
+import NbField from './Field.vue'
 import NbMenu from './Menu.vue'
 import NbMenuBar from './MenuBar.vue'
 import NbMenuBarItem from './MenuBarItem.vue'
@@ -83,6 +84,7 @@ const components = {
   NbImageCropper,
   NbJsonTree,
   NbLabel,
+  NbField,
   NbLineChart,
   NbMenu,
   NbMenuBar,

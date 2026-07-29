@@ -1,24 +1,60 @@
 // ── Inspector pattern ────────────────────────────────────────────────────
 // Apply `.nb-inspector` to a container of stacked NbShellPanels to get the
-// flat, dense, two-column inspector look from the "Building an inspector"
-// guide: strong header caps that separate sections, and label-left /
-// value-right rows sharing one value edge.
+// dense, aligned inspector look from the "Building an inspector" guide:
+// section header caps, a single label-column spine every row lines up on, and
+// panels that read as separate cards with a little breathing room.
 //
-// The point of shipping it here is reuse: every inspector across every
-// product (a node inspector, a control inspector, a settings sidebar) wears
-// one implementation instead of reinventing a sidebar. The field components
-// are converted in place, so no per-field markup change is needed.
+// The rows are NbField (label + control), so alignment is structural — every
+// field shares --nb-field-label-width and lands on one spine with no per-field
+// CSS. The legacy in-place `:has()` rules further down still convert a bare
+// labeled field (no NbField wrapper) for backward compatibility.
+//
+// The point of shipping it here is reuse: every inspector across every product
+// wears one implementation instead of reinventing a sidebar.
 
 .nb-inspector {
-  // Panels sit flush; the header cap does the separating, so no card gaps
-  // waste vertical space (the way dense pro-tool inspectors work).
-  --nb-shell-panel-gap: 0;
-  // Width of the label column. Override per surface if labels run long.
-  --nb-inspector-label-width: 96px;
+  // ── Cards with breathing room ──────────────────────────────────────────
+  // A gutter insets the panels from the inspector edges — crucially clearing
+  // the resize handle on the left, which is what makes a flush inspector feel
+  // glued — and a small margin gives each panel a gap from its neighbours so
+  // it reads as its own card. Still dense (small gaps, not airy).
+  padding: 5px;
+  --nb-shell-panel-gap: 3px; // ~6px between panels, ~8px in from the edges
 
-  // Header cap: a clearly tinted bar with a top divider, so each section
-  // start reads at a glance even though panels are flush. Title is muted
-  // STRUCTURE, never content, which reserves full contrast for the values.
+  // ── Field spine (NbField) ──────────────────────────────────────────────
+  // The label column every NbField shares. 7.5rem fits long labels such as
+  // "Drag threshold (px)" on one line; override per surface if needed.
+  --nb-field-label-width: 7.5rem;
+  --nb-field-col-gap: 12px;
+
+  // Compact numeric controls for these dense rows: smaller slider/number
+  // steppers, a compact readout, and a track that shrinks instead of pushing
+  // the row past its column. Set via the components' own knobs, so there is no
+  // specificity fight with their scoped styles.
+  --nb-number-input-stepper-width: 26px;
+  --nb-slider-readout-width: 112px;
+  --nb-slider-track-min-width: 0;
+
+  // ── Panel content inset ────────────────────────────────────────────────
+  // Content and header title share one left edge, held off the panel border
+  // so nothing hugs the card edge.
+  .nb-shell-panel__header {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  // Fields stack vertically with a little rhythm between them (the content is
+  // display:flex/row by default, which would lay fields out side by side).
+  .nb-shell-panel__content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 8px 12px;
+  }
+
+  // ── Section header caps ────────────────────────────────────────────────
+  // A tinted bar with a top divider so each section start reads at a glance.
+  // Title is muted STRUCTURE, never content, reserving full contrast for the
+  // values.
   .nb-shell-panel__header {
     background: var(--nb-c-layer-2);
     border-top: 1px solid var(--nb-c-layer-3);
@@ -31,11 +67,44 @@
     color: var(--nb-c-text-muted);
   }
 
-  // Two-column rows: label left (quiet), control right, so every value shares
-  // one left edge you scan straight down and each field is half as tall. Only
-  // fields that HAVE a label get the two-column grid; a label-less input (e.g.
-  // a bare list of text inputs) stays full width instead of gaining a phantom
-  // empty label column.
+  // ── Active-panel affordance ────────────────────────────────────────────
+  // Tint the top and bottom edges of the panel under the pointer (or the one
+  // being edited) so it's clear which section is in play and where it starts
+  // and ends. Edges only — never the left, where the resize handle lives.
+  // Border-color only (paint, not layout).
+  .nb-shell-panel {
+    transition: border-color 0.12s ease;
+  }
+  .nb-shell-panel:hover,
+  .nb-shell-panel:focus-within {
+    --nb-inspector-hl: color-mix(
+      in srgb,
+      var(--nb-c-primary) 60%,
+      var(--nb-c-border)
+    );
+    border-top-color: var(--nb-inspector-hl);
+    border-bottom-color: var(--nb-inspector-hl);
+  }
+
+  // ── Sliders stack ──────────────────────────────────────────────────────
+  // A slider needs width for a usable track, which a two-column row can't give
+  // in a narrow inspector — the readout eats the value column and the track
+  // collapses to a sliver. So any field containing a slider stacks: label on
+  // its own line, full-width track + right-aligned readout below. It still
+  // shares the right-edge spine, and it happens automatically — no per-row
+  // markup. (This is a layout decision keyed on the control, not a per-field
+  // coercion.)
+  .nb-field:has(.nb-slider) {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 4px;
+  }
+
+  // ── Legacy in-place conversion (no NbField wrapper) ────────────────────
+  // A bare labeled field dropped straight into .nb-inspector is still coerced
+  // into the two-column shape. Scoped to fields that HAVE a label so a
+  // label-less input keeps full width. NbField-wrapped fields have no inner
+  // label, so these never fire for them.
+  --nb-inspector-label-width: 96px;
   .nb-text-input:has(> .nb-label),
   .nb-select:has(> .nb-label) {
     display: grid;
@@ -44,7 +113,6 @@
     column-gap: 10px;
     row-gap: 0;
   }
-  // A multiline field keeps its tall box, so top-align its label.
   .nb-text-input--multiline {
     align-items: start;
   }
@@ -56,10 +124,6 @@
     text-transform: none;
     letter-spacing: 0;
   }
-
-  // Sliders take the same two-column shape. The default variant's field-box is
-  // display:contents, so override it to a block to make it the value cell, and
-  // let the track shrink into the narrower column beside its readout.
   .nb-slider:has(> .nb-slider__label) {
     display: grid;
     grid-template-columns: var(--nb-inspector-label-width) minmax(0, 1fr);

@@ -84,6 +84,8 @@ export type {
 } from './components/Charts/InterpolationChart.d'
 export { default as NbLineChart } from './components/Charts/LineChart.vue'
 export { default as NbLabel } from './components/Label.vue'
+export { default as NbField } from './components/Field.vue'
+export type { IFieldProps } from './components/Field.d'
 export { default as NbMenu } from './components/Menu.vue'
 export { default as NbMenuBar } from './components/MenuBar.vue'
 export { default as NbMenuBarItem } from './components/MenuBarItem.vue'
