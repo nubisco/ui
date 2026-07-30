@@ -35,3 +35,6 @@ yarn-debug.log*
 yarn-error.log*
 
 .claude/
+
+# Written by scripts/verify-consumer-types.mjs, removed on exit
+.consumer-types.tsconfig.json
