@@ -1,3 +1,10 @@
+## [1.53.1](https://github.com/nubisco/ui/compare/v1.53.0...v1.53.1) (2026-07-30)
+
+
+### Bug Fixes
+
+* **types:** ship the hand-written declaration modules ([d5b72ad](https://github.com/nubisco/ui/commit/d5b72ad12840ec3646dc7834afb0c8e0dbeb588a))
+
 # [1.53.0](https://github.com/nubisco/ui/compare/v1.52.0...v1.53.0) (2026-07-29)
 
 
