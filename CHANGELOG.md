@@ -1,3 +1,10 @@
+## [1.53.2](https://github.com/nubisco/ui/compare/v1.53.1...v1.53.2) (2026-08-02)
+
+
+### Bug Fixes
+
+* **treenode:** change direction of chevrons on folders ([67722a4](https://github.com/nubisco/ui/commit/67722a436fd5176e2c0d648f0a4f6650d3e6cf3b))
+
 ## [1.53.1](https://github.com/nubisco/ui/compare/v1.53.0...v1.53.1) (2026-07-30)
 
 
