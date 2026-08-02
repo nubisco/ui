@@ -353,11 +353,12 @@ function onKeydown(e: KeyboardEvent) {
 
   &__toggle-icon {
     color: var(--nb-c-text-muted);
-    transform: rotate(-90deg);
+    // caret-right glyph: collapsed points right (0deg), expanded points down (90deg).
+    transform: rotate(0deg);
     transition: transform 0.1s ease;
 
     &--expanded {
-      transform: rotate(0deg);
+      transform: rotate(90deg);
     }
   }
 
