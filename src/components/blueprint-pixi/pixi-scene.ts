@@ -28,6 +28,8 @@ import { levelToColorNumber } from './level-color'
 import type { BlueprintLiveData } from './live-data'
 
 const GRID_TILE = 24
+// `'grid'` variant: draw a heavier major line every N cells.
+const GRID_MAJOR_EVERY = 5
 const FLOW_SPEED = 0.45 // fraction of a wire traversed per second
 const FLOW_DOT_R = 2.5
 // A flow candidate only animates when its live signal exceeds this (linear
@@ -291,16 +293,27 @@ export class PixiScene {
   }
 
   private makeGridTexture(bg: TBlueprintBackground): PIXI.Texture {
-    // A transparent full-tile rect fixes the texture size to GRID_TILE; the
-    // pattern (dot, or top+left edge lines) is drawn over it so tiling yields
-    // an evenly spaced grid.
+    // A transparent full-tile rect fixes the texture size; the pattern (dot, or
+    // top+left edge lines) is drawn over it so tiling yields an evenly spaced
+    // grid. `'grid'` uses a larger tile (GRID_MAJOR_EVERY cells) so a heavier
+    // major line lands at the tile edge on top of the minor cell lines.
     const g = new this.Pixi.Graphics()
-    g.rect(0, 0, GRID_TILE, GRID_TILE).fill({ color: 0xffffff, alpha: 0 })
+    const tile = bg === 'grid' ? GRID_TILE * GRID_MAJOR_EVERY : GRID_TILE
+    g.rect(0, 0, tile, tile).fill({ color: 0xffffff, alpha: 0 })
     if (bg === 'dots') {
       g.circle(1, 1, 1).fill({ color: this.gridColor, alpha: 1 })
     } else if (bg === 'lines') {
-      g.rect(0, 0, GRID_TILE, 1).fill({ color: this.gridColor, alpha: 1 })
-      g.rect(0, 0, 1, GRID_TILE).fill({ color: this.gridColor, alpha: 1 })
+      g.rect(0, 0, tile, 1).fill({ color: this.gridColor, alpha: 1 })
+      g.rect(0, 0, 1, tile).fill({ color: this.gridColor, alpha: 1 })
+    } else if (bg === 'grid') {
+      // Minor cell lines every GRID_TILE, drawn dim; then the major line at the
+      // tile edge (repeats every GRID_MAJOR_EVERY cells) at full strength.
+      for (let p = 0; p < tile; p += GRID_TILE) {
+        g.rect(0, p, tile, 1).fill({ color: this.gridColor, alpha: 0.5 })
+        g.rect(p, 0, 1, tile).fill({ color: this.gridColor, alpha: 0.5 })
+      }
+      g.rect(0, 0, tile, 1).fill({ color: this.gridColor, alpha: 1 })
+      g.rect(0, 0, 1, tile).fill({ color: this.gridColor, alpha: 1 })
     }
     const texture = this.app.renderer.generateTexture(g)
     // Linear sampling softens the pattern when it is minified (zoomed out),

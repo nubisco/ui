@@ -137,9 +137,14 @@ export interface IBlueprintCardPaint {
  *  when a WebGL-capable client renderer is available, else `'dom'`. */
 export type TBlueprintRenderer = 'auto' | 'dom' | 'pixi'
 
-/** Built-in canvas background pattern. Color and spacing are themable via
- *  `--nb-blueprint-grid-color` and `--nb-blueprint-grid-gap`. */
-export type TBlueprintBackground = 'dots' | 'lines' | 'none'
+/** Built-in canvas background pattern. `'grid'` is a ruled grid with heavier
+ *  major lines every few cells; `'lines'` a plain ruled grid; `'dots'` a dot
+ *  grid; `'none'` an empty canvas. Color and spacing are themable via
+ *  `--nb-blueprint-grid-color` and `--nb-blueprint-grid-gap`. For full control
+ *  (custom colours, gap, thickness, or an arbitrary layer) drop
+ *  `NbBlueprintBackground` — or any element — into NbBlueprint's `#background`
+ *  slot instead. */
+export type TBlueprintBackground = 'grid' | 'dots' | 'lines' | 'none'
 
 export interface IBlueprintProps {
   /**
@@ -221,8 +226,10 @@ export interface IBlueprintProps {
   renderer?: TBlueprintRenderer
   /**
    * Canvas background pattern. `'dots'` (default) is the standard dot grid,
-   * `'lines'` a ruled grid, `'none'` an empty canvas. Color and spacing are
-   * themable via `--nb-blueprint-grid-color` and `--nb-blueprint-grid-gap`.
+   * `'lines'` a ruled grid, `'grid'` a ruled grid with heavier major lines
+   * every few cells, `'none'` an empty canvas. Color and spacing are themable
+   * via `--nb-blueprint-grid-color` and `--nb-blueprint-grid-gap`. Ignored when
+   * the `#background` slot is used (the slot takes over the backdrop).
    */
   background?: TBlueprintBackground
   /**
