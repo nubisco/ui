@@ -1,3 +1,10 @@
+# [1.54.0](https://github.com/nubisco/ui/compare/v1.53.2...v1.54.0) (2026-08-05)
+
+
+### Features
+
+* **blueprint:** add NbBlueprintBackground component and #background slot ([40a3c2e](https://github.com/nubisco/ui/commit/40a3c2e77d8a84cb85ede42798b4668bb2f0f565)), closes [#background](https://github.com/nubisco/ui/issues/background) [#background](https://github.com/nubisco/ui/issues/background)
+
 ## [1.53.2](https://github.com/nubisco/ui/compare/v1.53.1...v1.53.2) (2026-08-02)
 
 
