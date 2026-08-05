@@ -185,6 +185,10 @@ export default withMermaid(
                       },
                       { text: 'Card', link: '/ui/components/blueprint/card' },
                       {
+                        text: 'Background',
+                        link: '/ui/components/blueprint/background',
+                      },
+                      {
                         text: 'Controls',
                         link: '/ui/components/blueprint/controls',
                       },

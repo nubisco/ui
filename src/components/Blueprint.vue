@@ -12,6 +12,18 @@
     <!-- Ambient gradient overlays -->
     <div class="nb-blueprint__ambient" />
 
+    <!-- Optional custom backdrop, drawn behind the scene. When provided it
+         replaces the built-in `background` pattern (which is suppressed below),
+         so nothing double-paints. NbBlueprintBackground reads the camera from
+         the controller and pans/zooms itself. -->
+    <div
+      v-if="$slots.background"
+      class="nb-blueprint__background-slot"
+      aria-hidden="true"
+    >
+      <slot name="background" />
+    </div>
+
     <!-- Scene renderer. The DOM/SVG renderer draws the camera-transformed
          grid, wires, and cards today; a PixiJS (WebGL) renderer slots in as
          a sibling branch (chosen by `resolvedRenderer`) in a later phase.
@@ -32,7 +44,7 @@
       :level-coloring="animateConnections === 'levels'"
       :activity-style="activityStyle ?? 'flow'"
       :animate-connections="animateConnections"
-      :background="background"
+      :background="builtinBackground"
       @wire-mousedown="onWireMouseDown"
       @wire-contextmenu="onWireContextMenu"
       @wire-mousemove="onWireMouseMove"
@@ -59,7 +71,7 @@
       :level-coloring="animateConnections === 'levels'"
       :activity-style="activityStyle ?? 'flow'"
       :animate-connections="animateConnections"
-      :background="background"
+      :background="builtinBackground"
       :live-data="liveData"
       @wire-mousedown="onWireMouseDown"
       @wire-contextmenu="onWireContextMenu"
@@ -148,6 +160,7 @@ import {
   onBeforeUnmount,
   nextTick,
   provide,
+  useSlots,
 } from 'vue'
 import {
   NB_BLUEPRINT_CONTEXT,
@@ -182,6 +195,14 @@ const props = withDefaults(defineProps<IBlueprintProps>(), {
   renderer: 'auto',
   background: 'dots',
 })
+
+const slots = useSlots()
+
+// The renderer's built-in background is suppressed when the host supplies a
+// `#background` slot, so the custom backdrop and the pattern never double-paint.
+const builtinBackground = computed(() =>
+  slots.background ? 'none' : props.background,
+)
 
 // Which renderer actually draws the scene. The DOM renderer is always
 // available and is the synchronous default; the PixiJS (WebGL) renderer is
@@ -2142,6 +2163,16 @@ defineExpose({
   :deep(> *) {
     pointer-events: auto;
   }
+}
+
+// Host-supplied backdrop layer: sits behind the scene (below the renderer in
+// source order), non-interactive. The slotted background positions itself
+// absolutely and overflows this box; the container's overflow:hidden clips it.
+.nb-blueprint__background-slot {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .nb-blueprint__ambient {

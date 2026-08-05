@@ -391,10 +391,58 @@ If `paint` (and the loose fallbacks) are omitted, far/gesture cards render as a 
 
 ## Background
 
-The canvas pattern is set with the `background` prop: `'dots'` (default), `'lines'`, or `'none'`. Color and spacing are themable with CSS variables, so changing the look is a one-liner:
+The canvas pattern is set with the `background` prop: `'dots'` (default), `'lines'`, `'grid'` (a ruled grid with heavier major lines every few cells), or `'none'`. Color and spacing are themable with CSS variables, so changing the look is a one-liner:
+
+<preview>
+  <div style="height: 300px; border: 1px solid var(--nb-c-border, #e8e8f0); border-radius: 8px; overflow: hidden; display: flex;">
+    <NbBlueprint :connections="demoConnections" :background="bgBackground">
+      <template v-if="bgCustom" #background>
+        <NbBlueprintBackground
+          variant="grid"
+          color="rgba(56, 189, 248, 0.35)"
+          :gap="28"
+          secondary-color="rgba(56, 189, 248, 0.6)"
+          :secondary-gap="140"
+        />
+      </template>
+      <div
+        v-for="card in demoCards"
+        :key="card.id"
+        :style="{ position: 'absolute', transform: `translate(${card.x}px, ${card.y}px)` }"
+      >
+        <NbBlueprintCard
+          :id="card.id"
+          :title="card.title"
+          :category="card.category"
+          :color="card.color"
+          :ports="card.ports"
+          :connected-ports="connectedPortsFor(card.id)"
+          collapsed
+        />
+      </div>
+    </NbBlueprint>
+  </div>
+  <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+    <span style="font-size: 0.85em; color: var(--nb-c-text-muted, #8a8a9a);">background prop:</span>
+    <NbButton
+      v-for="v in bgVariants"
+      :key="v"
+      size="sm"
+      :variant="!bgCustom && bgBackground === v ? 'primary' : 'ghost'"
+      @click="bgCustom = false; bgBackground = v"
+    >{{ v }}</NbButton>
+    <NbButton
+      size="sm"
+      :variant="bgCustom ? 'primary' : 'ghost'"
+      @click="bgCustom = true"
+    >#background slot</NbButton>
+  </div>
+</preview>
+
+Scroll to pan and pinch (or Ctrl + scroll) to zoom — the background tracks the camera with the scene. The last button swaps the built-in pattern for a custom `NbBlueprintBackground` in the `#background` slot, which suppresses the prop automatically.
 
 ```vue
-<NbBlueprint :cards="cards" background="lines" />
+<NbBlueprint :cards="cards" background="grid" />
 ```
 
 ```css
@@ -404,7 +452,9 @@ The canvas pattern is set with the `background` prop: `'dots'` (default), `'line
 }
 ```
 
-The setting applies to both renderers (the DOM renderer draws a CSS pattern; the PixiJS renderer draws a tiled texture).
+The prop applies to both renderers (the DOM renderer draws a CSS pattern; the PixiJS renderer draws a tiled texture), and is the most efficient option.
+
+For full control — per-instance colours, gap, thickness, a custom secondary grid, or an entirely custom backdrop — drop [`NbBlueprintBackground`](/ui/components/blueprint/background) (or any element) into the `#background` slot instead. See [Background](/ui/components/blueprint/background).
 
 ## Theming
 
@@ -425,7 +475,7 @@ The canvas background uses `--nb-c-layer-0`. Ambient gradients are configurable 
 | `wheelMode`          | `'auto' \| 'zoom' \| 'pan'`                        | `'auto'`  | What plain wheel events do. Pinch always zooms regardless. See [Panning and zooming](#panning-and-zooming).                                                                                                                                                                         |
 | `editable`           | `boolean`                                          | `false`   | Advisory edit-mode flag, surfaced through [`useBlueprint()`](#the-useblueprint-composable) as `isEditMode` so optional chrome (a controls toolbar, etc.) can show itself only while editing. Does not change pan/zoom/selection, which are always interactive.                      |
 | `renderer`           | `'auto' \| 'dom' \| 'pixi'`                        | `'auto'`  | Rendering backend. `'auto'` uses the PixiJS (WebGL) renderer when available, else the DOM/SVG renderer; `'dom'` forces DOM/SVG; `'pixi'` forces WebGL (falls back to DOM with a warning when unavailable). The public API is identical across renderers. See [Renderer](#renderer). |
-| `background`         | `'dots' \| 'lines' \| 'none'`                      | `'dots'`  | Canvas background pattern. Themable via `--nb-blueprint-grid-color` and `--nb-blueprint-grid-gap`. See [Background](#background).                                                                                                                                                   |
+| `background`         | `'grid' \| 'dots' \| 'lines' \| 'none'`            | `'dots'`  | Canvas background pattern. Themable via `--nb-blueprint-grid-color` and `--nb-blueprint-grid-gap`. Ignored when the `#background` slot is used. See [Background](#background).                                                                                                      |
 
 ## Events
 
@@ -443,12 +493,13 @@ The canvas background uses `--nb-c-layer-0`. Ambient gradients are configurable 
 
 ## Slots
 
-| Slot        | Scope props                         | Description                                                                                                                                                                                                                    |
-| ----------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `default`   | (none)                              | Card layer (non-windowed). Place `NbBlueprintCard` instances here, positioned with `transform: translate(x, y)` on a wrapper. Ignored when `cards` is set.                                                                     |
-| `card`      | `{ card: IBlueprintCard }`          | Per-card template for windowed rendering (used when the `cards` prop is set). Blueprint owns the position wrapper; render one `NbBlueprintCard` from `card`. See [Windowed rendering](#windowed-rendering-large-graphs).       |
-| `wire-menu` | `{ connection, close, disconnect }` | Replaces the default wire context menu (right-click on a wire). Default content is a single Disconnect button.                                                                                                                 |
-| `chrome`    | (none)                              | Viewport-space overlay layer, rendered in both the windowed and legacy APIs. Place `NbBlueprintControls`, `NbBlueprintMinimap`, or any host overlay here; children are positioned in screen space and opt into pointer events. |
+| Slot         | Scope props                         | Description                                                                                                                                                                                                                                   |
+| ------------ | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `default`    | (none)                              | Card layer (non-windowed). Place `NbBlueprintCard` instances here, positioned with `transform: translate(x, y)` on a wrapper. Ignored when `cards` is set.                                                                                    |
+| `card`       | `{ card: IBlueprintCard }`          | Per-card template for windowed rendering (used when the `cards` prop is set). Blueprint owns the position wrapper; render one `NbBlueprintCard` from `card`. See [Windowed rendering](#windowed-rendering-large-graphs).                      |
+| `wire-menu`  | `{ connection, close, disconnect }` | Replaces the default wire context menu (right-click on a wire). Default content is a single Disconnect button.                                                                                                                                |
+| `chrome`     | (none)                              | Viewport-space overlay layer, rendered in both the windowed and legacy APIs. Place `NbBlueprintControls`, `NbBlueprintMinimap`, or any host overlay here; children are positioned in screen space and opt into pointer events.                |
+| `background` | (none)                              | Backdrop layer, drawn behind the scene. Place [`NbBlueprintBackground`](/ui/components/blueprint/background) or any element here; when set it replaces the built-in `background` prop. See [Background](/ui/components/blueprint/background). |
 
 ## Exposed instance
 
@@ -652,6 +703,12 @@ const initialConnections = [
 ]
 
 const demoBlueprint = ref<any>(null)
+
+// Background section demo: switch the built-in pattern, or drop a custom
+// NbBlueprintBackground into the #background slot.
+const bgVariants = ['dots', 'lines', 'grid', 'none'] as const
+const bgBackground = ref<(typeof bgVariants)[number]>('grid')
+const bgCustom = ref(false)
 
 const demoCards = ref<IDemoCard[]>(
   initialDemoCards.map((c) => ({ ...c, ports: c.ports.map((p) => ({ ...p })) })),

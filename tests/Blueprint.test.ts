@@ -3,6 +3,7 @@ import { h } from 'vue'
 import { mount } from '@vue/test-utils'
 import Blueprint from '../src/components/Blueprint.vue'
 import BlueprintCard from '../src/components/BlueprintCard.vue'
+import BlueprintDomRenderer from '../src/components/BlueprintDomRenderer.vue'
 
 // Renders a card via the windowed `#card` scoped slot. jsdom has no
 // layout, so getBoundingClientRect (and thus the seeded viewport size) is
@@ -810,5 +811,39 @@ describe('Blueprint', () => {
     expect([...selected].sort()).toEqual(['far', 'near'])
 
     w.unmount()
+  })
+
+  describe('#background slot', () => {
+    const rendererBackground = (w: ReturnType<typeof mount>) =>
+      w.findComponent(BlueprintDomRenderer).props('background')
+
+    it('passes the background prop to the renderer when no slot is given', () => {
+      const w = mount(Blueprint, { props: { background: 'grid' } })
+      expect(rendererBackground(w)).toBe('grid')
+    })
+
+    it('renders the #background slot behind the scene', () => {
+      const w = mount(Blueprint, {
+        slots: { background: () => h('div', { class: 'custom-bg' }, 'bg') },
+      })
+      const layer = w.find('.nb-blueprint__background-slot')
+      expect(layer.exists()).toBe(true)
+      expect(layer.find('.custom-bg').exists()).toBe(true)
+    })
+
+    it('suppresses the built-in background while the slot is used', () => {
+      const w = mount(Blueprint, {
+        props: { background: 'grid' },
+        slots: { background: () => h('div', { class: 'custom-bg' }) },
+      })
+      // The renderer must draw nothing so the slot and the pattern do not
+      // double-paint, even though the prop asked for 'grid'.
+      expect(rendererBackground(w)).toBe('none')
+    })
+
+    it('omits the slot layer entirely when no #background slot is provided', () => {
+      const w = mount(Blueprint)
+      expect(w.find('.nb-blueprint__background-slot').exists()).toBe(false)
+    })
   })
 })
