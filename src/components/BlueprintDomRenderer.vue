@@ -160,6 +160,30 @@ const canvasStyle = computed(() => ({
       linear-gradient(to right, var(--_grid-color) 1px, transparent 1px),
       linear-gradient(to bottom, var(--_grid-color) 1px, transparent 1px);
   }
+
+  // Ruled grid with heavier major lines every few cells: minor 1px cell lines at
+  // the base gap, plus 2px major lines at a larger stride (default gap x 5).
+  &--grid {
+    --_grid-major-color: var(
+      --nb-blueprint-grid-secondary-color,
+      var(--_grid-color)
+    );
+    --_grid-major-gap: var(
+      --nb-blueprint-grid-secondary-gap,
+      calc(var(--nb-blueprint-grid-gap) * 5)
+    );
+
+    background-image:
+      linear-gradient(to right, var(--_grid-color) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--_grid-color) 1px, transparent 1px),
+      linear-gradient(to right, var(--_grid-major-color) 2px, transparent 2px),
+      linear-gradient(to bottom, var(--_grid-major-color) 2px, transparent 2px);
+    background-size:
+      var(--nb-blueprint-grid-gap) var(--nb-blueprint-grid-gap),
+      var(--nb-blueprint-grid-gap) var(--nb-blueprint-grid-gap),
+      var(--_grid-major-gap) var(--_grid-major-gap),
+      var(--_grid-major-gap) var(--_grid-major-gap);
+  }
 }
 
 .nb-blueprint__canvas {

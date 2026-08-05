@@ -56,6 +56,7 @@ import NbUserMenu from './UserMenu.vue'
 import NbBottomPanel from './BottomPanel.vue'
 import NbShellPanel from './ShellPanel.vue'
 import NbBlueprint from './Blueprint.vue'
+import NbBlueprintBackground from './BlueprintBackground.vue'
 import NbBlueprintCard from './BlueprintCard.vue'
 import NbBlueprintControls from './BlueprintControls.vue'
 import NbBlueprintMinimap from './BlueprintMinimap.vue'
@@ -118,6 +119,7 @@ const components = {
   NbBottomPanel,
   NbShellPanel,
   NbBlueprint,
+  NbBlueprintBackground,
   NbBlueprintCard,
   NbBlueprintControls,
   NbBlueprintMinimap,

@@ -187,6 +187,11 @@ export type {
   IBlueprintCardProps,
   IBlueprintCardParameter,
 } from './components/BlueprintCard.types'
+export { default as NbBlueprintBackground } from './components/BlueprintBackground.vue'
+export type {
+  IBlueprintBackgroundProps,
+  TBlueprintBackgroundVariant,
+} from './components/BlueprintBackground.d'
 
 // Directives
 export { default as nbTooltipDirective } from './directives/ToolTip.directive'
