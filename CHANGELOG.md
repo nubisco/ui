@@ -1,3 +1,10 @@
+# [1.56.0](https://github.com/nubisco/ui/compare/v1.55.0...v1.56.0) (2026-08-09)
+
+
+### Features
+
+* **types:** accept string literals on every template-facing prop ([3227f93](https://github.com/nubisco/ui/commit/3227f933a7d9f30885cf4a9253ab30721c134988))
+
 # [1.55.0](https://github.com/nubisco/ui/compare/v1.54.0...v1.55.0) (2026-08-09)
 
 
