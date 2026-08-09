@@ -12,8 +12,8 @@ enum EAiLabelSize {
 // #endregion EAiLabelSize
 
 interface IAiLabelProps {
-  variant?: EAiLabelVariant
-  size?: EAiLabelSize
+  variant?: `${EAiLabelVariant}`
+  size?: `${EAiLabelSize}`
 }
 
 export { EAiLabelVariant, EAiLabelSize, IAiLabelProps }

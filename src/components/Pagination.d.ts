@@ -16,7 +16,7 @@ export interface IPaginationProps {
   /** Selectable page sizes. Default `[10, 20, 30, 40, 50]`. */
   pageSizeOptions?: number[]
   /** Control density. Matches the shared `ESizeShort` scale. Default `md`. */
-  size?: ESizeShort | 'sm' | 'md' | 'lg'
+  size?: `${ESizeShort}`
   /** Disables all controls. */
   disabled?: boolean
   /** Label before the page-size select. Default `Items per page:`. */

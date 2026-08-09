@@ -16,7 +16,7 @@ enum EButtonType {
  * rejected four sizes the component has always styled. The raw literals sit
  * alongside the enum so templates can write `size="xs"` without importing it.
  */
-type TButtonSize = ESize | 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
+type TButtonSize = `${ESize}`
 
 interface IButtonProps {
   variant?: string
@@ -27,7 +27,7 @@ interface IButtonProps {
   /** Icon name passed directly to NbIcon. Rendered in the trailing padding area. Hidden while loading. */
   icon?: string
   /** Native button type. Ignored when `href` is provided. */
-  type?: EButtonType
+  type?: `${EButtonType}`
   /** When provided the component renders as an `<a>` element instead of `<button>`. */
   href?: string
   /** Forwarded to the `<a>` element. Only used when `href` is set. */

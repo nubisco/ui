@@ -13,8 +13,8 @@ enum ESwitchVariant {
 
 interface ISwitchProps extends IHumanInputComponent, IWithLabel {
   modelValue?: boolean
-  variant?: ESwitchVariant
-  size?: ESwitchSize
+  variant?: `${ESwitchVariant}`
+  size?: `${ESwitchSize}`
 }
 
 export { ESwitchSize, ESwitchVariant, ISwitchProps }

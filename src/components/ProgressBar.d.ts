@@ -19,9 +19,9 @@ interface IProgressBarProps extends IDefaultProps, IWithLabel {
   /** Contextual hint below the bar. Rendered in the error style when `status` is `error`. */
   helper?: string
   /** Track thickness: `md` is 8px, `sm` is 4px. */
-  size?: EProgressBarSize
+  size?: `${EProgressBarSize}`
   /** Semantic state. `finished` and `error` fill the bar and recolor it. */
-  status?: EProgressBarStatus
+  status?: `${EProgressBarStatus}`
 }
 
 export { EProgressBarSize, EProgressBarStatus, IProgressBarProps }

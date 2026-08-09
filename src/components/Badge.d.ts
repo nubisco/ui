@@ -15,8 +15,8 @@ enum EBadgeSize {
 }
 
 interface IBadgeProps {
-  variant?: EBadgeVariant
-  size?: EBadgeSize
+  variant?: `${EBadgeVariant}`
+  size?: `${EBadgeSize}`
   dot?: boolean
 }
 

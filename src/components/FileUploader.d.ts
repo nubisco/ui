@@ -9,7 +9,7 @@ enum EFileUploaderStatus {
 
 interface IFileItem {
   file: File
-  status: EFileUploaderStatus
+  status: `${EFileUploaderStatus}`
   error?: string
 }
 
@@ -17,7 +17,7 @@ interface IFileUploaderProps extends IDefaultProps {
   heading?: string
   description?: string
   buttonLabel?: string
-  variant?: EVariant
+  variant?: `${EVariant}`
   accept?: string
   multiple?: boolean
   maxSize?: number

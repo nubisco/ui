@@ -3,7 +3,7 @@ import { ESizeShort } from '@/types/Size.d'
 interface IModalProps {
   open?: boolean
   title?: string
-  size?: ESizeShort
+  size?: `${ESizeShort}`
   closeOnOverlay?: boolean
 }
 
