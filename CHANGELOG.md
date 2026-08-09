@@ -1,3 +1,10 @@
+# [1.55.0](https://github.com/nubisco/ui/compare/v1.54.0...v1.55.0) (2026-08-09)
+
+
+### Features
+
+* **button:** accept the full xxs-xxl size scale ([ae52210](https://github.com/nubisco/ui/commit/ae522104a705f4a3e94a7fc5bba50eab156a46d0))
+
 # [1.54.0](https://github.com/nubisco/ui/compare/v1.53.2...v1.54.0) (2026-08-05)
 
 
