@@ -43,11 +43,14 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  // `${E}` rather than the bare enum: a template writes size="sm", which is
+  // the string literal, and a literal is not assignable to a string enum even
+  // though the values match. The enum members stay assignable either way.
   size: {
-    type: String as PropType<ESwitchSize>,
+    type: String as PropType<`${ESwitchSize}`>,
     default: ESwitchSize.Medium,
-    validator: (value: ESwitchSize) =>
-      Object.values(ESwitchSize).includes(value),
+    validator: (value: `${ESwitchSize}`) =>
+      Object.values(ESwitchSize).includes(value as ESwitchSize),
   },
   verbose: Boolean,
   name: {
@@ -56,10 +59,10 @@ const props = defineProps({
   },
   disabled: Boolean,
   variant: {
-    type: String as PropType<ESwitchVariant>,
+    type: String as PropType<`${ESwitchVariant}`>,
     default: ESwitchVariant.Primary,
-    validator: (value: ESwitchVariant) =>
-      Object.values(ESwitchVariant).includes(value),
+    validator: (value: `${ESwitchVariant}`) =>
+      Object.values(ESwitchVariant).includes(value as ESwitchVariant),
   },
 })
 

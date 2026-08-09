@@ -8,7 +8,7 @@ interface ILabelProps {
   required?: boolean
   disabled?: boolean
   // Visual size of the label text
-  size?: ELabelSize
+  size?: `${ELabelSize}`
 }
 
 export { ELabelSize, ILabelProps }
