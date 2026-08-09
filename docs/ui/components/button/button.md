@@ -257,7 +257,7 @@ The button uses CSS custom properties from the design system:
 | ---------- | ------------------------------------------------------------------------------------- | ----------- | -------------------------------------------------------------------- |
 | `variant`  | `'primary' \| 'secondary' \| 'ghost' \| 'danger' \| 'success' \| 'warning' \| 'info'` | `'primary'` | Color and style variant                                              |
 | `outlined` | `boolean`                                                                             | `false`     | Transparent bg with colored border/text                              |
-| `size`     | `'sm' \| 'md' \| 'lg'`                                                                | `'md'`      | Button size                                                          |
+| `size`     | `'xxs' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| 'xxl'`                              | `'md'`      | Button size. The full scale, all seven backed by CSS (since 1.55.0)  |
 | `disabled` | `boolean`                                                                             | `false`     | Disables the button                                                  |
 | `loading`  | `boolean`                                                                             | `false`     | Shows a spinner and prevents interaction                             |
 | `type`     | `'button' \| 'submit' \| 'reset'`                                                     | `'button'`  | Native `<button>` type. Ignored when `href` is set                   |
