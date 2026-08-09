@@ -81,7 +81,7 @@ export interface IDataTableProps<T = Record<string, unknown>> {
   /** Row identity. See {@link TRowKey}. */
   rowKey: TRowKey<T>
   /** Density. Matches the shared `ESizeShort` scale. Default `md`. */
-  size?: ESizeShort | 'sm' | 'md' | 'lg'
+  size?: `${ESizeShort}`
   /** Controlled sort state, reflected in header UI and `aria-sort`. */
   sortState?: IDataTableSortState | null
   /** Row selection mode. Default `none`. */

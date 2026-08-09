@@ -47,10 +47,10 @@ enum EIconSize {
 interface IIconProps {
   name: string
   size?: ESize | string | number
-  animation?: EAnimation | null
-  animationMode?: EAnimationMode
+  animation?: `${EAnimation}` | null
+  animationMode?: `${EAnimationMode}`
   color?: string
-  weight?: EWeight
+  weight?: `${EWeight}`
   title?: string
   clickable?: boolean
   hoverable?: boolean

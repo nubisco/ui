@@ -11,7 +11,7 @@ enum ECheckboxGroupDirection {
 
 interface ICheckboxGroupProps
   extends IHumanInputComponent, IWithLabel, IWithMessages {
-  direction?: ECheckboxGroupDirection
+  direction?: `${ECheckboxGroupDirection}`
 }
 
 export { ECheckboxGroupDirection, ICheckboxGroupProps }

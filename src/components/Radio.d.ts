@@ -20,7 +20,7 @@ interface IRadioProps extends IHumanInputComponent, IWithLabel, IWithMessages {
   options: IRadioOption[]
   /** Required for native radio-button grouping via the HTML `name` attribute. */
   name: string
-  direction?: ERadioDirection
+  direction?: `${ERadioDirection}`
   /** Makes options visible but non-interactive. */
   readonly?: boolean
 }
