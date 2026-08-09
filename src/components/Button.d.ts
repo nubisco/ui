@@ -1,4 +1,4 @@
-import { ESizeShort } from '@/types/Size.d'
+import { ESize } from '@/types/Size.d'
 
 enum EButtonType {
   Button = 'button',
@@ -6,10 +6,22 @@ enum EButtonType {
   Reset = 'reset',
 }
 
+/**
+ * The full size scale NbButton implements. Every token here is backed by a
+ * real `.nb-button--<size>` rule (height, inline padding, font size, icon
+ * size) plus a matching icon-only width, so all seven render correctly.
+ *
+ * Deliberately NOT `ESizeShort` (`sm | md | lg`): that is the narrower scale
+ * used by Modal, DataTable and Pagination, and typing the button with it
+ * rejected four sizes the component has always styled. The raw literals sit
+ * alongside the enum so templates can write `size="xs"` without importing it.
+ */
+type TButtonSize = ESize | 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
+
 interface IButtonProps {
   variant?: string
   outlined?: boolean
-  size?: ESizeShort
+  size?: TButtonSize
   disabled?: boolean
   loading?: boolean
   /** Icon name passed directly to NbIcon. Rendered in the trailing padding area. Hidden while loading. */
@@ -32,3 +44,4 @@ interface IButtonProps {
 }
 
 export { EButtonType, IButtonProps }
+export type { TButtonSize }

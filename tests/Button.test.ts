@@ -63,6 +63,16 @@ describe('Button', () => {
     expect(wrapper.classes()).toContain('nb-button--md')
   })
 
+  // The prop was typed ESizeShort (sm|md|lg) while the SCSS implemented all
+  // seven, so four valid sizes were rejected by the compiler. Pin the full
+  // scale here so the type and the stylesheet cannot drift apart again.
+  it.each(['xxs', 'xs', 'sm', 'md', 'lg', 'xl', 'xxl'])(
+    'accepts the %s size and emits its class',
+    (size) => {
+      expect(createWrapper({ size }).classes()).toContain(`nb-button--${size}`)
+    },
+  )
+
   it('applies outlined class when outlined prop is true', () => {
     const wrapper = createWrapper({ outlined: true })
     expect(wrapper.classes()).toContain('nb-button--outlined')
