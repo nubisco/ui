@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 import { computed, useSlots, type Component } from 'vue'
-import { ESizeShort } from '@/types/Size.d'
+import { ESize } from '@/types/Size.d'
 import { EButtonType, IButtonProps } from './Button.d'
 import NbIcon from './Icon.vue'
 import { useRouterLink } from '@/composables/useRouterLink.composable'
@@ -43,7 +43,7 @@ import { useRouterLink } from '@/composables/useRouterLink.composable'
 const props = withDefaults(defineProps<IButtonProps>(), {
   variant: undefined,
   outlined: false,
-  size: ESizeShort.Medium,
+  size: ESize.Medium,
   disabled: false,
   loading: false,
   icon: undefined,
