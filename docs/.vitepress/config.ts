@@ -134,6 +134,7 @@ export default withMermaid(
             items: [
               { text: 'Quickstart', link: '/quickstart' },
               { text: 'Showcase', link: '/showcase' },
+              { text: 'Upgrading', link: '/upgrading' },
             ],
           },
           {
