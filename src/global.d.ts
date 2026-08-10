@@ -66,7 +66,7 @@ import TreeNode from './components/TreeNode.vue'
 import UserMenu from './components/UserMenu.vue'
 
 declare module 'vue' {
-  interface IGlobalComponents {
+  interface GlobalComponents {
     NbAiLabel: typeof AiLabel
     NbBadge: typeof Badge
     NbBarChart: typeof BarChart

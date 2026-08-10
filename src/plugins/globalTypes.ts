@@ -49,12 +49,17 @@ export function globalTypes(basePath: string): Plugin {
       .map((f) => `    Nb${f.name}: typeof ${f.name}`)
       .join('\n')
 
+    // The interface MUST be named `GlobalComponents`: that is the exact name
+    // Vue's template type-checker reads when resolving a tag that was never
+    // imported (i.e. everything registered by our plugin). Any other name is
+    // a valid module augmentation that nothing ever looks at, so consumers
+    // keep getting `any` for every <Nb*> tag and no prop is ever checked.
     const content = `// AUTO-GENERATED: do not edit by hand
 // Re-run the build to update this file when components change
 ${imports}
 
 declare module 'vue' {
-  interface IGlobalComponents {
+  interface GlobalComponents {
 ${entries}
   }
 }
