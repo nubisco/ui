@@ -65,6 +65,20 @@ export default defineConfig(
     },
   },
   {
+    // src/global.d.ts augments `vue` with `interface GlobalComponents`. That
+    // name is Vue's, not ours: its template checker looks up that exact
+    // identifier to resolve tags that were never imported. Renaming it to fit
+    // our `I` prefix produces a valid augmentation of an interface nothing
+    // reads, which is how every <Nb*> tag silently stayed `any` for consumers
+    // from 1.53.1 through 1.56.0. The file is generated, so the rule would
+    // also be unfixable at the source. `scripts/verify-consumer-globals.mjs`
+    // fails the build if the name ever drifts again.
+    files: ['src/global.d.ts'],
+    rules: {
+      '@typescript-eslint/naming-convention': 'off',
+    },
+  },
+  {
     ignores: [
       'dist/',
       'docs/.vitepress/**',

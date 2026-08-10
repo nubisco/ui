@@ -1,5 +1,31 @@
 # Upgrading
 
+## To 1.56.1 from 1.53.1-1.56.0
+
+If you already upgraded to 1.53.1-1.56.0 and your type checker stayed green,
+it was not telling you the truth, and this release is when the errors actually
+arrive. Work through the 1.56.0 section below: it applies to you now.
+
+Those releases restored the type declarations, but only for types you `import`
+by name. Components registered globally by the plugin are never imported, so
+they resolve through a different path: Vue's template checker looks up the
+interface `GlobalComponents` in module `vue`, by that exact name.
+
+We emitted the augmentation as `IGlobalComponents`, to satisfy an internal
+lint rule requiring an `I` prefix on interfaces. That is a perfectly valid
+module augmentation of an interface nothing reads. The result was that every
+`<Nb*>` tag in every consumer template still resolved to `any`, and no prop on
+any globally-registered component was checked at all.
+
+So if you consume the components globally (`app.use(NubiscoUI)`) rather than
+importing them one by one, none of the prop checking described below was ever
+in effect for you. Expect the burst of errors on this upgrade instead.
+
+Nothing about the components changed, at runtime or in their API. This release
+only corrects the name of the emitted interface, and adds a build gate
+(`verify:consumer-globals`) that type-checks a consumer template against the
+built output so the name cannot drift again.
+
 ## To 1.56.0 from anything below 1.53.1
 
 If you are coming from **1.52.x or earlier**, upgrading will surface TypeScript
