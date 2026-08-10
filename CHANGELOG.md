@@ -1,3 +1,10 @@
+## [1.56.1](https://github.com/nubisco/ui/compare/v1.56.0...v1.56.1) (2026-08-10)
+
+
+### Bug Fixes
+
+* **types:** emit the global augmentation as GlobalComponents ([26fa757](https://github.com/nubisco/ui/commit/26fa7578a427797bae8b28d3302b5d01bf27dd77))
+
 # [1.56.0](https://github.com/nubisco/ui/compare/v1.55.0...v1.56.0) (2026-08-09)
 
 
