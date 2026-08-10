@@ -1,3 +1,10 @@
+# [1.57.0](https://github.com/nubisco/ui/compare/v1.56.1...v1.57.0) (2026-08-10)
+
+
+### Features
+
+* **message:** add a success variant ([6b6f78e](https://github.com/nubisco/ui/commit/6b6f78eb58c10d2d6ec21b0be130170e952205d9))
+
 ## [1.56.1](https://github.com/nubisco/ui/compare/v1.56.0...v1.56.1) (2026-08-10)
 
 
