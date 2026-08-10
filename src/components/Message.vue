@@ -32,6 +32,9 @@ const props = withDefaults(defineProps<IMessageProps>(), {
 const iconMap = {
   error: 'warning-circle',
   warning: 'warning',
+  // Deliberate counterpart to error's `warning-circle`: same circled family,
+  // so the two outcomes of a validated field read as a matched pair.
+  success: 'check-circle',
   helper: 'info',
 } as const
 </script>
@@ -50,6 +53,9 @@ const iconMap = {
   }
   &--warning {
     color: var(--nb-c-warning);
+  }
+  &--success {
+    color: var(--nb-c-success);
   }
   &--helper {
     color: var(--nb-c-text-subtle);

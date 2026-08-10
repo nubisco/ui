@@ -1,6 +1,7 @@
 enum EMessageVariant {
   Error = 'error',
   Warning = 'warning',
+  Success = 'success',
   Helper = 'helper',
 }
 
