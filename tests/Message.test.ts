@@ -31,6 +31,27 @@ describe('Message', () => {
     expect(wrapper.classes()).toContain('nb-message--warning')
   })
 
+  it('renders success variant', () => {
+    const wrapper = createWrapper({ variant: 'success' })
+    expect(wrapper.classes()).toContain('nb-message--success')
+  })
+
+  it('uses check-circle icon for success variant', () => {
+    const wrapper = createWrapper({ variant: 'success' })
+    expect(
+      wrapper.find('[data-testid="nb-icon"]').attributes('data-name'),
+    ).toBe('check-circle')
+  })
+
+  it('keeps success on polite aria-live (only errors are assertive)', () => {
+    expect(createWrapper({ variant: 'success' }).attributes('aria-live')).toBe(
+      'polite',
+    )
+    expect(createWrapper({ variant: 'error' }).attributes('aria-live')).toBe(
+      'assertive',
+    )
+  })
+
   it('renders slot content in text span', () => {
     const wrapper = createWrapper({}, { default: 'Field is required' })
     expect(wrapper.find('.nb-message__text').text()).toBe('Field is required')
