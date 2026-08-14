@@ -1,3 +1,10 @@
+## [1.57.1](https://github.com/nubisco/ui/compare/v1.57.0...v1.57.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **blueprint:** don't deselect when the mousedown lands on chrome ([712c374](https://github.com/nubisco/ui/commit/712c374f1e6d56774900fc3da9fcb3f57cf4c2d7)), closes [#chrome](https://github.com/nubisco/ui/issues/chrome)
+
 # [1.57.0](https://github.com/nubisco/ui/compare/v1.56.1...v1.57.0) (2026-08-10)
 
 
