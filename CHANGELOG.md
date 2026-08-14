@@ -1,3 +1,10 @@
+# [1.58.0](https://github.com/nubisco/ui/compare/v1.57.1...v1.58.0) (2026-08-14)
+
+
+### Features
+
+* **blueprint:** let fitToView frame a subset of cards ([fb30cb5](https://github.com/nubisco/ui/commit/fb30cb5d433f5d186b60d67fbeaa9cda04f4a5a1))
+
 ## [1.57.1](https://github.com/nubisco/ui/compare/v1.57.0...v1.57.1) (2026-08-14)
 
 
