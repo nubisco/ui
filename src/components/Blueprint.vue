@@ -1672,7 +1672,16 @@ function shouldFlow(conn: IBlueprintConnection): boolean {
 
 // ── View controls ─────────────────────────────────────────────────────
 
-function getCardsBounds(): {
+/**
+ * Bounding box of the cards to frame.
+ *
+ * `ids` narrows it to a subset, for framing one meaningful cluster (a saved
+ * group, a search result, a selection) rather than the whole board. Omit it to
+ * measure everything. An `ids` set that matches no card returns null, so
+ * callers fall back to their usual empty-board behaviour instead of framing a
+ * degenerate box.
+ */
+function getCardsBounds(ids?: readonly string[]): {
   minX: number
   minY: number
   maxX: number
@@ -1682,20 +1691,25 @@ function getCardsBounds(): {
     minY = Infinity,
     maxX = -Infinity,
     maxY = -Infinity
+  const wanted = ids && ids.length ? new Set(ids) : null
+  let counted = 0
 
   // Windowed mode: measure the full graph from the `cards` prop, not the
   // DOM (which only holds on-screen cards), since fit/center must frame every
-  // card, not just the visible ones.
+  // card, not just the visible ones. That matters doubly for a subset: the
+  // cards being framed are usually the ones currently OFF screen.
   if (props.cards) {
     if (props.cards.length === 0) return null
     for (const c of props.cards) {
+      if (wanted && !wanted.has(c.id)) continue
       const { w, h } = cardSize(c)
       minX = Math.min(minX, c.x)
       minY = Math.min(minY, c.y)
       maxX = Math.max(maxX, c.x + w)
       maxY = Math.max(maxY, c.y + h)
+      counted++
     }
-    return { minX, minY, maxX, maxY }
+    return counted > 0 ? { minX, minY, maxX, maxY } : null
   }
 
   if (!containerRef.value) return null
@@ -1704,6 +1718,7 @@ function getCardsBounds(): {
 
   cards.forEach((card) => {
     const el = card as HTMLElement
+    if (wanted && !wanted.has(el.getAttribute('data-card-id') ?? '')) return
     const pos = getCardPosition(el)
     const w = el.offsetWidth
     const h = el.offsetHeight
@@ -1711,9 +1726,10 @@ function getCardsBounds(): {
     minY = Math.min(minY, pos.y)
     maxX = Math.max(maxX, pos.x + w)
     maxY = Math.max(maxY, pos.y + h)
+    counted++
   })
 
-  return { minX, minY, maxX, maxY }
+  return counted > 0 ? { minX, minY, maxX, maxY } : null
 }
 
 function centerView() {
@@ -1734,11 +1750,20 @@ function centerView() {
   panY.value = rect.height / 2 - cy
 }
 
-function fitToView(padding = 40) {
+/**
+ * Frame the board, or with `ids`, just those cards.
+ *
+ * The subset form is for "show me this cluster": pressing a saved group's chip,
+ * jumping to a search hit. Unknown ids are ignored; if none of them match, the
+ * camera is left alone rather than reset, since throwing the user back to the
+ * origin is a worse answer to "frame this" than doing nothing.
+ */
+function fitToView(padding = 40, ids?: readonly string[]) {
   if (!containerRef.value) return
 
-  const bounds = getCardsBounds()
+  const bounds = getCardsBounds(ids)
   if (!bounds) {
+    if (ids && ids.length) return
     resetView()
     return
   }
