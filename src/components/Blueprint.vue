@@ -613,6 +613,18 @@ function isWheelPassthrough(target: EventTarget | null): boolean {
 function onCanvasMouseDown(e: MouseEvent) {
   const target = e.target instanceof HTMLElement ? e.target : null
 
+  // Chrome (controls toolbar, minimap, anything a consumer puts in #chrome)
+  // renders INSIDE this container but is emphatically not canvas. Without this
+  // guard it falls through to "empty canvas" below and starts a marquee, and
+  // startMarquee deselects on the spot — so pressing an align button cleared
+  // the very selection the button was about to act on, and the click that
+  // followed ran against nothing. The toolbar looked dead and the selection
+  // vanished as you reached for it.
+  //
+  // Chrome is self-contained: its own controls handle their own events, so
+  // canvas gestures (marquee, pan, card drag) have no business starting here.
+  if (target?.closest('.nb-blueprint__chrome')) return
+
   // Port interactions (wire dragging) take priority
   const portEl = target?.closest('.nb-blueprint-card__port')
   if (portEl) return
