@@ -1,3 +1,10 @@
+# [1.59.0](https://github.com/nubisco/ui/compare/v1.58.0...v1.59.0) (2026-08-15)
+
+
+### Features
+
+* **blueprint:** add getCamera / setCamera ([4ef3023](https://github.com/nubisco/ui/commit/4ef3023a909784f1cca6738751a26ee4ae686c38))
+
 # [1.58.0](https://github.com/nubisco/ui/compare/v1.57.1...v1.58.0) (2026-08-14)
 
 
