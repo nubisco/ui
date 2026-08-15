@@ -259,6 +259,14 @@ export interface IBlueprintScreenPoint {
   clientY: number
 }
 
+/** A camera position: where the board is panned to, and how far zoomed in.
+ *  Read one with `getCamera()` and put it back with `setCamera()`. */
+export interface IBlueprintCamera {
+  panX: number
+  panY: number
+  zoom: number
+}
+
 /**
  * The full controller NbBlueprint provides via `inject` (key
  * `NB_BLUEPRINT_CONTROLLER`). It is a superset of
@@ -285,10 +293,17 @@ export interface IBlueprintController {
   deselectAll: () => void
   /** Reset zoom to 1 and centre the graph in the viewport. */
   centerView: () => void
-  /** Zoom/pan so the whole graph fits, with optional padding (px). */
-  fitToView: (padding?: number) => void
+  /** Zoom/pan so the graph fits, with optional padding (px). Pass `ids` to
+   *  frame just those cards; unknown ids are ignored, and if none match the
+   *  camera is left alone rather than reset. */
+  fitToView: (padding?: number, ids?: readonly string[]) => void
   /** Reset pan to 0,0 and zoom to 1. */
   resetView: () => void
+  /** Read the camera, to restore it later with setCamera. */
+  getCamera: () => IBlueprintCamera
+  /** Move the camera. Fields are independent and applied as given (no
+   *  clamping), so a saved viewpoint restores exactly. */
+  setCamera: (camera: Partial<IBlueprintCamera>) => void
   /** Zoom in one step, anchored at the viewport center. */
   zoomIn: () => void
   /** Zoom out one step, anchored at the viewport center. */
