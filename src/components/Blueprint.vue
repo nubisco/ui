@@ -180,6 +180,7 @@ import {
   type IAutoLayoutEdge,
 } from './blueprint-autolayout'
 import type {
+  IBlueprintCamera,
   IBlueprintConnection,
   IBlueprintCard,
   IBlueprintCardMove,
@@ -1278,6 +1279,8 @@ provide(NB_BLUEPRINT_CONTROLLER, {
   centerView,
   fitToView,
   resetView,
+  getCamera,
+  setCamera,
   zoomIn,
   zoomOut,
   alignLeft,
@@ -1800,6 +1803,35 @@ function resetView() {
   zoom.value = 1
 }
 
+/**
+ * Read the camera, to put it back later with setCamera().
+ *
+ * The pair exists for "go look at that, then return me to where I was": a
+ * consumer frames something with fitToView(), and restores the viewpoint the
+ * user had before it moved them. Doing that by reaching into the exposed
+ * panX / panY / zoom refs works, but those are internal state, and a supported
+ * pair is what lets the restore keep working if the camera's representation
+ * ever changes.
+ */
+function getCamera(): IBlueprintCamera {
+  return { panX: panX.value, panY: panY.value, zoom: zoom.value }
+}
+
+/**
+ * Move the camera. Fields are independent, so `setCamera({ zoom: 1 })` leaves
+ * the pan alone.
+ *
+ * Values are applied as given, with no clamping to content bounds: restoring a
+ * viewpoint the user genuinely had must reproduce it exactly, including one
+ * that looks at empty canvas. Use fitToView() when you want a sensible frame
+ * computed for you.
+ */
+function setCamera(c: Partial<IBlueprintCamera>) {
+  if (typeof c.panX === 'number') panX.value = c.panX
+  if (typeof c.panY === 'number') panY.value = c.panY
+  if (typeof c.zoom === 'number') zoom.value = c.zoom
+}
+
 // ── Alignment and distribution ────────────────────────────────────────
 
 type TSelectedCardInfo = {
@@ -2122,6 +2154,8 @@ defineExpose({
   centerView,
   fitToView,
   resetView,
+  getCamera,
+  setCamera,
   zoomIn,
   zoomOut,
   // Selection and focus
