@@ -101,22 +101,12 @@
 </template>
 
 <script setup lang="ts">
-import {
-  Comment,
-  Fragment,
-  Text,
-  computed,
-  inject,
-  ref,
-  useSlots,
-  type Component,
-  type Ref,
-  type VNode,
-} from 'vue'
+import { computed, inject, ref, useSlots, type Component, type Ref } from 'vue'
 import { ISidebarMenuItemProps } from './SidebarMenuItem.d'
 import NbIcon from './Icon.vue'
 import SidebarVariantScope from './SidebarVariantScope.vue'
 import { useRouterLink } from '@/composables/useRouterLink.composable'
+import { hasRenderableContent } from '@/utils/slotContent.helper'
 
 const props = withDefaults(defineProps<ISidebarMenuItemProps>(), {
   icon: undefined,
@@ -138,23 +128,6 @@ const variantRef = inject<Ref<'compact' | 'verbose'>>(
 const variant = computed(() => variantRef.value)
 
 const slots = useSlots()
-
-function hasRenderableContent(nodes: VNode[]): boolean {
-  return nodes.some((node) => {
-    if (node.type === Comment) return false
-    if (node.type === Text) {
-      return (
-        typeof node.children === 'string' && node.children.trim().length > 0
-      )
-    }
-    if (node.type === Fragment) {
-      return Array.isArray(node.children)
-        ? hasRenderableContent(node.children as VNode[])
-        : false
-    }
-    return true
-  })
-}
 
 const hasChildren = computed(() => {
   const content = slots.default?.()
