@@ -404,6 +404,20 @@ onBeforeUnmount(onResizeEnd)
   gap: 1rem;
 }
 
+// Slot-presence detection runs on vnodes, so a component in the slot counts as
+// content even on the renders where it outputs nothing: `<RouterView
+// name="fixedbar" />` on a route with no fixedbar view emits the wrapper with
+// nothing inside it. A zero-height bordered strip under the topbar reads as a
+// doubled header rule (2px instead of 1px). Comments are ignored by `:empty`,
+// so this catches exactly the "wrapper rendered, nothing in it" case and leaves
+// wrappers holding real (even empty-looking) elements alone.
+.nb-shell__outer-menu:empty,
+.nb-shell__inner-menu:empty,
+.nb-shell__menubar:empty,
+.nb-shell__fixedbar:empty {
+  display: none;
+}
+
 .nb-shell__main {
   flex: 1;
   padding: 1.5rem 1.75rem;

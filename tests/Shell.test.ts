@@ -104,6 +104,23 @@ describe('Shell', () => {
     expect(wrapper.find('.nb-shell__fixedbar').exists()).toBe(true)
   })
 
+  // A component in the slot (typically <RouterView name="fixedbar" />) is
+  // renderable as a vnode even on routes that register no fixedbar view, so
+  // the wrapper is emitted with nothing inside it. Left visible it stacks its
+  // 1px border under the topbar's, doubling the header rule. The CSS guard
+  // (:empty) is what actually hides it in the browser; this asserts the DOM
+  // shape that guard relies on, since comments do not defeat :empty.
+  it('leaves the fixedbar wrapper empty when a component slot renders nothing', () => {
+    const RendersNothing = { render: () => null }
+    const wrapper = mount(Shell, {
+      slots: { fixedbar: RendersNothing },
+    })
+    const fixedbar = wrapper.find('.nb-shell__fixedbar')
+    expect(fixedbar.exists()).toBe(true)
+    expect(fixedbar.element.children.length).toBe(0)
+    expect(fixedbar.text()).toBe('')
+  })
+
   // ── Inspector ──────────────────────────────────────────────────────────────
 
   it('renders inspector without visible class by default', () => {
