@@ -104,44 +104,15 @@
 </template>
 
 <script setup lang="ts">
-import {
-  Comment,
-  Fragment,
-  Text,
-  computed,
-  onBeforeUnmount,
-  provide,
-  ref,
-  toRef,
-  useSlots,
-  type VNode,
-} from 'vue'
+import { computed, onBeforeUnmount, provide, ref, toRef, useSlots } from 'vue'
+import { hasSlotContent as slotHasContent } from '@/utils/slotContent.helper'
 import { IShellProps } from './Shell.d'
 
 const slots = useSlots()
 
-function hasRenderableContent(nodes: VNode[]): boolean {
-  return nodes.some((node) => {
-    if (node.type === Comment) return false
-    if (node.type === Text)
-      return (
-        typeof node.children === 'string' && node.children.trim().length > 0
-      )
-    if (node.type === Fragment) {
-      return Array.isArray(node.children)
-        ? hasRenderableContent(node.children as VNode[])
-        : false
-    }
-    return true
-  })
-}
-
 /** Check if a named slot has renderable content */
 function hasSlotContent(name: string): boolean {
-  const content = (slots as Record<string, (() => VNode[]) | undefined>)[
-    name
-  ]?.()
-  return content ? hasRenderableContent(content) : false
+  return slotHasContent(slots, name)
 }
 
 /** Check if any sidebar slot has renderable content */
