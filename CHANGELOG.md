@@ -1,3 +1,10 @@
+## [1.59.1](https://github.com/nubisco/ui/compare/v1.59.0...v1.59.1) (2026-08-16)
+
+
+### Bug Fixes
+
+* **shell:** stop empty slot wrappers from doubling the header rule ([450b7cd](https://github.com/nubisco/ui/commit/450b7cd1812d98367a06559cf6e979cf60ecc002))
+
 # [1.59.0](https://github.com/nubisco/ui/compare/v1.58.0...v1.59.0) (2026-08-15)
 
 
