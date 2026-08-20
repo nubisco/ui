@@ -42,6 +42,7 @@
     - [Layout](#layout)
     - [Form Controls](#form-controls)
     - [Data Display](#data-display)
+    - [Navigation](#navigation)
   - [Grid System](#grid-system)
   - [TypeScript Support](#typescript-support)
   - [Documentation](#documentation)
@@ -202,6 +203,12 @@ Most component libraries impose styling opinions that are hard to override. Nubi
 | `NbBadge`    | Status badge/pill with 7 colour variants      |
 | `NbIcon`     | SVG icon component with virtual module loader |
 | `NbJsonTree` | Collapsible JSON tree viewer                  |
+
+### Navigation
+
+| Component | Description                                               |
+| :-------- | :-------------------------------------------------------- |
+| `NbTabs`  | Tab bar with optional panels, line and contained variants |
 
 ---
 
