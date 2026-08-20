@@ -261,6 +261,7 @@ export default withMermaid(
                   { text: 'Shell Panel', link: '/ui/components/shell-panel' },
                   { text: 'Slider', link: '/ui/components/slider' },
                   { text: 'Switch', link: '/ui/components/switch' },
+                  { text: 'Tabs', link: '/ui/components/tabs' },
                   { text: 'Text Input', link: '/ui/components/text-input' },
                   { text: 'Toast', link: '/ui/components/toast' },
                   { text: 'Tree', link: '/ui/components/tree' },
