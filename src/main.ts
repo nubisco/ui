@@ -130,6 +130,8 @@ export { default as NbNumberInput } from './components/NumberInput.vue'
 export { default as NbSlider } from './components/Slider.vue'
 export { default as NbSparkline } from './components/Charts/Sparkline.vue'
 export { default as NbSelect } from './components/Select.vue'
+export { default as NbTabs } from './components/Tabs.vue'
+export type { ITabItem, ITabsProps } from './components/Tabs.d'
 export { default as NbTextInput } from './components/TextInput.vue'
 export type { ISelectOption, ISelectProps } from './components/Select.d'
 

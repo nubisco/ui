@@ -48,6 +48,7 @@ import NbSidebarMenuItem from './SidebarMenuItem.vue'
 import NbSlider from './Slider.vue'
 import NbSparkline from './Charts/Sparkline.vue'
 import NbSwitch from './Switch.vue'
+import NbTabs from './Tabs.vue'
 import NbTextInput from './TextInput.vue'
 import NbToast from './Toast.vue'
 import NbTree from './Tree.vue'
@@ -111,6 +112,7 @@ const components = {
   NbSlider,
   NbSparkline,
   NbSwitch,
+  NbTabs,
   NbTextInput,
   NbToast,
   NbTree,
