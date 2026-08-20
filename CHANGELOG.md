@@ -1,3 +1,10 @@
+# [1.60.0](https://github.com/nubisco/ui/compare/v1.59.1...v1.60.0) (2026-08-20)
+
+
+### Features
+
+* **tabs:** add NbTabs with line and contained variants ([cd5d1a7](https://github.com/nubisco/ui/commit/cd5d1a76ed811f5ba447a0539067be4d7fd722f9))
+
 ## [1.59.1](https://github.com/nubisco/ui/compare/v1.59.0...v1.59.1) (2026-08-16)
 
 
