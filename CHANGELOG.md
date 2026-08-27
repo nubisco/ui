@@ -1,3 +1,10 @@
+## [1.60.2](https://github.com/nubisco/ui/compare/v1.60.1...v1.60.2) (2026-08-27)
+
+
+### Bug Fixes
+
+* **release:** republish after stuck npm ingestion ([aaa347d](https://github.com/nubisco/ui/commit/aaa347ddf3bb235a801358f9f4e33b51cebf37b2))
+
 ## [1.60.1](https://github.com/nubisco/ui/compare/v1.60.0...v1.60.1) (2026-08-27)
 
 
