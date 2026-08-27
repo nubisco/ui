@@ -214,6 +214,9 @@
     --nb-field-font-size: var(--nb-font-size-14);
     --nb-field-line-height: 1.5;
     --nb-field-disabled-opacity: 0.45;
+    // Vertical gap between a control's label and its field. Shared by every
+    // form control so a row mixing them lines its field tops up to the pixel.
+    --nb-field-label-gap: calc(var(--nb-base-unit) * 0.75);
 
     // Background tiers
     --nb-c-bg: var(--nb-c-french-gray-100);

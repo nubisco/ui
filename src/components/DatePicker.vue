@@ -1037,7 +1037,7 @@ defineExpose({
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--nb-field-label-gap);
   font-family: var(--nb-font-family-sans, sans-serif);
   --field-h: var(--nb-field-height-md);
 
@@ -1059,7 +1059,7 @@ defineExpose({
 .nb-date-picker__col {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--nb-field-label-gap);
   flex: 1;
   min-width: 0;
 }
