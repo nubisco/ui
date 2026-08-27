@@ -1,3 +1,10 @@
+# [1.61.0](https://github.com/nubisco/ui/compare/v1.60.2...v1.61.0) (2026-08-27)
+
+
+### Features
+
+* **data-table:** add opt-in `fill` prop for contained, internally-scrolling tables ([#6](https://github.com/nubisco/ui/issues/6)) ([cbf5f83](https://github.com/nubisco/ui/commit/cbf5f836ec78b8581922bf67b8299e7b734091f7))
+
 ## [1.60.2](https://github.com/nubisco/ui/compare/v1.60.1...v1.60.2) (2026-08-27)
 
 
