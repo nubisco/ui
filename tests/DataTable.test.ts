@@ -379,3 +379,46 @@ describe('NbDataTable', () => {
     expect(wrapper.find('.nb-data-table__batch').exists()).toBe(false)
   })
 })
+
+describe('NbDataTable fill mode', () => {
+  it('is off by default, leaving the root free of the fill modifier', () => {
+    const wrapper = mountTable()
+    expect(wrapper.classes()).not.toContain('nb-data-table--fill')
+  })
+
+  it('adds the fill modifier when the prop is set', () => {
+    const wrapper = mountTable({ fill: true })
+    expect(wrapper.classes()).toContain('nb-data-table--fill')
+  })
+
+  it('toggles the modifier reactively without touching other modifiers', async () => {
+    const wrapper = mountTable({ fill: false, zebra: true, stickyHeader: true })
+    expect(wrapper.classes()).not.toContain('nb-data-table--fill')
+
+    await wrapper.setProps({ fill: true })
+    expect(wrapper.classes()).toContain('nb-data-table--fill')
+    // Fill is purely additive: the other layout modifiers are untouched.
+    expect(wrapper.classes()).toContain('nb-data-table--zebra')
+    expect(wrapper.classes()).toContain('nb-data-table--sticky')
+
+    await wrapper.setProps({ fill: false })
+    expect(wrapper.classes()).not.toContain('nb-data-table--fill')
+  })
+
+  it('keeps the scroll region, toolbar and footer in place so the CSS has something to target', () => {
+    const wrapper = mountTable(
+      { fill: true, title: 'Team members' },
+      { slots: { footer: () => h('div', { class: 'pager' }, 'pagination') } },
+    )
+    // The fill rules are keyed off these three elements plus the root.
+    expect(wrapper.find('.nb-data-table__scroll').exists()).toBe(true)
+    expect(wrapper.find('.nb-data-table__toolbar').exists()).toBe(true)
+    expect(wrapper.find('.nb-data-table__footer').exists()).toBe(true)
+  })
+
+  it('composes with the sticky header, which fill depends on for a pinned head', () => {
+    const wrapper = mountTable({ fill: true, stickyHeader: true })
+    expect(wrapper.classes()).toContain('nb-data-table--fill')
+    expect(wrapper.classes()).toContain('nb-data-table--sticky')
+  })
+})
