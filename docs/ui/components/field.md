@@ -65,6 +65,37 @@ The default slot receives a generated `id`; bind it to your control so the label
 </NbField>
 ```
 
+## Mixed controls align
+
+Every form control puts the same vertical gap between its label and its field, so a row that mixes control types lines its field tops up to the pixel. The gap is one token, `--nb-field-label-gap`, shared by `NbTextInput`, `NbDatePicker`, `NbSelect`, `NbNumberInput`, `NbSlider` and `NbField`'s stack mode. It holds with or without a helper line.
+
+<preview>
+  <div id="mixed-row-demo" style="display:flex; gap:12px; align-items:flex-start; width:100%;">
+    <NbTextInput label="Policy ref" placeholder="ABC-123" style="flex:1" />
+    <NbDatePicker label="From" type="simple" placeholder="dd/mm/yyyy" style="flex:1" />
+    <NbSelect label="Status" model-value="1" :options="[{label:'Open', value:'1'},{label:'Closed', value:'2'}]" style="flex:1" />
+    <NbNumberInput label="Amount" :model-value="100" style="flex:1" />
+  </div>
+</preview>
+
+With a helper or error line under one of them, the field tops still align. The message only adds height below the field:
+
+<preview>
+  <div id="mixed-row-helper-demo" style="display:flex; gap:12px; align-items:flex-start; width:100%;">
+    <NbTextInput label="Policy ref" placeholder="ABC-123" error="Required" style="flex:1" />
+    <NbDatePicker label="From" type="simple" placeholder="dd/mm/yyyy" helper="Case-sensitive" style="flex:1" />
+    <NbSelect label="Status" model-value="1" :options="[{label:'Open', value:'1'},{label:'Closed', value:'2'}]" style="flex:1" />
+  </div>
+</preview>
+
+To tighten or loosen every control at once, override the token on a container:
+
+```css
+.my-form {
+  --nb-field-label-gap: 4px;
+}
+```
+
 ## In an inspector
 
 Inside a `.nb-inspector` container, `NbField` picks up the inspector treatment automatically — a compact spine, sliders that stack with full-width tracks, compact numeric steppers, and section highlighting. See [Building an inspector](/patterns/inspectors).
