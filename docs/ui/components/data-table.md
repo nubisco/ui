@@ -315,6 +315,90 @@ const pagedRows = computed(() => {
 </script>
 ```
 
+## Fill height & internal scroll
+
+Set `fill` and the table becomes a flex item that fills its parent and scrolls internally: the toolbar and the `#footer` stay pinned, the header stays sticky, and only the body scrolls. This is the shape you want for a full-height list view, and it needs no table-specific CSS on your side.
+
+<preview>
+  <div style="height: 320px; display: flex; flex-direction: column; min-height: 0; border: 1px dashed var(--nb-c-border);">
+    <NbDataTable
+      :columns="columns"
+      :rows="allRows"
+      row-key="id"
+      title="Team members"
+      fill
+      style="width: 100%"
+    >
+      <template #footer>
+        <NbPagination :page="1" :page-size="10" :total="allRows.length" />
+      </template>
+    </NbDataTable>
+  </div>
+</preview>
+
+```vue
+<template>
+  <NbDataTable
+    :columns="columns"
+    :rows="rows"
+    row-key="id"
+    title="Team members"
+    fill
+  >
+    <template #footer>
+      <NbPagination v-model:page="page" :page-size="pageSize" :total="total" />
+    </template>
+  </NbDataTable>
+</template>
+```
+
+### The parent must bound the height
+
+`fill` makes the table _claim_ its parent's height. It cannot _create_ one. The parent has to be a flex column that is itself bounded, which in practice means `min-height: 0` somewhere up the chain. Without that, the parent grows to fit every row and the page scrolls instead of the body.
+
+`NbShell`'s content row already qualifies, so a table placed directly in `#content` works with no extra CSS:
+
+```scss
+// Already part of NbShell, shown here for reference.
+.nb-shell__content-row {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+```
+
+```vue
+<NbShell>
+  <template #content>
+    <NbDataTable :columns="columns" :rows="rows" row-key="id" fill />
+  </template>
+</NbShell>
+```
+
+An unbounded wrapper between the shell and the table defeats it. A plain `<div>` grows to fit its content, so the table inherits no ceiling:
+
+```vue
+<!-- Does not scroll internally: the wrapper has no bounded height. -->
+<template #content>
+  <div class="my-view">
+    <NbDataTable :columns="columns" :rows="rows" row-key="id" fill />
+  </div>
+</template>
+```
+
+Give that wrapper the same treatment and it works again:
+
+```scss
+.my-view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+```
+
+Leave `fill` off (the default) and the table sizes to its content exactly as before.
+
 ## Accessibility
 
 - Renders a real `<table>` with `<th scope="col">` header cells and a `<colgroup>` for widths.
@@ -343,6 +427,7 @@ const pagedRows = computed(() => {
 | `emptyMessage` | `string`                                  | `undefined` | Message shown when there are no rows                |
 | `stickyHeader` | `boolean`                                 | `true`      | Pins the header while the body scrolls              |
 | `zebra`        | `boolean`                                 | `false`     | Alternating row backgrounds                         |
+| `fill`         | `boolean`                                 | `false`     | Fill the parent's height and scroll internally      |
 | `title`        | `string`                                  | `undefined` | Toolbar title                                       |
 | `description`  | `string`                                  | `undefined` | Toolbar sub-text                                    |
 | `ariaLabel`    | `string`                                  | `undefined` | Accessible name for the `<table>`                   |
