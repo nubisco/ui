@@ -5,6 +5,7 @@
       `nb-data-table--${size}`,
       { 'nb-data-table--zebra': zebra },
       { 'nb-data-table--sticky': stickyHeader },
+      { 'nb-data-table--fill': fill },
     ]"
   >
     <!-- Toolbar. The heading and tools stay mounted while rows are selected
@@ -334,6 +335,7 @@ const props = withDefaults(defineProps<IDataTableProps<T>>(), {
   emptyMessage: undefined,
   stickyHeader: true,
   zebra: false,
+  fill: false,
   title: undefined,
   description: undefined,
   ariaLabel: undefined,
@@ -851,6 +853,35 @@ function onRowClick(row: T, rowIndex: number) {
     position: sticky;
     top: 0;
     z-index: 1;
+  }
+
+  // ── Fill ─────────────────────────────────────────────────
+  // Opt-in via the `fill` prop: the table becomes a flex item that fills its
+  // parent and scrolls internally, so a consumer drops it into a bounded
+  // layout without writing any table-specific CSS.
+  //
+  // This only bites when an ancestor bounds the height, i.e. a flex column
+  // with `min-height: 0` (NbShell's `.nb-shell__content-row` already is one).
+  // Without that the parent grows to fit the rows and nothing scrolls.
+  &--fill {
+    flex: 1;
+    min-height: 0;
+  }
+
+  // The scroll region takes the leftover space. `min-height: 0` lets it
+  // shrink below its content, which is what moves the scrollbar onto the body
+  // instead of the page, and what gives the sticky header something to stick
+  // against.
+  &--fill &__scroll {
+    flex: 1;
+    min-height: 0;
+  }
+
+  // Toolbar and footer keep their intrinsic height instead of being squeezed
+  // as the body grows.
+  &--fill &__toolbar,
+  &--fill &__footer {
+    flex: none;
   }
 
   // ── States ───────────────────────────────────────────────
