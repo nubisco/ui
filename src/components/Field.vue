@@ -67,7 +67,7 @@ const controlId = computed(() => props.labelFor ?? autoId)
 // want the whole width, or labels too long to sit beside the control.
 .nb-field--stack {
   grid-template-columns: minmax(0, 1fr);
-  row-gap: 6px;
+  row-gap: var(--nb-field-label-gap);
 }
 
 // Fit: the control hugs its content (e.g. a switch) and the label takes the

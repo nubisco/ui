@@ -1,7 +1,6 @@
 <template>
   <NbGrid
     dir="col"
-    gap="xs"
     :class="[
       'nb-text-input',
       `nb-text-input--${variant}`,
@@ -309,6 +308,7 @@ const wrapperClasses = computed(() => ({
 <style scoped lang="scss">
 .nb-text-input {
   font-family: var(--nb-font-family-sans);
+  gap: var(--nb-field-label-gap);
   --field-h: var(--nb-field-height-md);
   // A field fills and shrinks to its container; it never forces the container
   // wider. Without this a multiline field's textarea uses its intrinsic

@@ -383,7 +383,7 @@ const trackAreaClasses = computed(() => ({
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 6px;
+  gap: var(--nb-field-label-gap);
   font-family: var(--nb-font-family-sans, sans-serif);
 
   &--disabled {
