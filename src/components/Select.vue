@@ -566,7 +566,7 @@ defineExpose({
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--nb-field-label-gap);
   font-family: var(--nb-font-family-sans, sans-serif);
   --field-h: var(--nb-field-height-md);
 
