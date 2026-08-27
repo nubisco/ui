@@ -100,6 +100,21 @@ export interface IDataTableProps<T = Record<string, unknown>> {
   stickyHeader?: boolean
   /** Alternating row background (Carbon "zebra"). Default false. */
   zebra?: boolean
+  /**
+   * Fill the parent's height and scroll internally: the toolbar and `#footer`
+   * stay pinned, the header stays sticky, and only the body scrolls. Lets a
+   * bounded layout host the table with no table-specific CSS on your side.
+   *
+   * Requires an ancestor that bounds the height, i.e. a flex column with
+   * `min-height: 0`. NbShell's content row (`.nb-shell__content-row`, which is
+   * `flex: 1; min-height: 0; overflow: hidden`) already qualifies, so a table
+   * placed directly in `#content` works. Any unbounded wrapper in between (a
+   * plain `<div>` that grows to fit its content) defeats it, and the page
+   * scrolls instead of the body.
+   *
+   * @default false
+   */
+  fill?: boolean
   /** Optional toolbar title. */
   title?: string
   /** Optional toolbar sub-text under the title. */
