@@ -1,3 +1,10 @@
+## [1.60.1](https://github.com/nubisco/ui/compare/v1.60.0...v1.60.1) (2026-08-27)
+
+
+### Bug Fixes
+
+* **forms:** normalize label-to-field gap across form controls ([#5](https://github.com/nubisco/ui/issues/5)) ([09dec28](https://github.com/nubisco/ui/commit/09dec28cfa625a4453b142ccf5ce70d8a2a0fcb4))
+
 # [1.60.0](https://github.com/nubisco/ui/compare/v1.59.1...v1.60.0) (2026-08-20)
 
 
