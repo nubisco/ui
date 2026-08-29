@@ -1,0 +1,107 @@
+@use 'sass:map';
+
+/// Layer ramps.
+///
+/// The four visual depth levels, defined as explicit values rather than derived
+/// from the tint ramp. Depth separation is a measured property: each step has to
+/// clear a perceptual distance from its neighbour, and every text colour has to
+/// clear AAA on every surface it can land on, including hover surfaces. A
+/// lightness-stepped tint chain cannot express that, and it also emitted
+/// fractional `rgb(229.5, ...)` channels.
+///
+/// Verify any change here with `node scripts/audit-contrast.mjs`, which measures
+/// these against the published Carbon Design System token values in
+/// `scripts/fixtures/carbon-tokens.json`.
+///
+/// @group @nubisco/layers
+
+/// Light ramp.
+///
+/// Descends monotonically from a near-white page: CIE L* 97.21 / 93.37 / 89.51 /
+/// 85.60, adjacent steps 3.83 / 3.87 / 3.90, non-decreasing so deeper nesting
+/// separates at least as much as shallower nesting. Depth therefore equals
+/// darkness and is readable as a position in an order, not just as a local
+/// boundary. Alternating the surfaces instead (the more common approach) makes
+/// layer 2 identical to layer 0, which leaves nesting past one level with no fill
+/// cue at all.
+///
+/// Borders escalate with depth (2.05 to 2.64 against their own surface) so the
+/// deepest element carries the crispest edge.
+///
+/// Hover darkens by 3.1 to 3.6 dL* and is derived per layer, so a hovered row
+/// never aliases with the resting colour of another layer.
+///
+/// @type Map
+$light: (
+  surface: (
+    0: #f6f7f9,
+    1: #ebecee,
+    2: #e0e1e3,
+    3: #d5d6d8,
+  ),
+  border: (
+    0: #aeafb1,
+    1: #9e9fa1,
+    2: #8f9092,
+    3: #818284,
+  ),
+  hover: (
+    0: #edeef0,
+    1: #e2e3e5,
+    2: #d7d8da,
+    3: #cbccce,
+  ),
+  text: #202123,
+  text-muted: #343537,
+  field-bg: #cdced0,
+  field-border: #6c6d6f,
+);
+
+/// Dark ramp.
+///
+/// @type Map
+$dark: (
+  surface: (
+    0: #17191c,
+    1: #262626,
+    2: #2e3138,
+    3: #3a3e45,
+  ),
+  border: (
+    0: #3a3e45,
+    1: #464a53,
+    2: #515761,
+    3: #5d636f,
+  ),
+  hover: (
+    0: #2e3138,
+    1: #3a3e45,
+    2: #464a53,
+    3: #515761,
+  ),
+  text: #d9d9d9,
+  text-muted: #9096a2,
+  field-bg: #333333,
+  field-border: #5d636f,
+);
+
+/// Returns one value from a ramp.
+///
+/// @param {Map} $ramp - `$light` or `$dark`
+/// @param {String} $role - surface, border or hover
+/// @param {Number} $level - 0 through 3
+/// @access public
+/// @group @nubisco/layers
+@function level($ramp, $role, $level) {
+  @return map.get(map.get($ramp, $role), $level);
+}
+
+/// Returns a scalar token from a ramp.
+///
+/// @param {Map} $ramp - `$light` or `$dark`
+/// @param {String} $key - text, text-muted, field-bg or field-border
+/// @access public
+/// @group @nubisco/layers
+@function token($ramp, $key) {
+  @return map.get($ramp, $key);
+}

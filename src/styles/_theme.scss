@@ -3,6 +3,7 @@
 @use 'config';
 @use 'variables/layout';
 @use 'variables/colors';
+@use 'variables/layers';
 @use 'variables/type';
 @use 'variables/grid';
 @use 'variables/animations';
@@ -115,20 +116,20 @@
     // Layer 1: panels, cards, sidebar body
     // Layer 2: nested panels, inspector sections
     // Layer 3: overlays, popovers, modals (highest)
-    --nb-c-layer-0: #{colors.get-color('french-gray', 100)};
-    --nb-c-layer-1: #{colors.get-color('plain-white', 100)};
-    --nb-c-layer-2: #{colors.get-color('french-gray', 100)};
-    --nb-c-layer-3: #{colors.get-color('plain-white', 100)};
+    --nb-c-layer-0: #{layers.level(layers.$light, surface, 0)};
+    --nb-c-layer-1: #{layers.level(layers.$light, surface, 1)};
+    --nb-c-layer-2: #{layers.level(layers.$light, surface, 2)};
+    --nb-c-layer-3: #{layers.level(layers.$light, surface, 3)};
 
-    --nb-c-layer-border-0: #{colors.get-color('french-gray', 250)};
-    --nb-c-layer-border-1: #{colors.get-color('french-gray', 250)};
-    --nb-c-layer-border-2: #{colors.get-color('french-gray', 300)};
-    --nb-c-layer-border-3: #{colors.get-color('french-gray', 200)};
+    --nb-c-layer-border-0: #{layers.level(layers.$light, border, 0)};
+    --nb-c-layer-border-1: #{layers.level(layers.$light, border, 1)};
+    --nb-c-layer-border-2: #{layers.level(layers.$light, border, 2)};
+    --nb-c-layer-border-3: #{layers.level(layers.$light, border, 3)};
 
-    --nb-c-layer-hover-0: #{colors.get-color('french-gray', 200)};
-    --nb-c-layer-hover-1: #{colors.get-color('french-gray', 150)};
-    --nb-c-layer-hover-2: #{colors.get-color('french-gray', 200)};
-    --nb-c-layer-hover-3: #{colors.get-color('french-gray', 150)};
+    --nb-c-layer-hover-0: #{layers.level(layers.$light, hover, 0)};
+    --nb-c-layer-hover-1: #{layers.level(layers.$light, hover, 1)};
+    --nb-c-layer-hover-2: #{layers.level(layers.$light, hover, 2)};
+    --nb-c-layer-hover-3: #{layers.level(layers.$light, hover, 3)};
 
     // Semantic surface tokens — default to layer-1 (most components sit on layer-0)
     --nb-c-surface: var(--nb-c-layer-1);
@@ -193,16 +194,20 @@
     --nb-c-component-plain-border-a11y: var(--nb-c-nouveau-gray-300-a11y);
 
     // Text
-    --nb-c-text: var(--nb-c-plain-black-900);
-    --nb-c-text-a11y: var(--nb-c-plain-black-900-a11y);
-    --nb-c-text-muted: var(--nb-c-nouveau-gray-600);
-    --nb-c-text-muted-a11y: var(--nb-c-nouveau-gray-600-a11y);
+    --nb-c-text: #{layers.token(layers.$light, text)};
+    --nb-c-text-a11y: #{colors.color-contrast(
+        layers.token(layers.$light, text)
+      )};
+    --nb-c-text-muted: #{layers.token(layers.$light, text-muted)};
+    --nb-c-text-muted-a11y: #{colors.color-contrast(
+        layers.token(layers.$light, text-muted)
+      )};
     --nb-c-text-subtle: var(--nb-c-nouveau-gray-500);
     --nb-c-text-subtle-a11y: var(--nb-c-nouveau-gray-500-a11y);
 
     // Form field tokens: heights and padding relative to --nb-base-unit (8px)
-    --nb-c-field-bg: var(--nb-c-french-gray-100);
-    --nb-c-field-border: var(--nb-c-french-gray-500);
+    --nb-c-field-bg: #{layers.token(layers.$light, field-bg)};
+    --nb-c-field-border: #{layers.token(layers.$light, field-border)};
     // xs is the compact size for dense surfaces (inspectors, toolbars).
     // Distinctly smaller than sm; pair with a 13px field font. See the
     // "Building an inspector" guide in the docs before reaching for it.
@@ -219,8 +224,8 @@
     --nb-field-label-gap: calc(var(--nb-base-unit) * 0.75);
 
     // Background tiers
-    --nb-c-bg: var(--nb-c-french-gray-100);
-    --nb-c-bg-soft: var(--nb-c-french-gray-200);
+    --nb-c-bg: var(--nb-c-layer-0);
+    --nb-c-bg-soft: var(--nb-c-layer-1);
 
     // Discrete / muted interactive states
     --nb-c-discrete: var(--nb-c-nouveau-gray-200);
@@ -430,20 +435,20 @@
 
     // ── Layer system (dark) ───────────────────────────────────────────────
     // In dark mode, layers get progressively lighter as elevation increases
-    --nb-c-layer-0: #{colors.get-color('nouveau-gray', 900)};
-    --nb-c-layer-1: #{colors.get-color('plain-black', 850)};
-    --nb-c-layer-2: #{colors.get-color('nouveau-gray', 800)};
-    --nb-c-layer-3: #{colors.get-color('nouveau-gray', 750)};
+    --nb-c-layer-0: #{layers.level(layers.$dark, surface, 0)};
+    --nb-c-layer-1: #{layers.level(layers.$dark, surface, 1)};
+    --nb-c-layer-2: #{layers.level(layers.$dark, surface, 2)};
+    --nb-c-layer-3: #{layers.level(layers.$dark, surface, 3)};
 
-    --nb-c-layer-border-0: #{colors.get-color('nouveau-gray', 750)};
-    --nb-c-layer-border-1: #{colors.get-color('nouveau-gray', 700)};
-    --nb-c-layer-border-2: #{colors.get-color('nouveau-gray', 650)};
-    --nb-c-layer-border-3: #{colors.get-color('nouveau-gray', 600)};
+    --nb-c-layer-border-0: #{layers.level(layers.$dark, border, 0)};
+    --nb-c-layer-border-1: #{layers.level(layers.$dark, border, 1)};
+    --nb-c-layer-border-2: #{layers.level(layers.$dark, border, 2)};
+    --nb-c-layer-border-3: #{layers.level(layers.$dark, border, 3)};
 
-    --nb-c-layer-hover-0: #{colors.get-color('nouveau-gray', 800)};
-    --nb-c-layer-hover-1: #{colors.get-color('nouveau-gray', 750)};
-    --nb-c-layer-hover-2: #{colors.get-color('nouveau-gray', 700)};
-    --nb-c-layer-hover-3: #{colors.get-color('nouveau-gray', 650)};
+    --nb-c-layer-hover-0: #{layers.level(layers.$dark, hover, 0)};
+    --nb-c-layer-hover-1: #{layers.level(layers.$dark, hover, 1)};
+    --nb-c-layer-hover-2: #{layers.level(layers.$dark, hover, 2)};
+    --nb-c-layer-hover-3: #{layers.level(layers.$dark, hover, 3)};
 
     // Surface tokens — override to dark values
     --nb-c-surface: var(--nb-c-layer-1);
@@ -454,17 +459,21 @@
     --nb-c-document: #{colors.get-color('plain-white', 50)};
 
     // Text
-    --nb-c-text: #{colors.get-color('plain-white', 150)}; // primary text: ~#d9d9d9
-    --nb-c-text-muted: #{colors.get-color('nouveau-gray', 400)};
+    --nb-c-text: #{layers.token(layers.$dark, text)};
+    --nb-c-text-a11y: #{colors.color-contrast(layers.token(layers.$dark, text))};
+    --nb-c-text-muted: #{layers.token(layers.$dark, text-muted)};
+    --nb-c-text-muted-a11y: #{colors.color-contrast(
+        layers.token(layers.$dark, text-muted)
+      )};
     --nb-c-text-subtle: #{colors.get-color('nouveau-gray', 500)};
 
     // Background tiers — deepest layer for page background
-    --nb-c-bg: #{colors.get-color('nouveau-gray', 900)}; // page bg: ~#17191c (close to VitePress's #1b1b1f)
-    --nb-c-bg-soft: #{colors.get-color('nouveau-gray', 850)}; // elevated bg: ~#242527
+    --nb-c-bg: var(--nb-c-layer-0);
+    --nb-c-bg-soft: var(--nb-c-layer-1);
 
     // Form fields
-    --nb-c-field-bg: #{colors.get-color('plain-black', 800)}; // input bg: ~#333333
-    --nb-c-field-border: #{colors.get-color('nouveau-gray', 600)};
+    --nb-c-field-bg: #{layers.token(layers.$dark, field-bg)};
+    --nb-c-field-border: #{layers.token(layers.$dark, field-border)};
 
     // Discrete
     --nb-c-discrete: #{colors.get-color('nouveau-gray', 700)};
