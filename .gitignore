@@ -26,6 +26,8 @@ coverage/
 
 # Generated build artifacts
 docs/public/tokens.json
+docs/public/contrast-audit.json
+docs/public/specimens/
 
 # Logs
 *.log
