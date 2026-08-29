@@ -59,30 +59,48 @@ $light: (
 
 /// Dark ramp.
 ///
+/// CIE L* 4.63 / 11.69 / 18.87 / 26.15, adjacent steps 7.06 / 7.18 / 7.27,
+/// non-decreasing so deeper nesting separates more, matching the discipline of
+/// Carbon's g100 ramp rather than our previous flat 6.70 / 5.20 / 5.58.
+///
+/// Hover REVERSES at layer 3: levels 0 to 2 lighten by about 5.1 dL*, level 3
+/// darkens by 5.42. There is no headroom above layer 3, and a hover surface
+/// lighter than it would force muted text toward white, collapsing the gap
+/// between the two text tiers. Carbon does the same thing at the top of its own
+/// g90 ramp (layer-03 #6f6f6f hovers to #5e5e5e). Direction is not the
+/// requirement, magnitude is.
+///
+/// layer-0 sits low deliberately. Raising it drags the whole ramp up, which
+/// raises layer 3, which forces muted text brighter to hold 7:1 there, which
+/// forces primary brighter still to keep the tiers apart, which makes glare
+/// worse rather than better. Halation is set at the top of the ramp, not the
+/// bottom: primary text on the page ground measures 15.96:1 here, against
+/// 17.63:1 for a near-black ground and 18.06:1 for a raised one.
+///
 /// @type Map
 $dark: (
   surface: (
-    0: #17191c,
-    1: #262626,
-    2: #2e3138,
-    3: #3a3e45,
+    0: #0f1011,
+    1: #1e1f20,
+    2: #2d2e2f,
+    3: #3d3e3f,
   ),
   border: (
-    0: #3a3e45,
-    1: #464a53,
-    2: #515761,
-    3: #5d636f,
+    0: #434445,
+    1: #4d4e4f,
+    2: #595a5b,
+    3: #696a6b,
   ),
   hover: (
-    0: #2e3138,
-    1: #3a3e45,
-    2: #464a53,
-    3: #515761,
+    0: #1a1b1c,
+    1: #292a2b,
+    2: #38393a,
+    3: #313233,
   ),
-  text: #d9d9d9,
-  text-muted: #9096a2,
-  field-bg: #333333,
-  field-border: #5d636f,
+  text: #eaebec,
+  text-muted: #d0d1d2,
+  field-bg: #141516,
+  field-border: #626364,
 );
 
 /// Returns one value from a ramp.
