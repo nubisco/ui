@@ -1,6 +1,7 @@
 <template>
   <div
     class="nb-shell"
+    v-bind="layerProps"
     :class="[
       { 'nb-shell--no-sidebar': !showSidebar },
       showSidebar ? `nb-shell--sidebar-${sidebarVariant}` : null,
@@ -107,6 +108,7 @@
 import { computed, onBeforeUnmount, provide, ref, toRef, useSlots } from 'vue'
 import { hasSlotContent as slotHasContent } from '@/utils/slotContent.helper'
 import { IShellProps } from './Shell.d'
+import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 
 const slots = useSlots()
 
@@ -131,6 +133,13 @@ const props = withDefaults(defineProps<IShellProps>(), {
   mainPadding: true,
   sidebarVariant: 'compact',
 })
+
+// The shell is the application frame, not a nested surface: at the top of a tree
+// it resolves to layer 1, which is exactly what its chrome regions (topbar, body,
+// menu strips) already painted from the `:root` default, so its own pixels are
+// unchanged. What it adds is an origin for contextual depth, so a surface dropped
+// into the shell body separates from it instead of matching it.
+const { layerProps } = useSurfaceLayer()
 
 // Provided so descendants of the `sidebar-*` slots (NbSidebarMenu,
 // NbSidebarMenuItem, NbSidebarMenuGroup, NbSidebarBrand) can adapt their

@@ -7,6 +7,7 @@
       { 'nb-data-table--sticky': stickyHeader },
       { 'nb-data-table--fill': fill },
     ]"
+    v-bind="layerProps"
   >
     <!-- Toolbar. The heading and tools stay mounted while rows are selected
          and the batch bar covers them as an overlay. Swapping the toolbar's
@@ -323,6 +324,7 @@ import NbCheckbox from './Checkbox.vue'
 import NbIcon from './Icon.vue'
 import NbButton from './Button.vue'
 import NbGrid from './Grid.vue'
+import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 
 const props = withDefaults(defineProps<IDataTableProps<T>>(), {
   size: ESizeShort.Medium,
@@ -340,6 +342,10 @@ const props = withDefaults(defineProps<IDataTableProps<T>>(), {
   description: undefined,
   ariaLabel: undefined,
 })
+
+// The table paints the bordered surface its toolbar, header and rows sit on, so
+// it takes the current layer and deepens anything rendered into its cells.
+const { layerProps } = useSurfaceLayer()
 
 const emit = defineEmits<{
   sort: [state: IDataTableSortState]
