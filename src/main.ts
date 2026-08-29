@@ -108,7 +108,10 @@ export type {
 } from './components/CommandPalette.d'
 export { default as NbMessage } from './components/Message.vue'
 export { default as NbModal } from './components/Modal.vue'
+export { default as NbLayer } from './components/Layer.vue'
+export type { ILayerProps } from './components/Layer.d'
 export { default as NbPanel } from './components/Panel.vue'
+export type { IPanelProps } from './components/Panel.d'
 export { default as NbPieChart } from './components/Charts/PieChart.vue'
 export { default as NbShell } from './components/Shell.vue'
 export type { TInspectorSize, TSidebarVariant } from './components/Shell.d'
@@ -204,6 +207,23 @@ export { dismissAllTooltips } from './directives/ToolTip.directive'
 export { useCommandPalette } from './composables/useCommandPalette.composable'
 export { useContextMenu } from './composables/useContextMenu.composable'
 export { useBlueprint } from './composables/useBlueprint.composable'
+export {
+  useSurfaceLayer,
+  useLayer,
+  clampLayer,
+  layerClassFor,
+  probeLayerFromDom,
+  NB_LAYER_INJECTION_KEY,
+  NB_LAYER_ATTRIBUTE,
+  NB_MIN_LAYER,
+  NB_MAX_LAYER,
+} from './composables/useSurfaceLayer.composable'
+export type {
+  TLayerLevel,
+  ILayerProbeResult,
+  IUseSurfaceLayerOptions,
+  IUseSurfaceLayerResult,
+} from './composables/useSurfaceLayer.composable'
 
 // Plugins
 export { NbCommandPalettePlugin } from './plugins/commandPalette'
