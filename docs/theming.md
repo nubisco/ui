@@ -102,6 +102,37 @@ const layerProps = [
 
 Four visual depth levels that give nested components distinct surfaces. Toggle between light and dark to see how each layer adapts.
 
+### Contextual nesting (no manual classes)
+
+A panel inside a panel is one layer deeper on its own. Nothing here names a
+depth, and nothing counts its own position in the tree.
+
+<preview :props="layerProps" v-slot="{ resultingProps }">
+  <div :class="resultingProps.theme === 'dark' ? 'dark' : ''" style="padding: 20px;">
+    <NbLabel size="sm" muted>Page ground</NbLabel>
+    <NbPanel style="margin-top: 8px;">
+      <NbLabel size="sm" muted>Panel (layer 1)</NbLabel>
+      <NbPanel style="margin-top: 8px;">
+        <NbLabel size="sm" muted>Panel in a panel (layer 2)</NbLabel>
+        <NbPanel style="margin-top: 8px;">
+          <NbLabel size="sm" muted>Panel in a panel in a panel (layer 3)</NbLabel>
+          <NbPanel style="margin-top: 8px;">
+            <NbLabel size="sm" muted>Deeper still: clamped, stays at layer 3</NbLabel>
+          </NbPanel>
+        </NbPanel>
+      </NbPanel>
+    </NbPanel>
+  </div>
+</preview>
+
+```vue
+<NbPanel>
+  <NbPanel>
+    <NbPanel />
+  </NbPanel>
+</NbPanel>
+```
+
 ### Nested panels
 
 <preview :props="layerProps" v-slot="{ resultingProps }">
@@ -165,7 +196,64 @@ Four visual depth levels that give nested components distinct surfaces. Toggle b
 
 ## How it works
 
-Apply `.nb-layer-{0-3}` to a container. All child components automatically inherit the right surface, border, and hover colors.
+Depth is derived from nesting. A component that paints a surface takes the
+current layer and moves everything inside it one layer deeper, clamped at 3 so
+that deep trees repeat the top layer instead of running out. At the top of a
+tree the first surface is layer 1, which is the `:root` default of
+`--nb-c-surface`, so nothing changes for markup that never nests.
+
+You can still take over. Applying `.nb-layer-{0-3}` to a container pins its
+subtree to that layer, exactly as before, and restarts the contextual count from
+there: a surface directly inside `.nb-layer-2` paints layer 2, and a surface
+inside that one paints layer 3. The nearest container wins.
+
+Overlays that leave the document flow (Modal, and any teleported popover) are
+pinned to layer 3 rather than inheriting the depth of whatever the teleport
+target happens to sit in.
+
+| Level | Class         | Use                               |
+| ----- | ------------- | --------------------------------- |
+| 0     | `.nb-layer-0` | App/page background               |
+| 1     | `.nb-layer-1` | Panels, cards, sidebar body       |
+| 2     | `.nb-layer-2` | Nested panels, inspector sections |
+| 3     | `.nb-layer-3` | Overlays, popovers, modals        |
+
+### Taking control
+
+```vue
+<!-- derived: 1, then 2 -->
+<NbPanel>
+  <NbPanel />
+</NbPanel>
+
+<!-- pinned on the component -->
+<NbPanel :layer="0" />
+<NbPanel class="nb-layer-3" />
+
+<!-- pinned on a container: everything inside starts counting from 2 -->
+<NbLayer :level="2">
+  <NbPanel />
+  <!-- layer 2 -->
+</NbLayer>
+
+<!-- push one step deeper without naming a number -->
+<NbLayer>
+  <NbPanel />
+</NbLayer>
+```
+
+For component authors, `useSurfaceLayer()` resolves the level and returns the
+attributes to bind on the painting element, and `useLayer()` reports the level
+the next surface would paint.
+
+```ts
+const { level, layerProps } = useSurfaceLayer()
+// bind layerProps on the element that paints var(--nb-c-surface)
+```
+
+Applying `.nb-layer-{0-3}` to a container still works on its own, with no
+runtime involved: all child components inherit the right surface, border, and
+hover colors from the CSS variables that class sets.
 
 | Level | Class         | Use                               |
 | ----- | ------------- | --------------------------------- |

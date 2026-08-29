@@ -72,6 +72,15 @@ export { EFileUploaderStatus } from './components/FileUploader.d'
 export type { IAiLabelProps } from './components/AiLabel.d'
 export { EAiLabelVariant, EAiLabelSize } from './components/AiLabel.d'
 
+export type { IPanelProps } from './components/Panel.d'
+export type { ILayerProps } from './components/Layer.d'
+export type {
+  TLayerLevel,
+  IUseSurfaceLayerOptions,
+  IUseSurfaceLayerResult,
+  ILayerProbeResult,
+} from './composables/useSurfaceLayer.composable'
+
 // Component type definitions that don't have .d.ts files yet
 export type TModalProps = Record<string, never>
 export type TPanelProps = Record<string, never>
