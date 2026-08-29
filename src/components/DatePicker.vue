@@ -281,6 +281,7 @@
       aria-modal="true"
       :aria-label="label ? `${label} calendar` : 'Date picker'"
       class="nb-date-picker__calendar"
+      v-bind="layerProps"
       :style="calendarStyle"
       @keydown="onCalendarKeydown"
       @mousedown.prevent
@@ -392,6 +393,7 @@ import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
 import NbIcon from './Icon.vue'
 import NbGrid from './Grid.vue'
+import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 
 defineOptions({ inheritAttrs: false })
 
@@ -421,6 +423,12 @@ const props = withDefaults(defineProps<IDatePickerProps>(), {
   id: undefined,
   name: '',
 })
+
+// The calendar dialog is teleported to the document body, so its DOM parent says
+// nothing about depth. Like every floating surface it pins to the top layer,
+// which also lines it up with the menu and command palette popovers that already
+// paint `--nb-c-layer-3` directly.
+const { layerProps } = useSurfaceLayer({ overlay: true })
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | null]

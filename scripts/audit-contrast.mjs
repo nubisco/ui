@@ -9,111 +9,11 @@
  * reference. Run: node scripts/audit-contrast.mjs [--json]
  */
 
-import * as sass from 'sass-embedded'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
-import { resolve, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
+import { ROOT, dL, loadThemeResolvers, r2, ratio } from './lib/layerTokens.mjs'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const ROOT = resolve(__dirname, '..')
-
-// ─── colour maths ───────────────────────────────────────────────────────────
-
-function parseColor(v) {
-  if (!v) return null
-  v = String(v).trim()
-  let m = v.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)
-  if (m) {
-    let h = m[1]
-    if (h.length === 3)
-      h = h
-        .split('')
-        .map((c) => c + c)
-        .join('')
-    return [
-      parseInt(h.slice(0, 2), 16),
-      parseInt(h.slice(2, 4), 16),
-      parseInt(h.slice(4, 6), 16),
-    ]
-  }
-  m = v.match(/^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)/i)
-  if (m) return [+m[1], +m[2], +m[3]]
-  return null
-}
-
-const srgb = (c) => {
-  c /= 255
-  return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
-}
-const lum = (rgb) =>
-  0.2126 * srgb(rgb[0]) + 0.7152 * srgb(rgb[1]) + 0.0722 * srgb(rgb[2])
-function ratio(a, b) {
-  const A = parseColor(a),
-    B = parseColor(b)
-  if (!A || !B) return null
-  const l1 = lum(A),
-    l2 = lum(B)
-  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)
-}
-// CIE L* (perceptual lightness, 0-100) — separation of near-identical greys
-// reads better in ΔL* than in a WCAG ratio that hugs 1.0.
-function lstar(v) {
-  const y = lum(parseColor(v))
-  return y <= 216 / 24389 ? y * (24389 / 27) : Math.cbrt(y) * 116 - 16
-}
-const dL = (a, b) => Math.abs(lstar(a) - lstar(b))
-const r2 = (n) => (n == null ? null : Math.round(n * 100) / 100)
-
-// ─── compile our theme ──────────────────────────────────────────────────────
-
-function compile(mixins) {
-  const { css } = sass.compileString(
-    `@use 'theme';` + mixins.map((m) => `@include theme.${m}();`).join(''),
-    { loadPaths: [resolve(ROOT, 'src/styles')], style: 'compressed' },
-  )
-  return css
-}
-
-function propsFrom(css, selector) {
-  // grab the block(s) whose selector matches, last-wins like the cascade
-  const out = {}
-  const re = new RegExp(`(^|})\\s*([^{}]*)\\{([^{}]*)\\}`, 'g')
-  let m
-  while ((m = re.exec(css))) {
-    const sel = m[2].trim()
-    if (!selector.test(sel)) continue
-    for (const [, name, value] of m[3].matchAll(
-      /(--nb-[\w-]+)\s*:\s*([^;}]+)/g,
-    )) {
-      out[name] = value.trim()
-    }
-  }
-  return out
-}
-
-function resolver(scopes) {
-  // scopes: array of prop maps, later ones override earlier
-  const merged = Object.assign({}, ...scopes)
-  return function deref(name, depth = 0) {
-    let v = merged[name]
-    if (v == null) return null
-    while (depth < 12) {
-      const m = String(v).match(/^var\(\s*(--nb-[\w-]+)\s*(?:,\s*([^)]+))?\)$/)
-      if (!m) break
-      const next = merged[m[1]]
-      v = next != null ? next : m[2]
-      depth++
-    }
-    return v
-  }
-}
-
-const cssAll = compile(['base', 'light', 'dark'])
-const rootProps = propsFrom(cssAll, /^:root$/)
-const darkProps = propsFrom(cssAll, /(^|\s)\.dark$/)
-
-const light = resolver([rootProps])
-const dark = resolver([rootProps, darkProps])
+const { light, dark } = loadThemeResolvers()
 
 // ─── Carbon reference (real published values) ───────────────────────────────
 
