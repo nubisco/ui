@@ -53,6 +53,7 @@ $light: (
   ),
   text: #202123,
   text-muted: #343537,
+  text-subtle: #565759,
   field-bg: #cdced0,
   field-border: #6c6d6f,
 );
@@ -99,10 +100,19 @@ $dark: (
   ),
   text: #eaebec,
   text-muted: #d0d1d2,
+  text-subtle: #a7a8aa,
   field-bg: #141516,
   field-border: #626364,
 );
 
+/// The third text tier, `text-subtle`, is held to WCAG AA (4.5:1) rather than
+/// AAA, on every one of the nine painted surfaces in its theme. AAA is not
+/// reachable for a third tier: muted already sits at 8.44:1 on the deepest light
+/// surface, so a tier lighter than muted and still above 7:1 has almost no room
+/// to exist and would not read as a separate tier. Carbon makes the same call
+/// with its own helper text. Use `text-subtle` only for genuinely non-essential
+/// text, and never for anything a person must read to operate the interface.
+///
 /// Returns one value from a ramp.
 ///
 /// @param {Map} $ramp - `$light` or `$dark`

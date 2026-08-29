@@ -8,7 +8,7 @@ tabs: ['Usage', 'Api']
 
 `NbShellPanel` is a self-contained, collapsible panel that negotiates space with its siblings via flexbox. Each panel renders with its own border, background, and a small gap around it, so that stacked panels look visually detached from one another and from their container (similar to panels in Unity or Unreal Engine).
 
-Panels are layer-aware. They use `--nb-c-surface` and `--nb-c-border`, so they automatically adapt to whatever layer context they sit in. Place panels inside a `.nb-layer-0` container and they pick up the corresponding surface. Nest them deeper and they contrast accordingly.
+Panels are layer-aware. They paint `--nb-c-surface` and `--nb-c-border`, and they derive their depth from nesting: a panel inside a shell takes the layer below the shell's, and a panel inside another surface goes one deeper again, clamped at layer 3. Placing them inside a `.nb-layer-{0-3}` container still pins the whole subtree to that layer and restarts the count from there.
 
 ## Basic usage
 
@@ -117,7 +117,7 @@ Override the default size buttons by using the `#controls` slot. This lets you p
 
 ## Layer integration
 
-Panels use `--nb-c-surface` and `--nb-c-border` for their background and border. This means they respond to the layer system automatically. Place the panel container on a deeper layer and the panels contrast against it.
+Panels use `--nb-c-surface` and `--nb-c-border` for their background and border, resolved from the layer they derive. Pinning the container to a layer overrides that derivation and the panels contrast against it.
 
 <preview>
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; height: 300px;">

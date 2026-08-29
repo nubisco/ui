@@ -1,6 +1,7 @@
 <template>
   <div
     class="nb-shell-panel"
+    v-bind="layerProps"
     :class="[currentSize, { 'nb-shell-panel--fluid': fluid }]"
   >
     <!-- ═══ HEADER ═══ -->
@@ -98,12 +99,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { TShellPanelSize, IShellPanelProps } from './ShellPanel.d'
+import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 
 const props = withDefaults(defineProps<IShellPanelProps>(), {
   size: 'default',
   title: '',
   fluid: false,
 })
+
+// A shell panel is a surface holding application content, so it deepens against
+// the shell body it sits on and against any panel it is nested in.
+const { layerProps } = useSurfaceLayer()
 
 const emit = defineEmits<{
   'update:size': [size: TShellPanelSize]

@@ -202,8 +202,10 @@
     --nb-c-text-muted-a11y: #{colors.color-contrast(
         layers.token(layers.$light, text-muted)
       )};
-    --nb-c-text-subtle: var(--nb-c-nouveau-gray-500);
-    --nb-c-text-subtle-a11y: var(--nb-c-nouveau-gray-500-a11y);
+    --nb-c-text-subtle: #{layers.token(layers.$light, text-subtle)};
+    --nb-c-text-subtle-a11y: #{colors.color-contrast(
+        layers.token(layers.$light, text-subtle)
+      )};
 
     // Form field tokens: heights and padding relative to --nb-base-unit (8px)
     --nb-c-field-bg: #{layers.token(layers.$light, field-bg)};
@@ -465,7 +467,7 @@
     --nb-c-text-muted-a11y: #{colors.color-contrast(
         layers.token(layers.$dark, text-muted)
       )};
-    --nb-c-text-subtle: #{colors.get-color('nouveau-gray', 500)};
+    --nb-c-text-subtle: #{layers.token(layers.$dark, text-subtle)};
 
     // Background tiers — deepest layer for page background
     --nb-c-bg: var(--nb-c-layer-0);

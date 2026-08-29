@@ -1,5 +1,5 @@
 <template>
-  <div class="nb-board">
+  <div class="nb-board" v-bind="layerProps">
     <div class="nb-board__grid" :style="gridStyle">
       <!-- Column headers -->
       <div
@@ -91,10 +91,16 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { IBoardProps, IBoardItem, IBoardMoveEvent } from './Board.d'
+import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 
 const props = withDefaults(defineProps<IBoardProps>(), {
   lanes: undefined,
 })
+
+// Board owns the surfaces its column headers and cards paint, and those cards
+// hold consumer content. It takes the current layer so the cards separate from
+// whatever the board sits on, and pushes anything nested inside a card deeper.
+const { layerProps } = useSurfaceLayer()
 
 const emit = defineEmits<{
   move: [event: IBoardMoveEvent]
