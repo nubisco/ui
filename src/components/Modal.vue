@@ -4,6 +4,7 @@
       <div v-if="open" class="nb-modal--overlay" @click.self="onOverlayClick">
         <div
           :class="['nb-modal--content', `nb-modal--content--${size}`]"
+          v-bind="layerProps"
           role="dialog"
           aria-modal="true"
           @click.stop
@@ -41,6 +42,7 @@
 <script setup lang="ts">
 import { watch, onMounted, onUnmounted } from 'vue'
 import { ESizeShort } from '@/types/Size.d'
+import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import type { IModalProps } from './Modal.d'
 
 const props = withDefaults(defineProps<IModalProps>(), {
@@ -51,6 +53,11 @@ const props = withDefaults(defineProps<IModalProps>(), {
 })
 
 const emit = defineEmits<{ close: [] }>()
+
+// The dialog is teleported to the document body, so its DOM parent says nothing
+// about depth. An overlay pins to the top layer and pushes its own content
+// deeper from there.
+const { layerProps } = useSurfaceLayer({ overlay: true })
 
 function onOverlayClick() {
   if (props.closeOnOverlay) emit('close')

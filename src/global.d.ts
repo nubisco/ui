@@ -32,6 +32,7 @@ import ImageCropper from './components/ImageCropper.vue'
 import InterpolationChart from './components/Charts/InterpolationChart.vue'
 import JsonTree from './components/JsonTree.vue'
 import Label from './components/Label.vue'
+import Layer from './components/Layer.vue'
 import LineChart from './components/Charts/LineChart.vue'
 import Menu from './components/Menu.vue'
 import MenuBar from './components/MenuBar.vue'
@@ -100,6 +101,7 @@ declare module 'vue' {
     NbInterpolationChart: typeof InterpolationChart
     NbJsonTree: typeof JsonTree
     NbLabel: typeof Label
+    NbLayer: typeof Layer
     NbLineChart: typeof LineChart
     NbMenu: typeof Menu
     NbMenuBar: typeof MenuBar
