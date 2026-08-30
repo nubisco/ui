@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/nubisco/ui/compare/v2.0.0...v2.0.1) (2026-08-30)
+
+
+### Bug Fixes
+
+* **build:** stop publishing sourcemaps and verify the release is installable ([caa6fcf](https://github.com/nubisco/ui/commit/caa6fcf26a98b73d190c87c099bc5bf4c0aa5f27))
+
 # [2.0.0](https://github.com/nubisco/ui/compare/v1.61.0...v2.0.0) (2026-08-30)
 
 
