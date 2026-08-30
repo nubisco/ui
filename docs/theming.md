@@ -358,6 +358,10 @@ dark; the field border, the one strong-edge role, reads 3.29 (light) and 3.04
 Both ramps changed. If you set `--nb-c-layer-*` yourself, or built screens
 against the old values, re-check them.
 
+**Upgrading from 1.x?** [Upgrading](/upgrading) has the full old-to-new value
+tables for both themes, what to do about markup that annotated every layer by
+hand, and a way to pin the old values if you need more time.
+
 - **Every light value moved,** though the direction is the one it always was: a
   grey ground with lighter panels on it. The old values were `#e5e5e5` and
   `#ffffff` repeating, so layer 2 was byte-identical to layer 0 and nesting past
