@@ -63,8 +63,14 @@ export default defineConfig(({ command }) => ({
         },
       },
     },
-    // Generate sourcemaps for debugging
-    sourcemap: true,
+    // No sourcemaps in the published build. They were 18,662 files and 46.7 MB
+    // of an 80.4 MB tarball, 58% of everything shipped, and npm's ingestion of
+    // this package stalled twice at that size (1.60.1 and 2.0.0), each time
+    // needing a manual republish. Consumers do not debug through library
+    // internals often enough to justify that, and anyone who needs maps can
+    // build the library locally, where this flag is the only thing to flip.
+    // Vite omits the sourceMappingURL comments too, so nothing dangles.
+    sourcemap: false,
     // Output directory
     outDir: 'dist',
     // Clear output directory before build
