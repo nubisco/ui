@@ -1,3 +1,40 @@
+# [2.0.0](https://github.com/nubisco/ui/compare/v1.61.0...v2.0.0) (2026-08-30)
+
+
+* fix(theme)!: rebuild the dark layer ramp for AAA on every surface ([8febc45](https://github.com/nubisco/ui/commit/8febc455abd4c0698eef83b5f25465a2c03488b5)), closes [#6f6f6f](https://github.com/nubisco/ui/issues/6f6f6f) [#5e5e5e](https://github.com/nubisco/ui/issues/5e5e5e)
+* fix(theme)!: rebuild the light layer ramp for AAA on every surface ([fa17d38](https://github.com/nubisco/ui/commit/fa17d381120f6b3101ad4490260ace8362cb4d21))
+
+
+### Features
+
+* **theme:** cover the remaining surfaces, document the ramp, guard it in CI ([80749c0](https://github.com/nubisco/ui/commit/80749c0d2d525cf4be83bcd407a492566063f073))
+* **theme:** derive layer depth from nesting instead of declaring it ([b7aa84a](https://github.com/nubisco/ui/commit/b7aa84a48d959e4adc3a09f44f745e180aef0c93))
+
+
+### BREAKING CHANGES
+
+* every --nb-c-layer-*, --nb-c-text, --nb-c-text-muted,
+--nb-c-field-bg and --nb-c-field-border value changes in dark. Consumers
+overriding these should re-check their screens. --nb-c-bg and --nb-c-bg-soft
+now follow layer 0 and layer 1 rather than carrying independent values.
+
+Verify with: node scripts/audit-contrast.mjs
+
+Claude-Session: https://claude.ai/code/session_01Y7TcyQomARVtzTXfRkYngD
+* the light theme's layer direction is inverted. The page ground
+is now the lightest surface and panels get progressively darker as they nest,
+where previously the page was grey and panels were white. Consumers who set
+--nb-c-layer-* or relied on the old direction should re-check their screens.
+The alternative was tested: a variant preserving the old direction hit every
+target and still lost a blind comparison, because alternation makes layer 2
+identical to layer 0 and leaves deep nesting with no fill cue at all.
+
+Verify with: node scripts/audit-contrast.mjs
+
+Dark is unchanged here and lands separately.
+
+Claude-Session: https://claude.ai/code/session_01Y7TcyQomARVtzTXfRkYngD
+
 # [1.61.0](https://github.com/nubisco/ui/compare/v1.60.2...v1.61.0) (2026-08-27)
 
 
