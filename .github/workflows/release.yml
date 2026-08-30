@@ -56,7 +56,27 @@ jobs:
       - run: pnpm run build
 
       - name: Release
+        id: release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: npx semantic-release
+        run: |
+          before=$(node -p "require('./package.json').version")
+          npx semantic-release
+          after=$(node -p "require('./package.json').version")
+          echo "version=$after" >> "$GITHUB_OUTPUT"
+          if [ "$before" != "$after" ]; then
+            echo "released=true" >> "$GITHUB_OUTPUT"
+            echo "Released $before -> $after"
+          else
+            echo "released=false" >> "$GITHUB_OUTPUT"
+            echo "No release for these commits, staying on $after"
+          fi
+
+      # `npm publish` exiting 0 means npm accepted the tarball, not that the
+      # version is installable. Ingestion of this package has stalled twice
+      # (1.60.1, 2.0.0), each time leaving this job green while `npm install`
+      # still resolved the previous version. Fail loudly instead.
+      - name: Verify the release is installable
+        if: steps.release.outputs.released == 'true'
+        run: node scripts/verify-npm-ingestion.mjs "${{ steps.release.outputs.version }}"
