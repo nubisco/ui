@@ -16,6 +16,7 @@ import { describe, it, expect } from 'vitest'
 import {
   dL,
   loadThemeResolvers,
+  lstar as lStar,
   parseColor,
   ratio,
 } from '../scripts/lib/layerTokens.mjs'
@@ -35,6 +36,21 @@ const HOVER_MIN_DL = 3.0
 const HOVER_MAX_DL = 12.0
 /** Adjacent surfaces have to separate, by theme. */
 const SURFACE_MIN_DL = { light: 3.8, dark: 7.0 } as const
+
+/** Light alternates, so every pair of surfaces must stay apart, not just neighbours. */
+const SURFACE_MIN_PAIR_DL = 1.5
+
+/** The deepest light surface stays bright. Below this it is a descending ramp again. */
+const LIGHT_FLOOR_LSTAR = 90.0
+
+/** No light surface pinned against the white ceiling. */
+const LIGHT_CEILING_LSTAR = 98.5
+
+/** A border past this stops reading as an edge and starts reading as a wireframe. */
+const BORDER_MAX = 4.5
+
+/** A hover value this close to any resting surface reads as a depth change. */
+const HOVER_MIN_SURFACE_DL = 1.5
 /** How far a neutral is allowed to drift from grey, per channel. */
 const MAX_CHANNEL_SPREAD = 8
 
@@ -138,14 +154,90 @@ describe.each(themes)('%s layer ramp', (theme) => {
     }
   })
 
-  it('never separates less as it goes deeper', () => {
-    // Monotonic separation is what makes depth readable as an order rather
-    // than as a set of local boundaries. Small rounding room, no real slack.
-    const steps = [0, 1, 2].map((i) => dL(t.surface[i], t.surface[i + 1]))
-    for (let i = 1; i < steps.length; i++) {
-      expect(steps[i], `step ${i} vs ${i - 1}`).toBeGreaterThanOrEqual(
-        steps[i - 1] - 0.01,
+  // The two themes carry depth in different shapes, so they are guarded
+  // differently.
+  //
+  // Dark runs a monotonic ramp: separation must never shrink as depth grows,
+  // which is what makes depth readable as an order rather than a set of local
+  // boundaries.
+  //
+  // Light alternates, because a light theme should stay light as surfaces
+  // stack rather than getting muddier with every level. Alternation cannot
+  // promise growing steps, so it has to promise two other things instead: no
+  // two surfaces may collapse onto each other (the failure in Carbon's own
+  // light themes, where layer 2 is byte-identical to the background), and the
+  // borders must carry the depth order the fill cannot.
+
+  if (theme === 'dark') {
+    it('never separates less as it goes deeper', () => {
+      const steps = [0, 1, 2].map((i) => dL(t.surface[i], t.surface[i + 1]))
+      for (let i = 1; i < steps.length; i++) {
+        expect(steps[i], `step ${i} vs ${i - 1}`).toBeGreaterThanOrEqual(
+          steps[i - 1] - 0.01,
+        )
+      }
+    })
+  }
+
+  if (theme === 'light') {
+    it('alternates darker and lighter rather than only descending', () => {
+      const l = t.surface.map(lStar)
+      expect(l[1], 'layer-1 above layer-0').toBeGreaterThan(l[0])
+      expect(l[2], 'layer-2 below layer-1').toBeLessThan(l[1])
+      expect(l[3], 'layer-3 above layer-2').toBeGreaterThan(l[2])
+    })
+
+    it('keeps the deepest surface light', () => {
+      // The point of alternating. If the deepest surface sinks, the theme has
+      // quietly become a descending ramp again.
+      expect(Math.min(...t.surface.map(lStar))).toBeGreaterThanOrEqual(
+        LIGHT_FLOOR_LSTAR,
       )
+    })
+
+    it('never pins a surface against the white ceiling', () => {
+      // Glare over a long session is set by the brightest surface, the same way
+      // it is set by the darkest one in dark mode.
+      expect(Math.max(...t.surface.map(lStar))).toBeLessThanOrEqual(
+        LIGHT_CEILING_LSTAR,
+      )
+    })
+
+    it('never lets two surfaces collapse onto each other', () => {
+      for (let i = 0; i < LEVELS.length; i++) {
+        for (let j = i + 1; j < LEVELS.length; j++) {
+          expect(
+            dL(t.surface[i], t.surface[j]),
+            `layer-${i} vs layer-${j}`,
+          ).toBeGreaterThanOrEqual(SURFACE_MIN_PAIR_DL)
+        }
+      }
+    })
+
+    it('escalates borders with depth to carry the order the fill cannot', () => {
+      const ratios = LEVELS.map((i) => ratio(t.border[i], t.surface[i]))
+      for (let i = 1; i < ratios.length; i++) {
+        expect(ratios[i], `border-${i} vs border-${i - 1}`).toBeGreaterThan(
+          ratios[i - 1],
+        )
+      }
+      // ...without becoming a wireframe.
+      for (const [i, r] of ratios.entries()) {
+        expect(r, `border-${i}`).toBeLessThanOrEqual(BORDER_MAX)
+      }
+    })
+  }
+
+  it('never lets a hover surface impersonate another layer', () => {
+    // A hovered row that lands on another layer's resting colour reads as a
+    // depth change rather than a state change.
+    for (const level of LEVELS) {
+      for (const other of LEVELS) {
+        expect(
+          dL(t.hover[level], t.surface[other]),
+          `hover-${level} vs layer-${other}`,
+        ).toBeGreaterThanOrEqual(HOVER_MIN_SURFACE_DL)
+      }
     }
   })
 

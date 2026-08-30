@@ -262,17 +262,32 @@ from a tint chain, because every one of them is chosen to clear a measured
 threshold. Both ramps are a single neutral hue family and every emitted value is
 integer-channel hex.
 
-**Light** surfaces descend from a near-white page. CIE L\* 97.21 / 93.37 / 89.51
-/ 85.60, adjacent steps 3.83 / 3.87 / 3.90.
+**Light** surfaces alternate: a grey ground, a lighter panel on it, a darker
+nested section, a lighter popover again. CIE L\* 94.05 / 98.22 / 91.95 / 96.14,
+adjacent separation 4.17 / 6.28 / 4.19. The point of alternating is that the
+theme stays light as surfaces stack: the deepest surface is still L\* 96, where
+a descending ramp would have it near L\* 86.
 
 | Level | Surface   | Border    | Hover     |
 | ----- | --------- | --------- | --------- |
-| 0     | `#f6f7f9` | `#aeafb1` | `#edeef0` |
-| 1     | `#ebecee` | `#9e9fa1` | `#e2e3e5` |
-| 2     | `#e0e1e3` | `#8f9092` | `#d7d8da` |
-| 3     | `#d5d6d8` | `#818284` | `#cbccce` |
+| 0     | `#edeeef` | `#a3a4a5` | `#dcddde` |
+| 1     | `#f9fafb` | `#9c9d9e` | `#e2e3e4` |
+| 2     | `#e7e8e9` | `#838485` | `#d7d8d9` |
+| 3     | `#f3f4f5` | `#818283` | `#e1e2e3` |
 
-Text `#202123`, muted text `#343537`, field background `#cdced0`, field border `#6c6d6f`.
+Text `#242526`, muted text `#38393a`, subtle text `#545556`, field background
+`#cacbcc`, field border `#646566`.
+
+Two things separate this from a plain alternating set. All four surfaces are
+distinct, worst pair 2.08 dL\*, so nesting past one level still carries a fill
+cue. And because an alternating fill cannot express depth as an order, the
+borders do it instead: 2.15 / 2.60 / 3.05 / 3.50 against their own surface,
+escalating with depth, capped short of reading as a wireframe.
+
+No light surface goes above L\* 98.5. Glare over a long session is set by the
+brightest surface the same way it is set by the darkest one in dark mode, so a
+fill pinned against pure white is the light-theme version of a near-black
+ground.
 
 **Dark** surfaces rise from a near-black page. CIE L\* 4.63 / 11.69 / 18.87 /
 26.15, adjacent steps 7.06 / 7.18 / 7.27.
@@ -310,14 +325,14 @@ colours) are not covered by these figures or by the guard.
 
 | Surface  | Primary text | Muted text |
 | -------- | ------------ | ---------- |
-| layer-0  | 15.03        | 11.45      |
-| layer-1  | 13.63        | 10.39      |
-| layer-2  | 12.31        | 9.38       |
-| layer-3  | 11.08        | 8.44       |
-| hover-0  | 13.88        | 10.58      |
-| hover-1  | 12.55        | 9.56       |
-| hover-2  | 11.30        | 8.61       |
-| hover-3  | 10.03        | 7.64       |
+| layer-0  | 13.22        | 9.96       |
+| layer-1  | 14.69        | 11.07      |
+| layer-2  | 12.52        | 9.43       |
+| layer-3  | 13.94        | 10.51      |
+| hover-0  | 11.29        | 8.51       |
+| hover-1  | 11.95        | 9.01       |
+| hover-2  | 10.76        | 8.11       |
+| hover-3  | 11.84        | 8.92       |
 | field-bg | 10.23        | 7.80       |
 
 **Dark**
@@ -343,17 +358,18 @@ dark; the field border, the one strong-edge role, reads 3.29 (light) and 3.04
 Both ramps changed. If you set `--nb-c-layer-*` yourself, or built screens
 against the old values, re-check them.
 
-- **The light ramp direction inverted.** The page ground is now the lightest
-  surface and panels get progressively darker as they nest. Previously the page
-  was grey (`#e5e5e5`) and panels were white, alternating, so layer 2 was
-  byte-identical to layer 0 and nesting past one level had no fill cue at all.
+- **Every light value moved,** though the direction is the one it always was: a
+  grey ground with lighter panels on it. The old values were `#e5e5e5` and
+  `#ffffff` repeating, so layer 2 was byte-identical to layer 0 and nesting past
+  one level had no fill cue at all. The new set alternates without repeating and
+  keeps every surface off pure white.
 - **Every dark value moved.** The old dark ramp mixed two hue families (layer 1
   came from a pure neutral, its neighbours from a blue-ish grey) and separated
   by 6.70 / 5.20 / 5.58 dL\*, weakest in the middle. It is now one neutral
   family, separating 7.06 / 7.18 / 7.27.
 - **Muted text was failing.** 4.82:1 on light layers 0 and 2, and 3.62:1 on dark
   layer 3, which is below AA. The floor is now 7.01:1 across all nine painted
-  surfaces in both themes.
+  surfaces in both themes, 7.12:1 in light.
 - **`--nb-c-text-subtle` was failing AA everywhere.** It measured 3.32:1 on
   light layer 3 and 2.22:1 on dark layer 3 against the old values, and was
   never measured. It now clears AA on all nine surfaces in both themes.
@@ -469,7 +485,7 @@ does.
 
 `--nb-c-text-subtle` is the exception and is held to **AA (4.5:1)**, not AAA, on
 those same nine surfaces. That is arithmetic, not laziness: muted text already
-sits at 8.44:1 on the deepest light surface, so a third tier lighter than muted
+sits at 9.43:1 on the darkest light surface, so a third tier lighter than muted
 and still above 7:1 has almost no room to exist and would stop reading as a
 separate tier. Carbon makes the same call with its own helper text. Use
 `--nb-c-text-subtle` only for genuinely non-essential text, never for anything
