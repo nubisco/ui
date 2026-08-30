@@ -1,6 +1,7 @@
 <template>
   <div
     class="nb-file-uploader"
+    v-bind="layerProps"
     @dragenter.prevent="onDragEnter"
     @dragover.prevent
     @dragleave.prevent="onDragLeave"
@@ -97,12 +98,18 @@ import {
 } from './FileUploader.d'
 import NbButton from './Button.vue'
 import NbIcon from './Icon.vue'
+import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 
 const props = withDefaults(defineProps<IFileUploaderProps>(), {
   buttonLabel: 'Add file',
   variant: EVariant.Primary,
   multiple: false,
 })
+
+// The uploader itself paints nothing, but the file rows it owns paint a surface
+// with a transparent border, so they vanish when they land on a container of the
+// same layer. Taking the current layer here moves those rows one step deeper.
+const { layerProps } = useSurfaceLayer()
 
 const emit = defineEmits<{
   /** Emitted whenever the file list changes. */

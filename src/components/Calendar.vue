@@ -1,5 +1,5 @@
 <template>
-  <div class="nb-calendar">
+  <div class="nb-calendar" v-bind="layerProps">
     <!-- Header: month navigation -->
     <div class="nb-calendar__header">
       <button class="nb-calendar__today-btn" @click="goToday">Today</button>
@@ -70,6 +70,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import type { ICalendarProps, ICalendarEvent } from './Calendar.d'
+import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 
 const props = withDefaults(defineProps<ICalendarProps>(), {
   events: () => [],
@@ -77,6 +78,10 @@ const props = withDefaults(defineProps<ICalendarProps>(), {
   weekStart: 1,
   locale: undefined,
 })
+
+// The calendar paints a bordered surface that day cells and events sit on, so
+// it takes the current layer and deepens its own contents.
+const { layerProps } = useSurfaceLayer()
 
 defineEmits<{
   'day-click': [date: string]
