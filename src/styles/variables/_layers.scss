@@ -1,0 +1,142 @@
+@use 'sass:map';
+
+/// Layer ramps.
+///
+/// The four visual depth levels, defined as explicit values rather than derived
+/// from the tint ramp. Depth separation is a measured property: each step has to
+/// clear a perceptual distance from its neighbour, and every text colour has to
+/// clear AAA on every surface it can land on, including hover surfaces. A
+/// lightness-stepped tint chain cannot express that, and it also emitted
+/// fractional `rgb(229.5, ...)` channels.
+///
+/// Verify any change here with `node scripts/audit-contrast.mjs`, which measures
+/// these against the published Carbon Design System token values in
+/// `scripts/fixtures/carbon-tokens.json`.
+///
+/// @group @nubisco/layers
+
+/// Light ramp.
+///
+/// Alternates the way Carbon's light themes do, because a light theme should
+/// stay light as surfaces stack: CIE L* 94.05 ground, 98.22 panel, 91.95 nested
+/// section, 96.14 popover. The deepest surface is still a bright L* 96, so
+/// nesting never turns the page muddy.
+///
+/// Two deliberate improvements on the reference. Carbon's g10 sets layer-02
+/// byte-identical to its background and layer-03 to layer-01, so past one level
+/// of nesting the fill carries no depth information at all. Here all four
+/// surfaces are distinct, worst pair 2.08 dL*. And no surface goes above
+/// L* 98.5: a fill pinned against the L*100 ceiling under dark text is the
+/// light-theme equivalent of a near-black ground, and glare over long sessions
+/// is set by the brightest surface, not the darkest.
+///
+/// Because the fill alternates it cannot carry depth order on its own, so the
+/// borders do: 2.15 / 2.60 / 3.05 / 3.50 against their own surface, escalating
+/// with depth, capped well short of reading as a wireframe.
+///
+/// Hover darkens on every layer, 5.7 to 8.0 dL*, and every hover value sits at
+/// least 1.76 dL* from every surface value, so a hovered row never reads as
+/// another layer's resting state.
+///
+/// @type Map
+$light: (
+  surface: (
+    0: #edeeef,
+    1: #f9fafb,
+    2: #e7e8e9,
+    3: #f3f4f5,
+  ),
+  border: (
+    0: #a3a4a5,
+    1: #9c9d9e,
+    2: #838485,
+    3: #818283,
+  ),
+  hover: (
+    0: #dcddde,
+    1: #e2e3e4,
+    2: #d7d8d9,
+    3: #e1e2e3,
+  ),
+  text: #242526,
+  text-muted: #38393a,
+  text-subtle: #545556,
+  field-bg: #cacbcc,
+  field-border: #646566,
+);
+
+/// Dark ramp.
+///
+/// CIE L* 4.63 / 11.69 / 18.87 / 26.15, adjacent steps 7.06 / 7.18 / 7.27,
+/// non-decreasing so deeper nesting separates more, matching the discipline of
+/// Carbon's g100 ramp rather than our previous flat 6.70 / 5.20 / 5.58.
+///
+/// Hover REVERSES at layer 3: levels 0 to 2 lighten by about 5.1 dL*, level 3
+/// darkens by 5.42. There is no headroom above layer 3, and a hover surface
+/// lighter than it would force muted text toward white, collapsing the gap
+/// between the two text tiers. Carbon does the same thing at the top of its own
+/// g90 ramp (layer-03 #6f6f6f hovers to #5e5e5e). Direction is not the
+/// requirement, magnitude is.
+///
+/// layer-0 sits low deliberately. Raising it drags the whole ramp up, which
+/// raises layer 3, which forces muted text brighter to hold 7:1 there, which
+/// forces primary brighter still to keep the tiers apart, which makes glare
+/// worse rather than better. Halation is set at the top of the ramp, not the
+/// bottom: primary text on the page ground measures 15.96:1 here, against
+/// 17.63:1 for a near-black ground and 18.06:1 for a raised one.
+///
+/// @type Map
+$dark: (
+  surface: (
+    0: #0f1011,
+    1: #1e1f20,
+    2: #2d2e2f,
+    3: #3d3e3f,
+  ),
+  border: (
+    0: #434445,
+    1: #4d4e4f,
+    2: #595a5b,
+    3: #696a6b,
+  ),
+  hover: (
+    0: #1a1b1c,
+    1: #292a2b,
+    2: #38393a,
+    3: #313233,
+  ),
+  text: #eaebec,
+  text-muted: #d0d1d2,
+  text-subtle: #a7a8aa,
+  field-bg: #141516,
+  field-border: #626364,
+);
+
+/// The third text tier, `text-subtle`, is held to WCAG AA (4.5:1) rather than
+/// AAA, on every one of the nine painted surfaces in its theme. AAA is not
+/// reachable for a third tier: muted already sits at 9.43:1 on the darkest light
+/// surface, so a tier lighter than muted and still above 7:1 has almost no room
+/// to exist and would not read as a separate tier. Carbon makes the same call
+/// with its own helper text. Use `text-subtle` only for genuinely non-essential
+/// text, and never for anything a person must read to operate the interface.
+///
+/// Returns one value from a ramp.
+///
+/// @param {Map} $ramp - `$light` or `$dark`
+/// @param {String} $role - surface, border or hover
+/// @param {Number} $level - 0 through 3
+/// @access public
+/// @group @nubisco/layers
+@function level($ramp, $role, $level) {
+  @return map.get(map.get($ramp, $role), $level);
+}
+
+/// Returns a scalar token from a ramp.
+///
+/// @param {Map} $ramp - `$light` or `$dark`
+/// @param {String} $key - text, text-muted, field-bg or field-border
+/// @access public
+/// @group @nubisco/layers
+@function token($ramp, $key) {
+  @return map.get($ramp, $key);
+}

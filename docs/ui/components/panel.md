@@ -39,6 +39,30 @@ Panels accept any slotted content, including other components.
   </NbPanel>
 </preview>
 
+## Depth is derived from nesting
+
+A panel inside a panel paints one layer deeper on its own. Nothing names a
+depth, and the count is clamped at layer 3.
+
+<preview>
+  <NbPanel>
+    <NbLabel size="sm" muted>Panel, layer 1</NbLabel>
+    <NbPanel style="margin-top: 8px;">
+      <NbLabel size="sm" muted>Panel in a panel, layer 2</NbLabel>
+      <NbPanel style="margin-top: 8px;">
+        <NbLabel size="sm" muted>Panel in a panel in a panel, layer 3</NbLabel>
+      </NbPanel>
+    </NbPanel>
+  </NbPanel>
+</preview>
+
+Use the `layer` prop, or a `.nb-layer-{0-3}` class, only to pin or reset a
+level. See [Theming, Layers](/theming) for when that is worth doing.
+
+```vue
+<NbPanel :layer="0" />
+```
+
 ## As a footer action bar
 
 Panels are commonly used as a container for modal or form action buttons, keeping them visually separated from the main content.
@@ -73,6 +97,12 @@ Panels are commonly used as a container for modal or form action buttons, keepin
 | --------- | ---------------------------------- |
 | `default` | Any content to render inside Panel |
 
-`NbPanel` is a pure layout container with no props of its own. Use CSS custom properties or inline styles to customize appearance.
+## Props
+
+| Prop    | Type               | Default     | Description                                                                        |
+| ------- | ------------------ | ----------- | ---------------------------------------------------------------------------------- |
+| `layer` | `0 \| 1 \| 2 \| 3` | `undefined` | Pins the panel to an absolute layer. Leave unset to derive the level from nesting. |
+
+Beyond the layer it paints, `NbPanel` is a layout container. Use CSS custom properties or inline styles to customize appearance.
 
 </doc-tab>

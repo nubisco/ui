@@ -1,11 +1,20 @@
 <template>
-  <div class="nb-panel">
+  <div class="nb-panel" v-bind="layerProps">
     <slot />
   </div>
 </template>
 
 <script setup lang="ts">
-// No props — Panel is a plain surface container
+import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
+import type { IPanelProps } from './Panel.d'
+
+const props = withDefaults(defineProps<IPanelProps>(), {
+  layer: undefined,
+})
+
+// Panel paints a surface, so it takes the current layer and pushes everything
+// inside it one level deeper. `layer` forces an absolute level when needed.
+const { layerProps } = useSurfaceLayer({ level: () => props.layer })
 </script>
 
 <style lang="scss" scoped>

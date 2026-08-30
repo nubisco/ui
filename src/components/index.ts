@@ -34,6 +34,7 @@ import NbCommandPalette from './CommandPalette.vue'
 import NbMessage from './Message.vue'
 import NbModal from './Modal.vue'
 import NbNumberInput from './NumberInput.vue'
+import NbLayer from './Layer.vue'
 import NbPanel from './Panel.vue'
 import NbPieChart from './Charts/PieChart.vue'
 import NbProgressBar from './ProgressBar.vue'
@@ -98,6 +99,7 @@ const components = {
   NbMessage,
   NbModal,
   NbNumberInput,
+  NbLayer,
   NbPanel,
   NbPieChart,
   NbProgressBar,

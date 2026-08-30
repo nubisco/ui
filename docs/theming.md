@@ -100,21 +100,108 @@ const layerProps = [
 
 ## Layers
 
-Four visual depth levels that give nested components distinct surfaces. Toggle between light and dark to see how each layer adapts.
+Four visual depth levels, `0` to `3`, that keep stacked surfaces distinct in both
+themes. **Depth is derived from nesting, not declared.** A component that paints a
+surface takes the current layer and moves everything inside it one level deeper,
+clamped at 3 so deep trees repeat the top layer instead of running out.
 
-### Nested panels
+### Nesting decides depth
+
+Nothing in this example names a layer. Each panel works out its own depth from
+where it sits.
 
 <preview :props="layerProps" v-slot="{ resultingProps }">
-  <div :class="[resultingProps.theme === 'dark' ? 'dark' : '', 'nb-layer-0']" style="padding: 20px; border-radius: 8px;">
-    <NbLabel size="sm" muted>Layer 0 — page background</NbLabel>
+  <div :class="resultingProps.theme === 'dark' ? 'dark' : ''" style="padding: 20px; background: var(--nb-c-layer-0);">
+    <NbLabel size="sm" muted>Page ground, layer 0</NbLabel>
     <NbPanel style="margin-top: 8px;">
-      <NbLabel size="sm" muted>Layer 1 — panel</NbLabel>
+      <NbLabel size="sm" muted>Panel, layer 1</NbLabel>
+      <NbPanel style="margin-top: 8px;">
+        <NbLabel size="sm" muted>Panel in a panel, layer 2</NbLabel>
+        <NbPanel style="margin-top: 8px;">
+          <NbLabel size="sm" muted>Panel in a panel in a panel, layer 3</NbLabel>
+          <NbPanel style="margin-top: 8px;">
+            <NbLabel size="sm" muted>Deeper still: clamped, stays at layer 3</NbLabel>
+          </NbPanel>
+        </NbPanel>
+      </NbPanel>
+    </NbPanel>
+  </div>
+</preview>
+
+```vue
+<NbPanel>
+  <NbPanel>
+    <NbPanel>
+      <NbPanel />
+    </NbPanel>
+  </NbPanel>
+</NbPanel>
+```
+
+Nesting is counted through ordinary markup, so wrappers, grids and slots in
+between do not break the chain.
+
+### Where a layer comes from
+
+A surface resolves its level in this order, strongest first.
+
+| #   | Source                                 | Example                                            |
+| --- | -------------------------------------- | -------------------------------------------------- |
+| 1   | An explicit `level` prop               | `<NbPanel :layer="0" />`                           |
+| 2   | An explicit class on the component     | `<NbPanel class="nb-layer-3" />`                   |
+| 3   | The nearest layer authority in the DOM | a hand-written `<div class="nb-layer-2">` above it |
+| 4   | The enclosing surface's context        | a panel inside a panel                             |
+| 5   | Level 1                                | the `:root` default of `--nb-c-surface`            |
+
+Rules 3 and 4 always agree in a tree built only from library components. Rule 3
+exists so that a `.nb-layer-N` container written by an application still wins,
+which the component tree cannot see on its own.
+
+Overlays that leave the document flow (Modal, the DatePicker calendar, and the
+teleported popovers) pin to layer 3 instead of inheriting the depth of whatever
+their teleport target happens to sit in.
+
+### Which components participate
+
+These take a layer from context and deepen what they contain.
+
+| Component        | Surface it owns                                                                                                                                                    |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `NbPanel`        | its own background                                                                                                                                                 |
+| `NbShellPanel`   | its own background                                                                                                                                                 |
+| `NbDataTable`    | the table body behind toolbar, header and rows                                                                                                                     |
+| `NbCalendar`     | the calendar frame                                                                                                                                                 |
+| `NbBoard`        | its column headers and cards                                                                                                                                       |
+| `NbFileUploader` | the file rows it lists                                                                                                                                             |
+| `NbShell`        | the application frame: resolves to layer 1 at the top of a tree, exactly what its chrome already painted, and acts as the origin of depth for everything inside it |
+| `NbModal`        | pinned to layer 3, teleported                                                                                                                                      |
+| `NbDatePicker`   | its calendar dialog, pinned to layer 3, teleported                                                                                                                 |
+
+These deliberately do not, and inherit the surface of whatever they sit in.
+
+| Component                                  | Why not                                                                                                                                                                                                      |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `NbMenuBar`, `NbPagination`                | chrome strips, not containers. Their background exists to match the surface they are attached to (a pagination bar is the footer of its table), and they hold controls rather than a new ground for content. |
+| `NbJsonTree`, `NbImageCropper`             | they use the surface token for an inline editing highlight, a drag handle and a thumbnail frame. That is a fill, not a depth.                                                                                |
+| `NbMenu`, `NbCommandPalette`, `NbUserMenu` | already floating at the top of the stack: they read `--nb-c-layer-3` directly, so no context can pull them off it.                                                                                           |
+| `NbSelect`, `NbSubmenu`, sidebar flyouts   | painted from field and shell tokens, not from the layer ramp.                                                                                                                                                |
+
+### Taking explicit control
+
+`.nb-layer-{0-3}` still pins a subtree to an absolute layer and restarts the
+contextual count from there. The nearest container wins.
+
+<preview :props="layerProps" v-slot="{ resultingProps }">
+  <div :class="[resultingProps.theme === 'dark' ? 'dark' : '', 'nb-layer-0']" style="padding: 20px; background: var(--nb-c-surface);">
+    <NbLabel size="sm" muted>Container pinned to layer 0</NbLabel>
+    <NbPanel style="margin-top: 8px;">
+      <NbLabel size="sm" muted>Panel, layer 1</NbLabel>
       <NbGrid dir="col" gap="sm" style="margin-top: 8px;">
         <NbTextInput label="Name" placeholder="Enter your name" size="sm" />
-        <div class="nb-layer-2" style="padding: 12px; border-radius: 6px;">
-          <NbLabel size="sm" muted>Layer 2 — nested section</NbLabel>
+        <div class="nb-layer-2" style="padding: 12px;">
+          <NbLabel size="sm" muted>Container pinned to layer 2</NbLabel>
           <NbPanel style="margin-top: 8px;">
-            <NbLabel size="sm" muted>Layer 3 — deepest</NbLabel>
+            <NbLabel size="sm" muted>Panel, layer 3</NbLabel>
             <NbButton variant="primary" size="sm" style="margin-top: 8px;">Action</NbButton>
           </NbPanel>
         </div>
@@ -123,93 +210,297 @@ Four visual depth levels that give nested components distinct surfaces. Toggle b
   </div>
 </preview>
 
-### Side-by-side comparison
+```vue
+<!-- derived: 1, then 2 -->
+<NbPanel>
+  <NbPanel />
+</NbPanel>
 
-<preview :props="layerProps" v-slot="{ resultingProps }">
-  <NbGrid dir="row" gap="md" :class="resultingProps.theme === 'dark' ? 'dark' : ''" style="padding: 16px;">
-    <div v-for="layer in [0, 1, 2, 3]" :key="layer" :class="'nb-layer-' + layer" style="flex: 1; padding: 16px; border-radius: 8px; text-align: center;">
-      <NbLabel size="sm" muted>Layer {{ layer }}</NbLabel>
-      <NbPanel style="margin-top: 8px;">
-        <NbLabel size="sm">Panel</NbLabel>
-        <NbButton size="sm" outlined style="margin-top: 8px;">Button</NbButton>
-      </NbPanel>
-    </div>
-  </NbGrid>
-</preview>
+<!-- pinned on the component -->
+<NbPanel :layer="0" />
+<NbPanel class="nb-layer-3" />
 
-### Dark mode app shell
+<!-- pinned on a container: everything inside starts counting from 2 -->
+<NbLayer :level="2">
+  <NbPanel />
+  <!-- layer 2 -->
+</NbLayer>
 
-<preview>
-  <div class="dark nb-layer-0" style="padding: 16px; border-radius: 8px;">
-    <NbGrid dir="row" gap="md">
-      <NbPanel style="flex: 1;">
-        <NbGrid dir="col" gap="sm">
-          <NbLabel size="md">Settings</NbLabel>
-          <NbTextInput label="API Key" placeholder="sk-..." size="sm" />
-          <NbSlider :model-value="50" :min="0" :max="100" label="Volume" size="sm" />
-          <NbSwitch name="dark-mode" label="Enable notifications" size="sm" />
-        </NbGrid>
-      </NbPanel>
-      <NbPanel style="flex: 1;">
-        <NbGrid dir="col" gap="sm">
-          <NbLabel size="md">Actions</NbLabel>
-          <NbButton variant="primary" size="sm">Save changes</NbButton>
-          <NbButton variant="danger" size="sm" outlined>Delete account</NbButton>
-        </NbGrid>
-      </NbPanel>
-    </NbGrid>
-  </div>
-</preview>
-
----
-
-## How it works
-
-Apply `.nb-layer-{0-3}` to a container. All child components automatically inherit the right surface, border, and hover colors.
-
-| Level | Class         | Use                               |
-| ----- | ------------- | --------------------------------- |
-| 0     | `.nb-layer-0` | App/page background               |
-| 1     | `.nb-layer-1` | Panels, cards, sidebar body       |
-| 2     | `.nb-layer-2` | Nested panels, inspector sections |
-| 3     | `.nb-layer-3` | Overlays, popovers, modals        |
-
-```html
-<div class="dark nb-layer-0">
-  <NbPanel>
-    <!-- Automatically uses layer-1 surface -->
-    <div class="nb-layer-2">
-      <NbPanel>
-        <!-- Uses layer-2 surface -->
-      </NbPanel>
-    </div>
-  </NbPanel>
-</div>
+<!-- one step deeper without naming a number -->
+<NbLayer>
+  <NbPanel />
+</NbLayer>
 ```
 
-## Layer-aware components
+#### When to name a layer, and when not to
 
-Every component in the library consumes semantic tokens that respond to layer context. The following tokens are overridden by `.nb-layer-{N}` classes:
+Name one when:
 
-| Semantic token         | What it controls                                                      |
-| ---------------------- | --------------------------------------------------------------------- |
-| `--nb-c-surface`       | Background of Panel, Modal, file items, badges, image cropper preview |
-| `--nb-c-border`        | Borders on Panel, Checkbox, AiLabel, file items, dropzones            |
-| `--nb-c-surface-hover` | Hover states on interactive surfaces                                  |
+- you are painting your own surface in application CSS and the runtime cannot
+  help you: `.nb-layer-2` on the wrapper gives your `var(--nb-c-surface)` rule
+  the right value;
+- you are **resetting**, not counting. A region that should read as a fresh
+  ground regardless of how deep it happens to be mounted (a document canvas, a
+  preview pane, an embedded editor) is exactly what `.nb-layer-0` is for;
+- a surface is created by markup the library never sees, for example content
+  rendered by a third-party widget.
 
-Components that use `--nb-c-text`, `--nb-c-text-muted`, and `--nb-c-text-subtle` for their text (Label, Switch, Checkbox, Breadcrumbs, Toast, Modal, FileUploader) adapt to light/dark mode automatically. Text tokens are set once per theme rather than per layer.
+Do not name one when you are only counting depth you could have derived. A
+`.nb-layer-2` written because "this panel is two deep" is a fact the component
+already knows, and it becomes wrong the first time someone moves the markup. If
+you find yourself computing a number, delete it and let nesting do the work.
 
-Components that use `color-mix()` with `--nb-c-surface` (such as Badge) will also adapt, since their tinted backgrounds blend against the current surface color.
+Prefer `<NbLayer :level="N">` over the raw class inside Vue: it sets the class
+**and** the context, so components inside it agree with plain CSS inside it. The
+raw class is the right tool in a stylesheet or in markup that no Vue component
+owns.
+
+### The ramp
+
+Values are defined outright in `src/styles/variables/_layers.scss`, not derived
+from a tint chain, because every one of them is chosen to clear a measured
+threshold. Both ramps are a single neutral hue family and every emitted value is
+integer-channel hex.
+
+**Light** surfaces alternate: a grey ground, a lighter panel on it, a darker
+nested section, a lighter popover again. CIE L\* 94.05 / 98.22 / 91.95 / 96.14,
+adjacent separation 4.17 / 6.28 / 4.19. The point of alternating is that the
+theme stays light as surfaces stack: the deepest surface is still L\* 96, where
+a descending ramp would have it near L\* 86.
+
+| Level | Surface   | Border    | Hover     |
+| ----- | --------- | --------- | --------- |
+| 0     | `#edeeef` | `#a3a4a5` | `#dcddde` |
+| 1     | `#f9fafb` | `#9c9d9e` | `#e2e3e4` |
+| 2     | `#e7e8e9` | `#838485` | `#d7d8d9` |
+| 3     | `#f3f4f5` | `#818283` | `#e1e2e3` |
+
+Text `#242526`, muted text `#38393a`, subtle text `#545556`, field background
+`#cacbcc`, field border `#646566`.
+
+Two things separate this from a plain alternating set. All four surfaces are
+distinct, worst pair 2.08 dL\*, so nesting past one level still carries a fill
+cue. And because an alternating fill cannot express depth as an order, the
+borders do it instead: 2.15 / 2.60 / 3.05 / 3.50 against their own surface,
+escalating with depth, capped short of reading as a wireframe.
+
+No light surface goes above L\* 98.5. Glare over a long session is set by the
+brightest surface the same way it is set by the darkest one in dark mode, so a
+fill pinned against pure white is the light-theme version of a near-black
+ground.
+
+**Dark** surfaces rise from a near-black page. CIE L\* 4.63 / 11.69 / 18.87 /
+26.15, adjacent steps 7.06 / 7.18 / 7.27.
+
+| Level | Surface   | Border    | Hover     |
+| ----- | --------- | --------- | --------- |
+| 0     | `#0f1011` | `#434445` | `#1a1b1c` |
+| 1     | `#1e1f20` | `#4d4e4f` | `#292a2b` |
+| 2     | `#2d2e2f` | `#595a5b` | `#38393a` |
+| 3     | `#3d3e3f` | `#696a6b` | `#313233` |
+
+Text `#eaebec`, muted text `#d0d1d2`, field background `#141516`, field border `#626364`.
+
+Adjacent separation never decreases with depth in either theme, so nesting reads
+as a position in an order rather than as a set of local boundaries.
+
+Dark hover reverses direction at layer 3: levels 0 to 2 lighten by about 5.1
+dL\*, level 3 darkens by 5.42. There is no headroom above layer 3, and a hover
+surface lighter than it would push muted text toward white and collapse the gap
+between the two text tiers.
+
+### Measured contrast
+
+Every ratio below is WCAG 2.x, measured on the compiled stylesheet by
+`node scripts/audit-contrast.mjs` and enforced on every commit by
+`tests/layerContrast.test.ts`. The bar is AAA (7:1) for `--nb-c-text` and
+`--nb-c-text-muted` on every surface text can land on, resting **and** hovered,
+plus the field background. `--nb-c-text-subtle` is held to AA on the same nine
+surfaces, for the reason given under Custom Properties below.
+
+Tokens outside the layer ramp (selected, active and accent fills, and the status
+colours) are not covered by these figures or by the guard.
+
+**Light**
+
+| Surface  | Primary text | Muted text |
+| -------- | ------------ | ---------- |
+| layer-0  | 13.22        | 9.96       |
+| layer-1  | 14.69        | 11.07      |
+| layer-2  | 12.52        | 9.43       |
+| layer-3  | 13.94        | 10.51      |
+| hover-0  | 11.29        | 8.51       |
+| hover-1  | 11.95        | 9.01       |
+| hover-2  | 10.76        | 8.11       |
+| hover-3  | 11.84        | 8.92       |
+| field-bg | 10.23        | 7.80       |
+
+**Dark**
+
+| Surface  | Primary text | Muted text |
+| -------- | ------------ | ---------- |
+| layer-0  | 15.96        | 12.46      |
+| layer-1  | 13.83        | 10.80      |
+| layer-2  | 11.40        | 8.90       |
+| layer-3  | 8.98         | 7.01       |
+| hover-0  | 14.45        | 11.28      |
+| hover-1  | 12.05        | 9.40       |
+| hover-2  | 9.70         | 7.57       |
+| hover-3  | 10.76        | 8.40       |
+| field-bg | 15.32        | 11.96      |
+
+Borders read 2.05 to 2.64 against their own surface in light and 1.95 to 1.98 in
+dark; the field border, the one strong-edge role, reads 3.29 (light) and 3.04
+(dark) against the field it encloses.
+
+### Breaking change
+
+Both ramps changed. If you set `--nb-c-layer-*` yourself, or built screens
+against the old values, re-check them.
+
+- **Every light value moved,** though the direction is the one it always was: a
+  grey ground with lighter panels on it. The old values were `#e5e5e5` and
+  `#ffffff` repeating, so layer 2 was byte-identical to layer 0 and nesting past
+  one level had no fill cue at all. The new set alternates without repeating and
+  keeps every surface off pure white.
+- **Every dark value moved.** The old dark ramp mixed two hue families (layer 1
+  came from a pure neutral, its neighbours from a blue-ish grey) and separated
+  by 6.70 / 5.20 / 5.58 dL\*, weakest in the middle. It is now one neutral
+  family, separating 7.06 / 7.18 / 7.27.
+- **Muted text was failing.** 4.82:1 on light layers 0 and 2, and 3.62:1 on dark
+  layer 3, which is below AA. The floor is now 7.01:1 across all nine painted
+  surfaces in both themes, 7.12:1 in light.
+- **`--nb-c-text-subtle` was failing AA everywhere.** It measured 3.32:1 on
+  light layer 3 and 2.22:1 on dark layer 3 against the old values, and was
+  never measured. It now clears AA on all nine surfaces in both themes.
+- **Surfaces were fractional.** The old tint chain emitted
+  `rgb(229.5, 229.5, 229.5)`. Every token is now integer-channel hex.
+- **`--nb-c-field-bg` was the same value as layer 0**, so a field on the page
+  had no fill boundary. It is now a distinct value in both themes.
+- **`NbModal` now paints layer 3** rather than layer 1, and a surface nested in
+  another surface now deepens instead of matching it. That is the defect being
+  fixed, and it is the one difference visible in markup that never used
+  `.nb-layer-N`.
+
+Markup that annotated every nesting site by hand renders exactly as it did
+before; that case is covered by tests.
+
+## API
+
+### `useSurfaceLayer()`
+
+For component authors. Resolves the level and returns the attributes to bind on
+the element that paints the surface.
+
+```ts
+import { useSurfaceLayer } from '@nubisco/ui'
+
+const { level, layerClass, layerProps } = useSurfaceLayer()
+```
+
+```vue
+<template>
+  <div class="my-card" v-bind="layerProps">
+    <slot />
+  </div>
+</template>
+```
+
+`layerProps` carries the `nb-layer-N` class and a `data-nb-layer` marker. The
+marker is what tells a painted surface (children go one deeper) apart from a
+bare context class (children paint exactly N).
+
+| Option           | Meaning                                                                   |
+| ---------------- | ------------------------------------------------------------------------- |
+| `level`          | force an absolute level, ignoring context                                 |
+| `overlay`        | the surface is teleported or floating: pin to layer 3, skip the DOM probe |
+| `probe`          | run the mount-time DOM probe. Defaults on, off for overlays               |
+| `el`             | the element that paints, when it is not the component root                |
+| `provideContext` | publish context to descendants. Defaults on                               |
+
+### `useLayer()`
+
+Read-only. Reports the level the next surface below this point would paint,
+which is what a component needs to decide, for example, which token to tint
+against.
+
+```ts
+const { level } = useLayer()
+```
+
+### `<NbLayer>`
+
+A context node, not a painted surface. With `level` it is exactly
+`.nb-layer-N`. Without one it pushes its subtree one step deeper. `as` picks the
+element it renders.
+
+```vue
+<NbLayer as="section" :level="0">
+  <NbPanel />
+  <!-- layer 0 -->
+</NbLayer>
+```
+
+### Limitations
+
+Stated plainly, because they are real.
+
+- **The DOM probe is a mount-time snapshot.** A surface reads its surroundings
+  once, on mount, and corrects itself on the next tick. Moving a mounted subtree
+  into a container at a different depth does not re-derive its layer. Remount it,
+  or pin it.
+- **All overlays share the ceiling.** Every teleported surface pins to layer 3,
+  so a popover opened from inside a modal cannot separate itself from the modal
+  by fill alone. It separates by border and shadow instead.
+- **Nesting past 3 repeats.** Depth 4 and beyond paint layer 3, matching
+  Carbon's clamp. If your tree is that deep, the fill is no longer carrying the
+  hierarchy and something else should.
+- **CSS-only consumers get the utility classes, not the derivation.** Depth
+  counting needs a runtime that can see the component tree. Without Vue,
+  `.nb-layer-N` behaves exactly as it always has, and it is the whole mechanism
+  available. This was measured rather than assumed: three CSS-only designs
+  (a descendant chain, the same chain at zero specificity, and single-block token
+  rotation) were prototyped and each failed on subtree resets or on teleported
+  nodes. `@scope` handles both directions but its support floor is too high for
+  this library to depend on.
+- **The layer classes only carry three tokens.** `--nb-c-surface`,
+  `--nb-c-border` and `--nb-c-surface-hover`. Anything else you paint stays where
+  it was.
+
+## Layer-aware tokens
+
+`.nb-layer-{N}`, and every component that resolves a layer, reassign exactly
+these three.
+
+| Semantic token         | What it controls            |
+| ---------------------- | --------------------------- |
+| `--nb-c-surface`       | the layer's background fill |
+| `--nb-c-border`        | the layer's border colour   |
+| `--nb-c-surface-hover` | the layer's hover fill      |
+
+Text tokens are set once per theme, not per layer. That is the point of the
+ramp: `--nb-c-text` and `--nb-c-text-muted` clear AAA on all four layers, all
+four hover states and the field, so text does not have to change when depth
+does.
+
+`--nb-c-text-subtle` is the exception and is held to **AA (4.5:1)**, not AAA, on
+those same nine surfaces. That is arithmetic, not laziness: muted text already
+sits at 9.43:1 on the darkest light surface, so a third tier lighter than muted
+and still above 7:1 has almost no room to exist and would stop reading as a
+separate tier. Carbon makes the same call with its own helper text. Use
+`--nb-c-text-subtle` only for genuinely non-essential text, never for anything
+someone has to read to operate the interface.
+
+Components that tint with `color-mix()` against `var(--nb-c-surface)` (Badge,
+for example) follow the current layer automatically.
 
 ## Tokens
 
-Each layer defines three CSS custom properties:
-
 | Token                     | Description                    |
 | ------------------------- | ------------------------------ |
-| `--nb-c-layer-{N}`        | Surface background for layer N |
-| `--nb-c-layer-border-{N}` | Border color for layer N       |
-| `--nb-c-layer-hover-{N}`  | Hover background for layer N   |
+| `--nb-c-layer-{N}`        | surface background for layer N |
+| `--nb-c-layer-border-{N}` | border colour for layer N      |
+| `--nb-c-layer-hover-{N}`  | hover background for layer N   |
 
 Override them to match your brand:
 
@@ -222,23 +513,43 @@ Override them to match your brand:
 }
 ```
 
+If you do, measure the result. `node scripts/audit-contrast.mjs` prints the same
+report the library holds itself to, including the published Carbon Design System
+values for comparison.
+
 ## Authoring layer-aware components
 
-When building custom components that should respond to layers, use these semantic tokens instead of palette colors:
+Paint with the semantic tokens, never with palette colours, and bind
+`layerProps` on whichever element carries the background.
 
-```scss
+```vue
+<template>
+  <div class="my-card" v-bind="layerProps">
+    <slot />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useSurfaceLayer } from '@nubisco/ui'
+
+const { layerProps } = useSurfaceLayer()
+</script>
+
+<style lang="scss" scoped>
 .my-card {
-  background: var(--nb-c-surface); // adapts to layer context
-  border: 1px solid var(--nb-c-border); // adapts to layer context
-  color: var(--nb-c-text); // adapts to light/dark mode
+  background: var(--nb-c-surface);
+  border: 1px solid var(--nb-c-border);
+  color: var(--nb-c-text);
 
   &:hover {
-    background: var(--nb-c-surface-hover); // adapts to layer context
+    background: var(--nb-c-surface-hover);
   }
 }
+</style>
 ```
 
-For tinted backgrounds (e.g. status badges), use `color-mix()` with `var(--nb-c-surface)` so the tint adapts to the current layer:
+For tinted backgrounds, mix against `var(--nb-c-surface)` so the tint follows the
+layer:
 
 ```scss
 .my-status {
