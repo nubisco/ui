@@ -135,7 +135,7 @@ Contextual feedback with `NbMessage`, compact labels with `NbLabel`, and count i
 
 ## Data Tables
 
-`NbDataTable` is a presentational, data-driven table for read-mostly application lists, modeled on the Carbon Design System. It ships full `<table>` semantics with controlled sorting (`aria-sort`), row selection, loading / empty / error states, density, a sticky header, and a companion `NbPagination` footer. It is not an editable spreadsheet, reach for `NbSpreadsheet` when cells need in-place editing.
+`NbDataTable` is a presentational, data-driven table for read-mostly application lists. It ships full `<table>` semantics with controlled sorting (`aria-sort`), row selection, loading / empty / error states, density, a sticky header, and a companion `NbPagination` footer. It is not an editable spreadsheet, reach for `NbSpreadsheet` when cells need in-place editing.
 
 <preview>
   <NbDataTable

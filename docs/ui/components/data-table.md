@@ -6,7 +6,7 @@ tabs: ['Usage', 'Api']
 
 <doc-tab name="Usage">
 
-`NbDataTable` is a presentational, data-driven table for read-mostly application lists, modeled on the [Carbon Design System Data Table](https://carbondesignsystem.com/components/data-table/usage/). It ships full `<table>` semantics, controlled sorting, row selection, loading / empty / error states, density options, a sticky header with horizontal scroll, and a companion `NbPagination` footer.
+`NbDataTable` is a presentational, data-driven table for read-mostly application lists. It ships full `<table>` semantics, controlled sorting, row selection, loading / empty / error states, density options, a sticky header with horizontal scroll, and a companion `NbPagination` footer.
 
 It is deliberately **not** an editable spreadsheet. When cells need in-place editing, reach for [`NbSpreadsheet`](/ui/labs/spreadsheet) instead.
 
@@ -49,7 +49,7 @@ const rows: Member[] = [
 
 ## Sorting
 
-Sorting is **controlled**: the table renders the `sortState` you pass and emits a `sort` event with the next state when a sortable header is activated (click or keyboard). Direction cycles `asc → desc → none`, matching Carbon. Apply the ordering yourself (or server-side) so the component stays honest about what it displays. Sortable headers expose `aria-sort`.
+Sorting is **controlled**: the table renders the `sortState` you pass and emits a `sort` event with the next state when a sortable header is activated (click or keyboard). Direction cycles `asc → desc → none`. Apply the ordering yourself (or server-side) so the component stays honest about what it displays. Sortable headers expose `aria-sort`.
 
 <preview>
   <NbDataTable
