@@ -176,6 +176,8 @@ These take a layer from context and deepen what they contain.
 | `NbShell`        | the application frame: resolves to layer 1 at the top of a tree, exactly what its chrome already painted, and acts as the origin of depth for everything inside it |
 | `NbModal`        | pinned to layer 3, teleported                                                                                                                                      |
 | `NbDatePicker`   | its calendar dialog, pinned to layer 3, teleported                                                                                                                 |
+| `NbInfoHint`     | its hint popover, pinned to layer 3, teleported                                                                                                                    |
+| `NbWalkthrough`  | its coach-mark popover, pinned to layer 3, teleported                                                                                                              |
 
 These deliberately do not, and inherit the surface of whatever they sit in.
 
