@@ -66,6 +66,7 @@ const out = {
       'color',
       'typography',
       'spacing',
+      'radius',
       'animation',
       'zIndex',
       'grid',
@@ -81,6 +82,7 @@ const out = {
     typeSet: {},
   },
   spacing: {},
+  radius: {},
   animation: {},
   zIndex: {},
   grid: {},
@@ -147,6 +149,12 @@ for (const [name, rawValue] of Object.entries(raw)) {
   }
   if (name.startsWith('spacing-')) {
     out.spacing[name.slice(8)] = token(rawValue, 'dimension')
+    continue
+  }
+
+  // ── Radius ───────────────────────────────────────────────────────────────
+  if (name.startsWith('radius-')) {
+    out.radius[name.slice(7)] = token(rawValue, 'dimension')
     continue
   }
 

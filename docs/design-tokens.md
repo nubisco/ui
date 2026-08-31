@@ -27,6 +27,12 @@ The token data is also published as a machine-readable file at [`/tokens.json`](
   <tokens-viewer section="spacing" />
 </ClientOnly>
 
+## Radius
+
+<ClientOnly>
+  <tokens-viewer section="radius" />
+</ClientOnly>
+
 ## Animation
 
 <ClientOnly>

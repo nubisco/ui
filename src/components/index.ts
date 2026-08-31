@@ -18,6 +18,7 @@ import NbFlag from './Flag.vue'
 import NbForm from './Form.vue'
 import NbGrid from './Grid.vue'
 import NbIcon from './Icon.vue'
+import NbInfoHint from './InfoHint.vue'
 import NbInterpolationChart from './Charts/InterpolationChart.vue'
 import NbImageCropper from './ImageCropper.vue'
 import NbJsonTree from './JsonTree.vue'
@@ -62,6 +63,7 @@ import NbBlueprintBackground from './BlueprintBackground.vue'
 import NbBlueprintCard from './BlueprintCard.vue'
 import NbBlueprintControls from './BlueprintControls.vue'
 import NbBlueprintMinimap from './BlueprintMinimap.vue'
+import NbWalkthrough from './Walkthrough.vue'
 
 const components = {
   NbAiLabel,
@@ -83,6 +85,7 @@ const components = {
   NbForm,
   NbGrid,
   NbIcon,
+  NbInfoHint,
   NbInterpolationChart,
   NbImageCropper,
   NbJsonTree,
@@ -127,6 +130,7 @@ const components = {
   NbBlueprintCard,
   NbBlueprintControls,
   NbBlueprintMinimap,
+  NbWalkthrough,
 }
 
 export default {

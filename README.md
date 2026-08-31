@@ -210,6 +210,13 @@ Most component libraries impose styling opinions that are hard to override. Nubi
 | :-------- | :-------------------------------------------------------- |
 | `NbTabs`  | Tab bar with optional panels, line and contained variants |
 
+### Onboarding
+
+| Component       | Description                                                                       |
+| :-------------- | :-------------------------------------------------------------------------------- |
+| `NbInfoHint`    | Discreet info affordance revealing a description on hover, focus or tap           |
+| `NbWalkthrough` | Guided product tour: spotlight, coach-mark popover, versioned per-user completion |
+
 ---
 
 ## Grid System

@@ -29,6 +29,7 @@ import GanttChart from './components/Charts/GanttChart.vue'
 import Grid from './components/Grid.vue'
 import Icon from './components/Icon.vue'
 import ImageCropper from './components/ImageCropper.vue'
+import InfoHint from './components/InfoHint.vue'
 import InterpolationChart from './components/Charts/InterpolationChart.vue'
 import JsonTree from './components/JsonTree.vue'
 import Label from './components/Label.vue'
@@ -66,6 +67,7 @@ import Toast from './components/Toast.vue'
 import Tree from './components/Tree.vue'
 import TreeNode from './components/TreeNode.vue'
 import UserMenu from './components/UserMenu.vue'
+import Walkthrough from './components/Walkthrough.vue'
 
 declare module 'vue' {
   interface GlobalComponents {
@@ -98,6 +100,7 @@ declare module 'vue' {
     NbGrid: typeof Grid
     NbIcon: typeof Icon
     NbImageCropper: typeof ImageCropper
+    NbInfoHint: typeof InfoHint
     NbInterpolationChart: typeof InterpolationChart
     NbJsonTree: typeof JsonTree
     NbLabel: typeof Label
@@ -135,6 +138,7 @@ declare module 'vue' {
     NbTree: typeof Tree
     NbTreeNode: typeof TreeNode
     NbUserMenu: typeof UserMenu
+    NbWalkthrough: typeof Walkthrough
   }
 }
 

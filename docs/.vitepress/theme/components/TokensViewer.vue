@@ -27,6 +27,7 @@ interface TokensJson {
     typeSet: Record<string, TypeSet>
   }
   spacing: Record<string, Token>
+  radius: Record<string, Token>
   animation: Record<string, Token>
   zIndex: Record<string, Token | Record<string, Token>>
 }
@@ -62,6 +63,10 @@ const spacingEntries = computed(() =>
   tokens.value
     ? Object.entries(tokens.value.spacing).filter(([k]) => k !== 'base-unit')
     : [],
+)
+
+const radiusEntries = computed(() =>
+  tokens.value ? Object.entries(tokens.value.radius ?? {}) : [],
 )
 
 const animationEntries = computed(() =>
@@ -202,6 +207,25 @@ function isLight(color: string): boolean {
       </div>
     </template>
 
+    <!-- ── Radius ────────────────────────────────────────────────── -->
+    <template v-if="!section || section === 'radius'">
+      <h2>Corner Radii</h2>
+      <div class="tv-radius-list">
+        <div
+          v-for="[name, token] in radiusEntries"
+          :key="name"
+          class="tv-radius-item"
+        >
+          <div
+            class="tv-radius-swatch"
+            :style="{ borderRadius: `var(--nb-radius-${name})` }"
+          />
+          <code>--nb-radius-{{ name }}</code>
+          <span class="tv-radius-value">{{ token.$value }}</span>
+        </div>
+      </div>
+    </template>
+
     <!-- ── Animation ─────────────────────────────────────────────── -->
     <template v-if="!section || section === 'animation'">
       <h2>Animation Durations</h2>
@@ -220,6 +244,27 @@ function isLight(color: string): boolean {
 </template>
 
 <style scoped>
+.tv-radius-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin: 1rem 0 2rem;
+}
+.tv-radius-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: flex-start;
+}
+.tv-radius-swatch {
+  width: 64px;
+  height: 64px;
+  background: var(--nb-c-primary);
+}
+.tv-radius-value {
+  color: var(--vp-c-text-2);
+  font-size: 0.8rem;
+}
 .tv-error {
   color: var(--vp-c-danger-1);
   padding: 1rem;
