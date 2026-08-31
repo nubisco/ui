@@ -164,7 +164,7 @@ The chart family is being rolled out in phases. The current release ships the th
 | Planned | Network       | Force-directed via `d3-force`                                 |
 | Planned | Alluvial      | Sankey via `d3-sankey`                                        |
 
-Inspiration for the family taxonomy comes from [IBM Carbon's data-visualization guidelines](https://carbondesignsystem.com/data-visualization/chart-types/).
+The family taxonomy follows established data-visualization practice: one chart type per question, not per dataset.
 
 </doc-tab>
 
