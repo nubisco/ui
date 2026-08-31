@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/nubisco/ui/compare/v2.0.1...v2.1.0) (2026-08-31)
+
+
+### Features
+
+* **onboarding:** add NbInfoHint and NbWalkthrough ([#7](https://github.com/nubisco/ui/issues/7)) ([814f87e](https://github.com/nubisco/ui/commit/814f87e27776356d7d9b829e10fc3eb1ced9e5f1))
+
 ## [2.0.1](https://github.com/nubisco/ui/compare/v2.0.0...v2.0.1) (2026-08-30)
 
 
