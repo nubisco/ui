@@ -10,7 +10,7 @@ tabs: ['Usage', 'Api']
 
 <doc-tab name="Usage">
 
-`NbSpreadsheet` is a spreadsheet-style data grid. It draws on the same design language as [`NbBoard`](/ui/components/board) and IBM Carbon's Data Spreadsheet pattern: dense rows, hairline borders, a sticky header, an inset focus ring, and tabular numerics throughout.
+`NbSpreadsheet` is a spreadsheet-style data grid. It shares a design language with [`NbBoard`](/ui/components/board): dense rows, hairline borders, a sticky header, an inset focus ring, and tabular numerics throughout.
 
 The contract is intentionally narrow: the host owns the data and the formulas, the component renders the grid, captures input, and emits changes. There is no built-in formula engine — derived cells come from a `computed` callback the host supplies, so you can wire it into Vuex, Pinia, a worker thread, or a remote service without forking the component.
 

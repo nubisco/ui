@@ -6,7 +6,7 @@ tabs: ['Usage', 'Accessibility', 'Api']
 
 <doc-tab name="Usage">
 
-`NbTree` and `NbTreeNode` provide a hierarchical tree view for navigating nested data structures like file systems, project explorers, or organizational charts. Inspired by the [Carbon Design System Tree View](https://carbondesignsystem.com/components/tree-view/usage/).
+`NbTree` and `NbTreeNode` provide a hierarchical tree view for navigating nested data structures like file systems, project explorers, or organizational charts.
 
 ## Basic Usage
 

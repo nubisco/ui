@@ -12,8 +12,8 @@ just a version bump. Look at a couple of screens and move on.
 
 ### Why it changed
 
-The layer system was measured against the published Carbon Design System token
-values and did not do what it existed to do.
+We audited the layer system against WCAG contrast targets and decided to
+rebuild it: the ramp was not doing the job it existed to do.
 
 - Muted text scored **3.62:1** on dark layer 3, below WCAG AA, and 4.82:1 on
   light layers 0 and 2.
@@ -33,7 +33,7 @@ values and did not do what it existed to do.
 Both text tiers now clear **AAA (7:1)** on all nine painted surfaces per theme:
 four layers, four hover states, and the field. `--nb-c-text-subtle` clears AA on
 the same nine. Run `node scripts/audit-contrast.mjs` in the repo to see the
-current numbers next to Carbon's.
+current numbers against a published reference set.
 
 ### 1. Token values moved
 
@@ -88,11 +88,11 @@ Two shape changes worth knowing when you re-pick values:
 
 - **Dark hover reverses at layer 3.** Levels 0 to 2 lighten, level 3 darkens.
   There is no headroom above layer 3, and a hover lighter than it forces muted
-  text toward white and collapses the gap between the two text tiers. Carbon
-  does the same at the top of its own g90 ramp.
+  text toward white and collapses the gap between the two text tiers.
+  Established dark ramps reverse at the top of the stack for the same reason.
 - **Light alternates rather than descending.** Grey ground, lighter panel,
   darker nested section, lighter popover, so the theme stays light as surfaces
-  stack. Unlike Carbon's light themes, no two surfaces repeat.
+  stack. No two surfaces repeat, so every level of nesting still carries depth.
 
 ### 2. `--nb-c-bg` and `--nb-c-bg-soft` now follow the ramp
 
@@ -190,7 +190,7 @@ claiming one.
 It is held to **AA (4.5:1)**, not AAA, and that is deliberate. Muted text
 already sits at 9.43:1 on the darkest light surface, so a third tier lighter
 than muted and still above 7:1 has almost no room to exist and would stop
-reading as a separate tier. Carbon makes the same call for its helper text.
+reading as a separate tier. That is the usual call for a helper-text tier.
 
 Use it only for genuinely non-essential text. If you used `--nb-c-text-subtle`
 for anything someone has to read to operate your interface, move that to

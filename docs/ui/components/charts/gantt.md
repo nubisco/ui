@@ -6,7 +6,7 @@ tabs: ['Usage', 'Api']
 
 <doc-tab name="Usage">
 
-`NbGanttChart` visualizes project schedules as horizontal bars along a timeline. It supports task dependencies, milestones, progress indicators, status coloring, and collapsible groups, following Carbon Design System conventions.
+`NbGanttChart` visualizes project schedules as horizontal bars along a timeline. It supports task dependencies, milestones, progress indicators, status coloring, and collapsible groups.
 
 <preview>
   <NbGanttChart

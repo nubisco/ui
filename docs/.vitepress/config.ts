@@ -320,8 +320,7 @@ export default withMermaid(
       footer: {
         message:
           'Released under the <a href="https://github.com/nubisco/ui/blob/master/LICENSE">MIT License</a>. · <a href="https://github.com/sponsors/joseporto">♥ Sponsor this project</a>',
-        copyright:
-          'Copyright © 2026 <a href="https://nubisco.io">Nubisco</a> · Inspired by <a href="https://carbondesignsystem.com" target="_blank" rel="noopener">IBM Carbon Design System</a>',
+        copyright: 'Copyright © 2026 <a href="https://nubisco.io">Nubisco</a>',
       },
     },
     sitemap: {
