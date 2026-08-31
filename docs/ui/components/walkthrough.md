@@ -334,16 +334,16 @@ In light themes the cut-out reads on its own: the undimmed page against the scri
 
 ## Tokens used
 
-| Token                                     | Applied to                                  |
-| ----------------------------------------- | ------------------------------------------- |
-| `--nb-c-scrim-strong`                     | The dimmed page behind the spotlight        |
-| `--nb-c-scrim`                            | Popover shadow                              |
-| `--nb-c-primary`                          | Spotlight outline (load-bearing, see below) |
-| `--nb-c-layer-3`, `--nb-c-layer-border-3` | Popover surface and border (overlay depth)  |
-| `--nb-c-text`, `--nb-c-text-muted`        | Title; body and step counter                |
-| `--nb-c-focus-ring`                       | Focus outline                               |
-| `--nb-radius-lg`                          | Popover rounding                            |
-| `--nb-zindex-modal`                       | Overlay stacking level                      |
+| Token                                                    | Applied to                                  |
+| -------------------------------------------------------- | ------------------------------------------- |
+| `--nb-c-scrim-strong`                                    | The dimmed page behind the spotlight        |
+| `--nb-c-scrim`                                           | Popover shadow                              |
+| `--nb-c-primary`                                         | Spotlight outline (load-bearing, see below) |
+| `--nb-c-layer-3`, `--nb-c-layer-border-3`                | Popover surface and border (overlay depth)  |
+| `--nb-c-text`, `--nb-c-text-muted`, `--nb-c-text-subtle` | Title, body, step counter                   |
+| `--nb-c-focus-ring`                                      | Focus outline                               |
+| `--nb-radius-lg`                                         | Popover rounding                            |
+| `--nb-zindex-modal`                                      | Overlay stacking level                      |
 
 </doc-tab>
 

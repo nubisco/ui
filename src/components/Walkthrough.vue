@@ -643,11 +643,13 @@ defineExpose({
   font-size: var(--nb-type-label-sm-size);
   font-weight: var(--nb-type-label-sm-weight);
   line-height: var(--nb-type-label-sm-line-height);
-  // Muted, not subtle: on the overlay layer --nb-c-text-subtle measures
-  // 6.78:1 (light) / 4.50:1 (dark), which clears AA but not the AAA bar the
-  // layer ramp holds text to. --nb-c-text-muted is 10.51:1 / 7.01:1 there and
-  // still reads as secondary next to the title.
-  color: var(--nb-c-text-muted);
+  // Subtle is the right tier here and the ramp is built for it: the token is
+  // deliberately held to AA (4.5:1), not AAA, and measures 6.78:1 light /
+  // 4.50:1 dark on the overlay layer. A step counter is orientation, not
+  // something you have to read to operate the tour, which is exactly the use
+  // the theming guide reserves it for. Muted would clear AAA but flatten the
+  // hierarchy, since the body copy above is already muted.
+  color: var(--nb-c-text-subtle);
   white-space: nowrap;
 }
 

@@ -32,7 +32,7 @@ These are the layers available in the standard page context, in ascending order:
 | `--nb-zindex-titlebar`              | `root + 20`        | Application title bar.                            |
 | `--nb-zindex-navigation`            | `root + 100`       | Main navigation (sidebar, top nav).               |
 | `--nb-zindex-backdrop`              | `navigation + 200` | Modal backdrop scrim.                             |
-| `--nb-zindex-modal`                 | `backdrop + 1`     | Modal dialog.                                     |
+| `--nb-zindex-modal`                 | `backdrop + 1`     | Modal dialog, walkthrough overlay.                |
 | `--nb-zindex-toast`                 | `modal + 50`       | Toast / notification. Always above modals.        |
 | `--nb-zindex-tooltip`               | `modal + 100`      | Tooltip. Topmost layer.                           |
 
