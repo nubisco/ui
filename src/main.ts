@@ -77,6 +77,11 @@ export type {
 } from './components/Charts/GanttChart.d'
 export { default as NbGrid } from './components/Grid.vue'
 export { default as NbIcon } from './components/Icon.vue'
+export { default as NbInfoHint } from './components/InfoHint.vue'
+export type {
+  IInfoHintProps,
+  TInfoHintPlacement,
+} from './components/InfoHint.d'
 export { default as NbJsonTree } from './components/JsonTree.vue'
 export { default as NbInterpolationChart } from './components/Charts/InterpolationChart.vue'
 export type {
@@ -199,12 +204,46 @@ export type {
   TBlueprintBackgroundVariant,
 } from './components/BlueprintBackground.d'
 
+// Onboarding: walkthrough / product tour
+export { default as NbWalkthrough } from './components/Walkthrough.vue'
+export type {
+  IWalkthrough,
+  IWalkthroughStep,
+  IWalkthroughProps,
+  IWalkthroughRecord,
+  IWalkthroughStorage,
+  IWalkthroughOptions,
+  IWalkthroughController,
+  IWalkthroughLabels,
+  TWalkthroughPlacement,
+  TWalkthroughOutcome,
+  TWalkthroughTarget,
+} from './components/Walkthrough.d'
+export {
+  createLocalStorageWalkthroughStorage,
+  createMemoryWalkthroughStorage,
+  createDefaultWalkthroughStorage,
+  WALKTHROUGH_STORAGE_PREFIX,
+} from './utils/walkthroughStorage.helper'
+export {
+  resolveTourTarget,
+  tourStepSelector,
+  isTargetVisible,
+  TOUR_STEP_ATTRIBUTE,
+} from './utils/tourTarget.helper'
+
 // Directives
 export { default as nbTooltipDirective } from './directives/ToolTip.directive'
 export { dismissAllTooltips } from './directives/ToolTip.directive'
+export { default as nbTourStepDirective } from './directives/TourStep.directive'
 
 // Composables
 export { useCommandPalette } from './composables/useCommandPalette.composable'
+export { useWalkthrough } from './composables/useWalkthrough.composable'
+export {
+  useReducedMotion,
+  prefersReducedMotion,
+} from './composables/useReducedMotion.composable'
 export { useContextMenu } from './composables/useContextMenu.composable'
 export { useBlueprint } from './composables/useBlueprint.composable'
 export {

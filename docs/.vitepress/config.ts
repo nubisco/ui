@@ -238,6 +238,7 @@ export default withMermaid(
                   { text: 'Flag', link: '/ui/components/flag' },
                   { text: 'Grid', link: '/ui/components/grid' },
                   { text: 'Icon', link: '/ui/components/icon' },
+                  { text: 'Info Hint', link: '/ui/components/info-hint' },
                   {
                     text: 'Image Cropper',
                     link: '/ui/components/image-cropper',
@@ -265,6 +266,7 @@ export default withMermaid(
                   { text: 'Text Input', link: '/ui/components/text-input' },
                   { text: 'Toast', link: '/ui/components/toast' },
                   { text: 'Tree', link: '/ui/components/tree' },
+                  { text: 'Walkthrough', link: '/ui/components/walkthrough' },
                 ],
               },
               {
@@ -279,6 +281,10 @@ export default withMermaid(
                     link: '/ui/composables/use-context-menu',
                   },
                   {
+                    text: 'useWalkthrough',
+                    link: '/ui/composables/use-walkthrough',
+                  },
+                  {
                     text: 'useStableId',
                     link: '/ui/composables/use-stable-id',
                   },
@@ -286,7 +292,10 @@ export default withMermaid(
               },
               {
                 text: 'Directives',
-                items: [{ text: 'Tooltip', link: '/ui/directives/tooltip' }],
+                items: [
+                  { text: 'Tooltip', link: '/ui/directives/tooltip' },
+                  { text: 'Tour Step', link: '/ui/directives/tour-step' },
+                ],
               },
             ],
           },

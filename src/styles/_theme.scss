@@ -237,6 +237,25 @@
     // Focus ring — used by all interactive controls via :focus-visible
     --nb-c-focus-ring: var(--nb-c-primary);
 
+    // ── Scrim / overlay ───────────────────────────────────────────────────
+    // The dim laid over the page by anything that takes over the viewport:
+    // modals, drawers, and the walkthrough spotlight. Derived from
+    // --nb-c-black via color-mix so it stays a semantic token (no literal
+    // rgba() at the call site) and one override re-tunes every overlay.
+    // --nb-c-scrim-strong is the heavier variant for surfaces that must
+    // fully suppress the page behind them (coach-mark spotlights).
+    --nb-c-scrim: color-mix(in srgb, var(--nb-c-black) 45%, transparent);
+    --nb-c-scrim-strong: color-mix(in srgb, var(--nb-c-black) 62%, transparent);
+
+    // ── Radii ─────────────────────────────────────────────────────────────
+    // Corner scale, expressed against the 8px base unit so a change to
+    // --nb-base-unit rescales rounding with everything else.
+    --nb-radius-xs: calc(var(--nb-base-unit) / 4); // 2px
+    --nb-radius-sm: calc(var(--nb-base-unit) / 2); // 4px
+    --nb-radius-md: var(--nb-base-unit); // 8px
+    --nb-radius-lg: calc(var(--nb-base-unit) * 1.5); // 12px
+    --nb-radius-pill: 9999px;
+
     --nb-grid-max-width: #{grid.$grid-max-width}px;
     --nb-grid-columns: #{grid.$grid-columns};
     --nb-grid-gutter: #{grid.$grid-gutter}px;
@@ -494,5 +513,12 @@
     --nb-c-component-active: #{colors.get-color('nouveau-gray', 400)};
     --nb-c-component-disabled: #{colors.get-color('nouveau-gray', 700)};
     --nb-c-component-plain-border: #{colors.get-color('nouveau-gray', 600)};
+
+    // Scrim — a dark page needs a heavier dim to read as "the page behind
+    // this is out of play"; 45% over an already-dark background barely
+    // registers. Only the scrim tokens change; the radius scale is
+    // theme-independent and stays on the base.
+    --nb-c-scrim: color-mix(in srgb, var(--nb-c-black) 65%, transparent);
+    --nb-c-scrim-strong: color-mix(in srgb, var(--nb-c-black) 80%, transparent);
   }
 }
