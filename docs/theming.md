@@ -458,9 +458,9 @@ Stated plainly, because they are real.
 - **All overlays share the ceiling.** Every teleported surface pins to layer 3,
   so a popover opened from inside a modal cannot separate itself from the modal
   by fill alone. It separates by border and shadow instead.
-- **Nesting past 3 repeats.** Depth 4 and beyond paint layer 3, matching
-  Carbon's clamp. If your tree is that deep, the fill is no longer carrying the
-  hierarchy and something else should.
+- **Nesting past 3 repeats.** Depth 4 and beyond paint layer 3. If your tree is
+  that deep, the fill is no longer carrying the hierarchy and something else
+  should.
 - **CSS-only consumers get the utility classes, not the derivation.** Depth
   counting needs a runtime that can see the component tree. Without Vue,
   `.nb-layer-N` behaves exactly as it always has, and it is the whole mechanism
@@ -493,7 +493,7 @@ does.
 those same nine surfaces. That is arithmetic, not laziness: muted text already
 sits at 9.43:1 on the darkest light surface, so a third tier lighter than muted
 and still above 7:1 has almost no room to exist and would stop reading as a
-separate tier. Carbon makes the same call with its own helper text. Use
+separate tier. That is the usual call for a helper-text tier. Use
 `--nb-c-text-subtle` only for genuinely non-essential text, never for anything
 someone has to read to operate the interface.
 
@@ -520,8 +520,8 @@ Override them to match your brand:
 ```
 
 If you do, measure the result. `node scripts/audit-contrast.mjs` prints the same
-report the library holds itself to, including the published Carbon Design System
-values for comparison.
+report the library holds itself to, including a published reference set for
+comparison.
 
 ## Authoring layer-aware components
 
