@@ -316,10 +316,11 @@ Use the `#notification` slot to show important banners above the topbar. The are
         <div style="width: 28px; height: 28px; background: #a78bfa; border-radius: 6px;" />
       </template>
       <template v-if="showNotification" #notification>
-        <div style="padding: 0.5rem 1rem; background: #fef3c7; color: #92400e; font-size: 0.875rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #fde68a;">
-          <span>Your trial expires in 3 days. <a href="#" style="color: #92400e; font-weight: 600;">Upgrade now</a></span>
-          <NbButton size="xxs" variant="ghost" icon="close" @click="showNotification = false" />
-        </div>
+        <NbBanner status="warning" flush dismissible title="Your trial expires in 3 days" @dismiss="showNotification = false">
+          <template #action>
+            <NbButton size="sm" variant="ghost">Upgrade now</NbButton>
+          </template>
+        </NbBanner>
       </template>
       <template #topbar-left>
         <strong>Dashboard</strong>
@@ -334,16 +335,25 @@ Use the `#notification` slot to show important banners above the topbar. The are
 <template>
   <NbShell>
     <template #notification>
-      <div class="trial-banner">
-        Your trial expires in 3 days.
-        <a href="/billing">Upgrade now</a>
-        <NbButton size="xxs" variant="ghost" icon="close" @click="dismiss" />
-      </div>
+      <NbBanner
+        status="warning"
+        flush
+        dismissible
+        title="Your trial expires in 3 days"
+      >
+        <template #action>
+          <NbButton size="sm" variant="ghost" @click="upgrade"
+            >Upgrade now</NbButton
+          >
+        </template>
+      </NbBanner>
     </template>
     <!-- ... other slots ... -->
   </NbShell>
 </template>
 ```
+
+Use [`NbBanner`](/ui/components/banner) here rather than a hand-rolled div: `flush` is the prop that makes it meet both edges of the notification area. Reach for `variant="callout"` when the message is a standing fact rather than the outcome of an action, and it loses its close button, because dismissing it would not make it untrue.
 
 ## Fixedbar slot
 
@@ -691,9 +701,7 @@ This example shows every slot populated at once, giving a complete picture of ho
         </div>
       </template>
       <template #notification>
-        <div style="padding: 0.35rem 1rem; background: #fef3c7; color: #92400e; font-size: 0.8125rem; border-bottom: 1px solid #fde68a;">
-          Unsaved changes.
-        </div>
+        <NbBanner status="warning" variant="callout" flush title="Unsaved changes" />
       </template>
       <template #topbar-left>
         <strong>Project</strong>
