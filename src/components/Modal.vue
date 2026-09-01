@@ -90,15 +90,20 @@ onUnmounted(() => {
 <style scoped lang="scss">
 @use 'sass:list';
 
+// The margin the dialog keeps from the viewport edge at every size. It is the
+// overlay's padding, and the immersive cap subtracts it, so the two cannot
+// drift apart.
+$modal-margin: 20px;
+
 .nb-modal--overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--nb-c-scrim);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--nb-z-modal, 301);
-  padding: 20px;
+  z-index: var(--nb-zindex-modal);
+  padding: $modal-margin;
 }
 
 .nb-modal--content {
@@ -127,13 +132,35 @@ $modal-sizes: (
     960px,
     96%,
   ),
+  xl: (
+    1280px,
+    98%,
+  ),
+  immersive: (
+    1600px,
+    100%,
+  ),
 );
 
+// The caps need no viewport arithmetic of their own: the content box is
+// width: 100% inside an overlay that is inset: 0 with its own padding, so a
+// max-width of 1600px already resolves to min(1600px, viewport - margin), and
+// the percentage heights resolve against that same padded box. Every size
+// therefore collapses toward full width on a small viewport, keeps its
+// margins, and never overflows.
 @each $name, $dims in $modal-sizes {
   .nb-modal--content--#{$name} {
     max-width: list.nth($dims, 1);
     max-height: list.nth($dims, 2);
   }
+}
+
+// Mobile browsers size a fixed inset: 0 box to the layout viewport, which the
+// address bar can overhang. The tallest size is the only one that ever reaches
+// that edge, so it alone also caps against the dynamic viewport. Identical to
+// 100% on desktop.
+.nb-modal--content--immersive {
+  max-height: min(100%, calc(100dvh - #{$modal-margin * 2}));
 }
 
 .nb-modal--header {
@@ -181,6 +208,8 @@ $modal-sizes: (
 }
 
 .nb-modal--footer {
+  flex-shrink: 0;
+
   :deep(> :only-child) {
     max-width: 50%;
   }
