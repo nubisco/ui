@@ -182,6 +182,33 @@
     --nb-c-danger-active: var(--nb-c-chicken-comb-700);
     --nb-c-danger-active-a11y: var(--nb-c-chicken-comb-700-a11y);
 
+    // ── Status SURFACES ───────────────────────────────────────────────────
+    // The semantic colours above are inks: strong enough to draw a border or
+    // set a word in, far too strong to fill a block with. A notification that
+    // fills its background needs a quiet ground and an ink that stays legible
+    // ON that ground, which is a different pair, not a lighter version of the
+    // same one. Named semantically so a component never has to know that
+    // "warning" happens to be phoenix-flames.
+    --nb-c-info-surface: var(--nb-c-the-blues-brothers-100);
+    --nb-c-on-info-surface: var(--nb-c-the-blues-brothers-800);
+    --nb-c-info-surface-border: var(--nb-c-the-blues-brothers-200);
+
+    --nb-c-success-surface: var(--nb-c-emerald-reflection-100);
+    --nb-c-on-success-surface: var(--nb-c-emerald-reflection-800);
+    --nb-c-success-surface-border: var(--nb-c-emerald-reflection-200);
+
+    --nb-c-warning-surface: var(--nb-c-phoenix-flames-100);
+    --nb-c-on-warning-surface: var(--nb-c-phoenix-flames-800);
+    --nb-c-warning-surface-border: var(--nb-c-phoenix-flames-200);
+
+    --nb-c-danger-surface: var(--nb-c-chicken-comb-100);
+    --nb-c-on-danger-surface: var(--nb-c-chicken-comb-800);
+    --nb-c-danger-surface-border: var(--nb-c-chicken-comb-200);
+
+    --nb-c-neutral-surface: var(--nb-c-nouveau-gray-100);
+    --nb-c-on-neutral-surface: var(--nb-c-nouveau-gray-800);
+    --nb-c-neutral-surface-border: var(--nb-c-nouveau-gray-200);
+
     --nb-c-component-plain: var(--nb-c-nouveau-gray-500);
     --nb-c-component-plain-a11y: var(--nb-c-nouveau-gray-500-a11y);
     --nb-c-component-inactive: var(--nb-c-nouveau-gray-700);
@@ -453,6 +480,71 @@
     --nb-c-warning: #{colors.get-color('phoenix-flames', 400)};
     --nb-c-danger: #{colors.get-color('chicken-comb', 400)};
     --nb-c-component-plain: #{colors.get-color('nouveau-gray', 400)};
+
+    // Status surfaces, inverted. A 100-tint ground is a lamp on a dark page, so
+    // dark mode fills with a translucent wash of the status colour over
+    // whatever layer is behind it and takes the ink from the light tints. The
+    // wash keeps the banner sitting ON the page rather than punching a hole in
+    // it, which a flat dark tint does.
+    --nb-c-info-surface: color-mix(
+      in srgb,
+      #{colors.get-color('the-blues-brothers', 400)} 16%,
+      transparent
+    );
+    --nb-c-on-info-surface: #{colors.get-color('the-blues-brothers', 200)};
+    --nb-c-info-surface-border: color-mix(
+      in srgb,
+      #{colors.get-color('the-blues-brothers', 400)} 32%,
+      transparent
+    );
+
+    --nb-c-success-surface: color-mix(
+      in srgb,
+      #{colors.get-color('emerald-reflection', 400)} 16%,
+      transparent
+    );
+    --nb-c-on-success-surface: #{colors.get-color('emerald-reflection', 200)};
+    --nb-c-success-surface-border: color-mix(
+      in srgb,
+      #{colors.get-color('emerald-reflection', 400)} 32%,
+      transparent
+    );
+
+    --nb-c-warning-surface: color-mix(
+      in srgb,
+      #{colors.get-color('phoenix-flames', 400)} 16%,
+      transparent
+    );
+    --nb-c-on-warning-surface: #{colors.get-color('phoenix-flames', 200)};
+    --nb-c-warning-surface-border: color-mix(
+      in srgb,
+      #{colors.get-color('phoenix-flames', 400)} 32%,
+      transparent
+    );
+
+    --nb-c-danger-surface: color-mix(
+      in srgb,
+      #{colors.get-color('chicken-comb', 400)} 16%,
+      transparent
+    );
+    --nb-c-on-danger-surface: #{colors.get-color('chicken-comb', 200)};
+    --nb-c-danger-surface-border: color-mix(
+      in srgb,
+      #{colors.get-color('chicken-comb', 400)} 32%,
+      transparent
+    );
+
+    --nb-c-neutral-surface: color-mix(
+      in srgb,
+      #{colors.get-color('nouveau-gray', 400)} 16%,
+      transparent
+    );
+    --nb-c-on-neutral-surface: #{colors.get-color('nouveau-gray', 200)};
+    --nb-c-neutral-surface-border: color-mix(
+      in srgb,
+      #{colors.get-color('nouveau-gray', 400)} 32%,
+      transparent
+    );
 
     // ── Layer system (dark) ───────────────────────────────────────────────
     // In dark mode, layers get progressively lighter as elevation increases
