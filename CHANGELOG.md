@@ -1,3 +1,10 @@
+# [2.4.0](https://github.com/nubisco/ui/compare/v2.3.0...v2.4.0) (2026-09-01)
+
+
+### Features
+
+* **nubisco-platform-mark:** add the platform mark and put it in the lockup ([bb382f4](https://github.com/nubisco/ui/commit/bb382f40cdefc43e8579ec4e822e712410fdc89d))
+
 # [2.3.0](https://github.com/nubisco/ui/compare/v2.2.0...v2.3.0) (2026-09-01)
 
 
