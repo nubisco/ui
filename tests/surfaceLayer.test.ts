@@ -437,13 +437,27 @@ describe('Shell as the origin of depth', () => {
     wrapper.unmount()
   })
 
-  it('separates a shell panel from the shell body it sits on', async () => {
+  it('paints the main region as the page ground', async () => {
+    const wrapper = await mountWith({ Shell }, '<Shell />')
+    const main = document.body.querySelector('.nb-shell__main')
+    expect(layerOf(main)).toBe(0)
+    expect(main?.getAttribute('data-nb-layer')).toBe('0')
+    wrapper.unmount()
+  })
+
+  it('puts the first surface on a page at layer 1, not 2', async () => {
+    const wrapper = await mountWith({ Shell }, '<Shell><Panel /></Shell>')
+    expect(layerOf(document.body.querySelector('.nb-panel'))).toBe(1)
+    wrapper.unmount()
+  })
+
+  it('separates a shell panel from the ground it sits on', async () => {
     const wrapper = await mountWith(
       { Shell, ShellPanel },
       '<Shell><ShellPanel /></Shell>',
     )
     expect(layerOf(document.body.querySelector('.nb-shell'))).toBe(1)
-    expect(layerOf(document.body.querySelector('.nb-shell-panel'))).toBe(2)
+    expect(layerOf(document.body.querySelector('.nb-shell-panel'))).toBe(1)
     wrapper.unmount()
   })
 
@@ -452,7 +466,30 @@ describe('Shell as the origin of depth', () => {
       { Shell, ShellPanel, DataTable },
       `<Shell><ShellPanel><DataTable ${tableProps} /></ShellPanel></Shell>`,
     )
-    expect(layerOf(document.body.querySelector('.nb-data-table'))).toBe(3)
+    expect(layerOf(document.body.querySelector('.nb-data-table'))).toBe(2)
+    wrapper.unmount()
+  })
+
+  it('counts the chrome slots from the chrome, not from the page ground', async () => {
+    // The topbar is not the page: a surface dropped in it is a surface on
+    // layer-1 chrome, so it lands on 2 while a panel in main lands on 1.
+    const wrapper = await mountWith(
+      { Shell },
+      '<Shell><template #topbar-right><Panel /></template><Panel /></Shell>',
+    )
+    const inTopbar = document.body.querySelector('.nb-shell__topbar .nb-panel')
+    const inMain = document.body.querySelector('.nb-shell__main .nb-panel')
+    expect(layerOf(inTopbar)).toBe(2)
+    expect(layerOf(inMain)).toBe(1)
+    wrapper.unmount()
+  })
+
+  it('still obeys a .nb-layer-N container an application writes inside main', async () => {
+    const wrapper = await mountWith(
+      { Shell },
+      '<Shell><div class="nb-layer-2"><Panel /></div></Shell>',
+    )
+    expect(layerOf(document.body.querySelector('.nb-panel'))).toBe(2)
     wrapper.unmount()
   })
 })

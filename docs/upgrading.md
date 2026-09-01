@@ -1,5 +1,66 @@
 # Upgrading
 
+## To 2.6.0 from 2.5.x
+
+The main region of `NbShell` is now the page ground. It paints layer 0, and the
+first surface a page puts into it paints layer 1 instead of layer 2. Nothing was
+renamed and no prop changed: this is a visual upgrade, and in most applications
+it is the one you were working around.
+
+It ships in a minor, so a `^2` range picks it up on a routine update. Look at a
+couple of screens after upgrading rather than after the next deploy.
+
+### What changed
+
+`NbShell` resolved to layer 1 and provided that as the context for every one of
+its slots, so a top-level `NbPanel` on a page painted **layer 2**, `#e7e8e9` in
+the light theme. That is the darkest fill in the light ramp, sitting on a
+near-white body, and one level deeper than the model the layer documentation
+describes (ground 0, panel 1, nested section 2).
+
+The chrome keeps its old depth. Topbar, menu strips, fixedbar and the shell body
+still resolve to layer 1 and are pixel-identical, and a surface dropped into a
+chrome slot still counts from there.
+
+| Where                                    | 2.5.x   | 2.6.0   |
+| ---------------------------------------- | ------- | ------- |
+| Shell chrome (topbar, menu strips, body) | layer 1 | layer 1 |
+| Shell main region                        | layer 1 | layer 0 |
+| First `NbPanel` on a page                | layer 2 | layer 1 |
+| Panel inside that panel                  | layer 3 | layer 2 |
+| Surface in a `topbar-*` slot             | layer 2 | layer 2 |
+
+In colours, a top-level panel goes from `#e7e8e9` to `#f9fafb` in the light
+theme and from `#2d2e2f` to `#1e1f20` in the dark one, and the page behind it
+from `#f9fafb` to `#edeeef` (light) and `#1e1f20` to `#0f1011` (dark).
+
+### What to check
+
+- **Surfaces you painted by hand inside a page.** If you wrote `#fff` (or any
+  literal) on rows and cards to escape the too-dark panel, delete it and let the
+  layer tokens do the work. That workaround now fights the ramp instead of
+  rescuing it.
+- **`.nb-layer-N` containers and `:layer` props inside `main`.** A number written
+  to compensate for the old off-by-one is now one too deep. Containers still win
+  over derivation, so nothing breaks, it just stays wrong. Delete the annotation
+  and let nesting derive it.
+- **Any CSS in your page that reads `var(--nb-c-surface)` directly.** Inside the
+  main region that now resolves to layer 0, the ground. If the rule was painting
+  a card, put it in an `NbPanel` or wrap it in `<NbLayer>`.
+
+### Keeping the old look
+
+Pin the page back to the chrome depth. This is a migration aid, not a
+recommendation.
+
+```vue
+<NbShell>
+  <NbLayer :level="2">
+    <!-- panels in here paint 2, as they did in 2.5.x -->
+  </NbLayer>
+</NbShell>
+```
+
 ## To 2.0.0 from 1.x
 
 Every layer, text and field colour changed, in both themes, and surfaces now
