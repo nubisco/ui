@@ -95,7 +95,7 @@ Two things follow from anchoring to the top, and both matter more than they soun
 - **A card's wires never move when its body changes.** Expanding a card, adding a parameter row, or rendering different slot content leaves every pin exactly where it was.
 - **A straight chain draws straight wires.** Two cards whose ports start at the same offset are joined by a horizontal wire regardless of their heights.
 
-The trade is that a card with more pins than it is tall lets them overflow past its bottom edge, visibly, rather than quietly compressing the pitch toward zero. That is deliberate: a 12-output card should look like a 12-output card.
+A card that has more ports than chrome grows to contain them: its `min-height` is derived from the pin count, so the last pin always sits inside the card with a corner's worth of clearance. The pitch is never compressed to make ports fit, because the pitch is also the hit target's height, and a 12-output card should look like a 12-output card.
 
 To move the whole column, a card with a taller custom header, say, set `--nb-blueprint-port-top` on the card. Prefer that to changing the pitch, which is tied to the hit-target height.
 
