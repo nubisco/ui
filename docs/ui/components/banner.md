@@ -17,11 +17,13 @@ It is the third of three things that look superficially alike, and picking the w
 | `NbToast`   | Something just happened, and the news expires by itself.           |
 
 <preview>
-  <NbBanner status="info" title="Draft saved">Visitors still see the published version.</NbBanner>
-  <NbBanner status="success" title="Published">All 20 routes are serving this release.</NbBanner>
-  <NbBanner status="warning" title="Rebuild queued but NOT confirmed">A hook accepted is the start of a build, not the end of one.</NbBanner>
-  <NbBanner status="error" title="The rebuild did not reach the live site">Content is live in the API and the site still serves the old HTML.</NbBanner>
-  <NbBanner status="neutral" title="Read-only">You have viewer access to this site.</NbBanner>
+  <div class="banner-stack">
+    <NbBanner status="info" title="Draft saved">Visitors still see the published version.</NbBanner>
+    <NbBanner status="success" title="Published">All 20 routes are serving this release.</NbBanner>
+    <NbBanner status="warning" title="Rebuild queued but NOT confirmed">A hook accepted is the start of a build, not the end of one.</NbBanner>
+    <NbBanner status="error" title="The rebuild did not reach the live site">Content is live in the API and the site still serves the old HTML.</NbBanner>
+    <NbBanner status="neutral" title="Read-only">You have viewer access to this site.</NbBanner>
+  </div>
 </preview>
 
 ```vue
@@ -41,8 +43,10 @@ An **inline** banner reports the outcome of something the user did. It has been 
 A **callout** states a standing fact that loads with the page: a trial expiring, a draft awaiting approval, an environment that is not production. Dismissing it would not make it untrue, so it cannot be dismissed. Passing `dismissible` to a callout does nothing, deliberately.
 
 <preview>
-  <NbBanner status="success" variant="inline" title="Changes requested" dismissible>The author has been notified.</NbBanner>
-  <NbBanner status="info" variant="callout" title="This draft is waiting for approval" dismissible>Visitors still see the published version.</NbBanner>
+  <div class="banner-stack">
+    <NbBanner status="success" variant="inline" title="Changes requested" dismissible>The author has been notified.</NbBanner>
+    <NbBanner status="info" variant="callout" title="This draft is waiting for approval" dismissible>Visitors still see the published version.</NbBanner>
+  </div>
 </preview>
 
 ```vue
@@ -68,13 +72,15 @@ A **callout** states a standing fact that loads with the page: a trial expiring,
 Put the way to resolve the banner in the `action` slot. Keep it to one or two controls: a banner is not a toolbar.
 
 <preview>
-  <NbBanner status="warning" title="Rebuild not confirmed">
-    The content is live in the API; the site may still serve old HTML.
-    <template #action>
-      <NbButton size="sm" variant="ghost">Check rebuild</NbButton>
-      <NbButton size="sm" variant="primary">Retry</NbButton>
-    </template>
-  </NbBanner>
+  <div class="banner-stack">
+    <NbBanner status="warning" title="Rebuild not confirmed">
+      The content is live in the API; the site may still serve old HTML.
+      <template #action>
+        <NbButton size="sm" variant="ghost">Check rebuild</NbButton>
+        <NbButton size="sm" variant="primary">Retry</NbButton>
+      </template>
+    </NbBanner>
+  </div>
 </preview>
 
 ```vue
@@ -185,3 +191,15 @@ Every rule reads from one pair of custom properties, so one banner can be retint
 - The close button takes its accessible name from `closeLabel`.
 
 </doc-tab>
+
+<style>
+/* The preview area is a flex column that stretches its single child, which
+   would make every banner as tall as the space available and hide the real
+   spacing. Stacking them inside one plain child keeps each at its own height. */
+.banner-stack {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--nb-base-unit) * 1.5);
+  width: 100%;
+}
+</style>
