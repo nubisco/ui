@@ -1,3 +1,15 @@
+# [2.3.0](https://github.com/nubisco/ui/compare/v2.2.0...v2.3.0) (2026-09-01)
+
+
+### Bug Fixes
+
+* **user-menu:** square the panel and run its rows edge to edge ([39e66ab](https://github.com/nubisco/ui/commit/39e66ab356225eb924f5807bd31d18585186ad1c))
+
+
+### Features
+
+* **nubisco-mark:** ship the mark as a component and as a file ([edc6409](https://github.com/nubisco/ui/commit/edc6409bdc3a5c86cb9e2ec40c79ed9ea4c5d650)), closes [#brand](https://github.com/nubisco/ui/issues/brand)
+
 # [2.2.0](https://github.com/nubisco/ui/compare/v2.1.0...v2.2.0) (2026-09-01)
 
 
