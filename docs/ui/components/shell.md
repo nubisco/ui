@@ -262,14 +262,14 @@ import { createApp } from 'vue'
 import NubiscoUI, { registerIcons } from '@nubisco/ui'
 import App from './App.vue'
 import BrandShield from './icons/BrandShield.vue'
-import RamoAuto from './icons/RamoAuto.vue'
+import WorkflowNode from './icons/WorkflowNode.vue'
 
 const app = createApp(App)
 app.use(NubiscoUI)
 
 registerIcons({
   'brand-shield': BrandShield,
-  'ramo-auto': RamoAuto,
+  'workflow-node': WorkflowNode,
 })
 
 app.mount('#app')
@@ -279,7 +279,7 @@ After registration, the names work anywhere `NbIcon` (or any component that take
 
 ```vue
 <NbSidebarBrand icon="brand-shield" title="..." />
-<NbSidebarMenuItem icon="ramo-auto" label="..." />
+<NbSidebarMenuItem icon="workflow-node" label="..." />
 ```
 
 Custom icons take precedence over the bundled catalog, so an app can override a built-in by registering the same name. To supply per-weight variants, pass an object instead of a single component:
