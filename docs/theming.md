@@ -41,6 +41,30 @@ You don't need to touch SCSS. Override CSS custom properties in your own stylesh
 
 That is all. Every component that references `--nb-c-primary` or `--nb-base-unit` inherits the change automatically.
 
+## Light and dark
+
+Both ramps ship in the CSS. The dark one is emitted under a `.dark` class on
+`<html>`, so switching themes is a matter of putting that class there and taking
+it away.
+
+[`useTheme`](/ui/composables/use-theme) does that, and the rest of what a real
+product needs around it: a three-state preference (`light`, `dark`, `system`,
+with `system` as the default), persistence, and following the OS when it changes
+mid-session.
+
+```ts
+import { configureTheme } from '@nubisco/ui'
+
+configureTheme({ storageKey: 'analytics.theme' })
+```
+
+```vue
+const { theme, resolved, setTheme, toggle } = useTheme()
+```
+
+Nothing else in the library needs to know: every component paints from the
+tokens below, and those tokens are what the class swaps.
+
 ## Semantic vs. palette tokens
 
 NubiscoUI separates two layers:
