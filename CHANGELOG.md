@@ -1,3 +1,10 @@
+# [2.6.0](https://github.com/nubisco/ui/compare/v2.5.0...v2.6.0) (2026-09-01)
+
+
+### Features
+
+* **shell:** make the main region the page ground ([86bf3bb](https://github.com/nubisco/ui/commit/86bf3bb4965d1365b3092e8cbb1918c9c7f59d16)), closes [#e7e8e9](https://github.com/nubisco/ui/issues/e7e8e9)
+
 # [2.5.0](https://github.com/nubisco/ui/compare/v2.4.0...v2.5.0) (2026-09-01)
 
 
