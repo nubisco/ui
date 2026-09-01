@@ -253,6 +253,13 @@ export {
   prefersReducedMotion,
 } from './composables/useReducedMotion.composable'
 export { useContextMenu } from './composables/useContextMenu.composable'
+export { useTheme, configureTheme } from './composables/useTheme.composable'
+export type {
+  TTheme,
+  TResolvedTheme,
+  IThemeOptions,
+  IThemeController,
+} from './composables/useTheme.composable'
 export { useBlueprint } from './composables/useBlueprint.composable'
 export {
   useSurfaceLayer,
