@@ -272,13 +272,13 @@ describe('walkthrough storage adapters', () => {
   })
 
   it('accepts a custom prefix', () => {
-    const store = createLocalStorageWalkthroughStorage('sipta:tour:')
+    const store = createLocalStorageWalkthroughStorage('app:tour:')
     store.set('intro', {
       version: 1,
       outcome: 'finish',
       completedAt: '2026-01-01T00:00:00.000Z',
     })
-    expect(window.localStorage.getItem('sipta:tour:intro')).toBeTruthy()
+    expect(window.localStorage.getItem('app:tour:intro')).toBeTruthy()
   })
 
   it('seeds a memory adapter', () => {

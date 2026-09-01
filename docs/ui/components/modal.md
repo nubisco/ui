@@ -122,17 +122,17 @@ with two columns, a detail panel, a preview beside a description. It is a
 bigger box, not a different kind of surface.
 
 Reach for **`immersive`** when the content is a comparison and the columns are
-the point: several offers side by side, a diff, a wide table you actually have
-to read across. At `lg` the same content wraps into cramped columns and buries
-the differences in inner scrolling, which is the failure this size exists to
-fix.
+the point: several candidates side by side, a diff, a wide table you actually
+have to read across. At `lg` the same content wraps into cramped columns and
+buries the differences in inner scrolling, which is the failure this size
+exists to fix.
 
 `immersive` is deliberately not full-screen. It keeps its margin, so the page
 behind stays visible and the dialog still reads as something you are inside of
 rather than somewhere you navigated to. If a task genuinely owns the whole
 screen, it wants a route, not a modal.
 
-Open the same four-column quote comparison at each size to see the difference:
+Open the same four-column comparison at each size to see the difference:
 
 <preview>
   <NbGrid dir="row" gap="sm">
@@ -140,14 +140,14 @@ Open the same four-column quote comparison at each size to see the difference:
     <NbButton @click="openWide = 'xl'">Compare at xl</NbButton>
     <NbButton @click="openWide = 'immersive'">Compare at immersive</NbButton>
   </NbGrid>
-  <NbModal :open="!!openWide" :size="openWide || 'lg'" :title="`Quote comparison (${openWide})`" @close="openWide = null">
+  <NbModal :open="!!openWide" :size="openWide || 'lg'" :title="`Region comparison (${openWide})`" @close="openWide = null">
     <NbGrid dir="row" gap="md" align="stretch">
-      <NbPanel v-for="quote in quotes" :key="quote.insurer" style="flex: 1; min-width: 0; padding: 16px;">
-        <p style="margin: 0 0 4px; font-weight: 600;">{{ quote.insurer }}</p>
-        <p style="margin: 0 0 12px; font-size: 22px; font-weight: 600;">{{ quote.premium }}</p>
-        <p style="margin: 0 0 4px; font-size: 13px;">Excess {{ quote.excess }}</p>
-        <p style="margin: 0 0 4px; font-size: 13px;">Cover {{ quote.cover }}</p>
-        <p style="margin: 0; font-size: 13px;">{{ quote.extras }}</p>
+      <NbPanel v-for="region in regions" :key="region.id" style="flex: 1; min-width: 0; padding: 16px;">
+        <p style="margin: 0 0 4px; font-weight: 600;">{{ region.id }}</p>
+        <p style="margin: 0 0 12px; font-size: 22px; font-weight: 600;">{{ region.latency }}</p>
+        <p style="margin: 0 0 4px; font-size: 13px;">Uptime {{ region.uptime }}</p>
+        <p style="margin: 0 0 4px; font-size: 13px;">Storage {{ region.storage }}</p>
+        <p style="margin: 0; font-size: 13px;">{{ region.notes }}</p>
       </NbPanel>
     </NbGrid>
     <template #footer>
@@ -158,10 +158,10 @@ Open the same four-column quote comparison at each size to see the difference:
 
 ```vue
 <template>
-  <NbModal :open="open" size="immersive" title="Quote comparison">
+  <NbModal :open="open" size="immersive" title="Region comparison">
     <NbGrid dir="row" gap="md" align="stretch">
-      <NbPanel v-for="quote in quotes" :key="quote.insurer">
-        <!-- one column per insurer -->
+      <NbPanel v-for="region in regions" :key="region.id">
+        <!-- one column per region -->
       </NbPanel>
     </NbGrid>
   </NbModal>
@@ -209,10 +209,10 @@ const openBasic = ref(false)
 const openActions = ref(false)
 const openSize = ref<'sm' | 'md' | 'lg' | 'xl' | 'immersive' | null>(null)
 const openWide = ref<'lg' | 'xl' | 'immersive' | null>(null)
-const quotes = [
-  { insurer: 'Fidelidade', premium: '€412,80', excess: '€250', cover: '€1.5M', extras: 'Vehicle replacement, EU roadside' },
-  { insurer: 'Ageas', premium: '€389,50', excess: '€400', cover: '€1.2M', extras: 'EU roadside' },
-  { insurer: 'Tranquilidade', premium: '€437,10', excess: '€150', cover: '€2M', extras: 'Vehicle replacement, glass, EU roadside' },
-  { insurer: 'Zurich', premium: '€455,00', excess: '€150', cover: '€2M', extras: 'Vehicle replacement, glass, legal cover' },
+const regions = [
+  { id: 'eu-west-1', latency: '24 ms', uptime: '99.99%', storage: '2 TB', notes: 'Read replicas, nightly snapshots' },
+  { id: 'us-east-1', latency: '86 ms', uptime: '99.98%', storage: '4 TB', notes: 'Nightly snapshots' },
+  { id: 'ap-south-1', latency: '142 ms', uptime: '99.95%', storage: '1 TB', notes: 'Read replicas, hourly snapshots' },
+  { id: 'sa-east-1', latency: '118 ms', uptime: '99.97%', storage: '1 TB', notes: 'Read replicas, nightly snapshots' },
 ]
 </script>

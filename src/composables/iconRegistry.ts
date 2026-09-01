@@ -54,12 +54,12 @@ function toWeights(icon: TCustomIcon): ICustomIconWeights {
  *
  * ```ts
  * import { registerIcons } from '@nubisco/ui'
- * import SiptaShield from './icons/SiptaShield.vue'
- * import RamoAuto from './icons/RamoAuto.vue'
+ * import BrandGlyph from './icons/BrandGlyph.vue'
+ * import WorkflowNode from './icons/WorkflowNode.vue'
  *
  * registerIcons({
- *   'sipta-shield': SiptaShield,
- *   'ramo-auto': RamoAuto,
+ *   'brand-glyph': BrandGlyph,
+ *   'workflow-node': WorkflowNode,
  * })
  * ```
  */
