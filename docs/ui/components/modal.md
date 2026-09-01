@@ -77,15 +77,23 @@ Use the `#footer` slot with a `NbPanel` to create a proper action bar.
 ## Sizes
 
 `size` caps both dimensions of the dialog: `sm` (520px wide, up to 72% of the
-viewport height), `md` (720px, 84%) and `lg` (960px, 96%). Height stays
+viewport height), `md` (720px, 84%), `lg` (960px, 96%), `xl` (1280px, 98%) and
+`immersive` (1600px, the full height inside the margin). Height stays
 content-driven below the cap, so short dialogs never show empty space; long
 content scrolls inside the body once the cap is reached.
+
+No size is a fixed box. The dialog is always `width: 100%` inside an overlay
+that keeps a margin all round, so every cap behaves as `min(cap, viewport -
+margin)`: on a narrow screen `immersive` and `sm` are the same width, and
+neither can overflow the viewport or push the page into horizontal scroll.
 
 <preview>
   <NbGrid dir="row" gap="sm">
     <NbButton @click="openSize = 'sm'">Small</NbButton>
     <NbButton @click="openSize = 'md'">Medium</NbButton>
     <NbButton @click="openSize = 'lg'">Large</NbButton>
+    <NbButton @click="openSize = 'xl'">Extra large</NbButton>
+    <NbButton @click="openSize = 'immersive'">Immersive</NbButton>
   </NbGrid>
   <NbModal :open="!!openSize" :size="openSize || 'md'" :title="`Size: ${openSize}`" @close="openSize = null">
     <p v-for="n in 30" :key="n" style="margin: 0 0 12px">
@@ -105,18 +113,73 @@ content scrolls inside the body once the cap is reached.
 </template>
 ```
 
+## Choosing between `lg`, `xl` and `immersive`
+
+The two larger steps solve different problems, which is why both exist.
+
+Reach for **`xl`** when a dialog is content-heavy but still a dialog: a form
+with two columns, a detail panel, a preview beside a description. It is a
+bigger box, not a different kind of surface.
+
+Reach for **`immersive`** when the content is a comparison and the columns are
+the point: several offers side by side, a diff, a wide table you actually have
+to read across. At `lg` the same content wraps into cramped columns and buries
+the differences in inner scrolling, which is the failure this size exists to
+fix.
+
+`immersive` is deliberately not full-screen. It keeps its margin, so the page
+behind stays visible and the dialog still reads as something you are inside of
+rather than somewhere you navigated to. If a task genuinely owns the whole
+screen, it wants a route, not a modal.
+
+Open the same four-column quote comparison at each size to see the difference:
+
+<preview>
+  <NbGrid dir="row" gap="sm">
+    <NbButton @click="openWide = 'lg'">Compare at lg</NbButton>
+    <NbButton @click="openWide = 'xl'">Compare at xl</NbButton>
+    <NbButton @click="openWide = 'immersive'">Compare at immersive</NbButton>
+  </NbGrid>
+  <NbModal :open="!!openWide" :size="openWide || 'lg'" :title="`Quote comparison (${openWide})`" @close="openWide = null">
+    <NbGrid dir="row" gap="md" align="stretch">
+      <NbPanel v-for="quote in quotes" :key="quote.insurer" style="flex: 1; min-width: 0; padding: 16px;">
+        <p style="margin: 0 0 4px; font-weight: 600;">{{ quote.insurer }}</p>
+        <p style="margin: 0 0 12px; font-size: 22px; font-weight: 600;">{{ quote.premium }}</p>
+        <p style="margin: 0 0 4px; font-size: 13px;">Excess {{ quote.excess }}</p>
+        <p style="margin: 0 0 4px; font-size: 13px;">Cover {{ quote.cover }}</p>
+        <p style="margin: 0; font-size: 13px;">{{ quote.extras }}</p>
+      </NbPanel>
+    </NbGrid>
+    <template #footer>
+      <NbButton size="lg" @click="openWide = null">Close</NbButton>
+    </template>
+  </NbModal>
+</preview>
+
+```vue
+<template>
+  <NbModal :open="open" size="immersive" title="Quote comparison">
+    <NbGrid dir="row" gap="md" align="stretch">
+      <NbPanel v-for="quote in quotes" :key="quote.insurer">
+        <!-- one column per insurer -->
+      </NbPanel>
+    </NbGrid>
+  </NbModal>
+</template>
+```
+
 </doc-tab>
 
 <doc-tab name="Api">
 
 ## Props
 
-| Prop             | Type                   | Default     | Description                                     |
-| ---------------- | ---------------------- | ----------- | ----------------------------------------------- |
-| `open`           | `boolean`              | `false`     | Controls whether the modal is open              |
-| `title`          | `string`               | `undefined` | Header title, alternative to the `#header` slot |
-| `size`           | `'sm' \| 'md' \| 'lg'` | `'md'`      | Caps the dialog width and height (see Sizes)    |
-| `closeOnOverlay` | `boolean`              | `true`      | Emits `close` when the backdrop is clicked      |
+| Prop             | Type                                          | Default     | Description                                     |
+| ---------------- | --------------------------------------------- | ----------- | ----------------------------------------------- |
+| `open`           | `boolean`                                     | `false`     | Controls whether the modal is open              |
+| `title`          | `string`                                      | `undefined` | Header title, alternative to the `#header` slot |
+| `size`           | `'sm' \| 'md' \| 'lg' \| 'xl' \| 'immersive'` | `'md'`      | Caps the dialog width and height (see Sizes)    |
+| `closeOnOverlay` | `boolean`                                     | `true`      | Emits `close` when the backdrop is clicked      |
 
 ## Slots
 
@@ -144,5 +207,12 @@ The modal uses `--nb-zindex-modal` from the design system token stack. Component
 import { ref } from 'vue'
 const openBasic = ref(false)
 const openActions = ref(false)
-const openSize = ref<'sm' | 'md' | 'lg' | null>(null)
+const openSize = ref<'sm' | 'md' | 'lg' | 'xl' | 'immersive' | null>(null)
+const openWide = ref<'lg' | 'xl' | 'immersive' | null>(null)
+const quotes = [
+  { insurer: 'Fidelidade', premium: '€412,80', excess: '€250', cover: '€1.5M', extras: 'Vehicle replacement, EU roadside' },
+  { insurer: 'Ageas', premium: '€389,50', excess: '€400', cover: '€1.2M', extras: 'EU roadside' },
+  { insurer: 'Tranquilidade', premium: '€437,10', excess: '€150', cover: '€2M', extras: 'Vehicle replacement, glass, EU roadside' },
+  { insurer: 'Zurich', premium: '€455,00', excess: '€150', cover: '€2M', extras: 'Vehicle replacement, glass, legal cover' },
+]
 </script>

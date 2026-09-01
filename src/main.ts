@@ -117,6 +117,7 @@ export type {
 } from './components/CommandPalette.d'
 export { default as NbMessage } from './components/Message.vue'
 export { default as NbModal } from './components/Modal.vue'
+export type { IModalProps, TModalSize } from './components/Modal.d'
 export { default as NbLayer } from './components/Layer.vue'
 export type { ILayerProps } from './components/Layer.d'
 export { default as NbPanel } from './components/Panel.vue'

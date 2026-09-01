@@ -106,11 +106,24 @@ describe('Modal', () => {
   })
 
   it('applies the size class for each size', () => {
-    for (const size of ['sm', 'md', 'lg']) {
+    for (const size of ['sm', 'md', 'lg', 'xl', 'immersive']) {
       const wrapper = createWrapper({ open: true, size })
       expect(wrapper.find('.nb-modal--content').classes()).toContain(
         `nb-modal--content--${size}`,
       )
+    }
+  })
+
+  // The larger steps are additive. A dialog that asked for sm, md or lg must
+  // come out of this change byte-identical, which is what this pins down.
+  it('gives the larger sizes their own class and leaves the others alone', () => {
+    for (const size of ['xl', 'immersive']) {
+      const classes = createWrapper({ open: true, size })
+        .find('.nb-modal--content')
+        .classes()
+      for (const old of ['sm', 'md', 'lg']) {
+        expect(classes).not.toContain(`nb-modal--content--${old}`)
+      }
     }
   })
 
