@@ -165,19 +165,19 @@ their teleport target happens to sit in.
 
 These take a layer from context and deepen what they contain.
 
-| Component        | Surface it owns                                                                                                                                                    |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `NbPanel`        | its own background                                                                                                                                                 |
-| `NbShellPanel`   | its own background                                                                                                                                                 |
-| `NbDataTable`    | the table body behind toolbar, header and rows                                                                                                                     |
-| `NbCalendar`     | the calendar frame                                                                                                                                                 |
-| `NbBoard`        | its column headers and cards                                                                                                                                       |
-| `NbFileUploader` | the file rows it lists                                                                                                                                             |
-| `NbShell`        | the application frame: resolves to layer 1 at the top of a tree, exactly what its chrome already painted, and acts as the origin of depth for everything inside it |
-| `NbModal`        | pinned to layer 3, teleported                                                                                                                                      |
-| `NbDatePicker`   | its calendar dialog, pinned to layer 3, teleported                                                                                                                 |
-| `NbInfoHint`     | its hint popover, pinned to layer 3, teleported                                                                                                                    |
-| `NbWalkthrough`  | its coach-mark popover, pinned to layer 3, teleported                                                                                                              |
+| Component        | Surface it owns                                                                                                                                                                                                                                             |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NbPanel`        | its own background                                                                                                                                                                                                                                          |
+| `NbShellPanel`   | its own background                                                                                                                                                                                                                                          |
+| `NbDataTable`    | the table body behind toolbar, header and rows                                                                                                                                                                                                              |
+| `NbCalendar`     | the calendar frame                                                                                                                                                                                                                                          |
+| `NbBoard`        | its column headers and cards                                                                                                                                                                                                                                |
+| `NbFileUploader` | the file rows it lists                                                                                                                                                                                                                                      |
+| `NbShell`        | the application frame. Its chrome (topbar, menu strips, body) resolves to layer 1 at the top of a tree, exactly what it already painted; its **main region is the page ground and paints layer 0**, so the first surface a page puts in it lands on layer 1 |
+| `NbModal`        | pinned to layer 3, teleported                                                                                                                                                                                                                               |
+| `NbDatePicker`   | its calendar dialog, pinned to layer 3, teleported                                                                                                                                                                                                          |
+| `NbInfoHint`     | its hint popover, pinned to layer 3, teleported                                                                                                                                                                                                             |
+| `NbWalkthrough`  | its coach-mark popover, pinned to layer 3, teleported                                                                                                                                                                                                       |
 
 These deliberately do not, and inherit the surface of whatever they sit in.
 
@@ -188,6 +188,32 @@ These deliberately do not, and inherit the surface of whatever they sit in.
 | `NbMenu`, `NbCommandPalette`, `NbUserMenu` | already floating at the top of the stack: they read `--nb-c-layer-3` directly, so no context can pull them off it.                                                                                           |
 | `NbSelect`, `NbSubmenu`, sidebar flyouts   | painted from field and shell tokens, not from the layer ramp.                                                                                                                                                |
 
+### The shell body is the page ground
+
+`NbShell` owns two depths, not one. The chrome around a page (topbar, menu
+strips, fixedbar, the body behind them) is layer 1. The main region is the page
+**ground** and paints layer 0, which is what makes a page written inside a shell
+count exactly like the standalone example above: first panel 1, panel in a panel
+2, and so on.
+
+```vue
+<NbShell>
+  <!-- main: layer 0 -->
+  <NbPanel>
+    <!-- layer 1 -->
+    <NbPanel />
+    <!-- layer 2 -->
+  </NbPanel>
+</NbShell>
+```
+
+The chrome slots keep counting from the chrome, because they are not the page: a
+surface dropped into `#topbar-right` sits on layer-1 chrome and paints layer 2.
+
+This mirrors Carbon, where the page background is `$background` and the first
+`<Layer>` on it is `layer-01`. The shell is chrome with its own tokens; it does
+not spend a level on itself.
+
 ### Taking explicit control
 
 `.nb-layer-{0-3}` still pins a subtree to an absolute layer and restarts the
@@ -197,13 +223,13 @@ contextual count from there. The nearest container wins.
   <div :class="[resultingProps.theme === 'dark' ? 'dark' : '', 'nb-layer-0']" style="padding: 20px; background: var(--nb-c-surface);">
     <NbLabel size="sm" muted>Container pinned to layer 0</NbLabel>
     <NbPanel style="margin-top: 8px;">
-      <NbLabel size="sm" muted>Panel, layer 1</NbLabel>
+      <NbLabel size="sm" muted>Panel, layer 0: the container pins it</NbLabel>
       <NbGrid dir="col" gap="sm" style="margin-top: 8px;">
         <NbTextInput label="Name" placeholder="Enter your name" size="sm" />
         <div class="nb-layer-2" style="padding: 12px;">
           <NbLabel size="sm" muted>Container pinned to layer 2</NbLabel>
           <NbPanel style="margin-top: 8px;">
-            <NbLabel size="sm" muted>Panel, layer 3</NbLabel>
+            <NbLabel size="sm" muted>Panel, layer 2: the container pins it</NbLabel>
             <NbButton variant="primary" size="sm" style="margin-top: 8px;">Action</NbButton>
           </NbPanel>
         </div>

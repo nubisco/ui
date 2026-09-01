@@ -804,6 +804,23 @@ The shell organizes its regions into a layering system that gives each area the 
 
 This layering is automatic. You do not need to set any z-index values yourself. The shell sets them so that interactive elements in higher regions always render above lower regions.
 
+## Surface depth
+
+The shell owns two depths. Its chrome (topbar, menu strips, fixedbar and the body behind them) is layer 1. The main region is the **page ground** and paints layer 0, so the first surface a page puts into it lands on layer 1 and nesting counts up from there.
+
+```vue
+<NbShell>
+  <!-- main: layer 0 -->
+  <NbPanel>
+    <!-- layer 1 -->
+    <NbPanel />
+    <!-- layer 2 -->
+  </NbPanel>
+</NbShell>
+```
+
+Surfaces in the chrome slots keep counting from the chrome: an `NbPanel` in `topbar-right` sits on layer-1 chrome and paints layer 2. See [Layers](/theming#layers) for the full model.
+
 ## Theming
 
 `NbShell` exposes CSS custom properties you can override on the `.nb-shell` selector to theme per-application:

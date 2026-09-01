@@ -66,8 +66,11 @@
             <main
               class="nb-shell__main"
               :class="{ 'nb-shell__main--no-padding': !mainPadding }"
+              v-bind="mainLayerProps"
             >
-              <slot />
+              <SurfaceLayerScope :level="1">
+                <slot />
+              </SurfaceLayerScope>
             </main>
 
             <!-- ═══ BOTTOM PANEL (optional) ═══ -->
@@ -109,6 +112,7 @@ import { computed, onBeforeUnmount, provide, ref, toRef, useSlots } from 'vue'
 import { hasSlotContent as slotHasContent } from '@/utils/slotContent.helper'
 import { IShellProps } from './Shell.d'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
+import SurfaceLayerScope from './SurfaceLayerScope.vue'
 
 const slots = useSlots()
 
@@ -140,6 +144,23 @@ const props = withDefaults(defineProps<IShellProps>(), {
 // unchanged. What it adds is an origin for contextual depth, so a surface dropped
 // into the shell body separates from it instead of matching it.
 const { layerProps } = useSurfaceLayer()
+
+// The main region is the page ground, so it paints layer 0 and the first
+// surface a page puts in it lands on layer 1. Deriving it from the chrome
+// instead made a top-level card layer 2, the darkest fill in the light ramp,
+// on a near-white body: one level too deep everywhere, and the opposite of the
+// mental model the layer docs describe (ground 0, panel 1, section 2).
+//
+// `provideContext: false` because this call must not become the shell's
+// context: only the main slot counts from here, while the topbar, inspector
+// and sidebar slots keep counting from the chrome. `SurfaceLayerScope` inside
+// the element is what carries it to the slot. The probe is off for the same
+// reason it is on Modal: the level is not up for negotiation.
+const { layerProps: mainLayerProps } = useSurfaceLayer({
+  level: 0,
+  probe: false,
+  provideContext: false,
+})
 
 // Provided so descendants of the `sidebar-*` slots (NbSidebarMenu,
 // NbSidebarMenuItem, NbSidebarMenuGroup, NbSidebarBrand) can adapt their
@@ -400,6 +421,9 @@ onBeforeUnmount(onResizeEnd)
 
 .nb-shell__main {
   flex: 1;
+  // Reads layer 0 through the class the component binds here, so the page
+  // ground is a shade below the chrome it sits under rather than the same fill.
+  background: var(--nb-c-surface);
   padding: 1.5rem 1.75rem;
   overflow-y: auto;
   overflow-x: hidden;

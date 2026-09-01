@@ -62,6 +62,7 @@ import SidebarVariantScope from './components/SidebarVariantScope.vue'
 import Slider from './components/Slider.vue'
 import Sparkline from './components/Charts/Sparkline.vue'
 import Submenu from './components/Submenu.vue'
+import SurfaceLayerScope from './components/SurfaceLayerScope.vue'
 import Switch from './components/Switch.vue'
 import Tabs from './components/Tabs.vue'
 import TextInput from './components/TextInput.vue'
@@ -135,6 +136,7 @@ declare module 'vue' {
     NbSlider: typeof Slider
     NbSparkline: typeof Sparkline
     NbSubmenu: typeof Submenu
+    NbSurfaceLayerScope: typeof SurfaceLayerScope
     NbSwitch: typeof Switch
     NbTabs: typeof Tabs
     NbTextInput: typeof TextInput
