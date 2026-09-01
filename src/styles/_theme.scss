@@ -237,6 +237,29 @@
     // Form field tokens: heights and padding relative to --nb-base-unit (8px)
     --nb-c-field-bg: #{layers.token(layers.$light, field-bg)};
     --nb-c-field-border: #{layers.token(layers.$light, field-border)};
+
+    // ── Status foregrounds ────────────────────────────────────────────────
+    // Drawn as glyphs and outlines directly on a layer surface, so they are
+    // held to WCAG 1.4.11 (3:1) against every surface a card paints. These
+    // are deliberately separate from --nb-c-success / -warning / -danger,
+    // which are FILL colours sized for buttons and carry white text.
+    // Measured here against layer-1 / layer-2: 5.19 / 4.42, 5.20 / 4.43,
+    // 6.64 / 5.66. Verify any change with scripts/audit-contrast.mjs.
+    --nb-c-status-valid: var(--nb-c-emerald-reflection-700);
+    --nb-c-status-warning: var(--nb-c-phoenix-flames-700);
+    --nb-c-status-error: var(--nb-c-chicken-comb-600);
+
+    // ── Node graph (NbBlueprint) ──────────────────────────────────────────
+    // A port is a control, and it sits OUTSIDE the card on the canvas
+    // ground, so its outline is measured against layer-0 rather than the
+    // card: field-border gives 5.03 here. port-bg follows the card surface
+    // so an unwired pin reads as an empty socket cut into the card.
+    --nb-c-port-bg: var(--nb-c-surface);
+    --nb-c-port-border: var(--nb-c-field-border);
+    // The discrete-event ping. Theme-aware, unlike the #38e0ff it replaces.
+    --nb-c-port-signal: var(--nb-c-info);
+    // Parameter rows inside a card: one layer deeper than the card itself.
+    --nb-c-node-row-bg: var(--nb-c-layer-2);
     // xs is the compact size for dense surfaces (inspectors, toolbars).
     // Distinctly smaller than sm; pair with a 13px field font. See the
     // "Building an inspector" guide in the docs before reaching for it.
@@ -277,6 +300,20 @@
     // ── Radii ─────────────────────────────────────────────────────────────
     // Corner scale, expressed against the 8px base unit so a change to
     // --nb-base-unit rescales rounding with everything else.
+    //
+    // Which step to reach for. A pill means the thing slides along a track or
+    // represents a person. `xs` means a control the user manipulates directly.
+    // Anything larger is a container they do not. Under that rule a node card
+    // and its ports are controls, not containers, which is why NbBlueprint
+    // sits on `xs` rather than on the 10px it used to hard-code.
+    //
+    //   none  full-bleed rails, meters, table cells, canvas edges
+    //   xs    buttons, fields, tags, blueprint cards and their ports
+    //   sm    popovers, menus, tooltips, minimap frame
+    //   md    modals, media thumbnails
+    //   lg    inspector panels, coach marks
+    //   pill  toggle tracks and thumbs, avatars, status pills
+    --nb-radius-none: 0;
     --nb-radius-xs: calc(var(--nb-base-unit) / 4); // 2px
     --nb-radius-sm: calc(var(--nb-base-unit) / 2); // 4px
     --nb-radius-md: var(--nb-base-unit); // 8px
@@ -587,6 +624,16 @@
     // Form fields
     --nb-c-field-bg: #{layers.token(layers.$dark, field-bg)};
     --nb-c-field-border: #{layers.token(layers.$dark, field-border)};
+
+    // Status foregrounds. The light values are mid-ramp fills that fall to
+    // ~3:1 or below on the dark surfaces, so the dark theme steps up the
+    // ramp instead: 8.26 / 6.80, 8.89 / 7.33, 5.99 / 4.94 against
+    // layer-1 / layer-2. --nb-c-port-bg, -port-border, -port-signal and
+    // -node-row-bg are aliases of tokens that already flip, so they need no
+    // override here.
+    --nb-c-status-valid: #{colors.get-color('emerald-reflection', 400)};
+    --nb-c-status-warning: #{colors.get-color('phoenix-flames', 400)};
+    --nb-c-status-error: #{colors.get-color('chicken-comb', 300)};
 
     // Discrete
     --nb-c-discrete: #{colors.get-color('nouveau-gray', 700)};
