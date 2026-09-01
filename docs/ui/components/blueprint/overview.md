@@ -25,6 +25,12 @@ tabs: ['Usage', 'Api']
 | Drag from port to port | Connect two cards               |
 | Right-click a wire     | Context menu (Disconnect, etc.) |
 
+Cards are keyboard-operable too. <kbd>Tab</kbd> reaches a card and its
+controls, arrow keys move it (with <kbd>Shift</kbd> for a coarse step), and
+<kbd>Enter</kbd> on a port starts a connection that a second <kbd>Enter</kbd>
+on another port completes. See
+[Keyboard and assistive technology](./card#keyboard-and-assistive-technology).
+
 ## Basic example
 
 Cards are placed in the default slot with `transform: translate(x, y)` positioning. The parent keeps the `connections` array and reacts to `connect`, `disconnect`, and `move` events.
@@ -209,6 +215,18 @@ blueprint.
 The card still emits `port-mousedown` and `port-mouseup` so consumers using
 `NbBlueprintCard` outside an `NbBlueprint` (in a docs page, isolated demo,
 etc.) can wire the events manually if needed.
+
+### Drop targets
+
+While a wire is in flight the blueprint publishes the port it started from,
+and every card lights the pins that could accept it and dims the ones that
+could not. This needs no wiring up and no host state: the answer arrives while
+the user is still aiming rather than on release.
+
+A pin can accept a wire when it is on a different card, faces the other way,
+and carries a compatible `dataType`. Compatibility rules and the family
+matching are documented under
+[Drop targets](./card#drop-targets) on the card page.
 
 ## Wire context menu
 
@@ -466,16 +484,17 @@ The canvas background uses `--nb-c-layer-0`. Ambient gradients are configurable 
 
 ## Props
 
-| Prop                 | Type                                               | Default   | Description                                                                                                                                                                                                                                                                         |
-| -------------------- | -------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `connections`        | `IBlueprintConnection[]`                           | `[]`      | Wires to draw between card ports. The parent owns this array.                                                                                                                                                                                                                       |
-| `cards`              | `IBlueprintCard[]`                                 | (none)    | Card geometry for windowed rendering. When set, render cards via the `#card` slot; only on-screen cards mount. See [Windowed rendering](#windowed-rendering-large-graphs).                                                                                                          |
-| `cardSizeEstimate`   | `{ width: number; height: number }`                | ~one card | Fallback card box for the windowing cull when a card omits `width`/`height`. Only affects how tightly off-screen cards are culled.                                                                                                                                                  |
-| `animateConnections` | `'never' \| 'always' \| 'on-activity' \| 'levels'` | `'never'` | Wire animation policy. See [Wire animation modes](#wire-animation-modes).                                                                                                                                                                                                           |
-| `wheelMode`          | `'auto' \| 'zoom' \| 'pan'`                        | `'auto'`  | What plain wheel events do. Pinch always zooms regardless. See [Panning and zooming](#panning-and-zooming).                                                                                                                                                                         |
-| `editable`           | `boolean`                                          | `false`   | Advisory edit-mode flag, surfaced through [`useBlueprint()`](#the-useblueprint-composable) as `isEditMode` so optional chrome (a controls toolbar, etc.) can show itself only while editing. Does not change pan/zoom/selection, which are always interactive.                      |
-| `renderer`           | `'auto' \| 'dom' \| 'pixi'`                        | `'auto'`  | Rendering backend. `'auto'` uses the PixiJS (WebGL) renderer when available, else the DOM/SVG renderer; `'dom'` forces DOM/SVG; `'pixi'` forces WebGL (falls back to DOM with a warning when unavailable). The public API is identical across renderers. See [Renderer](#renderer). |
-| `background`         | `'grid' \| 'dots' \| 'lines' \| 'none'`            | `'dots'`  | Canvas background pattern. Themable via `--nb-blueprint-grid-color` and `--nb-blueprint-grid-gap`. Ignored when the `#background` slot is used. See [Background](#background).                                                                                                      |
+| Prop                 | Type                                               | Default     | Description                                                                                                                                                                                                                                                                         |
+| -------------------- | -------------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `connections`        | `IBlueprintConnection[]`                           | `[]`        | Wires to draw between card ports. The parent owns this array.                                                                                                                                                                                                                       |
+| `density`            | `TBlueprintDensity`                                | `'default'` | Chrome density inherited by every card on the canvas: `'default'` or `'compact'`. Cards can override their own. It never changes port geometry, so switching density does not move a wire.                                                                                          |
+| `cards`              | `IBlueprintCard[]`                                 | (none)      | Card geometry for windowed rendering. When set, render cards via the `#card` slot; only on-screen cards mount. See [Windowed rendering](#windowed-rendering-large-graphs).                                                                                                          |
+| `cardSizeEstimate`   | `{ width: number; height: number }`                | ~one card   | Fallback card box for the windowing cull when a card omits `width`/`height`. Only affects how tightly off-screen cards are culled.                                                                                                                                                  |
+| `animateConnections` | `'never' \| 'always' \| 'on-activity' \| 'levels'` | `'never'`   | Wire animation policy. See [Wire animation modes](#wire-animation-modes).                                                                                                                                                                                                           |
+| `wheelMode`          | `'auto' \| 'zoom' \| 'pan'`                        | `'auto'`    | What plain wheel events do. Pinch always zooms regardless. See [Panning and zooming](#panning-and-zooming).                                                                                                                                                                         |
+| `editable`           | `boolean`                                          | `false`     | Advisory edit-mode flag, surfaced through [`useBlueprint()`](#the-useblueprint-composable) as `isEditMode` so optional chrome (a controls toolbar, etc.) can show itself only while editing. Does not change pan/zoom/selection, which are always interactive.                      |
+| `renderer`           | `'auto' \| 'dom' \| 'pixi'`                        | `'auto'`    | Rendering backend. `'auto'` uses the PixiJS (WebGL) renderer when available, else the DOM/SVG renderer; `'dom'` forces DOM/SVG; `'pixi'` forces WebGL (falls back to DOM with a warning when unavailable). The public API is identical across renderers. See [Renderer](#renderer). |
+| `background`         | `'grid' \| 'dots' \| 'lines' \| 'none'`            | `'dots'`    | Canvas background pattern. Themable via `--nb-blueprint-grid-color` and `--nb-blueprint-grid-gap`. Ignored when the `#background` slot is used. See [Background](#background).                                                                                                      |
 
 ## Events
 
