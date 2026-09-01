@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
+import { nextTick, ref } from 'vue'
 import { mount } from '@vue/test-utils'
 import BlueprintCard from '../src/components/BlueprintCard.vue'
 import { NB_BLUEPRINT_CONTEXT } from '../src/components/Blueprint.context'
+import type { IBlueprintCardPortEvent } from '../src/components/Blueprint.types'
 
 describe('BlueprintCard', () => {
   const createWrapper = (props = {}) =>
@@ -190,12 +192,13 @@ describe('BlueprintCard', () => {
     const pins = w.findAll('.nb-blueprint-card__port--channel')
     await pins[1].trigger('mousedown')
     const ev = w.emitted('port-mousedown')?.[0]?.[0] as
-      | { nodeId: string; portId: string; type: 'input' | 'output' }
+      | IBlueprintCardPortEvent
       | undefined
     expect(ev).toEqual({
       nodeId: 'test',
       portId: 'audio-out/r',
       type: 'output',
+      dataType: 'audio:stereo',
     })
   })
 
@@ -216,11 +219,25 @@ describe('BlueprintCard', () => {
     expect(w.find('.nb-blueprint-card__port-expand').exists()).toBe(false)
   })
 
+  // The tooltip and the accessible name live on the hit target, not on the
+  // pin: the pin is `pointer-events: none` decoration drawn over the button,
+  // so a title on it would never surface.
   it('renders a tooltip combining port and channel labels', () => {
     const w = createWrapper({ ports: [stereoPort] })
-    const pins = w.findAll('.nb-blueprint-card__port--channel')
-    expect(pins[0].attributes('title')).toBe('Stereo Out . L')
-    expect(pins[1].attributes('title')).toBe('Stereo Out . R')
+    const hits = w.findAll(
+      '.nb-blueprint-card__ports--right .nb-blueprint-card__port-hit',
+    )
+    expect(hits[0].attributes('title')).toBe('Stereo Out . L')
+    expect(hits[1].attributes('title')).toBe('Stereo Out . R')
+  })
+
+  it('names each port for assistive tech with its direction and state', () => {
+    const w = createWrapper({
+      ports: [{ id: 'in', label: 'Sidechain', type: 'input' }],
+      connectedPorts: ['in'],
+    })
+    const hit = w.find('.nb-blueprint-card__port-hit')
+    expect(hit.attributes('aria-label')).toBe('Sidechain, input, connected')
   })
 
   it('accepts new pin data types (audio:stereo, midi, control) without errors', () => {
@@ -355,12 +372,14 @@ describe('BlueprintCard', () => {
       nodeId: 'card',
       portId: 'out',
       type: 'output',
+      dataType: 'audio',
     })
     await port.trigger('mouseup')
     expect(onPortUp).toHaveBeenCalledWith({
       nodeId: 'card',
       portId: 'out',
       type: 'output',
+      dataType: 'audio',
     })
   })
 
@@ -374,6 +393,323 @@ describe('BlueprintCard', () => {
       nodeId: 'test',
       portId: 'in',
       type: 'input',
+      dataType: 'audio',
     })
+  })
+})
+
+// ── Port anatomy ──────────────────────────────────────────────────────
+//
+// These are geometry contracts, not styling preferences. The canvas derives
+// a wire endpoint from the element carrying `data-port`, so anything that
+// creeps into that element's box moves every wire attached to the card.
+describe('BlueprintCard ports', () => {
+  const createWrapper = (props = {}) =>
+    mount(BlueprintCard, {
+      props: { id: 'test', title: 'Test Card', ...props },
+    })
+
+  const audioIn = { id: 'in', label: 'In', type: 'input' as const }
+
+  it('keeps the inline label out of the element the wire layer measures', () => {
+    const w = createWrapper({
+      ports: [{ ...audioIn, showLabel: true }],
+      showPortLabels: 'left' as const,
+    })
+    const pin = w.find('.nb-blueprint-card__port')
+    expect(pin.attributes('data-port')).toBe('test:in')
+    // The label exists, and it is a sibling rather than a descendant. When it
+    // lived inside the pin, the endpoint sat half a label inside the card.
+    expect(w.find('.nb-blueprint-card__port-label').exists()).toBe(true)
+    expect(pin.find('.nb-blueprint-card__port-label').exists()).toBe(false)
+  })
+
+  it('puts the hit target on a real button, separate from the pin', () => {
+    const w = createWrapper({ ports: [audioIn] })
+    const hit = w.find('.nb-blueprint-card__port-hit')
+    expect(hit.element.tagName).toBe('BUTTON')
+    expect(hit.attributes('type')).toBe('button')
+    // The pin is inside the button, so the comfortable target and the
+    // measured box can differ without either compromising.
+    expect(hit.find('.nb-blueprint-card__port').exists()).toBe(true)
+  })
+
+  it('sizes pins with real dimensions, never transform: scale', () => {
+    const w = createWrapper({
+      ports: [
+        { ...audioIn, id: 'a', size: 'sm' as const },
+        { ...audioIn, id: 'b' },
+        { ...audioIn, id: 'c', size: 'lg' as const },
+      ],
+    })
+    const pins = w.findAll('.nb-blueprint-card__port')
+    expect(pins[0].classes()).toContain('nb-blueprint-card__port--size-sm')
+    expect(pins[2].classes()).toContain('nb-blueprint-card__port--size-lg')
+    // A scaled pin looked bigger while keeping a medium pin's box, so its
+    // endpoint and its hit area both stayed the wrong size.
+    for (const pin of pins) {
+      expect(pin.attributes('style') ?? '').not.toContain('scale')
+    }
+  })
+
+  it('marks a metered pin only when a level was reported for it', () => {
+    const w = createWrapper({
+      ports: [
+        { ...audioIn, id: 'quiet' },
+        { ...audioIn, id: 'loud' },
+      ],
+      activePorts: ['quiet', 'loud'],
+      portLevels: { loud: 0.42 },
+    })
+    const pins = w.findAll('.nb-blueprint-card__port')
+    expect(pins[0].classes()).not.toContain('nb-blueprint-card__port--metered')
+    expect(pins[1].classes()).toContain('nb-blueprint-card__port--metered')
+    expect(pins[1].attributes('style')).toContain('--pin-level: 42.0%')
+  })
+
+  it('clamps a reported level into 0..1', () => {
+    const w = createWrapper({
+      ports: [
+        { ...audioIn, id: 'over' },
+        { ...audioIn, id: 'under' },
+      ],
+      portLevels: { over: 3, under: -1 },
+    })
+    const pins = w.findAll('.nb-blueprint-card__port')
+    expect(pins[0].attributes('style')).toContain('--pin-level: 100.0%')
+    expect(pins[1].attributes('style')).toContain('--pin-level: 0.0%')
+  })
+})
+
+// ── Drop targets ──────────────────────────────────────────────────────
+describe('BlueprintCard drop targets', () => {
+  const dragOrigin = ref<IBlueprintCardPortEvent | null>(null)
+
+  const mountWithDrag = (props = {}) =>
+    mount(BlueprintCard, {
+      props: { id: 'target', title: 'Target', ...props },
+      global: {
+        provide: {
+          [NB_BLUEPRINT_CONTEXT as symbol]: {
+            onPortDown: vi.fn(),
+            onPortUp: vi.fn(),
+            dragOrigin,
+          },
+        },
+      },
+    })
+
+  const ports = [
+    {
+      id: 'audio-in',
+      label: 'Audio',
+      type: 'input' as const,
+      dataType: 'audio' as const,
+    },
+    {
+      id: 'midi-in',
+      label: 'MIDI',
+      type: 'input' as const,
+      dataType: 'midi' as const,
+    },
+    {
+      id: 'audio-out',
+      label: 'Out',
+      type: 'output' as const,
+      dataType: 'audio' as const,
+    },
+  ]
+
+  const classesFor = (w: ReturnType<typeof mountWithDrag>, portId: string) =>
+    w.find(`[data-port="target:${portId}"]`).classes()
+
+  it('marks nothing while no wire is in flight', async () => {
+    dragOrigin.value = null
+    const w = mountWithDrag({ ports })
+    await nextTick()
+    for (const p of ports) {
+      expect(classesFor(w, p.id)).not.toContain(
+        'nb-blueprint-card__port--target-valid',
+      )
+      expect(classesFor(w, p.id)).not.toContain(
+        'nb-blueprint-card__port--target-invalid',
+      )
+    }
+  })
+
+  it('lights compatible inputs and dims the rest while dragging an output', async () => {
+    dragOrigin.value = {
+      nodeId: 'other',
+      portId: 'src',
+      type: 'output',
+      dataType: 'audio',
+    }
+    const w = mountWithDrag({ ports })
+    await nextTick()
+    // Right direction, matching family.
+    expect(classesFor(w, 'audio-in')).toContain(
+      'nb-blueprint-card__port--target-valid',
+    )
+    // Right direction, wrong family.
+    expect(classesFor(w, 'midi-in')).toContain(
+      'nb-blueprint-card__port--target-invalid',
+    )
+    // An output cannot receive an output.
+    expect(classesFor(w, 'audio-out')).toContain(
+      'nb-blueprint-card__port--target-invalid',
+    )
+    dragOrigin.value = null
+  })
+
+  it('treats members of one data-type family as compatible', async () => {
+    dragOrigin.value = {
+      nodeId: 'other',
+      portId: 'src',
+      type: 'output',
+      dataType: 'audio:mono',
+    }
+    const w = mountWithDrag({
+      ports: [
+        {
+          id: 'stereo',
+          label: 'Stereo',
+          type: 'input' as const,
+          dataType: 'audio:stereo' as const,
+        },
+      ],
+    })
+    await nextTick()
+    expect(classesFor(w, 'stereo')).toContain(
+      'nb-blueprint-card__port--target-valid',
+    )
+    dragOrigin.value = null
+  })
+
+  it('treats an undeclared or `any` type as compatible with anything', async () => {
+    dragOrigin.value = {
+      nodeId: 'other',
+      portId: 'src',
+      type: 'output',
+      dataType: undefined,
+    }
+    const w = mountWithDrag({
+      ports: [
+        {
+          id: 'midi-in',
+          label: 'MIDI',
+          type: 'input' as const,
+          dataType: 'midi' as const,
+        },
+      ],
+    })
+    await nextTick()
+    expect(classesFor(w, 'midi-in')).toContain(
+      'nb-blueprint-card__port--target-valid',
+    )
+    dragOrigin.value = null
+  })
+
+  it('never marks a card against a drag that started on itself', async () => {
+    dragOrigin.value = {
+      nodeId: 'target',
+      portId: 'audio-out',
+      type: 'output',
+      dataType: 'audio',
+    }
+    const w = mountWithDrag({ ports })
+    await nextTick()
+    // The originating pin is neither a target nor a non-target...
+    expect(classesFor(w, 'audio-out')).not.toContain(
+      'nb-blueprint-card__port--target-valid',
+    )
+    expect(classesFor(w, 'audio-out')).not.toContain(
+      'nb-blueprint-card__port--target-invalid',
+    )
+    // ...and a card cannot wire to itself, so its other pins are not targets.
+    expect(classesFor(w, 'audio-in')).toContain(
+      'nb-blueprint-card__port--target-invalid',
+    )
+    dragOrigin.value = null
+  })
+})
+
+// ── Density, keyboard, status ─────────────────────────────────────────
+describe('BlueprintCard density and keyboard', () => {
+  it('inherits the canvas density and lets a card override it', () => {
+    const density = ref<'default' | 'compact'>('compact')
+    const withContext = (props = {}) =>
+      mount(BlueprintCard, {
+        props: { id: 'c', title: 'C', ...props },
+        global: {
+          provide: {
+            [NB_BLUEPRINT_CONTEXT as symbol]: {
+              onPortDown: vi.fn(),
+              onPortUp: vi.fn(),
+              density,
+            },
+          },
+        },
+      })
+    expect(withContext().classes()).toContain(
+      'nb-blueprint-card--density-compact',
+    )
+    expect(withContext({ density: 'default' }).classes()).toContain(
+      'nb-blueprint-card--density-default',
+    )
+  })
+
+  it('falls back to default density with no canvas around it', () => {
+    const w = mount(BlueprintCard, { props: { id: 'c', title: 'C' } })
+    expect(w.classes()).toContain('nb-blueprint-card--density-default')
+  })
+
+  it('nudges through the blueprint so arrow keys and drags share one path', async () => {
+    const nudge = vi.fn()
+    const w = mount(BlueprintCard, {
+      props: { id: 'c', title: 'C' },
+      global: {
+        provide: {
+          [NB_BLUEPRINT_CONTEXT as symbol]: {
+            onPortDown: vi.fn(),
+            onPortUp: vi.fn(),
+            nudge,
+          },
+        },
+      },
+    })
+    await w.trigger('keydown', { key: 'ArrowRight' })
+    expect(nudge).toHaveBeenCalledWith('c', 1, 0)
+    await w.trigger('keydown', { key: 'ArrowUp', shiftKey: true })
+    expect(nudge).toHaveBeenCalledWith('c', 0, -10)
+    // Keys the card does not own are left alone for the canvas to handle.
+    await w.trigger('keydown', { key: 'a' })
+    expect(nudge).toHaveBeenCalledTimes(2)
+  })
+
+  it('is focusable and describes itself', () => {
+    const w = mount(BlueprintCard, {
+      props: {
+        id: 'c',
+        title: 'Low-pass',
+        category: 'Effect',
+        status: 'warning' as const,
+        enabled: false,
+      },
+    })
+    expect(w.attributes('tabindex')).toBe('0')
+    expect(w.attributes('role')).toBe('group')
+    expect(w.attributes('aria-label')).toBe(
+      'Low-pass, Effect, Warning, disabled',
+    )
+  })
+
+  it('draws status as a titled glyph rather than a colour-only dot', () => {
+    const w = mount(BlueprintCard, {
+      props: { id: 'c', title: 'C', status: 'error' as const },
+    })
+    const status = w.find('.nb-blueprint-card__status')
+    expect(status.element.tagName.toLowerCase()).toBe('svg')
+    expect(status.attributes('aria-label')).toBe('Error')
+    expect(status.find('title').text()).toBe('Error')
   })
 })

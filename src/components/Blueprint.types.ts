@@ -2,6 +2,8 @@ import type { Ref } from 'vue'
 import type {
   IBlueprintPort,
   TBlueprintCardStatus,
+  TBlueprintDensity,
+  TBlueprintPinDataType,
 } from './BlueprintCard.types'
 import type { BlueprintLiveData } from './blueprint-pixi/live-data'
 import type { TWireActivityStyle } from './blueprint-pixi/pixi-scene'
@@ -151,6 +153,16 @@ export interface IBlueprintProps {
    * Wire connections between card ports.
    */
   connections?: IBlueprintConnection[]
+  /**
+   * Chrome density for every card on the canvas. Cards inherit it and can
+   * override their own. `'compact'` drops the header to 28px and hides the
+   * category line, which is worth having once a graph is past roughly twenty
+   * nodes and card headers are more of the canvas than the graph is.
+   *
+   * It never changes port geometry, so switching density does not move a
+   * single wire.
+   */
+  density?: TBlueprintDensity
   /**
    * Card geometry for the windowed rendering API. When provided, Blueprint
    * owns the card `v-for` and position wrappers and renders each card
@@ -348,6 +360,12 @@ export interface IBlueprintCardPortEvent {
   nodeId: string
   portId: string
   type: 'input' | 'output'
+  /**
+   * The port's declared data type, forwarded so the other end of a drag can
+   * decide whether it could accept this wire before the user lets go. Absent
+   * on events synthesised by older callers, which is read as `'any'`.
+   */
+  dataType?: TBlueprintPinDataType
 }
 
 /**
@@ -359,4 +377,27 @@ export interface IBlueprintCardPortEvent {
 export interface IBlueprintCardContext {
   onPortDown: (event: IBlueprintCardPortEvent) => void
   onPortUp: (event: IBlueprintCardPortEvent) => void
+  /**
+   * The port a wire drag started from, or null when no drag is in flight.
+   *
+   * Cards read this to answer the question the user is actually asking while
+   * they drag: can this wire land here? A port that could accept the wire
+   * lights up, every port that could not dims. Before this existed the answer
+   * only arrived on release, as either a wire or nothing at all.
+   */
+  dragOrigin: Ref<IBlueprintCardPortEvent | null>
+  /**
+   * Canvas-level chrome density. A card uses it unless it sets its own
+   * `density` prop.
+   */
+  density: Ref<TBlueprintDensity>
+  /**
+   * Move a card by a delta in canvas units, and report it through the
+   * blueprint's normal `move` event. Cards call this for keyboard nudging so
+   * arrow keys go through exactly the same path as a mouse drag.
+   */
+  nudge: (id: string, dx: number, dy: number) => void
+  /** Abandon an in-flight wire drag without connecting anything. Bound to
+   *  Escape so a keyboard user can back out of a connection they started. */
+  cancelPortDrag: () => void
 }

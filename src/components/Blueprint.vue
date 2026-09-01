@@ -187,6 +187,7 @@ import type {
   IBlueprintCardPortEvent,
   IBlueprintProps,
 } from './Blueprint.types'
+import type { TBlueprintPinDataType } from './BlueprintCard.types'
 
 const props = withDefaults(defineProps<IBlueprintProps>(), {
   connections: () => [],
@@ -195,6 +196,7 @@ const props = withDefaults(defineProps<IBlueprintProps>(), {
   editable: false,
   renderer: 'auto',
   background: 'dots',
+  density: 'default',
 })
 
 const slots = useSlots()
@@ -1155,7 +1157,11 @@ function onMarqueeEnd() {
 // ── Wire connections ──────────────────────────────────────────────────
 
 const dragWire = ref<string | null>(null)
-let dragFrom: { nodeId: string; portId: string; type: string } | null = null
+// The port a wire drag started from. Reactive, and provided to cards, because
+// every pin has to answer "could this wire land on me?" while the drag is
+// still in flight. It is written twice per drag (start and end), never per
+// frame, so making it reactive costs nothing on the hot path.
+const dragFrom = ref<IBlueprintCardPortEvent | null>(null)
 // When non-null, the active drag is a "rewire" of an existing wire's
 // endpoint rather than the creation of a fresh wire. dragFrom holds
 // the FIXED end (the side that stays put); on a successful drop we
@@ -1164,12 +1170,8 @@ let dragFrom: { nodeId: string; portId: string; type: string } | null = null
 const dragRewireOriginal = ref<IBlueprintConnection | null>(null)
 const REWIRE_GRAB_THRESHOLD = 40 // canvas units from endpoint to count as a grab
 
-function onPortMouseDown(data: {
-  nodeId: string
-  portId: string
-  type: string
-}) {
-  dragFrom = data
+function onPortMouseDown(data: IBlueprintCardPortEvent) {
+  dragFrom.value = data
   dragRewireOriginal.value = null
   document.addEventListener('mousemove', onWireDrag)
   document.addEventListener('mouseup', onWireDragEnd)
@@ -1211,13 +1213,26 @@ function onWireMouseDown(event: MouseEvent, conn: IBlueprintConnection) {
   // browser doesn't try to start a text-selection drag.
   event.preventDefault()
 
-  // Closer end is the one being moved; the other becomes the anchor.
+  // Closer end is the one being moved; the other becomes the anchor. The
+  // anchor carries its declared data type too, so pins can validate a rewire
+  // drop exactly as they validate a fresh connection.
   const grabFrom = distFrom < distTo
-  const anchor = grabFrom
-    ? { nodeId: conn.toNode, portId: conn.toPort, type: 'input' }
-    : { nodeId: conn.fromNode, portId: conn.fromPort, type: 'output' }
+  const anchorEl = grabFrom ? toEl : fromEl
+  const anchor: IBlueprintCardPortEvent = grabFrom
+    ? {
+        nodeId: conn.toNode,
+        portId: conn.toPort,
+        type: 'input',
+        dataType: portDataTypeOf(anchorEl),
+      }
+    : {
+        nodeId: conn.fromNode,
+        portId: conn.fromPort,
+        type: 'output',
+        dataType: portDataTypeOf(anchorEl),
+      }
 
-  dragFrom = anchor
+  dragFrom.value = anchor
   dragRewireOriginal.value = conn
   document.addEventListener('mousemove', onWireDrag)
   document.addEventListener('mouseup', onWireDragEnd)
@@ -1233,7 +1248,41 @@ function onWireMouseDown(event: MouseEvent, conn: IBlueprintConnection) {
 provide(NB_BLUEPRINT_CONTEXT, {
   onPortDown: (e: IBlueprintCardPortEvent) => onPortMouseDown(e),
   onPortUp: (e: IBlueprintCardPortEvent) => onPortMouseUp(e),
+  // Read by every pin to decide whether it is a valid drop target for the
+  // wire currently in flight, so the answer arrives while the user is still
+  // aiming rather than on release.
+  dragOrigin: dragFrom,
+  density: computed(() => props.density),
+  nudge: nudgeCards,
+  cancelPortDrag: onWireDragEnd,
 })
+
+/**
+ * Move a card by a delta in canvas units. Cards call this for keyboard
+ * nudging, and it deliberately mirrors mouse dragging: nudging a card that is
+ * part of the selection moves the whole selection, exactly as dragging one
+ * does, and the result is reported through the same `move` event. Positions
+ * have one path out of this component, not two.
+ */
+function nudgeCards(id: string, dx: number, dy: number) {
+  const container = containerRef.value
+  if (!container) return
+  let infos: TSelectedCardInfo[]
+  if (selectedIds.value.has(id)) {
+    infos = getSelectedCardInfos()
+  } else {
+    const el = container.querySelector(
+      `[data-card-id="${id}"]`,
+    ) as HTMLElement | null
+    if (!el) return
+    const pos = getCardPosition(el)
+    infos = [
+      { id, el, x: pos.x, y: pos.y, w: el.offsetWidth, h: el.offsetHeight },
+    ]
+  }
+  if (!infos.length) return
+  applyPositions(infos.map((i) => ({ ...i, x: i.x + dx, y: i.y + dy })))
+}
 
 // ── Coordinate transforms ─────────────────────────────────────────────
 // Shared by sibling chrome (minimap pan, controls "zoom to point") and
@@ -1355,13 +1404,23 @@ function findPortEl(nodeId: string, portId: string): HTMLElement | null {
   return portCache.get(nodeId, portId)
 }
 
+/** The declared data type of a pin, read off the element the card renders it
+ *  on. Undefined for the `any` case so it reads the same as an unset type. */
+function portDataTypeOf(
+  el: HTMLElement | null,
+): TBlueprintPinDataType | undefined {
+  const raw = el?.getAttribute('data-port-data-type')
+  return raw && raw !== 'any' ? (raw as TBlueprintPinDataType) : undefined
+}
+
 function onWireDrag(e: MouseEvent) {
-  if (!dragFrom || !containerRef.value) return
+  const origin = dragFrom.value
+  if (!origin || !containerRef.value) return
   const rect = containerRef.value.getBoundingClientRect()
   const mx = (e.clientX - rect.left - panX.value) / zoom.value
   const my = (e.clientY - rect.top - panY.value) / zoom.value
 
-  const fromEl = findPortEl(dragFrom.nodeId, dragFrom.portId)
+  const fromEl = findPortEl(origin.nodeId, origin.portId)
   if (!fromEl) return
 
   const fromRect = fromEl.getBoundingClientRect()
@@ -1378,20 +1437,21 @@ function onWireDragEnd() {
   // Drop on empty canvas: cancel everything. If a port handler emitted
   // a connect/disconnect first it will have already cleared dragFrom,
   // so this is idempotent.
-  dragFrom = null
+  dragFrom.value = null
   dragRewireOriginal.value = null
   dragWire.value = null
   document.removeEventListener('mousemove', onWireDrag)
   document.removeEventListener('mouseup', onWireDragEnd)
 }
 
-function onPortMouseUp(data: { nodeId: string; portId: string; type: string }) {
-  if (!dragFrom) return
-  if (dragFrom.nodeId === data.nodeId) return
-  if (dragFrom.type === data.type) return
+function onPortMouseUp(data: IBlueprintCardPortEvent) {
+  const origin = dragFrom.value
+  if (!origin) return
+  if (origin.nodeId === data.nodeId) return
+  if (origin.type === data.type) return
 
-  const from = dragFrom.type === 'output' ? dragFrom : data
-  const to = dragFrom.type === 'output' ? data : dragFrom
+  const from = origin.type === 'output' ? origin : data
+  const to = origin.type === 'output' ? data : origin
   const newConn: IBlueprintConnection = {
     fromNode: from.nodeId,
     fromPort: from.portId,
@@ -1416,7 +1476,7 @@ function onPortMouseUp(data: { nodeId: string; portId: string; type: string }) {
     emit('connect', newConn)
   }
 
-  dragFrom = null
+  dragFrom.value = null
   dragRewireOriginal.value = null
   dragWire.value = null
 }
