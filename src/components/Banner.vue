@@ -145,6 +145,16 @@ const iconMap = {
     --nb-banner-accent: var(--nb-c-component-plain);
   }
 
+  // Controls are taller than a line of text, so a banner carrying them is
+  // taller than its words need. Pinning the text to the top then leaves it
+  // riding high with the slack underneath. Centring the row is only correct
+  // BECAUSE the actions are what set the height: without them the first-line
+  // alignment above is what keeps a wrapping banner's icon beside its opening
+  // sentence, so this is deliberately scoped rather than made the default.
+  &:has(.nb-banner__actions) {
+    align-items: center;
+  }
+
   // Edge to edge inside a region that already has its own boundary, such as
   // NbShell's notification area. The status bar SURVIVES: it is the identity of
   // the thing, not decoration on it. Only the borders that would draw a box
