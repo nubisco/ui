@@ -249,6 +249,10 @@ export default withMermaid(
                   { text: 'Menu Bar', link: '/ui/components/menu-bar' },
                   { text: 'Message', link: '/ui/components/message' },
                   { text: 'Modal', link: '/ui/components/modal' },
+                  {
+                    text: 'Nubisco Mark',
+                    link: '/ui/components/nubisco-mark',
+                  },
                   { text: 'Number Input', link: '/ui/components/number-input' },
                   { text: 'Pagination', link: '/ui/components/pagination' },
                   { text: 'Panel', link: '/ui/components/panel' },

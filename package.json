@@ -40,6 +40,7 @@
       "default": "./dist/index.mjs"
     },
     "./dist/ui.css": "./dist/ui.css",
+    "./assets/nubisco-mark.svg": "./src/assets/nubisco-mark.svg",
     "./plugins/*": {
       "types": "./dist/plugins/*.d.ts",
       "import": "./dist/plugins/*.js"
@@ -71,6 +72,7 @@
     "src/plugins",
     "src/utils",
     "src/assets/icons",
+    "src/assets/nubisco-mark.svg",
     "README.md",
     "LICENSE"
   ],

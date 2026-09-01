@@ -26,7 +26,7 @@
     <!-- Footer bar: logo / edit link / copyright -->
     <div class="doc-footer__bar">
       <a href="/" class="doc-footer__brand">
-        <img src="/nubisco-logo.svg" alt="Nubisco" class="doc-footer__logo" />
+        <NbNubiscoMark :size="24" class="doc-footer__logo" />
         <span class="doc-footer__brand-name">Nubisco</span>
       </a>
 

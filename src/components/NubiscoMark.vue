@@ -1,5 +1,16 @@
 <template>
-  <svg viewBox="0 0 320 320" fill="none" aria-hidden="true" focusable="false">
+  <svg
+    :width="px"
+    :height="px"
+    viewBox="0 0 320 320"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    :role="props.title ? 'img' : undefined"
+    :aria-hidden="props.title ? undefined : 'true'"
+    :aria-labelledby="props.title ? titleId : undefined"
+    :focusable="props.title ? undefined : 'false'"
+  >
+    <title v-if="props.title" :id="titleId">{{ props.title }}</title>
     <defs>
       <linearGradient
         :id="`${markId}-g1`"
@@ -213,18 +224,32 @@
 </template>
 
 <script setup lang="ts">
-import { useId } from 'vue'
+import { computed, useId } from 'vue'
+import type { INubiscoMarkProps } from './NubiscoMark.d'
 
-// The Nubisco mark, the same three-leg gradient artwork as the platform
-// favicon, inlined so the menu carries its own signature and needs no asset
-// pipeline in the host. It reads on both light and dark grounds, so there is
-// no per-theme variant.
+// The Nubisco mark: the three-leg gradient artwork, inlined so a product can
+// render it with no asset pipeline of its own. The same artwork ships as a
+// file at `@nubisco/ui/assets/nubisco-mark.svg` for favicons and static HTML.
+// One source for both, so the mark cannot drift between products.
 //
-// Gradient ids are document-global: two menus on one page would otherwise both
-// resolve to the first instance's gradients, which is why every id is scoped
-// per instance here. `useId()` is unique per instance and stable across SSR
-// and hydration, but only within one Vue app. A host mounting several apps on
-// one page should give them distinct `app.config.idPrefix` values, which is
-// what that option is for.
-const markId = `nb-user-menu-mark-${useId()}`
+// It reads on both light and dark grounds, so there is no per-theme variant,
+// and the gradients are fixed brand colours rather than theme tokens.
+
+const props = withDefaults(defineProps<INubiscoMarkProps>(), {
+  size: 20,
+  title: undefined,
+})
+
+// Gradient ids are document-global: two marks on one page would otherwise both
+// paint with the first instance's gradients. `useId()` is unique per instance
+// and stable across SSR and hydration, but only within one Vue app. A host
+// mounting several apps on one page should give them distinct
+// `app.config.idPrefix` values, which is what that option is for.
+const uid = useId()
+const markId = `nb-nubisco-mark-${uid}`
+const titleId = `${markId}-title`
+
+const px = computed(() =>
+  typeof props.size === 'number' ? `${props.size}px` : props.size,
+)
 </script>
