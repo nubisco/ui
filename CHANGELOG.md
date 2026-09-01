@@ -1,3 +1,10 @@
+# [2.5.0](https://github.com/nubisco/ui/compare/v2.4.0...v2.5.0) (2026-09-01)
+
+
+### Features
+
+* **modal:** add xl and immersive sizes for content-heavy dialogs ([18347bf](https://github.com/nubisco/ui/commit/18347bfa08f8e7dbfe7eca9fa0b96c703b885382))
+
 # [2.4.0](https://github.com/nubisco/ui/compare/v2.3.0...v2.4.0) (2026-09-01)
 
 
