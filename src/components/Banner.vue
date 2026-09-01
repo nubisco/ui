@@ -164,7 +164,13 @@ const iconMap = {
     margin-block-start: calc((1.5em - 18px) / 2);
   }
 
-  &__body {
+  // Written as a descendant rather than a bare class so it outranks the prose
+  // styles of whatever is hosting it. A plain `.nb-banner__body { margin: 0 }`
+  // lost to the docs site's own `p` rule, which put 6.5px above the text and
+  // 19.5px below it: the banner grew to 73px for one line of 13px type, the
+  // padding read as lopsided, and the icon sat 6px above the sentence it
+  // belongs to. Any app that styles paragraphs would have done the same.
+  & &__body {
     flex: 1;
     min-width: 0;
     margin: 0;
@@ -190,7 +196,11 @@ const iconMap = {
     align-items: center;
     gap: calc(var(--nb-base-unit) / 2);
     flex-shrink: 0;
-    margin-block-start: calc((1.5em - 24px) / 2);
+    // Centred rather than offset by a hard-coded guess: the controls in here
+    // are whatever the caller put in, and their height is not knowable from a
+    // stylesheet. An earlier version assumed 24px and was 3px out against a
+    // 32px button.
+    align-self: center;
   }
 
   // Not an NbButton: ghost's hover fills with the PRIMARY colour, which lands a
