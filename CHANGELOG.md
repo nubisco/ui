@@ -1,3 +1,18 @@
+# [2.7.0](https://github.com/nubisco/ui/compare/v2.6.0...v2.7.0) (2026-09-01)
+
+
+### Bug Fixes
+
+* **banner:** centre the row when it carries action controls ([cf80c18](https://github.com/nubisco/ui/commit/cf80c183ae679460aa6f1350066363041315f566))
+* **banner:** status bar, filled icons, and a close button that is not purple ([9569b8b](https://github.com/nubisco/ui/commit/9569b8b060fa289ab780755441bf683885d1654d))
+* **banner:** stop the host's paragraph styles inflating the body ([5a79f77](https://github.com/nubisco/ui/commit/5a79f771270090757703b9c640bb60566a2838a9))
+
+
+### Features
+
+* **banner:** add NbBanner, the page-level message the shell had no component for ([5ac0aa1](https://github.com/nubisco/ui/commit/5ac0aa12a0e0024e9739a251aedb95071be15b21)), closes [#notification](https://github.com/nubisco/ui/issues/notification) [#fef3c7](https://github.com/nubisco/ui/issues/fef3c7) [#92400e](https://github.com/nubisco/ui/issues/92400e)
+* **theme:** add useTheme, the light/dark preference the apps were copying ([3081395](https://github.com/nubisco/ui/commit/3081395ff96da04373572b67abedc03679ec11ee))
+
 # [2.6.0](https://github.com/nubisco/ui/compare/v2.5.0...v2.6.0) (2026-09-01)
 
 
