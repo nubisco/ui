@@ -266,6 +266,7 @@ export default withMermaid(
                   { text: 'Text Input', link: '/ui/components/text-input' },
                   { text: 'Toast', link: '/ui/components/toast' },
                   { text: 'Tree', link: '/ui/components/tree' },
+                  { text: 'User Menu', link: '/ui/components/user-menu' },
                   { text: 'Walkthrough', link: '/ui/components/walkthrough' },
                 ],
               },

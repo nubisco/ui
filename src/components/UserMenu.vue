@@ -115,6 +115,21 @@
             <NbIcon name="sign-out" :size="15" />
             {{ t('userMenu.SIGN_OUT') }}
           </button>
+
+          <template v-if="props.brand !== 'none'">
+            <div class="nb-user-menu__divider" role="separator" />
+            <slot name="brand">
+              <p class="nb-user-menu__brand">
+                <NbUserMenuMark class="nb-user-menu__mark" />
+                <span class="nb-user-menu__brand-line"
+                  >{{ brandLine.prefix
+                  }}<span class="nb-user-menu__brand-name">{{
+                    brandLine.name
+                  }}</span></span
+                >
+              </p>
+            </slot>
+          </template>
         </div>
       </Transition>
     </Teleport>
@@ -122,9 +137,10 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import NbIcon from './Icon.vue'
+import NbUserMenuMark from './UserMenuMark.vue'
 import type { IUserMenuAccount, IUserMenuProps } from './UserMenu.d'
 
 // Resolution order per string: the host app's global catalog under
@@ -141,6 +157,7 @@ const BUILT_IN: Record<string, Record<string, string>> = {
     REMOVE_ACCOUNT: 'Sign this account out of this browser',
     PROFILE: 'Profile',
     SIGN_OUT: 'Sign out',
+    poweredBy: 'Powered by Nubisco Platform',
   },
   pt: {
     ACCOUNT_MENU: 'Menu de conta',
@@ -150,6 +167,7 @@ const BUILT_IN: Record<string, Record<string, string>> = {
     REMOVE_ACCOUNT: 'Terminar a sessão desta conta neste browser',
     PROFILE: 'Perfil',
     SIGN_OUT: 'Terminar sessão',
+    poweredBy: 'Fornecido pela Nubisco Platform',
   },
 }
 
@@ -167,8 +185,22 @@ const props = withDefaults(defineProps<IUserMenuProps>(), {
   accountsUnknown: false,
   showAccountActions: true,
   showProfile: true,
+  brand: 'footer',
   placement: 'right-end',
   disabled: false,
+})
+
+// "Nubisco Platform" is a product name and stays untranslated inside the
+// localised sentence, so the emphasis is found rather than hardcoded per
+// locale. A translation that drops the name renders wholly emphasised, which
+// is the higher-contrast half of the pair.
+const BRAND_NAME = 'Nubisco Platform'
+
+const brandLine = computed(() => {
+  const line = t('userMenu.poweredBy')
+  const at = line.indexOf(BRAND_NAME)
+  if (at < 0) return { prefix: '', name: line }
+  return { prefix: line.slice(0, at), name: line.slice(at) }
 })
 
 const emit = defineEmits<{
@@ -428,6 +460,30 @@ defineExpose({ open, toggle, close })
   &:hover {
     color: var(--nb-c-danger, #b91c1c);
   }
+}
+
+.nb-user-menu__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.3rem 0.4rem 0.15rem;
+  font-size: 0.68rem;
+  line-height: 1.2;
+  color: var(--nb-c-text-muted);
+  user-select: none;
+}
+
+.nb-user-menu__mark {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  display: block;
+}
+
+.nb-user-menu__brand-name {
+  font-weight: 600;
+  color: var(--nb-c-text);
 }
 
 .nb-user-menu__action--danger {

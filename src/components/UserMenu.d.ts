@@ -16,6 +16,15 @@ interface IUserMenuAccount {
 
 type TUserMenuPlacement = 'right-end' | 'top-start'
 
+/**
+ * How the menu signs itself as a Nubisco Platform product.
+ *
+ * A union rather than a boolean because a third mode, `'hub'` (the same
+ * lockup, but a real link to the Nubisco Platform product page), lands once
+ * that page exists.
+ */
+type TUserMenuBrand = 'footer' | 'none'
+
 interface IUserMenuProps {
   /** The identity the product is signed in as (header of the menu). */
   user: IUserMenuUser
@@ -35,9 +44,21 @@ interface IUserMenuProps {
   showAccountActions?: boolean
   /** Hide the Profile entry when the product has no profile page. */
   showProfile?: boolean
+  /**
+   * The Nubisco Platform lockup at the foot of the panel. `'footer'` renders a
+   * non-interactive signature; `'none'` renders nothing, for white-label
+   * deployments and for hosts that are not Nubisco products.
+   */
+  brand?: TUserMenuBrand
   /** Where the panel opens relative to the trigger. */
   placement?: TUserMenuPlacement
   disabled?: boolean
 }
 
-export { IUserMenuUser, IUserMenuAccount, TUserMenuPlacement, IUserMenuProps }
+export {
+  IUserMenuUser,
+  IUserMenuAccount,
+  TUserMenuPlacement,
+  TUserMenuBrand,
+  IUserMenuProps,
+}
