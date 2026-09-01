@@ -1,5 +1,135 @@
 # Upgrading
 
+## To 2.7.0 from 2.6.x
+
+`NbBlueprint` ports moved outside the card, and the wire layer now measures
+the pin rather than a box that also contained the pin's label. Everything else
+in this release follows from those two changes.
+
+It ships in a minor, so a `^2` range picks it up on a routine update. No prop
+was removed or renamed and no event stopped firing, but graphs will look
+different and card bounding boxes changed size, so look at a canvas after
+upgrading rather than after the next deploy.
+
+### What changed
+
+**Wires land on pins.** A wire endpoint is derived from the element carrying
+`data-port`. That element used to be a flex row containing the pin _and_, when
+`showPortLabels` was on, the inline label, so the endpoint sat at the centre
+of pin + gap + label, up to 11.5px away from the pin it was supposed to touch.
+The label is now a sibling, and the pin is the only thing in that box.
+
+For the same reason, `size: 'sm'` and `size: 'lg'` are real dimensions instead
+of `transform: scale()`. A scaled pin looked larger while keeping a medium
+pin's box, so its endpoint and its hit area both stayed the wrong size.
+
+**Pins sit outside the card.** They used to straddle the border, covering it
+and any left-edge decoration for their full height. Outside, the card's border
+stays continuous, the hit target never overlaps card content, and the pin is
+unambiguous to aim at. This is the change with a real cost, in the table below.
+
+**The port column is anchored to the top of the card.** It used to centre in
+the card's height, which made a pin's Y a function of how tall the card
+happened to be: expanding a card or adding a parameter row moved every wire
+attached to it. Pins now start at `--nb-blueprint-port-top` and step by
+`--nb-blueprint-port-pitch`.
+
+**Drop targets exist.** While a wire is dragged, compatible pins ring and
+incompatible ones dim. Nothing to wire up.
+
+**The card is keyboard-operable.** It had no `tabindex`, no `aria-*` and no
+focus styles at all; selection and connection were mousedown-only.
+
+**Colour, type and radius come from tokens.** The card carried around fourteen
+literal colours, including a `rgba(255, 255, 255, 0.015)` parameter-row fill
+that is invisible on the light ramp, and its own 10px corner radius. It now
+reads `--nb-c-port-*`, `--nb-c-status-*`, `--nb-c-node-row-bg` and
+`--nb-radius-xs`, and the node colour is spent once, on a rail down the card's
+left edge, instead of on the top bar, the category, every wired pin and the
+toggle at the same time.
+
+| Where              | 2.6.x                            | 2.7.0                                       |
+| ------------------ | -------------------------------- | ------------------------------------------- |
+| Pin position       | Straddling the card border       | Fully outside, flush with the outer edge    |
+| Card bounding box  | The card                         | The card + 24px of port gutter on each side |
+| Wire endpoint      | Centre of the port element's box | Centre of the pin                           |
+| Port column origin | Centred in the card's height     | `--nb-blueprint-port-top` from the top      |
+| Port pitch         | 6px gap, variable                | `--nb-blueprint-port-pitch`, 24px           |
+| Hit target         | The 6&times;14 pin               | A 24&times;24 button behind it              |
+| Card radius        | `10px`                           | `var(--nb-radius-xs)`                       |
+| Category colour    | The node colour                  | `--nb-c-text-subtle`                        |
+| Toggle "on" colour | The node colour                  | `--nb-c-primary`                            |
+| Status indicator   | 6px colour-only dot with a glow  | 14px glyph, distinct per state              |
+| Hover              | `translateY(-1px)` + drop shadow | Surface steps to `--nb-c-layer-hover-1`     |
+| Active port        | Infinite 1s ring in `#38e0ff`    | Level fill, or one ping per event           |
+
+### New API
+
+All additive.
+
+| Addition                                           | On                               | For                                                                  |
+| -------------------------------------------------- | -------------------------------- | -------------------------------------------------------------------- |
+| `density`                                          | `NbBlueprint`, `NbBlueprintCard` | `'default'` or `'compact'`. Set once on the canvas; cards inherit.   |
+| `portLevels`                                       | `NbBlueprintCard`                | `Record<string, number>`, 0 to 1. Listed pins render as meters.      |
+| `dataType`                                         | `IBlueprintCardPortEvent`        | The pin's declared type, so the other end of a drag can validate it. |
+| `dragOrigin`, `density`, `nudge`, `cancelPortDrag` | `IBlueprintCardContext`          | What the card needs to draw drop targets and route keyboard nudges.  |
+| `--nb-radius-none`                                 | Theme                            | Completes the existing radius scale.                                 |
+| `--nb-c-port-bg`, `-port-border`, `-port-signal`   | Theme                            | Port colours, previously literals in the component.                  |
+| `--nb-c-status-valid`, `-warning`, `-error`        | Theme                            | Status foregrounds, held to 3:1 on every surface a card paints.      |
+| `--nb-c-node-row-bg`                               | Theme                            | Parameter row fill.                                                  |
+
+### What to check
+
+- **Card spacing in your layouts.** This is the one that will bite. A card's
+  visual box is now 24px wider on each side that has ports. If your positions
+  were tuned so cards sat close together, adjacent cards' port gutters will
+  now touch or overlap. Auto-layout inside the component already accounts for
+  it; hand-authored coordinates and any spacing maths of your own do not.
+
+- **Anything that measured a card element.** `getBoundingClientRect` on
+  `.nb-blueprint-card` is unchanged, the gutters are absolutely positioned
+  outside it, but if you were measuring a wrapper, or hit-testing against a
+  card rectangle to decide what the pointer is over, the ports now sit outside
+  the rectangle you were testing.
+
+- **CSS that targeted `.nb-blueprint-card__port` for layout.** It is now the
+  pin only, a `pointer-events: none` span inside a
+  `.nb-blueprint-card__port-hit` button. Selectors that styled it still apply,
+  but rules that positioned it, gave it a hover state, or bound a listener to
+  it need to move to `.nb-blueprint-card__port-hit`.
+
+- **Handlers typed against the old port-event shape.** The payload gained an
+  optional `dataType`. If you asserted on the whole object (`toEqual` in a
+  test, an exhaustive destructure), it now has one more key.
+
+- **`--nb-card-glow`.** Still published on the card, so host CSS reading it
+  keeps working, but the component no longer paints anything with it. If you
+  were relying on the card's own radial wash, it is gone deliberately: it was
+  invented to fake depth on a dark ground and it reads as a grey smudge on the
+  light ramp.
+
+- **Custom card headers.** `--nb-blueprint-port-top` lines the first pin up
+  with the stock header. If you replaced the header through the default slot,
+  set it to your own header's centre.
+
+- **Reduced motion.** The card now honours `prefers-reduced-motion`. If your
+  tests asserted on the port ping, it does not schedule under that preference.
+
+### Keeping the old look
+
+There is no flag for it, and the geometry changes are not separable from the
+fixes. The nearest thing, if you need cards to occupy their old footprint
+while you retune positions, is to shrink the gutter:
+
+```css
+.nb-blueprint-card {
+  --nb-blueprint-port-hit: 8px; /* gutter matches the pin, as it used to */
+}
+```
+
+That gives back the horizontal space at the cost of the comfortable hit target,
+so treat it as a migration aid rather than a setting.
+
 ## To 2.6.0 from 2.5.x
 
 The main region of `NbShell` is now the page ground. It paints layer 0, and the
