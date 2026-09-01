@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/nubisco/ui/compare/v2.1.0...v2.2.0) (2026-09-01)
+
+
+### Features
+
+* **user-menu:** sign the panel with the Nubisco Platform lockup ([7710198](https://github.com/nubisco/ui/commit/7710198c3830e3f16ef8df45a9fc38fdd8b035d8)), closes [#brand](https://github.com/nubisco/ui/issues/brand)
+
 # [2.1.0](https://github.com/nubisco/ui/compare/v2.0.1...v2.1.0) (2026-08-31)
 
 
