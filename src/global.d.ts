@@ -2,6 +2,7 @@
 // Re-run the build to update this file when components change
 import AiLabel from './components/AiLabel.vue'
 import Badge from './components/Badge.vue'
+import Banner from './components/Banner.vue'
 import BarChart from './components/Charts/BarChart.vue'
 import Blueprint from './components/Blueprint.vue'
 import BlueprintBackground from './components/BlueprintBackground.vue'
@@ -76,6 +77,7 @@ declare module 'vue' {
   interface GlobalComponents {
     NbAiLabel: typeof AiLabel
     NbBadge: typeof Badge
+    NbBanner: typeof Banner
     NbBarChart: typeof BarChart
     NbBlueprint: typeof Blueprint
     NbBlueprintBackground: typeof BlueprintBackground
