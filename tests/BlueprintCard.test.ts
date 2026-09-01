@@ -713,3 +713,51 @@ describe('BlueprintCard density and keyboard', () => {
     expect(status.find('title').text()).toBe('Error')
   })
 })
+
+describe('BlueprintCard port overflow', () => {
+  it('publishes the taller column pin count so the card can contain it', () => {
+    const w = mount(BlueprintCard, {
+      props: {
+        id: 'mix',
+        title: 'Mixer',
+        ports: [
+          { id: 'a', label: 'A', type: 'input' as const },
+          { id: 'b', label: 'B', type: 'input' as const },
+          { id: 'c', label: 'C', type: 'input' as const },
+          { id: 'out', label: 'Sum', type: 'output' as const },
+        ],
+      },
+    })
+    // The card's min-height is derived from this, so a card with more ports
+    // than chrome grows instead of letting pins hang off its bottom edge.
+    expect(w.attributes('style')).toContain('--nb-blueprint-port-count: 3')
+  })
+
+  it('counts each channel of a multi-channel port as its own row', () => {
+    const w = mount(BlueprintCard, {
+      props: {
+        id: 'mix',
+        title: 'Mixer',
+        ports: [
+          {
+            id: 'out',
+            label: 'Out',
+            type: 'output' as const,
+            channels: [
+              { id: 'l', label: 'L' },
+              { id: 'r', label: 'R' },
+              { id: 'c', label: 'C' },
+              { id: 'lfe', label: 'LFE' },
+            ],
+          },
+        ],
+      },
+    })
+    expect(w.attributes('style')).toContain('--nb-blueprint-port-count: 4')
+  })
+
+  it('never reports fewer than one row, so a portless card keeps a floor', () => {
+    const w = mount(BlueprintCard, { props: { id: 'c', title: 'C' } })
+    expect(w.attributes('style')).toContain('--nb-blueprint-port-count: 1')
+  })
+})

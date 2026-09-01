@@ -17,6 +17,7 @@
     :style="{
       '--nb-card-color': color || 'var(--nb-c-primary)',
       '--nb-card-glow': cardGlow,
+      '--nb-blueprint-port-count': portRows,
     }"
     tabindex="0"
     role="group"
@@ -654,6 +655,15 @@ function projectPins(direction: 'input' | 'output'): IRenderedPin[] {
 const inputPins = computed((): IRenderedPin[] => projectPins('input'))
 const outputPins = computed((): IRenderedPin[] => projectPins('output'))
 
+// How many pin rows the taller of the two columns needs. The card uses it to
+// set a min-height, so a card with more ports than chrome grows to hold them
+// rather than letting them hang off its bottom edge. Compressing the pitch
+// instead is the one thing that must not happen: the pitch is also the hit
+// target's height.
+const portRows = computed(() =>
+  Math.max(inputPins.value.length, outputPins.value.length, 1),
+)
+
 const hasLabelsOnSide = computed(() => ({
   left: inputPins.value.some((p) => p.showLabel),
   right: outputPins.value.some((p) => p.showLabel),
@@ -821,6 +831,14 @@ function pinSize(port: IBlueprintPort): string {
 
   position: relative;
   min-width: 176px;
+  // Tall enough to contain its own port column: the last pin's bottom edge
+  // plus a corner's worth of clearance. Cards with more ports than chrome
+  // therefore grow, visibly, which is the honest outcome. The alternative,
+  // squeezing the pitch to fit, would shrink the hit targets with it.
+  min-height: calc(
+    var(--nb-blueprint-port-top) + (var(--nb-blueprint-port-count, 1) - 1) *
+      var(--nb-blueprint-port-pitch) + var(--nb-blueprint-port-height) / 2 + 8px
+  );
   border-radius: var(--nb-radius-xs);
   background: var(--nb-c-surface);
   border: 1px solid var(--nb-c-border);
@@ -878,6 +896,7 @@ function pinSize(port: IBlueprintPort): string {
 
   &--collapsed {
     min-width: 100px;
+    min-height: 0;
   }
 
   &--has-category {
