@@ -58,6 +58,20 @@ export type TBlueprintPortShape = 'pill' | 'diamond' | 'square' | 'circle'
  */
 export type TBlueprintPortSize = 'sm' | 'md' | 'lg'
 
+/**
+ * How tightly a card packs its chrome. Set once on `NbBlueprint` and every
+ * card in the canvas inherits it; a card can still override its own.
+ *
+ *   - `'default'`: 40px header, category line visible, 24px parameter rows.
+ *   - `'compact'`: 28px header, category hidden, 20px parameter rows. Meant
+ *     for graphs past roughly twenty nodes, where the header of every card is
+ *     more of the canvas than the graph is.
+ *
+ * Density changes chrome only. It never changes port geometry, because a pin
+ * that moves when the view setting changes would drag every wire with it.
+ */
+export type TBlueprintDensity = 'default' | 'compact'
+
 export interface IBlueprintPort {
   /** Unique port identifier */
   id: string
@@ -172,4 +186,19 @@ export interface IBlueprintCardProps {
    * Default: false (tooltip only).
    */
   showPortLabels?: TBlueprintPortLabelMode
+  /**
+   * Signal level per port id, 0 to 1. A port present here fills from the
+   * bottom in proportion to its level, so a quiet port looks quiet and a hot
+   * one looks hot. Ports in `activePorts` but absent here render as a solid
+   * fill instead.
+   *
+   * This replaces the old behaviour, where every active port ran the same
+   * looping ring forever and carried no information beyond "wired and live".
+   */
+  portLevels?: Record<string, number>
+  /**
+   * Chrome density. Inherited from the parent `NbBlueprint` when unset, so
+   * setting it here overrides the canvas for this card only.
+   */
+  density?: TBlueprintDensity
 }
