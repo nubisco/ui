@@ -1,6 +1,7 @@
 import type { App } from 'vue'
 import NbAiLabel from './AiLabel.vue'
 import NbBadge from './Badge.vue'
+import NbBanner from './Banner.vue'
 import NbBarChart from './Charts/BarChart.vue'
 import NbBoard from './Board.vue'
 import NbBreadcrumbs from './Breadcrumbs.vue'
@@ -70,6 +71,7 @@ import NbWalkthrough from './Walkthrough.vue'
 const components = {
   NbAiLabel,
   NbBadge,
+  NbBanner,
   NbBarChart,
   NbBoard,
   NbBreadcrumbs,
