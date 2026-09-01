@@ -41,6 +41,7 @@
     },
     "./dist/ui.css": "./dist/ui.css",
     "./assets/nubisco-mark.svg": "./src/assets/nubisco-mark.svg",
+    "./assets/nubisco-platform-mark.svg": "./src/assets/nubisco-platform-mark.svg",
     "./plugins/*": {
       "types": "./dist/plugins/*.d.ts",
       "import": "./dist/plugins/*.js"
@@ -73,6 +74,7 @@
     "src/utils",
     "src/assets/icons",
     "src/assets/nubisco-mark.svg",
+    "src/assets/nubisco-platform-mark.svg",
     "README.md",
     "LICENSE"
   ],
@@ -96,11 +98,12 @@
     "types:check": "vue-tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "quality:check": "pnpm run test && pnpm run lint && pnpm run format:check && pnpm run types:check",
+    "quality:check": "pnpm run test && pnpm run lint && pnpm run format:check && pnpm run types:check && pnpm run verify:marks",
     "docs:dev": "vitepress dev docs",
     "docs:build": "node scripts/build-tokens.mjs && vitepress build docs",
     "docs:serve": "vitepress serve docs",
-    "prepare": "simple-git-hooks"
+    "prepare": "simple-git-hooks",
+    "verify:marks": "node scripts/verify-inlined-marks.mjs"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged && pnpm run quality:check",

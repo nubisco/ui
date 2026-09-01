@@ -33,6 +33,7 @@ import NbMenuDivider from './MenuDivider.vue'
 import NbSubmenu from './Submenu.vue'
 import NbCommandPalette from './CommandPalette.vue'
 import NbNubiscoMark from './NubiscoMark.vue'
+import NbNubiscoPlatformMark from './NubiscoPlatformMark.vue'
 import NbMessage from './Message.vue'
 import NbModal from './Modal.vue'
 import NbNumberInput from './NumberInput.vue'
@@ -124,6 +125,7 @@ const components = {
   NbTree,
   NbTreeNode,
   NbNubiscoMark,
+  NbNubiscoPlatformMark,
   NbUserMenu,
   NbBottomPanel,
   NbShellPanel,
