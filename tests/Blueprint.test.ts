@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { h } from 'vue'
+import { h, nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import Blueprint from '../src/components/Blueprint.vue'
 import BlueprintCard from '../src/components/BlueprintCard.vue'
@@ -845,5 +845,109 @@ describe('Blueprint', () => {
       const w = mount(Blueprint)
       expect(w.find('.nb-blueprint__background-slot').exists()).toBe(false)
     })
+  })
+})
+
+// ── Keyboard nudging and drag broadcasting ────────────────────────────
+describe('Blueprint keyboard nudging', () => {
+  const twoCards = `
+    <div style="position: absolute; left: 10px; top: 20px;">
+      <div data-card-id="a" class="nb-blueprint-card" style="position: absolute;"></div>
+    </div>
+    <div style="position: absolute; left: 100px; top: 200px;">
+      <div data-card-id="b" class="nb-blueprint-card" style="position: absolute;"></div>
+    </div>
+  `
+
+  it('moves an unselected card on its own and reports it through move', () => {
+    const w = mount(Blueprint, { slots: { default: twoCards } })
+    // Reach the card context the way a card does.
+    const provided = (
+      w.vm.$ as unknown as {
+        provides: Record<
+          symbol,
+          { nudge: (i: string, x: number, y: number) => void }
+        >
+      }
+    ).provides
+    const key = Object.getOwnPropertySymbols(provided).find(
+      (s) => 'nudge' in (provided[s] ?? {}),
+    )!
+    provided[key].nudge('a', 5, -3)
+
+    const moves = w.emitted('move')?.at(-1)?.[0] as {
+      id: string
+      x: number
+      y: number
+    }[]
+    expect(moves).toEqual([{ id: 'a', x: 15, y: 17 }])
+  })
+
+  it('moves the whole selection when the nudged card is part of it', async () => {
+    const w = mount(Blueprint, { slots: { default: twoCards } })
+    const vm = w.vm as unknown as { selectAll: () => void }
+    vm.selectAll()
+    await nextTick()
+
+    const provided = (
+      w.vm.$ as unknown as {
+        provides: Record<
+          symbol,
+          { nudge: (i: string, x: number, y: number) => void }
+        >
+      }
+    ).provides
+    const key = Object.getOwnPropertySymbols(provided).find(
+      (s) => 'nudge' in (provided[s] ?? {}),
+    )!
+    provided[key].nudge('a', 10, 10)
+
+    const moves = w.emitted('move')?.at(-1)?.[0] as {
+      id: string
+      x: number
+      y: number
+    }[]
+    expect(moves).toHaveLength(2)
+    expect(moves).toEqual(
+      expect.arrayContaining([
+        { id: 'a', x: 20, y: 30 },
+        { id: 'b', x: 110, y: 210 },
+      ]),
+    )
+  })
+})
+
+describe('Blueprint drag origin', () => {
+  const contextOf = (w: ReturnType<typeof mount>) => {
+    const provided = (
+      w.vm.$ as unknown as { provides: Record<symbol, unknown> }
+    ).provides
+    const key = Object.getOwnPropertySymbols(provided).find(
+      (s) => 'dragOrigin' in ((provided[s] ?? {}) as object),
+    )!
+    return provided[key] as {
+      onPortDown: (e: unknown) => void
+      dragOrigin: { value: unknown }
+      cancelPortDrag: () => void
+    }
+  }
+
+  it('publishes the origin port for the length of a drag', () => {
+    const w = mount(Blueprint, {})
+    const ctx = contextOf(w)
+    expect(ctx.dragOrigin.value).toBeNull()
+
+    const origin = {
+      nodeId: 'a',
+      portId: 'out',
+      type: 'output',
+      dataType: 'audio',
+    }
+    ctx.onPortDown(origin)
+    // Cards read this to decide, mid-drag, whether they could accept the wire.
+    expect(ctx.dragOrigin.value).toEqual(origin)
+
+    ctx.cancelPortDrag()
+    expect(ctx.dragOrigin.value).toBeNull()
   })
 })
