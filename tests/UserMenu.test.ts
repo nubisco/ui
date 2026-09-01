@@ -128,6 +128,12 @@ describe('UserMenu', () => {
     const mark = brand?.querySelector('svg')
     expect(mark?.getAttribute('width')).toBe('13px')
     expect(mark?.getAttribute('aria-hidden')).toBe('true')
+    // The product mark, not the corporate one: they are different artwork.
+    expect(
+      mark
+        ?.querySelector('linearGradient')
+        ?.id.startsWith('nb-nubisco-platform-mark-'),
+    ).toBe(true)
     wrapper.unmount()
   })
 
@@ -226,7 +232,7 @@ describe('UserMenu', () => {
     ].map((node) => node.getAttribute('id'))
     expect(ids.length).toBeGreaterThan(0)
     expect(new Set(ids).size).toBe(ids.length)
-    for (const id of ids) expect(id).toMatch(/^nb-nubisco-mark-/)
+    for (const id of ids) expect(id).toMatch(/^nb-nubisco-platform-mark-/)
     // Every fill points at a gradient defined inside its own mark.
     for (const mark of marks) {
       const own = new Set(

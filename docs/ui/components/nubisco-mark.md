@@ -48,14 +48,17 @@ Pass `title` when the mark carries the meaning on its own, for example a bare lo
 Markup that is not Vue, a favicon, an email template, a splash screen, gets the same artwork as a file through the package exports map:
 
 ```ts
-import markUrl from '@nubisco/ui/assets/nubisco-mark.svg'
+import corporateMark from '@nubisco/ui/assets/nubisco-mark.svg'
+import platformMark from '@nubisco/ui/assets/nubisco-platform-mark.svg'
 ```
 
 ```html
 <link rel="icon" href="/path/to/nubisco-mark.svg" type="image/svg+xml" />
 ```
 
-The component and the file are held to the same artwork by a test that compares every path and gradient in one against the other, so a change to the mark has to be made in both or the build fails.
+Neither mark is ever fetched from a URL at runtime. The menu carrying the lockup is what people open when the platform is having a bad day, and a broken image there is worse than no lockup at all, so the artwork is inlined: about 2 kB gzipped, no request.
+
+The component and the file are held to the same artwork by `pnpm run verify:marks`, which runs in CI and compares every path, gradient stop, offset, opacity and transform in one against the other. Change the drawing in one place only and the build fails, naming the mark and the part that drifted.
 
 ## Several marks on one page
 
@@ -63,7 +66,7 @@ SVG gradient ids are document-global. If two copies of the mark declared the sam
 
 ## Where it is already used
 
-`NbUserMenu` renders it at 13px in the Nubisco Platform lockup at the foot of its panel. That lockup stays optional: `brand="none"` removes it, and the `#brand` slot replaces it, so a white-label product supplies its own logo. This component standardises the mark for products that do want to show it, it does not oblige anyone to.
+`NbUserMenu` renders `NbNubiscoPlatformMark` at 13px in the lockup at the foot of its panel: the lockup names Nubisco Platform, so it carries the platform's mark rather than the corporate one. That lockup stays optional: `brand="none"` removes it, and the `#brand` slot replaces it, so a white-label product supplies its own logo. This component standardises the mark for products that do want to show it, it does not oblige anyone to.
 
 </doc-tab>
 
@@ -78,6 +81,7 @@ SVG gradient ids are document-global. If two copies of the mark declared the sam
 
 ## Notes
 
+- Both `NbNubiscoMark` and `NbNubiscoPlatformMark` take exactly these props.
 - No events, no slots, no exposed methods. It is artwork.
 - Colours are fixed brand gradients, deliberately not themed.
 - Attributes fall through to the `<svg>` root, so `class` and `style` work as expected.

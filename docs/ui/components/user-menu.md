@@ -73,7 +73,7 @@ The foot of the panel signs the product as part of Nubisco Platform: the Nubisco
 </template>
 ```
 
-The mark is [`NbNubiscoMark`](/ui/components/nubisco-mark), the same component and the same artwork every other Nubisco surface renders, so the logo in this menu cannot drift from the one in your app header or on the platform console.
+The mark is [`NbNubiscoPlatformMark`](/ui/components/nubisco-mark), the Nubisco Platform product mark rather than the Nubisco corporate one, since the lockup names the platform. It is the same component every other Nubisco surface renders, inlined rather than fetched, so the logo cannot drift from the one on the platform console and cannot break when the network does.
 
 The panel is teleported to `<body>`, so it follows the **site** theme rather than any local preview wrapper: use the theme switch in the header to check the lockup on both grounds. The mark is one asset in both themes, and the text is token-only. Against `--nb-c-layer-3`, "Nubisco Platform" measures 13.94:1 light and 8.98:1 dark, and the "Powered by" prefix 10.51:1 and 7.01:1: comfortably past the 4.5:1 and 3:1 the lockup is held to.
 

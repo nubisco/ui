@@ -54,6 +54,7 @@ jobs:
 
       - run: pnpm run lint
       - run: pnpm run format:check
+      - run: pnpm run verify:marks
 
   build:
     name: Build

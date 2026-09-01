@@ -120,7 +120,7 @@
             <div class="nb-user-menu__divider" role="separator" />
             <slot name="brand">
               <p class="nb-user-menu__brand">
-                <NbNubiscoMark :size="13" class="nb-user-menu__mark" />
+                <NbNubiscoPlatformMark :size="13" class="nb-user-menu__mark" />
                 <span class="nb-user-menu__brand-line"
                   >{{ brandLine.prefix
                   }}<span class="nb-user-menu__brand-name">{{
@@ -140,7 +140,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import NbIcon from './Icon.vue'
-import NbNubiscoMark from './NubiscoMark.vue'
+import NbNubiscoPlatformMark from './NubiscoPlatformMark.vue'
 import type { IUserMenuAccount, IUserMenuProps } from './UserMenu.d'
 
 // Resolution order per string: the host app's global catalog under
