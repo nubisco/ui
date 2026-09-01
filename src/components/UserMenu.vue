@@ -358,9 +358,8 @@ defineExpose({ open, toggle, close })
   width: 260px;
   background: var(--nb-c-layer-3);
   border: 1px solid var(--nb-c-layer-border-3);
-  border-radius: 10px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
-  padding: 0.6rem;
+  padding: 0.6rem 0;
   z-index: var(--nb-zindex-menu);
 }
 
@@ -378,7 +377,7 @@ defineExpose({ open, toggle, close })
 }
 
 .nb-user-menu__label {
-  margin: 0.15rem 0.4rem 0;
+  margin: 0.15rem 1rem 0;
   font-size: 0.64rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -387,7 +386,7 @@ defineExpose({ open, toggle, close })
 }
 
 .nb-user-menu__email {
-  margin: 0.1rem 0.4rem 0.35rem;
+  margin: 0.1rem 1rem 0.35rem;
   font-size: 0.84rem;
   font-weight: 600;
   color: var(--nb-c-text);
@@ -409,8 +408,7 @@ defineExpose({ open, toggle, close })
   width: 100%;
   border: 0;
   background: none;
-  border-radius: 7px;
-  padding: 0.45rem 0.4rem;
+  padding: 0.45rem 1rem;
   font-size: 0.82rem;
   font-family: inherit;
   color: var(--nb-c-text);
@@ -467,7 +465,7 @@ defineExpose({ open, toggle, close })
   align-items: center;
   gap: 0.35rem;
   margin: 0;
-  padding: 0.3rem 0.4rem 0.15rem;
+  padding: 0.3rem 1rem 0.15rem;
   font-size: 0.68rem;
   line-height: 1.2;
   color: var(--nb-c-text-muted);
