@@ -294,6 +294,10 @@ export default withMermaid(
                     text: 'useStableId',
                     link: '/ui/composables/use-stable-id',
                   },
+                  {
+                    text: 'useTheme',
+                    link: '/ui/composables/use-theme',
+                  },
                 ],
               },
               {
