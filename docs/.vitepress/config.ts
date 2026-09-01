@@ -250,7 +250,7 @@ export default withMermaid(
                   { text: 'Message', link: '/ui/components/message' },
                   { text: 'Modal', link: '/ui/components/modal' },
                   {
-                    text: 'Nubisco Mark',
+                    text: 'Brand Marks',
                     link: '/ui/components/nubisco-mark',
                   },
                   { text: 'Number Input', link: '/ui/components/number-input' },

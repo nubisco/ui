@@ -198,12 +198,13 @@ Most component libraries impose styling opinions that are hard to override. Nubi
 
 ### Data Display
 
-| Component       | Description                                                                                   |
-| :-------------- | :-------------------------------------------------------------------------------------------- |
-| `NbBadge`       | Status badge/pill with 7 colour variants                                                      |
-| `NbIcon`        | SVG icon component with virtual module loader                                                 |
-| `NbJsonTree`    | Collapsible JSON tree viewer                                                                  |
-| `NbNubiscoMark` | The Nubisco mark, inline SVG. Also shipped as a file at `@nubisco/ui/assets/nubisco-mark.svg` |
+| Component               | Description                                                                                             |
+| :---------------------- | :------------------------------------------------------------------------------------------------------ |
+| `NbBadge`               | Status badge/pill with 7 colour variants                                                                |
+| `NbIcon`                | SVG icon component with virtual module loader                                                           |
+| `NbJsonTree`            | Collapsible JSON tree viewer                                                                            |
+| `NbNubiscoMark`         | The Nubisco corporate mark, inline SVG. Also shipped as a file at `@nubisco/ui/assets/nubisco-mark.svg` |
+| `NbNubiscoPlatformMark` | The Nubisco Platform product mark, inline SVG. Also at `@nubisco/ui/assets/nubisco-platform-mark.svg`   |
 
 ### Navigation
 

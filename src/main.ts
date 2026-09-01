@@ -36,6 +36,7 @@ export type { IButtonProps, TButtonSize } from './components/Button.d'
 export { default as NbDatePicker } from './components/DatePicker.vue'
 export type { IDatePickerProps } from './components/DatePicker.d'
 export { default as NbNubiscoMark } from './components/NubiscoMark.vue'
+export { default as NbNubiscoPlatformMark } from './components/NubiscoPlatformMark.vue'
 export type { INubiscoMarkProps } from './components/NubiscoMark.d'
 export { default as NbUserMenu } from './components/UserMenu.vue'
 export type {

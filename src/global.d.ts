@@ -43,6 +43,7 @@ import MenuItem from './components/MenuItem.vue'
 import Message from './components/Message.vue'
 import Modal from './components/Modal.vue'
 import NubiscoMark from './components/NubiscoMark.vue'
+import NubiscoPlatformMark from './components/NubiscoPlatformMark.vue'
 import NumberInput from './components/NumberInput.vue'
 import Pagination from './components/Pagination.vue'
 import Panel from './components/Panel.vue'
@@ -115,6 +116,7 @@ declare module 'vue' {
     NbMessage: typeof Message
     NbModal: typeof Modal
     NbNubiscoMark: typeof NubiscoMark
+    NbNubiscoPlatformMark: typeof NubiscoPlatformMark
     NbNumberInput: typeof NumberInput
     NbPagination: typeof Pagination
     NbPanel: typeof Panel
