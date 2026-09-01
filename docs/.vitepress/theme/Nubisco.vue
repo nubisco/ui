@@ -44,7 +44,7 @@
 
       <div class="nb-footer__bar">
         <a href="/" class="nb-footer__brand">
-          <img src="/nubisco-logo.svg" alt="Nubisco" class="nb-footer__logo" />
+          <NbNubiscoMark :size="24" class="nb-footer__logo" />
           <span class="nb-footer__brand-name">Nubisco</span>
         </a>
 
