@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { defineComponent } from 'vue'
 import { createI18n } from 'vue-i18n'
 import UserMenu from '../src/components/UserMenu.vue'
 
@@ -113,6 +114,127 @@ describe('UserMenu', () => {
     })
     await wrapper.find('.nb-user-menu__avatar').trigger('click')
     expect(panel()?.textContent).toContain('Abmelden')
+    wrapper.unmount()
+  })
+
+  it('renders the brand lockup by default, with the product name emphasised', async () => {
+    const wrapper = mountMenu()
+    await openMenu(wrapper)
+    const brand = panel()?.querySelector('.nb-user-menu__brand')
+    expect(brand?.textContent).toBe('Powered by Nubisco Platform')
+    expect(brand?.querySelector('.nb-user-menu__brand-name')?.textContent).toBe(
+      'Nubisco Platform',
+    )
+    expect(brand?.querySelector('svg')).toBeTruthy()
+    wrapper.unmount()
+  })
+
+  it('adds no tab stop and no role for the lockup', async () => {
+    const wrapper = mountMenu()
+    await openMenu(wrapper)
+    const brand = panel()?.querySelector('.nb-user-menu__brand') as HTMLElement
+    expect(brand.tagName).toBe('P')
+    expect(brand.getAttribute('role')).toBe(null)
+    expect(brand.getAttribute('tabindex')).toBe(null)
+    expect(brand.querySelectorAll('a, button, [tabindex]').length).toBe(0)
+    wrapper.unmount()
+  })
+
+  it('renders nothing for brand="none"', async () => {
+    const wrapper = mountMenu({ brand: 'none' })
+    await openMenu(wrapper)
+    expect(panel()?.querySelector('.nb-user-menu__brand')).toBe(null)
+    expect(panel()?.textContent).not.toContain('Nubisco Platform')
+    wrapper.unmount()
+  })
+
+  it('localises the lockup and keeps the product name emphasised', async () => {
+    const ptI18n = createI18n({
+      legacy: false,
+      locale: 'pt',
+      fallbackLocale: 'en',
+      messages: { pt: {}, en: {} },
+    })
+    const wrapper = mount(UserMenu, {
+      props: { user: { email: 'jose@nubisco.io' } },
+      global: { plugins: [ptI18n] },
+      attachTo: document.body,
+    })
+    await wrapper.find('.nb-user-menu__avatar').trigger('click')
+    const brand = panel()?.querySelector('.nb-user-menu__brand')
+    expect(brand?.textContent).toBe('Fornecido pela Nubisco Platform')
+    expect(brand?.querySelector('.nb-user-menu__brand-name')?.textContent).toBe(
+      'Nubisco Platform',
+    )
+    wrapper.unmount()
+  })
+
+  it('emphasises the whole line when a host translation drops the product name', async () => {
+    const hostI18n = createI18n({
+      legacy: false,
+      locale: 'en',
+      messages: { en: { userMenu: { poweredBy: 'Powered by the platform' } } },
+    })
+    const wrapper = mount(UserMenu, {
+      props: { user: { email: 'jose@nubisco.io' } },
+      global: { plugins: [hostI18n] },
+      attachTo: document.body,
+    })
+    await wrapper.find('.nb-user-menu__avatar').trigger('click')
+    expect(
+      panel()?.querySelector('.nb-user-menu__brand-name')?.textContent,
+    ).toBe('Powered by the platform')
+    wrapper.unmount()
+  })
+
+  it('replaces the lockup with the brand slot', async () => {
+    const wrapper = mount(UserMenu, {
+      props: { user: { email: 'jose@nubisco.io' } },
+      slots: { brand: '<span class="own-brand">Acme</span>' },
+      global: { plugins: [i18n] },
+      attachTo: document.body,
+    })
+    await wrapper.find('.nb-user-menu__avatar').trigger('click')
+    expect(panel()?.querySelector('.own-brand')?.textContent).toBe('Acme')
+    expect(panel()?.querySelector('.nb-user-menu__brand')).toBe(null)
+    wrapper.unmount()
+  })
+
+  it('scopes gradient ids per instance so several menus do not collide', async () => {
+    const host = defineComponent({
+      components: { UserMenu },
+      template: `
+        <div>
+          <UserMenu :user="{ email: 'jose@nubisco.io' }" />
+          <UserMenu :user="{ email: 'tools@nubisco.io' }" />
+        </div>
+      `,
+    })
+    const wrapper = mount(host, {
+      global: { plugins: [i18n] },
+      attachTo: document.body,
+    })
+    for (const trigger of wrapper.findAll('.nb-user-menu__avatar')) {
+      await trigger.trigger('click')
+    }
+    const marks = document.body.querySelectorAll('.nb-user-menu__mark')
+    expect(marks.length).toBe(2)
+    const ids = [
+      ...document.body.querySelectorAll('.nb-user-menu__mark linearGradient'),
+    ].map((node) => node.getAttribute('id'))
+    expect(ids.length).toBeGreaterThan(0)
+    expect(new Set(ids).size).toBe(ids.length)
+    for (const id of ids) expect(id).toMatch(/^nb-user-menu-mark-/)
+    // Every fill points at a gradient defined inside its own mark.
+    for (const mark of marks) {
+      const own = new Set(
+        [...mark.querySelectorAll('linearGradient')].map((n) => n.id),
+      )
+      for (const painted of mark.querySelectorAll('[fill^="url("]')) {
+        const ref = painted.getAttribute('fill')?.slice(5, -1)
+        expect(own.has(String(ref))).toBe(true)
+      }
+    }
     wrapper.unmount()
   })
 })

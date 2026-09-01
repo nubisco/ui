@@ -41,6 +41,7 @@ export type {
   IUserMenuUser,
   IUserMenuAccount,
   TUserMenuPlacement,
+  TUserMenuBrand,
 } from './components/UserMenu.d'
 export { default as NbCheckbox } from './components/Checkbox.vue'
 export { default as NbCheckboxGroup } from './components/CheckboxGroup.vue'
