@@ -895,7 +895,21 @@ function pinSize(port: IBlueprintPort): string {
   }
 
   &--collapsed {
-    min-width: 100px;
+    // Derived from the header's own chrome rather than guessed, because the
+    // title is the only flexible column in that grid: any floor narrower than
+    // the fixed parts collapses it to zero width and a collapsed card shows
+    // just its chevron and toggle. The old 100px floor was narrower than the
+    // chrome it had to hold, so that is precisely what happened, and hosts hit
+    // it whenever they stopped passing their own min-width on collapse.
+    //
+    // chevron + status + toggle + the gaps between them + both paddings,
+    // plus a readable amount of title.
+    --nb-blueprint-collapsed-title: 72px;
+    min-width: calc(
+      var(--nb-blueprint-pad-left) + 16px + 8px +
+        var(--nb-blueprint-collapsed-title) + 8px + 14px + 8px + 32px +
+        var(--nb-blueprint-pad-right)
+    );
     min-height: 0;
   }
 
@@ -1412,10 +1426,32 @@ function pinSize(port: IBlueprintPort): string {
     }
   }
 
-  // Active without a level: a solid fill. Still no loop.
-  &--active {
+  // Live, with no level reported: a solid fill plus a static halo in the
+  // signal colour.
+  //
+  // Two things this has to get right. It must not paint over a metered pin,
+  // because `--metered` is declared first and both are one class deep, so an
+  // unguarded rule wins on source order and fills the pin with the very
+  // colour the meter draws in, leaving the meter invisible in exactly the
+  // case the docs recommend (activePorts and portLevels together).
+  //
+  // And it must not be the same pixels as `--connected`, which it was: "this
+  // is wired" and "this is carrying signal" are different facts and a reader
+  // could not tell them apart. The halo is static, not a loop. The objection
+  // to the old treatment was that it animated forever on every live port, not
+  // that live ports were marked at all.
+  &--active:not(#{&}--metered) {
     border-color: var(--pin-color, var(--nb-card-color));
     background: var(--pin-color, var(--nb-card-color));
+    box-shadow: 0 0 0 2px
+      color-mix(in srgb, var(--nb-c-port-signal) 45%, transparent);
+  }
+
+  // A metered pin that is also live keeps its meter and takes the same halo,
+  // so "live" reads identically whether or not a level came with it.
+  &--metered#{&}--active {
+    box-shadow: 0 0 0 2px
+      color-mix(in srgb, var(--nb-c-port-signal) 45%, transparent);
   }
 
   // A single ring per event, fired when a port enters the active set, rather
