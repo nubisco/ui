@@ -174,10 +174,12 @@ export default withMermaid(
               {
                 text: 'Components',
                 items: [
+                  { text: 'Accordion', link: '/ui/components/accordion' },
                   { text: 'AI Label', link: '/ui/components/ai-label' },
                   { text: 'Badge', link: '/ui/components/badge' },
                   { text: 'Banner', link: '/ui/components/banner' },
                   { text: 'Board', link: '/ui/components/board' },
+                  { text: 'Card Grid', link: '/ui/components/card-grid' },
                   {
                     text: 'Blueprint',
                     items: [
@@ -231,6 +233,11 @@ export default withMermaid(
                   { text: 'Color Strip', link: '/ui/components/color-strip' },
                   { text: 'Data Table', link: '/ui/components/data-table' },
                   { text: 'Date Picker', link: '/ui/components/date-picker' },
+                  {
+                    text: 'Definition List',
+                    link: '/ui/components/definition-list',
+                  },
+                  { text: 'Empty State', link: '/ui/components/empty-state' },
                   { text: 'Field', link: '/ui/components/field' },
                   {
                     text: 'File Uploader',
@@ -262,6 +269,7 @@ export default withMermaid(
                     link: '/ui/components/progress-bar',
                   },
                   { text: 'Radio', link: '/ui/components/radio' },
+                  { text: 'Reorder List', link: '/ui/components/reorder-list' },
                   { text: 'Select', link: '/ui/components/select' },
                   { text: 'Shell', link: '/ui/components/shell' },
                   { text: 'Shell Panel', link: '/ui/components/shell-panel' },
