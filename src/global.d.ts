@@ -1,5 +1,7 @@
 // AUTO-GENERATED: do not edit by hand
 // Re-run the build to update this file when components change
+import Accordion from './components/Accordion.vue'
+import AccordionItem from './components/AccordionItem.vue'
 import AiLabel from './components/AiLabel.vue'
 import Badge from './components/Badge.vue'
 import Banner from './components/Banner.vue'
@@ -16,12 +18,17 @@ import BottomPanel from './components/BottomPanel.vue'
 import Breadcrumbs from './components/Breadcrumbs.vue'
 import Button from './components/Button.vue'
 import Calendar from './components/Calendar.vue'
+import Card from './components/Card.vue'
+import CardGrid from './components/CardGrid.vue'
 import Checkbox from './components/Checkbox.vue'
 import CheckboxGroup from './components/CheckboxGroup.vue'
 import ColorStrip from './components/ColorStrip.vue'
 import CommandPalette from './components/CommandPalette.vue'
 import DataTable from './components/DataTable.vue'
 import DatePicker from './components/DatePicker.vue'
+import DefinitionList from './components/DefinitionList.vue'
+import DefinitionListItem from './components/DefinitionListItem.vue'
+import EmptyState from './components/EmptyState.vue'
 import Field from './components/Field.vue'
 import FileUploader from './components/FileUploader.vue'
 import Flag from './components/Flag.vue'
@@ -51,6 +58,7 @@ import Panel from './components/Panel.vue'
 import PieChart from './components/Charts/PieChart.vue'
 import ProgressBar from './components/ProgressBar.vue'
 import Radio from './components/Radio.vue'
+import ReorderList from './components/ReorderList.vue'
 import Select from './components/Select.vue'
 import Shell from './components/Shell.vue'
 import ShellPanel from './components/ShellPanel.vue'
@@ -75,6 +83,8 @@ import Walkthrough from './components/Walkthrough.vue'
 
 declare module 'vue' {
   interface GlobalComponents {
+    NbAccordion: typeof Accordion
+    NbAccordionItem: typeof AccordionItem
     NbAiLabel: typeof AiLabel
     NbBadge: typeof Badge
     NbBanner: typeof Banner
@@ -91,12 +101,17 @@ declare module 'vue' {
     NbBreadcrumbs: typeof Breadcrumbs
     NbButton: typeof Button
     NbCalendar: typeof Calendar
+    NbCard: typeof Card
+    NbCardGrid: typeof CardGrid
     NbCheckbox: typeof Checkbox
     NbCheckboxGroup: typeof CheckboxGroup
     NbColorStrip: typeof ColorStrip
     NbCommandPalette: typeof CommandPalette
     NbDataTable: typeof DataTable
     NbDatePicker: typeof DatePicker
+    NbDefinitionList: typeof DefinitionList
+    NbDefinitionListItem: typeof DefinitionListItem
+    NbEmptyState: typeof EmptyState
     NbField: typeof Field
     NbFileUploader: typeof FileUploader
     NbFlag: typeof Flag
@@ -126,6 +141,7 @@ declare module 'vue' {
     NbPieChart: typeof PieChart
     NbProgressBar: typeof ProgressBar
     NbRadio: typeof Radio
+    NbReorderList: typeof ReorderList
     NbSelect: typeof Select
     NbShell: typeof Shell
     NbShellPanel: typeof ShellPanel

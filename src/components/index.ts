@@ -1,4 +1,6 @@
 import type { App } from 'vue'
+import NbAccordion from './Accordion.vue'
+import NbAccordionItem from './AccordionItem.vue'
 import NbAiLabel from './AiLabel.vue'
 import NbBadge from './Badge.vue'
 import NbBanner from './Banner.vue'
@@ -7,11 +9,16 @@ import NbBoard from './Board.vue'
 import NbBreadcrumbs from './Breadcrumbs.vue'
 import NbButton from './Button.vue'
 import NbCalendar from './Calendar.vue'
+import NbCard from './Card.vue'
+import NbCardGrid from './CardGrid.vue'
 import NbDatePicker from './DatePicker.vue'
 import NbCheckbox from './Checkbox.vue'
 import NbCheckboxGroup from './CheckboxGroup.vue'
 import NbColorStrip from './ColorStrip.vue'
 import NbDataTable from './DataTable.vue'
+import NbDefinitionList from './DefinitionList.vue'
+import NbDefinitionListItem from './DefinitionListItem.vue'
+import NbEmptyState from './EmptyState.vue'
 import NbPagination from './Pagination.vue'
 import NbFileUploader from './FileUploader.vue'
 import NbGanttChart from './Charts/GanttChart.vue'
@@ -43,6 +50,7 @@ import NbPanel from './Panel.vue'
 import NbPieChart from './Charts/PieChart.vue'
 import NbProgressBar from './ProgressBar.vue'
 import NbRadio from './Radio.vue'
+import NbReorderList from './ReorderList.vue'
 import NbSelect from './Select.vue'
 import NbShell from './Shell.vue'
 import NbSidebarBrand from './SidebarBrand.vue'
@@ -69,6 +77,8 @@ import NbBlueprintMinimap from './BlueprintMinimap.vue'
 import NbWalkthrough from './Walkthrough.vue'
 
 const components = {
+  NbAccordion,
+  NbAccordionItem,
   NbAiLabel,
   NbBadge,
   NbBanner,
@@ -77,9 +87,15 @@ const components = {
   NbBreadcrumbs,
   NbButton,
   NbCalendar,
+  NbCard,
+  NbCardGrid,
   NbDatePicker,
   NbCheckbox,
   NbCheckboxGroup,
+  NbDefinitionList,
+  NbDefinitionListItem,
+  NbEmptyState,
+  NbReorderList,
   NbColorStrip,
   NbDataTable,
   NbPagination,
