@@ -65,3 +65,24 @@ describe('Breadcrumbs', () => {
     expect(wrapper.find('[data-testid="nb-icon"]').exists()).toBe(false)
   })
 })
+
+describe('Breadcrumbs with an empty slot', () => {
+  // A v-for over an empty list still returns a Fragment, and a v-if that fails
+  // still returns a Comment. Neither renders anything, and neither should draw
+  // the separator after the brand.
+  it('draws no separator when the slot renders nothing', () => {
+    const wrapper = mount(Breadcrumbs, {
+      props: { title: 'Nubisco', subtitle: 'CMS' },
+      slots: { default: () => [] },
+    })
+    expect(wrapper.find('.nb-breadcrumbs__sep').exists()).toBe(false)
+  })
+
+  it('draws the separator when the slot renders a crumb', () => {
+    const wrapper = mount(Breadcrumbs, {
+      props: { title: 'Nubisco', subtitle: 'CMS' },
+      slots: { default: '<span>Releases</span>' },
+    })
+    expect(wrapper.find('.nb-breadcrumbs__sep').exists()).toBe(true)
+  })
+})

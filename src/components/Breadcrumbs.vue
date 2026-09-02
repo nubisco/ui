@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { useSlots, computed } from 'vue'
+import { useSlots, computed, Comment, Fragment, Text, type VNode } from 'vue'
 
 defineProps<{
   /** Text rendered before the subtitle in regular weight. */
@@ -34,7 +34,27 @@ defineProps<{
 }>()
 
 const slots = useSlots()
-const hasDefaultSlot = computed(() => !!slots.default?.())
+
+/**
+ * Whether the slot renders ANYTHING, not merely whether it was passed.
+ *
+ * `!!slots.default?.()` is true for a slot that produces nothing: a `v-for`
+ * over an empty list still returns a Fragment, and a `v-if` that fails still
+ * returns a Comment placeholder. The separator between the brand and the crumbs
+ * was drawn on that, so a view with no crumbs rendered "Nubisco CMS ›" with
+ * nothing after the chevron.
+ */
+function rendersContent(nodes: VNode[]): boolean {
+  return nodes.some((node) => {
+    if (node.type === Comment) return false
+    if (node.type === Text) return String(node.children ?? '').trim() !== ''
+    if (node.type === Fragment)
+      return rendersContent((node.children ?? []) as VNode[])
+    return true
+  })
+}
+
+const hasDefaultSlot = computed(() => rendersContent(slots.default?.() ?? []))
 </script>
 
 <style lang="scss" scoped>
