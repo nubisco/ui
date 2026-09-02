@@ -812,3 +812,61 @@ describe('BlueprintCard live and metered states', () => {
     )
   })
 })
+
+describe('BlueprintCard analog and digital ports', () => {
+  const portsFor = (extra: Record<string, unknown>) => [
+    { id: 'p', label: 'P', type: 'input' as const, ...extra },
+  ]
+  const pinOf = (props: Record<string, unknown>) =>
+    mount(BlueprintCard, {
+      props: { id: 'c', title: 'C', ...props },
+    }).find('.nb-blueprint-card__port')
+
+  it('derives analog for continuous data types', () => {
+    for (const dataType of ['audio', 'audio:stereo', 'number', 'vector3']) {
+      expect(pinOf({ ports: portsFor({ dataType }) }).classes()).toContain(
+        'nb-blueprint-card__port--analog',
+      )
+    }
+  })
+
+  it('derives digital for event data types', () => {
+    for (const dataType of ['midi', 'control', 'asset', 'color']) {
+      expect(pinOf({ ports: portsFor({ dataType }) }).classes()).toContain(
+        'nb-blueprint-card__port--digital',
+      )
+    }
+  })
+
+  it('lets a port declare its own signal, beating the dataType default', () => {
+    // A control port that really does carry a continuous value, e.g. a
+    // parameter automation lane rather than a trigger.
+    const pin = pinOf({
+      ports: portsFor({ dataType: 'control', signal: 'analog' }),
+    })
+    expect(pin.classes()).toContain('nb-blueprint-card__port--analog')
+    expect(pin.classes()).not.toContain('nb-blueprint-card__port--digital')
+  })
+
+  it('falls back to analog for an untyped port', () => {
+    expect(pinOf({ ports: portsFor({}) }).classes()).toContain(
+      'nb-blueprint-card__port--analog',
+    )
+  })
+
+  it('never derives a shape other than pill', () => {
+    // Shape is the target the user aims at, so it stays constant across data
+    // types. Analog and digital are told apart by texture instead.
+    for (const dataType of ['midi', 'control', 'color', 'asset', 'number']) {
+      expect(pinOf({ ports: portsFor({ dataType }) }).classes()).toContain(
+        'nb-blueprint-card__port--pill',
+      )
+    }
+  })
+
+  it('still honours an explicit shape override', () => {
+    expect(
+      pinOf({ ports: portsFor({ shape: 'diamond' }) }).classes(),
+    ).toContain('nb-blueprint-card__port--diamond')
+  })
+})

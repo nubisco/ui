@@ -100,6 +100,7 @@
             :class="[
               `nb-blueprint-card__port--${pinShape(pin.port)}`,
               `nb-blueprint-card__port--size-${pinSize(pin.port)}`,
+              `nb-blueprint-card__port--${pinSignal(pin.port)}`,
               pin.port.required ? 'nb-blueprint-card__port--required' : '',
               pin.channel ? 'nb-blueprint-card__port--channel' : '',
               isConnected(pin.portId)
@@ -340,6 +341,7 @@
             :class="[
               `nb-blueprint-card__port--${pinShape(pin.port)}`,
               `nb-blueprint-card__port--size-${pinSize(pin.port)}`,
+              `nb-blueprint-card__port--${pinSignal(pin.port)}`,
               pin.channel ? 'nb-blueprint-card__port--channel' : '',
               isConnected(pin.portId)
                 ? 'nb-blueprint-card__port--connected'
@@ -372,6 +374,7 @@ import type {
   TBlueprintDensity,
   TBlueprintPinDataType,
   TBlueprintPortShape,
+  TBlueprintPortSignal,
 } from './BlueprintCard.types'
 import type { IBlueprintCardPortEvent } from './Blueprint.types'
 import { NB_BLUEPRINT_CONTEXT } from './Blueprint.context'
@@ -753,6 +756,12 @@ const PIN_COLORS: Record<TBlueprintPinDataType, string> = {
 // types get the canonical pill (signal connectors); MIDI and control
 // types get diamonds (event / sideband connectors); typed-data types
 // (colour, asset) get sharp squares.
+// Every data type now defaults to the pill. A pin is a target the user aims a
+// wire at, and a target whose shape changes with its type is a target they
+// have to re-learn per port; the diamonds and squares made MIDI and control
+// pins measurably fiddlier to hit for no information the stripe pattern does
+// not carry better. `shape` is still honoured when a consumer sets it
+// explicitly, so nothing that wants a diamond loses one.
 const PIN_SHAPES: Record<TBlueprintPinDataType, TBlueprintPortShape> = {
   geometry: 'pill',
   celestial: 'pill',
@@ -763,15 +772,39 @@ const PIN_SHAPES: Record<TBlueprintPinDataType, TBlueprintPortShape> = {
   'audio:mono': 'pill',
   'audio:stereo': 'pill',
   'audio:bus': 'pill',
-  midi: 'diamond',
-  'midi:rechannelized': 'diamond',
-  control: 'diamond',
+  midi: 'pill',
+  'midi:rechannelized': 'pill',
+  control: 'pill',
   entity: 'pill',
-  number: 'diamond',
-  vector3: 'diamond',
-  color: 'square',
-  asset: 'square',
+  number: 'pill',
+  vector3: 'pill',
+  color: 'pill',
+  asset: 'pill',
   any: 'pill',
+}
+
+// Which data types carry a continuous quantity and which carry events. This
+// is what the stripe pattern and the choice of activity treatment key off.
+// A consumer's explicit `signal` beats it.
+const PIN_SIGNALS: Record<TBlueprintPinDataType, TBlueprintPortSignal> = {
+  geometry: 'analog',
+  celestial: 'analog',
+  lighting: 'analog',
+  effect: 'analog',
+  surface: 'analog',
+  audio: 'analog',
+  'audio:mono': 'analog',
+  'audio:stereo': 'analog',
+  'audio:bus': 'analog',
+  midi: 'digital',
+  'midi:rechannelized': 'digital',
+  control: 'digital',
+  entity: 'digital',
+  number: 'analog',
+  vector3: 'analog',
+  color: 'digital',
+  asset: 'digital',
+  any: 'analog',
 }
 
 /** Resolved colour for a single pin. Per-port `color` override beats
@@ -789,6 +822,12 @@ function pinShape(port: IBlueprintPort): string {
 /** Resolved size for a single pin. Default `'md'`. */
 function pinSize(port: IBlueprintPort): string {
   return port.size ?? 'md'
+}
+
+/** Whether a pin carries a continuous quantity or discrete events. Per-port
+ *  `signal` override beats the `dataType`-derived default. */
+function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
+  return port.signal ?? PIN_SIGNALS[port.dataType ?? 'any'] ?? 'analog'
 }
 </script>
 
@@ -1444,24 +1483,67 @@ function pinSize(port: IBlueprintPort): string {
     border-color: var(--pin-color, var(--nb-card-color));
     background: var(--pin-color, var(--nb-card-color));
     box-shadow: 0 0 0 2px
-      color-mix(in srgb, var(--nb-c-port-signal) 45%, transparent);
+      color-mix(
+        in srgb,
+        var(--pin-color, var(--nb-card-color)) 45%,
+        transparent
+      );
   }
 
   // A metered pin that is also live keeps its meter and takes the same halo,
   // so "live" reads identically whether or not a level came with it.
   &--metered#{&}--active {
     box-shadow: 0 0 0 2px
-      color-mix(in srgb, var(--nb-c-port-signal) 45%, transparent);
+      color-mix(
+        in srgb,
+        var(--pin-color, var(--nb-card-color)) 45%,
+        transparent
+      );
   }
 
-  // A single ring per event, fired when a port enters the active set, rather
-  // than an infinite one while it stays there. Transform and opacity only, so
-  // it composites without repainting.
-  &--ping::after {
+  // ── Analog and digital ─────────────────────────────────────────
+  // The two are told apart by texture, not by silhouette. A pin is a target
+  // the user aims a wire at, so its shape stays the same whatever it carries;
+  // and colour is already spent on `dataType`, so that channel is not free
+  // either. Stripes are a fill, not a form, which is why they survive being
+  // scaled down: at 40% canvas zoom the stripes blend to a lighter tone and
+  // the pin still reads as "not solid", where a small glyph or a rotated
+  // square would have collapsed into the same few pixels as a plain pill.
+  &--digital {
+    // The stripe colour has to flip with the fill underneath it. A free pin
+    // is hollow, so the stripes are drawn in the outline colour; a wired one
+    // is solid, so they are drawn in the surface colour and read as gaps cut
+    // out of the fill. One colour cannot do both: on a free pin, surface-on-
+    // surface is invisible.
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent 0 2px,
+      var(--nb-c-port-border) 2px 4px
+    );
+  }
+
+  &--digital#{&}--connected,
+  &--digital#{&}--active {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent 0 2px,
+      var(--nb-c-port-bg) 2px 4px
+    );
+  }
+
+  // A single pulse per event, fired when a port enters the active set, rather
+  // than a ring looping while it stays there. Digital only: an analog port
+  // reports how much is flowing, so a pulse would be telling the user
+  // something its own fill already says better.
+  //
+  // The pulse takes the PIN's colour, not a separate signal colour. A ring in
+  // some other hue reads as a third thing happening near the port rather than
+  // as that port firing.
+  &--digital#{&}--ping::after {
     content: '';
     position: absolute;
     inset: -3px;
-    border: 1.5px solid var(--nb-c-port-signal);
+    border: 1.5px solid var(--pin-color, var(--nb-card-color));
     border-radius: var(--nb-radius-xs);
     animation: nb-port-ping 320ms cubic-bezier(0, 0, 0.38, 0.9) 1;
     pointer-events: none;
@@ -1495,7 +1577,7 @@ function pinSize(port: IBlueprintPort): string {
 
 // The diamond composes its rotation with the ping's scale, so it needs its
 // own keyframes or the ring would un-rotate as it expands.
-.nb-blueprint-card__port--diamond.nb-blueprint-card__port--ping::after {
+.nb-blueprint-card__port--diamond.nb-blueprint-card__port--digital.nb-blueprint-card__port--ping::after {
   animation-name: nb-port-ping-diamond;
 }
 
