@@ -1,3 +1,10 @@
+## [2.8.1](https://github.com/nubisco/ui/compare/v2.8.0...v2.8.1) (2026-09-02)
+
+
+### Bug Fixes
+
+* **blueprint:** make live pins readable and stop them erasing the meter ([4d1a666](https://github.com/nubisco/ui/commit/4d1a666db264622e6db1779a12ca08e2b16876e1))
+
 # [2.8.0](https://github.com/nubisco/ui/compare/v2.7.0...v2.8.0) (2026-09-02)
 
 
