@@ -224,11 +224,11 @@ describe('BlueprintCard', () => {
   // so a title on it would never surface.
   it('renders a tooltip combining port and channel labels', () => {
     const w = createWrapper({ ports: [stereoPort] })
-    const hits = w.findAll(
-      '.nb-blueprint-card__ports--right .nb-blueprint-card__port-hit',
+    const pins = w.findAll(
+      '.nb-blueprint-card__ports--right .nb-blueprint-card__port',
     )
-    expect(hits[0].attributes('title')).toBe('Stereo Out . L')
-    expect(hits[1].attributes('title')).toBe('Stereo Out . R')
+    expect(pins[0].attributes('title')).toBe('Stereo Out . L')
+    expect(pins[1].attributes('title')).toBe('Stereo Out . R')
   })
 
   it('names each port for assistive tech with its direction and state', () => {
@@ -236,8 +236,8 @@ describe('BlueprintCard', () => {
       ports: [{ id: 'in', label: 'Sidechain', type: 'input' }],
       connectedPorts: ['in'],
     })
-    const hit = w.find('.nb-blueprint-card__port-hit')
-    expect(hit.attributes('aria-label')).toBe('Sidechain, input, connected')
+    const pin = w.find('.nb-blueprint-card__port')
+    expect(pin.attributes('aria-label')).toBe('Sidechain, input, connected')
   })
 
   it('accepts new pin data types (audio:stereo, midi, control) without errors', () => {
@@ -411,27 +411,50 @@ describe('BlueprintCard ports', () => {
 
   const audioIn = { id: 'in', label: 'In', type: 'input' as const }
 
-  it('keeps the inline label out of the element the wire layer measures', () => {
+  it('measures the wire endpoint from the element that carries data-port', () => {
     const w = createWrapper({
       ports: [{ ...audioIn, showLabel: true }],
       showPortLabels: 'left' as const,
     })
     const pin = w.find('.nb-blueprint-card__port')
     expect(pin.attributes('data-port')).toBe('test:in')
-    // The label exists, and it is a sibling rather than a descendant. When it
-    // lived inside the pin, the endpoint sat half a label inside the card.
-    expect(w.find('.nb-blueprint-card__port-label').exists()).toBe(true)
-    expect(pin.find('.nb-blueprint-card__port-label').exists()).toBe(false)
+    // The label lives inside that element now, which is safe only because it
+    // is positioned out of the element's own box: getBoundingClientRect
+    // reports the border box and ignores overflowing children, so the label
+    // cannot drag the endpoint the way it did when the two shared a flex row.
+    // The geometry itself is a CSS contract and is checked in a browser.
+    expect(pin.find('.nb-blueprint-card__port-label').exists()).toBe(true)
   })
 
-  it('puts the hit target on a real button, separate from the pin', () => {
+  it('is a single button per port: the pin, the target and the anchor', () => {
     const w = createWrapper({ ports: [audioIn] })
-    const hit = w.find('.nb-blueprint-card__port-hit')
-    expect(hit.element.tagName).toBe('BUTTON')
-    expect(hit.attributes('type')).toBe('button')
-    // The pin is inside the button, so the comfortable target and the
-    // measured box can differ without either compromising.
-    expect(hit.find('.nb-blueprint-card__port').exists()).toBe(true)
+    const pin = w.find('.nb-blueprint-card__port')
+    expect(pin.element.tagName).toBe('BUTTON')
+    expect(pin.attributes('type')).toBe('button')
+    // Retained as an alias so host CSS written against either name keeps
+    // working; it is the same element, not a second one.
+    expect(pin.classes()).toContain('nb-blueprint-card__port-hit')
+  })
+
+  // The budget this component is held to. Port lanes were about a quarter of
+  // pan and zoom frame cost on a 41-card session because each port was three
+  // nodes: a slot, a button and a span. A card with 16 I/O must not put 48
+  // nodes in the tree.
+  it('adds one element per port, and one more only when it has a label', () => {
+    const ports = Array.from({ length: 16 }, (_, i) => ({
+      id: `p${i}`,
+      label: `P${i}`,
+      type: (i < 8 ? 'input' : 'output') as 'input' | 'output',
+    }))
+    const bare = createWrapper({ ports })
+    const inside = (w: ReturnType<typeof createWrapper>) =>
+      w.findAll('.nb-blueprint-card__ports *').length
+    // 16 buttons, and nothing else.
+    expect(inside(bare)).toBe(16)
+
+    const labelled = createWrapper({ ports, showPortLabels: 'both' as const })
+    // 16 buttons plus their 16 labels, still no wrappers.
+    expect(inside(labelled)).toBe(32)
   })
 
   it('sizes pins with real dimensions, never transform: scale', () => {
