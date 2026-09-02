@@ -6,7 +6,7 @@ tabs: ['Usage', 'Api']
 
 <doc-tab name="Usage">
 
-`NbBlueprintCard` is a node card designed to live inside an [`NbBlueprint`](/ui/components/blueprint/overview) canvas. It renders a card with a top accent bar, typed input/output ports, a category tag, an optional enable toggle, and an optional remove button. It is presentational: the parent owns the card's position and the connections between cards.
+`NbBlueprintCard` is a node card designed to live inside an [`NbBlueprint`](/ui/components/blueprint/overview) canvas. It renders a card with an identity rail down its left edge, typed input/output ports, a category label, an optional enable toggle, and an optional remove button. It is presentational: the parent owns the card's position and the connections between cards.
 
 ## Basic card
 
@@ -159,6 +159,43 @@ The expanding ring is reserved for genuinely discrete moments: the card fires a 
 />
 ```
 
+Three cards at different levels. The fill is the port's own colour, so a busy graph still reads by node:
+
+<preview>
+  <div style="padding: 2rem 3rem; background: var(--nb-c-layer-0, var(--nb-c-bg)); border-radius: 2px; display: flex; justify-content: center; gap: 3.5rem; flex-wrap: wrap;">
+    <NbBlueprintCard
+      id="q"
+      title="Quiet"
+      category="-42 dB"
+      color="#22c55e"
+      :ports="[{ id: 'in', label: 'In', type: 'input', dataType: 'audio' }]"
+      :connected-ports="['in']"
+      :active-ports="['in']"
+      :port-levels="{ in: 0.12 }"
+    />
+    <NbBlueprintCard
+      id="n"
+      title="Nominal"
+      category="-12 dB"
+      color="#22c55e"
+      :ports="[{ id: 'in', label: 'In', type: 'input', dataType: 'audio' }]"
+      :connected-ports="['in']"
+      :active-ports="['in']"
+      :port-levels="{ in: 0.55 }"
+    />
+    <NbBlueprintCard
+      id="h"
+      title="Hot"
+      category="-2 dB"
+      color="#f59e0b"
+      :ports="[{ id: 'in', label: 'In', type: 'input', dataType: 'audio' }]"
+      :connected-ports="['in']"
+      :active-ports="['in']"
+      :port-levels="{ in: 0.94 }"
+    />
+  </div>
+</preview>
+
 `portLevels` is an ordinary reactive prop, so write it at frame rate, not at audio rate. For audio-rate values, use the blueprint's non-reactive `live` channel instead, which the PixiJS renderer reads on its own throttled tick.
 
 ## Multi-channel ports
@@ -309,7 +346,7 @@ For multi-channel ports, the label rendered next to each pin is the channel's la
 
 ## Selected state
 
-Pass `selected` to highlight a card with a 1px accent ring and outer glow.
+Pass `selected` to draw the card's border in its own identity colour, with a matching inset line. Selection is a colour change and nothing else: it does not lift the card or cast a shadow, because moving a card moves its pins, and its pins are where its wires are anchored.
 
 <preview>
   <div style="padding: 2rem; background: var(--nb-c-layer-0, var(--nb-c-bg)); border-radius: 8px; display: flex; justify-content: center;">
@@ -395,6 +432,21 @@ Use the `parameters` prop to display structured data inside the card body. Each 
 </template>
 ```
 
+## Status
+
+Three states, each a distinct glyph so they stay apart in greyscale, for a reader with a colour vision deficiency, and at the zoom levels where a coloured dot would be sub-pixel.
+
+<preview>
+  <div style="padding: 2rem 3rem; background: var(--nb-c-layer-0, var(--nb-c-bg)); border-radius: 2px; display: flex; justify-content: center; gap: 3.5rem; flex-wrap: wrap;">
+    <NbBlueprintCard id="sv" title="Loaded" category="plugin" color="#22c55e" status="valid" />
+    <NbBlueprintCard id="sw" title="Latency" category="plugin" color="#f59e0b" status="warning" />
+    <NbBlueprintCard id="se" title="Missing" category="plugin" color="#dc2626" status="error" />
+  </div>
+</preview>
+
+The glyph is a header cell rather than part of the title, so a long title
+ellipsises without pushing the status out of view.
+
 ## Removable
 
 <preview>
@@ -443,6 +495,39 @@ Anything placed in the default slot renders inside the card body, below the para
 `'compact'` is worth reaching for once a graph is past roughly twenty nodes, where the headers are more of the canvas than the graph is.
 
 Density changes chrome only. Port width, height, pitch and hit area are identical at both densities, so switching density does not move a single wire. The one thing that does move is `--nb-blueprint-port-top`, which tracks the header it is meant to line up with.
+
+<preview>
+  <div style="padding: 2rem 3rem; background: var(--nb-c-layer-0, var(--nb-c-bg)); border-radius: 2px; display: flex; justify-content: center; gap: 3.5rem; flex-wrap: wrap;">
+    <NbBlueprintCard
+      id="dd"
+      title="Reverb"
+      category="effect"
+      color="#8b5cf6"
+      :ports="[
+        { id: 'in', label: 'In', type: 'input', dataType: 'audio' },
+        { id: 'out', label: 'Out', type: 'output', dataType: 'audio' },
+      ]"
+      :connected-ports="['in', 'out']"
+      :parameters="[{ label: 'Decay', value: '2.4', unit: 's' }]"
+    />
+    <NbBlueprintCard
+      id="dc"
+      title="Reverb"
+      category="effect"
+      color="#8b5cf6"
+      density="compact"
+      :ports="[
+        { id: 'in', label: 'In', type: 'input', dataType: 'audio' },
+        { id: 'out', label: 'Out', type: 'output', dataType: 'audio' },
+      ]"
+      :connected-ports="['in', 'out']"
+      :parameters="[{ label: 'Decay', value: '2.4', unit: 's' }]"
+    />
+  </div>
+</preview>
+
+The pins sit at the same offset in both, which is the point: switching density
+across a whole canvas does not move a single wire.
 
 ```vue
 <!-- Every card in this canvas is compact... -->
@@ -617,6 +702,37 @@ An analog port has a magnitude worth showing, so it shows it. A digital port doe
 
 The pulse is drawn in the pin's colour rather than a separate signal colour, so it reads as _that port firing_ rather than as a third thing happening nearby.
 
+Side by side. The audio pins are solid, the MIDI pin is striped, and neither changed shape to say so:
+
+<preview>
+  <div style="padding: 2rem 3rem; background: var(--nb-c-layer-0, var(--nb-c-bg)); border-radius: 2px; display: flex; justify-content: center; gap: 3.5rem; flex-wrap: wrap;">
+    <NbBlueprintCard
+      id="an"
+      title="Compressor"
+      category="analog"
+      color="#22c55e"
+      :ports="[
+        { id: 'in', label: 'In', type: 'input', dataType: 'audio' },
+        { id: 'sc', label: 'Sidechain', type: 'input', dataType: 'audio' },
+        { id: 'out', label: 'Out', type: 'output', dataType: 'audio' },
+      ]"
+      :connected-ports="['in', 'out']"
+    />
+    <NbBlueprintCard
+      id="di"
+      title="Arpeggiator"
+      category="digital"
+      color="#a855f7"
+      :ports="[
+        { id: 'clock', label: 'Clock', type: 'input', dataType: 'control' },
+        { id: 'notes', label: 'Notes', type: 'input', dataType: 'midi' },
+        { id: 'out', label: 'Out', type: 'output', dataType: 'midi' },
+      ]"
+      :connected-ports="['notes', 'out']"
+    />
+  </div>
+</preview>
+
 Defaults come from `dataType` (see the table above), so existing ports behave sensibly without being touched. Set `signal` on a port to override, which is what you want for, say, a `control` port carrying a continuous automation lane rather than a trigger:
 
 ```ts
@@ -640,12 +756,12 @@ const ports: IBlueprintPort[] = [
 
 Three optional fields on `IBlueprintPort` override the `dataType`-derived defaults when two ports of the same dataType need to look different (typical example: a "bypass" control input that should read distinctly from other control ports).
 
-| Field    | Type                                          | Effect                                                                                                        |
-| -------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `shape`  | `'pill' \| 'diamond' \| 'square' \| 'circle'` | Beats the `dataType`-derived shape.                                                                           |
-| `color`  | CSS color string                              | Beats the `dataType`-derived color. Wires drawn from / to this pin inherit it.                                |
-| `size`   | `'sm' \| 'md' \| 'lg'`                        | `'md'` is the default. `'sm'` de-emphasises secondary ports; `'lg'` flags primary.                            |
-| `signal` | `'analog' \| 'digital'`                       | Beats the `dataType`-derived default. Drives the stripe decoration and which activity treatment the pin uses. |
+| Field    | Type                             | Effect                                                                                                                                            |
+| -------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `shape`  | `'pill' \| 'square' \| 'circle'` | An explicit outline. Never derived from `dataType`: shape is the target a user aims at, so it stays constant unless a card deliberately sets one. |
+| `color`  | CSS color string                 | Beats the `dataType`-derived color. Wires drawn from / to this pin inherit it.                                                                    |
+| `size`   | `'sm' \| 'md' \| 'lg'`           | `'md'` is the default. `'sm'` de-emphasises secondary ports; `'lg'` flags primary.                                                                |
+| `signal` | `'analog' \| 'digital'`          | Beats the `dataType`-derived default. Drives the stripe decoration and which activity treatment the pin uses.                                     |
 
 ```ts
 const ports: IBlueprintPort[] = [
@@ -671,7 +787,9 @@ const ports: IBlueprintPort[] = [
 ]
 ```
 
-Every shape and size is a real dimension on the pin element, so a pin's appearance, its wire endpoint and its hit area always agree. Shapes are centred on the same axis, so overriding a shape does not move the wire endpoint. Symmetrical shapes (`diamond`, `square`, `circle`) sit tangent to the card edge rather than flush against it, and the diamond is inset by the (√2 − 1) / 2 its rotated corners reach past its box.
+Every shape and size is a real dimension on the pin element, so a pin's appearance, its wire endpoint and its hit area always agree. Shapes are centred on the same axis, so overriding a shape does not move the wire endpoint. The symmetrical shapes (`square`, `circle`) sit tangent to the card edge rather than flush against it.
+
+Shape is never derived. Reach for a variant only when a port has to be told apart from its immediate neighbours on the same card, and never to encode what a port carries: that is what `signal` and `color` are for, and neither disturbs the outline a user is aiming at.
 
 Sub-pins (channels of a multi-channel port) render shorter than a root pin so a row of them reads as one stacked port.
 

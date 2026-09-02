@@ -31,24 +31,24 @@ export interface IBlueprintPortChannel {
 }
 
 /**
- * Visual shape for a single pin. Independent of `dataType` so an
- * `audio` port can render as a square (e.g. for an aux send) without
- * forcing the dataType taxonomy to grow new variants. When unset, the
- * shape is derived from `dataType` (see PIN_SHAPES inside
- * BlueprintCard.vue).
+ * Visual shape for a single pin.
  *
- *   - `'pill'` (default for most dataTypes): a 6x14 rounded pill —
- *     the canonical Blueprint connector tab.
- *   - `'diamond'`: rotated square, ~10x10. Reads as "control / event"
- *     rather than "audio / signal flow". MIDI and `control` ports
- *     default to this.
- *   - `'square'`: sharp 10x10 box. Good for typed-data ports
- *     (`color`, `asset`).
- *   - `'circle'`: small 8x8 dot. Good for boolean / single-bit
- *     ports where the smaller hit area visually de-emphasises the
- *     port relative to audio pins.
+ * Shape is the target a user aims a wire at, so it deliberately does NOT vary
+ * with `dataType`: a target that changes form per port is one they have to
+ * re-learn each time, and a rotated or shrunken silhouette converges with the
+ * default pill as soon as the canvas is zoomed out. What a port carries is
+ * expressed by `signal` (solid vs striped) and `color` instead, neither of
+ * which touches the pin's outline.
+ *
+ *   - `'pill'` (default): the canonical connector tab, flat against the card
+ *     and rounded on its outer end.
+ *   - `'square'`: a sharp box, tangent to the card edge.
+ *   - `'circle'`: a small dot. Its smaller target de-emphasises the port.
+ *
+ * Reach for a variant only when a port needs to be told apart from its
+ * immediate neighbours on the same card, never as a way to encode type.
  */
-export type TBlueprintPortShape = 'pill' | 'diamond' | 'square' | 'circle'
+export type TBlueprintPortShape = 'pill' | 'square' | 'circle'
 
 /**
  * Visual size for a single pin. Independent of shape. `'md'` is the
