@@ -101,19 +101,22 @@ To move the whole column, a card with a taller custom header, say, set `--nb-blu
 
 ### States
 
-| State          | Looks like                                       | Set by                                   |
-| -------------- | ------------------------------------------------ | ---------------------------------------- |
-| Free           | Outline on the card surface                      | The default                              |
-| Hover          | Filled in the pin colour                         | Pointer over the hit target              |
-| Focus          | 2px focus ring around the pin                    | Keyboard focus on the hit target         |
-| Connected      | Solid fill, no glow                              | `connectedPorts`                         |
-| Live           | Solid fill                                       | `activePorts`                            |
-| Metered        | Fills from the bottom in proportion to the level | `portLevels`                             |
-| Valid target   | Accent ring                                      | Automatic, while a wire is being dragged |
-| Invalid target | Dimmed to 30%                                    | Automatic, while a wire is being dragged |
-| Required       | Heavier outline                                  | `required: true` on an input port        |
+| State          | Looks like                                          | Set by                                   |
+| -------------- | --------------------------------------------------- | ---------------------------------------- |
+| Free           | Outline on the card surface                         | The default                              |
+| Hover          | Filled in the pin colour                            | Pointer over the hit target              |
+| Focus          | 2px focus ring around the pin                       | Keyboard focus on the hit target         |
+| Connected      | Solid fill, no halo                                 | `connectedPorts`                         |
+| Live           | Solid fill, plus a static halo in the signal colour | `activePorts`                            |
+| Metered        | Fills from the bottom in proportion to the level    | `portLevels`                             |
+| Metered + live | The meter, plus the halo                            | Both together                            |
+| Valid target   | Accent ring                                         | Automatic, while a wire is being dragged |
+| Invalid target | Dimmed to 30%                                       | Automatic, while a wire is being dragged |
+| Required       | Heavier outline                                     | `required: true` on an input port        |
 
-A connected pin is filled and carries **no** glow. A glow means signal, and a wired-but-silent port has none.
+A connected pin is filled and carries **no** halo. The halo means signal, and a wired-but-silent port has none, so "this is wired" and "this is carrying something" stay tellable apart. The halo is static: the objection to the old treatment was that it looped forever on every live port, not that live ports were marked at all.
+
+`portLevels` wins over `activePorts` for the pin's fill, so a port in both renders as a meter rather than a solid block, and takes the halo on top.
 
 ### Drop targets
 
@@ -130,6 +133,12 @@ Compatibility is deliberately loose, because a graph editor that refuses plausib
 - An undeclared `dataType`, or `'any'` at either end, connects to anything.
 - Identical types connect.
 - Members of a family connect: `audio:mono` reaches `audio:stereo` and `audio:bus`, because they share the segment before the colon. `midi` reaches neither.
+
+### Collapsed cards
+
+A collapsed card keeps its header: the chevron, the title, the status glyph and the toggle. Its width floor is derived from that chrome plus a readable amount of title, so the title is never the thing squeezed out to make room for the controls.
+
+Its ports stay in the DOM, so wires can still resolve their endpoints, but the slots flatten onto a single combined pin per side. Every hidden pin sits exactly where that combined pin is drawn, so wires converge on the connection point the user can actually see.
 
 ### Signal level and activity
 
