@@ -1,5 +1,47 @@
 # Upgrading
 
+## To 3.1.0 from 3.0.x
+
+Ports render as one element each instead of three. Nothing about how they look
+or behave changes.
+
+### What changed
+
+A port was a slot `div`, a hit `button` and a pin `span`. It is now a single
+`button` that carries `data-port`, is drawn at the hit size, and paints the
+visible pin with `::before` at its centre. Fill, stripes, level and the event
+pulse are all pseudo-element backgrounds rather than nested boxes. An inline
+label is a child of the button, positioned outside its box.
+
+A card with 16 I/O put 48 nodes in the tree and now puts 16. On a 41-card
+session with 268 ports that is 886 port-related nodes down to 350.
+
+### Why
+
+On large sessions the port lanes were a measurable share of pan and zoom frame
+cost, worst on zoom because consumers promote cards to cached compositor layers
+and a scale change re-rasters every one of them, each carrying its ports.
+
+### What to check
+
+- **CSS bound to `.nb-blueprint-card__port-hit`.** Still works: it is retained
+  as a second class on the same element. So is `.nb-blueprint-card__port`. They
+  now name the same node, which means a rule intended for one applies to both.
+  If you had different rules for each, merge them.
+- **`.nb-blueprint-card__port-slot` is gone.** Nothing should have targeted it;
+  it existed only to lay out a pin next to its label.
+- **The port element is now 24&times;24 rather than 8&times;16.** If you were
+  measuring it for anything other than its centre, measure `::before` or use
+  the centre. The centre is unchanged and is what the wire layer uses.
+- **The hit target now reaches about 8px back over the card's padding**, where
+  before it stopped at the card edge. That area is empty by construction, but
+  a host that draws its own content into the card's left or right padding
+  should check.
+- **A metered pin's level no longer tweens between values.** The fill is a
+  gradient stop rather than an animated height. Consumers already quantise
+  these values; if you were relying on the 90ms ease to smooth a noisy signal,
+  smooth it at the source.
+
 ## To 3.0.0 from 2.9.x
 
 The `'diamond'` pin shape is removed. That is the whole release.
