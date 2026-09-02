@@ -1,3 +1,10 @@
+## [3.0.2](https://github.com/nubisco/ui/compare/v3.0.1...v3.0.2) (2026-09-02)
+
+
+### Bug Fixes
+
+* **button:** an icon-only button is the same width as a link ([2c17109](https://github.com/nubisco/ui/commit/2c17109c27a26a398c7cc2ea5ecd483745104c27))
+
 ## [3.0.1](https://github.com/nubisco/ui/compare/v3.0.0...v3.0.1) (2026-09-02)
 
 
