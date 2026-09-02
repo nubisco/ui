@@ -1,3 +1,16 @@
+# [2.8.0](https://github.com/nubisco/ui/compare/v2.7.0...v2.8.0) (2026-09-02)
+
+
+### Bug Fixes
+
+* **blueprint:** grow a card to contain its own port column ([386e8a3](https://github.com/nubisco/ui/commit/386e8a3952d50976d60e887606819a324078559b))
+
+
+### Features
+
+* **blueprint:** move ports outside the card and anchor wires to the pin ([b43fe5b](https://github.com/nubisco/ui/commit/b43fe5bb631816bdfce95c70b3672f84d6352582))
+* **theme:** port, status and node-row tokens, plus a radius `none` step ([27c99c9](https://github.com/nubisco/ui/commit/27c99c939459e75aba203e4e2081775f727e18d9))
+
 # [2.7.0](https://github.com/nubisco/ui/compare/v2.6.0...v2.7.0) (2026-09-01)
 
 
