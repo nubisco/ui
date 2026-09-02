@@ -1,3 +1,10 @@
+# [2.9.0](https://github.com/nubisco/ui/compare/v2.8.1...v2.9.0) (2026-09-02)
+
+
+### Features
+
+* **blueprint:** analog and digital ports, told apart by texture not shape ([141b764](https://github.com/nubisco/ui/commit/141b76410c012b75efed7560255ae8e170c910c8))
+
 ## [2.8.1](https://github.com/nubisco/ui/compare/v2.8.0...v2.8.1) (2026-09-02)
 
 
