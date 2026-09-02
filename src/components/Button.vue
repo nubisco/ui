@@ -98,6 +98,12 @@ const iconSize = computed(() => iconSizeMap[props.size ?? 'md'] ?? 14)
   justify-content: center;
   gap: 6px;
   border: none;
+  // Not inherited from anywhere: a <button> defaults to border-box and an <a>
+  // defaults to content-box, so the SAME button was two different sizes
+  // depending on whether `href` was set. It showed up on icon-only, where the
+  // width is fixed: 32px became 32 + 12 + 12 of padding, and one link sat
+  // visibly wider than the buttons beside it.
+  box-sizing: border-box;
   font-family: inherit;
   font-weight: 500;
   cursor: pointer;

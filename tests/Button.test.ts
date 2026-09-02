@@ -170,3 +170,17 @@ describe('Button', () => {
     expect(link.attributes('data-to')).toBe(JSON.stringify({ name: 'home' }))
   })
 })
+
+describe('Button as a link', () => {
+  // A <button> defaults to border-box and an <a> to content-box, so an
+  // icon-only button rendered as a link was 32 + 12 + 12 wide while the button
+  // beside it was 32. The component has to set box-sizing itself.
+  it('renders an anchor when href is set, and still marks it icon-only', () => {
+    const wrapper = mount(Button, {
+      props: { href: 'https://example.com', icon: 'x', size: 'sm' },
+    })
+    expect(wrapper.element.tagName).toBe('A')
+    expect(wrapper.classes()).toContain('nb-button--icon-only')
+    expect(wrapper.classes()).toContain('nb-button--sm')
+  })
+})
