@@ -1,6 +1,6 @@
 # Upgrading
 
-## To 3.1.0 from 3.0.x
+## To 3.0.1 from 3.0.0
 
 Ports render as one element each instead of three. Nothing about how they look
 or behave changes.
