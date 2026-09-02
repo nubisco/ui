@@ -18,6 +18,36 @@ export type {
 } from './composables/iconRegistry'
 
 // Named exports for tree-shakeable individual imports
+export { default as NbAccordion } from './components/Accordion.vue'
+export { default as NbAccordionItem } from './components/AccordionItem.vue'
+export type {
+  IAccordionProps,
+  IAccordionItemProps,
+  TAccordionAlign,
+  TAccordionSize,
+} from './components/Accordion.d'
+export { default as NbCard } from './components/Card.vue'
+export { default as NbCardGrid } from './components/CardGrid.vue'
+export type { ICardProps, ICardGridProps } from './components/CardGrid.d'
+export { default as NbDefinitionList } from './components/DefinitionList.vue'
+export { default as NbDefinitionListItem } from './components/DefinitionListItem.vue'
+export type {
+  IDefinitionListProps,
+  IDefinitionListItemProps,
+  IDefinitionListItem,
+  TDefinitionListLayout,
+} from './components/DefinitionList.d'
+export { default as NbEmptyState } from './components/EmptyState.vue'
+export type {
+  IEmptyStateProps,
+  TEmptyStateKind,
+  TEmptyStateSize,
+} from './components/EmptyState.d'
+export { default as NbReorderList } from './components/ReorderList.vue'
+export type {
+  IReorderListProps,
+  IReorderEvent,
+} from './components/ReorderList.d'
 export { default as NbBoard } from './components/Board.vue'
 export type {
   IBoardColumn,

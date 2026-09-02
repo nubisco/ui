@@ -1,5 +1,61 @@
 # Upgrading
 
+## To 3.1.0 from 3.0.x
+
+Five new components, all additive. Nothing was renamed or removed, so the
+upgrade itself is a version bump. The work is in what you can now delete.
+
+### What is new
+
+| Component                                                                     | Replaces the hand-rolled                                                                                                              |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| [`NbAccordion`](/ui/components/accordion) + `NbAccordionItem`                 | Click-to-reveal sections in page body. `NbShellPanel` is still the right thing for an inspector section; this is for everything else. |
+| [`NbCardGrid`](/ui/components/card-grid) + `NbCard`                           | A responsive catalogue of cards, and the card surface itself.                                                                         |
+| [`NbDefinitionList`](/ui/components/definition-list) + `NbDefinitionListItem` | Label-and-value fact blocks.                                                                                                          |
+| [`NbReorderList`](/ui/components/reorder-list)                                | A vertical list whose rows drag to reorder, with a keyboard path.                                                                     |
+| [`NbEmptyState`](/ui/components/empty-state)                                  | The centred block a view shows when it has nothing to show.                                                                           |
+
+### What to delete, and what to watch for
+
+Each of these exists because the same thing had been written by hand more than
+once. When you replace a local copy, three of them have a detail worth knowing,
+because the local copies got them wrong.
+
+**A card grid is not an `NbGrid`.** `NbGrid`'s `grid` prop is a span within the
+16-column page grid: it answers "how much of the page does this take".
+`NbCardGrid`'s `min` is a column width: it answers "how many of these fit". If
+you hand-wrote `repeat(auto-fill, minmax(260px, 1fr))`, that is the prop you
+were reaching for.
+
+**A definition list puts its grid on each row, never on the `<dl>`.** A grid on
+the list makes _every descendant_ a grid item, so a heading, a divider or a
+form field placed inside gets pulled into the columns with the terms and
+values. That is not hypothetical: it is how a hand-rolled one shipped
+swallowing two form fields. If you keep a local copy for any reason, move the
+grid to the row.
+
+**An empty state has four kinds**, and they are not decoration: `empty`,
+`no-results`, `error` and `forbidden` want different copy and different
+actions. Naming the case is what stops "No results" appearing over a request
+that failed, and stops a view offering to create something in a list that could
+not load.
+
+### A note on host CSS
+
+Three of these components are deliberately over-specified against the page
+around them, and it is worth knowing why if you are reading the source:
+
+- The accordion's header is a `role="heading"` div, not an `<h3>`.
+- The reorder list's row margin is written as `.nb-reorder-list .nb-reorder-list__row`.
+- The empty state spaces its parts with `gap` and zeroes every margin.
+
+A host rule like `.some-container h3 { margin }` or `.some-container li
+{ margin }` has higher specificity than a component's own scoped class, so a
+component that styles a bare element cannot defend its own spacing. Each of
+those three was measurably wrong in a prose container before it was changed.
+If you are writing a component in this library, prefer a class or a role to an
+element selector for anything whose spacing matters.
+
 ## To 3.0.1 from 3.0.0
 
 Ports render as one element each instead of three. Nothing about how they look
