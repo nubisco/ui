@@ -253,11 +253,10 @@
     // A port is a control, and it sits OUTSIDE the card on the canvas
     // ground, so its outline is measured against layer-0 rather than the
     // card: field-border gives 5.03 here. port-bg follows the card surface
-    // so an unwired pin reads as an empty socket cut into the card.
+    // so an unwired pin reads as an empty socket cut into the card, and it
+    // doubles as the stripe colour on a wired digital pin.
     --nb-c-port-bg: var(--nb-c-surface);
     --nb-c-port-border: var(--nb-c-field-border);
-    // The discrete-event ping. Theme-aware, unlike the #38e0ff it replaces.
-    --nb-c-port-signal: var(--nb-c-info);
     // Parameter rows inside a card: one layer deeper than the card itself.
     --nb-c-node-row-bg: var(--nb-c-layer-2);
     // xs is the compact size for dense surfaces (inspectors, toolbars).
