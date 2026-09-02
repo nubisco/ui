@@ -92,11 +92,27 @@ All additive.
   card rectangle to decide what the pointer is over, the ports now sit outside
   the rectangle you were testing.
 
-- **CSS that targeted `.nb-blueprint-card__port` for layout.** It is now the
-  pin only, a `pointer-events: none` span inside a
+- **CSS that targeted `.nb-blueprint-card__port` for layout or interaction.**
+  It is now the pin only, a `pointer-events: none` span inside a
   `.nb-blueprint-card__port-hit` button. Selectors that styled it still apply,
   but rules that positioned it, gave it a hover state, or bound a listener to
   it need to move to `.nb-blueprint-card__port-hit`.
+
+  The one to check first is any rule that made ports inert, because it will
+  now silently do nothing:
+
+  ```css
+  /* Before: disabled the port. After: disables a span that was already
+     pointer-events: none, while the button behind it stays live. */
+  .nb-blueprint-card__port {
+    pointer-events: none;
+  }
+
+  /* After */
+  .nb-blueprint-card__port-hit {
+    pointer-events: none;
+  }
+  ```
 
 - **Handlers typed against the old port-event shape.** The payload gained an
   optional `dataType`. If you asserted on the whole object (`toEqual` in a
