@@ -751,17 +751,13 @@ const PIN_COLORS: Record<TBlueprintPinDataType, string> = {
   any: '#64748b',
 }
 
-// Default shape per dataType. The card looks up this map when a port
-// doesn't provide an explicit `shape` override. Audio / general-flow
-// types get the canonical pill (signal connectors); MIDI and control
-// types get diamonds (event / sideband connectors); typed-data types
-// (colour, asset) get sharp squares.
-// Every data type now defaults to the pill. A pin is a target the user aims a
+// Default shape per dataType, consulted when a port sets no explicit `shape`.
+// Every entry is the pill, deliberately. A pin is a target the user aims a
 // wire at, and a target whose shape changes with its type is a target they
-// have to re-learn per port; the diamonds and squares made MIDI and control
-// pins measurably fiddlier to hit for no information the stripe pattern does
-// not carry better. `shape` is still honoured when a consumer sets it
-// explicitly, so nothing that wants a diamond loses one.
+// have to re-learn per port, and the rotated and shrunken silhouettes made
+// MIDI and control pins fiddlier to hit for no information the stripe pattern
+// does not carry better. `shape` is still honoured when a consumer sets it
+// explicitly; it is simply never derived.
 const PIN_SHAPES: Record<TBlueprintPinDataType, TBlueprintPortShape> = {
   geometry: 'pill',
   celestial: 'pill',
@@ -1369,27 +1365,9 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   // ── Shapes ─────────────────────────────────────────────────────
   // Non-pill shapes are symmetrical, so they keep all four borders and sit
   // tangent to the card edge rather than flush against it.
-  &--diamond,
   &--square,
   &--circle {
     border: 1.5px solid var(--nb-c-port-border);
-  }
-
-  &--diamond {
-    --pin-w: 10px;
-    --pin-h: 10px;
-    border-radius: var(--nb-radius-xs);
-    transform: rotate(45deg);
-  }
-
-  // A rotated square's corners reach (√2 − 1) / 2 of its width past the box,
-  // so it is inset by exactly that much to stay clear of the card edge.
-  &--diamond#{&}--left {
-    right: calc(0.2071 * var(--pin-w));
-  }
-
-  &--diamond#{&}--right {
-    left: calc(0.2071 * var(--pin-w));
   }
 
   &--square {
@@ -1404,13 +1382,11 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
     border-radius: 50%;
   }
 
-  &--diamond#{&}--size-sm,
   &--square#{&}--size-sm {
     --pin-w: 8px;
     --pin-h: 8px;
   }
 
-  &--diamond#{&}--size-lg,
   &--square#{&}--size-lg {
     --pin-w: 13px;
     --pin-h: 13px;
@@ -1571,23 +1547,6 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   }
   to {
     transform: scale(2);
-    opacity: 0;
-  }
-}
-
-// The diamond composes its rotation with the ping's scale, so it needs its
-// own keyframes or the ring would un-rotate as it expands.
-.nb-blueprint-card__port--diamond.nb-blueprint-card__port--digital.nb-blueprint-card__port--ping::after {
-  animation-name: nb-port-ping-diamond;
-}
-
-@keyframes nb-port-ping-diamond {
-  from {
-    transform: rotate(45deg) scale(0.7);
-    opacity: 0.9;
-  }
-  to {
-    transform: rotate(45deg) scale(2);
     opacity: 0;
   }
 }

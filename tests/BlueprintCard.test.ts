@@ -865,8 +865,10 @@ describe('BlueprintCard analog and digital ports', () => {
   })
 
   it('still honours an explicit shape override', () => {
-    expect(
-      pinOf({ ports: portsFor({ shape: 'diamond' }) }).classes(),
-    ).toContain('nb-blueprint-card__port--diamond')
+    // Shape is never derived, but a card can still ask for one when a port
+    // has to be told apart from its immediate neighbours.
+    expect(pinOf({ ports: portsFor({ shape: 'circle' }) }).classes()).toContain(
+      'nb-blueprint-card__port--circle',
+    )
   })
 })
