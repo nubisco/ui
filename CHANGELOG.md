@@ -1,3 +1,19 @@
+# [3.0.0](https://github.com/nubisco/ui/compare/v2.9.0...v3.0.0) (2026-09-02)
+
+
+### Features
+
+* **blueprint:** drop the diamond pin shape ([a1c6371](https://github.com/nubisco/ui/commit/a1c63718791b32a11194249738722fa33931e733))
+
+
+### BREAKING CHANGES
+
+* **blueprint:** `TBlueprintPortShape` no longer includes `'diamond'`. It is
+now `'pill' | 'square' | 'circle'`. A TypeScript consumer passing
+`shape: 'diamond'` will fail to compile; at runtime the pin falls back to the
+default pill. Use `signal` to express what a port carries, or `'square'` /
+`'circle'` to separate a port from its immediate neighbours.
+
 # [2.9.0](https://github.com/nubisco/ui/compare/v2.8.1...v2.9.0) (2026-09-02)
 
 
