@@ -761,3 +761,54 @@ describe('BlueprintCard port overflow', () => {
     expect(w.attributes('style')).toContain('--nb-blueprint-port-count: 1')
   })
 })
+
+describe('BlueprintCard live and metered states', () => {
+  const audioIn = { id: 'in', label: 'In', type: 'input' as const }
+
+  it('marks a live pin that also has a level as both, so the meter wins', () => {
+    // The two are distinct facts: "carrying signal" and "carrying this much".
+    // The pin renders the meter and takes the live halo on top, which only
+    // holds because the active rule excludes metered pins. Without that
+    // exclusion it repainted the pin in the meter's own colour and the meter
+    // became invisible in exactly the pairing the docs recommend.
+    const w = mount(BlueprintCard, {
+      props: {
+        id: 'c',
+        title: 'C',
+        ports: [audioIn],
+        activePorts: ['in'],
+        portLevels: { in: 0.5 },
+      },
+    })
+    const pin = w.find('.nb-blueprint-card__port')
+    expect(pin.classes()).toContain('nb-blueprint-card__port--active')
+    expect(pin.classes()).toContain('nb-blueprint-card__port--metered')
+  })
+
+  it('keeps live and merely-wired distinguishable', () => {
+    const w = mount(BlueprintCard, {
+      props: {
+        id: 'c',
+        title: 'C',
+        ports: [audioIn, { ...audioIn, id: 'other' }],
+        connectedPorts: ['in', 'other'],
+        activePorts: ['other'],
+      },
+    })
+    const pins = w.findAll('.nb-blueprint-card__port')
+    expect(pins[0].classes()).toContain('nb-blueprint-card__port--connected')
+    expect(pins[0].classes()).not.toContain('nb-blueprint-card__port--active')
+    expect(pins[1].classes()).toContain('nb-blueprint-card__port--active')
+  })
+
+  it('keeps the title in the header when collapsed', () => {
+    // A collapsed card that shows only its chevron and toggle tells the user
+    // nothing about which node they collapsed.
+    const w = mount(BlueprintCard, {
+      props: { id: 'c', title: 'Youlean Loudness Meter', collapsed: true },
+    })
+    expect(w.find('.nb-blueprint-card__name').text()).toBe(
+      'Youlean Loudness Meter',
+    )
+  })
+})
