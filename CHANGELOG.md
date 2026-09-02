@@ -1,3 +1,10 @@
+## [3.0.3](https://github.com/nubisco/ui/compare/v3.0.2...v3.0.3) (2026-09-02)
+
+
+### Bug Fixes
+
+* **breadcrumbs:** no separator when the slot renders nothing ([8625ada](https://github.com/nubisco/ui/commit/8625ada42ccc8c1bf1bfd638a32ab755d50b34df))
+
 ## [3.0.2](https://github.com/nubisco/ui/compare/v3.0.1...v3.0.2) (2026-09-02)
 
 
