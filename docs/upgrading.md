@@ -1,6 +1,6 @@
 # Upgrading
 
-## To 2.7.0 from 2.6.x
+## To 2.8.0 from 2.7.x
 
 `NbBlueprint` ports moved outside the card, and the wire layer now measures
 the pin rather than a box that also contained the pin's label. Everything else
@@ -48,7 +48,7 @@ reads `--nb-c-port-*`, `--nb-c-status-*`, `--nb-c-node-row-bg` and
 left edge, instead of on the top bar, the category, every wired pin and the
 toggle at the same time.
 
-| Where              | 2.6.x                            | 2.7.0                                       |
+| Where              | 2.7.x                            | 2.8.0                                       |
 | ------------------ | -------------------------------- | ------------------------------------------- |
 | Pin position       | Straddling the card border       | Fully outside, flush with the outer edge    |
 | Card bounding box  | The card                         | The card + 24px of port gutter on each side |
