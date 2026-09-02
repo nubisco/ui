@@ -575,38 +575,77 @@ interface IBlueprintCardParameter {
 }
 ```
 
-## Pin colors and shapes by `dataType`
+## Pin colours and signal kind by `dataType`
 
-| `dataType`           | Color     | Shape   | Typical use                                      |
-| -------------------- | --------- | ------- | ------------------------------------------------ |
-| `audio`              | `#22c55e` | pill    | Generic mono audio.                              |
-| `audio:mono`         | `#22c55e` | pill    | Single-channel audio (semantic alias).           |
-| `audio:stereo`       | `#10b981` | pill    | Stereo pair (declare with `channels: [L, R]`).   |
-| `audio:bus`          | `#059669` | pill    | N-channel audio bus (any channel count).         |
-| `midi`               | `#a855f7` | diamond | MIDI stream.                                     |
-| `midi:rechannelized` | `#9333ea` | diamond | MIDI duplicated across channels (GP-style).      |
-| `control`            | `#94a3b8` | diamond | Control-rate signal (parameter automation, OSC). |
-| `geometry`           | `#6366f1` | pill    | Geometric data.                                  |
-| `celestial`          | `#f97316` | pill    | Celestial / scene-graph data.                    |
-| `lighting`           | `#f59e0b` | pill    | Lighting data.                                   |
-| `effect`             | `#a855f7` | pill    | Effect-graph data.                               |
-| `surface`            | `#3b82f6` | pill    | Surface / mesh data.                             |
-| `entity`             | `#ec4899` | pill    | Entity / actor reference.                        |
-| `number`             | `#94a3b8` | diamond | Scalar number.                                   |
-| `vector3`            | `#38bdf8` | diamond | 3-component vector.                              |
-| `color`              | `#fb923c` | square  | Color value.                                     |
-| `asset`              | `#a78bfa` | square  | Asset reference (texture, sample, plugin).       |
-| `any`                | `#64748b` | pill    | Untyped / wildcard.                              |
+Every data type renders as the same pill. A pin is the target a user aims a wire at, and a target whose shape changes with its type is one they have to re-learn per port, which costs more than the shape ever told them. What varies is **colour** and **signal kind**.
+
+| `dataType`           | Colour    | Signal  | Typical use                                    |
+| -------------------- | --------- | ------- | ---------------------------------------------- |
+| `audio`              | `#22c55e` | analog  | Generic mono audio.                            |
+| `audio:mono`         | `#22c55e` | analog  | Single-channel audio (semantic alias).         |
+| `audio:stereo`       | `#10b981` | analog  | Stereo pair (declare with `channels: [L, R]`). |
+| `audio:bus`          | `#059669` | analog  | N-channel audio bus (any channel count).       |
+| `midi`               | `#a855f7` | digital | MIDI stream.                                   |
+| `midi:rechannelized` | `#9333ea` | digital | MIDI duplicated across channels (GP-style).    |
+| `control`            | `#94a3b8` | digital | Triggers, gates, bypass wiring.                |
+| `geometry`           | `#6366f1` | analog  | Geometric data.                                |
+| `celestial`          | `#f97316` | analog  | Celestial / scene-graph data.                  |
+| `lighting`           | `#f59e0b` | analog  | Lighting data.                                 |
+| `effect`             | `#a855f7` | analog  | Effect-graph data.                             |
+| `surface`            | `#3b82f6` | analog  | Surface / mesh data.                           |
+| `entity`             | `#ec4899` | digital | Entity / actor reference.                      |
+| `number`             | `#94a3b8` | analog  | Scalar number.                                 |
+| `vector3`            | `#38bdf8` | analog  | 3-component vector.                            |
+| `color`              | `#fb923c` | digital | Colour value.                                  |
+| `asset`              | `#a78bfa` | digital | Asset reference (texture, sample, plugin).     |
+| `any`                | `#64748b` | analog  | Untyped / wildcard.                            |
+
+## Analog and digital
+
+`signal` is the library's own axis, independent of `dataType`. It answers a question `dataType` cannot: does this port carry a continuously varying quantity, or discrete events? That decides two things.
+
+**Decoration.** Digital pins are striped, analog pins are solid. The stripe is a fill, not a form, so it survives being scaled: at 40% canvas zoom a striped pin still reads as "not solid", where a smaller glyph or a rotated silhouette would have collapsed into the same few pixels as a plain pill. It also leaves the colour channel alone, which `dataType` already spends.
+
+**Activity.** The two kinds show they are busy in different ways, because they have different things to say.
+
+| Signal    | Activity                                         | Driven by              |
+| --------- | ------------------------------------------------ | ---------------------- |
+| `analog`  | Fills from the bottom in proportion to its level | `portLevels`           |
+| `digital` | One pulse per event, in the pin's own colour     | Entering `activePorts` |
+
+An analog port has a magnitude worth showing, so it shows it. A digital port does not: a level meter on a note stream is noise, and a ring that loops while the port stays active only ever says "still wired". One pulse per event means one pulse per thing that happened.
+
+The pulse is drawn in the pin's colour rather than a separate signal colour, so it reads as _that port firing_ rather than as a third thing happening nearby.
+
+Defaults come from `dataType` (see the table above), so existing ports behave sensibly without being touched. Set `signal` on a port to override, which is what you want for, say, a `control` port carrying a continuous automation lane rather than a trigger:
+
+```ts
+const ports: IBlueprintPort[] = [
+  // Audio in: solid, and metered from portLevels.
+  { id: 'in', label: 'In', type: 'input', dataType: 'audio' },
+  // MIDI in: striped, and pulses once per note.
+  { id: 'midi', label: 'MIDI', type: 'input', dataType: 'midi' },
+  // A control port that is really a continuous value, not a trigger.
+  {
+    id: 'mod',
+    label: 'Mod',
+    type: 'input',
+    dataType: 'control',
+    signal: 'analog',
+  },
+]
+```
 
 ## Per-port style overrides
 
 Three optional fields on `IBlueprintPort` override the `dataType`-derived defaults when two ports of the same dataType need to look different (typical example: a "bypass" control input that should read distinctly from other control ports).
 
-| Field   | Type                                          | Effect                                                                             |
-| ------- | --------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `shape` | `'pill' \| 'diamond' \| 'square' \| 'circle'` | Beats the `dataType`-derived shape.                                                |
-| `color` | CSS color string                              | Beats the `dataType`-derived color. Wires drawn from / to this pin inherit it.     |
-| `size`  | `'sm' \| 'md' \| 'lg'`                        | `'md'` is the default. `'sm'` de-emphasises secondary ports; `'lg'` flags primary. |
+| Field    | Type                                          | Effect                                                                                                        |
+| -------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `shape`  | `'pill' \| 'diamond' \| 'square' \| 'circle'` | Beats the `dataType`-derived shape.                                                                           |
+| `color`  | CSS color string                              | Beats the `dataType`-derived color. Wires drawn from / to this pin inherit it.                                |
+| `size`   | `'sm' \| 'md' \| 'lg'`                        | `'md'` is the default. `'sm'` de-emphasises secondary ports; `'lg'` flags primary.                            |
+| `signal` | `'analog' \| 'digital'`                       | Beats the `dataType`-derived default. Drives the stripe decoration and which activity treatment the pin uses. |
 
 ```ts
 const ports: IBlueprintPort[] = [

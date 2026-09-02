@@ -56,6 +56,28 @@ export type TBlueprintPortShape = 'pill' | 'diamond' | 'square' | 'circle'
  * ports), `'lg'` enlarges (good for primary audio ins / outs that
  * need to be visually emphasised).
  */
+/**
+ * Whether a port carries a continuously varying quantity or discrete events.
+ *
+ * This is the library's own axis, deliberately independent of `dataType`,
+ * which is a domain taxonomy that will keep growing. Analog and digital is
+ * the distinction that changes how a port behaves rather than what it is
+ * called, and it drives two things:
+ *
+ *   - **Decoration.** Digital pins are striped, analog pins are solid. Same
+ *     silhouette either way: a pin is a target the user aims a wire at, and
+ *     changing its shape by type makes that aim less predictable for no gain.
+ *     Texture separates them without touching form or the colour channel,
+ *     which `dataType` already spends.
+ *   - **Activity.** An analog port shows a level, filling in proportion to
+ *     what is flowing. A digital port has no meaningful level, so it pulses
+ *     once per event instead. See `portLevels` and `activePorts`.
+ *
+ * Defaults are derived from `dataType`, so existing ports get the right
+ * behaviour without being touched. Set it explicitly to override.
+ */
+export type TBlueprintPortSignal = 'analog' | 'digital'
+
 export type TBlueprintPortSize = 'sm' | 'md' | 'lg'
 
 /**
@@ -120,6 +142,12 @@ export interface IBlueprintPort {
    * connection.
    */
   size?: TBlueprintPortSize
+  /**
+   * Whether this port carries a continuous quantity or discrete events.
+   * Beats the `dataType`-derived default. Drives the pin's decoration and
+   * which activity treatment it uses.
+   */
+  signal?: TBlueprintPortSignal
 }
 
 /** Status indicator level */
@@ -187,10 +215,17 @@ export interface IBlueprintCardProps {
    */
   showPortLabels?: TBlueprintPortLabelMode
   /**
-   * Signal level per port id, 0 to 1. A port present here fills from the
-   * bottom in proportion to its level, so a quiet port looks quiet and a hot
-   * one looks hot. Ports in `activePorts` but absent here render as a solid
-   * fill instead.
+   * Signal level per port id, **0 to 1** (not 0 to 100), clamped. A port
+   * present here fills from the bottom in proportion to its level, so a quiet
+   * port looks quiet and a hot one looks hot. Ports in `activePorts` but
+   * absent here render as a solid fill instead.
+   *
+   * The scale is normalised on purpose: the library has no opinion on what
+   * the quantity is. An audio host maps dBFS onto 0 to 1 with whatever curve
+   * suits its meters, which is a decision only it can make.
+   *
+   * Only meaningful for analog ports. A digital port has no level; it pulses
+   * per event instead, driven by `activePorts`.
    *
    * This replaces the old behaviour, where every active port ran the same
    * looping ring forever and carried no information beyond "wired and live".

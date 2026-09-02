@@ -1,5 +1,64 @@
 # Upgrading
 
+## To 2.9.0 from 2.8.x
+
+Ports gained an analog / digital distinction, and stopped changing shape by
+data type. Additive: no prop was removed and no port stops rendering, but MIDI
+and control pins look different, so look at a canvas after upgrading.
+
+### What changed
+
+**No pin defaults to a diamond or a square any more.** `midi`, `control`,
+`number`, `vector3`, `color` and `asset` all rendered as diamonds or squares;
+every data type now renders as the same pill. A pin is the target a user aims a
+wire at, and a target whose shape changes with its type is one they have to
+re-learn per port. The shape was also the least robust way to carry the
+difference: a rotated square converges with a pill as soon as the canvas is
+zoomed out. `shape` is still honoured when set explicitly, so a consumer that
+wants a diamond keeps one.
+
+**`signal: 'analog' | 'digital'` replaces it**, defaulted from `dataType`.
+Digital pins are striped and analog pins are solid. A stripe is a fill rather
+than a form, so it survives scaling, and it leaves the colour channel to
+`dataType`.
+
+**Activity now depends on the kind.** An analog port fills in proportion to
+`portLevels`. A digital port has no meaningful level, so it pulses once when it
+enters `activePorts` instead. Pulsing is now digital-only; an analog port that
+goes live without a level still takes the steady fill and halo.
+
+**The pulse and the live halo take the pin's own colour.** They were drawn in
+`--nb-c-port-signal`, a blue that belonged to neither the pin nor the node, so
+a firing port read as a third thing happening near it.
+
+| Where               | 2.8.x                           | 2.9.0                |
+| ------------------- | ------------------------------- | -------------------- |
+| `midi` pin shape    | Diamond                         | Pill, striped        |
+| `control` pin shape | Diamond                         | Pill, striped        |
+| `color` / `asset`   | Square                          | Pill, striped        |
+| Pulse colour        | `--nb-c-port-signal` (blue)     | The pin's own colour |
+| Live halo colour    | `--nb-c-port-signal` (blue)     | The pin's own colour |
+| Pulse applies to    | Any port entering `activePorts` | Digital ports only   |
+
+### Removed
+
+`--nb-c-port-signal` is gone. It was added in 2.8.0 for the pulse and the halo,
+both of which now use the pin's colour, so it had no remaining user. If you
+referenced it, use `--pin-color` inside a port rule or the port's own `color`.
+
+### What to check
+
+- **Ports that relied on the derived diamond to mean something.** If a card
+  distinguished MIDI from audio purely by the shape it got for free, that now
+  comes from the stripe instead. It still reads, but it reads differently, so
+  it is worth a look rather than an assumption.
+- **`portLevels` on digital ports.** Harmless, but pointless: a level meter on
+  an event stream is noise. Move those ports to `activePorts` and let them
+  pulse.
+- **Anything that pulsed and should not.** Pulsing is digital-only now. An
+  analog port that was relying on entering `activePorts` to flash will hold a
+  steady fill instead, which is the intended behaviour but is a visible change.
+
 ## To 2.8.0 from 2.7.x
 
 `NbBlueprint` ports moved outside the card, and the wire layer now measures
