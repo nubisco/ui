@@ -1,5 +1,35 @@
 # Upgrading
 
+## To 3.0.0 from 2.9.x
+
+The `'diamond'` pin shape is removed. That is the whole release.
+
+### Breaking
+
+`TBlueprintPortShape` is now `'pill' | 'square' | 'circle'`. A TypeScript
+consumer passing `shape: 'diamond'` will fail to compile; at runtime such a pin
+falls back to the default pill rather than breaking.
+
+2.9.0 already stopped deriving the diamond from `dataType`, so by this point
+the value only affected cards that asked for one by hand.
+
+### Why
+
+Shape is the target a user aims a wire at. A pin that changes form is a pin
+they have to re-learn, and the diamond was the worst offender: it is the only
+shape whose visual bounds did not match its box, and a rotated square converges
+with a pill as soon as the canvas is zoomed out, which is where a node graph
+spends much of its time. It was carrying a distinction that `signal` now
+carries better, as a fill rather than a form.
+
+### What to use instead
+
+- To say what a port **carries**, use `signal` (`'analog' | 'digital'`, which
+  renders solid or striped) or an explicit `color`. Neither disturbs the
+  outline.
+- To make one port stand out from its **immediate neighbours** on the same
+  card, `'square'` and `'circle'` remain.
+
 ## To 2.9.0 from 2.8.x
 
 Ports gained an analog / digital distinction, and stopped changing shape by
