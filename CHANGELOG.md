@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/nubisco/ui/compare/v3.0.3...v3.1.0) (2026-09-02)
+
+
+### Features
+
+* **components:** add NbAccordion, NbCardGrid, NbDefinitionList, NbReorderList and NbEmptyState ([c6218c9](https://github.com/nubisco/ui/commit/c6218c90de6177ed639bfedc916a7f6ad62f45c4))
+
 ## [3.0.3](https://github.com/nubisco/ui/compare/v3.0.2...v3.0.3) (2026-09-02)
 
 
