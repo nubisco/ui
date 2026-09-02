@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/nubisco/ui/compare/v3.0.0...v3.0.1) (2026-09-02)
+
+
+### Performance Improvements
+
+* **blueprint:** render a port as one element instead of three ([6645bb4](https://github.com/nubisco/ui/commit/6645bb4c02dd0376fcddf0b8d03b889d9383ce7e))
+
 # [3.0.0](https://github.com/nubisco/ui/compare/v2.9.0...v3.0.0) (2026-09-02)
 
 
