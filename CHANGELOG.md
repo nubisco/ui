@@ -1,3 +1,10 @@
+# [3.2.0](https://github.com/nubisco/ui/compare/v3.1.0...v3.2.0) (2026-09-03)
+
+
+### Features
+
+* **blueprint:** restore the three-element port ([3d61c03](https://github.com/nubisco/ui/commit/3d61c0393ac2fd97cc26a2c343c0844fc0263ffb))
+
 # [3.1.0](https://github.com/nubisco/ui/compare/v3.0.3...v3.1.0) (2026-09-02)
 
 
