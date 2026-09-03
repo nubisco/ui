@@ -1,5 +1,44 @@
 # Upgrading
 
+## To the next release from 3.1.0
+
+The 3.0.1 port rework is reverted. A port is once again three elements: the
+slot, the hit target and the pin.
+
+### What changed
+
+Ports go back to the structure 3.0.0 shipped. `.nb-blueprint-card__port` is the
+pin again and carries `[data-port]`, `.nb-blueprint-card__port-hit` is the
+button that takes the click, and the label is a sibling rather than a child.
+Everything added in 3.0.2, 3.0.3 and 3.1.0 is untouched.
+
+### Why
+
+3.0.1 halved the port DOM and made panning measurably worse: on a 41-card
+session, pan p95 went from 32ms to 82ms and zoom p95 from 51ms to 87ms. The
+change optimised element count, and element count was never the cost. Ablation
+on that session put the entire regression in the merged pin.
+
+It also shipped a defect. The new port label CSS was written above the
+`<template>` tag, outside every SFC block, where the compiler discards it
+silently. Inline port labels have rendered invisibly, underneath the pin, since
+3.0.1. Reverting removes that with the rest of the change.
+
+3.0.1, 3.0.2, 3.0.3 and 3.1.0 are deprecated on npm for these two reasons.
+
+### What to check
+
+If you wrote CSS against 3.0.1's single-element port, it needs revisiting: the
+pin and the hit target are separate boxes again. If you never adopted 3.0.1,
+which was live for about a day, there is nothing to do.
+
+The underlying question of why the merged pin was slower is not settled. Two
+hypotheses were tested and eliminated (the port column overlapping the card,
+and always-on CSS transitions); a third, that per-element `--pin-level` values
+moved from a cheap `height` into gradient stop positions and made 268 pin
+backgrounds unshareable, remains untested. Any future attempt to reduce port
+DOM should answer that first.
+
 ## To 3.1.0 from 3.0.x
 
 Five new components, all additive. Nothing was renamed or removed, so the
@@ -55,48 +94,6 @@ component that styles a bare element cannot defend its own spacing. Each of
 those three was measurably wrong in a prose container before it was changed.
 If you are writing a component in this library, prefer a class or a role to an
 element selector for anything whose spacing matters.
-
-## To 3.0.1 from 3.0.0
-
-Ports render as one element each instead of three. Nothing about how they look
-or behave changes.
-
-### What changed
-
-A port was a slot `div`, a hit `button` and a pin `span`. It is now a single
-`button` that carries `data-port`, is drawn at the hit size, and paints the
-visible pin with `::before` at its centre. Fill, stripes, level and the event
-pulse are all pseudo-element backgrounds rather than nested boxes. An inline
-label is a child of the button, positioned outside its box.
-
-A card with 16 I/O put 48 nodes in the tree and now puts 16. On a 41-card
-session with 268 ports that is 886 port-related nodes down to 350.
-
-### Why
-
-On large sessions the port lanes were a measurable share of pan and zoom frame
-cost, worst on zoom because consumers promote cards to cached compositor layers
-and a scale change re-rasters every one of them, each carrying its ports.
-
-### What to check
-
-- **CSS bound to `.nb-blueprint-card__port-hit`.** Still works: it is retained
-  as a second class on the same element. So is `.nb-blueprint-card__port`. They
-  now name the same node, which means a rule intended for one applies to both.
-  If you had different rules for each, merge them.
-- **`.nb-blueprint-card__port-slot` is gone.** Nothing should have targeted it;
-  it existed only to lay out a pin next to its label.
-- **The port element is now 24&times;24 rather than 8&times;16.** If you were
-  measuring it for anything other than its centre, measure `::before` or use
-  the centre. The centre is unchanged and is what the wire layer uses.
-- **The hit target now reaches about 8px back over the card's padding**, where
-  before it stopped at the card edge. That area is empty by construction, but
-  a host that draws its own content into the card's left or right padding
-  should check.
-- **A metered pin's level no longer tweens between values.** The fill is a
-  gradient stop rather than an animated height. Consumers already quantise
-  these values; if you were relying on the 90ms ease to smooth a noisy signal,
-  smooth it at the source.
 
 ## To 3.0.0 from 2.9.x
 

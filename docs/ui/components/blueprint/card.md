@@ -66,21 +66,15 @@ Ports are the part of a node graph people look at most, so their anatomy, geomet
 
 ## Ports
 
-A port is **one element**: a `<button>` carrying `data-port`, drawn at the hit size with the visible pin painted by a pseudo-element at its centre.
+A port is three elements, because it answers three different questions and each has a different right answer.
 
-| Concern                   | Where it lives                                                                                                                              |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| The click and key target  | The button itself, 24&times;24                                                                                                              |
-| The wire endpoint         | The same button. The canvas measures its box, and the pin is centred in it, so the element's centre and the pin's centre are the same point |
-| The visible pin           | `::before`, 8&times;16 by default. Fill, stripes and level are layered backgrounds on it                                                    |
-| The event pulse           | `::after`                                                                                                                                   |
-| The optional inline label | A child span, positioned outside the button's own box                                                                                       |
+| Element                          | Is                                                                                                                 | Sized                    |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------ |
+| `.nb-blueprint-card__port-hit`   | The `<button>`. The only thing that takes a click or a keypress.                                                   | 24&times;24, transparent |
+| `.nb-blueprint-card__port`       | The pin. Carries `data-port`, so this box, and nothing else, is what the canvas measures to place a wire endpoint. | 8&times;16 by default    |
+| `.nb-blueprint-card__port-label` | The optional inline label, a sibling of the pin, drawn inside the card.                                            | Type only                |
 
-This matters beyond tidiness. Ports used to be three nested elements each, which put 48 nodes in the tree for a card with 16 I/O; on a 41-card session that was several hundred extra nodes inside cards that consumers promote to compositor layers, where every one of them is re-rastered on a zoom. The visible design is unchanged: same pin, same target size, same states.
-
-The label being a child is safe for a specific reason. `getBoundingClientRect` reports an element's own border box and ignores overflowing children, so a label cannot drag the endpoint the way it did when the pin and the label shared a flex row, which is the bug that made every wire on a labelled card land up to 11.5px off its pin.
-
-`.nb-blueprint-card__port-hit` is kept as a second class on the same element, so host CSS written against either name keeps working.
+Keeping them apart is what lets the target be comfortable without the pin being drawn that large, and what keeps a label out of the box the wire layer measures.
 
 ### Geometry
 

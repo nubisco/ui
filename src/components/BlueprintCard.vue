@@ -1,16 +1,3 @@
-.nb-blueprint-card__port-label { // A child of the port button, deliberately: a
-sibling would need a wrapper, // and a wrapper is the third element per port
-this change removed. It is // positioned outside the button's own box, and
-getBoundingClientRect reports // only that box, so the label cannot drag the
-wire endpoint with it, which // is the failure this component had before the pin
-was isolated. position: absolute; top: 50%; transform: translateY(-50%);
-font-size: 12px; line-height: 16px; color: var(--nb-c-text-subtle); white-space:
-nowrap; pointer-events: none; font-variant-numeric: tabular-nums;
-.nb-blueprint-card__port--left & { left: 100%; margin-left: 2px; }
-.nb-blueprint-card__port--right & { right: 100%; margin-right: 2px; // Fixed
-width, right-aligned, so a two-digit channel number cannot push // its pin out
-of line with the one-digit ones. min-width: 1.6em; text-align: right; } }
-
 <template>
   <div
     class="nb-blueprint-card"
@@ -40,22 +27,27 @@ of line with the one-digit ones. min-width: 1.6em; text-align: right; } }
     @focus="$emit('select', id)"
     @keydown="onKeydown"
   >
-    <!-- Input ports. ONE element per port.
-         The button IS the pin: it carries [data-port], so it is what the wire
-         layer measures, and it is what takes the click. It is drawn at the hit
-         size (24x24) with the visible 8x16 pin painted by ::before, centred, so
-         the element's centre and the pin's centre are the same point and the
-         endpoint still lands on the mark the user aimed at.
+    <!-- Input ports.
+         Three elements, because they answer three different questions and
+         conflating them is what went wrong before:
 
-         This used to be three elements (a slot, a button and a span), which put
-         48 nodes in the tree for a 16-port card and made port lanes about a
-         quarter of pan and zoom frame cost on a large session. Fill, level,
-         stripes and the event pulse are all painted by two pseudo-elements
-         instead of by nested boxes.
+           .__port-hit    the button. 24x24, transparent, and the only thing
+                          that takes a click, so the target is comfortable
+                          without the pin having to be drawn that large.
+           .__port        the pin. Carries [data-port], so this box, and
+                          nothing else, is what the wire layer measures. The
+                          inline label used to live in that box and dragged
+                          every endpoint off its pin by half a label.
+           .__port-label  the label, a sibling, drawn inside the card.
 
-         When the card is collapsed the pins still render, so wires can locate
-         their target via [data-port], but they stack onto one point and a
-         combined pin overlays them. -->
+         The pin sits OUTSIDE the card so the border and the identity rail
+         stay continuous instead of being notched wherever a pin lands.
+
+         When the card is collapsed the individual pins still render, so wires
+         can locate their target via [data-port], but they flatten to zero
+         height and one combined pin overlays them: the user sees a single
+         connection point per side while the wire layer keeps per-port
+         positions to draw to. -->
     <div class="nb-blueprint-card__ports nb-blueprint-card__ports--left">
       <div
         v-if="collapsed && inputPins.length > 0"
@@ -66,57 +58,68 @@ of line with the one-digit ones. min-width: 1.6em; text-align: right; } }
         }"
         :title="`${inputPins.length} input${inputPins.length === 1 ? '' : 's'}`"
       />
-      <button
+      <div
         v-for="pin in inputPins"
         :key="pin.key"
-        type="button"
-        :data-port="`${id}:${pin.portId}`"
-        :data-port-data-type="pin.port.dataType ?? 'any'"
-        class="nb-blueprint-card__port nb-blueprint-card__port-hit nb-blueprint-card__port--left"
-        :class="[
-          `nb-blueprint-card__port--${pinShape(pin.port)}`,
-          `nb-blueprint-card__port--size-${pinSize(pin.port)}`,
-          `nb-blueprint-card__port--${pinSignal(pin.port)}`,
-          pin.port.required ? 'nb-blueprint-card__port--required' : '',
-          pin.channel ? 'nb-blueprint-card__port--channel' : '',
-          isConnected(pin.portId) ? 'nb-blueprint-card__port--connected' : '',
-          isActive(pin.portId) ? 'nb-blueprint-card__port--active' : '',
-          hasLevel(pin.portId) ? 'nb-blueprint-card__port--metered' : '',
-          pingingPorts.has(pin.portId) ? 'nb-blueprint-card__port--ping' : '',
-          targetClass(pin, 'input'),
-        ]"
-        :style="pinStyle(pin)"
-        :title="pinTitle(pin)"
-        :aria-label="pinAriaLabel(pin, 'input')"
-        @mousedown.stop="
-          onPortDown({
-            nodeId: id,
-            portId: pin.portId,
-            type: 'input',
-            dataType: pin.port.dataType,
-          })
-        "
-        @mouseup.stop="
-          onPortUp({
-            nodeId: id,
-            portId: pin.portId,
-            type: 'input',
-            dataType: pin.port.dataType,
-          })
-        "
-        @keydown="
-          onPortKeydown($event, {
-            nodeId: id,
-            portId: pin.portId,
-            type: 'input',
-            dataType: pin.port.dataType,
-          })
-        "
+        class="nb-blueprint-card__port-slot"
       >
+        <button
+          type="button"
+          class="nb-blueprint-card__port-hit"
+          :title="pinTitle(pin)"
+          :aria-label="pinAriaLabel(pin, 'input')"
+          @mousedown.stop="
+            onPortDown({
+              nodeId: id,
+              portId: pin.portId,
+              type: 'input',
+              dataType: pin.port.dataType,
+            })
+          "
+          @mouseup.stop="
+            onPortUp({
+              nodeId: id,
+              portId: pin.portId,
+              type: 'input',
+              dataType: pin.port.dataType,
+            })
+          "
+          @keydown="
+            onPortKeydown($event, {
+              nodeId: id,
+              portId: pin.portId,
+              type: 'input',
+              dataType: pin.port.dataType,
+            })
+          "
+        >
+          <span
+            :data-port="`${id}:${pin.portId}`"
+            :data-port-data-type="pin.port.dataType ?? 'any'"
+            class="nb-blueprint-card__port nb-blueprint-card__port--left"
+            :class="[
+              `nb-blueprint-card__port--${pinShape(pin.port)}`,
+              `nb-blueprint-card__port--size-${pinSize(pin.port)}`,
+              `nb-blueprint-card__port--${pinSignal(pin.port)}`,
+              pin.port.required ? 'nb-blueprint-card__port--required' : '',
+              pin.channel ? 'nb-blueprint-card__port--channel' : '',
+              isConnected(pin.portId)
+                ? 'nb-blueprint-card__port--connected'
+                : '',
+              isActive(pin.portId) ? 'nb-blueprint-card__port--active' : '',
+              hasLevel(pin.portId) ? 'nb-blueprint-card__port--metered' : '',
+              pingingPorts.has(pin.portId)
+                ? 'nb-blueprint-card__port--ping'
+                : '',
+              targetClass(pin, 'input'),
+            ]"
+            :style="pinStyle(pin)"
+          />
+        </button>
         <span v-if="pin.showLabel" class="nb-blueprint-card__port-label">{{
           pinLabel(pin)
         }}</span>
-      </button>
+      </div>
     </div>
 
     <!-- Inner wrapper (clips accent bar and glow to border-radius) -->
@@ -284,8 +287,8 @@ of line with the one-digit ones. min-width: 1.6em; text-align: right; } }
       </div>
     </div>
 
-    <!-- Output ports. Mirror of the input column; see its comment for why a
-         port is a single element. -->
+    <!-- Output ports. Mirror of the input column; see its comment for why
+         the pin, its hit target and its label are three separate elements. -->
     <div class="nb-blueprint-card__ports nb-blueprint-card__ports--right">
       <div
         v-if="collapsed && outputPins.length > 0"
@@ -296,56 +299,67 @@ of line with the one-digit ones. min-width: 1.6em; text-align: right; } }
         }"
         :title="`${outputPins.length} output${outputPins.length === 1 ? '' : 's'}`"
       />
-      <button
+      <div
         v-for="pin in outputPins"
         :key="pin.key"
-        type="button"
-        :data-port="`${id}:${pin.portId}`"
-        :data-port-data-type="pin.port.dataType ?? 'any'"
-        class="nb-blueprint-card__port nb-blueprint-card__port-hit nb-blueprint-card__port--right"
-        :class="[
-          `nb-blueprint-card__port--${pinShape(pin.port)}`,
-          `nb-blueprint-card__port--size-${pinSize(pin.port)}`,
-          `nb-blueprint-card__port--${pinSignal(pin.port)}`,
-          pin.channel ? 'nb-blueprint-card__port--channel' : '',
-          isConnected(pin.portId) ? 'nb-blueprint-card__port--connected' : '',
-          isActive(pin.portId) ? 'nb-blueprint-card__port--active' : '',
-          hasLevel(pin.portId) ? 'nb-blueprint-card__port--metered' : '',
-          pingingPorts.has(pin.portId) ? 'nb-blueprint-card__port--ping' : '',
-          targetClass(pin, 'output'),
-        ]"
-        :style="pinStyle(pin)"
-        :title="pinTitle(pin)"
-        :aria-label="pinAriaLabel(pin, 'output')"
-        @mousedown.stop="
-          onPortDown({
-            nodeId: id,
-            portId: pin.portId,
-            type: 'output',
-            dataType: pin.port.dataType,
-          })
-        "
-        @mouseup.stop="
-          onPortUp({
-            nodeId: id,
-            portId: pin.portId,
-            type: 'output',
-            dataType: pin.port.dataType,
-          })
-        "
-        @keydown="
-          onPortKeydown($event, {
-            nodeId: id,
-            portId: pin.portId,
-            type: 'output',
-            dataType: pin.port.dataType,
-          })
-        "
+        class="nb-blueprint-card__port-slot"
       >
+        <button
+          type="button"
+          class="nb-blueprint-card__port-hit"
+          :title="pinTitle(pin)"
+          :aria-label="pinAriaLabel(pin, 'output')"
+          @mousedown.stop="
+            onPortDown({
+              nodeId: id,
+              portId: pin.portId,
+              type: 'output',
+              dataType: pin.port.dataType,
+            })
+          "
+          @mouseup.stop="
+            onPortUp({
+              nodeId: id,
+              portId: pin.portId,
+              type: 'output',
+              dataType: pin.port.dataType,
+            })
+          "
+          @keydown="
+            onPortKeydown($event, {
+              nodeId: id,
+              portId: pin.portId,
+              type: 'output',
+              dataType: pin.port.dataType,
+            })
+          "
+        >
+          <span
+            :data-port="`${id}:${pin.portId}`"
+            :data-port-data-type="pin.port.dataType ?? 'any'"
+            class="nb-blueprint-card__port nb-blueprint-card__port--right"
+            :class="[
+              `nb-blueprint-card__port--${pinShape(pin.port)}`,
+              `nb-blueprint-card__port--size-${pinSize(pin.port)}`,
+              `nb-blueprint-card__port--${pinSignal(pin.port)}`,
+              pin.channel ? 'nb-blueprint-card__port--channel' : '',
+              isConnected(pin.portId)
+                ? 'nb-blueprint-card__port--connected'
+                : '',
+              isActive(pin.portId) ? 'nb-blueprint-card__port--active' : '',
+              hasLevel(pin.portId) ? 'nb-blueprint-card__port--metered' : '',
+              pingingPorts.has(pin.portId)
+                ? 'nb-blueprint-card__port--ping'
+                : '',
+              targetClass(pin, 'output'),
+            ]"
+            :style="pinStyle(pin)"
+          />
+        </button>
         <span v-if="pin.showLabel" class="nb-blueprint-card__port-label">{{
           pinLabel(pin)
         }}</span>
-      </button>
+      </div>
     </div>
   </div>
 </template>
@@ -1246,42 +1260,35 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   width: var(--nb-blueprint-port-hit);
   z-index: 4;
 
-  // Offset so the PIN sits flush outside the card while the hit target stays
-  // centred on it. Centring is what keeps the element's centre and the pin's
-  // centre identical, which is what keeps the wire endpoint on the mark. The
-  // cost is that the target reaches a few pixels back over the card's padding,
-  // which is empty by construction.
+  // The hit target's inner edge lands exactly on the card's outer edge, so
+  // nothing in this column overlaps the card: the border and the identity
+  // rail stay continuous, and clicks inside the card are never intercepted.
   &--left {
-    left: calc(
-      -1 * (var(--nb-blueprint-port-hit) + var(--nb-blueprint-port-width)) / 2 -
-        1px
-    );
+    left: calc(-1 * var(--nb-blueprint-port-hit) - 1px);
+    align-items: flex-start;
   }
 
   &--right {
-    right: calc(
-      -1 * (var(--nb-blueprint-port-hit) + var(--nb-blueprint-port-width)) / 2 -
-        1px
-    );
+    right: calc(-1 * var(--nb-blueprint-port-hit) - 1px);
+    align-items: flex-end;
   }
 }
 
-// The port. One element, drawn at the hit size, with the visible pin painted
-// by ::before at the centre. The element's centre and the pin's centre are the
-// same point, so the wire endpoint still lands on the mark.
-//
-// `--pin-fill` and `--pin-stroke` are the seam the states write to, and
-// `--pin-layers` carries anything painted on top of the fill (the level meter,
-// the digital stripes). Doing it with custom properties rather than a rule per
-// combination is what lets fill, texture and level compose without either a
-// nested element or a combinatorial explosion of selectors.
-.nb-blueprint-card__port {
-  --pin-w: var(--nb-blueprint-port-width);
-  --pin-h: var(--nb-blueprint-port-height);
-  --pin-fill: var(--nb-c-port-bg);
-  --pin-stroke: var(--nb-c-port-border);
-  --pin-layers: none;
+.nb-blueprint-card__port-slot {
+  position: relative;
+  height: var(--nb-blueprint-port-pitch);
+  display: flex;
+  align-items: center;
 
+  .nb-blueprint-card__ports--right & {
+    flex-direction: row-reverse;
+  }
+}
+
+// The button. Transparent and 24x24, so the target is comfortable without the
+// pin being drawn that large, and so vertically adjacent targets tile rather
+// than overlap.
+.nb-blueprint-card__port-hit {
   position: relative;
   flex-shrink: 0;
   width: var(--nb-blueprint-port-hit);
@@ -1289,45 +1296,53 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   padding: 0;
   border: 0;
   background: none;
-  overflow: visible;
   cursor: crosshair;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: var(--pin-w);
-    height: var(--pin-h);
-    margin: calc(var(--pin-h) / -2) 0 0 calc(var(--pin-w) / -2);
-    box-sizing: border-box;
-    background-color: var(--pin-fill);
-    background-image: var(--pin-layers);
-    border: 1.5px solid var(--pin-stroke);
-    transition:
-      background-color 150ms,
-      border-color 150ms,
-      opacity 150ms;
-  }
-
-  // Flat face against the card, rounded on the outer end.
-  &--left::before {
-    border-radius: var(--nb-radius-xs) 0 0 var(--nb-radius-xs);
-    border-right: none;
-  }
-
-  &--right::before {
-    border-radius: 0 var(--nb-radius-xs) var(--nb-radius-xs) 0;
-    border-left: none;
-  }
 
   &:focus-visible {
     outline: none;
 
-    &::before {
+    .nb-blueprint-card__port {
       outline: 2px solid var(--nb-c-focus-ring);
       outline-offset: 2px;
     }
+  }
+}
+
+// The pin. This box, and only this box, carries [data-port], so it is what
+// the wire layer measures. Sizes are real dimensions rather than
+// `transform: scale()`, which changed how a pin looked without changing its
+// box, so a large pin used to keep a medium pin's endpoint and hit area.
+.nb-blueprint-card__port {
+  --pin-w: var(--nb-blueprint-port-width);
+  --pin-h: var(--nb-blueprint-port-height);
+
+  position: absolute;
+  top: 50%;
+  margin-top: calc(var(--pin-h) / -2);
+  width: var(--pin-w);
+  height: var(--pin-h);
+  background: var(--nb-c-port-bg);
+  border: 1.5px solid var(--nb-c-port-border);
+  // The button takes the click; the pin is decoration over it.
+  pointer-events: none;
+  transition:
+    background 150ms,
+    border-color 150ms,
+    opacity 150ms,
+    box-shadow 150ms;
+
+  // Flat face against the card, rounded on the outer end: the pin reads as
+  // plugged into the card rather than cut out of it.
+  &--left {
+    right: 0;
+    border-radius: var(--nb-radius-xs) 0 0 var(--nb-radius-xs);
+    border-right: none;
+  }
+
+  &--right {
+    left: 0;
+    border-radius: 0 var(--nb-radius-xs) var(--nb-radius-xs) 0;
+    border-left: none;
   }
 
   // ── Sizes ──────────────────────────────────────────────────────
@@ -1341,32 +1356,30 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
     --pin-h: 20px;
   }
 
+  // A sub-pin of a multi-channel port: shorter, so a row of channel pins
+  // reads as a stack rather than as N full-height ports.
   &--channel {
     --pin-h: 12px;
   }
 
   // ── Shapes ─────────────────────────────────────────────────────
-  &--square::before,
-  &--circle::before {
-    border: 1.5px solid var(--pin-stroke);
+  // Non-pill shapes are symmetrical, so they keep all four borders and sit
+  // tangent to the card edge rather than flush against it.
+  &--square,
+  &--circle {
+    border: 1.5px solid var(--nb-c-port-border);
   }
 
   &--square {
     --pin-w: 10px;
     --pin-h: 10px;
-
-    &::before {
-      border-radius: var(--nb-radius-none);
-    }
+    border-radius: var(--nb-radius-none);
   }
 
   &--circle {
     --pin-w: 8px;
     --pin-h: 8px;
-
-    &::before {
-      border-radius: 50%;
-    }
+    border-radius: 50%;
   }
 
   &--square#{&}--size-sm {
@@ -1390,80 +1403,61 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   }
 
   // ── States ─────────────────────────────────────────────────────
-  &--required::before {
+  &--required {
     border-width: 2px;
   }
 
-  // Wired, but not necessarily carrying anything. Filled, and no halo: a halo
-  // means signal, and a wired-but-silent port has none.
+  // Wired, but not necessarily carrying anything. A filled pin, and no glow:
+  // a glow means signal, and a wired-but-silent port has none.
   &--connected {
-    --pin-fill: var(--pin-color, var(--nb-card-color));
-    --pin-stroke: var(--pin-color, var(--nb-card-color));
+    border-color: var(--pin-color, var(--nb-card-color));
+    background: var(--pin-color, var(--nb-card-color));
   }
 
-  &:hover {
-    --pin-fill: var(--pin-color, var(--nb-card-color));
-    --pin-stroke: var(--pin-color, var(--nb-card-color));
+  .nb-blueprint-card__port-hit:hover & {
+    border-color: var(--pin-color, var(--nb-card-color));
+    background: var(--pin-color, var(--nb-card-color));
   }
 
-  // ── Analog and digital ─────────────────────────────────────────
-  // Texture, not silhouette. The stripe colour flips with the fill underneath:
-  // outline colour on a hollow pin, surface colour on a filled one. One colour
-  // cannot do both, because on a free pin surface-on-surface is invisible.
-  &--digital {
-    --pin-layers: repeating-linear-gradient(
-      -45deg,
-      transparent 0 2px,
-      var(--nb-c-port-border) 2px 4px
-    );
-  }
-
-  &--digital#{&}--connected,
-  &--digital#{&}--active {
-    --pin-layers: repeating-linear-gradient(
-      -45deg,
-      transparent 0 2px,
-      var(--nb-c-port-bg) 2px 4px
-    );
-  }
-
-  // Metered: the pin becomes a meter. The fill is a hard-stopped gradient
-  // rather than a nested element, which is what removes the third box per
-  // port. It does mean the level steps rather than tweens; consumers already
-  // quantise these values, and a tween on a per-frame value is a repaint
-  // nobody asked for.
+  // Metered: the pin becomes a meter, filling from the bottom in proportion
+  // to the level its consumer reports, so a quiet port looks quiet. The old
+  // treatment ran the same looping ring on every active port forever, which
+  // said only "wired and live", twenty live ports meant twenty identical
+  // rings and no information.
   &--metered {
-    --pin-fill: var(--nb-c-port-bg);
-    --pin-stroke: var(--pin-color, var(--nb-card-color));
-    --pin-layers: linear-gradient(
-      to top,
-      var(--pin-color, var(--nb-card-color)) var(--pin-level, 0%),
-      transparent var(--pin-level, 0%)
-    );
+    background: var(--nb-c-port-bg);
+    border-color: var(--pin-color, var(--nb-card-color));
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: var(--pin-level, 0%);
+      background: var(--pin-color, var(--nb-card-color));
+      transition: height 90ms linear;
+    }
   }
 
-  &--metered#{&}--digital {
-    --pin-layers:
-      repeating-linear-gradient(
-        -45deg,
-        transparent 0 2px,
-        var(--nb-c-port-bg) 2px 4px
-      ),
-      linear-gradient(
-        to top,
-        var(--pin-color, var(--nb-card-color)) var(--pin-level, 0%),
-        transparent var(--pin-level, 0%)
-      );
-  }
-
-  // Live with no level: filled, plus a static halo. Must not paint over a
-  // metered pin, or the meter is drawn in the colour that just covered it.
+  // Live, with no level reported: a solid fill plus a static halo in the
+  // signal colour.
+  //
+  // Two things this has to get right. It must not paint over a metered pin,
+  // because `--metered` is declared first and both are one class deep, so an
+  // unguarded rule wins on source order and fills the pin with the very
+  // colour the meter draws in, leaving the meter invisible in exactly the
+  // case the docs recommend (activePorts and portLevels together).
+  //
+  // And it must not be the same pixels as `--connected`, which it was: "this
+  // is wired" and "this is carrying signal" are different facts and a reader
+  // could not tell them apart. The halo is static, not a loop. The objection
+  // to the old treatment was that it animated forever on every live port, not
+  // that live ports were marked at all.
   &--active:not(#{&}--metered) {
-    --pin-fill: var(--pin-color, var(--nb-card-color));
-    --pin-stroke: var(--pin-color, var(--nb-card-color));
-  }
-
-  &--active::before {
+    border-color: var(--pin-color, var(--nb-card-color));
+    background: var(--pin-color, var(--nb-card-color));
     box-shadow: 0 0 0 2px
       color-mix(
         in srgb,
@@ -1472,15 +1466,59 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
       );
   }
 
-  // One pulse per event, digital only, in the pin's own colour.
+  // A metered pin that is also live keeps its meter and takes the same halo,
+  // so "live" reads identically whether or not a level came with it.
+  &--metered#{&}--active {
+    box-shadow: 0 0 0 2px
+      color-mix(
+        in srgb,
+        var(--pin-color, var(--nb-card-color)) 45%,
+        transparent
+      );
+  }
+
+  // ── Analog and digital ─────────────────────────────────────────
+  // The two are told apart by texture, not by silhouette. A pin is a target
+  // the user aims a wire at, so its shape stays the same whatever it carries;
+  // and colour is already spent on `dataType`, so that channel is not free
+  // either. Stripes are a fill, not a form, which is why they survive being
+  // scaled down: at 40% canvas zoom the stripes blend to a lighter tone and
+  // the pin still reads as "not solid", where a small glyph or a rotated
+  // square would have collapsed into the same few pixels as a plain pill.
+  &--digital {
+    // The stripe colour has to flip with the fill underneath it. A free pin
+    // is hollow, so the stripes are drawn in the outline colour; a wired one
+    // is solid, so they are drawn in the surface colour and read as gaps cut
+    // out of the fill. One colour cannot do both: on a free pin, surface-on-
+    // surface is invisible.
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent 0 2px,
+      var(--nb-c-port-border) 2px 4px
+    );
+  }
+
+  &--digital#{&}--connected,
+  &--digital#{&}--active {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent 0 2px,
+      var(--nb-c-port-bg) 2px 4px
+    );
+  }
+
+  // A single pulse per event, fired when a port enters the active set, rather
+  // than a ring looping while it stays there. Digital only: an analog port
+  // reports how much is flowing, so a pulse would be telling the user
+  // something its own fill already says better.
+  //
+  // The pulse takes the PIN's colour, not a separate signal colour. A ring in
+  // some other hue reads as a third thing happening near the port rather than
+  // as that port firing.
   &--digital#{&}--ping::after {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: calc(var(--pin-w) + 6px);
-    height: calc(var(--pin-h) + 6px);
-    margin: calc((var(--pin-h) + 6px) / -2) 0 0 calc((var(--pin-w) + 6px) / -2);
+    inset: -3px;
     border: 1.5px solid var(--pin-color, var(--nb-card-color));
     border-radius: var(--nb-radius-xs);
     animation: nb-port-ping 320ms cubic-bezier(0, 0, 0.38, 0.9) 1;
@@ -1488,13 +1526,16 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   }
 
   // ── Drop targets ───────────────────────────────────────────────
-  &--target-valid::before {
+  // Only while a wire is in flight. The card used to render the data type on
+  // every pin and read it nowhere, so the only answer to "can this land
+  // here?" arrived on release, as either a wire or silence.
+  &--target-valid {
     border-color: var(--nb-c-focus-ring);
     box-shadow: 0 0 0 3px
       color-mix(in srgb, var(--nb-c-focus-ring) 30%, transparent);
   }
 
-  &--target-invalid::before {
+  &--target-invalid {
     opacity: 0.3;
   }
 }
@@ -1512,21 +1553,32 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
 
 // ── Collapsed ─────────────────────────────────────────────────────────
 //
-// The ports stay in the DOM so the wire layer can resolve their position via
-// [data-port], but they stack on one point: every pin then shares the combined
-// pin's centre, so wires targeting the card converge on the connection point
-// the user can actually see.
+// The per-port pins stay in the DOM so the wire layer can resolve their
+// position via [data-port], but their slots flatten to zero height. With
+// every pin sharing one Y, wires targeting the card converge on the single
+// combined pin the user actually sees.
 .nb-blueprint-card--collapsed {
-  .nb-blueprint-card__port {
+  .nb-blueprint-card__port-slot {
     position: absolute;
     top: 0;
-    left: 0;
-    opacity: 0;
-    pointer-events: none;
+    height: var(--nb-blueprint-port-pitch);
   }
 
+  .nb-blueprint-card__ports--left .nb-blueprint-card__port-slot {
+    left: 0;
+  }
+
+  .nb-blueprint-card__ports--right .nb-blueprint-card__port-slot {
+    right: 0;
+  }
+
+  .nb-blueprint-card__port,
   .nb-blueprint-card__port-label {
     opacity: 0;
+  }
+
+  .nb-blueprint-card__port-hit {
+    pointer-events: none;
   }
 }
 
@@ -1536,10 +1588,6 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   top: calc(
     var(--nb-blueprint-port-pitch) / 2 - var(--nb-blueprint-port-height) / 2
   );
-  // The lane is now wider than the pin (it holds the hit target), so the
-  // combined pin centres in it rather than sitting against an edge.
-  left: 50%;
-  margin-left: calc(var(--nb-blueprint-port-width) / -2);
   width: var(--nb-blueprint-port-width);
   height: var(--nb-blueprint-port-height);
   background: var(--nb-c-port-bg);
@@ -1551,11 +1599,13 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
     border-color 150ms;
 
   &--left {
+    right: 0;
     border-radius: var(--nb-radius-xs) 0 0 var(--nb-radius-xs);
     border-right: none;
   }
 
   &--right {
+    left: 0;
     border-radius: 0 var(--nb-radius-xs) var(--nb-radius-xs) 0;
     border-left: none;
   }
