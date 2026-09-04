@@ -78,7 +78,7 @@ From Carbon's empty-state guidance, and worth following:
 
 ## Without an icon
 
-Pass `icon="null"` (or bind `:icon="null"`) to drop the mark, for a small empty state where it would crowd the copy.
+Bind `:icon="null"` to drop the mark, for a small empty state where it would crowd the copy. The binding is required: `icon="null"` without the colon passes the _string_ `'null'`, which resolves to a missing icon rather than to no icon, because the component tests `props.icon === null`.
 
 <preview>
   <div style="width: 100%; max-width: 28rem;">
