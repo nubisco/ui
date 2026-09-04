@@ -1,3 +1,24 @@
+# [3.3.0](https://github.com/nubisco/ui/compare/v3.2.0...v3.3.0) (2026-09-04)
+
+
+### Bug Fixes
+
+* **button:** take the hover border from a semantic role, not a brand ramp ([98fdd72](https://github.com/nubisco/ui/commit/98fdd72b5aee62989809c614072e538cb97d3679))
+* **exports:** NbAiLabel, NbFileUploader, NbForm and NbImageCropper were never exported ([243c473](https://github.com/nubisco/ui/commit/243c47372b6cd5b0a739a9d3c77ebeed7db5530e))
+* **modal:** one counted page-scroll lock, shared by everything that locks ([ab8ab74](https://github.com/nubisco/ui/commit/ab8ab744da99e1431983fb9ed54c5c244b13cb0d))
+
+
+### Features
+
+* **charts:** semantic colour roles, so a themed product is not stuck with our ramps ([75493fb](https://github.com/nubisco/ui/commit/75493fb96ec55d63b4c939b8475de103760db343))
+* **confirm:** NbConfirm and useConfirm(), one answer to "are you sure?" ([ed662fd](https://github.com/nubisco/ui/commit/ed662fd370eadf5716705ecbef203c483a3a8fc4))
+* **loading:** NbSpinner, NbInlineLoading and NbSkeleton ([2073db7](https://github.com/nubisco/ui/commit/2073db7e2a497b578c025511ca86ac57ccb9afbe))
+* **notification-center:** NbNotificationCenter ([e348971](https://github.com/nubisco/ui/commit/e348971be31b9efa8494a6cbf8bed324c9b90db4))
+* **shell:** useShellSlot(), an empty topbar that hides, a panel that fills ([5e84c45](https://github.com/nubisco/ui/commit/5e84c451b1401601b3a8cbeab454326c2055c7c9))
+* **stepper:** NbStepper for linear flows ([eeb7663](https://github.com/nubisco/ui/commit/eeb7663784e894fbd8f8a072b30561e21bb1f805))
+* **toast:** NbToaster and useToast(), the host the docs said we would not ship ([c129aa9](https://github.com/nubisco/ui/commit/c129aa9a5b683b62a8dc0e7f0a9e345b28af7c4c))
+* **tooltip:** usable on any element, with a controlled mode ([9a38936](https://github.com/nubisco/ui/commit/9a389361a96032a239b17a7b0953689cf293501a))
+
 # [3.2.0](https://github.com/nubisco/ui/compare/v3.1.0...v3.2.0) (2026-09-03)
 
 
