@@ -2,7 +2,10 @@
   <div
     class="nb-shell-panel"
     v-bind="layerProps"
-    :class="[currentSize, { 'nb-shell-panel--fluid': fluid }]"
+    :class="[
+      currentSize,
+      { 'nb-shell-panel--fluid': fluid, 'nb-shell-panel--fill': fill },
+    ]"
   >
     <!-- ═══ HEADER ═══ -->
     <div class="nb-shell-panel__header">
@@ -17,16 +20,23 @@
         </div>
       </div>
 
-      <div class="nb-shell-panel__header-right">
+      <div
+        class="nb-shell-panel__header-right"
+        role="group"
+        :aria-label="title ? `${title} panel size` : 'Panel size'"
+      >
         <slot name="controls">
           <!-- Minimize -->
           <button
+            type="button"
             class="nb-shell-panel__size-btn"
             :class="{ active: currentSize === 'collapsed' }"
-            title="Minimize"
+            :aria-pressed="currentSize === 'collapsed'"
+            :title="'Minimize'"
+            :aria-label="'Minimize'"
             @click="setSize('collapsed')"
           >
-            <svg width="12" height="12" viewBox="0 0 12 12">
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
               <line
                 x1="2"
                 y1="10"
@@ -39,12 +49,15 @@
           </button>
           <!-- Default (share space) -->
           <button
+            type="button"
             class="nb-shell-panel__size-btn"
             :class="{ active: currentSize === 'default' }"
-            title="Default"
+            :aria-pressed="currentSize === 'default'"
+            :title="'Default'"
+            :aria-label="'Default'"
             @click="setSize('default')"
           >
-            <svg width="12" height="12" viewBox="0 0 12 12">
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
               <rect
                 x="1"
                 y="5"
@@ -59,12 +72,15 @@
           </button>
           <!-- Maximize -->
           <button
+            type="button"
             class="nb-shell-panel__size-btn"
             :class="{ active: currentSize === 'full' }"
-            title="Maximize"
+            :aria-pressed="currentSize === 'full'"
+            :title="'Maximize'"
+            :aria-label="'Maximize'"
             @click="setSize('full')"
           >
-            <svg width="12" height="12" viewBox="0 0 12 12">
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
               <rect
                 x="1"
                 y="1"
@@ -105,6 +121,7 @@ const props = withDefaults(defineProps<IShellPanelProps>(), {
   size: 'default',
   title: '',
   fluid: false,
+  fill: false,
 })
 
 // A shell panel is a surface holding application content, so it deepens against
@@ -133,8 +150,8 @@ defineExpose({ setSize })
   // apps can override them on :root without fighting scoped-style specificity.
   display: flex;
   flex-direction: column;
-  background: var(--nb-c-surface);
-  border: 1px solid var(--nb-c-border);
+  background: var(--nb-shell-panel-bg);
+  border: var(--nb-shell-panel-border);
   border-radius: 2px;
   margin: var(--nb-shell-panel-gap);
   min-height: 0;
@@ -173,11 +190,31 @@ defineExpose({ setSize })
   // content needs. Right for multi-panel inspectors where each
   // section has its own length and forcing them to share the column
   // makes short panels too tall and long panels too short. The
-  // sibling-coordination rule (further down, unscoped) still wins —
+  // sibling-coordination rule (further down, unscoped) still wins:
   // a `.full` panel will collapse `.fluid` siblings to header-only,
   // which is the same behaviour non-fluid panels get.
   &--fluid.default {
     flex: 0 0 auto;
+  }
+
+  // ── Fill ─────────────────────────────────────────────────────────────────
+  // Opt-in via the `fill` prop, with the same name and the same meaning it has
+  // on NbDataTable: claim the parent's height and scroll internally. Two
+  // applications were re-declaring exactly this pair of declarations on
+  // .nb-shell-panel across six stylesheets, because `default` only shares a
+  // column with its siblings and `fluid` only shrinks to content: neither of
+  // them says "take what is left and put the scrollbar inside me".
+  //
+  // Ordered after `--fluid` deliberately. The two have equal specificity, so
+  // source order decides, and `fill` is the more specific intent: a panel
+  // asked to fill should fill even if it was also marked fluid.
+  //
+  // Like the table, this claims a height, it cannot create one. The parent has
+  // to be a bounded flex column (NbShell's `bottom` region and inspector
+  // column both are).
+  &--fill:not(.collapsed) {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 }
 
@@ -188,7 +225,8 @@ defineExpose({ setSize })
   height: var(--nb-shell-panel-header-height);
   padding: 0 8px;
   flex-shrink: 0;
-  border-bottom: 1px solid var(--nb-c-border);
+  background: var(--nb-shell-panel-header-bg);
+  border-bottom: var(--nb-shell-panel-header-border);
   gap: 8px;
 }
 
@@ -257,12 +295,36 @@ defineExpose({ setSize })
   overflow: hidden;
   min-height: 0;
 }
+
+// Under `fill`, the content region is the scroller. `min-height: 0` is what
+// lets it shrink below its content so the scrollbar lands here instead of on
+// the page, and `flex-direction: column` makes a single child (a table, a log,
+// a form) stack and stretch rather than sit in a row. A child that scrolls
+// itself (NbDataTable with `fill`) still wins: it never overflows this box, so
+// only one scrollbar is ever visible.
+.nb-shell-panel--fill > .nb-shell-panel__content {
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+}
+
+// The dimmed-header fade and the size-button hover tint are decorative
+// transitions on states the panel reaches either way, so the preference can
+// remove them outright. The library asks consumers to gate their animations;
+// it does not get to exempt its own.
+@media (prefers-reduced-motion: reduce) {
+  .nb-shell-panel.collapsed .nb-shell-panel__header,
+  .nb-shell-panel__size-btn {
+    transition: none;
+  }
+}
 </style>
 
 <!-- ── Unscoped: sibling coordination ─────────────────────────────────────
      When any panel in a container is maximized (.full), all sibling panels
      that are NOT .full collapse to header-only. This works regardless of
-     what the parent container is — any flex parent will do. -->
+     what the parent container is: any flex parent will do. -->
 <style lang="scss">
 :has(> .nb-shell-panel.full) > .nb-shell-panel:not(.full) {
   flex: 0 0 auto !important;
@@ -272,7 +334,7 @@ defineExpose({ setSize })
   }
 
   // A panel squeezed to header-only by a maximized sibling is, visually,
-  // collapsed too — so dim its header the same way an explicitly collapsed
+  // collapsed too, so dim its header the same way an explicitly collapsed
   // panel is. "Showing only a header" always reads the same, regardless of
   // whether the user collapsed it or a sibling was maximized.
   > .nb-shell-panel__header {
@@ -281,6 +343,14 @@ defineExpose({ setSize })
   }
   > .nb-shell-panel__header:hover {
     opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :has(> .nb-shell-panel.full) > .nb-shell-panel:not(.full) {
+    > .nb-shell-panel__header {
+      transition: none;
+    }
   }
 }
 </style>

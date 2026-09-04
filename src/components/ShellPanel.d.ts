@@ -30,4 +30,20 @@ export interface IShellPanelProps {
    * @default false
    */
   fluid?: boolean
+  /**
+   * Claim the parent's height and scroll internally. Same name and same
+   * semantics as `fill` on NbDataTable: the panel becomes a flex item that
+   * takes the space left in a bounded flex column, its header stays pinned,
+   * and the content region gets the scrollbar.
+   *
+   * Like the table, it claims a height rather than creating one: an ancestor
+   * has to bound it (a flex column with `min-height: 0`, which NbShell's
+   * `bottom` region and inspector column already are).
+   *
+   * Wins over `fluid` when both are set, and has no effect on a `collapsed`
+   * panel, which is header-only by definition.
+   *
+   * @default false
+   */
+  fill?: boolean
 }

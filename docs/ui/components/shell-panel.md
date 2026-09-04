@@ -248,11 +248,12 @@ Panels can be placed in any region of `NbShell`. Stack them in the main area, th
 
 ## Props
 
-| Prop    | Type                                 | Default     | Description                                                                                                                                                                                                                                 |
-| ------- | ------------------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `size`  | `'collapsed' \| 'default' \| 'full'` | `'default'` | Current panel size. Supports `v-model:size`.                                                                                                                                                                                                |
-| `title` | `string`                             | `''`        | Label shown in the header.                                                                                                                                                                                                                  |
-| `fluid` | `boolean`                            | `false`     | When true, a `default`-sized panel sizes to its content (`flex: 0 0 auto`) instead of sharing column space equally with siblings (`flex: 1 1 0%`). Right for inspectors with several unrelated sections. See [Fluid sizing](#fluid-sizing). |
+| Prop    | Type                                 | Default     | Description                                                                                                                                                                                                                                                    |
+| ------- | ------------------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `size`  | `'collapsed' \| 'default' \| 'full'` | `'default'` | Current panel size. Supports `v-model:size`.                                                                                                                                                                                                                   |
+| `title` | `string`                             | `''`        | Label shown in the header.                                                                                                                                                                                                                                     |
+| `fluid` | `boolean`                            | `false`     | When true, a `default`-sized panel sizes to its content (`flex: 0 0 auto`) instead of sharing column space equally with siblings (`flex: 1 1 0%`). Right for inspectors with several unrelated sections. See [Fluid sizing](#fluid-sizing).                    |
+| `fill`  | `boolean`                            | `false`     | Claim the parent's height and scroll internally: the header stays pinned and the content region gets the scrollbar. Same name and semantics as `fill` on `NbDataTable`. Wins over `fluid`; ignored while `collapsed`. See [Fill and scroll](#fill-and-scroll). |
 
 ## Events
 
@@ -275,42 +276,113 @@ Panels can be placed in any region of `NbShell`. Stack them in the main area, th
 | ----------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `collapsed` | Header only, does not grow             | Content is unmounted, cheap to toggle frequently.                                                                                                         |
 | `default`   | Sizing follows the `fluid` prop        | `fluid: false` (default) → `flex: 1 1 0%` (equal share with siblings). `fluid: true` → `flex: 0 0 auto` (content-fit). See [Fluid sizing](#fluid-sizing). |
-| `full`      | `flex: 1`, siblings collapse to header | Sibling coordination is automatic via CSS `:has()`. `fluid` is ignored — `full` always fills.                                                             |
+| `full`      | `flex: 1`, siblings collapse to header | Sibling coordination is automatic via CSS `:has()`. `fluid` is ignored: `full` always fills.                                                              |
 
 ## Fluid sizing
 
-`flex: 1 1 0%` (the back-compat default for `default`-size panels) makes every default panel take an equal slice of the column, no matter what's inside. That's right for tooling pages where every section roughly matches the others in length, but wrong for inspectors that mix short and long sections — a panel with two rows ends up the same height as a panel with twenty, and the long one then needs its own internal scrollbar inside its undersized share.
+`flex: 1 1 0%` (the back-compat default for `default`-size panels) makes every default panel take an equal slice of the column, no matter what's inside. That's right for tooling pages where every section roughly matches the others in length, but wrong for inspectors that mix short and long sections: a panel with two rows ends up the same height as a panel with twenty, and the long one then needs its own internal scrollbar inside its undersized share.
 
 Set `fluid` on each panel where you want content-driven height. The panel then uses `flex: 0 0 auto`, taking only the height its content needs. The parent column should scroll when the total exceeds the available space.
 
 ```vue
 <NbShellPanel title="Properties" fluid>
-  <!-- two rows of inputs — short panel, doesn't waste vertical space -->
+  <!-- two rows of inputs, short panel, doesn't waste vertical space -->
 </NbShellPanel>
 <NbShellPanel title="Bindings" fluid>
-  <!-- long list — grows as needed, the inspector column scrolls -->
+  <!-- long list, grows as needed, the inspector column scrolls -->
 </NbShellPanel>
 ```
 
 `fluid` only changes how `default` is sized. `collapsed` is always header-only; `full` always fills (and a single `full` panel still collapses its `fluid` siblings to header-only via the `:has()` rule).
 
+## Fill and scroll
+
+`size` decides how a panel shares a column with its siblings. `fill` decides something else: whether the panel claims the height its parent has, and puts the scrollbar inside itself rather than on the page.
+
+The gap between those two is the one two of our applications kept closing by hand. Both re-declared the same pair of lines on `.nb-shell-panel` across six different stylesheets, because `default` only shares a column, `fluid` only shrinks to content, and neither of them says "take what is left, and scroll".
+
+```vue
+<template>
+  <NbShell :main-padding="false">
+    <NbShellPanel title="Events" fill>
+      <NbDataTable :columns="columns" :rows="rows" row-key="id" fill />
+    </NbShellPanel>
+  </NbShell>
+</template>
+```
+
+The prop is called `fill` because [`NbDataTable`](/ui/components/data-table#fill) already calls it that and means the same thing by it: become a flex item that fills its parent, keep the fixed furniture pinned, and give the scrollbar to the content region. The two compose exactly as you would hope. The panel takes the shell's height, the table takes the panel's, and one scrollbar appears, on the table body, under a header that stays put.
+
+### It claims a height, it cannot create one
+
+Same caveat as the table. `fill` only bites when an ancestor bounds the height, which in practice means a flex column with `min-height: 0` somewhere up the chain. Without one, the parent grows to fit the content and the page scrolls instead of the panel.
+
+Inside `NbShell` you already have that: the `bottom` region and the inspector column are both bounded flex columns. Elsewhere, bound it yourself:
+
+```vue
+<template>
+  <!-- The bounded column. Without min-height: 0 nothing below this scrolls. -->
+  <div class="page">
+    <NbShellPanel title="Log" fill>
+      <pre>{{ lines.join('\n') }}</pre>
+    </NbShellPanel>
+  </div>
+</template>
+
+<style scoped lang="scss">
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+</style>
+```
+
+### How it interacts with the other sizing props
+
+- `fill` wins over `fluid` when both are set. `fluid` asks to shrink to content, `fill` asks to take the space: a panel told to do both is being told the second thing.
+- `fill` has no effect on `size="collapsed"`. A collapsed panel is header-only by definition, and a collapsed panel that filled its parent would be a very tall header.
+- A `full` sibling still collapses a `fill` panel to header-only, exactly as it does to every other panel. Maximizing one panel is a decision about the whole group.
+
+## Accessibility
+
+The default size controls are three toggle buttons, and the panel treats them as one control:
+
+- `type="button"` on all three. The documented use for a panel is an inspector section, which is very often a form, and an untyped `<button>` in a form is a submit button. Clicking Minimize should not save the record.
+- `aria-pressed` reflects the active size, so a screen reader announces which of the three is currently on rather than three identical unlabelled toggles.
+- Each carries an `aria-label` (`Minimize`, `Default`, `Maximize`) and its glyph is `aria-hidden`, so the SVG contributes nothing to the accessible name.
+- They sit in a `role="group"` named after the panel (`"Console panel size"` for `title="Console"`, `"Panel size"` with no title), so the three read as one set of related controls.
+
+Replacing the `controls` slot replaces all of it. If you put your own buttons there, they are yours to type, name and label.
+
+The collapsed-header dim and the size buttons' hover tint are transitions, and both are removed under `prefers-reduced-motion: reduce`. The panel still reaches the same states, instantly.
+
+The panel does not render a heading element for `title`: it is an 11px chrome label, not a document heading, and turning it into an `<h2>` would put a heading into every inspector column. If a panel's content is a section of the page, put the heading in the content.
+
 ## Visual design
 
 Each panel renders with:
 
-- A `1px` border using `--nb-c-border` (layer-aware)
+- A `1px` border from `--nb-shell-panel-border` (`--nb-c-border`, layer-aware)
 - A `1px` gap (margin) around itself, creating visual separation from siblings and edges
 - A `2px` border-radius for subtle rounding
-- Background from `--nb-c-surface` (layer-aware)
+- Background from `--nb-shell-panel-bg` (`--nb-c-surface`, layer-aware)
 
 This means panels adapt automatically to the layer context they sit in. No extra classes needed.
 
 ## CSS Custom Properties
 
-| Variable                         | Default | Description                                          |
-| -------------------------------- | ------- | ---------------------------------------------------- |
-| `--nb-shell-panel-header-height` | `28px`  | Header bar height                                    |
-| `--nb-shell-panel-gap`           | `1px`   | Gap (margin) around each panel for visual separation |
+| Variable                         | Default                        | Description                                           |
+| -------------------------------- | ------------------------------ | ----------------------------------------------------- |
+| `--nb-shell-panel-header-height` | `28px`                         | Header bar height                                     |
+| `--nb-shell-panel-gap`           | `1px`                          | Gap (margin) around each panel for visual separation  |
+| `--nb-shell-panel-bg`            | `var(--nb-c-surface)`          | Panel background                                      |
+| `--nb-shell-panel-border`        | `1px solid var(--nb-c-border)` | Panel border, as a full `border` shorthand            |
+| `--nb-shell-panel-header-bg`     | `transparent`                  | Header background. Set it to tint the header bar      |
+| `--nb-shell-panel-header-border` | `1px solid var(--nb-c-border)` | Border under the header, as a full `border` shorthand |
+
+Declared at `:root`, so an application overrides them there rather than competing with the component's scoped styles. The defaults resolve to semantic tokens, which means they follow the `.dark` theme on their own; a literal colour opts out of that and owes both themes a value.
 
 </doc-tab>
 
