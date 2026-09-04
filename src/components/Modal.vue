@@ -3,25 +3,42 @@
     <Transition name="nb-modal">
       <div v-if="open" class="nb-modal--overlay" @click.self="onOverlayClick">
         <div
+          ref="contentRef"
           :class="['nb-modal--content', `nb-modal--content--${size}`]"
           v-bind="layerProps"
-          role="dialog"
+          :role="role"
           aria-modal="true"
+          :aria-labelledby="labelledBy ?? (hasHeader ? titleId : undefined)"
+          :aria-describedby="describedBy"
+          :aria-busy="busy ? 'true' : undefined"
+          tabindex="-1"
           @click.stop
         >
-          <header v-if="$slots.header || title" class="nb-modal--header">
-            <span class="nb-modal--title">
+          <header v-if="hasHeader" class="nb-modal--header">
+            <span :id="titleId" class="nb-modal--title">
               <slot name="header">{{ title }}</slot>
             </span>
             <button
               class="nb-modal--close"
               aria-label="Close"
+              :disabled="closeDisabled"
+              :aria-disabled="closeDisabled ? 'true' : undefined"
               @click="emit('close')"
             >
               <NbIcon name="x" />
             </button>
           </header>
-          <main class="nb-modal--body">
+          <main
+            ref="bodyRef"
+            class="nb-modal--body"
+            :tabindex="scrollable ? 0 : undefined"
+            :role="scrollable ? 'region' : undefined"
+            :aria-labelledby="
+              scrollable
+                ? (labelledBy ?? (hasHeader ? titleId : undefined))
+                : undefined
+            "
+          >
             <slot />
           </main>
           <NbGrid
@@ -40,9 +57,22 @@
 </template>
 
 <script setup lang="ts">
-import { watch, onMounted, onUnmounted } from 'vue'
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  useId,
+  useSlots,
+  watch,
+} from 'vue'
 import { ESizeShort } from '@/types/Size.d'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
+import {
+  acquireScrollLock,
+  releaseScrollLock,
+} from '@/composables/useScrollLock.composable'
 import type { IModalProps } from './Modal.d'
 
 const props = withDefaults(defineProps<IModalProps>(), {
@@ -50,9 +80,22 @@ const props = withDefaults(defineProps<IModalProps>(), {
   open: false,
   size: ESizeShort.Medium,
   closeOnOverlay: true,
+  role: 'dialog',
+  labelledBy: undefined,
+  describedBy: undefined,
+  busy: false,
+  closeDisabled: false,
+  closeOnEscape: true,
 })
 
 const emit = defineEmits<{ close: [] }>()
+
+const slots = useSlots()
+const hasHeader = computed(() => !!slots.header || !!props.title)
+
+const titleId = `nb-modal-title-${useId()}`
+const contentRef = ref<HTMLElement | null>(null)
+const bodyRef = ref<HTMLElement | null>(null)
 
 // The dialog is teleported to the document body, so its DOM parent says nothing
 // about depth. An overlay pins to the top layer and pushes its own content
@@ -63,28 +106,128 @@ function onOverlayClick() {
   if (props.closeOnOverlay) emit('close')
 }
 
-// Trap focus / prevent body scroll
+// This instance's share of the counted page-scroll lock.
+let locked = false
+
+function lockScroll() {
+  if (locked) return
+  locked = true
+  acquireScrollLock()
+}
+
+function unlockScroll() {
+  if (!locked) return
+  locked = false
+  releaseScrollLock()
+}
+
+/**
+ * A body long enough to scroll has to be reachable by keyboard, so it is
+ * marked `role="region"` with `tabindex="0"` only while it actually
+ * overflows: a two-line dialog does not grow a stop in its tab order for
+ * nothing.
+ *
+ * Overflow is not a property of the moment the dialog opened. The viewport
+ * resizes, slot content arrives from a fetch, and a translated string is
+ * longer than the English one, so the decision is driven by observers rather
+ * than computed once. Entering the state uses a small dead zone and leaving
+ * it demands a genuine fit, so a pixel of rounding cannot flicker the region
+ * in and out of the tab order.
+ */
+const scrollable = ref(false)
+
+function measure() {
+  const body = bodyRef.value
+  if (!body) return
+  const overflow = body.scrollHeight - body.clientHeight
+  if (!scrollable.value && overflow > 4) scrollable.value = true
+  else if (scrollable.value && overflow <= 0) scrollable.value = false
+}
+
+let resizeObserver: ResizeObserver | null = null
+let mutationObserver: MutationObserver | null = null
+
+function observeBody() {
+  const body = bodyRef.value
+  if (!body) return
+  // Opening runs this from the watcher and again from onMounted on the first
+  // frame, so the previous pair is disconnected rather than leaked.
+  stopObserving()
+  if (typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(() => measure())
+    resizeObserver.observe(body)
+  }
+  // The box can keep its size while its contents grow past it, which is
+  // exactly the case a ResizeObserver on the box cannot see.
+  if (typeof MutationObserver !== 'undefined') {
+    mutationObserver = new MutationObserver(() => measure())
+    mutationObserver.observe(body, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    })
+  }
+  measure()
+}
+
+function stopObserving() {
+  resizeObserver?.disconnect()
+  resizeObserver = null
+  mutationObserver?.disconnect()
+  mutationObserver = null
+}
+
 watch(
   () => props.open,
-  (val) => {
-    document.body.style.overflow = val ? 'hidden' : ''
+  async (val) => {
+    if (val) lockScroll()
+    else unlockScroll()
+    await nextTick()
+    if (val) observeBody()
+    else {
+      stopObserving()
+      scrollable.value = false
+    }
   },
+  { immediate: true },
 )
 
 onUnmounted(() => {
-  document.body.style.overflow = ''
+  unlockScroll()
+  stopObserving()
 })
 
+/**
+ * Escape closes the topmost dialog only. Every instance listens on the
+ * document, so without this test a stack of two modals answered one keypress
+ * twice and the user lost both. "Topmost" is the last `aria-modal` element in
+ * document order, which is the paint order of teleported overlays.
+ */
+function isTopmost(): boolean {
+  const el = contentRef.value
+  if (!el) return false
+  const all = Array.from(
+    document.querySelectorAll<HTMLElement>('[aria-modal="true"]'),
+  )
+  return all.length === 0 || all[all.length - 1] === el
+}
+
 function onKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape' && props.open) emit('close')
+  if (e.key !== 'Escape') return
+  if (!props.open || !props.closeOnEscape || props.closeDisabled) return
+  if (!isTopmost()) return
+  emit('close')
 }
 
 onMounted(() => {
   document.addEventListener('keydown', onKeydown)
+  if (props.open) observeBody()
 })
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown)
 })
+
+defineExpose({ dialogEl: () => contentRef.value, bodyEl: () => bodyRef.value })
 </script>
 
 <style scoped lang="scss">
