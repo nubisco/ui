@@ -58,6 +58,19 @@ The foot of the panel signs the product as part of Nubisco Platform: the Nubisco
 
 `brand` is on by default, so upgrading gets you the lockup without changing anything.
 
+::: warning White-labelling: this is an opt-out, not an opt-in
+
+The default renders the **vendor's** brand inside **your** product. If the app is sold under a client's name, or is deployed to a customer's own domain, set `brand="none"` (or fill the `#brand` slot with the client's line) at the single place you mount `NbUserMenu`, and do it before the first release rather than after someone spots a foreign logo in their account menu.
+
+```vue
+<!-- White-label: no vendor signature anywhere in the menu. -->
+<NbUserMenu :user="user" brand="none" />
+```
+
+We know the default is the wrong way round: nobody should have to opt out of another company's branding. It stays `'footer'` because flipping it would silently strip the footer from every Nubisco product already shipping one, which is a breaking change, so it is queued for the next major. The prop and the slot are stable either way, an app that sets `brand="none"` today keeps working after the flip.
+
+:::
+
 <preview dir="row">
   <NbUserMenu :user="{ email: 'jose@nubisco.io', name: 'José Silva' }" brand="footer" />
   <NbUserMenu :user="{ email: 'tools@nubisco.io' }" brand="none" />

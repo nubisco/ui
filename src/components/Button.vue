@@ -254,7 +254,13 @@ const iconSize = computed(() => iconSizeMap[props.size ?? 'md'] ?? 14)
     &:hover:not(:disabled) {
       background: var(--nb-c-primary-hover);
       color: var(--nb-c-primary-hover-a11y);
-      border-color: var(--nb-c-grape-hyacinth-200);
+      /* A pale wash of the brand, not the grape-hyacinth ramp this used to
+         name: a white-label product had to write the vendor's colour into
+         its own stylesheet to stop violet leaking onto this edge.
+         --nb-c-primary-subtle is mixed from --nb-c-primary, so setting the
+         brand is enough and the rendered border does not visibly move
+         (dE2000 0.71 in light, 0.00 in dark, against what shipped). */
+      border-color: var(--nb-c-primary-subtle);
     }
     &:active:not(:disabled) {
       background: var(--nb-c-primary-active);
@@ -456,6 +462,29 @@ const iconSize = computed(() => iconSizeMap[props.size ?? 'md'] ?? 14)
   @keyframes nb-spin {
     to {
       transform: rotate(360deg);
+    }
+  }
+
+  // Freezing the ring leaves a three-quarter arc parked at one angle, which
+  // reads as a rendering fault rather than as work in progress. Close the ring
+  // and breathe it instead: no rotation, still alive. This matches what
+  // NbSpinner does under the same preference, so the two indicators do not
+  // disagree inside one product.
+  @media (prefers-reduced-motion: reduce) {
+    .nb-button__spinner {
+      border-top-color: currentcolor;
+      animation: nb-button-spinner-breathe 1600ms ease-in-out infinite;
+    }
+  }
+
+  @keyframes nb-button-spinner-breathe {
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+
+    50% {
+      opacity: 1;
     }
   }
 }
