@@ -153,13 +153,53 @@ export default withMermaid(
             text: 'Design System',
             items: [
               { text: 'Design Tokens', link: '/design-tokens' },
+              { text: 'Layout and breakpoints', link: '/principles/layout' },
+              { text: 'Spacing and rhythm', link: '/principles/spacing' },
+              { text: 'Motion', link: '/principles/motion' },
+              {
+                text: 'Data visualisation',
+                link: '/principles/data-visualisation',
+              },
               { text: 'Z-Index', link: '/principles/z-index' },
             ],
           },
           {
             text: 'Patterns',
             items: [
+              { text: 'The app frame', link: '/patterns/app-frame' },
+              {
+                text: 'Dialogs and destructive confirmation',
+                link: '/patterns/dialogs',
+              },
+              { text: 'Building a form', link: '/patterns/forms' },
+              { text: 'Empty states', link: '/patterns/empty-states' },
               { text: 'Building an inspector', link: '/patterns/inspectors' },
+              {
+                text: 'Status indicators',
+                link: '/patterns/status-indicators',
+              },
+              {
+                text: 'Disabled and read-only',
+                link: '/patterns/disabled-and-read-only',
+              },
+            ],
+          },
+          {
+            text: 'Content',
+            items: [
+              { text: 'Writing style', link: '/content/writing-style' },
+              { text: 'Action labels', link: '/content/action-labels' },
+            ],
+          },
+          {
+            text: 'Accessibility',
+            items: [
+              { text: 'Overview', link: '/accessibility/overview' },
+              { text: 'Keyboard interaction', link: '/accessibility/keyboard' },
+              {
+                text: 'Colour and contrast',
+                link: '/accessibility/color-contrast',
+              },
             ],
           },
           {
@@ -212,6 +252,7 @@ export default withMermaid(
                         link: '/ui/components/charts/overview',
                       },
                       { text: 'Bar', link: '/ui/components/charts/bar' },
+                      { text: 'Color', link: '/ui/components/charts/color' },
                       { text: 'Gantt', link: '/ui/components/charts/gantt' },
                       {
                         text: 'Interpolation',
@@ -231,6 +272,7 @@ export default withMermaid(
                     link: '/ui/components/command-palette',
                   },
                   { text: 'Color Strip', link: '/ui/components/color-strip' },
+                  { text: 'Confirm', link: '/ui/components/confirm' },
                   { text: 'Data Table', link: '/ui/components/data-table' },
                   { text: 'Date Picker', link: '/ui/components/date-picker' },
                   {
@@ -246,6 +288,10 @@ export default withMermaid(
                   { text: 'Flag', link: '/ui/components/flag' },
                   { text: 'Grid', link: '/ui/components/grid' },
                   { text: 'Icon', link: '/ui/components/icon' },
+                  {
+                    text: 'Inline Loading',
+                    link: '/ui/components/inline-loading',
+                  },
                   { text: 'Info Hint', link: '/ui/components/info-hint' },
                   {
                     text: 'Image Cropper',
@@ -261,6 +307,10 @@ export default withMermaid(
                     text: 'Brand Marks',
                     link: '/ui/components/nubisco-mark',
                   },
+                  {
+                    text: 'Notification Center',
+                    link: '/ui/components/notification-center',
+                  },
                   { text: 'Number Input', link: '/ui/components/number-input' },
                   { text: 'Pagination', link: '/ui/components/pagination' },
                   { text: 'Panel', link: '/ui/components/panel' },
@@ -271,13 +321,17 @@ export default withMermaid(
                   { text: 'Radio', link: '/ui/components/radio' },
                   { text: 'Reorder List', link: '/ui/components/reorder-list' },
                   { text: 'Select', link: '/ui/components/select' },
+                  { text: 'Skeleton', link: '/ui/components/skeleton' },
                   { text: 'Shell', link: '/ui/components/shell' },
                   { text: 'Shell Panel', link: '/ui/components/shell-panel' },
                   { text: 'Slider', link: '/ui/components/slider' },
+                  { text: 'Spinner', link: '/ui/components/spinner' },
+                  { text: 'Stepper', link: '/ui/components/stepper' },
                   { text: 'Switch', link: '/ui/components/switch' },
                   { text: 'Tabs', link: '/ui/components/tabs' },
                   { text: 'Text Input', link: '/ui/components/text-input' },
                   { text: 'Toast', link: '/ui/components/toast' },
+                  { text: 'Toaster', link: '/ui/components/toaster' },
                   { text: 'Tree', link: '/ui/components/tree' },
                   { text: 'User Menu', link: '/ui/components/user-menu' },
                   { text: 'Walkthrough', link: '/ui/components/walkthrough' },
@@ -291,6 +345,10 @@ export default withMermaid(
                     link: '/ui/composables/use-command-palette',
                   },
                   {
+                    text: 'useConfirm',
+                    link: '/ui/composables/use-confirm',
+                  },
+                  {
                     text: 'useContextMenu',
                     link: '/ui/composables/use-context-menu',
                   },
@@ -299,12 +357,20 @@ export default withMermaid(
                     link: '/ui/composables/use-walkthrough',
                   },
                   {
+                    text: 'useShellSlot',
+                    link: '/ui/composables/use-shell-slot',
+                  },
+                  {
                     text: 'useStableId',
                     link: '/ui/composables/use-stable-id',
                   },
                   {
                     text: 'useTheme',
                     link: '/ui/composables/use-theme',
+                  },
+                  {
+                    text: 'useToast',
+                    link: '/ui/composables/use-toast',
                   },
                 ],
               },
