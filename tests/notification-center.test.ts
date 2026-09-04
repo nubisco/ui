@@ -41,10 +41,16 @@ function mountCenter(props: Record<string, unknown> = {}, options = {}) {
 async function settle() {
   await nextTick()
   await nextTick()
-  // Long enough for the two animation frames Vue waits on before it removes a
-  // leaving element.
-  await new Promise((resolve) => setTimeout(resolve, 60))
-  await nextTick()
+  // Vue removes a leaving element after two animation frames. This used to
+  // sleep 60ms and hope that covered them, which passes on an idle machine and
+  // fails on a loaded CI runner with the panel still mounted: a wall-clock
+  // guess standing in for a condition. Wait on the frames themselves, the way
+  // Walkthrough.test.ts already does, so the wait is as long as the machine
+  // needs and no longer.
+  for (let i = 0; i < 4; i++) {
+    await new Promise((resolve) => requestAnimationFrame(resolve))
+    await nextTick()
+  }
 }
 
 async function openPanel(w: ReturnType<typeof mountCenter>) {
