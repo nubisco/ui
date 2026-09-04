@@ -151,13 +151,29 @@ export type {
 export { default as NbMessage } from './components/Message.vue'
 export { default as NbModal } from './components/Modal.vue'
 export type { IModalProps, TModalSize } from './components/Modal.d'
+export { default as NbConfirm } from './components/Confirm.vue'
+export type {
+  IConfirmProps,
+  IConfirmOptions,
+  TConfirmTone,
+} from './components/Confirm.d'
+export {
+  registerConfirmFloatingSelector,
+  CONFIRM_LEAVE_MS,
+} from './components/Confirm.env'
 export { default as NbLayer } from './components/Layer.vue'
 export type { ILayerProps } from './components/Layer.d'
 export { default as NbPanel } from './components/Panel.vue'
 export type { IPanelProps } from './components/Panel.d'
 export { default as NbPieChart } from './components/Charts/PieChart.vue'
 export { default as NbShell } from './components/Shell.vue'
-export type { TInspectorSize, TSidebarVariant } from './components/Shell.d'
+export type {
+  IShellProps,
+  TInspectorSize,
+  TSidebarVariant,
+  TShellTopbar,
+  TShellCollapseAt,
+} from './components/Shell.d'
 export { default as NbSidebarBrand } from './components/SidebarBrand.vue'
 export type { ISidebarBrandProps } from './components/SidebarBrand.d'
 export { default as NbSidebarLink } from './components/SidebarLink.vue'
@@ -169,12 +185,80 @@ export { default as NbSidebarMenuItem } from './components/SidebarMenuItem.vue'
 export type { ISidebarMenuItemProps } from './components/SidebarMenuItem.d'
 export { default as NbToast } from './components/Toast.vue'
 export type { TToastVariant, IToastCta } from './components/Toast.vue'
+export { default as NbToaster } from './components/Toaster.vue'
+export type { TToasterPlacement } from './components/Toaster.vue'
+export type { IToasterProps } from './components/Toaster.d'
 export { default as NbProgressBar } from './components/ProgressBar.vue'
 export type { IProgressBarProps } from './components/ProgressBar.d'
+// ── Loading ──────────────────────────────────────────────────────────────────
+// Indeterminate waiting. NbProgressBar above covers the determinate case; pick
+// between them in docs/ui/components/spinner.md.
+export { default as NbSpinner } from './components/Spinner.vue'
+export type { ISpinnerProps } from './components/Spinner.d'
+export {
+  ESpinnerSize,
+  ESpinnerOverlay,
+  ESpinnerTone,
+} from './components/Spinner.d'
+// The one exception to a blocking overlay's containment: a live region an
+// application owns and mounts at the top of the document. Without it, a toast
+// raised while `overlay="page"` is up is painted above the scrim and silent,
+// because `inert` removes a subtree from the accessibility tree too.
+export {
+  markOverlayExempt,
+  NB_OVERLAY_EXEMPT_ATTR,
+} from './components/Spinner.overlay'
+export { default as NbInlineLoading } from './components/InlineLoading.vue'
+export type { IInlineLoadingProps } from './components/InlineLoading.d'
+export { EInlineLoadingStatus } from './components/InlineLoading.d'
+export { default as NbSkeleton } from './components/Skeleton.vue'
+export type { ISkeletonProps, TSkeletonTypeSet } from './components/Skeleton.d'
+export { ESkeletonVariant } from './components/Skeleton.d'
 export { default as NbRadio } from './components/Radio.vue'
+export { default as NbNotificationCenter } from './components/NotificationCenter.vue'
+export type {
+  INotificationCenterProps,
+  INotificationItem,
+} from './components/NotificationCenter.vue'
+export { default as NbNotificationCenterItem } from './components/NotificationCenterItem.vue'
+export type {
+  INotificationCenterItemProps,
+  TNotificationStatus,
+} from './components/NotificationCenterItem.vue'
 export { default as NbNumberInput } from './components/NumberInput.vue'
 export { default as NbSlider } from './components/Slider.vue'
+// ── Flow progress ────────────────────────────────────────────────────────────
+// A linear multi-step indicator. It reports where a wizard is, it does not own
+// the flow. NbWalkthrough is the other thing: a guided tour over existing UI.
+export { default as NbStepper } from './components/Stepper.vue'
+export { default as NbStepperStep } from './components/StepperStep.vue'
+export type {
+  IStepperProps,
+  IStepperStepProps,
+  IStepperLabels,
+} from './components/Stepper.d'
+export {
+  EStepperOrientation,
+  EStepperSize,
+  EStepStatus,
+} from './components/Stepper.d'
 export { default as NbSparkline } from './components/Charts/Sparkline.vue'
+
+// The chart colour contract. Charts paint through the eight `--nb-c-chart-*`
+// role tokens, but the sequential and diverging ramps cannot be expressed by
+// setting a custom property: they are built with `color-mix()`, so a consumer
+// needs these builders. Documented in docs/ui/components/charts/color.md.
+export {
+  CHART_ROLE_COUNT,
+  DEFAULT_PALETTE,
+  colorAt,
+  chartRole,
+  seriesColors,
+  sequentialAt,
+  divergingAt,
+  rampSteps,
+} from './components/Charts/shared/palette'
+export type { TChartMark } from './components/Charts/shared/palette'
 export { default as NbSelect } from './components/Select.vue'
 export { default as NbTabs } from './components/Tabs.vue'
 export type { ITabItem, ITabsProps } from './components/Tabs.d'
@@ -194,7 +278,10 @@ export type {
 export { default as NbBottomPanel } from './components/BottomPanel.vue'
 export type { TBottomPanelSize } from './components/BottomPanel.d'
 export { default as NbShellPanel } from './components/ShellPanel.vue'
-export type { TShellPanelSize } from './components/ShellPanel.d'
+export type {
+  IShellPanelProps,
+  TShellPanelSize,
+} from './components/ShellPanel.d'
 export { default as NbBlueprint } from './components/Blueprint.vue'
 export type {
   IBlueprintConnection,
@@ -242,6 +329,16 @@ export type {
   TBlueprintBackgroundVariant,
 } from './components/BlueprintBackground.d'
 
+// Registered by the plugin since before this block existed, but never given a
+// named export, so `<NbForm>` worked while `import { NbForm }` did not. Found by
+// tests/component-registration.test.ts once it started treating the component
+// folder as the source of truth rather than comparing two lists that could both
+// be wrong in the same way.
+export { default as NbAiLabel } from './components/AiLabel.vue'
+export { default as NbFileUploader } from './components/FileUploader.vue'
+export { default as NbForm } from './components/Form.vue'
+export { default as NbImageCropper } from './components/ImageCropper.vue'
+
 // Onboarding: walkthrough / product tour
 export { default as NbWalkthrough } from './components/Walkthrough.vue'
 export type {
@@ -273,16 +370,83 @@ export {
 // Directives
 export { default as nbTooltipDirective } from './directives/ToolTip.directive'
 export { dismissAllTooltips } from './directives/ToolTip.directive'
+// The tooltip's binding types. Without these the documented
+// `const opts: ITooltipOptions = { ... }` does not compile for a consumer:
+// there is no `export *` in this entry, so a type that is not named here
+// does not reach dist/index.d.ts.
+export type {
+  ITooltipOptions,
+  TTooltipAria,
+  TTooltipStatus,
+  TTooltipTrigger,
+  TTooltipReason,
+  TTooltipDirective,
+} from './directives/ToolTip.directive'
 export { default as nbTourStepDirective } from './directives/TourStep.directive'
 
 // Composables
 export { useCommandPalette } from './composables/useCommandPalette.composable'
+export {
+  useToast,
+  createToastQueue,
+  resetToastQueue,
+  NB_TOAST_QUEUE_KEY,
+  NB_TOAST_DURATIONS,
+  NB_TOAST_STATUS_LABELS,
+} from './composables/useToast.composable'
+export type {
+  IToastQueue,
+  IToastQueueOptions,
+  IToastOptions,
+  IToastHandle,
+  IToastRecord,
+  IToastLabels,
+  TToastPatch,
+  TToastDismissReason,
+} from './composables/useToast.composable'
+export {
+  useConfirm,
+  dismissConfirms,
+} from './composables/useConfirm.composable'
+export type { TConfirmFn } from './composables/useConfirm.composable'
 export { useWalkthrough } from './composables/useWalkthrough.composable'
 export {
   useReducedMotion,
   prefersReducedMotion,
 } from './composables/useReducedMotion.composable'
 export { useContextMenu } from './composables/useContextMenu.composable'
+export { useInlineLoading } from './composables/useInlineLoading.composable'
+export type {
+  TInlineLoadingStatus,
+  IUseInlineLoading,
+  IUseInlineLoadingOptions,
+} from './composables/useInlineLoading.composable'
+// The shared "loading complete" live region behind NbSpinner's and
+// NbSkeleton's `completeLabel`. Exported so an app that unmounts an indicator
+// through its own routing can still announce the arrival.
+// `suppressLoadingAnnouncement` is its other half: a failed load must not be
+// reported as an arrival, and only the catch block knows which one it was.
+export {
+  announceLoadingComplete,
+  suppressLoadingAnnouncement,
+} from './composables/useLoadingAnnouncer.composable'
+// The counted page-scroll lock every blocking surface in the library shares.
+// Exported so an application's own overlay joins the same count instead of
+// becoming a fourth owner of `body { overflow }`.
+export {
+  acquireScrollLock,
+  releaseScrollLock,
+  useScrollLock,
+} from './composables/useScrollLock.composable'
+// The supported way for a view to put controls into the surrounding NbShell.
+// Replaces the eight hand-rolled DOM ids the audit found across the fleet.
+export { useShellSlot } from './composables/useShellSlot.composable'
+export type {
+  TShellSlotName,
+  TShellSlotClaim,
+  IShellSlotOptions,
+  IShellSlot,
+} from './composables/useShellSlot.composable'
 export { useTheme, configureTheme } from './composables/useTheme.composable'
 export type {
   TTheme,

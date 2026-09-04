@@ -146,6 +146,23 @@
     --nb-c-primary-hover-a11y: var(--nb-c-grape-hyacinth-600-a11y);
     --nb-c-primary-active: var(--nb-c-grape-hyacinth-700);
     --nb-c-primary-active-a11y: var(--nb-c-grape-hyacinth-700-a11y);
+    // A pale wash of the brand, for an edge drawn ON a primary fill (the
+    // ghost button's hover border is the only consumer today). It was
+    // var(--nb-c-grape-hyacinth-200) at the call site, which forced a
+    // white-label product to name the vendor's ramp in its own stylesheet.
+    //
+    // Derived, not aliased: an alias would still be violet after a product
+    // sets --nb-c-primary, which is the exact leak this token exists to
+    // close. 39% of the brand on white measures dE2000 0.71 from the tint
+    // it replaced, under the ~1.0 just-noticeable threshold, so no shipped
+    // hover border visibly moves. The dark theme repeats the mix at 50%
+    // because its --nb-c-primary is already a lighter step of the same ramp
+    // and needs less white to land on the same wash (dE2000 0.00 there).
+    --nb-c-primary-subtle: color-mix(
+      in srgb,
+      var(--nb-c-primary) 39%,
+      var(--nb-c-white)
+    );
 
     --nb-c-secondary: var(--nb-c-plain-black-700);
     --nb-c-secondary-a11y: var(--nb-c-plain-black-700-a11y);
@@ -248,6 +265,59 @@
     --nb-c-status-valid: var(--nb-c-emerald-reflection-700);
     --nb-c-status-warning: var(--nb-c-phoenix-flames-700);
     --nb-c-status-error: var(--nb-c-chicken-comb-600);
+
+    // == Data visualisation roles ==========================================
+    // Charts address colour by ROLE, never by ramp: a series is "chart-3",
+    // not "emerald". The eight defaults below alias exactly the ramps that
+    // Charts/shared/palette.ts used to name inline, so this theme repaints
+    // nothing, but a white-label product now retints every chart in the
+    // product by redefining eight custom properties in one place instead of
+    // hardcoding hex per app. (A green-branded insurance product did the
+    // hardcoding and shipped a violet placeholder series.)
+    //
+    // Order is part of the contract. colorAt() walks 1, 2, 3 ... and wraps
+    // at 8, so the sequence has to degrade gracefully: the low roles are the
+    // best separated pair we have. Minimum CIEDE2000 across the first five
+    // roles is 16.0 under normal vision; across all eight it falls to 6.5,
+    // because roles 1 and 7 are both violet-blues. Under simulated
+    // deuteranopia the same numbers are 5.2 and 0.8. That is a property of
+    // the brand ramps, not of this indirection, and it is why the docs cap
+    // colour-only encoding at five series. See charts/color.md.
+    //
+    // Contrast against layer-1, in order: 7.28, 5.25, 3.16, 2.06, 4.62,
+    // 5.68, 7.04, 4.63. Two roles miss WCAG 1.4.11 at 3:1 here: role 4
+    // (amber) on every layer, and role 3 on layer-0 and layer-2 (2.85 and
+    // 2.69, it only clears on layer-1). Both stay because raising them
+    // would repaint charts already in production, and both are documented
+    // as fill-only, never a 1px line or a legend dot on its own.
+    // Re-measure any change with tests/chartRoles.test.ts.
+    --nb-c-chart-1: var(--nb-c-grape-hyacinth-500);
+    --nb-c-chart-2: var(--nb-c-the-blues-brothers-500);
+    --nb-c-chart-3: var(--nb-c-emerald-reflection-600);
+    --nb-c-chart-4: var(--nb-c-phoenix-flames-500);
+    --nb-c-chart-5: var(--nb-c-chicken-comb-500);
+    --nb-c-chart-6: var(--nb-c-liberty-blue-500);
+    --nb-c-chart-7: var(--nb-c-powder-blue-500);
+    --nb-c-chart-8: var(--nb-c-nouveau-gray-500);
+
+    // Sequential ramp anchors: one hue, lightness carries the magnitude.
+    // Interpolated at paint time by sequentialAt() in the chart palette
+    // module, so a retint of these two ends retints the whole ramp. In this
+    // theme the largest value is the darkest end (L* 87.4 down to 21.2),
+    // which inverts under .dark.
+    --nb-c-chart-sequential-from: var(--nb-c-grape-hyacinth-100);
+    --nb-c-chart-sequential-to: var(--nb-c-grape-hyacinth-700);
+
+    // Diverging ramp anchors: two hues meeting at a neutral zero point.
+    // Cool to warm rather than green to red, because a green/red pair is
+    // the one axis a deuteranope cannot read at all, and a diverging scale
+    // has no legend position to fall back on. The two ends are matched in
+    // lightness (L* 44.4 and 47.9) so neither pole looks heavier than the
+    // other, and the midpoint is near the page ground so zero reads as
+    // "nothing here".
+    --nb-c-chart-diverging-low: var(--nb-c-the-blues-brothers-500);
+    --nb-c-chart-diverging-mid: var(--nb-c-nouveau-gray-150);
+    --nb-c-chart-diverging-high: var(--nb-c-chicken-comb-500);
 
     // ── Node graph (NbBlueprint) ──────────────────────────────────────────
     // A port is a control, and it sits OUTSIDE the card on the canvas
@@ -454,6 +524,10 @@
       var(--nb-c-black)
     );
     --nb-shell-sidebar-width: calc(var(--nb-base-unit) * 7); // 56px
+    // The verbose variant's rail width. A token rather than a literal inside
+    // Shell.vue's variant rule, so a product with long navigation labels can
+    // widen the rail without re-declaring the variant.
+    --nb-shell-sidebar-width-verbose: calc(var(--nb-base-unit) * 30); // 240px
     --nb-shell-sidebar-link-color: color-mix(
       in srgb,
       var(--nb-c-white) 55%,
@@ -483,15 +557,70 @@
       var(--nb-c-white)
     );
     --nb-shell-topbar-height: calc(var(--nb-base-unit) * 6.25); // 50px
+
+    // Shell chrome. Every rule that paints the frame reads one of these, so a
+    // dark or white-label product retints the shell by setting a token on
+    // :root instead of out-specifying Shell.vue's scoped [data-v-] selectors
+    // from a built stylesheet. The defaults point at the semantic tokens the
+    // chrome already used, so the pixels are unchanged, and because var()
+    // resolves where it is used they follow the .dark theme with no dark-mode
+    // duplicate of this block.
+    //
+    // Three levels: --nb-shell-bg for the frame ground, --nb-shell-chrome-* as
+    // the one place to retint every strip at once, and the per-region tokens
+    // that default to the chrome ones for when only the topbar should differ.
+    --nb-shell-bg: var(--nb-c-surface-raised);
+    --nb-shell-chrome-bg: var(--nb-c-surface);
+    --nb-shell-chrome-color: var(--nb-c-text);
+    --nb-shell-chrome-border: 1px solid var(--nb-c-border);
+    --nb-shell-chrome-padding-x: calc(var(--nb-base-unit) * 3); // 24px
+    --nb-shell-topbar-bg: var(--nb-shell-chrome-bg);
+    --nb-shell-topbar-color: var(--nb-shell-chrome-color);
+    --nb-shell-topbar-border: var(--nb-shell-chrome-border);
+    --nb-shell-fixedbar-bg: var(--nb-shell-chrome-bg);
+    --nb-shell-fixedbar-color: var(--nb-shell-chrome-color);
+    --nb-shell-fixedbar-border: var(--nb-shell-chrome-border);
+    // Shared by the outer menu, the inner menu and the legacy menubar: they
+    // are one visual family and no application has ever wanted them to differ.
+    --nb-shell-menu-bg: var(--nb-shell-chrome-bg);
+    --nb-shell-menu-color: var(--nb-shell-chrome-color);
+    --nb-shell-menu-border: var(--nb-shell-chrome-border);
+    --nb-shell-body-bg: var(--nb-shell-chrome-bg);
+    // The page ground behind the main region. Kept separate from the chrome:
+    // a branded topbar usually sits above an unbranded page.
+    --nb-shell-main-bg: var(--nb-c-surface);
     --nb-shell-inspector-width: calc(var(--nb-base-unit) * 70); // 560px
     --nb-shell-inspector-expanded-width: 50vw;
+    // Ceiling for a visible inspector, whatever set its width (a size preset,
+    // the expanded flag, or a dragged width). Half the viewport is the point
+    // at which the inspector stops being a side panel and starts being the
+    // page. Set it to `none` to opt out.
+    // `max()` with the resize floor is load-bearing: half a 560px-wide window
+    // is 280px, below the 288px floor the resize handle announces and clamps
+    // to, so a bare 50vw made the announced value, the clamped value and the
+    // rendered width disagree on a narrow viewport. The floor wins there.
+    --nb-shell-inspector-max-width: max(calc(var(--nb-base-unit) * 36), 50vw);
     --nb-shell-inspector-border: 1px solid var(--nb-c-border);
     --nb-shell-inspector-bg: var(--nb-c-surface);
+    // The grab-line on the inspector's resize handle. A token, not a literal
+    // brand hex: a white-label product should never have to name the vendor's
+    // ramp to restyle the frame.
+    --nb-shell-inspector-resize-color: var(--nb-c-primary);
+    // The dimmer behind the navigation drawer at collapsed widths. Black at
+    // 45% reads on both themes because it darkens whatever is under it rather
+    // than painting a colour of its own.
+    --nb-shell-scrim-bg: color-mix(in srgb, var(--nb-c-black) 45%, transparent);
 
     // Panels — emitted at :root so consumer apps can override on :root without
     // fighting the components' scoped-style specificity.
     --nb-shell-panel-header-height: calc(var(--nb-base-unit) * 3.5); // 28px
     --nb-shell-panel-gap: 1px; // hairline separator, not a spacing step
+    --nb-shell-panel-bg: var(--nb-c-surface);
+    --nb-shell-panel-border: 1px solid var(--nb-c-border);
+    // Transparent by default so the header reads as part of the panel; set it
+    // when a product wants the header bar tinted against its own content.
+    --nb-shell-panel-header-bg: transparent;
+    --nb-shell-panel-header-border: 1px solid var(--nb-c-border);
     --nb-bottom-panel-header-height: calc(var(--nb-base-unit) * 3.5); // 28px
     --nb-bottom-panel-bg: var(--nb-c-layer-0, var(--nb-c-bg));
     --nb-bottom-panel-border: var(--nb-c-border);
@@ -506,6 +635,13 @@
   .dark {
     // Status colors — lighter tints for dark backgrounds
     --nb-c-primary: #{colors.get-color('grape-hyacinth', 400)};
+    // Same wash, re-mixed: the dark --nb-c-primary is a 400, so it takes less
+    // white than the light 500 does to reach the tint this token used to alias.
+    --nb-c-primary-subtle: color-mix(
+      in srgb,
+      var(--nb-c-primary) 50%,
+      var(--nb-c-white)
+    );
     --nb-c-primary-a11y: #{colors.color-contrast(
         colors.get-color('grape-hyacinth', 400)
       )};
@@ -633,6 +769,41 @@
     --nb-c-status-valid: #{colors.get-color('emerald-reflection', 400)};
     --nb-c-status-warning: #{colors.get-color('phoenix-flames', 400)};
     --nb-c-status-error: #{colors.get-color('chicken-comb', 300)};
+
+    // Data visualisation roles, dark. Same eight hues, stepped up their
+    // ramps, exactly as --nb-c-primary and the status colours are stepped
+    // here. The light values are mid-ramp fills chosen against a white
+    // page: three of them (roles 1, 6 and 7 at 2.17, 2.78 and 2.25 against
+    // layer-1) sink into a dark one and were failing WCAG 1.4.11 in every
+    // dark-mode chart the fleet renders. The tints below measure 5.48,
+    // 4.42, 7.69, 8.89, 4.32, 4.30, 4.49 and 5.56 against layer-1, and all
+    // eight clear 3:1 on layer-0 through layer-2, which the light set does
+    // not manage. They do NOT clear it on layer-3, the lightest dark
+    // surface (roles 2, 5, 6 and 7 land between 2.79 and 2.92), so do not
+    // paint a chart on layer-3 in dark without overriding these. Role 7 is
+    // a 350 rather than the 400 its neighbours use: at 400 it measured
+    // 2.95 on layer-2, and contrast wins over separation on the role that
+    // is already the weakest of the eight. Minimum CIEDE2000 is 15.4 over
+    // the first five roles and 5.5 over all eight.
+    --nb-c-chart-1: var(--nb-c-grape-hyacinth-300);
+    --nb-c-chart-2: var(--nb-c-the-blues-brothers-400);
+    --nb-c-chart-3: var(--nb-c-emerald-reflection-500);
+    --nb-c-chart-4: var(--nb-c-phoenix-flames-400);
+    --nb-c-chart-5: var(--nb-c-chicken-comb-400);
+    --nb-c-chart-6: var(--nb-c-liberty-blue-400);
+    --nb-c-chart-7: var(--nb-c-powder-blue-350);
+    --nb-c-chart-8: var(--nb-c-nouveau-gray-400);
+
+    // Sequential runs the other way on a dark page: the largest value is
+    // the brightest end, so "from" is the tint nearest the background.
+    --nb-c-chart-sequential-from: var(--nb-c-grape-hyacinth-800);
+    --nb-c-chart-sequential-to: var(--nb-c-grape-hyacinth-200);
+
+    // Diverging keeps its two hues and moves the zero point to a dark
+    // neutral. Ends stepped one tint lighter to hold 4.3:1 on layer-1.
+    --nb-c-chart-diverging-low: var(--nb-c-the-blues-brothers-400);
+    --nb-c-chart-diverging-mid: var(--nb-c-nouveau-gray-800);
+    --nb-c-chart-diverging-high: var(--nb-c-chicken-comb-400);
 
     // Discrete
     --nb-c-discrete: #{colors.get-color('nouveau-gray', 700)};
