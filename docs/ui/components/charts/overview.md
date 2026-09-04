@@ -76,7 +76,11 @@ Cartesian charts (`NbBarChart`, `NbLineChart`) accept a `series: IChartSeries[]`
 
 ## Theming
 
-Colors are sourced from the design-system CSS variables (`--nb-c-grape-hyacinth-500`, etc.), which means charts automatically follow your light / dark theme without any extra configuration. To use a custom palette, pass `colors` with any CSS color string, including raw hex, rgb, or your own custom properties.
+Charts paint through eight semantic role tokens, `--nb-c-chart-1` to `--nb-c-chart-8`, which default to Nubisco ramps and follow the light / dark theme with no configuration. A white-label product redefines those eight on `:root` and every chart in the app follows, including ones nobody has written yet. They used to name the brand ramps directly, which meant an override could not reach them.
+
+To colour one chart specifically, pass `colors` with any CSS color string, including raw hex, rgb, or your own custom properties.
+
+Choosing between categorical, sequential and diverging scales, how many series colour can carry, the measured contrast and colour-vision numbers, and the full white-label recipe are on [Chart Color](/ui/components/charts/color).
 
 ```vue
 <template>

@@ -262,7 +262,7 @@ import ChartFrame from './shared/ChartFrame.vue'
 import ChartLegend from './shared/ChartLegend.vue'
 import ChartTooltip from './shared/ChartTooltip.vue'
 import { timelineTicks, dateToX } from './shared/scales'
-import { colorAt, DEFAULT_PALETTE } from './shared/palette'
+import { chartRole, colorAt, DEFAULT_PALETTE } from './shared/palette'
 import type {
   IGanttChartProps,
   IGanttTask,
@@ -292,12 +292,22 @@ const props = withDefaults(defineProps<IGanttChartProps>(), {
 
 // ── Status color map ────────────────────────────────────────────────────────
 
+// Roles, not ramps. Each of these named a Nubisco ramp until now, which meant
+// a white-label product could retint every other chart and still get a violet
+// bar for an unset status. The five roles chosen resolve to exactly the ramps
+// that were here, so the light theme is unchanged; the dark theme moves with
+// every other chart colour, see docs/ui/components/charts/color.md.
+//
+// These are chart roles rather than --nb-c-success / -warning / -danger on
+// purpose: a Gantt bar is a large fill on a busy grid, and the status inks are
+// tuned for text and icons. Products that want the status hues pass
+// `statusColors`.
 const STATUS_DEFAULTS: Record<TGanttTaskStatus, string> = {
-  default: 'var(--nb-c-grape-hyacinth-500)',
-  'on-track': 'var(--nb-c-emerald-reflection-600)',
-  'at-risk': 'var(--nb-c-phoenix-flames-500)',
-  behind: 'var(--nb-c-chicken-comb-500)',
-  complete: 'var(--nb-c-the-blues-brothers-500)',
+  default: chartRole(1),
+  'on-track': chartRole(3),
+  'at-risk': chartRole(4),
+  behind: chartRole(5),
+  complete: chartRole(2),
 }
 
 const statusColorMap = computed(() => ({

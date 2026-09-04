@@ -373,15 +373,17 @@ interface IGanttGroup {
 
 ## Status colors
 
-The following default status colors are used. Override them via the `statusColors` prop.
+The following default status colors are used. Each is a chart role, so a product that retints `--nb-c-chart-*` retints these too. Override them individually via the `statusColors` prop.
 
-| Status     | Default token                   |
-| ---------- | ------------------------------- |
-| `default`  | `--nb-c-grape-hyacinth-500`     |
-| `on-track` | `--nb-c-emerald-reflection-600` |
-| `at-risk`  | `--nb-c-phoenix-flames-500`     |
-| `behind`   | `--nb-c-chicken-comb-500`       |
-| `complete` | `--nb-c-the-blues-brothers-500` |
+| Status     | Default token    | Resolves to (light)             |
+| ---------- | ---------------- | ------------------------------- |
+| `default`  | `--nb-c-chart-1` | `--nb-c-grape-hyacinth-500`     |
+| `on-track` | `--nb-c-chart-3` | `--nb-c-emerald-reflection-600` |
+| `at-risk`  | `--nb-c-chart-4` | `--nb-c-phoenix-flames-500`     |
+| `behind`   | `--nb-c-chart-5` | `--nb-c-chicken-comb-500`       |
+| `complete` | `--nb-c-chart-2` | `--nb-c-the-blues-brothers-500` |
+
+The dark theme resolves the same roles to lighter tints, see [Chart Color](/ui/components/charts/color). These are chart roles rather than the `--nb-c-status-*` inks because a Gantt bar is a large fill on a busy grid; pass `statusColors` to use the status hues instead.
 
 </doc-tab>
 
