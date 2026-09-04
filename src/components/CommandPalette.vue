@@ -103,6 +103,12 @@ import type {
   ICommandPaletteState,
 } from './CommandPalette.d'
 import { NB_COMMAND_PALETTE_KEY } from '@/composables/useCommandPalette.composable'
+import { useScrollLock } from '@/composables/useScrollLock.composable'
+
+// The palette takes the page's scrollbar while it is open. It holds a share of
+// the same counted lock NbModal and NbSpinner's page overlay use, so a palette
+// opened over a dialog cannot hand the page back its scrollbar when it closes.
+const { lock: lockScroll, unlock: unlockScroll } = useScrollLock()
 
 const props = withDefaults(defineProps<ICommandPaletteProps>(), {
   openShortcut: 'Meta+k',
@@ -265,10 +271,10 @@ watch(
           }
         })
       })
-      document.body.style.overflow = 'hidden'
+      lockScroll()
     } else {
       query.value = ''
-      document.body.style.overflow = ''
+      unlockScroll()
     }
   },
 )
@@ -349,7 +355,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', onGlobalKeydown)
-  document.body.style.overflow = ''
+  unlockScroll()
 })
 </script>
 

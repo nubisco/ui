@@ -186,5 +186,28 @@ const messageVariant = computed(() =>
       background-position-x: -105%;
     }
   }
+
+  // A sweep travelling across the screen is exactly the motion the preference
+  // asks us to drop, but simply cancelling the animation leaves a static
+  // eighth-width stub that reads as 12% complete, which is a lie. Fill the
+  // track and pulse it in place instead: no travel, still unmistakably busy.
+  @media (prefers-reduced-motion: reduce) {
+    &--indeterminate &__track::after {
+      background-image: none;
+      background-color: var(--nb-c-primary);
+      animation: nb-progress-bar-pulse 2000ms ease-in-out infinite;
+    }
+  }
+
+  @keyframes nb-progress-bar-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.45;
+    }
+  }
 }
 </style>
