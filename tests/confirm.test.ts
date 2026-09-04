@@ -1265,6 +1265,7 @@ describe('useConfirm ownership of a request in flight', () => {
     // The timeout hatch hands the buttons back while the first request may
     // still be running. If that first one then succeeds, it is answering a
     // question the user has already asked again.
+    vi.useFakeTimers()
     const confirm = useConfirm()
     const first = deferred()
     const second = deferred()
@@ -1282,7 +1283,13 @@ describe('useConfirm ownership of a request in flight', () => {
     await nextTick()
     confirmEl().click()
 
-    await waitFor(() => text().includes('taking longer'), 'the timeout notice')
+    // Drive the deadline instead of waiting for it. On real timers this raced
+    // the promise queue: a 10ms wall-clock timeout against microtask
+    // scheduling passes on an idle machine and hangs on a loaded CI runner,
+    // and adding a console.log was enough to make it pass, which is the
+    // signature of a test measuring its own environment rather than the code.
+    await vi.advanceTimersByTimeAsync(10)
+    expect(text()).toContain('taking longer')
     expect(await isSettled(answer)).toBe(false)
 
     // Retry.
@@ -1300,6 +1307,7 @@ describe('useConfirm ownership of a request in flight', () => {
     second.resolve()
     await flushPromises()
     expect(await answer).toBe(true)
+    vi.useRealTimers()
   })
 
   it('does not let a dead request cancel the deadline of a live one', async () => {
@@ -1311,6 +1319,7 @@ describe('useConfirm ownership of a request in flight', () => {
     const second = deferred()
     let n = 0
 
+    vi.useFakeTimers()
     const answer = confirm({
       title: 'Delete environment',
       timeout: 30,
@@ -1319,7 +1328,9 @@ describe('useConfirm ownership of a request in flight', () => {
     })
     await nextTick()
     confirmEl().click()
-    await waitFor(() => text().includes('Still running.'), 'first timeout')
+    // Driven, not awaited: same wall-clock race as the test above.
+    await vi.advanceTimersByTimeAsync(30)
+    expect(text()).toContain('Still running.')
 
     confirmEl().click()
     await nextTick()
@@ -1327,10 +1338,12 @@ describe('useConfirm ownership of a request in flight', () => {
     await flushPromises()
 
     // The second attempt's own deadline still fires.
-    await waitFor(() => text().includes('Still running.'), 'second timeout')
+    await vi.advanceTimersByTimeAsync(30)
+    expect(text()).toContain('Still running.')
     cancelEl().click()
     expect(await answer).toBe(false)
     second.resolve()
+    vi.useRealTimers()
   })
 })
 
