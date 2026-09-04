@@ -44,6 +44,9 @@ import NbNubiscoMark from './NubiscoMark.vue'
 import NbNubiscoPlatformMark from './NubiscoPlatformMark.vue'
 import NbMessage from './Message.vue'
 import NbModal from './Modal.vue'
+import NbConfirm from './Confirm.vue'
+import NbNotificationCenter from './NotificationCenter.vue'
+import NbNotificationCenterItem from './NotificationCenterItem.vue'
 import NbNumberInput from './NumberInput.vue'
 import NbLayer from './Layer.vue'
 import NbPanel from './Panel.vue'
@@ -59,11 +62,17 @@ import NbSidebarMenu from './SidebarMenu.vue'
 import NbSidebarMenuGroup from './SidebarMenuGroup.vue'
 import NbSidebarMenuItem from './SidebarMenuItem.vue'
 import NbSlider from './Slider.vue'
+import NbStepper from './Stepper.vue'
+import NbStepperStep from './StepperStep.vue'
+import NbSpinner from './Spinner.vue'
+import NbInlineLoading from './InlineLoading.vue'
+import NbSkeleton from './Skeleton.vue'
 import NbSparkline from './Charts/Sparkline.vue'
 import NbSwitch from './Switch.vue'
 import NbTabs from './Tabs.vue'
 import NbTextInput from './TextInput.vue'
 import NbToast from './Toast.vue'
+import NbToaster from './Toaster.vue'
 import NbTree from './Tree.vue'
 import NbTreeNode from './TreeNode.vue'
 import NbUserMenu from './UserMenu.vue'
@@ -121,6 +130,9 @@ const components = {
   NbCommandPalette,
   NbMessage,
   NbModal,
+  NbConfirm,
+  NbNotificationCenter,
+  NbNotificationCenterItem,
   NbNumberInput,
   NbLayer,
   NbPanel,
@@ -135,11 +147,17 @@ const components = {
   NbSidebarMenuGroup,
   NbSidebarMenuItem,
   NbSlider,
+  NbStepper,
+  NbStepperStep,
+  NbSpinner,
+  NbInlineLoading,
+  NbSkeleton,
   NbSparkline,
   NbSwitch,
   NbTabs,
   NbTextInput,
   NbToast,
+  NbToaster,
   NbTree,
   NbTreeNode,
   NbNubiscoMark,

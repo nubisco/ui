@@ -24,6 +24,7 @@ import Checkbox from './components/Checkbox.vue'
 import CheckboxGroup from './components/CheckboxGroup.vue'
 import ColorStrip from './components/ColorStrip.vue'
 import CommandPalette from './components/CommandPalette.vue'
+import Confirm from './components/Confirm.vue'
 import DataTable from './components/DataTable.vue'
 import DatePicker from './components/DatePicker.vue'
 import DefinitionList from './components/DefinitionList.vue'
@@ -38,6 +39,7 @@ import Grid from './components/Grid.vue'
 import Icon from './components/Icon.vue'
 import ImageCropper from './components/ImageCropper.vue'
 import InfoHint from './components/InfoHint.vue'
+import InlineLoading from './components/InlineLoading.vue'
 import InterpolationChart from './components/Charts/InterpolationChart.vue'
 import JsonTree from './components/JsonTree.vue'
 import Label from './components/Label.vue'
@@ -50,6 +52,8 @@ import MenuDivider from './components/MenuDivider.vue'
 import MenuItem from './components/MenuItem.vue'
 import Message from './components/Message.vue'
 import Modal from './components/Modal.vue'
+import NotificationCenter from './components/NotificationCenter.vue'
+import NotificationCenterItem from './components/NotificationCenterItem.vue'
 import NubiscoMark from './components/NubiscoMark.vue'
 import NubiscoPlatformMark from './components/NubiscoPlatformMark.vue'
 import NumberInput from './components/NumberInput.vue'
@@ -68,14 +72,19 @@ import SidebarMenu from './components/SidebarMenu.vue'
 import SidebarMenuGroup from './components/SidebarMenuGroup.vue'
 import SidebarMenuItem from './components/SidebarMenuItem.vue'
 import SidebarVariantScope from './components/SidebarVariantScope.vue'
+import Skeleton from './components/Skeleton.vue'
 import Slider from './components/Slider.vue'
 import Sparkline from './components/Charts/Sparkline.vue'
+import Spinner from './components/Spinner.vue'
+import Stepper from './components/Stepper.vue'
+import StepperStep from './components/StepperStep.vue'
 import Submenu from './components/Submenu.vue'
 import SurfaceLayerScope from './components/SurfaceLayerScope.vue'
 import Switch from './components/Switch.vue'
 import Tabs from './components/Tabs.vue'
 import TextInput from './components/TextInput.vue'
 import Toast from './components/Toast.vue'
+import Toaster from './components/Toaster.vue'
 import Tree from './components/Tree.vue'
 import TreeNode from './components/TreeNode.vue'
 import UserMenu from './components/UserMenu.vue'
@@ -107,6 +116,7 @@ declare module 'vue' {
     NbCheckboxGroup: typeof CheckboxGroup
     NbColorStrip: typeof ColorStrip
     NbCommandPalette: typeof CommandPalette
+    NbConfirm: typeof Confirm
     NbDataTable: typeof DataTable
     NbDatePicker: typeof DatePicker
     NbDefinitionList: typeof DefinitionList
@@ -121,6 +131,7 @@ declare module 'vue' {
     NbIcon: typeof Icon
     NbImageCropper: typeof ImageCropper
     NbInfoHint: typeof InfoHint
+    NbInlineLoading: typeof InlineLoading
     NbInterpolationChart: typeof InterpolationChart
     NbJsonTree: typeof JsonTree
     NbLabel: typeof Label
@@ -133,6 +144,8 @@ declare module 'vue' {
     NbMenuItem: typeof MenuItem
     NbMessage: typeof Message
     NbModal: typeof Modal
+    NbNotificationCenter: typeof NotificationCenter
+    NbNotificationCenterItem: typeof NotificationCenterItem
     NbNubiscoMark: typeof NubiscoMark
     NbNubiscoPlatformMark: typeof NubiscoPlatformMark
     NbNumberInput: typeof NumberInput
@@ -151,14 +164,19 @@ declare module 'vue' {
     NbSidebarMenuGroup: typeof SidebarMenuGroup
     NbSidebarMenuItem: typeof SidebarMenuItem
     NbSidebarVariantScope: typeof SidebarVariantScope
+    NbSkeleton: typeof Skeleton
     NbSlider: typeof Slider
     NbSparkline: typeof Sparkline
+    NbSpinner: typeof Spinner
+    NbStepper: typeof Stepper
+    NbStepperStep: typeof StepperStep
     NbSubmenu: typeof Submenu
     NbSurfaceLayerScope: typeof SurfaceLayerScope
     NbSwitch: typeof Switch
     NbTabs: typeof Tabs
     NbTextInput: typeof TextInput
     NbToast: typeof Toast
+    NbToaster: typeof Toaster
     NbTree: typeof Tree
     NbTreeNode: typeof TreeNode
     NbUserMenu: typeof UserMenu
