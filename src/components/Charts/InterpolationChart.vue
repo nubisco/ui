@@ -166,6 +166,7 @@
 import { computed, ref, onBeforeUnmount } from 'vue'
 import ChartFrame from './shared/ChartFrame.vue'
 import ChartTooltip from './shared/ChartTooltip.vue'
+import { colorAt } from './shared/palette'
 import { linear, padDomain } from './shared/scales'
 import { useChartSize } from './shared/useChartSize'
 import type {
@@ -198,7 +199,12 @@ const emit = defineEmits<{
   'update:modelValue': [value: IInterpolationPoint[]]
 }>()
 
-const lineColor = 'var(--nb-c-grape-hyacinth-500)'
+// One series, so it takes the first colour of whatever palette applies: the
+// `colors` prop when the caller sets it, role 1 otherwise. It named
+// --nb-c-grape-hyacinth-500 directly until now, which is why a white-label
+// product could rebrand every other chart and still get a violet curve here,
+// and why the `colors` prop was declared but never read.
+const lineColor = computed(() => colorAt(0, props.colors))
 const pointStroke = 'var(--nb-c-surface)'
 
 const margin = { top: 16, right: 16, bottom: 32, left: 48 }
@@ -452,12 +458,12 @@ const tooltipRows = computed(() => {
     {
       label: props.inputLabel || 'Input',
       value: formatNum(pt.input),
-      color: lineColor,
+      color: lineColor.value,
     },
     {
       label: props.outputLabel || 'Output',
       value: formatNum(pt.output),
-      color: lineColor,
+      color: lineColor.value,
     },
   ]
 })
