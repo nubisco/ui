@@ -1,24 +1,101 @@
 @mixin tooltip {
+  // The description node. Not a chip: it is the text of the tooltip as
+  // assistive technology sees it, present from the moment the binding mounts,
+  // referenced by the anchor's `aria-describedby` the whole time.
+  //
+  // Visually hidden, never `display: none` and never the `hidden` attribute.
+  // Both of those remove it from the accessibility tree, which is the one
+  // place it has to be; the whole reason it exists is that a description
+  // computed at focus time cannot be waiting on a hover-intent timer.
+  .nb-tooltip-description {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    overflow: hidden;
+    // `clip-path` rather than the legacy `clip`: it is not deprecated and it
+    // does not force the element out of the flow in a way that some engines
+    // use to skip it entirely.
+    clip-path: inset(50%);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
   .nb-tooltip {
     position: fixed;
     overflow: visible;
-    padding: var(--nb-base-unit);
+    // Logical, so a chip in an Arabic or Hebrew build gets its padding on the
+    // sides the text actually starts and ends on. The arrow offsets further
+    // down stay physical on purpose: placement is computed from geometry in
+    // the directive (which side has room), and geometry has no direction.
+    padding-block: var(--nb-base-unit);
+    padding-inline: var(--nb-base-unit);
     border-radius: calc(var(--nb-base-unit) / 1.333);
-    background: var(--nb-c-discrete);
-    color: var(--nb-c-discrete-a11y);
+    // Inverted surface, not the discrete grey pair. Two reasons: the grey
+    // pair only flips its background between themes (its -a11y foreground
+    // stays the light-theme value, so a dark-theme chip was dark text on a
+    // dark chip), and every hand-rolled tooltip in the fleet, including the
+    // two inside this library, independently chose an inverted chip. The two
+    // vars let a consumer retint one chip without touching the theme.
+    background: var(--nb-tooltip-bg, var(--nb-c-contrast));
+    color: var(--nb-tooltip-fg, var(--nb-c-surface));
     z-index: var(--nb-zindex-tooltip);
     text-transform: none;
     font-size: var(--nb-font-size-13);
-    line-height: 1;
-    user-select: none;
-    pointer-events: none;
+    // A chip has no width of its own: it shrink-wraps its text. Without a
+    // ceiling, a 400-character body renders as ONE line wider than the
+    // viewport, and the directive's clamp cannot rescue it (the maximum left
+    // goes negative, so the chip is pushed back to the inset and runs off the
+    // right edge). 34 base units is about 55 characters at this size, a
+    // comfortable measure. `--nb-tooltip-max-width` widens or narrows it for
+    // one chip; the answer for anything that needs much more is not a
+    // tooltip.
+    max-inline-size: var(
+      --nb-tooltip-max-width,
+      calc(var(--nb-base-unit) * 34)
+    );
+    // Now that the text can wrap, it needs leading. At `line-height: 1` a
+    // wrapped body, a documented `<br>` and an embedded newline all render as
+    // touching lines.
+    line-height: var(--nb-line-height-snug);
+    // A single unbroken token (a URL, a hash, a file path) would otherwise
+    // blow straight through the max-width.
+    overflow-wrap: anywhere;
+    // The chip is reachable by the pointer. WCAG 2.1 AA 1.4.13 ("Hoverable")
+    // requires that content revealed on hover can be hovered without
+    // disappearing, and `pointer-events: none` makes that impossible by
+    // construction: nothing the user does with the mouse can ever land on the
+    // chip. That is not a defensible default for the one affordance in this
+    // library whose whole purpose is labelling controls, and it is the
+    // difference between readable and unreadable for anyone at 200% zoom, who
+    // has to pan onto a clamped chip to finish the sentence.
+    //
+    // The directive supplies the other half: entering the chip cancels the
+    // pending hide, leaving it restarts it. The chip stays out of the tab
+    // order and holds nothing operable, so it is still not a container.
+    pointer-events: auto;
+    // Text in a chip is often the thing worth copying: an error code, a full
+    // path, a signature. There is no reason to forbid selecting it now that
+    // the pointer can reach it.
+    user-select: text;
+    // Structural containment, defence in depth for caller-supplied content.
+    // `contain: layout` makes the chip the containing block for any
+    // absolutely or fixed-positioned descendant, so a class or a style that
+    // reached the chip from a CMS field or an API payload cannot escape the
+    // chip's box to become a full-viewport overlay. The content sanitiser
+    // already refuses `position`; this is the belt to that pair of braces,
+    // and it does not clip (the arrow pseudo-elements still overflow).
+    contain: layout;
     opacity: 0;
-    text-align: center;
-    --tooltip-arrow-border-color: var(--nb-c-discrete);
-    transform: scale(0.95);
-    transition:
-      opacity 0.2s ease,
-      transform 0.2s ease;
+    // `start`, not `center`. A one-line chip shrink-wraps its text so the two
+    // are indistinguishable, and a wrapped chip is far easier to read ragged
+    // right than centred.
+    text-align: start;
+    --tooltip-arrow-border-color: var(--nb-tooltip-bg, var(--nb-c-contrast));
     &:before,
     &:after {
       position: absolute;
@@ -47,32 +124,64 @@
     }
     &-tip {
       font-weight: var(--nb-font-weight-regular);
-      color: var(--nb-c-component-discrete-text);
+      // Demoted by transparency rather than by a second colour token: on an
+      // inverted chip any fixed grey is right in one theme and wrong in the
+      // other, while 78% of an already-contrasting foreground stays legible
+      // in both.
+      opacity: 0.78;
     }
 
+    // Every flavour foreground is the theme's auto-contrast companion for its
+    // own background, never a literal. `--nb-c-danger` and friends are not the
+    // same colour in both themes (the dark theme uses a lighter step of the
+    // same ramp), so a hardcoded white is correct in at most one of them and
+    // is the WORST available choice in the other. The `-a11y` companions are
+    // computed from the background they sit on, which is why the rest of the
+    // library uses them.
     &-flavor {
       &-primary {
         background: var(--nb-c-primary);
-        color: var(--nb-c-white);
+        color: var(--nb-c-primary-a11y);
         --tooltip-arrow-border-color: var(--nb-c-primary);
         .nb-tooltip-tip {
-          color: var(--nb-c-white);
+          color: var(--nb-c-primary-a11y);
         }
       }
       &-danger {
         background: var(--nb-c-danger);
-        color: var(--nb-c-white);
+        color: var(--nb-c-danger-a11y);
         --tooltip-arrow-border-color: var(--nb-c-danger);
         .nb-tooltip-tip {
-          color: var(--nb-c-white);
+          color: var(--nb-c-danger-a11y);
         }
       }
       &-info {
         background: var(--nb-c-info);
-        color: var(--nb-c-white);
+        color: var(--nb-c-info-a11y);
         --tooltip-arrow-border-color: var(--nb-c-info);
         .nb-tooltip-tip {
-          color: var(--nb-c-white);
+          color: var(--nb-c-info-a11y);
+        }
+      }
+      // `success` and `warning` exist because the library's status vocabulary
+      // has them (NbBanner.status, EVariant) and the tooltip was the one place
+      // that silently did not: `flavor: 'warning'` used to compile and emit an
+      // unstyled chip. Same construction as the three above, so a themed build
+      // that moves the ramp moves these with it.
+      &-success {
+        background: var(--nb-c-success);
+        color: var(--nb-c-success-a11y);
+        --tooltip-arrow-border-color: var(--nb-c-success);
+        .nb-tooltip-tip {
+          color: var(--nb-c-success-a11y);
+        }
+      }
+      &-warning {
+        background: var(--nb-c-warning);
+        color: var(--nb-c-warning-a11y);
+        --tooltip-arrow-border-color: var(--nb-c-warning);
+        .nb-tooltip-tip {
+          color: var(--nb-c-warning-a11y);
         }
       }
     }
@@ -164,23 +273,36 @@
     }
   }
 
-  // Animation for appearing
-  @keyframes tooltipAppear {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
+  @media (prefers-reduced-motion: reduce) {
+    .nb-tooltip {
+      animation: none !important;
+      transform: none;
     }
   }
 
-  // Animation for disappearing
+  // Entrance and exit. Both the fade and the small rise live in the keyframes
+  // rather than in a base `transform` plus a `transition`: the directive only
+  // ever sets `animation`, so a base transform had nothing to transition back
+  // from and every chip rendered permanently scaled down.
+  @keyframes tooltipAppear {
+    0% {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
   @keyframes tooltipDisappear {
     0% {
       opacity: 1;
+      transform: scale(1);
     }
     100% {
       opacity: 0;
+      transform: scale(0.98);
     }
   }
 }
