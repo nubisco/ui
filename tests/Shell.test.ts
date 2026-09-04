@@ -80,7 +80,12 @@ describe('Shell', () => {
   })
 
   it('places notification above the topbar', () => {
-    const wrapper = createWrapper({}, { notification: '<div>Notice</div>' })
+    // `topbar-left` is passed because the topbar is now only rendered when it
+    // has something to show; the ordering claim is unchanged.
+    const wrapper = createWrapper(
+      {},
+      { notification: '<div>Notice</div>', 'topbar-left': '<h1>Page</h1>' },
+    )
     const body = wrapper.find('.nb-shell__body')
     const children = body.element.children
     const notificationIndex = Array.from(children).findIndex((el) =>
