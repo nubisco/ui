@@ -1,9 +1,8 @@
 ---
+layout: nubisco
 title: Action labels
 description: One label per intent and the ban list, with the decision tree, the destructive-action guard table and the register a view can be rewritten from mechanically.
 ---
-
-# Action labels
 
 A count of the labels shipped across twelve applications built on this library:
 
@@ -22,8 +21,8 @@ A count of the labels shipped across twelve applications built on this library:
 ::: info Where these counts come from
 A manual audit, in September 2026, of the twelve applications that consume this
 library (cms, keystone, verba, openbridge, platform, analytics, tally,
-openbridge-marketplace, stagewright, planetcraft, a white-label client product,
-stratos), read at their then current default branches. The method was a grep
+openbridge-marketplace, stagewright, planetcraft, stratos, and one
+white-label client product), read at their then current default branches. The method was a grep
 for literal button and menu-item strings in templates and scripts, plus a read
 of every dialog footer. Repeated renders of one label count once, so these are
 a floor rather than a total. They are an observation of one moment: re-run the

@@ -1,9 +1,8 @@
 ---
+layout: nubisco
 title: Writing style
 description: 'The ruling for every string in a Nubisco UI surface: casing, person, tense, punctuation, numbers, dates, terminology, bias-free wording, translation, errors, loading and the accessibility of copy.'
 ---
-
-# Writing style
 
 Strings are a component. They ship, they regress, and they are the part of the
 product a user actually reads. This page is the ruling for every string that
@@ -25,7 +24,7 @@ question comes up that this page cannot answer, that is a bug in this page.
 Every count quoted here comes from one source: a manual audit, in September
 2026, of the twelve applications that consume this library (cms, keystone,
 verba, openbridge, platform, analytics, tally, openbridge-marketplace,
-stagewright, planetcraft, a white-label client product, stratos), read at their then
+stagewright, planetcraft, stratos, and one white-label client product), read at their then
 current default branches. The method was a grep for literal strings in
 templates and scripts plus a read of every dialog, so the counts are a floor
 rather than a total, and they are observations of one moment. Re-run it and

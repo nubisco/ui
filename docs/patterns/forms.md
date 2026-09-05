@@ -1,4 +1,7 @@
-# Building a form
+---
+layout: nubisco
+title: Building a form
+---
 
 A form is a promise about **when the value is committed**. Everything else on
 this page follows from that: where the label goes, when the red text appears,
@@ -84,6 +87,31 @@ you picked in [Rule 2](#rule-2-three-layouts-are-legal-and-the-hand-rolled-one-i
 purpose: a validated field belongs to the control, so it always renders its own
 error.
 
+That table is easier to believe with both of them on screen. The same field
+twice, at the same content and bound to the same value, so typing in one moves
+the other. Nothing else about them is the same.
+
+<preview dir="col">
+  <div class="fdx-pair">
+    <div class="fdx-half">
+      <p class="fdx-label">Control-level layout</p>
+      <NbTextInput id="fdx-anatomy-control" v-model="anatomyEmail" label="Work email" type="email" required error="Enter a work email address" />
+      <p class="fdx-note">Label, control and message are three props on one component: <code>label</code>, <code>v-model</code>, <code>error</code>. Nothing wraps it, and there is nothing to keep in step with it.</p>
+    </div>
+    <div class="fdx-half">
+      <p class="fdx-label">NbField layout</p>
+      <NbField label="Work email" hint="We use this for billing receipts" v-slot="{ id }">
+        <NbTextInput :id="id" v-model="anatomyEmail" size="xs" type="email" error="Enter a work email address" />
+      </NbField>
+      <p class="fdx-note"><code>NbField</code> owns the label and the hint, in the label column and the value column of one grid. The message is still the control's own <code>error</code> prop, because <code>NbField</code> has no message slot: it lands under the control, inside the value column.</p>
+    </div>
+  </div>
+</preview>
+
+Note what moved and what did not. The label crossed from the control to the
+wrapper. The error did not, and cannot: there is no arrangement of these two
+components in which `NbField` renders the validation message.
+
 ## Rule 1: choose the surface before you choose anything else
 
 Where the form lives decides its size, its save model and its footer. Decide it
@@ -121,6 +149,31 @@ surface, not by taste.
 | **Control-level label** (the control's `label` prop) | Label above the control, message below, all inside the control       | Standalone forms: sign-up, settings pages, dialogs, anything with a Save button         |
 | **`NbField` row** (`orientation="row"`, default)     | Label beside the control on a shared grid spine                      | Inspectors and dense property panels. See [Building an inspector](/patterns/inspectors) |
 | **`NbField` stack** (`orientation="stack"`)          | Label on its own line above a full-width control, still on the spine | A tall or wide control inside an otherwise row-based panel (a text area, a slider)      |
+
+All three, running, at the content each one is for:
+
+<preview dir="col">
+  <div class="fdx-trio">
+    <div class="fdx-third">
+      <p class="fdx-label">1. Control-level label</p>
+      <NbTextInput id="fdx-legal-name" v-model="legal.name" label="Display name" />
+      <NbSelect id="fdx-legal-region" v-model="legal.region" label="Region" :options="regionOptions" />
+      <p class="fdx-note">Label above, message below, all of it inside the control. This is the standalone-form layout: a sign-up, a settings page, a dialog, anything with a Save button.</p>
+    </div>
+    <div class="fdx-third">
+      <p class="fdx-label">2. NbField row (the default)</p>
+      <NbField label="Display name" v-slot="{ id }"><NbTextInput :id="id" v-model="legal.name" size="xs" /></NbField>
+      <NbField label="Region" v-slot="{ id }"><NbSelect :id="id" v-model="legal.region" size="xs" :options="regionOptions" /></NbField>
+      <NbField label="Retries" v-slot="{ id }"><NbNumberInput :id="id" v-model="legal.retries" size="xs" :min="0" :max="9" /></NbField>
+      <p class="fdx-note">Three controls of three different kinds, one spine. Every label sits in the same <code>--nb-field-label-width</code> column and every control shares one left edge and one right edge, because they share the token, not because anyone measured them.</p>
+    </div>
+    <div class="fdx-third">
+      <p class="fdx-label">3. NbField stack</p>
+      <NbField label="Release notes" orientation="stack" hint="Shown on the release page" v-slot="{ id }"><NbTextInput :id="id" v-model="legal.notes" size="xs" multiline :rows="4" /></NbField>
+      <p class="fdx-note">Still an <code>NbField</code>, so it still belongs to the panel, but the label takes its own line and the control takes the full width. For the one text area in an otherwise row-based panel, not for the panel.</p>
+    </div>
+  </div>
+</preview>
 
 The fourth layout is the one five applications independently reinvented, and it
 is why field height, label colour and helper spacing disagree across the fleet.
@@ -169,6 +222,36 @@ colours, and the `role="status"` live region that announces the error. It also
 hardcodes `#e5484d` where `--nb-c-danger` exists, so the error text is the wrong
 red in the dark theme.
 
+That is a list of assertions until you put the two columns beside each other.
+The left column below is the wrong markup above, rendered: the same `6px` gap,
+the same `margin-bottom: 16px`, the same `#e5484d`. The right column is the same
+three fields as library controls, at the same width.
+
+<preview dir="col">
+  <div class="fdx-pair">
+    <div class="fdx-half fdx-half--wrong">
+      <p class="fdx-label">Wrong: div.field, as five products shipped it</p>
+      <div class="fdx-handrolled">
+        <div class="field"><label for="fdx-hr-name">Name</label><input id="fdx-hr-name" v-model="handRolled.name" class="input" /></div>
+        <div class="field"><label for="fdx-hr-email">Work email</label><input id="fdx-hr-email" v-model="handRolled.email" type="email" class="input" /><span class="field-error">Enter a work email address</span></div>
+        <div class="field"><label for="fdx-hr-team">Team</label><input id="fdx-hr-team" v-model="handRolled.team" class="input" disabled /></div>
+      </div>
+      <p class="fdx-note">Focus one of these, then focus one on the right. This column has no focus ring, no icon beside the error (so colour is the only carrier of meaning), no live region to announce it, a disabled field that is only slightly greyer, a label colour that is the browser's rather than <code>--nb-c-text-muted</code>, and a literal hex red that stays that hex with the <code>.dark</code> class on. The three rows are also three different heights, because the one with a message pushes the next field down by a value nothing else in the form knows about.</p>
+    </div>
+    <div class="fdx-half fdx-half--right">
+      <p class="fdx-label">Right: the control owns the field</p>
+      <NbTextInput id="fdx-lib-name" v-model="handRolled.name" label="Name" />
+      <NbTextInput id="fdx-lib-email" v-model="handRolled.email" label="Work email" type="email" error="Enter a work email address" />
+      <NbTextInput id="fdx-lib-team" v-model="handRolled.team" label="Team" disabled />
+      <p class="fdx-note">Same three fields, same values, no CSS on this page at all. One control height from <code>--nb-field-height-md</code>, one label-to-control gap from <code>--nb-field-label-gap</code>, one red from <code>--nb-c-danger</code>, an icon paired with that red, and a disabled state at <code>--nb-field-disabled-opacity</code>. The vertical rhythm comes from the container, so a field that gains a message does not shift the spacing rule for the fields under it.</p>
+    </div>
+  </div>
+</preview>
+
+Both columns are bound to the same three values, which is the point: this is not
+a better-looking alternative to the left column, it is the same field with
+nothing local to maintain.
+
 ::: danger Never hand-roll the field
 If the layout you want is not one of the three above, you have found a gap in
 the library. File it, do not fork it locally.
@@ -198,6 +281,49 @@ that is decoration:
 If you already own the id, pass it as `labelFor` instead. Fields dropped into
 `NbField` without binding the id still look right, which is exactly why this is
 easy to miss and worth checking in review.
+
+Click both labels below. Only one of them puts the caret in the input.
+
+<preview dir="col">
+  <div class="fdx-pair">
+    <div class="fdx-half fdx-half--wrong">
+      <p class="fdx-label">Wrong: the slot id is not bound</p>
+      <NbField label="Name">
+        <NbTextInput v-model="labelDemo.a" size="xs" />
+      </NbField>
+      <p class="fdx-note">It looks correct, which is the whole problem: nothing about the rendering says anything is missing. <code>NbField</code> put <code>for</code> on the id it generated, the control generated a different one for itself, and the <code>&lt;label&gt;</code> now points at an element that does not exist. Clicking it does nothing and the input has no accessible name.</p>
+    </div>
+    <div class="fdx-half fdx-half--right">
+      <p class="fdx-label">Right: the slot id is bound</p>
+      <NbField label="Name" v-slot="{ id }">
+        <NbTextInput :id="id" v-model="labelDemo.b" size="xs" />
+      </NbField>
+      <p class="fdx-note">Clicking the label focuses the input, and a screen reader says "Name" when focus arrives. The only difference between the two is <code>v-slot="{ id }"</code> and <code>:id="id"</code>.</p>
+    </div>
+  </div>
+</preview>
+
+Setting the label in both places is the other half of this rule, and unlike the
+id it is visible the moment you render it:
+
+<preview dir="col">
+  <div class="fdx-pair">
+    <div class="fdx-half fdx-half--wrong">
+      <p class="fdx-label">Wrong: label on the wrapper and on the control</p>
+      <NbField label="Work email" v-slot="{ id }">
+        <NbTextInput :id="id" v-model="labelDemo.c" label="Work email" size="xs" />
+      </NbField>
+      <p class="fdx-note">Two <code>&lt;label&gt;</code> elements now point at one input, so its accessible name is the label said twice, and the row is twice as tall as every other row in the panel. In a ten-field inspector this reads as a rendering fault.</p>
+    </div>
+    <div class="fdx-half fdx-half--right">
+      <p class="fdx-label">Right: label on NbField only</p>
+      <NbField label="Work email" v-slot="{ id }">
+        <NbTextInput :id="id" v-model="labelDemo.c" size="xs" />
+      </NbField>
+      <p class="fdx-note">One label, in the layout's label column, at the row height every other field in the panel has.</p>
+    </div>
+  </div>
+</preview>
 
 Placeholders are not labels. `placeholder` disappears the moment the user types,
 so a placeholder-only field is unlabelled for anyone who came back to it later,
@@ -244,6 +370,35 @@ bound, `warning` and `helper` render nothing. `NbSelect`, `NbNumberInput` and
 is fixed, bind `error` on a text input and put steady helper text in
 `NbField`'s `hint` slot (or in the label), where it will actually appear.
 :::
+
+That is not something you should have to take on trust from a warning box. Both
+controls below have `helper` bound and no `error`. One of them renders it.
+
+<preview dir="col">
+  <div class="fdx-pair">
+    <div class="fdx-half fdx-half--wrong">
+      <p class="fdx-label">NbTextInput: helper bound, nothing shown</p>
+      <NbTextInput id="fdx-helper-text" v-model="helperDemo.a" label="Subdomain" placeholder="acme" helper="Letters, numbers and hyphens only" />
+      <p class="fdx-note">The prop is bound and the guidance is gone. <code>TextInput.vue</code> resolves its message with <code>??</code>, <code>error</code> defaults to <code>''</code>, and empty string is not nullish, so the chain stops on the first link every time.</p>
+    </div>
+    <div class="fdx-half fdx-half--right">
+      <p class="fdx-label">NbSelect: helper bound, helper shown</p>
+      <NbSelect id="fdx-helper-select" v-model="helperDemo.b" label="Region" :options="regionOptions" helper="Data never leaves this region" />
+      <p class="fdx-note">The same prop, on a control that tests truthiness in order (<code>error</code>, then <code>warning</code>, then <code>helper</code>), which is what the table above documents for all of them.</p>
+    </div>
+  </div>
+</preview>
+
+The mitigation, rendered: the same sentence in `NbField`'s `hint`, where it
+appears and stays under the control.
+
+<preview dir="col">
+  <div class="fdx-stack fdx-stack--narrow">
+    <NbField label="Subdomain" hint="Letters, numbers and hyphens only" v-slot="{ id }">
+      <NbTextInput :id="id" v-model="helperDemo.a" size="xs" placeholder="acme" />
+    </NbField>
+  </div>
+</preview>
 
 ## Rule 5: there must be a real `<form>` element
 
@@ -320,6 +475,42 @@ Two details that are easy to get wrong:
 ```
 
 :::
+
+::: info `NbButton` already defaults to `type="button"`
+The defect above is real and shipped, but it reaches a form through a raw
+`<button>`, not through `NbButton`: `Button.vue` defaults `type` to
+`EButtonType.Button`, so an `NbButton` with no `type` renders
+`type="button"` and does not submit. The rule stands as written anyway, for two
+reasons. A raw `<button>`, and any wrapper that forwards `type` without a
+default, does submit. And an explicit `type` on every button in a form is the
+only version of this that is checkable by reading the template, which is what
+the checklist at the foot of this page asks a reviewer to do.
+:::
+
+The seventy-two-field finding at the top of this page is invisible in a
+screenshot and obvious in one keypress. Put the caret in either field below and
+press Enter.
+
+<preview dir="col">
+  <div class="fdx-pair">
+    <div class="fdx-half fdx-half--wrong">
+      <p class="fdx-label">Wrong: fields in a div, with a click handler</p>
+      <div class="fdx-loose">
+        <NbTextInput id="fdx-loose-email" v-model="enterDemo.looseEmail" label="Work email" type="email" size="sm" placeholder="you@acme.com" />
+        <NbButton size="sm" variant="primary" @click="looseSubmits++">Send invite</NbButton>
+      </div>
+      <p class="fdx-note">Enter does nothing. Submits so far: <strong>{{ looseSubmits }}</strong>. The button still works, so this passes a click-through review and fails every keyboard user. There is also no form element for the browser to offer to autofill, and nothing for assistive technology to describe as a group.</p>
+    </div>
+    <div class="fdx-half fdx-half--right">
+      <p class="fdx-label">Right: NbForm, which is a real &lt;form&gt;</p>
+      <NbForm @submit.prevent="formSubmits++">
+        <NbTextInput id="fdx-form-email" v-model="enterDemo.formEmail" label="Work email" type="email" size="sm" placeholder="you@acme.com" />
+        <template #footer><NbButton size="sm" variant="primary" type="submit">Send invite</NbButton></template>
+      </NbForm>
+      <p class="fdx-note">Enter submits. Submits so far: <strong>{{ formSubmits }}</strong>. Nothing was added to make that happen: the element is a <code>&lt;form&gt;</code>, the commit button is <code>type="submit"</code>, and implicit submission is the browser's, not ours.</p>
+    </div>
+  </div>
+</preview>
 
 ### Forms inside a modal
 
@@ -435,6 +626,36 @@ Three hard rules:
   optional") costs nothing and removes the guess. This is the one place
   `#message` earns its keep.
 
+The two legal conventions and the collision, at the same three fields. The third
+panel is what happens when two people edit one form and each follows a different
+one of the first two.
+
+<preview dir="col">
+  <div class="fdx-trio">
+    <div class="fdx-third fdx-third--right">
+      <p class="fdx-label">Default: mark what is required</p>
+      <NbTextInput id="fdx-mark-a-email" v-model="marking.email" label="Work email" type="email" size="sm" required />
+      <NbSelect id="fdx-mark-a-role" v-model="marking.role" label="Role" size="sm" :options="roleOptions" required />
+      <NbTextInput id="fdx-mark-a-team" v-model="marking.team" label="Team" size="sm" />
+      <p class="fdx-note">Two asterisks, one unmarked field. The asterisk comes from <code>NbLabel</code> in <code>--nb-c-danger</code> and is <code>aria-hidden</code>, so it is decoration for the eye. What makes it real is the same <code>required</code> prop setting the native constraint on the input and <code>aria-required</code> on the select.</p>
+    </div>
+    <div class="fdx-third fdx-third--right">
+      <p class="fdx-label">Inverted: mark the one exception</p>
+      <NbTextInput id="fdx-mark-b-email" v-model="marking.email" label="Work email" type="email" size="sm" />
+      <NbSelect id="fdx-mark-b-role" v-model="marking.role" label="Role" size="sm" :options="roleOptions" />
+      <NbTextInput id="fdx-mark-b-team" v-model="marking.team" label="Team (optional)" size="sm" />
+      <p class="fdx-note">When nine of ten fields are mandatory, nine asterisks are noise, so the word goes in the label text of the one exception and nothing else is marked. The convention has to be stated in <code>#message</code> for this panel to be readable at all, which is the point of the rule above it.</p>
+    </div>
+    <div class="fdx-third fdx-third--wrong">
+      <p class="fdx-label">Wrong: both, in one form</p>
+      <NbTextInput id="fdx-mark-c-email" v-model="marking.email" label="Work email" type="email" size="sm" required />
+      <NbSelect id="fdx-mark-c-role" v-model="marking.role" label="Role" size="sm" :options="roleOptions" required />
+      <NbTextInput id="fdx-mark-c-team" v-model="marking.team" label="Team (optional)" size="sm" />
+      <p class="fdx-note">Now the reader has to work out which mark carries the meaning. In a longer form, what does an unmarked field between these two mean: required, or optional? Both symbols are on screen, so neither one answers it and the user guesses.</p>
+    </div>
+  </div>
+</preview>
+
 ## Rule 9: how form text is written
 
 The library styles the string. It cannot write it, and the fleet shows that
@@ -499,6 +720,29 @@ The rule, in order:
 4. **After a failed submit, switch that field to validate on input**, so the
    error clears as soon as it is fixed. A message that stays red after the user
    corrects it teaches them to ignore messages.
+
+Type an email address into both of these, one character at a time, then leave
+the field.
+
+<preview dir="col">
+  <div class="fdx-pair">
+    <div class="fdx-half fdx-half--wrong">
+      <p class="fdx-label">Wrong: validates on every keystroke</p>
+      <NbTextInput id="fdx-eager" v-model="eager.value" label="Work email" type="email" placeholder="you@acme.com" :error="eagerError" />
+      <p class="fdx-note">Red from the first character, and red for the whole of <code>jose@nubis</code>, because an address in progress is an address that is not valid yet. The user is being corrected while they are still answering, which is the most common way a form feels hostile.</p>
+    </div>
+    <div class="fdx-half fdx-half--right">
+      <p class="fdx-label">Right: on blur, then on input</p>
+      <NbTextInput id="fdx-polite" v-model="polite.value" label="Work email" type="email" placeholder="you@acme.com" :error="polite.error" @blur="politeBlur" @input="politeInput" />
+      <p class="fdx-note">Silent while you type. It speaks when you leave the field, and only if you left something in it: tab straight through without typing and it stays quiet, because "required" is a verdict for submit time, not for a field you passed over. Once it has spoken, it clears as soon as the value is right.</p>
+    </div>
+  </div>
+</preview>
+
+The right-hand field's `@blur` and `@input` really are on the `<input>`:
+`TextInput.vue` declares `inheritAttrs: false` and binds `$attrs` on the native
+element, which is the only reason a listener written at the call site fires at
+all.
 
 This is the whole state a form of this shape needs. It is complete: copy it and
 it runs.
@@ -634,6 +878,55 @@ function submit() {
 off-screen field moves the caret somewhere the user cannot see, and a sighted
 keyboard user then types into nothing. If you honour reduced motion elsewhere,
 use `useReducedMotion()` to drop `behavior: 'smooth'` here too.
+
+Everything on this page so far, in one form. Press **Send invite** with it
+empty, then fix one field at a time, then submit a form that passes and watch
+the server refuse it.
+
+<preview dir="col">
+  <div class="fdx-formframe">
+    <NbForm title="Invite a teammate" novalidate @submit.prevent="submitInvite">
+      <template #message>Required fields are marked with an asterisk.</template>
+      <NbBanner v-if="inviteBanner" status="error" variant="inline" :title="inviteBanner" />
+      <NbTextInput id="fdx-invite-email" v-model="invite.values.email" label="Work email" type="email" placeholder="you@acme.com" required :error="invite.errors.email" :aria-invalid="invite.errors.email ? true : undefined" @blur="touchInvite('email')" @input="reviseInvite('email')" />
+      <NbSelect id="fdx-invite-role" v-model="invite.values.role" label="Role" :options="roleOptions" required :error="invite.errors.role" @change="commitInvite('role')" />
+      <template #footer>
+        <NbButton variant="secondary" type="button" @click="resetInvite">Cancel</NbButton>
+        <NbButton variant="primary" type="submit" :loading="invite.saving">Send invite</NbButton>
+      </template>
+    </NbForm>
+  </div>
+</preview>
+
+Read that demo against the rules it is made of:
+
+- The banner is the **first child of the default slot**, not of `#message`, and
+  `#message` carries the one sentence that states the marking convention
+  (Rule 8). Swap them and hydration breaks.
+- Every entry the summary counts has a field error rendered on its own field,
+  which is the strict relationship this rule sets. Fix one field and the count
+  in the banner follows.
+- Focus moves to the first invalid control on a failed submit, by
+  `getElementById`, which only works because both controls carry an id this page
+  chose (Rule 6). The demo prefixes its ids `fdx-invite-` rather than `field-`
+  only so they cannot collide with the other demos on this page.
+- The commit button is never disabled to express invalidity. It is disabled by
+  `:loading` while the request is in flight, and by nothing else (Rule 14).
+- The server refusal keeps every value the user typed, sets the field error the
+  failure maps to, and does not appear in a toast (Rule 12).
+- Exit is left of commit, exactly one button is `primary`, and both carry an
+  explicit `type` (Rule 5, Rule 18).
+
+::: warning `required` needs `novalidate`, or your validation never runs
+That form carries `novalidate`, and the snippets above do not. `required` on
+`NbTextInput` and `NbNumberInput` sets the **native** `required` attribute, and
+`NbForm` renders a plain `<form>` with no `novalidate`, so the browser's own
+constraint validation intercepts the submit first: it shows its own bubble in
+its own colours, in the browser's UI language rather than the application's, and
+your `@submit` handler is never called. No `validateAll()`, no summary banner,
+no focus move. Put `novalidate` on `NbForm` (attributes fall through to the
+`<form>`) whenever you validate in JavaScript, which by Rule 10 is always.
+:::
 
 ## Rule 12: a server failure with no field goes in the form, not in a toast
 
@@ -1231,3 +1524,312 @@ the template.
 - [ ] Every interactive element is reachable and operable by keyboard.
 - [ ] The form was checked with the `.dark` class applied, and no meaning is
       carried by colour alone.
+
+<script setup lang="ts">
+import { computed, reactive, ref } from 'vue'
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/* Every option list here is a plain ISelectOption[] (see src/components/Select.d.ts):
+   label, value. Nothing on this page invents a prop. */
+const regionOptions = [
+  { label: 'Europe (Frankfurt)', value: 'eu' },
+  { label: 'US East (Virginia)', value: 'us' },
+  { label: 'Asia (Singapore)', value: 'ap' },
+]
+
+const roleOptions = [
+  { label: 'Admin', value: 'admin' },
+  { label: 'Editor', value: 'editor' },
+  { label: 'Viewer', value: 'viewer' },
+]
+
+/* Anatomy: one value behind both layouts, so the demo cannot cheat by showing
+   two different fields. */
+const anatomyEmail = ref('jose@')
+
+/* Rule 2: the three legal layouts. */
+const legal = reactive({
+  name: 'Release pipeline',
+  region: 'eu',
+  retries: 3,
+  notes: 'Fixes the redirect that dropped the trailing slash.',
+})
+
+/* Rule 2: the contrast pair. Both columns are bound to these three values. */
+const handRolled = reactive({
+  name: 'Ada Okafor',
+  email: 'ada@',
+  team: 'Platform',
+})
+
+/* Rule 3: the id binding, and the doubled label. */
+const labelDemo = reactive({ a: '', b: '', c: 'ada@nubisco.io' })
+
+/* Rule 4: the helper caveat. */
+const helperDemo = reactive({ a: '', b: 'eu' })
+
+/* Rule 8: required, optional, and both at once. All three panels share one set
+   of values, so the only thing that differs between them is the marking. */
+const marking = reactive({ email: '', role: '', team: '' })
+
+/* Rule 5: Enter, with and without a form element. */
+const enterDemo = reactive({ looseEmail: '', formEmail: '' })
+const looseSubmits = ref(0)
+const formSubmits = ref(0)
+
+/* One rule, shared by every validation demo below, so they all agree about
+   what a work email address is. */
+const isEmail = (value: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value)
+
+/* Rule 10, the wrong half: a computed error is a validate-on-keystroke form
+   with no state at all, which is exactly why products end up with one. */
+const eager = reactive({ value: '' })
+const eagerError = computed(() =>
+  eager.value === '' || isEmail(eager.value) ? '' : 'Enter a work email address',
+)
+
+/* Rule 10, the right half: nothing before first blur, nothing on a field the
+   user only tabbed through, and on input once it has spoken. */
+const polite = reactive({ value: '', error: '', touched: false })
+
+function politeBlur() {
+  polite.touched = true
+  if (polite.value === '') {
+    polite.error = ''
+    return
+  }
+  polite.error = isEmail(polite.value) ? '' : 'Enter a work email address'
+}
+
+function politeInput() {
+  if (!polite.touched) return
+  polite.error = isEmail(polite.value) ? '' : 'Enter a work email address'
+}
+
+/* Rule 11: the whole form. `rules` insertion order is the visual order of the
+   fields, which is the order focusFirstInvalid walks. */
+const inviteRules: Record<string, (value: string) => string> = {
+  email: (value) => (isEmail(value) ? '' : 'Enter a work email address'),
+  role: (value) => (value ? '' : 'Choose a role'),
+}
+
+const invite = reactive({
+  values: { email: '', role: '' } as Record<string, string>,
+  errors: { email: '', role: '' } as Record<string, string>,
+  summary: '',
+  serverError: '',
+  submitted: false,
+  saving: false,
+})
+
+/* Two sources, one banner: a validation summary and a server refusal are the
+   same surface (Rule 11 and Rule 12) but not the same lifetime. */
+const inviteBanner = computed(() => invite.summary || invite.serverError)
+
+function countInvalid() {
+  return Object.keys(inviteRules).filter((name) => invite.errors[name])
+}
+
+function refreshSummary() {
+  const broken = countInvalid()
+  if (!broken.length) {
+    invite.summary = ''
+    return
+  }
+  invite.summary =
+    broken.length === 1
+      ? 'One field needs an answer before this invite can be sent.'
+      : `${broken.length} fields need an answer before this invite can be sent.`
+}
+
+/* Blur validates only what blur can tell you, and never "required" on a field
+   the user tabbed through. */
+function touchInvite(name: string) {
+  if (!invite.values[name]) return
+  invite.errors[name] = inviteRules[name](invite.values[name])
+  if (invite.submitted) refreshSummary()
+}
+
+/* After a failed submit the same field validates on input, so the error clears
+   as it is fixed. Before that, this is a no-op. */
+function reviseInvite(name: string) {
+  if (!invite.submitted) return
+  invite.errors[name] = inviteRules[name](invite.values[name])
+  invite.serverError = ''
+  refreshSummary()
+}
+
+/* A select has no half-finished state: the moment it changes it is answerable,
+   so it validates on change whether or not the form has been submitted. */
+function commitInvite(name: string) {
+  invite.errors[name] = inviteRules[name](invite.values[name])
+  invite.serverError = ''
+  if (invite.submitted) refreshSummary()
+}
+
+async function submitInvite() {
+  invite.submitted = true
+  invite.serverError = ''
+  for (const name of Object.keys(inviteRules)) {
+    invite.errors[name] = inviteRules[name](invite.values[name])
+  }
+  const broken = countInvalid()
+  if (broken.length) {
+    refreshSummary()
+    const el = document.getElementById(`fdx-invite-${broken[0]}`)
+    el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    el?.focus()
+    return
+  }
+  invite.summary = ''
+  invite.saving = true
+  await wait(1200)
+  invite.saving = false
+  /* Rule 12: a failure the submit owns, not a field, rendered in the form with
+     every value the user typed still in place. It maps to a field here, so the
+     field carries it too. */
+  invite.serverError = 'That address already belongs to this workspace.'
+  invite.errors.email = 'Use an address that is not already a member'
+}
+
+function resetInvite() {
+  invite.values.email = ''
+  invite.values.role = ''
+  invite.errors.email = ''
+  invite.errors.role = ''
+  invite.summary = ''
+  invite.serverError = ''
+  invite.submitted = false
+  invite.saving = false
+}
+</script>
+
+<style scoped>
+/* The preview area stretches its single child, so a demo with more than one
+   thing in it goes in a plain stacking wrapper and each part keeps its own
+   height. */
+.fdx-stack {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--nb-base-unit) * 1.5);
+  width: 100%;
+}
+
+.fdx-stack--narrow {
+  max-width: 340px;
+}
+
+/* Wrong on the left, right on the right, one column when there is no room for
+   two. */
+.fdx-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: calc(var(--nb-base-unit) * 2);
+  width: 100%;
+  align-items: start;
+}
+
+.fdx-trio {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: calc(var(--nb-base-unit) * 2);
+  width: 100%;
+  align-items: start;
+}
+
+.fdx-half,
+.fdx-third {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--nb-base-unit) * 1.5);
+  align-items: stretch;
+  padding: calc(var(--nb-base-unit) * 1.5);
+  border-radius: var(--nb-radius-md);
+  border: 1px solid var(--nb-c-border);
+  min-width: 0;
+}
+
+.fdx-half--wrong,
+.fdx-third--wrong {
+  border-color: var(--nb-c-danger-surface);
+}
+
+.fdx-half--right,
+.fdx-third--right {
+  border-color: var(--nb-c-success-surface);
+}
+
+.fdx-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--nb-c-text-muted);
+}
+
+.fdx-half--wrong .fdx-label,
+.fdx-third--wrong .fdx-label {
+  color: var(--nb-c-danger);
+}
+
+.fdx-half--right .fdx-label,
+.fdx-third--right .fdx-label {
+  color: var(--nb-c-success);
+}
+
+.fdx-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--nb-c-text-muted);
+}
+
+.fdx-note code {
+  font-size: 12px;
+}
+
+/* Rule 5: fields with no form around them, laid out the way the audited views
+   lay them out. The absence of a <form> is the demo; this only stacks them. */
+.fdx-loose {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--nb-base-unit) * 2);
+  align-items: flex-start;
+}
+
+/* Rule 7: a form column is capped, never full-bleed at desktop width. */
+.fdx-formframe {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* THE DEFECT, RENDERED. This is not a component and is not offered as one: it
+   is the div.field five products shipped, reproduced verbatim from the [Wrong]
+   block above (6px gap, 16px margin, #e5484d at 12px) so the comparison beside
+   it is a comparison and not an assertion. Never copy this block. */
+.fdx-handrolled .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.fdx-handrolled .field:last-child {
+  margin-bottom: 0;
+}
+
+.fdx-handrolled .input {
+  padding: 8px;
+  border: 1px solid #cfcfcf;
+  font: inherit;
+  font-size: 14px;
+}
+
+.fdx-handrolled .field-error {
+  color: #e5484d;
+  font-size: 12px;
+}
+</style>

@@ -1,9 +1,8 @@
 ---
+layout: nubisco
 title: Empty states
 description: The four reasons a view has nothing to show, why they must never share one message, and where the empty state sits relative to the chrome around it.
 ---
-
-# Empty states
 
 An empty state answers one question: **why is there nothing here, and what do I
 do about it?** There are exactly four answers, and the whole cost of this pattern
@@ -51,6 +50,60 @@ are forbidden from offering. Find the row that is true and the rest follows.
 The single most common defect is a `no-results` state wearing an `empty` state's
 call to action. The user filters a list of 400 invoices down to zero, is offered
 `Create invoice`, and creates a duplicate of something the filter is hiding.
+
+The four kinds in the live component, each carrying only the action its row
+allows. They separate before a word is read: a tray, a magnifier, a warning
+circle and a padlock, with colour on exactly one of them. `forbidden` has no
+action at all, which is the right number.
+
+<preview dir="col">
+  <div class="esx-quad">
+    <div class="esx-cell">
+      <p class="esx-kind">kind="empty"</p>
+      <NbEmptyState size="sm" title="Start by adding a contact" description="Contacts are the people you send campaigns to.">
+        <template #actions><NbButton size="sm" icon="plus">Add contact</NbButton></template>
+      </NbEmptyState>
+    </div>
+    <div class="esx-cell">
+      <p class="esx-kind">kind="no-results"</p>
+      <NbEmptyState size="sm" kind="no-results" title="No contacts match “acme”" description="Try a shorter search, or clear the filters to see all contacts.">
+        <template #actions><NbButton size="sm" variant="secondary">Clear filters</NbButton></template>
+      </NbEmptyState>
+    </div>
+    <div class="esx-cell">
+      <p class="esx-kind">kind="error"</p>
+      <NbEmptyState size="sm" kind="error" title="Could not load contacts" description="The request did not complete. This is usually temporary.">
+        <template #actions><NbButton size="sm" variant="secondary" icon="arrow-clockwise">Try again</NbButton></template>
+      </NbEmptyState>
+    </div>
+    <div class="esx-cell">
+      <p class="esx-kind">kind="forbidden"</p>
+      <NbEmptyState size="sm" kind="forbidden" title="You cannot see these contacts" description="An administrator of this workspace can grant access." />
+    </div>
+  </div>
+</preview>
+
+Both of the states below are `kind="no-results"`, on the same filtered set of
+400 invoices. Only one of them is safe to press.
+
+<preview dir="col">
+  <div class="esx-pair">
+    <div class="esx-half esx-half--wrong">
+      <p class="esx-label">Wrong: a create action over a filtered set</p>
+      <NbEmptyState size="sm" kind="no-results" title="No invoices match “acme”" description="You have 400 invoices. This filter matched none of them.">
+        <template #actions><NbButton size="sm" icon="plus" @click="duplicates++">New invoice</NbButton></template>
+      </NbEmptyState>
+      <p class="esx-note">Pressed {{ duplicates }} times here, which in the audited product is {{ duplicates }} new invoice{{ duplicates === 1 ? '' : 's' }} duplicating records the filter is hiding.</p>
+    </div>
+    <div class="esx-half esx-half--right">
+      <p class="esx-label">Right: the way out is the control that caused it</p>
+      <NbEmptyState size="sm" kind="no-results" title="No invoices match “acme”" description="Try a broader search, or clear the filters to see everything.">
+        <template #actions><NbButton size="sm" variant="secondary">Clear filters</NbButton></template>
+      </NbEmptyState>
+      <p class="esx-note">Same kind, same copy shape, and an action that widens the set instead of adding to it.</p>
+    </div>
+  </div>
+</preview>
 
 ### Deriving the kind, once
 
@@ -164,6 +217,40 @@ The order is not cosmetic. `loading` outranks everything, `error` and
 one of the five that is a statement about the user rather than about the
 request.
 
+Both templates, live. One button starts the same failing 1.4 second request in
+both halves. Watch the left one while the request is still in flight, and then
+again once it has failed: it says the same thing three times, and only one of
+the three is a fact.
+
+<preview dir="col">
+  <div class="esx-stack">
+    <div class="esx-runner">
+      <NbButton icon="arrow-clockwise" @click="loadContacts">Load contacts (this request will fail)</NbButton>
+      <span class="esx-note">Request: <strong>{{ contactStatus }}</strong></span>
+    </div>
+    <div class="esx-pair">
+      <div class="esx-half esx-half--wrong">
+        <p class="esx-label">Wrong: one branch for three states</p>
+        <NbEmptyState v-if="!contacts.length" size="sm" title="No contacts yet" description="Add your first contact to start a campaign.">
+          <template #actions><NbButton size="sm" icon="plus">Add contact</NbButton></template>
+        </NbEmptyState>
+        <p class="esx-note">Rendered on the row count alone, so it is on screen before the request returns and still on screen after it fails. The audited product says this in a bare paragraph; the component states the same false thing more legibly, which is the only difference.</p>
+      </div>
+      <div class="esx-half esx-half--right">
+        <p class="esx-label">Right: precedence order, empty state last</p>
+        <NbSkeleton v-if="contactStatus === 'loading'" variant="text" type="body-md" :lines="4" label="Loading contacts" />
+        <NbEmptyState v-else-if="contactStatus === 'error'" size="sm" kind="error" title="Could not load contacts" description="The request did not complete. This is usually temporary.">
+          <template #actions><NbButton size="sm" variant="secondary" icon="arrow-clockwise" @click="loadContacts">Try again</NbButton></template>
+        </NbEmptyState>
+        <NbEmptyState v-else size="sm" title="No contacts yet" description="Add your first contact to start a campaign.">
+          <template #actions><NbButton size="sm" icon="plus">Add contact</NbButton></template>
+        </NbEmptyState>
+        <p class="esx-note">Three moments, three branches. The claim about the user's contacts is only reached when nothing else is true.</p>
+      </div>
+    </div>
+  </div>
+</preview>
+
 ### Four more consequences of the same rule
 
 - **A refetch of data you already have keeps the old data.** Filtering a loaded
@@ -210,6 +297,38 @@ they can see and cannot leave, and the only exit is a page reload. One audited
 table does exactly this: the toolbar is inside the `v-if` that tests the row
 count, so filtering to zero removes the filter field.
 
+Both tables below hold the same four invoices and run the same filter. Type
+`zzz` into each search field, and then try to get back.
+
+<preview dir="col">
+  <div class="esx-pair esx-pair--stack">
+    <div class="esx-half esx-half--wrong">
+      <p class="esx-label">Wrong: the empty state replaces the table and its toolbar</p>
+      <div v-if="wrongRows.length" class="esx-table">
+        <NbDataTable :columns="invoiceColumns" :rows="wrongRows" row-key="id" title="Invoices" size="sm" :sticky-header="false">
+          <template #search><NbTextInput v-model="wrongQuery" name="esx-wrong-query" size="sm" placeholder="Search invoices" /></template>
+        </NbDataTable>
+      </div>
+      <NbEmptyState v-else size="sm" kind="no-results" title="No invoices match your filters" description="Try a broader search, or clear the filters to see everything." />
+      <p class="esx-note">The search field was inside the branch that tested the row count, so filtering to zero unmounted it. Nothing on screen can widen the filter now. <NbButton size="sm" variant="ghost" @click="wrongQuery = ''">Reset the demo</NbButton> stands in for the page reload, which is the only exit the audited product leaves.</p>
+    </div>
+    <div class="esx-half esx-half--right">
+      <p class="esx-label">Right: the empty state replaces the rows only</p>
+      <div class="esx-table">
+        <NbDataTable :columns="invoiceColumns" :rows="rightRows" row-key="id" title="Invoices" size="sm" :sticky-header="false">
+          <template #search><NbTextInput v-model="rightQuery" name="esx-right-query" size="sm" placeholder="Search invoices" /></template>
+          <template #empty>
+            <NbEmptyState size="sm" kind="no-results" :title="rightEmptyTitle" description="Try a broader search, or clear the filters to see everything.">
+              <template #actions><NbButton size="sm" variant="secondary" @click="rightQuery = ''">Clear filters</NbButton></template>
+            </NbEmptyState>
+          </template>
+        </NbDataTable>
+      </div>
+      <p class="esx-note">The title, the toolbar, the search field and the three headings all survive, the message sits under the columns it is about, and there are two ways out: the field that caused it, and the button in the empty state.</p>
+    </div>
+  </div>
+</preview>
+
 There is one deliberate exception. On a genuine `kind="empty"` first use, where
 nothing has ever existed, a filter bar is furniture for a set of zero. Hiding
 the _filters_ there is fine. The page header, the tabs and the primary action
@@ -243,6 +362,17 @@ right chrome and no message. Keep the chrome, add the message.
 | Side panel or inspector   | `sm` | no         | often none | one, or none       |
 | Card or dashboard tile    | `sm` | no         | none       | none, or one ghost |
 | Drop zone or empty column | `sm` | **yes**    | yes        | none               |
+
+The controls under this frame are the real props. `size` moves the padding and
+the measure together (`44ch` at `md`, `36ch` at `sm`), `bordered` is for a
+region with no edges of its own, and `icon` is the one a small container usually
+decides against. Every combination here is a container decision, not a mood.
+
+<preview :props="containerProps" v-slot="{ resultingProps }">
+  <div class="esx-stack">
+    <NbEmptyState :kind="resultingProps.kind" :size="resultingProps.size" :bordered="resultingProps.bordered" :icon="resultingProps.mark === 'none' ? null : undefined" title="Start by creating an environment" description="Environments hold content independently, so you can draft against staging without touching production." />
+  </div>
+</preview>
 
 ### In a table
 
@@ -369,6 +499,42 @@ page is empty. Duplicating that action inside the empty state is correct and
 expected, with the same label in both places. See
 [action labels](/content/action-labels).
 
+Both frames below are the real `NbShell` at a fixed height, the way
+[shell](/ui/components/shell) demonstrates itself: the frame stands in for the
+viewport, and nothing about the component is changed. The heading row inside the
+content is the application's own markup, because the library ships no
+page-header component, and it is exactly the part that has to survive.
+
+<preview dir="col">
+  <div class="esx-pair esx-pair--stack">
+    <div class="esx-half esx-half--wrong">
+      <p class="esx-label">Wrong: centred against the viewport, header replaced</p>
+      <div class="esx-shell-frame">
+        <NbShell style="height: 100%">
+          <template #topbar-left><strong>Environments</strong></template>
+          <div class="esx-page-empty esx-page-empty--viewport">
+            <NbEmptyState title="Start by creating an environment" description="Environments hold content independently, so you can draft against staging without touching production."><template #actions><NbButton icon="plus">Create environment</NbButton></template></NbEmptyState>
+          </div>
+        </NbShell>
+      </div>
+      <p class="esx-note">The box is twice the height of the frame, so the component centres itself below the fold and the call to action is off the bottom. The page heading and its primary action were inside the branch the empty state replaced, so there is nothing above it either.</p>
+    </div>
+    <div class="esx-half esx-half--right">
+      <p class="esx-label">Right: the header stays, the box is 24rem</p>
+      <div class="esx-shell-frame">
+        <NbShell style="height: 100%">
+          <template #topbar-left><strong>Environments</strong></template>
+          <div class="esx-page-header"><div class="esx-page-title">Environments</div><NbButton size="sm" icon="plus">Create environment</NbButton></div>
+          <div class="esx-page-empty">
+            <NbEmptyState title="Start by creating an environment" description="Environments hold content independently, so you can draft against staging without touching production."><template #actions><NbButton icon="plus">Create environment</NbButton></template></NbEmptyState>
+          </div>
+        </NbShell>
+      </div>
+      <p class="esx-note">The copy lands in the upper third, the action is on screen, and the same action is still in the header where it belongs once environments exist. Two buttons with one label, which is correct.</p>
+    </div>
+  </div>
+</preview>
+
 ### In a panel or inspector
 
 `size="sm"`, and usually `:icon="null"`. A panel is narrow, already framed, and
@@ -389,6 +555,23 @@ not a landing page.
 An inspector with no selection is a different thing again, and it belongs with
 the rest of the selection rules in [inspectors](/patterns/inspectors).
 
+Two real `NbShellPanel`s, side by side, at the width a panel actually gets.
+
+<preview dir="col">
+  <div class="esx-pair">
+    <div class="esx-half esx-half--wrong">
+      <p class="esx-label">Wrong: md, a mark, and a border inside a border</p>
+      <div class="esx-panel-frame"><NbShellPanel title="Comments" fluid><NbEmptyState class="esx-panel-child" bordered title="No comments yet" description="Select text in the document to leave the first one." /></NbShellPanel></div>
+      <p class="esx-note">Two outlines around one message, and a 32px mark taking the width a narrow column needed for the sentence. The panel header already said where the edges are.</p>
+    </div>
+    <div class="esx-half esx-half--right">
+      <p class="esx-label">Right: sm, no mark, no border</p>
+      <div class="esx-panel-frame"><NbShellPanel title="Comments" fluid><NbEmptyState class="esx-panel-child" size="sm" :icon="null" title="No comments yet" description="Select text in the document to leave the first one." /></NbShellPanel></div>
+      <p class="esx-note">One line, in a frame that is already framed. Note the binding is a real <code>:icon="null"</code>: the string <code>"null"</code> resolves to a missing icon instead of to no icon.</p>
+    </div>
+  </div>
+</preview>
+
 ### A drop zone or an empty column
 
 This is the one case for `bordered`. A dashed outline tells the reader how big
@@ -406,6 +589,15 @@ the empty region is, which matters when the empty thing is a target.
 
 Skip `bordered` inside anything that already has an edge: a panel, a card, or a
 table cell. Two nested outlines around one message read as a defect.
+
+The dashed outline is the size of the target, which is the information a drop
+zone owes the reader:
+
+<preview dir="col">
+  <div class="esx-stack esx-stack--narrow">
+    <NbEmptyState bordered size="sm" :icon="null" title="Drop a block here" description="Blocks in this zone render in order, top to bottom." />
+  </div>
+</preview>
 
 ---
 
@@ -574,6 +766,24 @@ Three conversions, one per audited defect.
 `emptyMessage` is a fallback for tables that are still being built. Anything a
 customer will see gets the `empty` slot and a real sentence naming the noun.
 
+The same table, the same columns, the same zero rows, twice. The only difference
+is whether anybody wrote the empty state.
+
+<preview dir="col">
+  <div class="esx-pair">
+    <div class="esx-half esx-half--wrong">
+      <p class="esx-label">Wrong: the library fallback, shipped</p>
+      <div class="esx-table"><NbDataTable :columns="memberColumns" :rows="[]" row-key="id" title="Members" size="sm" :sticky-header="false" /></div>
+      <p class="esx-note">This is what the component prints when the slot is left alone. It names no noun, offers nothing, and cannot tell "nobody has been invited yet" apart from "your filter excluded everyone".</p>
+    </div>
+    <div class="esx-half esx-half--right">
+      <p class="esx-label">Right: the empty slot, with a sentence</p>
+      <div class="esx-table"><NbDataTable :columns="memberColumns" :rows="[]" row-key="id" title="Members" size="sm" :sticky-header="false"><template #empty><NbEmptyState size="sm" title="Start by inviting a member" description="Members can sign in to this workspace and see its projects."><template #actions><NbButton size="sm" icon="plus">Invite member</NbButton></template></NbEmptyState></template></NbDataTable></div>
+      <p class="esx-note">The headings still describe what will be here, and now something says why it is not here yet, and what to press.</p>
+    </div>
+  </div>
+</preview>
+
 ---
 
 ## Tokens an empty state is allowed to touch
@@ -588,6 +798,16 @@ It has to be set inline (or from a rule more specific than a single class),
 because the component declares the default on its own root element. Raise it
 only for a genuinely wide container, and never past about `60ch`: centred prose
 gets hard to track well before the container runs out.
+
+The one knob, on the live component. The container is the same width at every
+setting: only the description's measure changes, and `80ch` is in the list to
+show what "hard to track" looks like rather than to recommend it.
+
+<preview :props="measureProps" v-slot="{ resultingProps }">
+  <div class="esx-stack">
+    <NbEmptyState :style="{ '--nb-empty-state-measure': resultingProps.measure }" title="Nothing scheduled this week" description="Runs you schedule appear here with the environment they will run against, their owner, and the time of the next execution." />
+  </div>
+</preview>
 
 Everything else the component paints comes from existing tokens and is not
 yours to override: `--nb-c-text` and `--nb-c-text-subtle` for the copy,
@@ -634,3 +854,278 @@ Before a view with a possible zero-item state ships:
     will not get it?
 12. Does it work in the dark theme, which it does for free if you did not
     restyle it?
+
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/* Rule 1: how many duplicates the wrong call to action has produced on this
+   page. The count is the whole point of the demo, so it is real state. */
+const duplicates = ref(0)
+
+/* Rule 2: one failing request, driving both halves of the pair. `contacts`
+   stays empty because a failed fetch leaves it empty, which is exactly why a
+   row count of zero is not evidence of anything. */
+const contacts = ref<{ id: string }[]>([])
+const contactStatus = ref<'idle' | 'loading' | 'error'>('idle')
+
+async function loadContacts() {
+  contactStatus.value = 'loading'
+  await wait(1400)
+  contactStatus.value = 'error'
+}
+
+/* Rule 3: the same four invoices and the same filter, run twice. */
+const invoiceColumns = [
+  { key: 'id', header: 'Invoice' },
+  { key: 'customer', header: 'Customer' },
+  { key: 'amount', header: 'Amount', align: 'right' as const },
+]
+
+const invoices = [
+  { id: 'INV-1041', customer: 'Northwind', amount: '€ 1,240.00' },
+  { id: 'INV-1042', customer: 'Contoso', amount: '€ 320.50' },
+  { id: 'INV-1043', customer: 'Fabrikam', amount: '€ 88.00' },
+  { id: 'INV-1044', customer: 'Northwind', amount: '€ 2,010.75' },
+]
+
+const filterInvoices = (query: string) => {
+  const q = query.trim().toLowerCase()
+  if (!q) return invoices
+  return invoices.filter(
+    (row) =>
+      row.id.toLowerCase().includes(q) || row.customer.toLowerCase().includes(q),
+  )
+}
+
+const wrongQuery = ref('')
+const rightQuery = ref('')
+const wrongRows = computed(() => filterInvoices(wrongQuery.value))
+const rightRows = computed(() => filterInvoices(rightQuery.value))
+const rightEmptyTitle = computed(
+  () => 'No invoices match “' + rightQuery.value.trim() + '”',
+)
+
+/* Migrations: the library default against a written empty state. */
+const memberColumns = [
+  { key: 'name', header: 'Member' },
+  { key: 'role', header: 'Role' },
+  { key: 'seen', header: 'Last seen' },
+]
+
+/* Rule 4. `mark` is a control, not a prop: it picks between the default icon
+   and a real `null`, and is read from `resultingProps` in the template so
+   nothing invented reaches the component. */
+const containerProps = [
+  {
+    label: 'Kind',
+    name: 'kind',
+    type: 'single',
+    options: [
+      { value: 'empty', label: 'empty' },
+      { value: 'no-results', label: 'no-results' },
+      { value: 'error', label: 'error' },
+      { value: 'forbidden', label: 'forbidden' },
+    ],
+    default: 'empty',
+  },
+  {
+    label: 'Size',
+    name: 'size',
+    type: 'single',
+    options: [
+      { value: 'md', label: 'md' },
+      { value: 'sm', label: 'sm' },
+    ],
+    default: 'md',
+  },
+  { label: 'Bordered', name: 'bordered', type: 'boolean', default: false },
+  {
+    label: 'Mark',
+    name: 'mark',
+    type: 'single',
+    options: [
+      { value: 'default', label: 'the icon for the kind' },
+      { value: 'none', label: 'no icon (:icon="null")' },
+    ],
+    default: 'default',
+  },
+]
+
+const measureProps = [
+  {
+    label: 'Measure',
+    name: 'measure',
+    type: 'single',
+    options: [
+      { value: '36ch', label: '36ch (the sm default)' },
+      { value: '44ch', label: '44ch (the md default)' },
+      { value: '52ch', label: '52ch' },
+      { value: '60ch', label: '60ch (the ceiling)' },
+      { value: '80ch', label: '80ch (too wide)' },
+    ],
+    default: '44ch',
+  },
+]
+</script>
+
+<style scoped>
+/* The preview area stretches its single child, so anything showing more than
+   one thing goes in a plain stacking wrapper. */
+.esx-stack {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--nb-base-unit) * 1.5);
+  width: 100%;
+}
+
+.esx-stack--narrow {
+  max-width: 26rem;
+}
+
+.esx-runner {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--nb-base-unit) * 1.5);
+  flex-wrap: wrap;
+}
+
+/* Four kinds, four cells, and as many columns as the page has room for. */
+.esx-quad {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: calc(var(--nb-base-unit) * 1.5);
+  width: 100%;
+  align-items: start;
+}
+
+.esx-cell {
+  border: 1px solid var(--nb-c-border);
+  border-radius: var(--nb-radius-md);
+  padding: calc(var(--nb-base-unit) * 1.5);
+}
+
+.esx-kind {
+  margin: 0;
+  font-family: var(--nb-font-family-mono, monospace);
+  font-size: 12px;
+  color: var(--nb-c-text-muted);
+}
+
+/* Wrong on the left, right on the right, one column when there is no room. */
+.esx-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: calc(var(--nb-base-unit) * 2);
+  width: 100%;
+  align-items: start;
+}
+
+.esx-pair--stack {
+  grid-template-columns: 1fr;
+}
+
+.esx-half {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--nb-base-unit) * 1.5);
+  align-items: stretch;
+  padding: calc(var(--nb-base-unit) * 1.5);
+  border-radius: var(--nb-radius-md);
+  border: 1px solid var(--nb-c-border);
+}
+
+.esx-half--wrong {
+  border-color: var(--nb-c-danger-surface);
+}
+
+.esx-half--right {
+  border-color: var(--nb-c-success-surface);
+}
+
+.esx-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.esx-half--wrong .esx-label {
+  color: var(--nb-c-danger);
+}
+
+.esx-half--right .esx-label {
+  color: var(--nb-c-success);
+}
+
+.esx-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--nb-c-text-muted);
+}
+
+/* The tables are the real component. The frame only stops a docs column from
+   letting them run to the full page width. */
+.esx-table {
+  border: 1px solid var(--nb-c-border);
+  border-radius: var(--nb-radius-md);
+  overflow: hidden;
+}
+
+/* NbShell fills its parent, so it can only be shown at a size a docs column
+   has. Nothing about the shell is changed; it is given a viewport. */
+.esx-shell-frame {
+  height: 300px;
+  overflow: hidden;
+  border: 1px solid var(--nb-c-border);
+  border-radius: var(--nb-radius-md);
+}
+
+/* The box the empty state is centred in, which is the decision rule 4 is
+   about. `24rem` puts the copy in the upper third of the frame. */
+.esx-page-empty {
+  display: flex;
+  min-height: 24rem;
+  padding: var(--nb-spacing-24) 0;
+}
+
+/* Twice the height of the frame, standing in for `min-height: 100vh` on a
+   laptop: the component centres itself below the fold. */
+.esx-page-empty--viewport {
+  min-height: 200%;
+}
+
+.esx-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--nb-base-unit) * 2);
+  padding-bottom: var(--nb-spacing-8);
+  border-bottom: 1px solid var(--nb-c-border);
+}
+
+.esx-page-title {
+  font-size: var(--nb-font-size-16);
+  font-weight: 600;
+  color: var(--nb-c-text);
+}
+
+.esx-panel-frame {
+  height: 220px;
+  display: flex;
+  border: 1px solid var(--nb-c-border);
+  border-radius: var(--nb-radius-md);
+  overflow: hidden;
+}
+
+/* NbShellPanel's content region is a bare flex row, so a single child sizes to
+   its content instead of spanning the panel. This is the only thing on the
+   page that had to be nudged, and it is a note in the resistance log rather
+   than a restyle of the empty state itself. */
+.esx-panel-child {
+  flex: 1;
+}
+</style>

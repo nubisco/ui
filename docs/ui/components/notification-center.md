@@ -11,7 +11,7 @@ tabs: ['Usage', 'Api']
 It is a **container**, not a feed. It holds no store, fetches nothing, polls nothing, marks nothing as read and knows nothing about your domain. Three Nubisco consoles each wrote this bell independently, and the parts that differed were the parts that should differ: what a notification is, where it came from, and what tapping it does. Everything the three agreed on, the trigger, the count, the dropdown, the dismissal rules, the focus order, the read/unread distinction, is here. One of those three files carries a comment saying it copied another console's placement so the two products would not disagree; that is the coordination this component makes unnecessary.
 
 ::: info Where the evidence on this page comes from
-Claims about "the audit" refer to a review of the twelve applications that consume this library (cms, keystone, verba, openbridge, platform, analytics, tally, openbridge-marketplace, stagewright, planetcraft, a white-label client product, stratos). That review is a report about **those** repositories and is not checked into this one, so do not go looking for it here. What it found in this repository is checkable here, and is linked wherever it is used.
+Claims about "the audit" refer to a review of the twelve applications that consume this library (cms, keystone, verba, openbridge, platform, analytics, tally, openbridge-marketplace, stagewright, planetcraft, stratos, and one white-label client product). That review is a report about **those** repositories and is not checked into this one, so do not go looking for it here. What it found in this repository is checkable here, and is linked wherever it is used.
 :::
 
 <preview dir="col">

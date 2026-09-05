@@ -1,9 +1,8 @@
 ---
+layout: nubisco
 title: Dialogs and destructive confirmation
 description: When a dialog is the right surface and when it is not, the button contract every confirmation obeys, when to demand type-to-confirm, when confirming is the wrong answer entirely, and a mechanical checklist for finding unguarded destructive actions in an existing view.
 ---
-
-# Dialogs and destructive confirmation
 
 A dialog stops the user. That is not a side effect of the pattern, it **is** the
 pattern: everything else on the screen becomes unreachable until the person in
@@ -96,6 +95,38 @@ button included. **The docs caused that defect.** That page has since been
 corrected and now points here, but the lesson is why this page exists: a wrong
 example is copied faster than a written rule is read.
 :::
+
+Both of those are live below. On the left is the confirmation this
+documentation used to teach, assembled out of `NbModal` exactly as it was
+written here; on the right is the same question through `useConfirm()`. Open
+them one after the other, and press <kbd>Tab</kbd> in each:
+
+<preview dir="col">
+  <div class="nfx-pair">
+    <div class="nfx-half nfx-half--wrong">
+      <p class="nfx-label">Wrong: a confirmation assembled out of NbModal</p>
+      <NbButton size="sm" @click="taughtWrongOpen = true">Delete environment</NbButton>
+      <NbModal :open="taughtWrongOpen" @close="taughtWrongOpen = false">
+        <template #header>Confirm Action</template>
+        <p style="margin: 0">Are you sure you want to continue?</p>
+        <template #footer>
+          <NbPanel style="padding: 12px">
+            <NbGrid dir="row" gap="sm" justify="end">
+              <NbButton variant="ghost" @click="taughtWrongOpen = false">Cancel</NbButton>
+              <NbButton variant="primary" @click="taughtWrongOpen = false">Confirm</NbButton>
+            </NbGrid>
+          </NbPanel>
+        </template>
+      </NbModal>
+      <p class="nfx-note">Five things are missing and none of them are visual: initial focus is not on Cancel, there is no pending lock, the role is <code>dialog</code> rather than <code>alertdialog</code>, the commit is the same blue as Save, and nothing on screen says which environment is about to go. The padded panel in the footer is a sixth defect, and the only one of the six you can see.</p>
+    </div>
+    <div class="nfx-half nfx-half--right">
+      <p class="nfx-label">Right: useConfirm(), one call</p>
+      <NbButton size="sm" variant="danger" @click="runCorrectConfirm">Delete environment</NbButton>
+      <p class="nfx-note">Cancel holds focus on open, the commit is red and says the verb, and the record is printed verbatim in its own strip. Nothing was mounted to make this work. Last answer: <strong>{{ correctAnswer }}</strong></p>
+    </div>
+  </div>
+</preview>
 
 ---
 
@@ -209,6 +240,57 @@ handling for that failure, is worse than no undo: the user has been told the
 mistake is fixed. If the restore can fail, confirm up front instead.
 :::
 
+### The inversion, live
+
+This is the audit's sharpest single finding, and it is one product: the delete
+that could be undone was confirmed, and the delete that could not be undone was
+not. Both halves below are wrong, and they are wrong in opposite directions:
+
+<preview dir="col">
+  <div class="nfx-pair">
+    <div class="nfx-half nfx-half--wrong">
+      <p class="nfx-label">Wrong: a guard on the reversible action</p>
+      <NbButton size="sm" @click="runCeremonyConfirm">Remove filter</NbButton>
+      <p class="nfx-note">Removing a filter is undone by adding it back, so this dialog has no consequence to warn about. Answered the same way every time, it teaches the user that a scrim means "press the red one". Last answer: <strong>{{ ceremonyAnswer }}</strong></p>
+    </div>
+    <div class="nfx-half nfx-half--wrong">
+      <p class="nfx-label">Wrong: no guard on the irreversible one</p>
+      <NbButton size="sm" variant="danger" @click="unguardedRevokes++">Regenerate secret</NbButton>
+      <p class="nfx-note">One click, no question, and every client using the old secret is already broken. Secrets regenerated so far in this preview: <strong>{{ unguardedRevokes }}</strong>. That is the audit's finding rendered exactly: the user cannot tell the two buttons apart until afterwards.</p>
+    </div>
+  </div>
+</preview>
+
+Corrected, the guard moves. The reversible one loses its dialog and gains an
+undo; the irreversible one gains the dialog it never had:
+
+<preview dir="col">
+  <div class="nfx-pair">
+    <div class="nfx-half nfx-half--right">
+      <p class="nfx-label">Right: reversible, so undo instead of ask</p>
+      <div class="nfx-rows">
+        <div v-for="comment in comments" :key="comment.id" class="nfx-row">
+          <span>{{ comment.author }}: {{ comment.text }}</span>
+          <NbButton size="sm" variant="ghost" @click="deleteComment(comment)">Delete</NbButton>
+        </div>
+      </div>
+      <div id="nfx-toaster-undo" class="nfx-toaster-frame nfx-toaster-frame--short"></div>
+      <ClientOnly>
+        <NbToaster :queue="undoQueue" to="#nfx-toaster-undo" :max="3" />
+      </ClientOnly>
+      <p class="nfx-note">The row leaves at once and the request is deferred until the toast ends. Press Undo and it comes back at its own index; let the toast expire and the delete commits. Committed deletes: <strong>{{ committedDeletes }}</strong>. Restore the list with <NbButton size="sm" variant="ghost" @click="resetComments">Reset</NbButton></p>
+    </div>
+    <div class="nfx-half nfx-half--right">
+      <p class="nfx-label">Right: irreversible, so ask</p>
+      <NbButton size="sm" variant="danger" @click="runSecretConfirm">Regenerate secret</NbButton>
+      <p class="nfx-note">Same action as the unguarded button above, with the reach of it stated before it happens rather than discovered after. Secrets regenerated: <strong>{{ guardedRevokes }}</strong></p>
+    </div>
+  </div>
+</preview>
+
+Note what the left half is not doing: there is no confirmation in front of the
+undo. Two guards on one action is not twice as safe.
+
 ---
 
 ## Rule 3: modal or non-modal
@@ -257,6 +339,25 @@ underneath it.
 
 Two `confirm()` calls never stack at all: there is one dialog for the whole
 page, and a second question queues behind the first.
+
+The one legal stack, running. Open the modal, start the delete inside it, and
+press <kbd>Esc</kbd>: the confirm closes and the modal is still there with your
+work in it. Press <kbd>Esc</kbd> again and the modal goes:
+
+<preview dir="col">
+  <NbGrid dir="row" gap="sm" align="center">
+    <NbButton size="sm" @click="stackOpen = true">Environment settings</NbButton>
+    <span class="nfx-note">Last answer: <strong>{{ stackAnswer }}</strong></span>
+  </NbGrid>
+  <NbModal :open="stackOpen" title="Environment settings" @close="stackOpen = false">
+    <NbTextInput label="Display name" name="nfx-stack-name" model-value="staging-eu" />
+    <p style="margin: 0">Deleting this environment takes its entries, releases and keys with it.</p>
+    <template #footer>
+      <NbButton variant="ghost" @click="stackOpen = false">Cancel</NbButton>
+      <NbButton variant="danger" @click="runStackedConfirm">Delete environment</NbButton>
+    </template>
+  </NbModal>
+</preview>
 
 ---
 
@@ -311,6 +412,46 @@ in the fleet:
 </template>
 ```
 
+### The contract, one variable at a time
+
+Two confirmations that differ in exactly one option each. The wrong half of each
+pair is a real defect out of the audit, and both are reachable only by asking
+for them: `NbConfirm` has no prop that styles a destructive commit as primary,
+so the left dialog below gets there through `tone="neutral"`, which is the
+option that means "this is not destructive".
+
+<preview dir="col">
+  <div class="nfx-pair">
+    <div class="nfx-half nfx-half--wrong">
+      <p class="nfx-label">Wrong: a destructive commit styled as a primary</p>
+      <NbButton size="sm" @click="runNeutralToneOnDestructive">Delete environment</NbButton>
+      <p class="nfx-note">The commit is the same blue as Save, and because <code>tone</code> also decides the role, this dialog is a <code>dialog</code> rather than an <code>alertdialog</code>: a screen reader no longer reads the consequence on entry. One wrong option, two losses.</p>
+    </div>
+    <div class="nfx-half nfx-half--right">
+      <p class="nfx-label">Right: tone danger, which is the default</p>
+      <NbButton size="sm" variant="danger" @click="runCorrectConfirm">Delete environment</NbButton>
+      <p class="nfx-note">Red commit, ghost cancel, cancel holding focus, <code>role="alertdialog"</code>. Nothing was passed to get any of it.</p>
+    </div>
+  </div>
+</preview>
+
+The second variable is the word on the button. Everything else about these two
+is identical:
+
+<preview dir="col">
+  <div class="nfx-pair">
+    <div class="nfx-half nfx-half--wrong">
+      <p class="nfx-label">Wrong: confirmLabel "Yes"</p>
+      <NbButton size="sm" @click="runYesLabel">Delete environment</NbButton>
+      <p class="nfx-note">Pulled out of the page into a list of actions, this button reads <code>Yes</code> and <code>Cancel</code>, which says nothing about what is being agreed to. The user has to go back and re-read the title to find out.</p>
+    </div>
+    <div class="nfx-half nfx-half--right">
+      <p class="nfx-label">Right: confirmLabel is the verb phrase</p>
+      <NbButton size="sm" variant="danger" @click="runCorrectConfirm">Delete environment</NbButton>
+      <p class="nfx-note">Reads <code>Delete environment</code> and <code>Cancel</code>, which is the whole dialog in two labels.</p>
+    </div>
+  </div>
+</preview>
 ### Why the commit label is the verb
 
 The reason is mechanical rather than aesthetic. A screen reader user can pull a
@@ -358,6 +499,34 @@ When the action touches someone else's data, say whose: `Delete Ana's comment`,
 not `Delete comment`. The audit found a comment delete that named nothing at
 all, in a product where moderators delete other people's writing.
 
+The same delete, asked twice. Only one of them tells the user which row they
+clicked:
+
+<preview dir="col">
+  <div class="nfx-pair">
+    <div class="nfx-half nfx-half--wrong">
+      <p class="nfx-label">Wrong: "Are you sure you want to continue?"</p>
+      <NbButton size="sm" @click="runVagueBody">Delete environment</NbButton>
+      <p class="nfx-note">Adds nothing the user did not already know. There is no record, no consequence and no reach, so the only information in the dialog is that a dialog appeared.</p>
+    </div>
+    <div class="nfx-half nfx-half--right">
+      <p class="nfx-label">Right: the record, verbatim, in its own strip</p>
+      <NbButton size="sm" variant="danger" @click="runNamedRecord">Delete environment</NbButton>
+      <p class="nfx-note">The name is monospaced because <code>staging-eu</code> and <code>staging-eul</code> are one glyph apart, and <code>subjectLabel</code> says what kind of thing it is. Last answer: <strong>{{ namedAnswer }}</strong></p>
+    </div>
+  </div>
+</preview>
+
+When the reach is a list rather than a sentence, `body` renders it inside the
+dialog. This one deletes a container, so it says what goes with it:
+
+<preview dir="col">
+  <NbGrid dir="row" gap="sm" align="center">
+    <NbButton size="sm" variant="danger" @click="runBodyList">Delete environment</NbButton>
+    <span class="nfx-note">The list comes from a render function, resolved before the call.</span>
+  </NbGrid>
+</preview>
+
 ---
 
 ## Rule 6: type-to-confirm is for blast radius, not for severity
@@ -394,6 +563,24 @@ The match ignores surrounding whitespace (a name pasted with a trailing space is
 the same intent) and is case sensitive (the friction is the point). The field
 clears on every open, so a phrase typed for one record cannot carry over to the
 next one.
+
+Both of these gate the commit. One of them is buying attention and the other is
+spending it:
+
+<preview dir="col">
+  <div class="nfx-pair">
+    <div class="nfx-half nfx-half--wrong">
+      <p class="nfx-label">Wrong: a gate on a routine, single-record delete</p>
+      <NbButton size="sm" @click="runOverGated">Delete note</NbButton>
+      <p class="nfx-note">One note, owned by the person deleting it, and a paragraph to reproduce before the button turns on. Do this on a routine action and people learn to copy the phrase without reading it, which spends exactly the attention the gate was meant to buy.</p>
+    </div>
+    <div class="nfx-half nfx-half--right">
+      <p class="nfx-label">Right: a gate sized to the blast radius</p>
+      <NbButton size="sm" variant="danger" @click="runTypedGate">Delete environment</NbButton>
+      <p class="nfx-note">A container and everything inside it. The gate is the record's own name, the match is case sensitive, and the field clears on every open so a phrase typed for one environment cannot carry to the next. Last answer: <strong>{{ typedAnswer }}</strong></p>
+    </div>
+  </div>
+</preview>
 
 ---
 
@@ -441,6 +628,43 @@ API rejects duplicates.
 For an `NbModal` you are driving yourself, the same rule applies with your own
 state: `:loading` on the commit button, `:close-disabled` on the modal, and
 `:close-on-overlay="false"` while the request is in flight.
+
+Both buttons below run the same 1.6 second request. Confirm each one and then
+click the commit again while it is still working:
+
+<preview dir="col">
+  <div class="nfx-pair">
+    <div class="nfx-half nfx-half--wrong">
+      <p class="nfx-label">Wrong: a hand-rolled confirm with no pending state</p>
+      <NbButton size="sm" @click="loosePendingOpen = true">Delete environment</NbButton>
+      <NbModal :open="loosePendingOpen" @close="loosePendingOpen = false">
+        <template #header>Delete environment</template>
+        <p style="margin: 0">This deletes staging-eu and everything in it.</p>
+        <template #footer>
+          <NbButton variant="ghost" @click="loosePendingOpen = false">Cancel</NbButton>
+          <NbButton variant="danger" @click="fireLooseDelete">Delete environment</NbButton>
+        </template>
+      </NbModal>
+      <p class="nfx-note">Nothing changes when you press it, so a user on a slow connection presses it again. DELETE requests sent: <strong>{{ looseFires }}</strong>. Everything after the first one is about to fail loudly on a record that no longer exists.</p>
+    </div>
+    <div class="nfx-half nfx-half--right">
+      <p class="nfx-label">Right: the request lives inside onConfirm</p>
+      <NbButton size="sm" variant="danger" @click="runLockedDelete">Delete environment</NbButton>
+      <p class="nfx-note">Both buttons and the close control lock, the commit spins under <code>busyLabel</code>, and <kbd>Esc</kbd>, the backdrop and the close control stop dismissing, because the request has already left. DELETE requests sent: <strong>{{ lockedFires }}</strong>, however many times you click.</p>
+    </div>
+  </div>
+</preview>
+
+The failure path is the same call. When `onConfirm` rejects, nothing resolves:
+the dialog stays open with the failure in it and the buttons come back, so the
+user retries or cancels with the error still in front of them.
+
+<preview dir="col">
+  <NbGrid dir="row" gap="sm" align="center">
+    <NbButton size="sm" variant="danger" outlined @click="runFailingDelete">Delete environment (fails)</NbButton>
+    <span class="nfx-note">Last answer: <strong>{{ failingAnswer }}</strong></span>
+  </NbGrid>
+</preview>
 
 ---
 
@@ -583,6 +807,23 @@ on a timer, never because a websocket delivered news.
 The test is the same as everywhere else on this page: does the system need an
 answer before it can continue, and is the cost of not asking borne by the user?
 Almost nothing that arrives on its own passes it.
+
+The exception in that last row is the only dialog on this page that is not
+destructive, and it is the one case where `tone="neutral"` is correct: the
+commit is primary rather than red, the role is `dialog` rather than
+`alertdialog`, and the button order, the ghost cancel and the focus on cancel
+are unchanged.
+
+<preview dir="col">
+  <NbGrid dir="row" gap="sm" align="center">
+    <NbButton size="sm" @click="runSessionConfirm">Simulate the session expiring</NbButton>
+    <span class="nfx-note">Last answer: <strong>{{ sessionAnswer }}</strong></span>
+  </NbGrid>
+</preview>
+
+In a product this one is not opened by a click, which is the only exemption to
+this rule that exists: the deadline is real, the user's unsaved work is what is
+at stake, and a banner they can ignore would cost them the work.
 
 ---
 
@@ -758,3 +999,341 @@ Only relevant where the view drives an `NbModal` itself.
   when it is not a question.
 - [Keyboard interaction](/accessibility/keyboard) for focus return and key
   meanings.
+
+<script setup lang="ts">
+import { h, ref } from 'vue'
+import { useConfirm } from '../../src/composables/useConfirm.composable'
+import { createToastQueue } from '../../src/composables/useToast.composable'
+
+const confirm = useConfirm()
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/* Rule 1, and reused as the right half of both Rule 4 pairs: the whole of a
+   correct destructive confirmation is these five lines. */
+const taughtWrongOpen = ref(false)
+const correctAnswer = ref('nothing yet')
+
+async function runCorrectConfirm() {
+  const answered = await confirm({
+    title: 'Delete environment',
+    subjectLabel: 'Environment',
+    subject: 'staging-eu',
+    message: 'Every entry, release and API key in it is deleted.',
+    confirmLabel: 'Delete environment',
+  })
+  correctAnswer.value = answered ? 'confirmed' : 'cancelled'
+}
+
+/* Rule 2: the inversion. A guard on something reversible, and no guard on
+   something that is not. */
+const ceremonyAnswer = ref('nothing yet')
+const unguardedRevokes = ref(0)
+const guardedRevokes = ref(0)
+
+async function runCeremonyConfirm() {
+  const answered = await confirm({
+    title: 'Remove filter',
+    message: 'The list will show all environments again.',
+    confirmLabel: 'Remove filter',
+  })
+  ceremonyAnswer.value = answered ? 'confirmed' : 'cancelled'
+}
+
+async function runSecretConfirm() {
+  const answered = await confirm({
+    title: 'Regenerate client secret',
+    subjectLabel: 'Client',
+    subject: 'openbridge-web',
+    message:
+      'Every integration using the current secret stops working the moment ' +
+      'the new one exists.',
+    confirmLabel: 'Regenerate secret',
+  })
+  if (answered) guardedRevokes.value += 1
+}
+
+/* Rule 2, the corrected reversible half: no dialog, an undo, and the request
+   deferred until the toast ends with a reason that is not `action`. */
+const undoQueue = createToastQueue({ max: 3 })
+const seedComments = [
+  { id: 'c1', author: 'Ana', text: 'The pricing table is off by one row.' },
+  { id: 'c2', author: 'Ravi', text: 'Shipped the fix, please re-check.' },
+]
+const comments = ref([...seedComments])
+const committedDeletes = ref(0)
+
+function resetComments() {
+  comments.value = [...seedComments]
+  committedDeletes.value = 0
+}
+
+function deleteComment(comment: (typeof seedComments)[number]) {
+  const index = comments.value.indexOf(comment)
+  if (index < 0) return
+  comments.value.splice(index, 1)
+  undoQueue.push({
+    message: 'Comment deleted',
+    variant: 'success',
+    duration: 8000,
+    cta: {
+      label: 'Undo',
+      action: () => comments.value.splice(index, 0, comment),
+    },
+    onDismiss: (reason) => {
+      if (reason !== 'action') committedDeletes.value += 1
+    },
+  })
+}
+
+/* Rule 3: the one legal stack. */
+const stackOpen = ref(false)
+const stackAnswer = ref('nothing yet')
+
+async function runStackedConfirm() {
+  const answered = await confirm({
+    title: 'Delete environment',
+    subjectLabel: 'Environment',
+    subject: 'staging-eu',
+    message: 'Every entry, release and API key in it is deleted.',
+    confirmLabel: 'Delete environment',
+  })
+  stackAnswer.value = answered ? 'confirmed' : 'cancelled'
+  if (answered) stackOpen.value = false
+}
+
+/* Rule 4: one variable at a time. `tone: 'neutral'` on a destructive action is
+   the defect, and it is the only way NbConfirm will render a primary-styled
+   commit at all. */
+async function runNeutralToneOnDestructive() {
+  await confirm({
+    title: 'Delete environment',
+    subjectLabel: 'Environment',
+    subject: 'staging-eu',
+    message: 'Every entry, release and API key in it is deleted.',
+    confirmLabel: 'Delete environment',
+    tone: 'neutral',
+  })
+}
+
+async function runYesLabel() {
+  await confirm({
+    title: 'Delete environment',
+    subjectLabel: 'Environment',
+    subject: 'staging-eu',
+    message: 'Every entry, release and API key in it is deleted.',
+    confirmLabel: 'Yes',
+  })
+}
+
+/* Rule 5: the body names the record. */
+const namedAnswer = ref('nothing yet')
+
+async function runVagueBody() {
+  await confirm({
+    title: 'Confirm Action',
+    message: 'Are you sure you want to continue?',
+    confirmLabel: 'Delete environment',
+  })
+}
+
+async function runNamedRecord() {
+  const answered = await confirm({
+    title: 'Delete environment',
+    subjectLabel: 'Environment',
+    subject: 'staging-eu',
+    message: 'Every entry, release and API key in it is deleted.',
+    confirmLabel: 'Delete environment',
+  })
+  namedAnswer.value = answered ? 'confirmed' : 'cancelled'
+}
+
+async function runBodyList() {
+  await confirm({
+    title: 'Delete environment',
+    subjectLabel: 'Environment',
+    subject: 'production',
+    confirmLabel: 'Delete environment',
+    body: () =>
+      h('ul', { style: 'margin: 0; padding-left: 1.2em' }, [
+        h('li', '1,204 entries'),
+        h('li', '38 releases'),
+        h('li', '4 API keys'),
+      ]),
+  })
+}
+
+/* Rule 6: the gate, over-applied and correctly applied. */
+const typedAnswer = ref('nothing yet')
+
+async function runOverGated() {
+  await confirm({
+    title: 'Delete note',
+    subjectLabel: 'Note',
+    subject: 'Weekly notes',
+    message: 'The note is deleted.',
+    confirmLabel: 'Delete note',
+    typeToConfirm: 'Weekly notes',
+    typeToConfirmHelper: 'Case sensitive.',
+  })
+}
+
+async function runTypedGate() {
+  const answered = await confirm({
+    title: 'Delete environment',
+    subjectLabel: 'Environment',
+    subject: 'production',
+    message: 'This deletes 1,204 entries, 38 releases and 4 API keys.',
+    confirmLabel: 'Delete environment',
+    typeToConfirm: 'production',
+    typeToConfirmHelper: 'Case sensitive.',
+  })
+  typedAnswer.value = answered ? 'confirmed' : 'cancelled'
+}
+
+/* Rule 7: the pending lock, and what its absence costs. */
+const loosePendingOpen = ref(false)
+const looseFires = ref(0)
+const lockedFires = ref(0)
+const failingAnswer = ref('nothing yet')
+
+async function fireLooseDelete() {
+  looseFires.value += 1
+  await wait(1600)
+  loosePendingOpen.value = false
+}
+
+async function runLockedDelete() {
+  await confirm({
+    title: 'Delete environment',
+    subjectLabel: 'Environment',
+    subject: 'staging-eu',
+    message: 'Every entry, release and API key in it is deleted.',
+    confirmLabel: 'Delete environment',
+    busyLabel: 'Deleting...',
+    onConfirm: async () => {
+      lockedFires.value += 1
+      await wait(1600)
+    },
+  })
+}
+
+async function runFailingDelete() {
+  const answered = await confirm({
+    title: 'Delete environment',
+    subjectLabel: 'Environment',
+    subject: 'staging-eu',
+    message: 'Every entry, release and API key in it is deleted.',
+    confirmLabel: 'Delete environment',
+    busyLabel: 'Deleting...',
+    onConfirm: async () => {
+      await wait(1200)
+      throw new Error('rejected by the API')
+    },
+    formatError: () =>
+      'The environment is locked by a running release. Wait for it to finish, then try again.',
+  })
+  failingAnswer.value = answered ? 'confirmed' : 'cancelled'
+}
+
+/* Rule 11: the one non-destructive dialog on this page. */
+const sessionAnswer = ref('nothing yet')
+
+async function runSessionConfirm() {
+  const answered = await confirm({
+    title: 'Stay signed in',
+    message:
+      'This session ends in two minutes, and the draft on this page has not ' +
+      'been saved.',
+    confirmLabel: 'Stay signed in',
+    tone: 'neutral',
+  })
+  sessionAnswer.value = answered ? 'stayed signed in' : 'cancelled'
+}
+</script>
+
+<style scoped>
+/* The preview area stretches its single child, so anything showing more than
+   one thing goes in a plain stacking wrapper. */
+.nfx-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: calc(var(--nb-base-unit) * 2);
+  width: 100%;
+  align-items: start;
+}
+
+.nfx-half {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--nb-base-unit) * 1.5);
+  align-items: flex-start;
+  padding: calc(var(--nb-base-unit) * 1.5);
+  border-radius: var(--nb-radius-md);
+  border: 1px solid var(--nb-c-border);
+}
+
+.nfx-half--wrong {
+  border-color: var(--nb-c-danger-surface);
+}
+
+.nfx-half--right {
+  border-color: var(--nb-c-success-surface);
+}
+
+.nfx-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.nfx-half--wrong .nfx-label {
+  color: var(--nb-c-danger);
+}
+
+.nfx-half--right .nfx-label {
+  color: var(--nb-c-success);
+}
+
+.nfx-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--nb-c-text-muted);
+}
+
+/* The comment list in the undo demo is page content, not a component: two
+   lines of text and a real NbButton each. */
+.nfx-rows {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--nb-base-unit));
+  width: 100%;
+}
+
+.nfx-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--nb-base-unit) * 1.5);
+  font-size: 13px;
+  color: var(--nb-c-text);
+}
+
+/* NbToaster is position: fixed, and a transform on an ancestor is what makes
+   fixed positioning resolve against that ancestor rather than the viewport.
+   In an application the stack anchors to the viewport corner. */
+.nfx-toaster-frame {
+  position: relative;
+  transform: translateZ(0);
+  width: 100%;
+  min-height: 220px;
+  border: 1px dashed var(--nb-c-border);
+  border-radius: var(--nb-radius-md);
+}
+
+.nfx-toaster-frame--short {
+  min-height: 180px;
+}
+</style>
