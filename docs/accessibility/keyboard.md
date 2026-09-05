@@ -1,9 +1,8 @@
 ---
+layout: nubisco
 title: Keyboard interaction
 description: Tab order, Escape and Enter conventions, focus visibility, focus management across dialogs and routes, arrow-key composites, skip links, and how to make a whole row activatable.
 ---
-
-# Keyboard interaction
 
 Everything a pointer can do, a keyboard must be able to do. That is WCAG 2.2 SC 2.1.1 and it is the criterion the fleet fails most often, always the same way: an interaction gets attached to an element that cannot receive focus, and nobody notices because everybody testing it has a mouse.
 

@@ -1,9 +1,8 @@
 ---
+layout: nubisco
 title: The app frame, navigation and going back
 description: What each region of NbShell is for, how a view contributes controls to it, the single breadcrumb trail, the ban on back buttons, and how an application with no router still says where the user is.
 ---
-
-# The app frame, navigation and going back
 
 The frame is the part of a product the user never chose to look at and never
 stops looking at. It answers three questions continuously, without being asked:
@@ -143,6 +142,90 @@ Two consequences worth stating outright, because both shipped:
 
 :::
 
+### The regions, running
+
+Both frames below are one real `NbShell`, given a fixed height the way
+[Shell](/ui/components/shell) demonstrates itself. Nothing is drawn by hand:
+every label sits in the region whose slot name it carries, so a label in the
+strip above `<main>` is proof that the strip is `topbar-left`, not an
+illustration of one.
+
+The console shape first: the rail, the two topbar halves, the `fixedbar`, the
+body, the pinned `bottom` region and the inspector column.
+
+<preview dir="col">
+  <div class="afx-stack">
+    <div class="afx-shell-frame afx-shell-frame--tall">
+      <NbShell sidebar-variant="verbose" inspector-visible inspector-size="xs" inspector-label="Properties" sidebar-label="Openbridge sections" style="height: 100%">
+        <template #sidebar-logo><span class="afx-region">sidebar-logo</span></template>
+        <template #sidebar-nav>
+          <span class="afx-region">sidebar-nav</span>
+          <NbSidebarMenu>
+            <NbSidebarMenuItem icon="cpu" label="Devices" href="#the-regions-running" active />
+            <NbSidebarMenuItem icon="chart-line" label="Reports" href="#the-regions-running" />
+          </NbSidebarMenu>
+        </template>
+        <template #sidebar-bottom><span class="afx-region">sidebar-bottom</span></template>
+        <template #topbar-left><span class="afx-region">topbar-left</span></template>
+        <template #topbar-right><span class="afx-region">topbar-right</span></template>
+        <template #fixedbar><span class="afx-region">fixedbar</span></template>
+        <template #bottom><span class="afx-region">bottom</span></template>
+        <template #inspector>
+          <NbShellPanel title="inspector" fill>
+            <p class="afx-note" style="padding: 0 var(--nb-base-unit)">Properties of the current selection. Its sections are <code>NbShellPanel</code>s, and it scrolls on its own.</p>
+          </NbShellPanel>
+        </template>
+        <p class="afx-region">default slot: the &lt;main&gt; element</p>
+        <p class="afx-note" style="margin: 0">The page, with exactly one <code>&lt;h1&gt;</code>, and the only scroll container in the frame.</p>
+      </NbShell>
+    </div>
+  </div>
+</preview>
+
+Then the three strips that sit above the topbar, which most products never use
+and two of them use for the wrong thing. `outer-menu` spans the rail and the
+inspector; `inner-menu` spans the body and the inspector but not the rail;
+`notification` is inside the body, above the topbar, and holds a `flush` banner
+about the account:
+
+<preview dir="col">
+  <div class="afx-stack">
+    <div class="afx-shell-frame">
+      <NbShell sidebar-variant="verbose" inspector-visible inspector-size="xs" style="height: 100%">
+        <template #outer-menu><span class="afx-region">outer-menu, over the rail, the body and the inspector</span></template>
+        <template #sidebar-logo><span class="afx-region">sidebar-logo</span></template>
+        <template #sidebar-nav><span class="afx-region">sidebar-nav</span></template>
+        <template #inner-menu><span class="afx-region">inner-menu, over the body and the inspector</span></template>
+        <template #notification>
+          <NbBanner status="warning" variant="callout" flush title="Read-only mode">Your session has viewer access. Ask an admin to grant editing.</NbBanner>
+        </template>
+        <template #topbar-left><span class="afx-region">topbar-left</span></template>
+        <template #inspector><NbShellPanel title="inspector" fill /></template>
+        <p class="afx-note" style="margin: 0">Three strips, three scopes: the application, the body, the account. None of them is the page.</p>
+      </NbShell>
+    </div>
+  </div>
+</preview>
+
+::: info What these frames cannot show, and why they are not shrunk further
+Three of the frame's behaviours are **viewport** behaviours, and a fixed-height
+box in a docs column is not a viewport:
+
+- **Everything below `collapse-at`.** The shell decides from
+  `window.innerWidth`, not from its own box, so the drawer, the drawer toggle
+  and the inspector sheet appear when the **browser window** is narrower than
+  672px, whatever size the frame above is. Narrow this page and the frames
+  collapse together with it; that is the honest way to see them.
+- **The scroll contract.** `<main>` is the only scroller, but at 320px each
+  region is most of the frame and there is nothing to scroll past.
+- **The skip link**, which is visible only while focused. Click inside a frame
+  and press Tab: it is the first thing the frame offers.
+
+Shrinking a shell until the rail, the topbar and the inspector are stripes
+would demonstrate none of that and would misrepresent all of it, so these
+frames stay at a size where each region is still recognisably itself.
+:::
+
 ### The scroll contract
 
 The frame is `height: 100dvh; overflow: hidden`. That is deliberate and it is
@@ -268,6 +351,35 @@ the inspector becomes a sheet.
   that warning is the only signal you get. It fires once, not once per
   contribution, because a route transition holds two contributors at a time.
 
+Both settings, side by side, with the same empty shell under each. Neither frame
+passes a topbar slot and neither has a contributor, so the only difference is the
+prop:
+
+<preview dir="col">
+  <div class="afx-pair">
+    <div class="afx-half afx-half--neutral">
+      <p class="afx-label">topbar="auto", the default</p>
+      <div class="afx-shell-frame afx-shell-frame--short">
+        <NbShell sidebar-variant="verbose" style="height: 100%">
+          <template #sidebar-logo><NbSidebarBrand icon="shield-check" title="Openbridge" subtitle="Fleet" /></template>
+          <p class="afx-note" style="margin: 0">The body starts at the top of the frame. There is no bar and no border line, because there is nothing to put in one.</p>
+        </NbShell>
+      </div>
+      <p class="afx-note">Absent from the DOM, not hidden. This is the setting that makes four products' empty-strip CSS deletable.</p>
+    </div>
+    <div class="afx-half afx-half--neutral">
+      <p class="afx-label">topbar="always"</p>
+      <div class="afx-shell-frame afx-shell-frame--short">
+        <NbShell sidebar-variant="verbose" topbar="always" style="height: 100%">
+          <template #sidebar-logo><NbSidebarBrand icon="shield-check" title="Openbridge" subtitle="Fleet" /></template>
+          <p class="afx-note" style="margin: 0">The bar is reserved and empty, and the body starts below its border.</p>
+        </NbShell>
+      </div>
+      <p class="afx-note">Correct when something outside the shell is positioned against the bar's height and would jump on the routes that fill neither half. Not correct as a default.</p>
+    </div>
+  </div>
+</preview>
+
 ### Order inside `topbar-right`
 
 The region takes whatever a view gives it, so without a rule a five-icon topbar
@@ -371,6 +483,80 @@ writes `<component :is="…">` everywhere**, including
 form that survives a rename of the local variable in review. Pick one per
 product; do not mix them in one file.
 
+### The contribution, running
+
+The frame below is a real `NbShell` with **no** `topbar-left` and **no**
+`topbar-right` slot passed to it. Everything in its topbar comes from a view
+mounted in the default slot, which calls `useShellSlot('topbar-left')` and
+`useShellSlot('topbar-right')` and renders into the outlets it gets back. There
+is no id anywhere in it, and the layout declares nothing.
+
+Unmount the view and watch the whole strip go with it: the contribution is what
+made the region exist, which is the third of the three defects above
+(**existence**) with no CSS involved.
+
+<preview dir="col">
+  <div class="afx-stack">
+    <div class="afx-controls">
+      <NbButton size="sm" variant="secondary" @click="viewMounted = !viewMounted">{{ viewMounted ? 'Unmount the view' : 'Mount the view' }}</NbButton>
+      <span class="afx-note">The view is {{ viewMounted ? 'on screen, and holding both topbar halves' : 'gone, and so is the topbar' }}.</span>
+    </div>
+    <div class="afx-shell-frame">
+      <NbShell sidebar-variant="verbose" style="height: 100%">
+        <template #sidebar-logo><NbSidebarBrand icon="shield-check" title="Openbridge" subtitle="Fleet" /></template>
+        <template #sidebar-nav>
+          <NbSidebarMenu>
+            <NbSidebarMenuItem icon="cpu" label="Devices" href="#the-contribution-running" active />
+            <NbSidebarMenuItem icon="chart-line" label="Reports" href="#the-contribution-running" />
+          </NbSidebarMenu>
+        </template>
+        <ContributingView v-if="viewMounted" />
+        <p v-else class="afx-note" style="margin: 0">No view is contributing, so there is no topbar in the DOM at all. Nothing was hidden: <code>topbar="auto"</code> (the default) never rendered it.</p>
+      </NbShell>
+    </div>
+  </div>
+</preview>
+
+That view is the one in the tip above. Written as a single-file component, which
+is what it would be in a product, it is exactly this:
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useShellSlot } from '@nubisco/ui'
+
+const crumbs = useShellSlot('topbar-left')
+const actions = useShellSlot('topbar-right')
+const dirty = ref(false)
+</script>
+
+<template>
+  <component :is="crumbs.Outlet">
+    <NbBreadcrumbs title="Openbridge" subtitle="Devices">
+      <a href="#devices">Devices</a>
+      <span aria-current="page">Rack 4</span>
+    </NbBreadcrumbs>
+  </component>
+
+  <component :is="actions.Outlet">
+    <NbButton
+      size="sm"
+      :variant="dirty ? 'primary' : 'ghost'"
+      @click="dirty = !dirty"
+    >
+      {{ dirty ? 'Save' : 'Edit something' }}
+    </NbButton>
+  </component>
+
+  <article>…</article>
+</template>
+```
+
+The page you are reading has no build step for a second single-file component,
+so the running one above is the same setup body with a render function instead
+of a template: `h(crumbs.Outlet, …)` is the outlet `<component :is="…">`
+resolves to, and nothing else about it differs.
+
 **Why.** The id convention looks harmless and fails in three ways we have shipped:
 
 1. **Timing.** A child's `onMounted` runs before its ancestors'. A view that
@@ -449,6 +635,54 @@ Whether the trail element itself lives in the layout's `#topbar-left` slot or is
 contributed by the view with `useShellSlot('topbar-left')` is a product
 decision, and both are legal. What is not legal is doing both, which is how two
 products came to render two trails.
+
+Two trails and one trail, in two real frames. The left-hand one is the shape two
+products ship: a correct trail in `topbar-left`, and a second one rendered into
+`topbar-right` on some routes.
+
+<preview dir="col">
+  <div class="afx-pair afx-pair--stack">
+    <div class="afx-half afx-half--wrong">
+      <p class="afx-label">Wrong: two trails, so neither is the answer</p>
+      <div class="afx-shell-frame afx-shell-frame--short">
+        <NbShell sidebar-variant="verbose" style="height: 100%">
+          <template #sidebar-logo><NbSidebarBrand icon="shield-check" title="Openbridge" subtitle="Fleet" /></template>
+          <template #topbar-left>
+            <NbBreadcrumbs title="Openbridge" subtitle="Devices">
+              <a href="#one-trail-owned-by-the-frame">Devices</a>
+              <span aria-current="page">Rack 4</span>
+            </NbBreadcrumbs>
+          </template>
+          <template #topbar-right>
+            <NbBreadcrumbs title="Fleet" subtitle="Rack 4" />
+          </template>
+          <p class="afx-note" style="margin: 0">Which of the two says where the user is? Both claim to, they disagree about the wording, and only one of them navigates.</p>
+        </NbShell>
+      </div>
+      <p class="afx-note">There are also now two <code>&lt;nav aria-label="breadcrumb"&gt;</code> landmarks in one document, which is the landmark-uniqueness rule broken as well.</p>
+    </div>
+    <div class="afx-half afx-half--right">
+      <p class="afx-label">Right: one trail on the left, actions on the right</p>
+      <div class="afx-shell-frame afx-shell-frame--short">
+        <NbShell sidebar-variant="verbose" style="height: 100%">
+          <template #sidebar-logo><NbSidebarBrand icon="shield-check" title="Openbridge" subtitle="Fleet" /></template>
+          <template #topbar-left>
+            <NbBreadcrumbs title="Openbridge" subtitle="Devices">
+              <a href="#one-trail-owned-by-the-frame">Devices</a>
+              <span aria-current="page">Rack 4</span>
+            </NbBreadcrumbs>
+          </template>
+          <template #topbar-right>
+            <NbButton size="sm" variant="ghost">Duplicate</NbButton>
+            <NbButton size="sm" variant="primary">Save</NbButton>
+          </template>
+          <p class="afx-note" style="margin: 0">Left is where you are, right is what you can do. One statement each, and the two halves never argue.</p>
+        </NbShell>
+      </div>
+      <p class="afx-note">One landmark named "breadcrumb", one location, and the corner is free for the primary action.</p>
+    </div>
+  </div>
+</preview>
 
 ### Flat products render no trail
 
@@ -560,6 +794,46 @@ product the two links are `<button>`s calling `ascend()`; see
 [Applications with no router](#applications-with-no-router).
 :::
 
+The two trails below are the same component with the same words. The only
+difference is what the crumbs are made of, and the difference is invisible until
+you use a keyboard. Tab through the pair: the left-hand trail is skipped
+entirely, because nothing in it is focusable, while the right-hand one stops on
+"Properties" and on "Casa del Mar".
+
+<preview dir="col">
+  <div class="afx-pair">
+    <div class="afx-half afx-half--wrong">
+      <p class="afx-label">Wrong: crumbs the user cannot activate</p>
+      <NbBreadcrumbs title="Meridian" subtitle="Properties">
+        <span>Properties</span>
+        <span>Casa del Mar</span>
+        <span>Tasks</span>
+      </NbBreadcrumbs>
+      <p class="afx-note">Renders identically to a working trail, which is why it survived review. Nothing is focusable, nothing is announced as actionable, and the last crumb carries no <code>aria-current</code>, so nothing says which of the three is the page.</p>
+    </div>
+    <div class="afx-half afx-half--right">
+      <p class="afx-label">Right: every crumb but the last navigates</p>
+      <NbBreadcrumbs title="Meridian" subtitle="Properties">
+        <a href="#crumbs-are-links-not-text">Properties</a>
+        <a href="#crumbs-are-links-not-text">Casa del Mar</a>
+        <span aria-current="page">Tasks</span>
+      </NbBreadcrumbs>
+      <p class="afx-note">Two real links and one current page. In an application the links are <code>RouterLink</code>s, and in a routerless one they are <code>NbButton variant="ghost"</code> calling <code>ascend()</code>.</p>
+    </div>
+  </div>
+</preview>
+
+::: warning What the running demo exposes: the component draws no separator between crumbs
+`NbBreadcrumbs` renders one chevron, between the brand prefix and the crumbs,
+and **nothing between the crumbs themselves**: they are laid out by a `0.35rem`
+gap, so the two trails above read as spaced words rather than as a path. That is
+a library gap, not a licence to inject your own `›` into the slot: a separator
+typed into the crumb list is read aloud, is not consistent between products, and
+is exactly the hand-rolled fix this page rules against. Raise it, the way
+[Theming the frame](#theming-the-frame-without-selectors) says to, and pass real
+links in the meantime.
+:::
+
 ### No back buttons
 
 **Rule.** Do not render a back button. Not in the topbar, not beside the trail,
@@ -589,6 +863,45 @@ task (a wizard, a checkout, an import) may offer **Cancel**, and a multi-step
 one may offer **Back** _within the step sequence_. Both are about the task, not
 about the application's structure, and both are labelled by what they do. See
 [Action labels](/content/action-labels).
+
+The pair, running, because the back button's defect is not visible in a
+screenshot: it is what the control **cannot say**.
+
+<preview dir="col">
+  <div class="afx-pair afx-pair--stack">
+    <div class="afx-half afx-half--wrong">
+      <p class="afx-label">Wrong: a back button and a page label</p>
+      <div class="afx-shell-frame afx-shell-frame--short">
+        <NbShell sidebar-variant="verbose" style="height: 100%">
+          <template #sidebar-logo><NbSidebarBrand icon="shield-check" title="Meridian" subtitle="Portfolio" /></template>
+          <template #topbar-left>
+            <NbButton size="sm" variant="ghost" icon="arrow-left">Back</NbButton>
+            <strong>Tasks</strong>
+          </template>
+          <p class="afx-note" style="margin: 0">Three levels deep. Back to what? On a deep link, a refresh or a link from an email there is no history behind this control, and it cannot name where it goes.</p>
+        </NbShell>
+      </div>
+      <p class="afx-note">It also hides depth: the two parents above this page are unreachable in one activation, and the search and sort the URL was holding are lost when "back" is a hard-coded route.</p>
+    </div>
+    <div class="afx-half afx-half--right">
+      <p class="afx-label">Right: the trail is the way back</p>
+      <div class="afx-shell-frame afx-shell-frame--short">
+        <NbShell sidebar-variant="verbose" style="height: 100%">
+          <template #sidebar-logo><NbSidebarBrand icon="shield-check" title="Meridian" subtitle="Portfolio" /></template>
+          <template #topbar-left>
+            <NbBreadcrumbs title="Meridian" subtitle="Properties">
+              <a href="#no-back-buttons">Properties</a>
+              <a href="#no-back-buttons">Casa del Mar</a>
+              <span aria-current="page">Tasks</span>
+            </NbBreadcrumbs>
+          </template>
+          <p class="afx-note" style="margin: 0">The same three levels, named. Either parent is one activation away, and the trail says the same thing after a refresh as it did before one.</p>
+        </NbShell>
+      </div>
+      <p class="afx-note">Structure, not history. The browser's own back button is still there, still bigger, and now it is the only one.</p>
+    </div>
+  </div>
+</preview>
 
 ## Page titles and the trail
 
@@ -1377,3 +1690,167 @@ not a licence for a selector. Raise it.
 [Action labels](/content/action-labels) ·
 [Keyboard interaction](/accessibility/keyboard) ·
 [Colour contrast](/accessibility/color-contrast)
+
+<script setup>
+import { defineComponent, h, ref } from 'vue'
+import NbBreadcrumbs from '../../src/components/Breadcrumbs.vue'
+import NbButton from '../../src/components/Button.vue'
+import { useShellSlot } from '../../src/composables/useShellSlot.composable'
+
+const viewMounted = ref(true)
+
+/**
+ * A view, not a mock of one: it is mounted in the shell's default slot and it
+ * reaches the topbar the only supported way, through useShellSlot. Written with
+ * a render function rather than a template because a docs page has no build step
+ * for a second single-file component, and h(crumbs.Outlet) is the same outlet
+ * `<component :is="crumbs.Outlet">` resolves to.
+ */
+const ContributingView = defineComponent({
+  name: 'ContributingView',
+  setup() {
+    const crumbs = useShellSlot('topbar-left')
+    const actions = useShellSlot('topbar-right')
+    const dirty = ref(false)
+
+    return () => [
+      h(crumbs.Outlet, null, {
+        default: () =>
+          h(NbBreadcrumbs, { title: 'Openbridge', subtitle: 'Devices' }, {
+            default: () => [
+              h('a', { href: '#the-contribution-running' }, 'Devices'),
+              h('span', { 'aria-current': 'page' }, 'Rack 4'),
+            ],
+          }),
+      }),
+      h(actions.Outlet, null, {
+        default: () =>
+          h(
+            NbButton,
+            {
+              size: 'sm',
+              variant: dirty.value ? 'primary' : 'ghost',
+              onClick: () => (dirty.value = !dirty.value),
+            },
+            () => (dirty.value ? 'Save' : 'Edit something'),
+          ),
+      }),
+      h('p', { class: 'afx-note', style: 'margin: 0' },
+        'This paragraph is the view. The trail and the button in the topbar are the same view, teleported into the two regions it claimed.'),
+    ]
+  },
+})
+</script>
+
+<style scoped>
+/* The preview area stretches its single child, so a demo with more than one
+   thing in it goes in a plain stacking wrapper. */
+.afx-stack {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--nb-base-unit) * 1.5);
+  width: 100%;
+}
+
+.afx-controls {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--nb-base-unit) * 1.5);
+  flex-wrap: wrap;
+}
+
+.afx-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: calc(var(--nb-base-unit) * 2);
+  width: 100%;
+  align-items: start;
+}
+
+.afx-pair--stack {
+  grid-template-columns: 1fr;
+}
+
+.afx-half {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--nb-base-unit) * 1.5);
+  align-items: flex-start;
+  padding: calc(var(--nb-base-unit) * 1.5);
+  border-radius: var(--nb-radius-md);
+  border: 1px solid var(--nb-c-border);
+}
+
+.afx-half--wrong {
+  border-color: var(--nb-c-danger-surface);
+}
+
+.afx-half--right {
+  border-color: var(--nb-c-success-surface);
+}
+
+.afx-half > .afx-shell-frame,
+.afx-half > .nb-breadcrumbs {
+  width: 100%;
+}
+
+.afx-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.afx-half--wrong .afx-label {
+  color: var(--nb-c-danger);
+}
+
+.afx-half--right .afx-label {
+  color: var(--nb-c-success);
+}
+
+.afx-half--neutral .afx-label {
+  color: var(--nb-c-text-muted);
+}
+
+.afx-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--nb-c-text-muted);
+}
+
+/* The region name, printed in the region. Not a component and not pretending
+   to be one: a label, so the slot names in the table above are findable on
+   screen. */
+.afx-region {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  color: var(--nb-c-text-subtle);
+  border: 1px dashed currentColor;
+  border-radius: 2px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+
+/* NbShell is height: 100dvh by design, so the only way to show it in a docs
+   column is to give it a smaller viewport. Nothing about the shell is changed. */
+.afx-shell-frame {
+  height: 260px;
+  overflow: hidden;
+  border: 1px solid var(--nb-c-border);
+  border-radius: var(--nb-radius-md);
+}
+
+.afx-shell-frame--tall {
+  height: 320px;
+}
+
+.afx-shell-frame--short {
+  height: 220px;
+}
+</style>

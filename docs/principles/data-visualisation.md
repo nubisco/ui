@@ -1,13 +1,12 @@
 ---
+layout: nubisco
 title: Data visualisation
 description: Choosing a chart, or choosing not to draw one. Axis rules, legends, empty and loading states, density, and what a chart owes a reader who cannot see colour.
 ---
 
-# Data visualisation
-
 `src/components/Charts/` holds six chart components (`NbBarChart`, `NbLineChart`, `NbPieChart`, `NbSparkline`, `NbGanttChart`, `NbInterpolationChart`) and three shared parts they all render through (`ChartFrame`, `ChartLegend`, `ChartTooltip`). Until now the documentation told you what each one accepts and nothing at all about when to reach for it, what its axis is allowed to do, or what it shows a user while the fetch is still in flight.
 
-The result is visible in the fleet. A white-label insurance product passes six hardcoded hex values into every chart because it could not see how else to escape a violet first series. Another product asks `NbBarChart` for `orientation="horizontal"`, does not get it, and works around the collided axis labels by shipping a second set of abbreviated category names in its translation files. A device dashboard draws four sparklines from arrays that start empty, so every metric card shows a blank box until the second poll lands, while a desktop app avoids the same blank box only because someone happened to pre-fill its history array with zeros. None of those are careless. All of them are decisions this page should have made for them.
+The result is visible in the fleet. A white-label white-label product passes six hardcoded hex values into every chart because it could not see how else to escape a violet first series. Another product asks `NbBarChart` for `orientation="horizontal"`, does not get it, and works around the collided axis labels by shipping a second set of abbreviated category names in its translation files. A device dashboard draws four sparklines from arrays that start empty, so every metric card shows a blank box until the second poll lands, while a desktop app avoids the same blank box only because someone happened to pre-fill its history array with zeros. None of those are careless. All of them are decisions this page should have made for them.
 
 ::: tip Colour has its own page
 Which of the three scales your data needs, in what order the eight roles are assigned, the measured separations under colour-vision deficiency, and the full white-label override recipe are on [Charts, Colour](/ui/components/charts/color). This page decides everything except which colours; where the two touch, this page states the rule and links.
@@ -58,7 +57,7 @@ Comparing one measure across named, unordered categories. Reach for it whenever 
 
 - **Categories come from the first series only.** `categories` is `props.series[0].data.map(d => d.x)`. Every series after the first is read positionally, by index. A second series with different `x` values is plotted under the first series' labels with no warning.
 - **A missing point is drawn as zero.** Bars read `s.data[ci]?.y ?? 0`, so a series that is short by one category renders a zero-height bar there and a `0` in the tooltip. "No data for March" and "zero in March" become the same picture. Fill your gaps explicitly before you pass them, or split the chart.
-- **`orientation` and `stacked` do nothing.** Both props are declared on `IBarChartProps` and defaulted in `withDefaults`, and neither is referenced by the render. `orientation="horizontal"` gets you a vertical chart. This is why the insurance dashboard ships shortened branch names: it asked for a horizontal chart, got vertical ticks that collided, and fixed the collision in its translation files.
+- **`orientation` and `stacked` do nothing.** Both props are declared on `IBarChartProps` and defaulted in `withDefaults`, and neither is referenced by the render. `orientation="horizontal"` gets you a vertical chart. This is why the white-label dashboard ships shortened branch names: it asked for a horizontal chart, got vertical ticks that collided, and fixed the collision in its translation files.
 
 ### `NbLineChart`
 
@@ -267,7 +266,7 @@ For a chart, accessible means two things beyond the usual: **there is a text alt
 
 Charts paint through eight semantic roles, `--nb-c-chart-1` to `--nb-c-chart-8`, plus five ramp anchors, all declared in `src/styles/_theme.scss` for both themes. A product that is not violet redefines those eight once and every chart in the application follows, including the ones nobody has written yet.
 
-The insurance product predates the roles. It found a palette module that named brand ramps directly, could not override them, and did this:
+The white-label product predates the roles. It found a palette module that named brand ramps directly, could not override them, and did this:
 
 ```ts
 // Do not copy this. It is the shape of the problem.

@@ -62,7 +62,6 @@
                 { label: 'dark', value: 'dark' },
               ]"
               name="theme-selector"
-              :virtual="false"
             />
           </template>
           <template
@@ -76,8 +75,6 @@
                 :label="availableProp.label ?? availableProp.name"
                 :options="availableProp.options"
                 :name="availableProp.name"
-                :allowClear="availableProp.allowClear ?? true"
-                :virtual="false"
                 :placeholder="availableProp.placeholder"
               />
             </template>
@@ -88,25 +85,17 @@
                 :label="availableProp.label ?? availableProp.name"
                 :options="availableProp.options"
                 :name="availableProp.name"
-                :allowClear="availableProp.allowClear ?? true"
                 multiple
-                :virtual="false"
                 :placeholder="availableProp.placeholder"
               />
             </template>
             <!-- boolean -->
             <template v-else-if="availableProp.type === 'boolean'">
-              <NbSelect
+              <NbSwitch
                 v-model="reactiveValues[availableProp.name]"
-                variant="fluid"
+                class="preview--boolean-control"
                 :label="availableProp.label ?? availableProp.name"
-                :options="[
-                  { label: 'true', value: true },
-                  { label: 'false', value: false },
-                ]"
                 :name="availableProp.name"
-                :virtual="false"
-                :placeholder="availableProp.placeholder"
               />
             </template>
             <!-- string -->
@@ -205,9 +194,10 @@ const props = withDefaults(defineProps<PreviewProps>(), {
 
 const themeClass = ref('light')
 
-const previewClasses = computed(() => {
-  return themeClass ? { [themeClass.value]: true } : {}
-})
+const previewClasses = computed(() => ({
+  'preview--slot': true,
+  [themeClass.value]: true,
+}))
 
 const reactiveValues = reactive(
   props.props.reduce(
@@ -300,6 +290,29 @@ const previewWrapperClasses = computed(() => ({
 .preview {
   position: relative;
   background: var(--nb-c-surface);
+  // A stacked demo is laid out in normal block flow rather than as a flex
+  // column, because a flex column stretches whatever it is handed. A lone
+  // badge was pulled to the full width of the frame and drawn as a grey bar,
+  // and an item carrying NbGrid's `grow` (`flex: 1 1 0`) stopped being sized
+  // by its own content at all. Demos worked around that with a wrapper div,
+  // which is exactly what a demo should not need. In block flow every item is
+  // the size it would be on a real page: a banner or a card fills the width
+  // because a block does, a badge or a button stays its own size because it
+  // is inline-level. The margin reproduces the `gap="md"` the flex column
+  // used, so a stack keeps the same rhythm it had. Rows stay flex, since
+  // distributing width across a row is the point of a row demo.
+  .preview--slot.col {
+    display: block;
+
+    > :deep(* + *) {
+      margin-top: calc(var(--nb-base-unit) * 2);
+    }
+  }
+  // The boolean control is a switch, not a full-width field, so keep it from
+  // being stretched by the distributed row of controls.
+  :deep(.preview--boolean-control) {
+    justify-content: space-between;
+  }
   &.constrained {
     overflow: hidden;
   }

@@ -97,7 +97,7 @@ semantic     --nb-c-primary                 "the brand's main action colour"
 
 The raw layer describes a pigment. The semantic layer describes a job. A white-label deployment retints the semantic layer and everything that spoke semantically follows; everything that named a pigment stays purple.
 
-This is not hypothetical. `NbButton`'s ghost hover border used to name `--nb-c-grape-hyacinth-200`, a raw Nubisco brand ramp, and a white-label client had to write the vendor's purple into their own stylesheet to stop it leaking onto that edge. The comment explaining the fix is still in `Button.vue`. The same class of mistake in a chart palette put a purple placeholder into a green-branded insurance product, where no upgrade could remove it, because the hex had been copied into the consuming app.
+This is not hypothetical. `NbButton`'s ghost hover border used to name `--nb-c-grape-hyacinth-200`, a raw Nubisco brand ramp, and a white-label client had to write the vendor's purple into their own stylesheet to stop it leaking onto that edge. The comment explaining the fix is still in `Button.vue`. The same class of mistake in a chart palette put a purple placeholder into a green-branded white-label product, where no upgrade could remove it, because the hex had been copied into the consuming app.
 
 **Rule: never name a raw token in application code.** Raw tokens exist so the theme layer can be built out of them. If the semantic token you need does not exist, that is a gap in this library worth reporting, not a licence to reach past it.
 

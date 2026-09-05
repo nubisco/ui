@@ -1,9 +1,8 @@
 ---
+layout: nubisco
 title: Spacing and rhythm
 description: The Nubisco spacing scale, how to pick a step, and where space belongs when a component and its parent disagree.
 ---
-
-# Spacing and rhythm
 
 Space is the only property in this library that two people can both get "right" and still produce two different screens. Colour has semantic roles that refuse to be misread. Type has named sets. Space has a number, and a number always looks reasonable in isolation.
 

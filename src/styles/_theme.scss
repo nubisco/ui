@@ -272,7 +272,7 @@
     // Charts/shared/palette.ts used to name inline, so this theme repaints
     // nothing, but a white-label product now retints every chart in the
     // product by redefining eight custom properties in one place instead of
-    // hardcoding hex per app. (A green-branded insurance product did the
+    // hardcoding hex per app. (A green-branded white-label product did the
     // hardcoding and shipped a violet placeholder series.)
     //
     // Order is part of the contract. colorAt() walks 1, 2, 3 ... and wraps

@@ -173,6 +173,8 @@ export default withMermaid(
               },
               { text: 'Building a form', link: '/patterns/forms' },
               { text: 'Empty states', link: '/patterns/empty-states' },
+              { text: 'Loading and progress', link: '/patterns/loading' },
+              { text: 'Notifications', link: '/patterns/notifications' },
               { text: 'Building an inspector', link: '/patterns/inspectors' },
               {
                 text: 'Status indicators',

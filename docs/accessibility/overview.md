@@ -1,9 +1,8 @@
 ---
+layout: nubisco
 title: Accessibility
 description: What NubiscoUI guarantees, what your application still owns, and how to read a component page that says nothing about accessibility.
 ---
-
-# Accessibility
 
 An audit of twelve applications built on this library found two consoles with clickable table rows that no keyboard can reach, one with card rows built as bare `<div>`s, and one where reordering a form's fields required a mouse. In every case the team had looked at the component page, found nothing about accessibility, and drawn the reasonable conclusion that the library had it covered.
 

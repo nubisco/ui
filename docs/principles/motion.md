@@ -1,9 +1,8 @@
 ---
+layout: nubisco
 title: Motion
 description: What movement is allowed to mean in this library, the four duration tokens and how to pick one, which curve belongs to entering, exiting and moving, how several moving things are coordinated, and the reduced-motion rule.
 ---
-
-# Motion
 
 Motion is the only part of this system that costs the user time. A colour is read instantly, a spacing step is read instantly, and a 300ms slide is 300ms the user spends waiting to find out what happened. That is the whole economics of this page: every animation has to buy back the time it spends, and most of them do not.
 
@@ -41,7 +40,7 @@ Motion in a Nubisco application is doing one of exactly three things. If you can
 
 ### What motion is not for
 
-It is not for delight, polish, brand expression or making a screen feel alive. This library is used to build a CMS, an integration console, an insurance back office and a node graph editor. In all four, the user is doing work, and the thing that feels good is that the interface got out of the way.
+It is not for delight, polish, brand expression or making a screen feel alive. This library is used to build a CMS, an integration console, a back office and a node graph editor. In all four, the user is doing work, and the thing that feels good is that the interface got out of the way.
 
 The concrete prohibitions:
 

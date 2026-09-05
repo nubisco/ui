@@ -1,9 +1,8 @@
 ---
+layout: nubisco
 title: Colour
 description: The difference between a brand ramp and a semantic role, what every role in NubiscoUI means, how the -a11y inks work, and what a white-label product may override.
 ---
-
-# Colour
 
 There are two colour vocabularies in this library and only one of them is yours.
 
@@ -12,7 +11,7 @@ A **ramp** is a named hue with seventeen tints: `--nb-c-grape-hyacinth-500` is a
 Application code and component code name roles. Only `src/styles/_theme.scss` names ramps.
 
 ::: danger This is the rule the audit found broken
-A white-label insurance product inherited a violet placeholder series in its charts, because `Charts/shared/palette.ts` listed eight ramp names and a comment claiming brand overrides propagated. They did not: the product did not own those ramps, so it hardcoded hex per chart and now no library upgrade can recolour it. Separately, the ghost button bound its hover border to `--nb-c-grape-hyacinth-200`, so a rebranded product had to name the vendor's brand colour in its own stylesheet to stop purple leaking on hover.
+A white-label white-label product inherited a violet placeholder series in its charts, because `Charts/shared/palette.ts` listed eight ramp names and a comment claiming brand overrides propagated. They did not: the product did not own those ramps, so it hardcoded hex per chart and now no library upgrade can recolour it. Separately, the ghost button bound its hover border to `--nb-c-grape-hyacinth-200`, so a rebranded product had to name the vendor's brand colour in its own stylesheet to stop purple leaking on hover.
 
 Both now go through roles (`--nb-c-chart-1` through `-8`, and `--nb-c-primary-subtle`). The rule exists so the next one does not happen.
 :::

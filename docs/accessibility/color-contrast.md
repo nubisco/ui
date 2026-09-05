@@ -1,9 +1,8 @@
 ---
+layout: nubisco
 title: Colour and contrast
 description: Contrast requirements for text, icons, borders and focus rings, why colour is never the only signal, what the -a11y shade system actually does, and how the dark theme and forced colours change the answer.
 ---
-
-# Colour and contrast
 
 Colour fails quietly. A control with no keyboard path is obviously broken the moment you test it; a label at 2:1 looks fine to the person who chose it, on the display they chose it on, and disappears for everybody else. Nobody files a bug, because the people who cannot read it assume they have missed something.
 

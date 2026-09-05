@@ -28,7 +28,10 @@ export interface PreviewPropColor extends PreviewPropBase {
   default?: string
 }
 
-/** Renders a toggle switch. Use for boolean props. */
+/**
+ * Renders a toggle switch (`NbSwitch`). Use for boolean props.
+ * `placeholder` is ignored: a switch has no empty state to describe.
+ */
 export interface PreviewPropBoolean extends PreviewPropBase {
   type: 'boolean'
   default?: boolean
@@ -58,8 +61,6 @@ export interface PreviewPropSingle extends PreviewPropBase {
   /** The list of valid values for this prop. */
   options: Array<{ value: string | number; label: string }>
   default?: string | number
-  /** Whether the dropdown shows a clear option. Defaults to true. */
-  allowClear?: boolean
 }
 
 /** Renders a multi-select dropdown. Use for array props that accept multiple values from a fixed set. */
@@ -68,8 +69,6 @@ export interface PreviewPropMulti extends PreviewPropBase {
   /** The list of valid values for this prop. */
   options: Array<{ value: string | number; label: string }>
   default?: Array<string | number>
-  /** Whether the dropdown shows a clear option. Defaults to true. */
-  allowClear?: boolean
 }
 
 // ─── Union ────────────────────────────────────────────────────────────────────

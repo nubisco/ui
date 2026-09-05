@@ -11,7 +11,7 @@
 // `--nb-c-grape-hyacinth-500` and friends with a comment claiming that brand
 // overrides propagated automatically. They did not. Those are ramp names, not
 // roles, and a product that rebrands does not own them, so a green-branded
-// insurance product hardcoded hex per chart and shipped a violet placeholder
+// white-label product hardcoded hex per chart and shipped a violet placeholder
 // series. Ramp names are also why `--nb-c-chart-*` steps up its tints under
 // `.dark` (three of the eight light values fail WCAG 1.4.11 on a dark surface)
 // while the call sites here stay theme-agnostic.
