@@ -1,3 +1,231 @@
+# [2.0.0](https://github.com/nubisco/ui/compare/v1.0.0...v2.0.0) (2026-09-05)
+
+
+* fix(theme)!: rebuild the dark layer ramp for AAA on every surface ([a056fc2](https://github.com/nubisco/ui/commit/a056fc2c5bd55e88d6f91dab7cb885ccaafc3b5a)), closes [#6f6f6f](https://github.com/nubisco/ui/issues/6f6f6f) [#5e5e5e](https://github.com/nubisco/ui/issues/5e5e5e)
+* fix(theme)!: rebuild the light layer ramp for AAA on every surface ([28d5dcf](https://github.com/nubisco/ui/commit/28d5dcfb75cbc13e328182aa19460b98fa95e6db))
+
+
+### Bug Fixes
+
+* accent bar via background gradient, inward semicircle ports, selected hover border ([190aeb8](https://github.com/nubisco/ui/commit/190aeb850fec17f8b32437b947beb46e32c551c5))
+* add Gantt chart to docs sidebar navigation ([e6abd31](https://github.com/nubisco/ui/commit/e6abd31da67b1953bf26fd31aad4779015017d51))
+* add missing components to global registration (FileUploader, ImageCropper, AiLabel, Switch, Form) ([0854001](https://github.com/nubisco/ui/commit/08540011280e2936d4b4e2b1516691fa3d2326da))
+* **banner:** centre the row when it carries action controls ([77e0608](https://github.com/nubisco/ui/commit/77e06081fc81c67ea8e355999665eb6f9cdef0ff))
+* **banner:** status bar, filled icons, and a close button that is not purple ([06314f2](https://github.com/nubisco/ui/commit/06314f2843127b9c093016b9308fa01b4900694e))
+* **banner:** stop the host's paragraph styles inflating the body ([9d36258](https://github.com/nubisco/ui/commit/9d36258f85616720fb268c60519078166bfbec07))
+* **blueprint-card:** top/bottom gutter on port pin column ([95bb07b](https://github.com/nubisco/ui/commit/95bb07b68879417317054aca350c0bb4c0a3f16d))
+* **blueprint:** activity gated on real signal; separate levels from activity ([64a56bb](https://github.com/nubisco/ui/commit/64a56bb7c89b970e2f40bb99d4bedd1cdb728ec4))
+* **blueprint:** compositor-only port glow (was animating box-shadow) ([466b413](https://github.com/nubisco/ui/commit/466b413328951abf975407b41200869e290b34cf))
+* **blueprint:** don't deselect when the mousedown lands on chrome ([5b4f825](https://github.com/nubisco/ui/commit/5b4f825859d0938b64302f9f80e4bcb8fac7c8ea)), closes [#chrome](https://github.com/nubisco/ui/issues/chrome)
+* **blueprint:** don't preventDefault Space when a text input is focused ([07c011f](https://github.com/nubisco/ui/commit/07c011fae475245ef87b8894eb65c14c3e3483af))
+* **Blueprint:** export IBlueprintCard/IBlueprintProps and ship interface modules ([7840620](https://github.com/nubisco/ui/commit/78406209125f71806c7fa0cd7f8b8fb4f0c29601)), closes [#card](https://github.com/nubisco/ui/issues/card)
+* **blueprint:** grow a card to contain its own port column ([cbe741d](https://github.com/nubisco/ui/commit/cbe741d761d7e0662aa68e54e8b1b672319d3310))
+* **blueprint:** keep selection box glued to cards during pan/zoom ([0531a2f](https://github.com/nubisco/ui/commit/0531a2f90e3d3e8fd6d11c277a9db02371d0cfea))
+* **blueprint:** make live pins readable and stop them erasing the meter ([00eb98e](https://github.com/nubisco/ui/commit/00eb98e7b70b2dd39fb0c23be26e490b39895848))
+* **blueprint:** port signal = compositor-only ping (not box-shadow); align >9-port labels ([85580f7](https://github.com/nubisco/ui/commit/85580f79ea0f33515066f133ee7f2114e545d1cc))
+* **blueprint:** prevent descendant from moving cards ([63ecd99](https://github.com/nubisco/ui/commit/63ecd99c1ec96f561719b331962100cb5d544fc3))
+* **blueprint:** require pixi.js peer + shape the port ping like the pin ([4f84b0b](https://github.com/nubisco/ui/commit/4f84b0b5147d4a80c44d1f8a73e974604bb46b19))
+* **blueprint:** run the vibrate wire wave source-to-dest at a fixed wavelength ([1e257ef](https://github.com/nubisco/ui/commit/1e257ef021483b5e14732cf7eafd248a1e1bbd19))
+* **blueprint:** stop text/element selection on the canvas ([47b8bc7](https://github.com/nubisco/ui/commit/47b8bc72856dcfa16c750644ad181d53370e290c))
+* **blueprint:** tighten MutationObserver to break wire-update feedback loop ([8484dcd](https://github.com/nubisco/ui/commit/8484dcdded81fe37c07be91c3daad4d750c60519))
+* **blueprint:** tighter/faster vibrate; reset wire shape on style/mode switch ([4a4a644](https://github.com/nubisco/ui/commit/4a4a644a92a885d8d6db2539bf9a3832e393598b))
+* **breadcrumbs:** no separator when the slot renders nothing ([70f18f5](https://github.com/nubisco/ui/commit/70f18f5c3a6bd02b9d950a9c85c25aaac0034dc0))
+* build plugins to dist/plugins as JS, fix exports ([6358102](https://github.com/nubisco/ui/commit/63581027720d782cee012ca1e40a26569a975f6f))
+* **build:** stop publishing sourcemaps and verify the release is installable ([23eafb2](https://github.com/nubisco/ui/commit/23eafb282f650618ce66f4ce667d49a5da375985))
+* **button:** an icon-only button is the same width as a link ([4c09583](https://github.com/nubisco/ui/commit/4c095831ed04178e069fe4c6671410f937145648))
+* **Button:** render to prop as plain <a href> for SSR compatibility ([81ba471](https://github.com/nubisco/ui/commit/81ba471974252ca3912430c432563863f6d31028))
+* **button:** take the hover border from a semantic role, not a brand ramp ([c93533d](https://github.com/nubisco/ui/commit/c93533d28c1e68894bc994152d88efd7abdaccd9))
+* card dragging works with Vue reactive re-renders, unclip ports ([aa40a7c](https://github.com/nubisco/ui/commit/aa40a7c8647208a8be0ba10dcec5e658aad0c424))
+* **ci:** move build-script approval to pnpm-workspace.yaml ([9196854](https://github.com/nubisco/ui/commit/9196854c40d69e723226b1f2f202d9c640c5c758))
+* clip accent bar to card radius, drive selection via prop not DOM ([bbae370](https://github.com/nubisco/ui/commit/bbae37013b35f3141063b408b3b80edbf9837406))
+* clip accent bar with inner wrapper, semicircle ports, selected+hover border ([f828f5e](https://github.com/nubisco/ui/commit/f828f5e7dee69a2d47036d77f7296e374b31aad6))
+* **data-table:** align with Carbon, drop invented controls, stop reflow ([becefe2](https://github.com/nubisco/ui/commit/becefe2ffae05a6aa819ae75719caefba482b62c))
+* **docs:** contain z-index in preview wrapper to prevent NbShell overlap ([ee72ac6](https://github.com/nubisco/ui/commit/ee72ac60e64e9e8db043eac9b4e075b51b36af91))
+* **docs:** format VitePress config for Prettier compliance ([8d97873](https://github.com/nubisco/ui/commit/8d978730c5c285621eb83a284ac58769d8b9b9a4))
+* **docs:** move sitemap config to top level so VitePress generates sitemap.xml ([d293bf9](https://github.com/nubisco/ui/commit/d293bf9b749ff40b4f8105e51b6ec797a795d8f1))
+* **docs:** reformat Plausible script tag to satisfy Prettier line length ([efc96da](https://github.com/nubisco/ui/commit/efc96dab5f111251accbb321575da26b56b74418))
+* **docs:** resolve design tokens 404 in production by respecting base path ([01a3433](https://github.com/nubisco/ui/commit/01a34333907a7de29b12f34afe1168fe318b3529))
+* **docs:** write tokens.json to docs/public so VitePress copies it to dist ([6cef877](https://github.com/nubisco/ui/commit/6cef8771e32e1dca6be8d84c048fa96f9ecf0120))
+* **exports:** NbAiLabel, NbFileUploader, NbForm and NbImageCropper were never exported ([421293d](https://github.com/nubisco/ui/commit/421293d72866a25c378ff3b745cd7033f877d187))
+* **file-uploader:** replace all wildcard characters in MIME type check ([9489be5](https://github.com/nubisco/ui/commit/9489be5a02f7cd019626acbbf12947e4c59c634f))
+* format config.ts to pass prettier check ([60e4d2b](https://github.com/nubisco/ui/commit/60e4d2b361e26c5247a15f249d68d83c61618b81))
+* **forms:** normalize label-to-field gap across form controls ([#5](https://github.com/nubisco/ui/issues/5)) ([79de70f](https://github.com/nubisco/ui/commit/79de70f8c16f41c31e19b08ffd248ead365164e5))
+* install NbCommandPalettePlugin automatically from the main plugin ([aafabc1](https://github.com/nubisco/ui/commit/aafabc12dec239616d43447680b83e8293c65f74))
+* **logo:** fix the project logo path in README.md re [#1](https://github.com/nubisco/ui/issues/1) ([7a9caf7](https://github.com/nubisco/ui/commit/7a9caf745b4c482dd4c9a0cbcb2fb9da0ecc2113))
+* make NbIcon clickable/hoverable optional and harden pre-commit hook ([ffbcb07](https://github.com/nubisco/ui/commit/ffbcb07f06361a8ebc2a8a649ca653c4002647c7))
+* **Menu:** clamp max-height to available viewport space ([717eaf6](https://github.com/nubisco/ui/commit/717eaf611f538fb667a382a58a8911873c23f89b))
+* **modal:** one counted page-scroll lock, shared by everything that locks ([85032a7](https://github.com/nubisco/ui/commit/85032a7957fb25011b940d5855acc3bc9adc2ba3))
+* point analytics script to self-hosted NAS endpoint ([d3663e3](https://github.com/nubisco/ui/commit/d3663e3208078b660e35041952df942f08eaf72c))
+* register components explicitly to fix global registration in library builds ([cad8008](https://github.com/nubisco/ui/commit/cad8008e67caccfe232dfdeaefa548c0cfbcb32a))
+* **release:** republish after stuck npm ingestion ([6c3ba21](https://github.com/nubisco/ui/commit/6c3ba2190ec0b0e5f8f50fb609bbb14f20df072a))
+* remove inline pin labels, use color-coded dots with tooltips ([b928551](https://github.com/nubisco/ui/commit/b928551e3d5d379e091d11314f558dd204a8c6e5))
+* set vitepress base to /ui/ for github pages deployment ([aaa8fe5](https://github.com/nubisco/ui/commit/aaa8fe5fc00a4b38d783544f3d58d72fb1fd79fe))
+* **shell-panel:** dim panels squeezed to header-only by a maximized sibling ([32534fb](https://github.com/nubisco/ui/commit/32534fbd6cc6a848b4e15f6aaa31ef4d4d4bf79c))
+* **shell:** maximize the bottom panel over the main area ([de5e9e0](https://github.com/nubisco/ui/commit/de5e9e0d37d5cdebe40caa02b93f34b75289bcea))
+* **shell:** stop empty slot wrappers from doubling the header rule ([a534b45](https://github.com/nubisco/ui/commit/a534b45cecbd8f3d91f43b9c9a215d8054173184))
+* sort command palette groups and items alphabetically for consistent arrow-key navigation ([f76d0c5](https://github.com/nubisco/ui/commit/f76d0c51733c7f6f43e44037772848edff31aeb9))
+* ssr bundle vue-i18n for vitepress static build; drop node 20 from ci matrix ([dd6f640](https://github.com/nubisco/ui/commit/dd6f6409c31d49f59684c0bd379d5e213b8c0ab7))
+* **styles:** declare unplugin-fonts as an optional peer dependency ([0fe38e2](https://github.com/nubisco/ui/commit/0fe38e2f41efc3b59959ba923d84817e3a5987f4))
+* **styles:** scope .nb-inspector two-column rows to labeled fields ([57120c6](https://github.com/nubisco/ui/commit/57120c69c672adb934d1c4748f64166807777d07))
+* **text-input:** keep a multiline field within its container ([be7e8b0](https://github.com/nubisco/ui/commit/be7e8b0355b12460f56769edac800fb42814ab6e))
+* **theme:** adapt more components to the layer system ([7e848f6](https://github.com/nubisco/ui/commit/7e848f64a977aa98f4e7f58857cd764d3b3722f4))
+* **theme:** make component theme tokens overridable from :root and system-derived ([3a05874](https://github.com/nubisco/ui/commit/3a05874133b79a197c2af76446e9c56b5dd8fa95))
+* **tooltip:** clamp position to viewport so chips don't render offscreen ([baad420](https://github.com/nubisco/ui/commit/baad4201aa679825e54951874572767d20d82c52))
+* **tooltip:** dismiss orphans, flip across all sides, re-aim arrow ([447e37e](https://github.com/nubisco/ui/commit/447e37e7199b3d29f450625bdfea255367bd3fa2))
+* **tooltip:** stop orphan chips and per-render forced layout ([1b348e6](https://github.com/nubisco/ui/commit/1b348e6141bc2654bb3ab7ee59b17e221f620d05))
+* **treenode:** change direction of chevrons on folders ([a332411](https://github.com/nubisco/ui/commit/a332411ec8c3ed0de750ce92805cd29bfd6139a7))
+* **TreeNode:** toggle expand/collapse on row click, not just chevron ([8ce3fac](https://github.com/nubisco/ui/commit/8ce3fac817eb7d583c42e567ba8a89331cfce37e))
+* **types:** add NbShell and NbSidebarLink to global component type declarations ([8042cc9](https://github.com/nubisco/ui/commit/8042cc9535332f8ee428e680a7c17566da19f6e8))
+* **types:** emit the global augmentation as GlobalComponents ([265b710](https://github.com/nubisco/ui/commit/265b7108c3c41b660e44dc323a648b8e6db05155))
+* **types:** ship the hand-written declaration modules ([12db605](https://github.com/nubisco/ui/commit/12db6058901f96228ffec1810237db48b353d70e))
+* use input step as minimum gap between neighbor points in InterpolationChart ([bbbf04d](https://github.com/nubisco/ui/commit/bbbf04da88155d4dce46f5c69552e7f3bf36116f))
+* **user-menu:** square the panel and run its rows edge to edge ([8c30e5e](https://github.com/nubisco/ui/commit/8c30e5e91a051c41eb2a8dcd6a323f6b9f8043d7))
+
+
+### Features
+
+* add card dragging, multi-selection, alignment, distribution, and auto-layout to Blueprint ([d7e1e35](https://github.com/nubisco/ui/commit/d7e1e35d0a3098d7ea1ef00cbed12aa03a4f8567))
+* add creatable option to NbSelect for user-defined entries ([47a2efc](https://github.com/nubisco/ui/commit/47a2efce487f3d77b09a8b6dd1ef24b244160ea4))
+* add fitToView and resetView to Blueprint, make ambient gradients themeable ([026f8d8](https://github.com/nubisco/ui/commit/026f8d8e5260db94a55248118371cf32969b0ee5))
+* add GanttChart component with dependencies, milestones, and status indicators ([dfa9c08](https://github.com/nubisco/ui/commit/dfa9c08ee4e4b4d03111b81b458ad5db03f55854))
+* add Google Analytics support via VITE_GA_ID env variable ([fbd9471](https://github.com/nubisco/ui/commit/fbd9471c8aa1a8317c454cafc59701e0597fd89e))
+* add labs Spreadsheet, verbose Shell sidebar, icon registry, RouterLink support ([934bac9](https://github.com/nubisco/ui/commit/934bac998884e631c1a3ea58085d1d728018fc1b))
+* add multi I/O to blueprint card ([1947bfc](https://github.com/nubisco/ui/commit/1947bfc6849ca817e97a91fc8b1baed6c435bb06))
+* add NbBoard kanban component with drag-and-drop and swim lanes ([19a80f2](https://github.com/nubisco/ui/commit/19a80f25eae5f8e5437ce74c8471f665cb438e41))
+* add NbCalendar and NbDatePicker components ([8765ee4](https://github.com/nubisco/ui/commit/8765ee47fca231c242c57ac24dcad0f31342956a))
+* add NbInterpolationChart component ([8ef158c](https://github.com/nubisco/ui/commit/8ef158c62ca2e23a180a58f8e66ed96ec70b47f2))
+* add NbShellPanel component, shell docs for menu slots, fix MenuBar toggle and Slider validation ([1560d6e](https://github.com/nubisco/ui/commit/1560d6e56bfe9d10bfac6195ed5e203f6b1ad488)), closes [#bottom](https://github.com/nubisco/ui/issues/bottom)
+* **analytics:** remove GA and keep Nubisco Analytics only ([e8eb98d](https://github.com/nubisco/ui/commit/e8eb98d2c5bfb34e501aac96e6c53cf796289900))
+* **banner:** add NbBanner, the page-level message the shell had no component for ([fc734b9](https://github.com/nubisco/ui/commit/fc734b940f013f3770570c010519b8630932a4bc)), closes [#notification](https://github.com/nubisco/ui/issues/notification) [#fef3c7](https://github.com/nubisco/ui/issues/fef3c7) [#92400e](https://github.com/nubisco/ui/issues/92400e)
+* **blueprint-card:** always-rendered channel pins and inline port labels ([16970bd](https://github.com/nubisco/ui/commit/16970bdeb35f80099aac498b040e192a0bfffae8))
+* **blueprint-card:** collapsed cards merge port pins into one combined pin ([0d247b3](https://github.com/nubisco/ui/commit/0d247b3522c0e69854f4f36e285c7012fd6bd709))
+* **blueprint:** add getCamera / setCamera ([9808498](https://github.com/nubisco/ui/commit/980849894850d02d5726bac77e3f04c1604d3343))
+* **blueprint:** add NbBlueprintBackground component and #background slot ([5b7fa5d](https://github.com/nubisco/ui/commit/5b7fa5ddc2243952ead8ee877aab3baa4d002a95)), closes [#background](https://github.com/nubisco/ui/issues/background) [#background](https://github.com/nubisco/ui/issues/background)
+* **blueprint:** analog and digital ports, told apart by texture not shape ([16c2ce9](https://github.com/nubisco/ui/commit/16c2ce93a9887d24a27c315598f88af7ae0c0b84))
+* **blueprint:** drag wire endpoints to re-attach without delete ([f782dc6](https://github.com/nubisco/ui/commit/f782dc65103a481915d74e98e9dfa2388566931a))
+* **blueprint:** drop the diamond pin shape ([d25afea](https://github.com/nubisco/ui/commit/d25afeae5e27b3ff4874c930584debd064e397af))
+* **blueprint:** let fitToView frame a subset of cards ([83f3206](https://github.com/nubisco/ui/commit/83f3206fb671c2a0716068eabe41e9293d0addeb))
+* **blueprint:** move ports outside the card and anchor wires to the pin ([23fd947](https://github.com/nubisco/ui/commit/23fd947a2183bc055a0252cc56e46ae8e6d9b8f5))
+* **blueprint:** port glow means live signal, not just connected ([fa4233a](https://github.com/nubisco/ui/commit/fa4233a106e577e483280fee1789a9f1456d6495))
+* **blueprint:** port signal-flow auto-layout into the library ([a66ba99](https://github.com/nubisco/ui/commit/a66ba991ad38d35c5de90ce166cefd5f98f07d54))
+* **blueprint:** re-land per-wire + per-pin signal-activity indicators ([b36c88c](https://github.com/nubisco/ui/commit/b36c88ca82329ab3236452011808cf252fcbe34f))
+* **blueprint:** restore the three-element port ([9fad537](https://github.com/nubisco/ui/commit/9fad537500d2c6288eb5dbb7b18a08e3be9b2abd))
+* **blueprint:** selectable activity styles (flow / pulse / vibrate) ([4dab844](https://github.com/nubisco/ui/commit/4dab8447039c4223aaab8c2463e8e07b4e3cf9ad))
+* **blueprint:** self-wiring drag-to-connect + right-click wire menu ([5e5ff0a](https://github.com/nubisco/ui/commit/5e5ff0a72f6cb79d4bd2b47d057c5cac7d30f950))
+* **blueprint:** WebGL render-on-demand renderer, controls/minimap, live-data channel ([#3](https://github.com/nubisco/ui/issues/3)) ([fef70eb](https://github.com/nubisco/ui/commit/fef70ebaecc46a343317d9bad9910f1fff8f5901)), closes [hi#frequency](https://github.com/hi/issues/frequency)
+* **blueprint:** wheel passes through to card-internal controls ([9c1ef93](https://github.com/nubisco/ui/commit/9c1ef9363a3597b75c7a379b3119a06b69d3dd50))
+* **blueprint:** wheelMode, levels animation, drop-on-wire gesture ([10c6b6c](https://github.com/nubisco/ui/commit/10c6b6cd8a37521af28cda1a95a7c8dbf7ab4316))
+* **blueprint:** wider wire hit-region + marquee no longer steals wire grabs ([088bb86](https://github.com/nubisco/ui/commit/088bb8679a31dbd2e6413cf46589c057ca277522))
+* **blueprint:** wire + pin signal-activity visualisation ([717396f](https://github.com/nubisco/ui/commit/717396f69bee37d92e3063862af5ee5dbc507d63))
+* **blueprint:** wire-mouseover / wire-mouseout events for hover tooltips ([35c37c2](https://github.com/nubisco/ui/commit/35c37c2338326d16a653908d1e4feb7d894e13fb))
+* **button:** accept the full xxs-xxl size scale ([7431465](https://github.com/nubisco/ui/commit/7431465bcc263c83b13876b0e9848d5b79b52a40))
+* **Button:** add `to` prop for Vue Router navigation ([5ce6730](https://github.com/nubisco/ui/commit/5ce67307f5b88c8659c89b03554cb71c1e39f396))
+* **charts:** add Bar, Line and Pie chart components with documentation ([a3e2e59](https://github.com/nubisco/ui/commit/a3e2e59aefdc08660ced0a784f45ff283bba0b53))
+* **charts:** add NbSparkline component for inline dashboard charts ([4e7e3c4](https://github.com/nubisco/ui/commit/4e7e3c40e1fc6d263da78688bef0d920d8d71c21))
+* **charts:** semantic colour roles, so a themed product is not stuck with our ramps ([7ab427c](https://github.com/nubisco/ui/commit/7ab427c05107a3a6c83494f38bc223465efbf59b))
+* **checkbox:** align checkbox and radio with Carbon specs, add NbCheckboxGroup ([0db59c2](https://github.com/nubisco/ui/commit/0db59c27e137d486ee54584e1bd624a4800801df))
+* **components:** add Menu system, MenuBar, and Command Palette ([d09db6e](https://github.com/nubisco/ui/commit/d09db6e2ba9ed0555009bffcd2beea110fa2e18a)), closes [#menubar](https://github.com/nubisco/ui/issues/menubar)
+* **components:** add NbAccordion, NbCardGrid, NbDefinitionList, NbReorderList and NbEmptyState ([bf48a9b](https://github.com/nubisco/ui/commit/bf48a9b0279cf1fab25d74e5e8f2bed50577a72f))
+* **components:** add NbBottomPanel, NbBlueprint, NbBlueprintCard ([f48c2b8](https://github.com/nubisco/ui/commit/f48c2b8a46986d84d265d15f91e13d3602a1f2a5)), closes [#bottom](https://github.com/nubisco/ui/issues/bottom) [#bottom](https://github.com/nubisco/ui/issues/bottom)
+* **components:** add Tree and TreeNode components ([76c56b2](https://github.com/nubisco/ui/commit/76c56b26a13565e9407c08c85abdc893c756faca))
+* **confirm:** NbConfirm and useConfirm(), one answer to "are you sure?" ([0d742a8](https://github.com/nubisco/ui/commit/0d742a81a42d3dc1fc40e43a0c9d2e7736185472))
+* **data-table:** add NbDataTable and NbPagination components ([568c2d8](https://github.com/nubisco/ui/commit/568c2d84d989ef135b125d219e0390ee0e52f696))
+* **data-table:** add opt-in `fill` prop for contained, internally-scrolling tables ([#6](https://github.com/nubisco/ui/issues/6)) ([a0b9fb4](https://github.com/nubisco/ui/commit/a0b9fb4e8880f33cb1bce5e4a5243fc2985903f7))
+* **date-picker:** align with Carbon date picker guidelines ([de53772](https://github.com/nubisco/ui/commit/de53772069c7a9e078caae60999f406bc62170a4))
+* distinguish focus vs selection, themeable marquee, cleaner selected state ([65cd1aa](https://github.com/nubisco/ui/commit/65cd1aa82a6ef50eeb3748c4c6102ce78f4bc0c1))
+* **docs:** add design token pipeline and live token reference page ([52c324d](https://github.com/nubisco/ui/commit/52c324d23de3f64207edd888aa6bc90f80ca92c9))
+* **docs:** add Plausible analytics for docs.nubisco.io ([a0fce43](https://github.com/nubisco/ui/commit/a0fce43e86de0066cfc9d14bf9d595281c8a14fb))
+* evolve BlueprintCard with typed pins, collapse, status indicator ([749d126](https://github.com/nubisco/ui/commit/749d1267aa2939691f51f76f3995f8f304ac2cc3))
+* **field:** add NbField labeled-row primitive + inspector treatment ([b66c02d](https://github.com/nubisco/ui/commit/b66c02d4a24aab1c3af97c45f2e364c65f16015a))
+* **fields:** add xs size for dense surfaces ([dcf7a80](https://github.com/nubisco/ui/commit/dcf7a80033f47ae7b9f5c5debe6f2938f2fb1b42))
+* **json-tree:** add NbJsonTree documentation page ([134ddea](https://github.com/nubisco/ui/commit/134ddea1b339ac819d9461561bfab37d0aef15ff))
+* **loading:** NbSpinner, NbInlineLoading and NbSkeleton ([cb74171](https://github.com/nubisco/ui/commit/cb74171a731dfd82f379aee6d7ecd3a9c2f2c8a9))
+* **message:** add a success variant ([c4cc1f6](https://github.com/nubisco/ui/commit/c4cc1f64f8085485a47572da447cc4d0ae9954b6))
+* **modal:** add xl and immersive sizes for content-heavy dialogs ([12075d5](https://github.com/nubisco/ui/commit/12075d529c5b32c2aa24878c6683d9fdc230bbf0))
+* **modal:** size now caps height as well as width, scale shifted up ([1bc0716](https://github.com/nubisco/ui/commit/1bc071606afaa4253ea45b288baaee0ee2c6f255))
+* NbShell layout redesign — outer-menu, inner-menu, auto-hide sidebar ([56083d4](https://github.com/nubisco/ui/commit/56083d4592ca6d2c5504198fdfeae2804bd27edc))
+* new nubisco analytics integration ([ed9ccb2](https://github.com/nubisco/ui/commit/ed9ccb2281a2d2f229a600ffc341374b23daca95))
+* **notification-center:** NbNotificationCenter ([1dc2960](https://github.com/nubisco/ui/commit/1dc2960ac9d79f448995b6f9d89e5ef4b7a93fb5))
+* **nubisco-mark:** ship the mark as a component and as a file ([5fa3c0d](https://github.com/nubisco/ui/commit/5fa3c0d92f3082bff10f8f16f935fd08a47f666d)), closes [#brand](https://github.com/nubisco/ui/issues/brand)
+* **nubisco-platform-mark:** add the platform mark and put it in the lockup ([31edbce](https://github.com/nubisco/ui/commit/31edbce4f2496b5807b2bcecd7d6256325a86b0b))
+* **onboarding:** add NbInfoHint and NbWalkthrough ([#7](https://github.com/nubisco/ui/issues/7)) ([4ab4fa2](https://github.com/nubisco/ui/commit/4ab4fa296798a5e42ab255dec94230730deb7de5))
+* persistent marching-ants selection box, cards expand only on focus ([e79d535](https://github.com/nubisco/ui/commit/e79d53599b4e9c46eab246288d6db0f106c24a64))
+* **progress-bar:** add NbProgressBar following Carbon guidelines ([feb38af](https://github.com/nubisco/ui/commit/feb38af91348d302ccdbcb8bd853b43c8afbf2b7))
+* redesign Blueprint cards with top accent, structured rows, animated wires ([bb544e2](https://github.com/nubisco/ui/commit/bb544e26d2409a7bafa6b89e2ffbfa280e39fec1))
+* render command palette shortcuts as individual keycaps, remove namespace pills ([d98c479](https://github.com/nubisco/ui/commit/d98c47958cc1748fa1d560edf15b0faf65b40f6f))
+* **shell-panel:** dim the header of collapsed panels ([4315d63](https://github.com/nubisco/ui/commit/4315d63697699b0b73a7b1dfd82fca470ec73d65))
+* **Shell:** add inspectorSize prop with xs, sm, md, lg, xl variants ([0dee3ed](https://github.com/nubisco/ui/commit/0dee3ed5c3ee0caef1de5b1df5ede93b16945b80))
+* **shell:** add NbShell layout and NbSidebarLink navigation components ([e66ac2c](https://github.com/nubisco/ui/commit/e66ac2c5bdca3e9a171fa715282022ce05f744b1))
+* **shell:** add notification slot and component documentation ([6dfda75](https://github.com/nubisco/ui/commit/6dfda754e35d759be981ff0ded8e772df8d1a360))
+* **shell:** make the main region the page ground ([072d7c8](https://github.com/nubisco/ui/commit/072d7c81038cb39a48235585254c3918eca41d05)), closes [#e7e8e9](https://github.com/nubisco/ui/issues/e7e8e9)
+* **shell:** render fixedbar from route slot and hide empty shell bar ([1683499](https://github.com/nubisco/ui/commit/168349956b5135d82b87b2a9bf74659c67b2cfcd))
+* **shell:** resizable inspector ([b8f178d](https://github.com/nubisco/ui/commit/b8f178d4e17ef45b10fd17611f356fb406a1e735))
+* **shell:** useShellSlot(), an empty topbar that hides, a panel that fills ([c0a8bf9](https://github.com/nubisco/ui/commit/c0a8bf957f069f85d752e4cbee8fb4763f05b32c))
+* **slider:** round the readout to the step precision ([988bf8d](https://github.com/nubisco/ui/commit/988bf8dd4cf1cb4cae87cfa39cd8f380e5268cbc))
+* split two-finger scroll (pan) from pinch-to-zoom ([fcb5ecd](https://github.com/nubisco/ui/commit/fcb5ecd570fad4282274d35b8439777ed4b2e5f9))
+* **stepper:** NbStepper for linear flows ([b097ee2](https://github.com/nubisco/ui/commit/b097ee2ad5f664f45ce363185b22280ebedd16eb))
+* **styles:** add .nb-inspector pattern for two-column inspectors ([6fda810](https://github.com/nubisco/ui/commit/6fda8105395cc6c6590f6018a71ef519170e96cc))
+* **styles:** self-host default fonts via a configurable fonts() plugin ([3e4e425](https://github.com/nubisco/ui/commit/3e4e425299b8413e088039b76c814c13c6c4b485))
+* **tabs:** add NbTabs with line and contained variants ([68fa32a](https://github.com/nubisco/ui/commit/68fa32aeef4ca42f8d87b7c51c3c913ab054c8a8))
+* **theme:** add layer system for visual depth ([ad1bd8e](https://github.com/nubisco/ui/commit/ad1bd8e7a027b37ba9e5c827eb8e9f666686d01a))
+* **theme:** add useTheme, the light/dark preference the apps were copying ([79891be](https://github.com/nubisco/ui/commit/79891be0f5ebc4783c3ab733c7a3ef3d9a1050c9))
+* **theme:** cover the remaining surfaces, document the ramp, guard it in CI ([310e1bf](https://github.com/nubisco/ui/commit/310e1bfadfe51cdd097d0aa00e63c4d99c7c9adf))
+* **theme:** derive layer depth from nesting instead of declaring it ([142b904](https://github.com/nubisco/ui/commit/142b904e3f06ed4c7a6cdc45ee9ebfb44547455b))
+* **theme:** port, status and node-row tokens, plus a radius `none` step ([85fbb29](https://github.com/nubisco/ui/commit/85fbb298c9647c2e36a465f18ebb817fca37b9de))
+* **toast:** NbToaster and useToast(), the host the docs said we would not ship ([563fbd9](https://github.com/nubisco/ui/commit/563fbd9166d6cc5be93c3d3fa4a273083af93a5f))
+* **tooltip:** usable on any element, with a controlled mode ([2077e62](https://github.com/nubisco/ui/commit/2077e62fc1f2570ab82839102e735fe09a76c013))
+* **types:** accept string literals on every template-facing prop ([03313b2](https://github.com/nubisco/ui/commit/03313b25235711dc205efdfef52c5f67dae7e65b))
+* **user-menu:** sign the panel with the Nubisco Platform lockup ([e226111](https://github.com/nubisco/ui/commit/e2261113f4c8e8eff4a66b4d60ff0874cd6d9aff)), closes [#brand](https://github.com/nubisco/ui/issues/brand)
+* **user-menu:** standardized ecosystem user menu ([f710cce](https://github.com/nubisco/ui/commit/f710cce3d858dece02450cbc7689a2fb5cd933c1))
+
+
+### Performance Improvements
+
+* **Blueprint:** cache port centre positions, invalidate per-card ([afeae6f](https://github.com/nubisco/ui/commit/afeae6f5dbf2ef735f3e16ae169a26d62d879f34)), closes [#2](https://github.com/nubisco/ui/issues/2)
+* **Blueprint:** cache port DOM lookups + skip wireKey++ on pan ([a9e3233](https://github.com/nubisco/ui/commit/a9e32331add39901ed8e79259af05fe41753e707))
+* **Blueprint:** cache resolveWireColor per port element ([17e2a7f](https://github.com/nubisco/ui/commit/17e2a7f7ab6a1a1a076738942f03b41dbfb1e661))
+* **Blueprint:** cull off-screen wires and add windowed card rendering ([81ef1b2](https://github.com/nubisco/ui/commit/81ef1b21392165bb892f298b85c7e1d1c423345c))
+* **Blueprint:** drop per-wire drop-shadow filter ([fe40de7](https://github.com/nubisco/ui/commit/fe40de70a94c0de1ffc42850d63d54c27151c5ea))
+* **Blueprint:** GPU-promote the canvas during pan/zoom ([51e6989](https://github.com/nubisco/ui/commit/51e698928ff8ad82e6f8f94949fe80f946ac0a52))
+* **Blueprint:** ignore in-card style mutations in the wire observer ([67edeb0](https://github.com/nubisco/ui/commit/67edeb0e16c073b12f50cad68c2279ac958de6e0))
+* **Blueprint:** position cards via left/top, not transform ([9ba7dd7](https://github.com/nubisco/ui/commit/9ba7dd7fa2b05720c260c4649274116332e3e71b))
+* **blueprint:** render a port as one element instead of three ([355b0fd](https://github.com/nubisco/ui/commit/355b0fdf646dc8ec3b1f8cdcd6f99a1f0baf78f9))
+
+
+### Reverts
+
+* Revert "feat(blueprint): wire + pin signal-activity visualisation" ([8c69c17](https://github.com/nubisco/ui/commit/8c69c1744eb9437f7f486d1a824321a3840fdfc6))
+
+
+### BREAKING CHANGES
+
+* **blueprint:** `TBlueprintPortShape` no longer includes `'diamond'`. It is
+now `'pill' | 'square' | 'circle'`. A TypeScript consumer passing
+`shape: 'diamond'` will fail to compile; at runtime the pin falls back to the
+default pill. Use `signal` to express what a port carries, or `'square'` /
+`'circle'` to separate a port from its immediate neighbours.
+* every --nb-c-layer-*, --nb-c-text, --nb-c-text-muted,
+--nb-c-field-bg and --nb-c-field-border value changes in dark. Consumers
+overriding these should re-check their screens. --nb-c-bg and --nb-c-bg-soft
+now follow layer 0 and layer 1 rather than carrying independent values.
+
+Verify with: node scripts/audit-contrast.mjs
+
+Claude-Session: https://claude.ai/code/session_01Y7TcyQomARVtzTXfRkYngD
+* the light theme's layer direction is inverted. The page ground
+is now the lightest surface and panels get progressively darker as they nest,
+where previously the page was grey and panels were white. Consumers who set
+--nb-c-layer-* or relied on the old direction should re-check their screens.
+The alternative was tested: a variant preserving the old direction hit every
+target and still lost a blind comparison, because alternation makes layer 2
+identical to layer 0 and leaves deep nesting with no fill cue at all.
+
+Verify with: node scripts/audit-contrast.mjs
+
+Dark is unchanged here and lands separately.
+
+Claude-Session: https://claude.ai/code/session_01Y7TcyQomARVtzTXfRkYngD
+
 # [3.3.0](https://github.com/nubisco/ui/compare/v3.2.0...v3.3.0) (2026-09-04)
 
 
