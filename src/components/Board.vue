@@ -36,6 +36,13 @@
             v-if="getCell(null, col.id).length === 0"
             class="nb-board__empty-cell"
           />
+          <!-- Per-column footer: the host's affordance for acting on the
+               column itself (typically "add an item here"). A slot rather
+               than a built-in button so Board stays ignorant of what adding
+               means; absent slot, absent footprint. -->
+          <div v-if="$slots['column-footer']" class="nb-board__col-footer">
+            <slot name="column-footer" :column="col" />
+          </div>
         </div>
       </template>
 
@@ -80,6 +87,9 @@
                 v-if="getCell(lane.id, col.id).length === 0"
                 class="nb-board__empty-cell"
               />
+              <div v-if="$slots['column-footer']" class="nb-board__col-footer">
+                <slot name="column-footer" :column="col" :lane="lane" />
+              </div>
             </div>
           </template>
         </template>
@@ -325,5 +335,9 @@ function onDrop(toLaneId: string | null, toColId: string) {
 
 .nb-board__empty-cell {
   min-height: 40px;
+}
+
+.nb-board__col-footer {
+  margin-top: 0.35rem;
 }
 </style>
