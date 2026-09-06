@@ -147,6 +147,43 @@ Use the `lane-header` slot to customize lane header rendering.
 </NbBoard>
 ```
 
+## Adding Items Per Column
+
+The `column-footer` slot renders at the bottom of every column cell, scoped to its column (and lane, in lane mode). Boards do not know what creating an item means in the host application, so the slot carries the affordance and the host carries the behavior — typically opening a creation dialog preset to that column. When the slot is absent it leaves no footprint.
+
+<preview>
+  <NbBoard :columns="columns" :items="items" @move="onMove">
+    <template #card="{ item }">
+      <strong>{{ item.title }}</strong>
+    </template>
+    <template #column-footer="{ column }">
+      <NbButton size="sm" variant="ghost" icon="plus" @click="addTo(column.id)">
+        Add item
+      </NbButton>
+    </template>
+  </NbBoard>
+</preview>
+
+```vue
+<template>
+  <NbBoard :columns="columns" :items="items" @move="onMove">
+    <template #card="{ item }">
+      <strong>{{ item.title }}</strong>
+    </template>
+    <template #column-footer="{ column }">
+      <NbButton
+        size="sm"
+        variant="ghost"
+        icon="plus"
+        @click="openCreateDialog(column.id)"
+      >
+        Add item
+      </NbButton>
+    </template>
+  </NbBoard>
+</template>
+```
+
 ## Drag and Drop
 
 Drag and drop is built in. When a card is dragged to a different cell, the `move` event fires with the source and destination coordinates. The component does not mutate `items` directly; update your data in the event handler.
@@ -206,10 +243,11 @@ interface IBoardMoveEvent {
 
 ## Slots
 
-| Slot          | Scope                                                           | Description                |
-| ------------- | --------------------------------------------------------------- | -------------------------- |
-| `card`        | `{ item: IBoardItem, column: IBoardColumn, lane?: IBoardLane }` | Content of each card       |
-| `lane-header` | `{ lane: IBoardLane }`                                          | Custom lane header content |
+| Slot            | Scope                                                           | Description                                                                                                       |
+| --------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `card`          | `{ item: IBoardItem, column: IBoardColumn, lane?: IBoardLane }` | Content of each card                                                                                              |
+| `lane-header`   | `{ lane: IBoardLane }`                                          | Custom lane header content                                                                                        |
+| `column-footer` | `{ column: IBoardColumn, lane?: IBoardLane }`                   | Rendered at the bottom of every column cell; typically an "add an item here" affordance. No footprint when absent |
 
 </doc-tab>
 
@@ -249,6 +287,11 @@ const laneItems = ref([
 function onMove(e: { itemId: string; toColumnId: string; toLaneId?: string | null }) {
   const item = items.value.find((i) => i.id === e.itemId)
   if (item) item.columnId = e.toColumnId
+}
+
+let nextId = 100
+function addTo(columnId: string) {
+  items.value.push({ id: String(nextId++), columnId, title: 'New item' })
 }
 
 function onMoveLane(e: { itemId: string; toColumnId: string; toLaneId?: string | null }) {
