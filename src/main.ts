@@ -208,6 +208,11 @@ export {
   markOverlayExempt,
   NB_OVERLAY_EXEMPT_ATTR,
 } from './components/Spinner.overlay'
+export { default as NbInlineEdit } from './components/InlineEdit.vue'
+export type {
+  IInlineEditProps,
+  TInlineEditSize,
+} from './components/InlineEdit.d'
 export { default as NbInlineLoading } from './components/InlineLoading.vue'
 export type { IInlineLoadingProps } from './components/InlineLoading.d'
 export { EInlineLoadingStatus } from './components/InlineLoading.d'

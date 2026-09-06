@@ -107,7 +107,7 @@ const emit = defineEmits<{
 }>()
 
 const gridStyle = computed(() => ({
-  gridTemplateColumns: `repeat(${props.columns.length}, minmax(200px, 1fr))`,
+  gridTemplateColumns: `repeat(${props.columns.length}, var(--nb-board-column-track, minmax(200px, 1fr)))`,
 }))
 
 function columnCount(colId: string): number {

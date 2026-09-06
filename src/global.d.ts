@@ -39,6 +39,7 @@ import Grid from './components/Grid.vue'
 import Icon from './components/Icon.vue'
 import ImageCropper from './components/ImageCropper.vue'
 import InfoHint from './components/InfoHint.vue'
+import InlineEdit from './components/InlineEdit.vue'
 import InlineLoading from './components/InlineLoading.vue'
 import InterpolationChart from './components/Charts/InterpolationChart.vue'
 import JsonTree from './components/JsonTree.vue'
@@ -131,6 +132,7 @@ declare module 'vue' {
     NbIcon: typeof Icon
     NbImageCropper: typeof ImageCropper
     NbInfoHint: typeof InfoHint
+    NbInlineEdit: typeof InlineEdit
     NbInlineLoading: typeof InlineLoading
     NbInterpolationChart: typeof InterpolationChart
     NbJsonTree: typeof JsonTree

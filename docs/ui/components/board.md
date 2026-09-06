@@ -75,6 +75,26 @@ const columns = [
 </script>
 ```
 
+## Column Sizing
+
+Columns default to `minmax(200px, 1fr)`: they share the available width equally
+and never shrink below 200px. On wide screens with few columns that reads as
+overly wide tracks, so the track is themeable via `--nb-board-column-track`.
+Set it on the board (or any ancestor) to pin columns to a fixed or bounded
+width; the board scrolls horizontally when they no longer fit.
+
+```css
+/* Trello-style fixed-width columns */
+.my-board {
+  --nb-board-column-track: 272px;
+}
+
+/* Bounded: never narrower than 240px, never wider than 320px */
+.my-board {
+  --nb-board-column-track: minmax(240px, 320px);
+}
+```
+
 ## Swim Lanes
 
 Pass a `lanes` array to group items into horizontal swim lanes. Each lane is collapsible. Items are matched to lanes via `laneId`.
