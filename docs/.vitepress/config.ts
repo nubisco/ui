@@ -291,6 +291,10 @@ export default withMermaid(
                   { text: 'Grid', link: '/ui/components/grid' },
                   { text: 'Icon', link: '/ui/components/icon' },
                   {
+                    text: 'Inline Edit',
+                    link: '/ui/components/inline-edit',
+                  },
+                  {
                     text: 'Inline Loading',
                     link: '/ui/components/inline-loading',
                   },
