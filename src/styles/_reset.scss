@@ -84,6 +84,11 @@
   a {
     background-color: transparent;
     all: unset;
+    /* `all: unset` resets box-sizing to content-box, and the element
+     * selector outranks the `*` border-box rule above, so every anchor
+     * (including link-rendered components like NbCard) would overflow the
+     * box its layout gave it by its own padding and border. */
+    box-sizing: border-box;
   }
 
   /**
