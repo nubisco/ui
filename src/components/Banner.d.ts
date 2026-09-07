@@ -1,3 +1,4 @@
+import type { TIconSource } from '@/types/Glyph.d'
 enum EBannerStatus {
   Info = 'info',
   Success = 'success',
@@ -39,7 +40,7 @@ interface IBannerProps {
    */
   dismissible?: boolean
   /** Icon name override. Defaults to the icon that matches `status`. */
-  icon?: string
+  icon?: TIconSource
   /** Hide the icon entirely. The colour alone must then not be the only cue. */
   hideIcon?: boolean
   /**

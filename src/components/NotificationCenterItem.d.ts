@@ -1,3 +1,4 @@
+import type { TIconSource } from '@/types/Glyph.d'
 /**
  * The fleet's status vocabulary, the same five words NbToast, NbMessage and
  * NbBanner use. `error`, not `danger`: `danger` is the word for a destructive
@@ -35,7 +36,7 @@ export interface INotificationCenterItemProps {
    *  the library's status words: neutral, info, success, warning, error. */
   variant?: TNotificationVariant
   /** Phosphor icon name. `null` renders no icon and no icon gutter. */
-  icon?: string | null
+  icon?: TIconSource | null
   /** Renders the row as a link. Takes priority over `interactive`. */
   href?: string
   /**

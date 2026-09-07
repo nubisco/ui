@@ -1,3 +1,4 @@
+import type { TIconSource } from '@/types/Glyph.d'
 /**
  * How the accordion's chevron is placed relative to its title.
  *
@@ -66,7 +67,7 @@ export interface IAccordionItemProps {
   /** The header text. A plain string; use the `title` slot for anything else. */
   title?: string
   /** Optional icon name, rendered before the title. */
-  icon?: string
+  icon?: TIconSource
   /** Short text after the title, for a count or a status. */
   meta?: string
   /** Non-interactive: the header renders muted and cannot be toggled. */

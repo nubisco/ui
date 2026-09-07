@@ -1,3 +1,4 @@
+import type { TIconSource } from '@/types/Glyph.d'
 /**
  * Tree component types.
  *
@@ -32,7 +33,7 @@ export interface ITreeNodeProps {
   /** Display label */
   label: string
   /** Icon name (from NbIcon) */
-  icon?: string
+  icon?: TIconSource
   /** Whether the node is disabled */
   disabled?: boolean
   /** Depth level (auto-computed from nesting, override to set manually) */

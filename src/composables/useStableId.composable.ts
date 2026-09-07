@@ -20,13 +20,15 @@ import str2kebab from '@/utils/str2kebab.helper'
  * const elementId = useStableId(props)  // props carries id? and name?
  */
 // #region useStableId
-export function useStableId(props: { id?: string; name?: string }): string {
+export function useStableId(props: { id?: string; name?: unknown }): string {
   if (props.id) return props.id
 
   const instance = getCurrentInstance()
   const componentSlug = str2kebab(instance?.type?.__name ?? 'component')
 
-  if (props.name) {
+  // `name` is only usable as an ID when it is a string. NbIcon and NbFlag also
+  // accept a glyph module there, which carries nothing to slugify.
+  if (typeof props.name === 'string' && props.name) {
     return `${componentSlug}-${str2kebab(props.name)}`
   }
 

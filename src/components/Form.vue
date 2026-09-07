@@ -27,6 +27,7 @@
 </template>
 
 <script lang="ts" setup>
+import NbGrid from './Grid.vue'
 import { IFormProps } from './Form.d'
 
 withDefaults(defineProps<IFormProps>(), {

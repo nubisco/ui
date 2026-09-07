@@ -1,3 +1,4 @@
+import { glyphStubComputed } from './__mocks__/glyphStub'
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import NumberInput from '../src/components/NumberInput.vue'
@@ -18,7 +19,8 @@ const NbMessageStub = {
 const NbIconStub = {
   name: 'NbIcon',
   props: ['name', 'size'],
-  template: '<i data-testid="nb-icon" :data-name="name"></i>',
+  computed: glyphStubComputed,
+  template: '<i data-testid="nb-icon" :data-name="resolvedName"></i>',
 }
 
 describe('NumberInput', () => {

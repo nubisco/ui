@@ -1,10 +1,11 @@
+import type { TIconSource } from '@/types/Glyph.d'
 export interface ICommand {
   /** Unique identifier */
   id: string
   /** Display label */
   label: string
   /** Phosphor icon name */
-  icon?: string
+  icon?: TIconSource
   /** Namespace for grouping (e.g. "File", "Edit") */
   namespace?: string
   /** Keyboard shortcut display text (e.g. "Cmd+S") */

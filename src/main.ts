@@ -1,11 +1,44 @@
-import type { App } from 'vue'
-import components from './components/index'
+import type { App, Component } from 'vue'
 import directives from './directives/index'
 import { NbCommandPalettePlugin } from './plugins/commandPalette'
 
+export interface INubiscoUIOptions {
+  /**
+   * Components to register globally. Normally you want none of these: the
+   * bundler plugin (`@nubisco/ui/vite`) resolves `<NbButton>` to an import at
+   * compile time, so the app links only what its templates actually use.
+   *
+   * Pass a map when you want specific components available by name anyway,
+   * for instance for templates compiled at runtime:
+   *
+   * ```ts
+   * import NbButton from '@nubisco/ui/components/Button'
+   * app.use(NubiscoUI, { components: { NbButton } })
+   * ```
+   *
+   * To register everything, use the escape hatch entry instead:
+   * `import NubiscoUI from '@nubisco/ui/all'`.
+   */
+  components?: Record<string, Component>
+}
+
+/**
+ * The app-level plugin: directives, the command palette, and anything else
+ * that is genuinely global.
+ *
+ * It deliberately does *not* register components. Global registration is what
+ * made the library impossible to tree-shake: `app.use()` is reachable from
+ * every app, so a static reference to the full component map inside `install`
+ * pins all 85 components (and, before this change, the whole icon catalogue)
+ * into every bundle. Component resolution now happens at compile time.
+ */
 export default {
-  install(app: App) {
-    app.use(components)
+  install(app: App, options: INubiscoUIOptions = {}) {
+    if (options.components) {
+      for (const [name, component] of Object.entries(options.components)) {
+        app.component(name, component)
+      }
+    }
     app.use(directives)
     app.use(NbCommandPalettePlugin)
   },
@@ -16,6 +49,21 @@ export type {
   TCustomIcon,
   ICustomIconWeights,
 } from './composables/iconRegistry'
+export {
+  registerFlags,
+  unregisterFlag,
+  getRegisteredFlag,
+} from './composables/flagRegistry'
+export type { TCustomFlag } from './composables/flagRegistry'
+export {
+  hasCatalog,
+  catalogNames,
+  pickWeight,
+} from './composables/glyphCatalog.composable'
+export type {
+  TGlyphKind,
+  TGlyphLoader,
+} from './composables/glyphCatalog.composable'
 
 // Named exports for tree-shakeable individual imports
 export { default as NbAccordion } from './components/Accordion.vue'

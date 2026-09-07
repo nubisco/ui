@@ -22,7 +22,11 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@nubisco/ui/icons/all": ["generated/icons/all.d.ts"],
+      "@nubisco/ui/flags/all": ["generated/flags/all.d.ts"],
+      "@nubisco/ui/icons/*": ["generated/icons/module.d.ts"],
+      "@nubisco/ui/flags/*": ["generated/flags/module.d.ts"]
     }
   },
   "include": ["src/**/*"],

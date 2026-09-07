@@ -40,6 +40,11 @@
 </template>
 
 <script setup lang="ts">
+import * as iconInfo from '@nubisco/ui/icons/info'
+import * as iconCheckCircle from '@nubisco/ui/icons/check-circle'
+import * as iconWarning from '@nubisco/ui/icons/warning'
+import * as iconXCircle from '@nubisco/ui/icons/x-circle'
+import * as iconNote from '@nubisco/ui/icons/note'
 import { computed, ref, useSlots } from 'vue'
 import NbIcon from './Icon.vue'
 import { EBannerStatus, EBannerVariant, IBannerProps } from './Banner.d'
@@ -84,11 +89,11 @@ function dismiss(): void {
 // status gets a distinct silhouette, because colour is not allowed to be the
 // only difference between them.
 const iconMap = {
-  info: 'info',
-  success: 'check-circle',
-  warning: 'warning',
-  error: 'x-circle',
-  neutral: 'note',
+  info: iconInfo,
+  success: iconCheckCircle,
+  warning: iconWarning,
+  error: iconXCircle,
+  neutral: iconNote,
 } as const
 </script>
 

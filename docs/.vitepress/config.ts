@@ -7,8 +7,7 @@ import {
   groupIconMdPlugin,
   groupIconVitePlugin,
 } from 'vitepress-plugin-group-icons'
-import { icons } from '../../src/plugins/icons'
-import { flags } from '../../src/plugins/flags'
+import { nubiscoGlyphs } from '../../src/plugins/vite/glyphs'
 import { fonts } from '../../src/plugins/fonts'
 
 export default withMermaid(
@@ -79,13 +78,19 @@ export default withMermaid(
           },
         }),
         groupIconVitePlugin(),
-        icons(path.resolve(__dirname, '../..')),
-        flags(path.resolve(__dirname, '../..')),
+        nubiscoGlyphs({
+          glyphRoot: path.resolve(__dirname, '../../generated'),
+          catalog: 'off',
+        }),
         fonts(),
       ],
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '../../src'),
+          // The docs build from source, so the published `@nubisco/ui/icons/*`
+          // subpaths resolve to the generated modules the build would ship.
+          '@nubisco/ui/icons': path.resolve(__dirname, '../../generated/icons'),
+          '@nubisco/ui/flags': path.resolve(__dirname, '../../generated/flags'),
         },
       },
       server: {
@@ -133,6 +138,7 @@ export default withMermaid(
             text: 'Getting Started',
             items: [
               { text: 'Quickstart', link: '/quickstart' },
+              { text: 'What ships in your bundle', link: '/bundling' },
               { text: 'Showcase', link: '/showcase' },
               { text: 'Upgrading', link: '/upgrading' },
             ],

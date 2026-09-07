@@ -1,3 +1,4 @@
+import { glyphStubComputed } from './__mocks__/glyphStub'
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import Modal from '../src/components/Modal.vue'
@@ -5,7 +6,8 @@ import Modal from '../src/components/Modal.vue'
 const NbIconStub = {
   name: 'NbIcon',
   props: ['name', 'size'],
-  template: '<i data-testid="nb-icon" :data-name="name"></i>',
+  computed: glyphStubComputed,
+  template: '<i data-testid="nb-icon" :data-name="resolvedName"></i>',
 }
 
 const NbGridStub = {

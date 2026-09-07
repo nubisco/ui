@@ -1,3 +1,4 @@
+import { glyphStubComputed } from './__mocks__/glyphStub'
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import ColorStrip from '../src/components/ColorStrip.vue'
@@ -16,8 +17,9 @@ describe('ColorStrip', () => {
           NbIcon: {
             name: 'NbIcon',
             props: ['name', 'weight', 'color'],
+            computed: glyphStubComputed,
             template:
-              '<i data-testid="nb-icon" :data-name="name" :data-weight="weight" :data-color="color"></i>',
+              '<i data-testid="nb-icon" :data-name="resolvedName" :data-weight="weight" :data-color="color"></i>',
           },
           NbGrid: {
             name: 'NbGrid',

@@ -43,6 +43,8 @@
 </template>
 
 <script setup lang="ts">
+import NbLabel from './Label.vue'
+import NbMessage from './Message.vue'
 import { computed } from 'vue'
 import { ERadioDirection, IRadioProps, IRadioOption } from './Radio.d'
 

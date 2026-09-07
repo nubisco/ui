@@ -361,9 +361,9 @@ describe('ShellPanel fill', () => {
  * `import { useShellSlot } from '@nubisco/ui'`, and that is a different
  * question: it is only true if the symbol is on the entry.
  *
- * The entry cannot be imported under vitest (src/main.ts pulls in
- * `virtual:flags` and `virtual:icons`, which only exist under the library's own
- * Vite build), so this reads the entry the way tests/component-registration.ts
+ * Importing the entry here would pull in the whole barrel, which this
+ * assertion does not need, so this reads it the way
+ * tests/component-registration.ts
  * and tests/Toaster.test.ts already do: parse the re-exports out of the source,
  * then import the module each one points at and check the symbol is really
  * there. Source-matching alone would pass on a typo in the path.

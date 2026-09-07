@@ -9,7 +9,7 @@
     "allowImportingTsExtensions": false,
     "noEmit": false,
     "emitDeclarationOnly": false,
-    "declaration": false,
+    "declaration": true,
     "rootDir": "./src",
     "outDir": "./dist",
     "strict": true,

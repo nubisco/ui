@@ -21,8 +21,9 @@ import { resolve } from 'node:path'
  * `import { NbForm } from '@nubisco/ui'` did not resolve. The two lists agreed
  * with each other in the old test's terms and were both wrong.
  *
- * Read as text rather than imported: src/main.ts pulls in `virtual:icons` and
- * `virtual:flags`, which exist only under the library's own vite config.
+ * Read as text rather than imported: these are assertions about the source
+ * lists themselves, and reading them keeps the check independent of whether
+ * the barrel can be evaluated in a test environment.
  */
 const root = resolve(__dirname, '..')
 const mainSrc = readFileSync(resolve(root, 'src/main.ts'), 'utf8')
@@ -90,4 +91,36 @@ describe('component registration', () => {
       expect(registered.has(name)).toBe(true)
     },
   )
+})
+
+/**
+ * A fourth list exists now: `src/components/manifest.ts`, generated from
+ * index.ts. It drives the bundler plugin's resolver, the per-component build
+ * entries and the ambient declarations, so a manifest that has fallen behind
+ * index.ts means `<NbNewThing>` silently fails to auto-import and ships no
+ * entry point. The build regenerates it; this catches a commit that did not.
+ */
+describe('component manifest', () => {
+  const manifestSrc = readFileSync(
+    resolve(root, 'src/components/manifest.ts'),
+    'utf8',
+  )
+  const manifest = new Map(
+    [...manifestSrc.matchAll(/^\s{2}(Nb\w+): '(.+)',$/gm)].map((m) => [
+      m[1],
+      m[2],
+    ]),
+  )
+
+  it('lists exactly what the plugin registers', () => {
+    expect([...manifest.keys()].sort()).toEqual([...registered].sort())
+  })
+
+  it.each([...manifest])('%s points at a file that exists', (_name, file) => {
+    expect(
+      readdirSync(
+        resolve(componentDir, file.includes('/') ? file.split('/')[0] : '.'),
+      ),
+    ).toContain(`${file.split('/').pop()}.vue`)
+  })
 })

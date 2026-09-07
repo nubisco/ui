@@ -1,4 +1,5 @@
 import { ESize } from '@/types/Size.d'
+import type { TIconSource } from '@/types/Glyph.d'
 
 enum EAnimation {
   SwingRight = 'swing-right',
@@ -45,7 +46,17 @@ enum EIconSize {
 }
 
 interface IIconProps {
-  name: string
+  /**
+   * Icon name, or an icon module. A string is resolved at runtime and needs
+   * the catalogue (see `@nubisco/ui/icons/all`); a module is linked directly.
+   */
+  name?: TIconSource
+  /**
+   * An explicitly imported icon module, for code the plugin cannot see
+   * through: `import GithubLogo from '@nubisco/ui/icons/github-logo'`.
+   * Takes precedence over `name`.
+   */
+  icon?: TIconSource
   size?: ESize | string | number
   animation?: `${EAnimation}` | null
   animationMode?: `${EAnimationMode}`
@@ -57,3 +68,4 @@ interface IIconProps {
 }
 
 export { EAnimation, EAnimationMode, EWeight, EIconSize, IIconProps }
+export type { TIconSource }

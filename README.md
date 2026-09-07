@@ -85,21 +85,72 @@ pnpm install
 
 ### Basic Usage
 
-```vue
-<script setup>
-import { NbGrid, NbPanel, NbButton } from '@nubisco/ui'
-import '@nubisco/ui/dist/ui.css'
-</script>
+Two lines of setup, after which every `<Nb*>` tag works in any template with no
+per-file import, and the built bundle contains only what those templates used.
 
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import { nubiscoUI } from '@nubisco/ui/vite'
+
+export default defineConfig({
+  plugins: [vue(), ...nubiscoUI()],
+})
+```
+
+```ts
+// main.ts
+import NubiscoUI from '@nubisco/ui' // directives, command palette, app-level config
+import '@nubisco/ui/css'
+
+app.use(NubiscoUI)
+```
+
+```vue
 <template>
   <NbGrid dir="col" gap="md">
     <NbPanel>
       <h1>Hello World</h1>
     </NbPanel>
-    <NbButton>Click me</NbButton>
+    <NbButton icon="rocket-launch">Click me</NbButton>
   </NbGrid>
 </template>
 ```
+
+A page that renders one button and one icon links one button and one icon. The
+plugin walks each template, resolves `<NbButton>` to an import of
+`@nubisco/ui/components/Button` and `icon="rocket-launch"` to an import of
+`@nubisco/ui/icons/rocket-launch`, and writes both into that file. Nothing is
+deferred to runtime, so SSR, prerendering and hydration behave exactly as they
+would with imports you had written by hand.
+
+It also emits a `components.d.ts` so editors and `vue-tsc` still see the tags.
+
+#### Without the plugin
+
+Every component is also a real entry point, so you can import what you use:
+
+```vue
+<script setup>
+import { NbButton } from '@nubisco/ui/components/Button'
+import { NbGrid } from '@nubisco/ui/components/Grid'
+</script>
+```
+
+And if you cannot add a bundler plugin at all (a no-build page, a CDN embed,
+someone else's toolchain), there is one explicit escape hatch that registers
+every component globally:
+
+```ts
+import NubiscoUI from '@nubisco/ui/all'
+
+app.use(NubiscoUI)
+```
+
+That links the whole library, which is the cost the compile-time resolution
+exists to avoid. It lives behind its own import so that choosing it is a
+decision someone wrote down.
 
 ### Vite Configuration
 
@@ -108,10 +159,11 @@ Add the `fonts` plugin to load the bundled typefaces (Plus Jakarta Sans + Fira C
 ```ts
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { nubiscoUI } from '@nubisco/ui/vite'
 import { fonts } from '@nubisco/ui/plugins/fonts'
 
 export default defineConfig({
-  plugins: [vue(), fonts()],
+  plugins: [vue(), ...nubiscoUI(), fonts()],
   css: {
     preprocessorOptions: {
       scss: {
@@ -128,7 +180,7 @@ export default defineConfig({
 **Option 1: Pre-built CSS (recommended for most projects):**
 
 ```js
-import '@nubisco/ui/dist/ui.css'
+import '@nubisco/ui/css'
 ```
 
 **Option 2: SCSS (recommended for full customization):**
@@ -137,19 +189,94 @@ import '@nubisco/ui/dist/ui.css'
 @use '@nubisco/ui/styles' as *;
 ```
 
-### Icon Support
+### Icons and Flags
 
-Icons are bundled in the pre-built dist. If you import from source (not `dist/ui.css`), add the icons Vite plugin:
+`NbIcon` carries ~1,500 Phosphor icons in six weights and `NbFlag` carries 255
+country flags. No app should pay for all of them to render a handful, so the
+name is resolved as early as it can be. There are three tiers, and you will
+mostly use the first without thinking about it.
 
-```ts
-import { icons as iconsPlugin } from '@nubisco/ui/plugins/icons'
+**A literal name.** The plugin sees the constant and links that one glyph:
 
-export default defineConfig({
-  plugins: [vue(), fonts(), iconsPlugin(process.cwd())],
-})
+```vue
+<NbIcon name="github-logo" />
+<NbIcon name="check" weight="bold" />
+<NbFlag name="pt" />
+<NbButton icon="plus">Add</NbButton>
 ```
 
-> **Note:** Import the plugin from `@nubisco/ui/plugins/icons` — it contains Node.js-only code that cannot run in the browser.
+**An imported module**, for code the plugin cannot see through, and for
+projects that do not want a bundler plugin at all:
+
+```vue
+<script setup>
+import GithubLogo from '@nubisco/ui/icons/github-logo'
+</script>
+
+<template>
+  <NbIcon :icon="GithubLogo" />
+</template>
+```
+
+**A name only known at runtime** is the interesting case: a value from an API,
+a CMS field, a user's choice in a picker. If the set of values it can take is
+known, register those modules once and the app links only them:
+
+```ts
+import { registerIcons, registerFlags } from '@nubisco/ui'
+import * as check from '@nubisco/ui/icons/check'
+import * as warning from '@nubisco/ui/icons/warning'
+import * as pt from '@nubisco/ui/flags/pt'
+
+registerIcons({ check, warning })
+registerFlags({ pt })
+```
+
+If it is genuinely open-ended, load the full catalogue in the one file that
+needs it. That file pays for it and no other page does:
+
+```ts
+import '@nubisco/ui/icons/all'
+import '@nubisco/ui/flags/all'
+```
+
+`registerIcons` is also how you add icons of your own, or override a built-in:
+a registered name always wins over the catalogue.
+
+If a runtime name reaches `NbIcon` with none of the three in place, it throws on
+first render with a message naming these options, rather than silently leaving a
+hole in the page.
+
+To ship the entire collection on purpose, import both catalogues in your entry:
+
+```ts
+import '@nubisco/ui/icons/all'
+import '@nubisco/ui/flags/all'
+```
+
+[What ships in your bundle](https://docs.nubisco.io/ui/bundling) covers this in
+full: what the plugin links for each way of naming a glyph, how to see what it
+resolved, and how to deliberately ship everything.
+
+### Stylesheets
+
+The library ships one stylesheet per component rather than one 214KB file, and
+the plugin imports the ones each page needs alongside the components it resolved.
+A page with a button and an icon loads 19KB of CSS.
+
+Design tokens are separate and always required; they come from the SCSS entry:
+
+```scss
+@use '@nubisco/ui/variables';
+```
+
+If you would rather have the single stylesheet, turn the per-component imports
+off and import it yourself:
+
+```ts
+nubiscoUI({ styles: false }) // vite.config.ts
+import '@nubisco/ui/css' // main.ts
+```
 
 ---
 

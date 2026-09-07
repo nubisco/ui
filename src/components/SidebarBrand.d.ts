@@ -1,3 +1,4 @@
+import type { TIconSource } from '@/types/Glyph.d'
 interface ISidebarBrandProps {
   /** Primary brand name (top line, prominent). */
   title: string
@@ -8,7 +9,7 @@ interface ISidebarBrandProps {
    * as a string; for fully custom marks (logo, gradient block) use the
    * `icon` slot instead.
    */
-  icon?: string
+  icon?: TIconSource
 }
 
 export { ISidebarBrandProps }

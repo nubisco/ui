@@ -26,6 +26,7 @@
 </template>
 
 <script setup lang="ts">
+import NbGrid from './Grid.vue'
 import { computed } from 'vue'
 import type { PropType } from 'vue'
 import { ESwitchSize, ESwitchVariant } from './Switch.d'

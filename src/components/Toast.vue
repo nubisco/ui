@@ -60,6 +60,11 @@
 </template>
 
 <script setup lang="ts">
+import type { TIconSource } from '@/types/Glyph.d'
+import * as iconCheckCircle from '@nubisco/ui/icons/check-circle'
+import * as iconWarningCircle from '@nubisco/ui/icons/warning-circle'
+import * as iconWarning from '@nubisco/ui/icons/warning'
+import * as iconInfo from '@nubisco/ui/icons/info'
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import NbIcon from './Icon.vue'
 
@@ -134,11 +139,11 @@ const showPaused = computed(() =>
   props.managed ? props.paused : selfPaused.value,
 )
 
-const iconMap: Record<TToastVariant, string> = {
-  success: 'check-circle',
-  error: 'warning-circle',
-  warning: 'warning',
-  info: 'info',
+const iconMap: Record<TToastVariant, TIconSource> = {
+  success: iconCheckCircle,
+  error: iconWarningCircle,
+  warning: iconWarning,
+  info: iconInfo,
 }
 
 /** English defaults. Every one of them is overridable per toast. */

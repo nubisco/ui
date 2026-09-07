@@ -191,6 +191,7 @@
 </template>
 
 <script setup lang="ts">
+import NbGrid from './Grid.vue'
 import { computed, nextTick, ref, useId, watch } from 'vue'
 import type { IReadableFieldComponent } from '@/types/Props.d'
 import NbLabel from './Label.vue'

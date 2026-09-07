@@ -1,3 +1,4 @@
+import type { TIconSource } from '@/types/Glyph.d'
 export type TMenuItemSize = 'xs' | 'sm' | 'md' | 'lg'
 
 export interface IMenuProps {
@@ -13,7 +14,7 @@ export interface IMenuProps {
 
 export interface IMenuItemProps {
   /** Phosphor icon name */
-  icon?: string
+  icon?: TIconSource
   /** Display label */
   label: string
   /** Keyboard shortcut display text (e.g. "Cmd+C"), display only */
@@ -32,7 +33,7 @@ export interface IMenuItemProps {
 
 export interface ISubmenuProps {
   /** Phosphor icon name */
-  icon?: string
+  icon?: TIconSource
   /** Display label */
   label: string
   /** Disables the submenu trigger */

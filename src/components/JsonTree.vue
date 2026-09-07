@@ -53,6 +53,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import NbJsonTree from './JsonTree.vue'
 import type { IJsonTreeProps, TJsonValue } from './JsonTree.d'
 
 const nullString = 'null'

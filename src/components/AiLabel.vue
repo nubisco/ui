@@ -17,6 +17,7 @@
 </template>
 
 <script lang="ts" setup>
+import NbGrid from './Grid.vue'
 import { computed } from 'vue'
 import { EAiLabelVariant, EAiLabelSize, IAiLabelProps } from './AiLabel.d'
 

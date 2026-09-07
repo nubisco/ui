@@ -80,6 +80,11 @@ export type {
 </script>
 
 <script setup lang="ts">
+import type { TIconSource } from '@/types/Glyph.d'
+import * as iconInfo from '@nubisco/ui/icons/info'
+import * as iconCheckCircle from '@nubisco/ui/icons/check-circle'
+import * as iconWarning from '@nubisco/ui/icons/warning'
+import * as iconWarningCircle from '@nubisco/ui/icons/warning-circle'
 import { computed, onMounted, ref, useSlots } from 'vue'
 import NbIcon from './Icon.vue'
 import type {
@@ -149,12 +154,12 @@ const rowBindings = computed(() =>
     : {},
 )
 
-const STATUS_ICONS: Record<TNotificationStatus, string | null> = {
+const STATUS_ICONS: Record<TNotificationStatus, TIconSource | null> = {
   neutral: null,
-  info: 'info',
-  success: 'check-circle',
-  warning: 'warning',
-  error: 'warning-circle',
+  info: iconInfo,
+  success: iconCheckCircle,
+  warning: iconWarning,
+  error: iconWarningCircle,
 }
 
 /** One normalisation point for the deprecated `danger` spelling. */

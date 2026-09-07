@@ -11,28 +11,21 @@ title: Quickstart
 pnpm add @nubisco/ui
 ```
 
-## Register components
-
-```ts
-import { createApp } from 'vue'
-import App from './App.vue'
-import NubiscoUI from '@nubisco/ui'
-import '@nubisco/ui/dist/ui.css'
-
-createApp(App).use(NubiscoUI).mount('#app')
-```
-
 ## Configure Vite
 
-Add the `fonts` plugin to load the bundled typefaces (Plus Jakarta Sans + Fira Code), and configure SCSS so design tokens are available across all your stylesheets:
+One plugin resolves both halves of the library at compile time: `<NbButton>`
+becomes an import of that component, and `<NbIcon name="check" />` becomes an
+import of that one icon. Nothing is registered globally, nothing is deferred to
+runtime, and the bundle contains what your templates actually used.
 
 ```ts
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { nubiscoUI } from '@nubisco/ui/vite'
 import { fonts } from '@nubisco/ui/plugins/fonts'
 
 export default defineConfig({
-  plugins: [vue(), fonts()],
+  plugins: [vue(), ...nubiscoUI(), fonts()],
   css: {
     preprocessorOptions: {
       scss: {
@@ -44,20 +37,26 @@ export default defineConfig({
 })
 ```
 
-## Add icon support
+The `fonts` plugin loads the bundled typefaces (Plus Jakarta Sans + Fira Code);
+the SCSS block makes the design tokens available across your stylesheets.
 
-If your project uses `NbIcon`, add the icons plugin. It resolves icons from the `@phosphor-icons/core` package at build time. Only icons you reference end up in the bundle.
+> **Note:** Import build plugins from `@nubisco/ui/vite` and
+> `@nubisco/ui/plugins/*`. They contain Node.js-only code that cannot run in
+> the browser.
+
+## Install the app plugin
+
+The app plugin carries the things that are genuinely global: directives, the
+command palette, app-level configuration. It does not register components.
 
 ```ts
-import { fonts } from '@nubisco/ui/plugins/fonts'
-import { icons } from '@nubisco/ui/plugins/icons'
+import { createApp } from 'vue'
+import App from './App.vue'
+import NubiscoUI from '@nubisco/ui'
+import '@nubisco/ui/css'
 
-export default defineConfig({
-  plugins: [vue(), fonts(), icons(process.cwd())],
-})
+createApp(App).use(NubiscoUI).mount('#app')
 ```
-
-> **Note:** Import plugins from `@nubisco/ui/plugins/*`. They contain Node.js-only code that cannot run in the browser.
 
 ## Use components
 
@@ -67,16 +66,55 @@ export default defineConfig({
     <NbPanel>
       <h2>Hello</h2>
       <p>Welcome to Nubisco UI.</p>
-      <NbButton variant="primary">Continue</NbButton>
+      <NbButton variant="primary" icon="arrow-right">Continue</NbButton>
     </NbPanel>
   </NbGrid>
 </template>
 ```
 
-## Import individual components
+No imports in that file: the plugin wrote them. It also emits a
+`components.d.ts` so editors and `vue-tsc` still see the tags.
+
+## Icons and flags
+
+A literal name costs one icon. A name your code only knows at runtime needs one
+of two declarations, depending on whether the set of values is bounded:
 
 ```ts
-import { NbButton, NbPanel, NbGrid } from '@nubisco/ui'
+// Bounded: an API field that can only be one of these.
+import { registerIcons } from '@nubisco/ui'
+import * as check from '@nubisco/ui/icons/check'
+import * as warning from '@nubisco/ui/icons/warning'
+
+registerIcons({ check, warning })
+```
+
+```ts
+// Open-ended: an icon picker, a CMS field. Import this in the one file that
+// needs it, and no other page pays for it.
+import '@nubisco/ui/icons/all'
+```
+
+`NbFlag` works the same way, with `registerFlags` and `@nubisco/ui/flags/all`.
+
+[What ships in your bundle](/bundling) explains what reaches your build for each
+way of naming a glyph, and how to ship the whole collection when you want it.
+
+## Without a bundler plugin
+
+Every component is a real entry point:
+
+```ts
+import { NbButton } from '@nubisco/ui/components/Button'
+```
+
+And if you cannot add a build step at all, one explicit import registers
+everything, at the cost of linking the whole library:
+
+```ts
+import NubiscoUI from '@nubisco/ui/all'
+
+app.use(NubiscoUI)
 ```
 
 ## Styling options
@@ -84,7 +122,7 @@ import { NbButton, NbPanel, NbGrid } from '@nubisco/ui'
 **Option 1: Pre-built CSS (recommended for most projects):**
 
 ```ts
-import '@nubisco/ui/dist/ui.css'
+import '@nubisco/ui/css'
 ```
 
 **Option 2: SCSS source (for full customisation):**

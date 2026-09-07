@@ -72,6 +72,8 @@
 </template>
 
 <script setup lang="ts">
+import * as iconCheck from '@nubisco/ui/icons/check'
+import * as iconWarning from '@nubisco/ui/icons/warning'
 import { computed, inject, onUnmounted, ref, useSlots } from 'vue'
 import { EStepStatus, IStepperStepProps } from './Stepper.d'
 import { NB_STEPPER_CONTEXT, type TStepStatus } from './Stepper.context'
@@ -152,8 +154,8 @@ const isClickable = computed(
 )
 
 const markerIcon = computed(() => {
-  if (status.value === EStepStatus.Complete) return 'check'
-  if (status.value === EStepStatus.Invalid) return 'warning'
+  if (status.value === EStepStatus.Complete) return iconCheck
+  if (status.value === EStepStatus.Invalid) return iconWarning
   return null
 })
 

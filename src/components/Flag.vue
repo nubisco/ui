@@ -17,27 +17,50 @@
 </template>
 
 <script setup lang="ts">
-// @ts-expect-error virtual module provided by flags vite plugin
-import flags from 'virtual:flags'
 import { computed } from 'vue'
-import kebab2camel from '@/utils/kebab2camel.helper'
 import { ESizePixel, IFlagProps } from './Flag.d'
 import { useStableId } from '@/composables/useStableId.composable'
+import { getRegisteredFlag } from '@/composables/flagRegistry'
+import {
+  glyphNameOf,
+  pickWeight,
+  resolveFromCatalog,
+} from '@/composables/glyphCatalog.composable'
 
 const props = withDefaults(defineProps<IFlagProps>(), {
   name: undefined,
+  flag: undefined,
   size: ESizePixel.Medium,
   clickable: false,
 })
 
 const emit = defineEmits(['click'])
 
-const componentInternalId = useStableId(props)
+/** The country code, when one was given as a string rather than a module. */
+const source = computed(() => props.flag ?? props.name)
+
+/**
+ * The country code: given directly, or read back off the module when the
+ * compile-time plugin substituted one, so the identity class is the same
+ * either way.
+ */
+const flagName = computed(() => {
+  const code =
+    typeof source.value === 'string' ? source.value : glyphNameOf(source.value)
+  return code?.replaceAll('_', '-').toLowerCase()
+})
+
+/** A flag module passed directly, through either `flag` or `name`. */
+const flagModule = computed(() =>
+  typeof source.value === 'string' ? undefined : source.value,
+)
+
+const componentInternalId = useStableId({ name: flagName.value })
 
 const classes = computed(() => {
   return {
     'nb-flag': true,
-    ...(props.name && { [`nb-flag--${props.name}`]: true }),
+    ...(flagName.value && { [`nb-flag--${flagName.value}`]: true }),
     [`nb-flag--${props.size}`]:
       typeof props.size === 'string' && ['sm', 'md', 'lg'].includes(props.size),
     'box-clickable': props.clickable,
@@ -81,7 +104,29 @@ const attributes = computed(() => {
 })
 
 const flagComponent = computed(() => {
-  return flags[kebab2camel(`f-${props.name.replaceAll('_', '-')}`)]
+  // An explicitly supplied module wins: the bundler linked exactly this flag.
+  if (flagModule.value) return pickWeight(flagModule.value)
+
+  const name =
+    typeof source.value === 'string'
+      ? source.value.replaceAll('_', '-').toLowerCase()
+      : undefined
+  if (!name) return undefined
+
+  // Then the app-level registry, which is also how an app declares the
+  // bounded set of flags it knows it will need without loading everything.
+  const custom = getRegisteredFlag(name)
+  if (custom) return custom
+
+  // Finally the full catalogue, which throws if it was never loaded. A country
+  // selector is the case that legitimately needs it.
+  const fromCatalog = resolveFromCatalog('flag', name)
+  if (!fromCatalog && import.meta.env?.DEV) {
+    console.error(
+      `[@nubisco/ui] <NbFlag> found no flag named "${name}" in the loaded catalogue.`,
+    )
+  }
+  return fromCatalog
 })
 </script>
 

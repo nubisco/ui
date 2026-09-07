@@ -6,15 +6,12 @@
     :title="title"
     @click="!clickable ? undefined : emit('click', $event)"
   >
-    <component :is="iconComponent" aria-hidden="true" />
+    <component :is="iconComponent" v-if="iconComponent" aria-hidden="true" />
   </i>
 </template>
 
 <script setup lang="ts">
-// @ts-expect-error virtual module provided by icons vite plugin
-import icons from 'virtual:icons'
 import { computed } from 'vue'
-import kebab2camel from '@/utils/kebab2camel.helper'
 import { ESize } from '@/types/Size.d'
 import { EAnimationMode, EWeight, EIconSize, IIconProps } from './Icon.d'
 import { useStableId } from '@/composables/useStableId.composable'
@@ -22,8 +19,15 @@ import {
   getRegisteredIcon,
   type ICustomIconWeights,
 } from '@/composables/iconRegistry'
+import {
+  glyphNameOf,
+  pickWeight,
+  resolveFromCatalog,
+} from '@/composables/glyphCatalog.composable'
 
 const props = withDefaults(defineProps<IIconProps>(), {
+  name: undefined,
+  icon: undefined,
   size: ESize.Medium,
   animation: null,
   animationMode: EAnimationMode.Always,
@@ -36,7 +40,23 @@ const props = withDefaults(defineProps<IIconProps>(), {
 
 const emit = defineEmits(['click'])
 
-const componentInternalId = useStableId(props)
+const source = computed(() => props.icon ?? props.name)
+
+/**
+ * The icon's name: given directly as a string, or read back off the module
+ * when the compile-time plugin substituted one, so the identity class and the
+ * stable element id are the same either way.
+ */
+const iconName = computed(() =>
+  typeof source.value === 'string' ? source.value : glyphNameOf(source.value),
+)
+
+/** An icon module passed directly, through either `icon` or `name`. */
+const iconModule = computed(() =>
+  typeof source.value === 'string' ? undefined : source.value,
+)
+
+const componentInternalId = useStableId({ name: iconName.value })
 
 const attributes = computed(() => {
   const iconSize =
@@ -56,24 +76,44 @@ const attributes = computed(() => {
   }
 })
 
+/**
+ * The name, when one was given as a string. `name` also accepts an icon module
+ * so that the compile-time plugin can rewrite a literal name into a static
+ * import without every forwarding component having to grow a second prop.
+ */
 const iconComponent = computed(() => {
-  // Check the app-level registry first so consumers can supply custom icons
-  // (or override built-ins) without rebuilding the library.
+  // An explicitly supplied module wins: nothing has to be resolved at runtime,
+  // and the bundler linked exactly this icon.
+  const explicit = iconModule.value
+  if (explicit) return pickWeight(explicit, props.weight)
+
+  const name = typeof source.value === 'string' ? source.value : undefined
+  if (!name) return undefined
+
+  // Then the app-level registry, so consumers can supply custom icons (or
+  // override built-ins) without rebuilding the library. This is also the
+  // supported way to declare a bounded set of runtime-chosen icons: register
+  // the modules you know you need and no catalogue is required.
   const custom = getRegisteredIcon(
-    props.name,
+    name,
     props.weight as keyof ICustomIconWeights,
   )
   if (custom) return custom
 
-  const iconKey = kebab2camel(`i-${props.name}`)
-  const iconSet = (icons as Record<string, any>)[iconKey]
-  return iconSet?.[props.weight] || iconSet?.regular
+  // Finally the full catalogue, which throws if it was never loaded.
+  const fromCatalog = resolveFromCatalog('icon', name, props.weight)
+  if (!fromCatalog && import.meta.env?.DEV) {
+    console.error(
+      `[@nubisco/ui] <NbIcon> found no icon named "${name}" in the loaded catalogue.`,
+    )
+  }
+  return fromCatalog
 })
 
 const classes = computed(() => {
   return {
     'nb-icon': true,
-    ...(props.name && { [props.name]: true }),
+    ...(iconName.value && { [iconName.value]: true }),
     [`nb-icon-${props.size}`]: [
       'xxs',
       'xs',

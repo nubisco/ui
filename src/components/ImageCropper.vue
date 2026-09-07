@@ -46,6 +46,7 @@
 </template>
 
 <script setup lang="ts">
+import NbGrid from './Grid.vue'
 import { ref, onMounted, computed, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ICropRect, EHandleName, IImageCropperProps } from './ImageCropper.d'

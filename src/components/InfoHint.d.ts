@@ -1,3 +1,4 @@
+import type { TIconSource } from '@/types/Glyph.d'
 import type { TAnchorSide } from '@/utils/anchorPosition.helper'
 
 /**
@@ -27,7 +28,7 @@ interface IInfoHintProps {
   /** Icon size in pixels, matching NbIcon's numeric `size`. */
   size?: number
   /** Any icon name NbIcon accepts. Defaults to the Phosphor `info` glyph. */
-  icon?: string
+  icon?: TIconSource
   /**
    * Accessible name for the trigger button. Override it when the hint sits
    * next to an ambiguous value so screen-reader users hear what it explains,

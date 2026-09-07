@@ -1,3 +1,4 @@
+import type { TIconSource } from '@/types/Glyph.d'
 import type { TGapSize } from './Grid.d'
 
 export interface ICardGridProps {
@@ -33,7 +34,7 @@ export interface ICardProps {
   /** One line under the title: a type, an owner, a version. */
   subtitle?: string
   /** Icon name, rendered in the card's header. */
-  icon?: string
+  icon?: TIconSource
   /**
    * Renders the whole card as a link. The card becomes an `<a>`, so it gets a
    * browser's link affordances for free: middle click, open in new tab, and a
