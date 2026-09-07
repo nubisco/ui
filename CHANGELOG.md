@@ -1,3 +1,17 @@
+# [3.4.0](https://github.com/nubisco/ui/compare/v3.3.1...v3.4.0) (2026-09-07)
+
+
+### Bug Fixes
+
+* **styles:** anchors keep border-box after the all-unset reset ([eab6b19](https://github.com/nubisco/ui/commit/eab6b19f5ace077ead801d73f2adce4c693f0431))
+
+
+### Features
+
+* **board:** position-aware moves, column slots, column reorder, keyboard drag ([27752c9](https://github.com/nubisco/ui/commit/27752c926ac731398d2f7d3ae854c2d0eb8f9182))
+* column-footer slot on NbBoard ([4bd70ac](https://github.com/nubisco/ui/commit/4bd70ac565572f1e66f7495951baf150884e9085))
+* NbInlineEdit component and a themeable board column track ([6b038e5](https://github.com/nubisco/ui/commit/6b038e5d00d5cbc26a0ad2f0e377e0609c016530))
+
 # [3.3.0](https://github.com/nubisco/ui/compare/v3.2.0...v3.3.0) (2026-09-04)
 
 
