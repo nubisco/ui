@@ -90,7 +90,16 @@ async function loadNames(
 ): Promise<{ icon: Set<string>; flag: Set<string> }> {
   const read = async (kind: string) => {
     const file = path.join(glyphRoot, `${kind}s`, 'names.json')
-    if (!existsSync(file)) return new Set<string>()
+    // Missing names mean every literal name silently stops being rewritten,
+    // which shows up much later as a component that renders nothing. Say so
+    // here instead: in this repo the fix is `pnpm run generate`, and in a
+    // consumer it means the installed package is incomplete.
+    if (!existsSync(file))
+      throw new Error(
+        `[nubisco-ui] no ${kind} catalogue at ${file}. The glyph modules have ` +
+          `not been generated (run \`pnpm run generate\`), or \`glyphRoot\` ` +
+          `points somewhere that does not ship them.`,
+      )
     return new Set<string>(JSON.parse(await readFile(file, 'utf8')))
   }
   return { icon: await read('icon'), flag: await read('flag') }
