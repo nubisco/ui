@@ -1,3 +1,10 @@
+# [3.6.0](https://github.com/nubisco/ui/compare/v3.5.4...v3.6.0) (2026-09-07)
+
+
+### Features
+
+* **select:** scoped option and value slots ([c39f3cc](https://github.com/nubisco/ui/commit/c39f3cc95f79a92ffc67e2e56ef1aaba86b7ce60)), closes [#option](https://github.com/nubisco/ui/issues/option) [#value](https://github.com/nubisco/ui/issues/value)
+
 ## [3.5.4](https://github.com/nubisco/ui/compare/v3.5.3...v3.5.4) (2026-09-07)
 
 
