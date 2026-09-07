@@ -1,3 +1,10 @@
+## [3.5.4](https://github.com/nubisco/ui/compare/v3.5.3...v3.5.4) (2026-09-07)
+
+
+### Bug Fixes
+
+* **menu:** wear the z-index tier the scale reserves for menus ([f08b297](https://github.com/nubisco/ui/commit/f08b29773282541aa19da12a6edfd8040eeb5031))
+
 ## [3.5.3](https://github.com/nubisco/ui/compare/v3.5.2...v3.5.3) (2026-09-07)
 
 
