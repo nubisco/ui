@@ -225,7 +225,9 @@ watch(
   padding: var(--nb-spacing-12) var(--nb-spacing-14);
   background: var(--nb-c-bg);
   border: 1px solid var(--nb-c-border);
-  border-radius: var(--nb-radius-md);
+  // Square by design, the same call NbBanner made: a toast carries the same
+  // straight status accent bar on its edge, and a radius fights it.
+  border-radius: 0;
   box-shadow: 0 var(--nb-spacing-4) var(--nb-spacing-16)
     color-mix(in srgb, var(--nb-c-scrim) 35%, transparent);
   /* Narrower than the content box on a small phone, so the stack can never
