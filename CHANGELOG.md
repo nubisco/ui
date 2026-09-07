@@ -1,3 +1,10 @@
+# [3.5.0](https://github.com/nubisco/ui/compare/v3.4.0...v3.5.0) (2026-09-07)
+
+
+### Features
+
+* **shell:** contextbar region for secondary navigation ([6b2b5d2](https://github.com/nubisco/ui/commit/6b2b5d285fed5c256c9ffc49c40ba4e8cfbc4b54))
+
 # [3.4.0](https://github.com/nubisco/ui/compare/v3.3.1...v3.4.0) (2026-09-07)
 
 
