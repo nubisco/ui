@@ -113,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { TShellPanelSize, IShellPanelProps } from './ShellPanel.d'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 
@@ -132,9 +132,21 @@ const emit = defineEmits<{
   'update:size': [size: TShellPanelSize]
 }>()
 
+// Works controlled or uncontrolled: internal state carries the size so the
+// header buttons act even when the consumer never binds v-model:size, and a
+// prop change (the controlled case) still overrides on the next tick.
+const internalSize = ref<TShellPanelSize>(props.size)
+watch(
+  () => props.size,
+  (size) => (internalSize.value = size),
+)
+
 const currentSize = computed({
-  get: () => props.size,
-  set: (v) => emit('update:size', v),
+  get: () => internalSize.value,
+  set: (v) => {
+    internalSize.value = v
+    emit('update:size', v)
+  },
 })
 
 function setSize(size: TShellPanelSize) {
@@ -184,6 +196,13 @@ defineExpose({ setSize })
 
   &.full {
     flex: 1 1 0%;
+
+    // A maximized panel owns its column, so its content scrolls internally
+    // the way `fill` does; otherwise anything taller than the space the
+    // siblings left is silently clipped by the panel's own overflow.
+    > .nb-shell-panel__content {
+      overflow-y: auto;
+    }
   }
 
   // Fluid mode: a default-sized panel takes only the height its
