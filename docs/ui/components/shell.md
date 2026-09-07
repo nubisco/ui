@@ -77,7 +77,7 @@ const dirty = ref(false)
 
 The button renders inside the shell's topbar, but it is still this view's button: the outlet teleports the nodes, it does not re-create them, so `dirty`, the click handler and any component state inside are the view's own and update from here.
 
-Regions you can claim: `outer-menu`, `inner-menu`, `notification`, `topbar-left`, `topbar-right`, `fixedbar`, `bottom`, `inspector`. The sidebar is deliberately not among them, because navigation is a property of the application rather than of the page currently open in it.
+Regions you can claim: `outer-menu`, `inner-menu`, `notification`, `topbar-left`, `topbar-right`, `fixedbar`, `contextbar`, `bottom`, `inspector`. The sidebar is deliberately not among them, because navigation is a property of the application rather than of the page currently open in it.
 
 ### It solves the ordering problem
 
@@ -495,6 +495,21 @@ Use [`NbBanner`](/ui/components/banner) here rather than a hand-rolled div: `flu
 ## Fixedbar slot
 
 The `#fixedbar` slot renders a non-scrolling bar between the topbar and the main content, useful for tabs, breadcrumbs, or filters. Like the notification slot, it is only rendered when content is provided.
+
+## Contextbar
+
+The `#contextbar` slot renders a secondary navigation column between the sidebar and the main content: a document tree, a media browser, a channel list. It runs from the bar above it to the bottom of the frame, scrolls independently of the page, and its width is themeable via `--nb-shell-contextbar-width` (default 272px). Name it with `contextbarLabel` ("Documents", "Media") since that is both the landmark's accessible name and the toggle text on collapsed frames, where the column folds behind a toggle bar and opens as a bounded block instead.
+
+```vue
+<NbShell contextbar-label="Documents">
+  <template #contextbar>
+    <NbTree v-model="selected">...</NbTree>
+  </template>
+  <RouterView />
+</NbShell>
+```
+
+Views can also claim it per route with `useShellSlot('contextbar')`, which is the right shape when only some sections of the product carry a tree.
 
 <preview>
   <div style="height: 360px; border: 1px solid var(--nb-c-border, #e8e8f0); border-radius: 8px; overflow: hidden;">

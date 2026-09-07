@@ -35,6 +35,7 @@ export type TShellSlotName =
   | 'topbar-left'
   | 'topbar-right'
   | 'fixedbar'
+  | 'contextbar'
   | 'bottom'
   | 'inspector'
 
