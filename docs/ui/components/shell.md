@@ -496,6 +496,8 @@ Use [`NbBanner`](/ui/components/banner) here rather than a hand-rolled div: `flu
 
 The `#fixedbar` slot renders a non-scrolling bar between the topbar and the main content, useful for tabs, breadcrumbs, or filters. Like the notification slot, it is only rendered when content is provided.
 
+The bar adapts common slot content so it composes cleanly with the chrome: line-variant `NbTabs` lose their own bottom rule and stretch to the bar's edge (the bar's border is the rule, and the active underline replaces it under the active tab), and bare `NbSelect` triggers lose their leading padding so their text sits on the same rail as the page content below.
+
 ## Contextbar
 
 The `#contextbar` slot renders a secondary navigation column between the sidebar and the main content: a document tree, a media browser, a channel list. It runs from the bar above it to the bottom of the frame, scrolls independently of the page, and its width is themeable via `--nb-shell-contextbar-width` (default 272px). Name it with `contextbarLabel` ("Documents", "Media") since that is both the landmark's accessible name and the toggle text on collapsed frames, where the column folds behind a toggle bar and opens as a bounded block instead.

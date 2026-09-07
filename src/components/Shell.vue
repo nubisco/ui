@@ -1329,6 +1329,27 @@ defineExpose({
   background: var(--nb-shell-fixedbar-bg);
   color: var(--nb-shell-fixedbar-color);
   gap: 1rem;
+
+  // Field triggers render bare on chrome (no box, no side borders), so their
+  // TEXT is the alignment edge the eye reads. Their built-in inline padding
+  // would float that text off the page rail the main region establishes.
+  :deep(.nb-select__trigger) {
+    padding-inline-start: 0;
+  }
+
+  // Line tabs carry their own bottom rule; stacked on the bar's border that
+  // reads as a doubled header. The bar's rule wins, and the tabs stretch to
+  // the bar's bottom edge so the active underline replaces the rule under
+  // the active tab instead of floating above it.
+  :deep(.nb-tabs--line) {
+    align-self: stretch;
+  }
+
+  :deep(.nb-tabs--line .nb-tabs__list) {
+    block-size: 100%;
+    align-items: end;
+    border-bottom: 0;
+  }
 }
 
 // Slot-presence detection runs on vnodes, so a component in the slot counts as
@@ -1433,7 +1454,9 @@ defineExpose({
   // Reads layer 0 through the class the component binds here, so the page
   // ground is a shade below the chrome it sits under rather than the same fill.
   background: var(--nb-shell-main-bg);
-  padding: 1.5rem 1.75rem;
+  // Inline padding shares the chrome token so page content sits on the same
+  // rail as the topbar and fixedbar; a private value here drifts the two.
+  padding: 1.5rem var(--nb-shell-chrome-padding-x);
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
