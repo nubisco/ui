@@ -1,3 +1,10 @@
+## [3.5.3](https://github.com/nubisco/ui/compare/v3.5.2...v3.5.3) (2026-09-07)
+
+
+### Bug Fixes
+
+* **shell-panel,inspector:** working size buttons, scrolling inspector pattern ([85d5b7b](https://github.com/nubisco/ui/commit/85d5b7ba65f47d86fa504a218bd248b80610647c))
+
 ## [3.5.2](https://github.com/nubisco/ui/compare/v3.5.1...v3.5.2) (2026-09-07)
 
 
