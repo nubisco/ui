@@ -1,3 +1,10 @@
+## [4.0.1](https://github.com/nubisco/ui/compare/v4.0.0...v4.0.1) (2026-09-07)
+
+
+### Bug Fixes
+
+* **docs:** resolve the site's own library imports from source ([c908388](https://github.com/nubisco/ui/commit/c908388885bf3de3113a9ce862b6e68d5b8e065a))
+
 # [4.0.0](https://github.com/nubisco/ui/compare/v3.6.0...v4.0.0) (2026-09-07)
 
 
