@@ -32,7 +32,10 @@
             { 'nb-select__value--placeholder': !displayValue },
           ]"
         >
-          {{ displayValue || placeholder }}
+          <slot v-if="displayValue" name="value" :values="selectedValues">{{
+            displayValue
+          }}</slot>
+          <template v-else>{{ placeholder }}</template>
         </span>
         <NbMessage
           v-if="error"
@@ -116,7 +119,10 @@
               { 'nb-select__value--placeholder': !displayValue },
             ]"
           >
-            {{ displayValue || placeholder }}
+            <slot v-if="displayValue" name="value" :values="selectedValues">{{
+              displayValue
+            }}</slot>
+            <template v-else>{{ placeholder }}</template>
           </span>
           <NbGrid align="center" justify="center" class="nb-select__caret">
             <NbIcon :name="isOpen ? 'caret-up' : 'caret-down'" :size="16" />
@@ -187,7 +193,11 @@
             />
           </svg>
         </span>
-        <span class="nb-select__option-label">{{ option.label }}</span>
+        <span class="nb-select__option-label">
+          <!-- Rich option rows (avatar + name, icon + label) without the
+               consumer re-implementing the listbox. -->
+          <slot name="option" :option="option">{{ option.label }}</slot>
+        </span>
       </div>
       <div v-if="!options || options.length === 0" class="nb-select__empty">
         No options
@@ -207,6 +217,10 @@
 </template>
 
 <script setup lang="ts">
+import NbLabel from './Label.vue'
+import NbMessage from './Message.vue'
+import NbGrid from './Grid.vue'
+import NbIcon from './Icon.vue'
 import { ref, computed, watch, nextTick, onBeforeUnmount, useId } from 'vue'
 import { ISelectOption, ISelectProps } from './Select'
 
