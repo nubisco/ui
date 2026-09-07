@@ -1,3 +1,29 @@
+# [4.0.0](https://github.com/nubisco/ui/compare/v3.6.0...v4.0.0) (2026-09-07)
+
+
+* feat(build)!: resolve components, icons and styles at compile time ([7b6cee6](https://github.com/nubisco/ui/commit/7b6cee68a44c553c78e968587bd54cc3bf96015f))
+
+
+### Bug Fixes
+
+* **build:** generate the glyph modules before testing and type checking ([32db969](https://github.com/nubisco/ui/commit/32db969584fc34efa568e129ba007dff3abd2f9a))
+
+
+### BREAKING CHANGES
+
+* `app.use(NubiscoUI)` no longer registers components. Add
+`nubiscoUI()` from `@nubisco/ui/vite` to the bundler config, or import
+`@nubisco/ui/all` to keep global registration of the whole library. Icon
+and flag names decided at runtime no longer resolve on their own and now
+throw unless registered or backed by an imported catalogue. Library CSS is
+split per component, so app styles that relied on load order against a
+single `ui.css` may now win or lose differently; `nubiscoUI({ styles: false })`
+with `import '@nubisco/ui/css'` restores the old ordering. The internal
+`@nubisco/ui/plugins/icons` and `@nubisco/ui/plugins/flags` Vite plugins are
+removed, replaced by `@nubisco/ui/vite`. See docs/upgrading.md.
+
+Claude-Session: https://claude.ai/code/session_01BFdPzNnJuTLC833KhR67Po
+
 # [3.6.0](https://github.com/nubisco/ui/compare/v3.5.4...v3.6.0) (2026-09-07)
 
 
