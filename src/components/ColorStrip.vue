@@ -57,6 +57,9 @@
 </template>
 
 <script setup lang="ts">
+import NbLabel from './Label.vue'
+import NbGrid from './Grid.vue'
+import NbIcon from './Icon.vue'
 import { computed, ref, watch } from 'vue'
 import { useId } from 'vue'
 import { IColorStripProps, IOption } from './ColorStrip'

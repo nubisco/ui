@@ -1,3 +1,4 @@
+import type { TIconSource } from '@/types/Glyph.d'
 import { ESize } from '@/types/Size.d'
 
 enum EButtonType {
@@ -25,7 +26,7 @@ interface IButtonProps {
   disabled?: boolean
   loading?: boolean
   /** Icon name passed directly to NbIcon. Rendered in the trailing padding area. Hidden while loading. */
-  icon?: string
+  icon?: TIconSource
   /** Native button type. Ignored when `href` is provided. */
   type?: `${EButtonType}`
   /** When provided the component renders as an `<a>` element instead of `<button>`. */

@@ -1,3 +1,4 @@
+import type { TIconSource } from '@/types/Glyph.d'
 import { IDefaultProps } from '@/types/Props.d'
 
 // #region ETabsVariant
@@ -25,7 +26,7 @@ interface ITabItem {
   /** Visible tab text. */
   label: string
   /** Optional icon name rendered before the label. */
-  icon?: string
+  icon?: TIconSource
   /** Optional count or short status rendered after the label. */
   badge?: string | number
   /** Prevents selection and dims the tab. */

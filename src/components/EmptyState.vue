@@ -34,6 +34,11 @@
 </template>
 
 <script setup lang="ts">
+import type { TIconSource } from '@/types/Glyph.d'
+import * as iconTray from '@nubisco/ui/icons/tray'
+import * as iconMagnifyingGlass from '@nubisco/ui/icons/magnifying-glass'
+import * as iconWarningCircle from '@nubisco/ui/icons/warning-circle'
+import * as iconLockSimple from '@nubisco/ui/icons/lock-simple'
 import { computed } from 'vue'
 import type { IEmptyStateProps } from './EmptyState.d'
 import NbIcon from './Icon.vue'
@@ -49,11 +54,11 @@ const props = withDefaults(defineProps<IEmptyStateProps>(), {
 
 // Distinct icons per kind, because the four situations are genuinely
 // different and a single generic mark would make them look like one.
-const ICONS: Record<string, string> = {
-  empty: 'tray',
-  'no-results': 'magnifying-glass',
-  error: 'warning-circle',
-  forbidden: 'lock-simple',
+const ICONS: Record<string, TIconSource> = {
+  empty: iconTray,
+  'no-results': iconMagnifyingGlass,
+  error: iconWarningCircle,
+  forbidden: iconLockSimple,
 }
 
 const resolvedIcon = computed(() =>

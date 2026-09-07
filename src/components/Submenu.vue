@@ -42,6 +42,7 @@
 </template>
 
 <script setup lang="ts">
+import NbIcon from './Icon.vue'
 import { ref, computed, inject, nextTick, onBeforeUnmount } from 'vue'
 import type { ISubmenuProps, IMenuContext } from './Menu.d'
 

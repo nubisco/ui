@@ -1,3 +1,4 @@
+import { glyphStubComputed } from './__mocks__/glyphStub'
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import ProgressBar from '../src/components/ProgressBar.vue'
@@ -17,7 +18,8 @@ const NbMessageStub = {
 const NbIconStub = {
   name: 'NbIcon',
   props: ['name', 'size'],
-  template: '<i data-testid="nb-icon" :data-name="name" />',
+  computed: glyphStubComputed,
+  template: '<i data-testid="nb-icon" :data-name="resolvedName" />',
 }
 
 describe('ProgressBar', () => {

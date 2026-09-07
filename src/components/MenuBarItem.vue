@@ -26,6 +26,7 @@
 </template>
 
 <script setup lang="ts">
+import NbMenu from './Menu.vue'
 import {
   ref,
   computed,

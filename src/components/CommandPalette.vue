@@ -88,6 +88,7 @@
 </template>
 
 <script setup lang="ts">
+import NbIcon from './Icon.vue'
 import {
   ref,
   computed,

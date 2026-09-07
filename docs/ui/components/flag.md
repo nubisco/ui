@@ -69,11 +69,41 @@ The `name` prop takes a two-letter ISO 3166-1 alpha-2 country code in lowercase 
 
 ## Props
 
-| Prop        | Type               | Default  | Description                                 |
-| ----------- | ------------------ | -------- | ------------------------------------------- |
-| `name`      | `string`           | required | Lowercase ISO 3166-1 alpha-2 country code   |
-| `size`      | `string \| number` | `'md'`   | Named size or pixel value (see sizes table) |
-| `clickable` | `boolean`          | `false`  | Adds pointer cursor and `role="button"`     |
+| Prop        | Type               | Default  | Description                                                 |
+| ----------- | ------------------ | -------- | ----------------------------------------------------------- |
+| `name`      | `string \| module` | required | Lowercase ISO 3166-1 alpha-2 country code, or a flag module |
+| `flag`      | `module`           | -        | An imported flag module; wins over `name`                   |
+| `size`      | `string \| number` | `'md'`   | Named size or pixel value (see sizes table)                 |
+| `clickable` | `boolean`          | `false`  | Adds pointer cursor and `role="button"`                     |
+
+## How a code is resolved
+
+The 255 flags follow the same three tiers as [NbIcon](/ui/components/icon): a
+literal code is linked as one module by the bundler plugin, an imported module
+can be passed directly, and a code known only at runtime needs either
+`registerFlags` for a bounded set or `@nubisco/ui/flags/all` for an open one.
+
+A country _selector_ is the case the full catalogue exists for, since it must
+render whatever the user picks:
+
+```ts
+import '@nubisco/ui/flags/all'
+```
+
+A built app therefore contains only the flags its templates named; see
+[What ships in your bundle](/bundling) for how to check, and how to ship all 255
+on purpose.
+
+Where the codes are bounded, register them instead and the page links only
+those flags:
+
+```ts
+import { registerFlags } from '@nubisco/ui'
+import * as pt from '@nubisco/ui/flags/pt'
+import * as es from '@nubisco/ui/flags/es'
+
+registerFlags({ pt, es })
+```
 
 ## Sizes
 
@@ -111,8 +141,7 @@ For bare language codes without a country (`en`, `fr`), the language code itself
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import flags from 'virtual:flags'
-import str2kebab from '@nubisco/ui/utils/str2kebab.helper'
+import { catalog as flagCatalog } from '@nubisco/ui/flags/catalog'
 import type { PreviewPropDef } from '../../.vitepress/components/Preview.d'
 import { getCountryByCode } from '../../mocks/countries-mocks'
 
@@ -120,9 +149,7 @@ const { t } = useI18n({})
 
 const isDialogOpen = ref(false)
 
-const flagList = [...new Set(Object.keys(flags)
-  .map(item => str2kebab(item.replace(/^f/, '')))
-)]
+const flagList = Object.keys(flagCatalog)
 
 const availableProps: PreviewPropDef[] = [
   {

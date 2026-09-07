@@ -29,6 +29,12 @@
     "access": "public"
   },
   "type": "module",
+  "sideEffects": [
+    "*.css",
+    "*.scss",
+    "**/icons/all.mjs",
+    "**/flags/all.mjs"
+  ],
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -39,7 +45,20 @@
       "require": "./dist/index.cjs",
       "default": "./dist/index.mjs"
     },
+    "./all": {
+      "types": "./dist/all.d.ts",
+      "import": "./dist/all.mjs",
+      "require": "./dist/all.cjs",
+      "default": "./dist/all.mjs"
+    },
+    "./vite": {
+      "types": "./dist/plugins/vite/index.d.ts",
+      "import": "./dist/plugins/vite/index.js",
+      "default": "./dist/plugins/vite/index.js"
+    },
     "./dist/ui.css": "./dist/ui.css",
+    "./dist/styles/*": "./dist/styles/*",
+    "./component-styles.json": "./dist/component-styles.json",
     "./assets/nubisco-mark.svg": "./src/assets/nubisco-mark.svg",
     "./assets/nubisco-platform-mark.svg": "./src/assets/nubisco-platform-mark.svg",
     "./plugins/*": {
@@ -48,15 +67,51 @@
     },
     "./components/*": {
       "types": "./dist/components/*.d.ts",
-      "import": "./src/components/*"
+      "import": "./dist/components/*.mjs",
+      "require": "./dist/components/*.cjs",
+      "default": "./dist/components/*.mjs"
+    },
+    "./icons/all": {
+      "types": "./dist/icons/all.d.ts",
+      "import": "./dist/icons/all.mjs",
+      "default": "./dist/icons/all.mjs"
+    },
+    "./icons/catalog": {
+      "types": "./dist/icons/catalog.d.ts",
+      "import": "./dist/icons/catalog.mjs",
+      "default": "./dist/icons/catalog.mjs"
+    },
+    "./icons/*": {
+      "types": "./dist/icons/module.d.ts",
+      "import": "./dist/icons/*.mjs",
+      "default": "./dist/icons/*.mjs"
+    },
+    "./flags/all": {
+      "types": "./dist/flags/all.d.ts",
+      "import": "./dist/flags/all.mjs",
+      "default": "./dist/flags/all.mjs"
+    },
+    "./flags/catalog": {
+      "types": "./dist/flags/catalog.d.ts",
+      "import": "./dist/flags/catalog.mjs",
+      "default": "./dist/flags/catalog.mjs"
+    },
+    "./flags/*": {
+      "types": "./dist/flags/module.d.ts",
+      "import": "./dist/flags/*.mjs",
+      "default": "./dist/flags/*.mjs"
     },
     "./composables/*": {
       "types": "./dist/composables/*.d.ts",
-      "import": "./src/composables/*"
+      "import": "./dist/composables/*.mjs",
+      "require": "./dist/composables/*.cjs",
+      "default": "./dist/composables/*.mjs"
     },
     "./utils/*": {
       "types": "./dist/utils/*.d.ts",
-      "import": "./src/utils/*"
+      "import": "./dist/utils/*.mjs",
+      "require": "./dist/utils/*.cjs",
+      "default": "./dist/utils/*.mjs"
     },
     "./styles": "./src/styles/index.scss",
     "./styles/*": "./src/styles/*",
@@ -80,12 +135,12 @@
   ],
   "scripts": {
     "clean": "rm -rf dist",
-    "prebuild": "pnpm run clean",
-    "build": "pnpm run build:lib && pnpm run build:types && pnpm run build:plugins && pnpm run verify:types",
+    "prebuild": "pnpm run clean && pnpm run generate",
+    "build": "pnpm run build:lib && pnpm run build:types && pnpm run build:plugins && node scripts/finalize-dist.mjs && pnpm run verify:types",
     "build:lib": "vite build",
     "build:types": "vue-tsc --noEmit false --declaration --emitDeclarationOnly --outDir dist && node scripts/copy-type-modules.mjs && node scripts/rewrite-dist-aliases.mjs dist",
     "build:plugins": "tsc --project tsconfig.plugins.json",
-    "verify:types": "pnpm run verify:dist-types && pnpm run verify:consumer-types && pnpm run verify:consumer-globals",
+    "verify:types": "pnpm run verify:dist-types && pnpm run verify:consumer-types && pnpm run verify:consumer-globals && pnpm run verify:resolution && pnpm run verify:styles",
     "verify:dist-types": "node scripts/verify-dist-types.mjs dist",
     "verify:consumer-types": "node scripts/verify-consumer-types.mjs",
     "verify:consumer-globals": "node scripts/verify-consumer-globals.mjs",
@@ -103,7 +158,10 @@
     "docs:build": "node scripts/build-tokens.mjs && vitepress build docs",
     "docs:serve": "vitepress serve docs",
     "prepare": "simple-git-hooks",
-    "verify:marks": "node scripts/verify-inlined-marks.mjs"
+    "verify:marks": "node scripts/verify-inlined-marks.mjs",
+    "generate": "node scripts/generate-component-manifest.mjs && node scripts/generate-assets.mjs && node scripts/generate-entries.mjs",
+    "verify:resolution": "node scripts/verify-compile-time-resolution.mjs dist",
+    "verify:styles": "node scripts/verify-style-split.mjs dist"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged && pnpm run quality:check",
@@ -185,5 +243,9 @@
         }
       ]
     ]
+  },
+  "dependencies": {
+    "magic-string": "^1.2.3",
+    "unplugin-vue-components": "^32.1.0"
   }
 }

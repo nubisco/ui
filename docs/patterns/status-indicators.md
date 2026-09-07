@@ -22,7 +22,7 @@ as a vocabulary problem rather than a component problem:
 - **`NbBadge` renders a bare `<span>`.** No `role`, no `aria-*`, no live region.
   A badge in `dot` mode with no text content is, to a screen reader, an empty
   element. It says nothing at all.
-- **`NbFlag` is not a status component.** It resolves `virtual:flags` and
+- **`NbFlag` is not a status component.** It resolves the country-flag catalogue and
   renders a country flag. Anything named "flag" in your status code is either a
   misuse of `NbFlag` or a hand-rolled component that should be a badge.
 
@@ -70,7 +70,7 @@ sizes, and the size difference is the argument:
       <p class="sx-label">NbFlag: not a carrier</p>
       <div class="sx-flag-row"><NbFlag name="br" :size="20" /><code>name="br"</code></div>
       <div class="sx-flag-row"><NbFlag name="suspended" :size="20" /><code>name="suspended"</code></div>
-      <p class="sx-note">The first is Brazil. The second is the same component asked for a status: nothing resolves out of <code>virtual:flags</code>, so it renders an empty element. The blank is the component, unmodified.</p>
+      <p class="sx-note">The first is Brazil. The second is the same component asked for a status: nothing resolves out of the flag catalogue, so it renders an empty element. The blank is the component, unmodified.</p>
     </div>
   </div>
 </preview>
@@ -80,7 +80,7 @@ Two consequences worth stating outright, because both have been shipped:
 ::: danger Never these
 
 - **`NbFlag` is not a status indicator.** It takes a `name` and renders a
-  country flag from the `virtual:flags` module. There is no status meaning in it
+  country flag from the flag catalogue. There is no status meaning in it
   at all. See [Flag](/ui/components/flag).
 - **A `NbMessage` is not a page status.** `NbMessage` is 12px text with a 14px
   icon designed to sit under a field. It has no title, no action slot and no

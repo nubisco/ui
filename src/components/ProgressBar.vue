@@ -32,6 +32,11 @@
 </template>
 
 <script setup lang="ts">
+import * as iconCheckCircle from '@nubisco/ui/icons/check-circle'
+import * as iconWarningCircle from '@nubisco/ui/icons/warning-circle'
+import NbLabel from './Label.vue'
+import NbIcon from './Icon.vue'
+import NbMessage from './Message.vue'
 import { computed } from 'vue'
 import {
   EProgressBarSize,
@@ -77,8 +82,8 @@ const barStyle = computed(() => ({
 }))
 
 const statusIcon = computed(() => {
-  if (props.status === EProgressBarStatus.Finished) return 'check-circle'
-  if (props.status === EProgressBarStatus.Error) return 'warning-circle'
+  if (props.status === EProgressBarStatus.Finished) return iconCheckCircle
+  if (props.status === EProgressBarStatus.Error) return iconWarningCircle
   return null
 })
 

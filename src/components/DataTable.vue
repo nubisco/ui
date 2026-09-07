@@ -304,6 +304,10 @@
   lang="ts"
   generic="T extends Record<string, unknown> = Record<string, unknown>"
 >
+import type { TIconSource } from '@/types/Glyph.d'
+import * as iconArrowsDownUp from '@nubisco/ui/icons/arrows-down-up'
+import * as iconArrowUp from '@nubisco/ui/icons/arrow-up'
+import * as iconArrowDown from '@nubisco/ui/icons/arrow-down'
 import {
   computed,
   getCurrentInstance,
@@ -545,9 +549,9 @@ function ariaSortFor(
   return props.sortState!.direction === 'asc' ? 'ascending' : 'descending'
 }
 
-function sortIcon(col: IDataTableColumn<T>): string {
-  if (!isSorted(col)) return 'arrows-down-up'
-  return props.sortState!.direction === 'asc' ? 'arrow-up' : 'arrow-down'
+function sortIcon(col: IDataTableColumn<T>): TIconSource {
+  if (!isSorted(col)) return iconArrowsDownUp
+  return props.sortState!.direction === 'asc' ? iconArrowUp : iconArrowDown
 }
 
 // Cycle none → asc → desc → none, matching Carbon.

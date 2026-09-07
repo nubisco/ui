@@ -1,12 +1,12 @@
 import { config } from '@vue/test-utils'
 
-// The library registers its components globally (app.use), so any component's
-// template can reference presentational siblings (NbGrid, NbLabel, NbMessage,
-// NbIcon) by their global name. A test that mounts a single component in
-// isolation never installs the library, so Vue cannot resolve those siblings
-// and both warns ("Failed to resolve component") and renders broken
-// <nbgrid>/<nbicon> custom elements. Register slot-passing stubs for the
-// ubiquitous presentational siblings once here so every mount resolves them.
+// Library components now import their presentational siblings (NbGrid,
+// NbLabel, NbMessage, NbIcon) directly, so a test that mounts one in isolation
+// resolves them without any global registration. These stubs are kept because
+// specs assert against them: they keep a mount focused on the component under
+// test and give it stable hooks (`data-testid`, `data-name`) instead of the
+// sibling's full markup. A spec that needs the real sibling overrides the stub
+// via its own `global.stubs`.
 //
 // These are the exact stubs individual specs were already duplicating; keeping
 // them global means new specs get resolution for free, and any spec that needs
@@ -33,9 +33,24 @@ config.global.stubs = {
   },
   NbIcon: {
     name: 'NbIcon',
-    props: ['name', 'weight', 'color', 'size'],
+    props: ['name', 'icon', 'weight', 'color', 'size'],
+    // `name` may arrive as a glyph module rather than a string: the
+    // compile-time plugin rewrites a literal name into a static import, and
+    // every generated glyph carries its own `glyphName` so the identity is
+    // still readable. Mirror what the real NbIcon does so `data-name`
+    // assertions keep meaning the same thing.
+    computed: {
+      resolvedName(this: { name: unknown; icon: unknown }) {
+        const source = this.icon ?? this.name
+        if (typeof source === 'string') return source
+        const glyph = source as
+          | { glyphName?: string; regular?: { glyphName?: string } }
+          | undefined
+        return glyph?.glyphName ?? glyph?.regular?.glyphName
+      },
+    },
     template:
-      '<i class="nb-icon" data-testid="nb-icon" :data-name="name" :data-weight="weight" :data-color="color"></i>',
+      '<i class="nb-icon" data-testid="nb-icon" :data-name="resolvedName" :data-weight="weight" :data-color="color"></i>',
   },
   NbGrid: {
     name: 'NbGrid',

@@ -118,6 +118,10 @@
 </template>
 
 <script setup lang="ts">
+import NbLabel from './Label.vue'
+import NbGrid from './Grid.vue'
+import NbNumberInput from './NumberInput.vue'
+import NbMessage from './Message.vue'
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { ESizeShort } from '@/types/Size.d'
 import type { ISliderProps, TActiveHandle } from './Slider.d'

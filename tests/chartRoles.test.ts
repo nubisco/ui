@@ -30,10 +30,9 @@ import {
   parseColor,
   ratio,
 } from '../scripts/lib/layerTokens.mjs'
-// The module is imported by its own path because src/main.ts pulls in
-// `virtual:icons` and `virtual:flags`, which exist only under the library's
-// own vite config (the same reason component-registration.test.ts reads the
-// entry as text). Reachability from `@nubisco/ui` is therefore asserted
+// The module is imported by its own path because src/main.ts is the whole
+// barrel, which this assertion does not need (the same reason
+// component-registration.test.ts reads the entry as text). Reachability from `@nubisco/ui` is therefore asserted
 // against the text of src/main.ts, below, and it has to be: half of this
 // surface (both ramps) cannot be reached by setting a custom property, so an
 // entry that forgets it makes the documented examples uncompilable.

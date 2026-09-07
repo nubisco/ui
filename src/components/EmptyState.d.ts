@@ -1,3 +1,4 @@
+import type { TIconSource } from '@/types/Glyph.d'
 /**
  * Why the space is empty. This is not decoration: the four cases want
  * different copy and different actions, and naming the case is what stops a
@@ -30,7 +31,7 @@ export interface IEmptyStateProps {
    */
   description?: string
   /** Icon name. Defaults to one that suits `kind`; pass `null` for none. */
-  icon?: string | null
+  icon?: TIconSource | null
   /** See `TEmptyStateKind`. */
   kind?: `${TEmptyStateKind}`
   /** `'md'` (default) for a whole view, `'sm'` inside a panel or a card. */

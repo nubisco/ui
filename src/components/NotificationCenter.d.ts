@@ -1,3 +1,4 @@
+import type { TIconSource } from '@/types/Glyph.d'
 import type { IAnchorSize } from '@/utils/anchorPosition.helper'
 import type { TNotificationVariant } from './NotificationCenterItem.d'
 
@@ -13,7 +14,7 @@ export interface INotificationItem {
   read?: boolean
   /** Status word, from the same vocabulary as NbToast and NbMessage. */
   variant?: TNotificationVariant
-  icon?: string | null
+  icon?: TIconSource | null
   /** Renders the row as a link instead of a button. */
   href?: string
   /** Overrides the centre's `interactive` for this one row. `false` makes
@@ -149,7 +150,7 @@ export interface INotificationCenterProps {
   closeOnNavigate?: boolean
   disabled?: boolean
   /** Phosphor icon for the trigger and the empty state. */
-  icon?: string
+  icon?: TIconSource
   /** BCP 47 tag for relative times. */
   locale?: string
   unreadLabel?: string

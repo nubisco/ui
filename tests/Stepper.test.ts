@@ -936,7 +936,7 @@ describe('Stepper', () => {
    * suite certify a component no application could import. What follows reads
    * the three files a consumer's build actually reads, and nothing else.
    *
-   * Read as text rather than imported: src/main.ts pulls in `virtual:icons`,
+   * Read as text rather than imported: this asserts about the source itself,
    * which only exists under the library's own vite config.
    */
   describe('shipping', () => {

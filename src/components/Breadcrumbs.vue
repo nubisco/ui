@@ -24,6 +24,7 @@
 </template>
 
 <script setup lang="ts">
+import NbIcon from './Icon.vue'
 import { useSlots, computed, Comment, Fragment, Text, type VNode } from 'vue'
 
 defineProps<{

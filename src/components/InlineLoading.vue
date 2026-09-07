@@ -36,6 +36,9 @@
 </template>
 
 <script setup lang="ts">
+import * as iconCheckCircle from '@nubisco/ui/icons/check-circle'
+import * as iconWarningCircle from '@nubisco/ui/icons/warning-circle'
+import NbIcon from './Icon.vue'
 import { computed, onBeforeUnmount, watch } from 'vue'
 import { useStableId } from '@/composables/useStableId.composable'
 import NbSpinner from './Spinner.vue'
@@ -104,8 +107,8 @@ const text = computed(() => {
 })
 
 const statusIcon = computed(() => {
-  if (props.status === EInlineLoadingStatus.Finished) return 'check-circle'
-  if (props.status === EInlineLoadingStatus.Error) return 'warning-circle'
+  if (props.status === EInlineLoadingStatus.Finished) return iconCheckCircle
+  if (props.status === EInlineLoadingStatus.Error) return iconWarningCircle
   return null
 })
 

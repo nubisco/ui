@@ -22,6 +22,11 @@
 </template>
 
 <script setup lang="ts">
+import * as iconWarningCircle from '@nubisco/ui/icons/warning-circle'
+import * as iconWarning from '@nubisco/ui/icons/warning'
+import * as iconCheckCircle from '@nubisco/ui/icons/check-circle'
+import * as iconInfo from '@nubisco/ui/icons/info'
+import NbIcon from './Icon.vue'
 import { EMessageVariant, IMessageProps } from './Message.d'
 
 const props = withDefaults(defineProps<IMessageProps>(), {
@@ -30,12 +35,12 @@ const props = withDefaults(defineProps<IMessageProps>(), {
 })
 
 const iconMap = {
-  error: 'warning-circle',
-  warning: 'warning',
+  error: iconWarningCircle,
+  warning: iconWarning,
   // Deliberate counterpart to error's `warning-circle`: same circled family,
   // so the two outcomes of a validated field read as a matched pair.
-  success: 'check-circle',
-  helper: 'info',
+  success: iconCheckCircle,
+  helper: iconInfo,
 } as const
 </script>
 

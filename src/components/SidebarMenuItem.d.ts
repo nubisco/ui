@@ -1,3 +1,4 @@
+import type { TIconSource } from '@/types/Glyph.d'
 interface ISidebarMenuItemProps {
   /** Visible row label. */
   label: string
@@ -5,7 +6,7 @@ interface ISidebarMenuItemProps {
    * Optional icon name (uses NbIcon). Recommended for top-level items in
    * verbose sidebars; child items typically omit it.
    */
-  icon?: string
+  icon?: TIconSource
   /**
    * Target route. When vue-router is installed (the app called
    * `app.use(router)`), the row renders as a `<RouterLink>` and accepts any

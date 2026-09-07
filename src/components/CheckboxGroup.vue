@@ -32,6 +32,8 @@
 </template>
 
 <script setup lang="ts">
+import NbLabel from './Label.vue'
+import NbMessage from './Message.vue'
 import { computed, provide } from 'vue'
 import { ECheckboxGroupDirection, ICheckboxGroupProps } from './CheckboxGroup.d'
 import { NB_CHECKBOX_GROUP_CONTEXT } from './CheckboxGroup.context'

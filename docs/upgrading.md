@@ -1,5 +1,166 @@
 # Upgrading
 
+## To the next release from 3.5.3
+
+`app.use(NubiscoUI)` no longer registers components, and icons and flags are
+resolved at compile time. This is the change that makes the package
+installable once and still ship only what an app uses.
+
+### What changed
+
+**Components.** The app plugin installs directives, the command palette and
+app-level configuration. It does not register the 86 components any more,
+because a static reference to all of them inside `install()` is reachable from
+every app and pinned the whole library into every bundle.
+
+Add the bundler plugin instead. It resolves `<NbButton>` to an import of
+`@nubisco/ui/components/Button` in the file that used it:
+
+```ts
+// vite.config.ts
+import { nubiscoUI } from '@nubisco/ui/vite'
+
+export default defineConfig({ plugins: [vue(), ...nubiscoUI()] })
+```
+
+Nothing else in your templates changes. The plugin emits a `components.d.ts`,
+so editors and `vue-tsc` keep seeing the tags.
+
+**Per-component entry points.** `dist/components/` used to contain nothing but
+declaration files: the whole runtime was one barrel, and
+`exports["./components/*"]` pointed at `src/`, which was never published, so a
+deep import resolved its types and failed on its runtime. Every component is now
+a real entry point, importable with or without the plugin:
+
+```ts
+import { NbButton } from '@nubisco/ui/components/Button'
+```
+
+The package also declares `sideEffects`, so bundlers can drop what a barrel
+import does not reach.
+
+**Icons and flags.** `NbIcon` and `NbFlag` used to resolve every name through a
+single module holding the entire catalogue: ~1,500 icons in six weights and 255
+flags, about 1.5MB linked so that one glyph could render. They now resolve in
+three tiers.
+
+A literal name is rewritten by the plugin into an import of that one glyph, so
+nothing about your templates changes:
+
+```vue
+<NbIcon name="github-logo" />
+<NbButton icon="plus">Add</NbButton>
+```
+
+A name your code only knows at runtime needs a declaration, and which one
+depends on whether the set of values is bounded:
+
+```ts
+// Bounded: values from an API that can only be one of these.
+import { registerIcons } from '@nubisco/ui'
+import * as check from '@nubisco/ui/icons/check'
+
+registerIcons({ check })
+```
+
+```ts
+// Open-ended: an icon picker, a CMS field. Import it in the one file that
+// needs it; no other page pays for it.
+import '@nubisco/ui/icons/all'
+```
+
+If neither is in place, `NbIcon` throws on first render with a message naming
+the options, rather than leaving an invisible hole in the page.
+
+**Stylesheets.** `dist/ui.css` was one 214KB file containing the styles for all
+86 components, so a page with a button downloaded the styles for a Gantt chart.
+The library now ships one stylesheet per chunk, and the bundler plugin imports
+the ones each page's components need. A page with a button and an icon loads
+19KB instead of 214KB.
+
+`@nubisco/ui/css` still exists and still contains everything, so nothing breaks
+if you keep importing it. But if you import it _and_ run the plugin, you get
+both, so drop it:
+
+```ts
+// main.ts
+- import '@nubisco/ui/css'
+```
+
+Design tokens are unaffected: they were never in `ui.css`. They come from
+`@use '@nubisco/ui/variables'`, as before.
+
+**One thing to check about the cascade.** Splitting the stylesheet moves library
+rules around. Before, `@nubisco/ui/css` was imported once in your entry, so
+library CSS always came first and your own stylesheet always came later. Now a
+component's styles load with the component, which can put them after yours.
+
+Almost every library rule is scoped to its component with a `[data-v-…]`
+attribute, so this cannot change which rule wins for those; the build refuses to
+publish if two stylesheets ever style the same unscoped selector. What it can
+change is a rule of _yours_ that was beating an unscoped library rule only
+because of load order. The symptom is a control you had restyled coming back in
+the library's colours.
+
+If that happens, either raise the specificity of your override, or keep the old
+arrangement:
+
+```ts
+// vite.config.ts
+nubiscoUI({ styles: false })
+```
+
+```ts
+// main.ts
+import '@nubisco/ui/css'
+```
+
+**Composables and utilities.** `exports["./composables/*"]` pointed at `./src/`,
+which `files` never published, so
+`import { useTheme } from '@nubisco/ui/composables/useTheme.composable'`
+resolved its types and then failed on its runtime. Both subpaths are real entry
+points now. The specifiers are unchanged.
+
+**Removed.** `@nubisco/ui/plugins/icons` and `@nubisco/ui/plugins/flags`, the
+Vite plugins that built the `virtual:icons` and `virtual:flags` modules, are
+gone: the artwork now ships as addressable modules and needs no virtual module
+to reach. Remove them from your Vite config.
+
+### What to check
+
+- Add `nubiscoUI()` to your Vite config, or switch to
+  `import NubiscoUI from '@nubisco/ui/all'` if you cannot run a bundler plugin.
+- Search for `<NbIcon :name="…">` and `:icon="…"` bindings whose value is not a
+  literal, and give each one a `registerIcons` entry or a catalogue import.
+- Drop `icons()` / `flags()` from your Vite config.
+- If you registered library components by hand to work around
+  `resolveComponent('NbGrid')` and friends, delete that: components import
+  their own internals now, and `resolveComponent("Nb…")` appears nowhere in the
+  built output.
+- Drop `import '@nubisco/ui/css'` if you run the plugin, and re-check any place
+  where your CSS overrides a library rule.
+
+[What ships in your bundle](/bundling) covers all of this from the consuming
+side, including how to see what the plugin linked and how to deliberately ship
+the whole collection.
+
+### Why
+
+Measured on a consuming site's homepage, before and after: render-blocking
+payload went from 3,136 KB (801 KB gzipped) to 1,325 KB (318 KB gzipped), and
+the built site went from 9,502 files to 1,664. The published package went from
+18,989 files to 2,755. On a page that renders one button and one icon, the
+whole payload is 91KB of JS and 19KB of CSS.
+
+Registering components lazily with `defineAsyncComponent` was tried first and
+is not a substitute. An unresolved async component during hydration is treated
+as absent: Vue drops a placeholder over the prerendered markup and rebuilds the
+DOM when the import lands. That measured a cumulative layout shift of 1.37 to
+2.16 against 0, and two e2e tests caught a form ignoring a click that arrived
+before its wrapper had hydrated. `hydrateOnIdle()` did not help. Compile-time
+resolution has none of those properties, because nothing is deferred to
+runtime.
+
 ## To the next release from 3.1.0
 
 The 3.0.1 port rework is reverted. A port is once again three elements: the

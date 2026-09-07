@@ -1,3 +1,4 @@
+import { glyphStubComputed } from './__mocks__/glyphStub'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { DOMWrapper, enableAutoUnmount, mount } from '@vue/test-utils'
 import { readFileSync } from 'node:fs'
@@ -19,7 +20,8 @@ import {
 const NbIconStub = {
   name: 'NbIcon',
   props: ['name', 'size'],
-  template: '<i data-testid="nb-icon" :data-name="name"></i>',
+  computed: glyphStubComputed,
+  template: '<i data-testid="nb-icon" :data-name="resolvedName"></i>',
 }
 
 /**
@@ -1842,8 +1844,8 @@ describe('delivery', () => {
    * `import { useToast } from '@nubisco/ui'` and `<NbToaster />`.
    *
    * Read as text rather than imported, the way component-registration.test.ts
-   * does: src/main.ts pulls in `virtual:icons`, which exists only under the
-   * library's own vite config.
+   * does: importing src/main.ts would pull in the whole barrel, which this
+   * assertion about the source does not need.
    */
   const main = readFileSync(join(__dirname, '../src/main.ts'), 'utf8')
   const registry = readFileSync(
@@ -2046,8 +2048,8 @@ describe('documentation', () => {
  */
 describe('delivery: every documented identifier is importable', () => {
   const root = join(__dirname, '..')
-  // Read as text, not imported: src/main.ts pulls in `virtual:icons`, which
-  // only resolves under the library's own vite config.
+  // Read as text, not imported: importing the barrel is unnecessary work for
+  // an assertion about what the barrel's source declares.
   const main = readFileSync(join(root, 'src/main.ts'), 'utf8')
 
   /** Every name `@nubisco/ui` hands out, values and types alike. */

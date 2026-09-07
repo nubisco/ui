@@ -53,6 +53,8 @@
 </template>
 
 <script setup lang="ts">
+import NbIcon from './Icon.vue'
+import NbBadge from './Badge.vue'
 import { computed, ref, useSlots, watch } from 'vue'
 import { ETabsSize, ETabsVariant, ITabItem, ITabsProps } from './Tabs.d'
 import { useStableId } from '@/composables/useStableId.composable'
