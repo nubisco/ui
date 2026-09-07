@@ -91,6 +91,14 @@ export default withMermaid(
           // subpaths resolve to the generated modules the build would ship.
           '@nubisco/ui/icons': path.resolve(__dirname, '../../generated/icons'),
           '@nubisco/ui/flags': path.resolve(__dirname, '../../generated/flags'),
+          // Same reason: these subpaths point at `dist`, which the docs build
+          // does not produce, so they resolve to the source they are built
+          // from instead.
+          '@nubisco/ui/composables': path.resolve(
+            __dirname,
+            '../../src/composables',
+          ),
+          '@nubisco/ui/utils': path.resolve(__dirname, '../../src/utils'),
         },
       },
       server: {
