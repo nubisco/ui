@@ -155,18 +155,55 @@
               <slot name="fixedbar" />
             </div>
 
-            <main
-              :id="resolvedMainId"
-              ref="mainRef"
-              tabindex="-1"
-              class="nb-shell__main"
-              :class="{ 'nb-shell__main--no-padding': !mainPadding }"
-              v-bind="mainLayerProps"
+            <!-- ═══ CONTEXTBAR TOGGLE (collapsed frames only) ═══
+                 Below `collapseAt` the contextbar folds away; this bar is the
+                 way back to it. In the permanent layout the column is always
+                 there, so the toggle would be noise. -->
+            <button
+              v-if="collapsed && showRegion('contextbar')"
+              type="button"
+              class="nb-shell__contextbar-toggle"
+              :aria-expanded="contextbarOpen"
+              @click="contextbarOpen = !contextbarOpen"
             >
-              <SurfaceLayerScope :level="1">
-                <slot />
-              </SurfaceLayerScope>
-            </main>
+              <span>{{ contextbarLabel }}</span>
+              <span
+                class="nb-shell__contextbar-toggle-glyph"
+                aria-hidden="true"
+              >
+                {{ contextbarOpen ? '▾' : '▸' }}
+              </span>
+            </button>
+
+            <!-- ═══ MAIN ROW: contextbar | main ═══
+                 The contextbar is a secondary navigation column (a document
+                 tree, a media browser) that runs from the bar above it to the
+                 bottom of the frame. It scrolls on its own so the tree and the
+                 page never fight over one scrollbar. -->
+            <div class="nb-shell__main-row">
+              <aside
+                v-if="showRegion('contextbar')"
+                v-show="!collapsed || contextbarOpen"
+                :ref="regionRef('contextbar')"
+                class="nb-shell__contextbar"
+                :class="regionClass('contextbar')"
+                :aria-label="contextbarLabel"
+              >
+                <slot name="contextbar" />
+              </aside>
+              <main
+                :id="resolvedMainId"
+                ref="mainRef"
+                tabindex="-1"
+                class="nb-shell__main"
+                :class="{ 'nb-shell__main--no-padding': !mainPadding }"
+                v-bind="mainLayerProps"
+              >
+                <SurfaceLayerScope :level="1">
+                  <slot />
+                </SurfaceLayerScope>
+              </main>
+            </div>
 
             <!-- ═══ BOTTOM PANEL (optional) ═══ -->
             <div
@@ -353,7 +390,14 @@ const props = withDefaults(defineProps<IShellProps>(), {
   skipToContentLabel: 'Skip to content',
   sidebarLabel: 'Primary',
   inspectorLabel: 'Inspector',
+  contextbarLabel: 'Browse',
 })
+
+/**
+ * Collapsed frames fold the contextbar behind a toggle; the permanent layout
+ * always shows it, so this state only means anything below `collapseAt`.
+ */
+const contextbarOpen = ref(false)
 
 const emit = defineEmits<{
   'update:inspectorWidth': [width: number | null]
@@ -1319,6 +1363,69 @@ defineExpose({
     > .nb-shell__topbar-left:empty
   ):has(> .nb-shell__topbar-right:empty) {
   display: none;
+}
+
+// ── Main row: contextbar | main ────────────────────────────────────────────────
+
+.nb-shell__main-row {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--nb-shell-main-bg);
+}
+
+.nb-shell__contextbar {
+  flex: 0 0 var(--nb-shell-contextbar-width, calc(var(--nb-base-unit) * 34));
+  width: var(--nb-shell-contextbar-width, calc(var(--nb-base-unit) * 34));
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-right: 1px solid var(--nb-c-border);
+  padding: 1rem 1rem 1rem 1.75rem;
+}
+
+.nb-shell__contextbar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.55rem 1.25rem;
+  border: 0;
+  border-bottom: 1px solid var(--nb-c-border);
+  background: var(--nb-shell-main-bg);
+  color: var(--nb-c-text);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--nb-c-focus-ring, var(--nb-c-primary));
+    outline-offset: -2px;
+  }
+}
+
+.nb-shell__contextbar-toggle-glyph {
+  color: var(--nb-c-text-subtle);
+}
+
+// Collapsed frames stack: the contextbar becomes a bounded block under its
+// toggle instead of a column there is no room for.
+.nb-shell--collapsed .nb-shell__main-row {
+  flex-direction: column;
+}
+
+.nb-shell--collapsed .nb-shell__contextbar {
+  flex: 0 0 auto;
+  width: 100%;
+  max-height: 45vh;
+  border-right: 0;
+  border-bottom: 1px solid var(--nb-c-border);
+  padding: 0.75rem 1.25rem;
 }
 
 .nb-shell__main {

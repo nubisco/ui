@@ -58,6 +58,27 @@ describe('Shell', () => {
     expect(wrapper.find('.nb-shell__topbar-right button').exists()).toBe(true)
   })
 
+  it('renders the contextbar when its slot is used', () => {
+    const wrapper = createWrapper(
+      { contextbarLabel: 'Documents' },
+      { contextbar: '<nav class="tree">tree</nav>' },
+    )
+    const bar = wrapper.find('.nb-shell__contextbar')
+    expect(bar.exists()).toBe(true)
+    expect(bar.attributes('aria-label')).toBe('Documents')
+    expect(bar.find('.tree').exists()).toBe(true)
+    // Main sits beside it inside the row.
+    expect(wrapper.find('.nb-shell__main-row .nb-shell__main').exists()).toBe(
+      true,
+    )
+  })
+
+  it('hides the contextbar and its toggle when the slot is empty', () => {
+    const wrapper = createWrapper()
+    expect(wrapper.find('.nb-shell__contextbar').exists()).toBe(false)
+    expect(wrapper.find('.nb-shell__contextbar-toggle').exists()).toBe(false)
+  })
+
   it('renders default slot content in main', () => {
     const wrapper = createWrapper({}, { default: '<p>Page content</p>' })
     expect(wrapper.find('.nb-shell__main p').exists()).toBe(true)

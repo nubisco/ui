@@ -137,6 +137,13 @@ interface IShellProps {
    */
   inspectorLabel?: string
   /**
+   * Accessible name for the contextbar `<aside>` landmark, and the text of
+   * the toggle that stands in for it on collapsed frames. Name the content
+   * ("Documents", "Media"), not the region.
+   * @default 'Browse'
+   */
+  contextbarLabel?: string
+  /**
    * The viewport width below which the frame stops being three columns.
    *
    * A 240px verbose rail plus a 288px inspector leaves nothing for the page on
