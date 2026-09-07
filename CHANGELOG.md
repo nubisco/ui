@@ -1,3 +1,10 @@
+## [3.5.2](https://github.com/nubisco/ui/compare/v3.5.1...v3.5.2) (2026-09-07)
+
+
+### Bug Fixes
+
+* **toast:** square by design, the same call NbBanner already made ([bd7da98](https://github.com/nubisco/ui/commit/bd7da985cc4dcc737a099595f49e9ad9dfaa0e58))
+
 ## [3.5.1](https://github.com/nubisco/ui/compare/v3.5.0...v3.5.1) (2026-09-07)
 
 
