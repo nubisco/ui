@@ -1,3 +1,10 @@
+## [3.5.1](https://github.com/nubisco/ui/compare/v3.5.0...v3.5.1) (2026-09-07)
+
+
+### Bug Fixes
+
+* **shell,banner:** chrome alignment, single fixedbar rule, square banners ([d12ba63](https://github.com/nubisco/ui/commit/d12ba639023f7649a53d87f896fc2cf5cb00baa6))
+
 # [3.5.0](https://github.com/nubisco/ui/compare/v3.4.0...v3.5.0) (2026-09-07)
 
 
