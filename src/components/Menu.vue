@@ -205,6 +205,10 @@ defineExpose({
 
 <style lang="scss">
 .nb-menu {
+  // Teleported to body but previously had no z-index at all, so any
+  // positioned page element (sticky column headers, shell chrome) painted
+  // over it. The scale already reserves a tier for menus; wear it.
+  z-index: var(--nb-zindex-menu);
   background: var(--nb-c-layer-3);
   border: 1px solid var(--nb-c-layer-border-3);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
