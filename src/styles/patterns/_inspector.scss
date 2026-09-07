@@ -13,6 +13,21 @@
 // wears one implementation instead of reinventing a sidebar.
 
 .nb-inspector {
+  // ── The scroll surface ─────────────────────────────────────────────────
+  // The shell's inspector column clips (overflow hidden) so the resize
+  // transition never spills; the CONTENT is what scrolls. Inside that flex
+  // column these lines make the pattern fill the aside and scroll.
+  //
+  // It is itself a flex column so the panels' size states actually act:
+  // fluid panels stay content-sized (the organic default), non-fluid
+  // defaults share the column, and a maximized panel stretches into the
+  // space its header-only siblings released.
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-block-size: 0;
+  overflow-y: auto;
+
   // ── Cards with breathing room ──────────────────────────────────────────
   // A gutter insets the panels from the inspector edges — crucially clearing
   // the resize handle on the left, which is what makes a flush inspector feel
