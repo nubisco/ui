@@ -36,6 +36,22 @@ interface IBoardMoveEvent {
   fromLaneId?: string | null
   /** The lane the item was moved to (only when lanes are used). */
   toLaneId?: string | null
+  /**
+   * Index the item should occupy in the destination cell's item sequence,
+   * counted with the moved item itself excluded. 0 is the top of the cell.
+   */
+  toIndex: number
+  /** ID of the item that ends up directly above the moved item, or null at the top. */
+  beforeItemId: string | null
+  /** ID of the item that ends up directly below the moved item, or null at the bottom. */
+  afterItemId: string | null
+}
+
+interface IBoardColumnMoveEvent {
+  /** The ID of the column that was moved. */
+  columnId: string
+  /** Index the column should occupy in the `columns` array after the move. */
+  toIndex: number
 }
 
 interface IBoardProps {
@@ -45,6 +61,11 @@ interface IBoardProps {
   items: IBoardItem[]
   /** Optional swim lanes. When provided, the board renders horizontal lane rows. */
   lanes?: IBoardLane[]
+  /**
+   * Allow columns to be reordered by dragging their headers. Off by default;
+   * when on, dropping a header on another column emits `column-move`.
+   */
+  reorderableColumns?: boolean
 }
 
 export type {
@@ -52,6 +73,7 @@ export type {
   IBoardLane,
   IBoardItem,
   IBoardMoveEvent,
+  IBoardColumnMoveEvent,
   IBoardProps,
 }
 
@@ -60,5 +82,6 @@ export type {
   IBoardLane as NbBoardLane,
   IBoardItem as NbBoardItem,
   IBoardMoveEvent as NbBoardMoveEvent,
+  IBoardColumnMoveEvent as NbBoardColumnMoveEvent,
   IBoardProps as NbBoardProps,
 }

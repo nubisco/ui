@@ -54,6 +54,7 @@ export type {
   IBoardLane,
   IBoardItem,
   IBoardMoveEvent,
+  IBoardColumnMoveEvent,
   IBoardProps,
 } from './components/Board.d'
 export { default as NbBreadcrumbs } from './components/Breadcrumbs.vue'
