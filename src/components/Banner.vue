@@ -103,7 +103,9 @@ const iconMap = {
   // notification readable at a glance from across the page, before any of the
   // words are: the ground alone is too pale to carry the status on its own.
   border-inline-start: 3px solid var(--nb-banner-accent);
-  border-radius: calc(var(--nb-base-unit) / 2);
+  // Square by design: a banner is a strip of page furniture, not a card, and
+  // even a small radius fights the straight status bar on its edge.
+  border-radius: 0;
   background: var(--nb-banner-bg);
   color: var(--nb-banner-fg);
   font-family: var(--nb-font-family-sans);
@@ -160,7 +162,6 @@ const iconMap = {
   // the thing, not decoration on it. Only the borders that would draw a box
   // inside an existing box go.
   &--flush {
-    border-radius: 0;
     border-inline-end: none;
     border-block-start: none;
   }
