@@ -1,3 +1,10 @@
+## [4.1.2](https://github.com/nubisco/ui/compare/v4.1.1...v4.1.2) (2026-09-08)
+
+
+### Bug Fixes
+
+* **vite,info-hint,notification-center:** link styles for hand-written imports, and glyphs named in prop defaults ([75764f1](https://github.com/nubisco/ui/commit/75764f1a7612d5dc60573cde930d66cb3e1fdbb3))
+
 ## [4.1.1](https://github.com/nubisco/ui/compare/v4.1.0...v4.1.1) (2026-09-08)
 
 
