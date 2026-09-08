@@ -10,9 +10,7 @@
       { 'nb-button--icon-only': isIconOnly },
     ]"
     :to="useRouter ? to : undefined"
-    :href="linkTag === 'a' ? resolvedHref : undefined"
-    :target="linkTag === 'a' ? target : undefined"
-    :rel="linkTag === 'a' ? rel : undefined"
+    v-bind="anchorAttrs"
     :disabled="linkTag === 'button' ? disabled || loading : undefined"
     :aria-disabled="
       linkTag !== 'button' && (disabled || loading) ? true : undefined
@@ -78,6 +76,17 @@ const linkTag = computed<string | Component>(() => {
   if (resolvedHref.value) return 'a'
   return 'button'
 })
+
+// Spread rather than bound individually, because an attribute bound to
+// `undefined` is not the same as an absent one. RouterLink computes its own
+// href and renders it on the <a> it owns; a fallthrough `href` merges over
+// that, so `:href="linkTag === 'a' ? resolvedHref : undefined"` produced a
+// link with no href in every app that has a router installed.
+const anchorAttrs = computed(() =>
+  linkTag.value === 'a'
+    ? { href: resolvedHref.value, target: props.target, rel: props.rel }
+    : {},
+)
 
 const iconSizeMap: Record<string, number> = {
   xxs: 10,
