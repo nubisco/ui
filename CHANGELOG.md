@@ -1,3 +1,10 @@
+# [4.1.0](https://github.com/nubisco/ui/compare/v4.0.2...v4.1.0) (2026-09-08)
+
+
+### Features
+
+* **bar-chart,pie-chart:** implement orientation and stacking, add a select event ([dcf4353](https://github.com/nubisco/ui/commit/dcf4353fdfa21eecff08a6f70eea608c6ddb2e2b))
+
 ## [4.0.2](https://github.com/nubisco/ui/compare/v4.0.1...v4.0.2) (2026-09-08)
 
 
