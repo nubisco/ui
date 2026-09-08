@@ -1,6 +1,86 @@
 # Upgrading
 
-## To the next release from 3.5.3
+## To 4.1.x from 4.0.x
+
+Nothing here is breaking. Two of these are worth reading anyway: one fixes
+links that were quietly not links, and one can change what your bundle
+contains.
+
+### Links with `to` carry an href again (4.0.2)
+
+`NbButton`, `NbSidebarLink` and `NbSidebarMenuItem` rendered an `<a>` with **no
+`href`** whenever a router was installed, for the `to` prop. Clicking still
+navigated, so it passed a smoke test, but the element was not a link: not
+crawlable, not `role="link"` for assistive technology, and dead to middle-click,
+open-in-new-tab and copy-link-address. Prerendered sites baked the missing href
+into shipped HTML.
+
+This is not a 4.0 regression, it dates from 1.39.1. If you are on any release
+from 1.39.1 to 4.0.1 and you use `to` with vue-router, you want 4.0.2. There is
+nothing to change in your code.
+
+### `NbBarChart` honours `orientation` and `stacked`
+
+Both were declared props that the render never read, so a chart passing
+`orientation="horizontal"` came out vertical with a green typecheck. They work
+now, which means **a chart that was passing either prop will change appearance
+on upgrade**. That is the fix, but it is a visual change rather than a silent
+one: check any chart that sets them.
+
+Horizontal puts the categories on the vertical axis and sizes its left gutter
+to the longest label, up to 40% of the width. `stacked` scales the value axis to
+the category total rather than the tallest segment.
+
+### Charts can be clicked
+
+`NbBarChart` and `NbPieChart` emit `select`, so a bar or a slice can be a way
+into the data behind it. The payload carries the datum rather than the rendered
+label, and the shared types are now exported from the package entry:
+
+```ts
+import type {
+  IChartSeriesSelection,
+  IChartCategoricalSelection,
+  TChartSelection,
+  IChartSeries,
+  IChartPoint,
+} from '@nubisco/ui'
+```
+
+Interactivity is opt-in. With no listener bound, nothing about the chart
+changes: no pointer cursor, no focus ring, no button semantics. Bind one and
+each bar or slice becomes a focusable button. See
+[Bar Chart](/ui/components/charts/bar) for the payload and the accessibility
+behaviour.
+
+### The glyph plugin sees through more expressions
+
+Three cases the compile-time resolver used to get wrong. All of them are fixes,
+and two of them change what gets linked:
+
+- **A glyph forwarded through another component is now resolved.**
+  `<NbButton :icon="copied ? 'check' : 'copy'">` links those two icons. It
+  previously linked nothing at all, and worked only if some other chunk had
+  loaded the catalogue first, which made it depend on navigation order.
+- **An expression is resolved only when every value it can produce is linked
+  artwork.** `block.icon || 'cube'` was treated as fully resolved because it
+  contained a literal and no quoted string survived the rewrite, even though it
+  can just as easily produce `block.icon`. It now pulls the catalogue in, as it
+  always should have. **This can grow a bundle**, in exactly the place where the
+  icon was previously going to throw at runtime.
+- **Binding an imported glyph module no longer drags a catalogue in.**
+  `<NbIcon :name="GithubLogo" />`, where the file imports `GithubLogo` from
+  `@nubisco/ui/icons/github-logo`, is understood as already-linked artwork.
+
+The plugin also warns, once per file, when a forwarded glyph is a value it
+cannot see through. If those bindings are deliberate pass-through props in your
+own wrapper components, turn it off:
+
+```ts
+nubiscoUI({ glyphs: { warnUnresolved: false } })
+```
+
+## To 4.0.0 from 3.6.0 or any 3.5.x
 
 `app.use(NubiscoUI)` no longer registers components, and icons and flags are
 resolved at compile time. This is the change that makes the package
@@ -161,7 +241,7 @@ before its wrapper had hydrated. `hydrateOnIdle()` did not help. Compile-time
 resolution has none of those properties, because nothing is deferred to
 runtime.
 
-## To the next release from 3.1.0
+## To 3.3.0 from 3.1.0
 
 The 3.0.1 port rework is reverted. A port is once again three elements: the
 slot, the hit target and the pin.
