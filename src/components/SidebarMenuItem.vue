@@ -19,7 +19,7 @@
       }"
       :type="rowTag === 'button' ? 'button' : undefined"
       :to="useRouter ? to : undefined"
-      :href="rowTag === 'a' ? resolvedHref : undefined"
+      v-bind="anchorAttrs"
       :disabled="
         rowTag === 'button' && !hasChildren ? disabled || undefined : undefined
       "
@@ -165,6 +165,14 @@ const rowTag = computed<string | Component>(() => {
   if (resolvedHref.value) return 'a'
   return 'button'
 })
+
+// Spread rather than bound individually, because an attribute bound to
+// `undefined` is not the same as an absent one: RouterLink computes its own
+// href, and a fallthrough `href` merges over it, leaving a link with no href
+// in every app that has a router installed.
+const anchorAttrs = computed(() =>
+  rowTag.value === 'a' ? { href: resolvedHref.value } : {},
+)
 
 function onClick(event: MouseEvent) {
   if (props.disabled) {

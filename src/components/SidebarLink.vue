@@ -8,7 +8,7 @@
       'nb-sidebar-link--disabled': disabled,
     }"
     :to="useRouter ? to : undefined"
-    :href="linkTag === 'a' ? resolvedHref : undefined"
+    v-bind="anchorAttrs"
     :disabled="linkTag === 'button' ? disabled || undefined : undefined"
     :aria-disabled="linkTag !== 'button' && disabled ? true : undefined"
     :data-tooltip="tooltip || undefined"
@@ -51,6 +51,14 @@ const linkTag = computed<string | Component>(() => {
   if (resolvedHref.value) return 'a'
   return 'button'
 })
+
+// Spread rather than bound individually, because an attribute bound to
+// `undefined` is not the same as an absent one: RouterLink computes its own
+// href, and a fallthrough `href` merges over it, leaving a link with no href
+// in every app that has a router installed.
+const anchorAttrs = computed(() =>
+  linkTag.value === 'a' ? { href: resolvedHref.value } : {},
+)
 </script>
 
 <style scoped lang="scss">
