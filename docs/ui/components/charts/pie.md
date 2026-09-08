@@ -104,6 +104,32 @@ const data = [
 | `showTooltip` | `boolean`                        | `true`          | Show hover tooltip                               |
 | `colors`      | `string[]`                       | default palette | Per-slice colors (overridden by per-datum color) |
 
+## Events
+
+| Event    | Payload                      | Description                              |
+| -------- | ---------------------------- | ---------------------------------------- |
+| `select` | `IChartCategoricalSelection` | A slice was clicked, or activated by key |
+
+```vue
+<template>
+  <NbPieChart :data="data" @select="onSelect" />
+</template>
+
+<script setup lang="ts">
+import type { IChartCategoricalSelection } from '@nubisco/ui'
+
+const onSelect = (selection: IChartCategoricalSelection) => {
+  // { kind: 'categorical', label, value, index, datum }
+  console.log(selection.label, selection.value)
+}
+</script>
+```
+
+Interactivity is opt-in and works the same way it does on
+[the bar chart](/ui/components/charts/bar): with no `@select` listener the chart
+is a picture, and with one each slice becomes a focusable button, activated with
+<kbd>Enter</kbd> or <kbd>Space</kbd>.
+
 ## Data shape
 
 ```ts
