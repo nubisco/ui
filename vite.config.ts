@@ -115,6 +115,10 @@ export default defineConfig(({ command }) => ({
     nubiscoGlyphs({
       glyphRoot: resolve(__dirname, 'generated'),
       catalog: 'off',
+      // Our own `<NbButton :icon="props.icon">` forwards are pass-through by
+      // design: the consumer passes a name or a module, and their build is
+      // where that resolves.
+      warnUnresolved: false,
     }),
     emitStyleManifest(),
     vue(),

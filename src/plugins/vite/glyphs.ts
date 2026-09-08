@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import MagicString from 'magic-string'
-import { parse } from 'vue/compiler-sfc'
+import { parse, babelParse } from 'vue/compiler-sfc'
 
 /**
  * Resolves icon and flag artwork at compile time.
@@ -63,6 +63,15 @@ export interface IGlyphOptions {
   packageName?: string
   /** Log every rewrite. Useful when auditing what a page actually links. */
   verbose?: boolean
+  /**
+   * Warn when a glyph forwarded through another component (`<NbButton
+   * :icon="…">`) is a value this plugin cannot see through, so no artwork was
+   * linked for it. On by default, once per file, because the alternative is
+   * the silence that lets an icon reach `NbIcon` with nothing to resolve it
+   * against. Turn it off in a codebase where those bindings are deliberate
+   * pass-through props, resolved by whoever passes them in.
+   */
+  warnUnresolved?: boolean
 }
 
 type TKind = 'icon' | 'flag'
@@ -136,6 +145,99 @@ function staticWeight(element: any): string | undefined {
   return 'regular'
 }
 
+/**
+ * Parse one template expression on its own. `babelParse` wants a program, so
+ * the expression is wrapped; a binding Vue accepts but Babel cannot read is
+ * simply unknown, which the caller treats as unresolved.
+ */
+function parseExpression(expression: string): any {
+  try {
+    const { program } = babelParse(`(${expression})`, {
+      sourceType: 'module',
+      plugins: ['typescript'],
+    })
+    const statement: any = program.body[0]
+    return statement?.type === 'ExpressionStatement'
+      ? statement.expression
+      : undefined
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * Whether every value this expression can hand to the component is artwork the
+ * bundle already links: a literal this plugin just rewrote, or a glyph module
+ * the file imported itself.
+ *
+ * The point is what it refuses. `open ? 'caret-up' : 'caret-down'` produces one
+ * of two rewritten literals and nothing else, so it is resolved. `block?.icon
+ * || 'cube'` also contains a rewritten literal, but it can just as easily
+ * produce `block.icon`, which is a runtime value and needs the catalogue.
+ * Judging by "a rewritten literal appears and no quoted string survives" called
+ * that second one resolved, which meant adding a literal fallback silently
+ * removed the coverage the same expression had without one.
+ */
+function producesOnlyLinkedGlyphs(
+  node: any,
+  isLinked: (name: string) => boolean,
+): boolean {
+  if (!node) return false
+  const recurse = (child: any) => producesOnlyLinkedGlyphs(child, isLinked)
+  switch (node.type) {
+    case 'Identifier':
+      return isLinked(node.name)
+    // The test is not a value the prop receives; the two arms are.
+    case 'ConditionalExpression':
+      return recurse(node.consequent) && recurse(node.alternate)
+    // `a || b`, `a ?? b` and `a && b` can all produce either side.
+    case 'LogicalExpression':
+      return recurse(node.left) && recurse(node.right)
+    case 'SequenceExpression':
+      return recurse(node.expressions[node.expressions.length - 1])
+    case 'TSAsExpression':
+    case 'TSNonNullExpression':
+    case 'TSSatisfiesExpression':
+    case 'ParenthesizedExpression':
+      return recurse(node.expression)
+    default:
+      return false
+  }
+}
+
+/**
+ * Local names bound to glyph modules by the file's own imports, so that
+ * `<NbIcon :name="GithubLogo" />` is understood as already-linked artwork
+ * rather than as a runtime name needing the whole catalogue.
+ */
+function glyphImportLocals(script: string, packageName: string): Set<string> {
+  const locals = new Set<string>()
+  const from = packageName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const pattern = new RegExp(
+    `import\\s+([^;'"\n]+?)\\s+from\\s*['"]${from}/(?:icons|flags)/[^'"]+['"]`,
+    'g',
+  )
+  for (const match of script.matchAll(pattern)) {
+    const clause = match[1]
+    const namespace = clause.match(/\*\s+as\s+(\w+)/)
+    if (namespace) locals.add(namespace[1])
+    const defaultImport = clause.match(/^\s*(\w+)/)
+    if (defaultImport) locals.add(defaultImport[1])
+    const named = clause.match(/\{([^}]*)\}/)
+    if (named) {
+      for (const part of named[1].split(',')) {
+        const local = part
+          .trim()
+          .split(/\s+as\s+/)
+          .pop()
+          ?.trim()
+        if (local) locals.add(local)
+      }
+    }
+  }
+  return locals
+}
+
 function staticPropKind(
   name: string,
   isIcon: boolean,
@@ -157,6 +259,7 @@ export function nubiscoGlyphs(options: IGlyphOptions = {}) {
     flags = true,
     packageName = '@nubisco/ui',
     verbose = false,
+    warnUnresolved = true,
   } = options
 
   const glyphRoot = options.glyphRoot ?? defaultGlyphRoot()
@@ -186,6 +289,16 @@ export function nubiscoGlyphs(options: IGlyphOptions = {}) {
       const edits: IEdit[] = []
       const used = new Map<string, IGlyphImport>()
       const catalogsNeeded = new Set<TKind>()
+      const unresolvedForwards: { tag: string; prop: string; exp: string }[] =
+        []
+
+      // Artwork the file already imports by hand counts as linked: binding an
+      // imported module is the documented no-plugin path, and pulling a
+      // catalogue in on top of it would be pure waste.
+      const glyphLocals = glyphImportLocals(
+        `${descriptor.scriptSetup?.content ?? ''}\n${descriptor.script?.content ?? ''}`,
+        packageName,
+      )
 
       const use = (glyph: IGlyphImport) => {
         const variable = identifierFor(glyph)
@@ -229,17 +342,18 @@ export function nubiscoGlyphs(options: IGlyphOptions = {}) {
             continue
           }
 
-          /* ---- bound: :name="…" on NbIcon / NbFlag --------------------- */
+          /* ---- bound: :name="…", :icon="…", :flag="…" ------------------ */
           if (
             prop.type === NODE_DIRECTIVE &&
             prop.name === 'bind' &&
             prop.arg?.type === EXPR_SIMPLE &&
-            prop.exp?.type === EXPR_SIMPLE &&
-            (isIcon || isFlag)
+            prop.exp?.type === EXPR_SIMPLE
           ) {
-            const kind: TKind = isIcon ? 'icon' : 'flag'
-            if (!enabled(kind)) continue
-            if (!['name', 'icon', 'flag'].includes(prop.arg.content)) continue
+            // Same rule as the static branch, so `:icon="a ? 'check' : 'copy'"`
+            // links the two icons whether it is written on NbIcon or forwarded
+            // through NbButton. Only the tag decides the kind.
+            const kind = staticPropKind(prop.arg.content, isIcon, isFlag)
+            if (!kind || !enabled(kind)) continue
 
             const expression: string = prop.exp.content
             const rewritten = expression.replace(
@@ -262,15 +376,51 @@ export function nubiscoGlyphs(options: IGlyphOptions = {}) {
               })
             }
 
-            // Considered resolved when every value the expression can produce
-            // is one of the modules just imported: at least one appears, and
-            // no string literal survived that could not be accounted for.
-            const resolved =
-              rewritten.includes('__nb_') && !/['"]/.test(rewritten)
-            if (!resolved) catalogsNeeded.add(kind)
+            const resolved = producesOnlyLinkedGlyphs(
+              parseExpression(rewritten),
+              (identifier) =>
+                used.has(identifier) || glyphLocals.has(identifier),
+            )
+            if (resolved) continue
+
+            // On NbIcon or NbFlag an unresolvable name is fatal at first
+            // render, so the catalogue is the only thing that can save it. On
+            // a forwarding component the same expression may just as well be
+            // a module arriving as a prop, and linking 1,500 icons on that
+            // guess would make the common wrapper the most expensive file in
+            // the bundle. So that case is reported rather than paid for.
+            if (isIcon || isFlag) catalogsNeeded.add(kind)
+            else
+              unresolvedForwards.push({
+                tag,
+                prop: prop.arg.content,
+                exp: expression,
+              })
           }
         }
       })
+
+      // One line per file, however many bindings it has: this is a note about
+      // the file, and repeating the same advice per expression would train
+      // people to skip it.
+      if (warnUnresolved && unresolvedForwards.length) {
+        const kinds = new Set(unresolvedForwards.map((f) => f.prop))
+        const register = kinds.has('flag')
+          ? 'registerFlags()'
+          : 'registerIcons()'
+        const catalogue = `${packageName}/${kinds.has('flag') ? 'flags' : 'icons'}/all`
+        console.warn(
+          `[nubisco-ui] ${path.relative(process.cwd(), file)}: no artwork ` +
+            `linked for ` +
+            unresolvedForwards
+              .map((f) => `<${f.tag} :${f.prop}="${f.exp}">`)
+              .join(', ') +
+            `. The value is only known at runtime, so it will throw on first ` +
+            `render unless something resolves it: ${register} for a known ` +
+            `set, or import '${catalogue}' in this file. Nothing to do if ` +
+            `these are pass-through props (set warnUnresolved: false).`,
+        )
+      }
 
       if (!used.size && !catalogsNeeded.size) return
 

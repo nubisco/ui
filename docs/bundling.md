@@ -29,12 +29,19 @@ about how to tell, and what to do about it.
 | `<NbFlag name="pt" />`                               | one flag                      |
 | `<NbButton icon="plus">`                             | one icon, all six weights     |
 | `<NbIcon :name="open ? 'caret-up' : 'caret-down'"/>` | two icons                     |
+| `<NbButton :icon="copied ? 'check' : 'copy'">`       | two icons                     |
+| `<NbIcon :icon="AnIconYouImported" />`               | that module, nothing extra    |
 | `<NbIcon :name="whateverTheApiSaid" />`              | **nothing** (see below)       |
 
 ## When the name is only known at runtime
 
 A value from an API, a CMS field, a user's choice in a picker. The plugin cannot
-see through it, and neither can the bundler, so no icon is linked for it. This
+see through it, and neither can the bundler, so no icon is linked for it.
+
+An expression counts as resolved only when **every** value it can produce is
+artwork the build already links. `open ? 'caret-up' : 'caret-down'` qualifies.
+`block.icon || 'cube'` does not, even though it contains a literal: it can just
+as easily produce `block.icon`, which is a runtime value. This
 is not a corner case: it is the normal shape of a status column, a category
 list, or a country selector.
 
@@ -154,6 +161,24 @@ export default defineConfig({
 [nubisco-ui] src/cms/blocks/SiteNavBlock.vue binds <NbIcon> to a runtime value,
   so the full icon catalogue is linked into this file. If the set of possible
   values is known, registerIcons() avoids it.
+```
+
+The plugin also warns, once per file, when a glyph forwarded through another
+component is a value it cannot see through:
+
+```
+[nubisco-ui] src/cms/blocks/SiteNavBlock.vue: no artwork linked for
+  <NbButton :icon="actionIcon">. The value is only known at runtime, so it will
+  throw on first render unless something resolves it.
+```
+
+Forwarded bindings are the one case where the plugin cannot tell a name from a
+module, so it reports rather than pulling a catalogue in on a guess. If those
+bindings are pass-through props in your own wrapper components, resolved
+wherever they are passed in, turn the warning off:
+
+```ts
+nubiscoUI({ glyphs: { warnUnresolved: false } })
 ```
 
 That second line is the one to read carefully. It is not an error, but it is the
