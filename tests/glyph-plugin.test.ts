@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { resolve } from 'node:path'
 import { nubiscoGlyphs } from '../src/plugins/vite/glyphs'
 
@@ -113,7 +113,8 @@ describe('glyph plugin: runtime names', () => {
   it('does not load the catalogue for a forwarded dynamic icon', async () => {
     // <NbButton :icon="x" /> says nothing about what x is: it may already be a
     // module. Pulling 1,500 icons in on that evidence would make the common
-    // wrapper component the most expensive thing in the bundle.
+    // wrapper component the most expensive thing in the bundle. It is reported
+    // instead, see below.
     const out = await transform(sfc('<NbButton :icon="whatever" />'))
     expect(out).toBeUndefined()
   })
@@ -130,5 +131,134 @@ describe('glyph plugin: runtime names', () => {
       ) => Promise<{ code: string } | undefined>
     ).call({}, sfc('<NbIcon :name="chosen" />'), '/app/src/Thing.vue')
     expect(out).toBeUndefined()
+  })
+})
+
+describe('glyph plugin: bound names on forwarding components', () => {
+  // A forwarded `:icon` was skipped outright: no rewrite, no catalogue, no
+  // message. `<NbButton icon="plus">` linked its icon and
+  // `<NbButton :icon="copied ? 'check' : 'copy'">` linked nothing, so the
+  // second one worked only when some other chunk had already loaded the
+  // catalogue, which made it depend on navigation order.
+  it('links the literals in a forwarded ternary', async () => {
+    const out = await transform(
+      sfc(`<NbButton :icon="copied ? 'check' : 'copy'">Copy</NbButton>`),
+    )
+    expect(out).toContain(
+      "import * as __nb_icon_check from '@nubisco/ui/icons/check'",
+    )
+    expect(out).toContain(
+      "import * as __nb_icon_copy from '@nubisco/ui/icons/copy'",
+    )
+    expect(out).toContain(':icon="copied ? __nb_icon_check : __nb_icon_copy"')
+    expect(out).not.toContain('icons/all')
+  })
+
+  it('links a forwarded flag literal in an expression', async () => {
+    const out = await transform(sfc(`<NbSelect :flag="open ? 'pt' : 'es'" />`))
+    expect(out).toContain("from '@nubisco/ui/flags/pt'")
+    expect(out).toContain("from '@nubisco/ui/flags/es'")
+  })
+
+  it('leaves `name` alone on a forwarding component', async () => {
+    // On a text input `name` is the form field name, not a glyph.
+    expect(
+      await transform(sfc(`<NbTextInput :name="open ? 'plus' : 'check'" />`)),
+    ).toBeUndefined()
+  })
+})
+
+describe('glyph plugin: reporting what it could not link', () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  // Cleared before each test rather than after: the spy is installed when this
+  // block is collected, so it would otherwise carry warnings from the specs
+  // above it.
+  beforeEach(() => warn.mockClear())
+
+  it('names the file and the expression it could not resolve', async () => {
+    await transform(sfc('<NbButton :icon="actionIcon" />'))
+    expect(warn).toHaveBeenCalledOnce()
+    const message = warn.mock.calls[0][0] as string
+    expect(message).toContain('Thing.vue')
+    expect(message).toContain(':icon="actionIcon"')
+    expect(message).toContain('registerIcons()')
+    expect(message).toContain("'@nubisco/ui/icons/all'")
+  })
+
+  it('says nothing when the binding is a glyph module the file imported', async () => {
+    // The documented no-plugin path. Warning here would be noise, and linking
+    // a catalogue on top of an already-linked module would be waste.
+    const out = await transform(
+      sfc(
+        '<NbButton :icon="GithubLogo" />',
+        `\nimport GithubLogo from '@nubisco/ui/icons/github-logo'\n`,
+      ),
+    )
+    expect(warn).not.toHaveBeenCalled()
+    expect(out).toBeUndefined()
+  })
+
+  it('does not warn about NbIcon, which gets the catalogue instead', async () => {
+    const out = await transform(sfc('<NbIcon :name="chosen" />'))
+    expect(out).toContain("import '@nubisco/ui/icons/all'")
+    expect(warn).not.toHaveBeenCalled()
+  })
+})
+
+describe('glyph plugin: expressions that only look resolved', () => {
+  // Rewriting a literal used to be taken as proof the whole expression was
+  // covered, as long as no quoted string survived. So `x || 'cube'` was called
+  // resolved while `x || fallback` was not, meaning adding a literal fallback
+  // silently removed coverage from the same expression.
+  it('still loads the catalogue for a literal fallback', async () => {
+    const out = await transform(sfc(`<NbIcon :name="block?.icon || 'cube'" />`))
+    expect(out).toContain("from '@nubisco/ui/icons/cube'")
+    expect(out).toContain("import '@nubisco/ui/icons/all'")
+  })
+
+  it('treats ?? and && the same way', async () => {
+    for (const expression of [
+      `block.icon ?? 'cube'`,
+      `enabled && 'cube'`,
+      `(block.icon || 'cube')`,
+    ]) {
+      const out = await transform(sfc(`<NbIcon :name="${expression}" />`))
+      expect(out, expression).toContain("import '@nubisco/ui/icons/all'")
+    }
+  })
+
+  it('keeps a ternary of literals resolved, however nested', async () => {
+    const out = await transform(
+      sfc(`<NbIcon :name="a ? 'check' : b ? 'copy' : 'cube'" />`),
+    )
+    expect(out).toContain("from '@nubisco/ui/icons/check'")
+    expect(out).toContain("from '@nubisco/ui/icons/cube'")
+    expect(out).not.toContain('icons/all')
+  })
+
+  it('resolves a ternary between two imported modules', async () => {
+    const out = await transform(
+      sfc(
+        '<NbIcon :name="on ? Check : Copy" />',
+        `\nimport Check from '@nubisco/ui/icons/check'\nimport Copy from '@nubisco/ui/icons/copy'\n`,
+      ),
+    )
+    expect(out).toBeUndefined()
+  })
+
+  it('loads the catalogue when one arm is a runtime value', async () => {
+    const out = await transform(
+      sfc(
+        `<NbIcon :name="on ? Check : whatever" />`,
+        `\nimport Check from '@nubisco/ui/icons/check'\n`,
+      ),
+    )
+    expect(out).toContain("import '@nubisco/ui/icons/all'")
+  })
+
+  it('leaves an unparsable expression to the Vue plugin to report', async () => {
+    // vue/compiler-sfc rejects the template before we see it, and a broken
+    // build is not ours to half-fix.
+    expect(await transform(sfc(`<NbIcon :name="a ===" />`))).toBeUndefined()
   })
 })
