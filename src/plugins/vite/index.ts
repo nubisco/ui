@@ -5,6 +5,7 @@ import type { Plugin } from 'vite'
 import Components from 'unplugin-vue-components/vite'
 import { COMPONENT_MANIFEST } from '../../components/manifest.js'
 import { nubiscoGlyphs, type IGlyphOptions } from './glyphs.js'
+import { nubiscoImports } from './imports.js'
 
 /**
  * Compile-time resolution for `@nubisco/ui`.
@@ -34,6 +35,10 @@ import { nubiscoGlyphs, type IGlyphOptions } from './glyphs.js'
  * records which of them each component needs, so a page loads the styles for
  * what it renders and nothing else. Consumers who do not run this plugin
  * import `@nubisco/ui/css`, the whole sheet, as before.
+ *
+ * A third plugin gives hand-written imports the same treatment, because an app
+ * that writes `import { NbButton } from '@nubisco/ui'` never reaches the
+ * resolver and so used to get no stylesheets at all.
  *
  * Nothing is deferred to runtime, so SSR, prerendering and hydration behave
  * exactly as they would with hand-written imports.
@@ -90,6 +95,7 @@ export function nubiscoUI(options: INubiscoUIOptions = {}): Plugin[] {
   const { components = true, glyphs = true, styles = true } = options
   const componentOptions = typeof components === 'object' ? components : {}
   const plugins: Plugin[] = []
+  let resolvedComponents = 0
 
   if (glyphs !== false) {
     plugins.push(nubiscoGlyphs(typeof glyphs === 'object' ? glyphs : {}))
@@ -102,6 +108,18 @@ export function nubiscoUI(options: INubiscoUIOptions = {}): Plugin[] {
       : {}
 
     plugins.push(
+      nubiscoImports({
+        manifest: lookup,
+        styleManifest,
+        styles,
+        packageName: '@nubisco/ui',
+        onResolve: (count) => {
+          resolvedComponents += count
+        },
+      }) as Plugin,
+    )
+
+    plugins.push(
       Components({
         dirs: componentOptions.dirs ?? [],
         dts: componentOptions.dts ?? 'components.d.ts',
@@ -109,6 +127,7 @@ export function nubiscoUI(options: INubiscoUIOptions = {}): Plugin[] {
           (name: string) => {
             const file = lookup.get(name)
             if (!file) return
+            resolvedComponents += 1
             const sheets = styleManifest[file] ?? []
             return {
               name,
@@ -119,6 +138,31 @@ export function nubiscoUI(options: INubiscoUIOptions = {}): Plugin[] {
         ],
       }),
     )
+
+    // A build that linked no component at all cannot have linked any component
+    // CSS either, and `styles: true` says the app is relying on this plugin
+    // for it. That combination ships an unstyled app and fails nothing, so it
+    // is worth a line. It is reachable when every usage goes through a
+    // namespace import (`import * as UI from '@nubisco/ui'`), or a dynamic
+    // one, neither of which names the components it uses.
+    if (styles) {
+      plugins.push({
+        name: 'nubisco-ui:styles-check',
+        apply: 'build',
+        closeBundle() {
+          if (resolvedComponents) return
+          console.warn(
+            `[nubisco-ui] no components were linked in this build, so none of ` +
+              `the component stylesheets were either. If this app renders ` +
+              `Nubisco components, it will render unstyled. Import them by ` +
+              `name (\`import { NbButton } from '@nubisco/ui'\`) or use the ` +
+              `tags directly so they can be resolved; or pass ` +
+              `\`nubiscoUI({ styles: false })\` and import ` +
+              `'@nubisco/ui/css' yourself.`,
+          )
+        },
+      })
+    }
   }
 
   return plugins

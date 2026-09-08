@@ -18,7 +18,7 @@
       @focus="onFocus"
       @blur="onBlur"
     >
-      <NbIcon :name="icon" :size="size" weight="regular" />
+      <NbIcon :name="resolvedIcon" :size="size" weight="regular" />
     </button>
 
     <Teleport :to="teleportTo">
@@ -50,6 +50,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import * as iconInfo from '@nubisco/ui/icons/info'
 import NbIcon from './Icon.vue'
 import { useStableId } from '@/composables/useStableId.composable'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
@@ -66,13 +67,20 @@ const props = withDefaults(defineProps<IInfoHintProps>(), {
   term: undefined,
   placement: 'top',
   size: 14,
-  icon: 'info',
+  icon: undefined,
   label: undefined,
   openDelay: 120,
   closeDelay: 140,
   teleportTo: 'body',
   disabled: false,
 })
+
+// The default has to be the module, not the name. A name is resolved at
+// runtime, which means it needs the icon catalogue, which a compile-time build
+// deliberately does not carry: `icon: 'info'` as a prop default is invisible to
+// the glyph transform, so the component shipped linking no artwork at all and
+// threw on first render in any app that had not loaded the whole catalogue.
+const resolvedIcon = computed(() => props.icon ?? iconInfo)
 
 const emit = defineEmits<{
   /** Popover became visible. */

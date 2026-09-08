@@ -224,6 +224,48 @@ import '@nubisco/ui/css'
 See [Upgrading](/upgrading) for what changes about the cascade when styles are
 split, and how to tell whether it affects you.
 
+## Importing components by hand
+
+You do not have to rely on auto-import. If you prefer explicit imports, write
+them and the plugin still does its half of the work:
+
+```vue
+<script setup lang="ts">
+import { NbButton, NbPanel } from '@nubisco/ui'
+</script>
+```
+
+Each of those is rewritten to its own entry point, and each brings its
+stylesheets with it, so the result is what auto-import would have produced.
+Names that are not components (composables, types, `registerIcons`) stay on the
+barrel import untouched.
+
+The one shape the plugin cannot help with is a namespace import, because it
+never names the components it uses:
+
+```ts
+// Nothing to resolve here: no per-component splitting, no stylesheets.
+import * as UI from '@nubisco/ui'
+```
+
+A build that resolves no components at all says so, since with `styles: true`
+that combination ships an app with no component CSS.
+
+## Testing
+
+Component tests do not run your bundler plugin, so a component that renders an
+icon has no linked artwork to draw. Load the catalogue in your test setup, where
+it costs nothing because test bundles are not shipped:
+
+```ts
+// vitest.setup.ts
+import '@nubisco/ui/icons/all'
+import '@nubisco/ui/flags/all'
+```
+
+Or run `nubiscoUI()` in your Vitest config, if you would rather your tests link
+exactly what your build links.
+
 ## Without a bundler plugin
 
 Nothing here requires the plugin. Every component and every glyph is an entry
