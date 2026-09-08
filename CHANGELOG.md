@@ -1,3 +1,10 @@
+## [4.0.2](https://github.com/nubisco/ui/compare/v4.0.1...v4.0.2) (2026-09-08)
+
+
+### Bug Fixes
+
+* **button,sidebar-link,sidebar-menu-item:** keep the href on a `to` link ([4b8cd98](https://github.com/nubisco/ui/commit/4b8cd98372b29e6cd57d62a5d844082a71cf61b5))
+
 ## [4.0.1](https://github.com/nubisco/ui/compare/v4.0.0...v4.0.1) (2026-09-07)
 
 
