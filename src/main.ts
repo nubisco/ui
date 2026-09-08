@@ -113,6 +113,23 @@ export { default as NbBanner } from './components/Banner.vue'
 export type { IBannerProps } from './components/Banner.d'
 export { EBannerStatus, EBannerVariant } from './components/Banner.d'
 export { default as NbBarChart } from './components/Charts/BarChart.vue'
+export type {
+  IBarChartProps,
+  TBarOrientation,
+} from './components/Charts/BarChart.d'
+// The data and selection shapes the whole chart family speaks. A consumer
+// typing a `@select` handler needs these, so they are part of the entry rather
+// than reachable only through a deep import.
+export type {
+  TChartScalar,
+  IChartPoint,
+  IChartSeries,
+  ICategoricalDatum,
+  IChartCommonProps,
+  IChartSeriesSelection,
+  IChartCategoricalSelection,
+  TChartSelection,
+} from './components/Charts/shared/types.d'
 export { default as NbButton } from './components/Button.vue'
 export type { IButtonProps, TButtonSize } from './components/Button.d'
 export { default as NbDatePicker } from './components/DatePicker.vue'

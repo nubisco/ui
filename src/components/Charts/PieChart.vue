@@ -10,7 +10,8 @@
         :width="size.width"
         :height="size.height"
         class="nb-chart__svg"
-        role="img"
+        :class="{ 'nb-chart__svg--selectable': isSelectable() }"
+        :role="isSelectable() ? 'group' : 'img'"
         :aria-label="title || 'Pie chart'"
         @mouseleave="hoverIndex = null"
       >
@@ -22,8 +23,15 @@
             :class="{ 'is-dim': hoverIndex !== null && hoverIndex !== i }"
             :d="slice.path"
             :fill="slice.color"
+            :tabindex="isSelectable() ? 0 : undefined"
+            :role="isSelectable() ? 'button' : undefined"
+            :aria-label="
+              isSelectable() ? `${slice.label}: ${slice.value}` : undefined
+            "
             @mouseenter="hoverIndex = i"
             @mousemove="(e) => updateTooltip(e)"
+            @click="onSelect(i)"
+            @keydown="onSliceKeydown($event, i)"
           />
           <template v-if="labels !== 'none'">
             <text
@@ -59,13 +67,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, getCurrentInstance, ref } from 'vue'
 import ChartFrame from './shared/ChartFrame.vue'
 import ChartLegend from './shared/ChartLegend.vue'
 import ChartTooltip from './shared/ChartTooltip.vue'
 import { colorAt, DEFAULT_PALETTE } from './shared/palette'
 import { useChartSize } from './shared/useChartSize'
 import type { IPieChartProps } from './PieChart.d'
+import type { IChartCategoricalSelection } from './shared/types.d'
 
 const props = withDefaults(defineProps<IPieChartProps>(), {
   title: undefined,
@@ -78,6 +87,34 @@ const props = withDefaults(defineProps<IPieChartProps>(), {
   innerRadius: 0,
   labels: 'percent',
 })
+
+const emit = defineEmits<{ select: [selection: IChartCategoricalSelection] }>()
+
+// Read off the vnode rather than cached in a computed, which would freeze the
+// answer from first render. Interactivity is opt-in: with nobody listening the
+// chart stays a picture, with no cursor, focus ring or button semantics.
+const instance = getCurrentInstance()
+const isSelectable = () => Boolean(instance?.vnode.props?.onSelect)
+
+const onSelect = (index: number) => {
+  if (!isSelectable()) return
+  const datum = props.data[index]
+  if (!datum) return
+  emit('select', {
+    kind: 'categorical',
+    label: datum.label,
+    value: datum.value,
+    index,
+    datum,
+  })
+}
+
+const onSliceKeydown = (e: KeyboardEvent, index: number) => {
+  if (!isSelectable()) return
+  if (e.key !== 'Enter' && e.key !== ' ') return
+  e.preventDefault()
+  onSelect(index)
+}
 
 const root = ref<HTMLElement | null>(null)
 const size = useChartSize(root, { width: 280, height: 240 })
@@ -226,6 +263,15 @@ const tooltipRows = computed(() => {
 
 .nb-chart__svg {
   display: block;
+}
+
+.nb-chart__svg--selectable .nb-chart__slice {
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 1px solid var(--nb-c-focus-ring);
+    outline-offset: 1px;
+  }
 }
 
 .nb-chart__slice {
