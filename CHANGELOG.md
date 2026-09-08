@@ -1,3 +1,10 @@
+## [4.1.1](https://github.com/nubisco/ui/compare/v4.1.0...v4.1.1) (2026-09-08)
+
+
+### Bug Fixes
+
+* **glyphs:** link forwarded literals, and stop calling mixed expressions resolved ([e21f85a](https://github.com/nubisco/ui/commit/e21f85aa6060381a23be1a4b7959f2909a01d306))
+
 # [4.1.0](https://github.com/nubisco/ui/compare/v4.0.2...v4.1.0) (2026-09-08)
 
 
