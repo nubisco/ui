@@ -25,7 +25,7 @@
         v-bind="triggerProps"
         @click="toggle"
       >
-        <NbIcon :name="icon" :size="18" />
+        <NbIcon :name="resolvedIcon" :size="18" />
         <!-- The number is decoration: the same count is already in the
              button's accessible name, uncapped, so a reader hears "142
              unread" where the badge only has room for "99+". -->
@@ -229,7 +229,7 @@
             <slot name="empty">
               <NbEmptyState
                 size="sm"
-                :icon="icon"
+                :icon="resolvedIcon"
                 :title="emptyTitle"
                 :description="emptyDescription"
               />
@@ -362,6 +362,7 @@ import {
   useSlots,
   watch,
 } from 'vue'
+import * as iconBell from '@nubisco/ui/icons/bell'
 import NbButton from './Button.vue'
 import NbEmptyState from './EmptyState.vue'
 import NbIcon from './Icon.vue'
@@ -403,13 +404,18 @@ const props = withDefaults(defineProps<INotificationCenterProps>(), {
   closeOnSelect: true,
   closeOnNavigate: true,
   disabled: false,
-  icon: 'bell',
+  icon: undefined,
   locale: undefined,
   unreadLabel: 'Unread',
   readLabel: 'Read',
   formatUnread: (count: number) =>
     count === 1 ? '1 unread' : `${count} unread`,
 })
+
+// The module, not the name: a glyph named in a prop default is invisible to
+// the compile-time transform, so `icon: 'bell'` linked nothing and left the
+// bell to be resolved from a catalogue the app may not have loaded.
+const resolvedIcon = computed(() => props.icon ?? iconBell)
 
 const emit = defineEmits<{
   'update:open': [value: boolean]

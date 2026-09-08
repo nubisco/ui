@@ -167,6 +167,19 @@ both, so drop it:
 - import '@nubisco/ui/css'
 ```
 
+::: warning Check this on 4.1.2 or later
+Before 4.1.2, the per-component stylesheets were only linked for components the
+plugin auto-imported from your templates. An app that wrote its imports by hand,
+`import { NbButton } from '@nubisco/ui'`, got no component CSS at all, so
+dropping this line shipped a completely unstyled app with nothing failing: the
+build, the typecheck and the tests all passed, and the CSS bundle still looked
+plausible because the app's own styles and the design tokens were still in it.
+
+4.1.2 gives hand-written imports the same treatment, so the instruction above is
+safe whichever way you import. On an earlier 4.x, either upgrade or keep the
+`@nubisco/ui/css` import with `nubiscoUI({ styles: false })`.
+:::
+
 Design tokens are unaffected: they were never in `ui.css`. They come from
 `@use '@nubisco/ui/variables'`, as before.
 
@@ -217,8 +230,23 @@ to reach. Remove them from your Vite config.
   `resolveComponent('NbGrid')` and friends, delete that: components import
   their own internals now, and `resolveComponent("Nb…")` appears nowhere in the
   built output.
-- Drop `import '@nubisco/ui/css'` if you run the plugin, and re-check any place
-  where your CSS overrides a library rule.
+- Drop `import '@nubisco/ui/css'` if you run the plugin (on 4.1.2 or later, see
+  the warning above), and re-check any place where your CSS overrides a library
+  rule.
+- Load the icon catalogue in your test setup. Component tests do not run your
+  bundler plugin, so a component that renders an icon has nothing to resolve it
+  against and the test fails where the app is fine:
+
+  ```ts
+  // vitest.setup.ts
+  import '@nubisco/ui/icons/all'
+  import '@nubisco/ui/flags/all'
+  ```
+
+  Test bundles are not shipped, so the catalogue costs nothing here. The
+  alternative, if you would rather keep tests honest about what the app links,
+  is to run `nubiscoUI()` in your Vitest config the same way you run it in your
+  build.
 
 [What ships in your bundle](/bundling) covers all of this from the consuming
 side, including how to see what the plugin linked and how to deliberately ship

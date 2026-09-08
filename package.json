@@ -140,7 +140,7 @@
     "build:lib": "vite build",
     "build:types": "vue-tsc --noEmit false --declaration --emitDeclarationOnly --outDir dist && node scripts/copy-type-modules.mjs && node scripts/rewrite-dist-aliases.mjs dist",
     "build:plugins": "tsc --project tsconfig.plugins.json",
-    "verify:types": "pnpm run verify:dist-types && pnpm run verify:consumer-types && pnpm run verify:consumer-globals && pnpm run verify:resolution && pnpm run verify:styles",
+    "verify:types": "pnpm run verify:dist-types && pnpm run verify:consumer-types && pnpm run verify:consumer-globals && pnpm run verify:resolution && pnpm run verify:styles && pnpm run verify:glyph-defaults",
     "verify:dist-types": "node scripts/verify-dist-types.mjs dist",
     "verify:consumer-types": "node scripts/verify-consumer-types.mjs",
     "verify:consumer-globals": "node scripts/verify-consumer-globals.mjs",
@@ -161,7 +161,8 @@
     "verify:marks": "node scripts/verify-inlined-marks.mjs",
     "generate": "node scripts/generate-component-manifest.mjs && node scripts/generate-assets.mjs && node scripts/generate-entries.mjs",
     "verify:resolution": "node scripts/verify-compile-time-resolution.mjs dist",
-    "verify:styles": "node scripts/verify-style-split.mjs dist"
+    "verify:styles": "node scripts/verify-style-split.mjs dist",
+    "verify:glyph-defaults": "node scripts/verify-default-glyphs.mjs dist"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged && pnpm run quality:check",
