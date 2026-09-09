@@ -95,4 +95,19 @@ const hasDefaultSlot = computed(() => rendersContent(slots.default?.() ?? []))
   font-weight: 700;
   color: var(--nb-c-text);
 }
+
+/* A trail of more than one crumb needs separators between them, not only
+ * between the brand and the first. Without this "Home" and "Doodloop" render
+ * as "Home Doodloop", which reads as one name rather than two levels.
+ *
+ * Drawn in CSS rather than as icon nodes because the crumbs arrive through a
+ * slot: the component cannot interleave markup between children it does not
+ * own without re-rendering them. Content, not a border, so it inherits the
+ * text colour and scales with the font. */
+.nb-breadcrumbs__crumbs > :not(:first-child)::before {
+  content: '/';
+  margin-inline-end: 0.35rem;
+  color: var(--nb-c-text-subtle);
+  font-weight: 400;
+}
 </style>
