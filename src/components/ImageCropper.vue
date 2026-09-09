@@ -51,7 +51,36 @@ import { ref, onMounted, computed, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ICropRect, EHandleName, IImageCropperProps } from './ImageCropper.d'
 
-const { t } = useI18n({})
+// Resolution order per string: the host app's global catalog under `common.*`
+// for the active locale, else the built-in default for the active language,
+// else built-in English. The cropper previously read these keys without
+// providing any, so an app with no `common.*` catalog rendered "common.WIDTH"
+// at its users, which is the same shape of bug NbUserMenu already avoids.
+const BUILT_IN: Record<string, Record<string, string>> = {
+  en: {
+    X: 'X',
+    Y: 'Y',
+    WIDTH: 'Width',
+    HEIGHT: 'Height',
+    IMAGE_THUMBNAIL: 'Cropped preview',
+  },
+  pt: {
+    X: 'X',
+    Y: 'Y',
+    WIDTH: 'Largura',
+    HEIGHT: 'Altura',
+    IMAGE_THUMBNAIL: 'Pré-visualização recortada',
+  },
+}
+
+const { t: globalT, te, locale } = useI18n({ useScope: 'global' })
+
+function t(fullKey: string): string {
+  if (te(fullKey)) return globalT(fullKey)
+  const key = fullKey.slice('common.'.length)
+  const lang = String(locale.value).toLowerCase().split('-')[0]
+  return BUILT_IN[lang]?.[key] ?? BUILT_IN.en[key] ?? fullKey
+}
 
 const props = withDefaults(defineProps<IImageCropperProps>(), {
   cropAsCircle: false,
