@@ -1,3 +1,10 @@
+## [4.1.4](https://github.com/nubisco/ui/compare/v4.1.3...v4.1.4) (2026-09-09)
+
+
+### Bug Fixes
+
+* **image-cropper:** ship the strings it reads ([5ffa7a9](https://github.com/nubisco/ui/commit/5ffa7a9193cb056fbe2a6213db50b6000b56378d))
+
 ## [4.1.3](https://github.com/nubisco/ui/compare/v4.1.2...v4.1.3) (2026-09-09)
 
 
