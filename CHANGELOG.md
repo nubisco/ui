@@ -1,3 +1,10 @@
+## [4.1.3](https://github.com/nubisco/ui/compare/v4.1.2...v4.1.3) (2026-09-09)
+
+
+### Bug Fixes
+
+* **breadcrumbs:** separate the crumbs, not just the brand ([9a5bff6](https://github.com/nubisco/ui/commit/9a5bff61ac49cd8d2e1b46c5f6e2fc89d749bf6d))
+
 ## [4.1.2](https://github.com/nubisco/ui/compare/v4.1.1...v4.1.2) (2026-09-08)
 
 
