@@ -2,7 +2,7 @@
   "name": "@nubisco/ui",
   "version": "4.1.4",
   "description": "Vue 3 UI component library",
-  "packageManager": "pnpm@11.0.8",
+  "packageManager": "pnpm@12.3.4+sha512.961aa41fb077da3a04a441d9f8e15ebc0c96da8ef710b2eb67bf9ee7cb0610eabd48f1fd85f51cffe73846785fa0f87c56a3a872a1d893f8446741b5cce45457",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nubisco/ui.git"
@@ -140,7 +140,7 @@
     "build:lib": "vite build",
     "build:types": "vue-tsc --noEmit false --declaration --emitDeclarationOnly --outDir dist && node scripts/copy-type-modules.mjs && node scripts/rewrite-dist-aliases.mjs dist",
     "build:plugins": "tsc --project tsconfig.plugins.json",
-    "verify:types": "pnpm run verify:dist-types && pnpm run verify:consumer-types && pnpm run verify:consumer-globals && pnpm run verify:resolution && pnpm run verify:styles && pnpm run verify:glyph-defaults",
+    "verify:types": "pnpm run verify:dist-types && pnpm run verify:consumer-types && pnpm run verify:consumer-globals && pnpm run verify:resolution && pnpm run verify:styles && pnpm run verify:glyph-defaults && pnpm run verify:theme-export",
     "verify:dist-types": "node scripts/verify-dist-types.mjs dist",
     "verify:consumer-types": "node scripts/verify-consumer-types.mjs",
     "verify:consumer-globals": "node scripts/verify-consumer-globals.mjs",
@@ -162,7 +162,9 @@
     "generate": "node scripts/generate-component-manifest.mjs && node scripts/generate-assets.mjs && node scripts/generate-entries.mjs",
     "verify:resolution": "node scripts/verify-compile-time-resolution.mjs dist",
     "verify:styles": "node scripts/verify-style-split.mjs dist",
-    "verify:glyph-defaults": "node scripts/verify-default-glyphs.mjs dist"
+    "verify:glyph-defaults": "node scripts/verify-default-glyphs.mjs dist",
+    "verify:theme-export": "node scripts/verify-theme-export.mjs",
+    "test:e2e": "playwright test"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged && pnpm run quality:check",
@@ -192,6 +194,7 @@
     "@fontsource/fira-code": "^5.2.7",
     "@fontsource/plus-jakarta-sans": "^5.2.8",
     "@phosphor-icons/core": "^2.1.1",
+    "@playwright/test": "^1.63.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@types/node": "^25.5.0",
