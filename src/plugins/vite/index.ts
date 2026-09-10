@@ -91,6 +91,15 @@ const RESOLVER_ENTRIES = Object.entries(COMPONENT_MANIFEST) as [
   string,
 ][]
 
+/**
+ * The full-stylesheet import, in the two spellings that reach the same file:
+ * the `./css` export condition and the path it maps to. Matched against source
+ * text rather than a resolved id so it is found before the CSS pipeline turns
+ * it into something else.
+ */
+const FULL_SHEET =
+  /(?:^|["'\s(])@nubisco\/ui\/(?:css|dist\/ui\.css)(?=["'\s)]|$)/m
+
 export function nubiscoUI(options: INubiscoUIOptions = {}): Plugin[] {
   const { components = true, glyphs = true, styles = true } = options
   const componentOptions = typeof components === 'object' ? components : {}
@@ -103,6 +112,8 @@ export function nubiscoUI(options: INubiscoUIOptions = {}): Plugin[] {
 
   if (components !== false) {
     const lookup = new Map(RESOLVER_ENTRIES)
+    // Set by the first non-vendor module found importing the full sheet.
+    let fullSheetImporter: string | null = null
     const styleManifest = styles
       ? loadStyleManifest(options.distRoot ?? defaultDistRoot())
       : {}
@@ -149,7 +160,58 @@ export function nubiscoUI(options: INubiscoUIOptions = {}): Plugin[] {
       plugins.push({
         name: 'nubisco-ui:styles-check',
         apply: 'build',
+
+        /*
+         * The other half of the same mistake.
+         *
+         * `@nubisco/ui/css` is the whole 214KB sheet for all 86 components. It
+         * still exists and still works, so an app that keeps importing it
+         * while this plugin also links per-component sheets gets every rule
+         * twice: byte-identical, same specificity, nothing renders
+         * differently, and the only symptom is a CSS bundle roughly twice the
+         * size it should be.
+         *
+         * That combination is exactly what an upgrade produces, because
+         * importing the full sheet was the correct thing to do beforehand.
+         * The upgrade guide says to drop the line; this says so at the moment
+         * it starts costing something, which is the difference between a
+         * sentence someone read and a sentence someone acts on.
+         */
+        transform(code, id) {
+          if (fullSheetImporter) return
+          if (id.includes('/node_modules/')) return
+          if (!FULL_SHEET.test(code)) return
+          fullSheetImporter = id
+          return null
+        },
+
         closeBundle() {
+          /*
+           * Both halves of the condition matter, and the second one is not
+           * decoration.
+           *
+           * The full sheet is the RIGHT answer for a build that links no
+           * per-component stylesheets: an entry built without this plugin at
+           * all, or one whose components never got resolved. Warning on the
+           * import alone would fire on a file where importing it is the only
+           * thing keeping the app styled, and a diagnostic that cries wolf on
+           * correct code is how people learn to ignore it.
+           *
+           * So this fires only when both sources are actually feeding the same
+           * build. That also makes it mutually exclusive with the "nothing was
+           * linked" warning below, which is the opposite failure.
+           */
+          if (fullSheetImporter && resolvedComponents > 0) {
+            const where = fullSheetImporter.split('/').slice(-2).join('/')
+            console.warn(
+              `[nubisco-ui] ${where} imports the full stylesheet ` +
+                `('@nubisco/ui/css') and this plugin is also linking ` +
+                `per-component stylesheets, so every component rule is in ` +
+                `this build twice. It renders correctly and costs roughly ` +
+                `double the component CSS. Drop the import, or keep it and ` +
+                `pass \`nubiscoUI({ styles: false })\`.`,
+            )
+          }
           if (resolvedComponents) return
           console.warn(
             `[nubisco-ui] no components were linked in this build, so none of ` +

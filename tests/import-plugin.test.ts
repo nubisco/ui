@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { nubiscoImports } from '../src/plugins/vite/imports'
 
 /**
@@ -202,5 +202,120 @@ describe('what the build can tell from it', () => {
     const { transform, resolved } = make()
     transform(sfc(`import { registerIcons } from '@nubisco/ui'`))
     expect(resolved()).toBe(0)
+  })
+})
+
+/**
+ * The mirror image of the bug above.
+ *
+ * Before per-component stylesheets existed, importing `@nubisco/ui/css` was
+ * the correct thing to do, so an upgraded app still has that line. Now that
+ * the plugin also links per-component sheets, the two together put every
+ * component rule in the bundle twice: byte-identical, same specificity,
+ * nothing renders differently, and the only symptom is a CSS bundle at
+ * roughly double the size it should be.
+ *
+ * It cost a downstream team a measured investigation to find, which is the
+ * definition of a diagnostic worth emitting.
+ */
+describe('full-stylesheet duplication warning', () => {
+  const stylesCheck = async (styles = true) => {
+    const { default: nubiscoUI } = await import('../src/plugins/vite/index')
+    const plugins = nubiscoUI({ styles }) as any[]
+    return plugins.find((p) => p?.name === 'nubisco-ui:styles-check')
+  }
+
+  /**
+   * `resolved` stands in for the plugin having actually linked a
+   * per-component stylesheet in this build, which is half the condition.
+   */
+  const run = async (
+    code: string,
+    id = '/app/src/main.ts',
+    resolved = true,
+  ) => {
+    const { default: nubiscoUI } = await import('../src/plugins/vite/index')
+    const plugins = nubiscoUI({ styles: true }) as any[]
+    const check = plugins.find((p) => p?.name === 'nubisco-ui:styles-check')
+    const imports = plugins.find((p) => p?.name === 'nubisco-ui:imports')
+
+    // Drive the real counter the diagnostic reads, rather than faking it.
+    if (resolved && imports?.transform) {
+      imports.transform.call(
+        {},
+        "import { NbButton } from '@nubisco/ui'\n",
+        '/app/src/Uses.ts',
+      )
+    }
+
+    const warnings: string[] = []
+    const spy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation((m: string) => void warnings.push(m))
+    check.transform.call({}, code, id)
+    check.closeBundle.call({})
+    spy.mockRestore()
+    return warnings.join('\n')
+  }
+
+  it('warns when the full stylesheet is imported alongside the plugin', async () => {
+    const out = await run("import '@nubisco/ui/css'\n")
+    expect(out).toContain('twice')
+    expect(out).toContain('src/main.ts')
+  })
+
+  it('recognises the dist path spelling too', async () => {
+    const out = await run("import '@nubisco/ui/dist/ui.css'\n")
+    expect(out).toContain('twice')
+  })
+
+  it('stays silent when the full stylesheet is not imported', async () => {
+    const out = await run("import { NbButton } from '@nubisco/ui'\n")
+    expect(out).not.toContain('twice')
+  })
+
+  // A per-component sheet is exactly what the plugin itself emits. Matching it
+  // would make the warning fire on every build that is doing the right thing.
+  it('does not mistake a per-component stylesheet for the full one', async () => {
+    const out = await run("import '@nubisco/ui/dist/styles/Button.css'\n")
+    expect(out).not.toContain('twice')
+  })
+
+  it('ignores the import when it comes from a dependency', async () => {
+    const out = await run(
+      "import '@nubisco/ui/css'\n",
+      '/app/node_modules/some-kit/index.js',
+    )
+    expect(out).not.toContain('twice')
+  })
+
+  it('says nothing when the app opted out of style injection', async () => {
+    const plugin = await stylesCheck(false)
+    expect(plugin).toBeUndefined()
+  })
+
+  /*
+   * The case a downstream team hit: a second entry point that is built WITHOUT
+   * this plugin, where the full sheet is the only source of component styles
+   * and importing it is correct. Nothing must be linking per-component sheets
+   * for the warning to make sense.
+   */
+  it('stays silent when no per-component stylesheet was linked', async () => {
+    const out = await run(
+      "import '@nubisco/ui/css'\n",
+      '/app/src/demo.ts',
+      false,
+    )
+    expect(out).not.toContain('twice')
+  })
+
+  it('gives the opposite advice, not both, when nothing was linked', async () => {
+    const out = await run(
+      "import '@nubisco/ui/css'\n",
+      '/app/src/demo.ts',
+      false,
+    )
+    expect(out).toContain('no components were linked')
+    expect(out).not.toContain('twice')
   })
 })
