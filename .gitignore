@@ -46,3 +46,7 @@ generated/
 
 # Emitted by unplugin-vue-components in consumer projects
 components.d.ts
+
+# Playwright: browser-test output. `test:e2e` is local-only and never runs in CI.
+test-results/
+playwright-report/
