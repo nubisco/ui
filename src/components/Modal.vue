@@ -75,6 +75,8 @@ import {
   acquireScrollLock,
   releaseScrollLock,
 } from '@/composables/useScrollLock.composable'
+import { useFocusTrap } from '@/composables/useFocusTrap.composable'
+import { floatingSelector } from './Confirm.env'
 import type { IModalProps } from './Modal.d'
 
 const props = withDefaults(defineProps<IModalProps>(), {
@@ -88,6 +90,9 @@ const props = withDefaults(defineProps<IModalProps>(), {
   busy: false,
   closeDisabled: false,
   closeOnEscape: true,
+  trapFocus: true,
+  floatingSelectors: undefined,
+  initialFocus: undefined,
 })
 
 const emit = defineEmits<{ close: [] }>()
@@ -107,6 +112,35 @@ const { layerProps } = useSurfaceLayer({ overlay: true })
 function onOverlayClick() {
   if (props.closeOnOverlay) emit('close')
 }
+
+/**
+ * The dialog holds keyboard focus for as long as it is open.
+ *
+ * The scrim makes the page behind unavailable to the eye but does nothing to
+ * the tab order, so without this Tab walks out of the dialog and onto the
+ * document underneath: this component's own showcase reproduced it in one
+ * keypress while the page above it promised a focus trap.
+ *
+ * A wrapper that runs its own trap (NbConfirm, which has extra rules for its
+ * pending state and its type-to-confirm gate) switches this off by prop rather
+ * than having two traps pull focus in opposite directions.
+ *
+ * The floating list is shared with NbConfirm so that a teleported NbSelect
+ * list opened from inside a dialog counts as inside it under both.
+ */
+function resolveInitialFocus(): HTMLElement | null {
+  const target = props.initialFocus
+  if (!target) return null
+  if (typeof target === 'function') return target()
+  return contentRef.value?.querySelector<HTMLElement>(target) ?? null
+}
+
+useFocusTrap({
+  container: () => contentRef.value,
+  active: () => props.open && props.trapFocus,
+  initialFocus: resolveInitialFocus,
+  floatingSelector: () => floatingSelector(props.floatingSelectors),
+})
 
 // This instance's share of the counted page-scroll lock.
 let locked = false
@@ -233,6 +267,8 @@ defineExpose({ dialogEl: () => contentRef.value, bodyEl: () => bodyRef.value })
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 @use 'sass:list';
 
 // The margin the dialog keeps from the viewport edge at every size. It is the
@@ -257,9 +293,12 @@ $modal-margin: 20px;
   width: 100%;
   display: flex;
   flex-direction: column;
+  // The dialog clips its own header and footer to its corner. Without this a
+  // rounded dialog shows square header corners poking past the arc.
   overflow: hidden;
-
-  --parent-radius: 8px;
+  // Teleported to <body>: it takes the appearance from the document and is
+  // the outer surface of everything inside it.
+  @include radius.surface(modal);
 }
 
 // Size caps for both dimensions: height stays content-driven up to the cap
@@ -313,6 +352,14 @@ $modal-sizes: (
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
+  /*
+   * The close control is inset from the dialog's edge rather than flush in
+   * the corner. Flush was tolerable while every corner was square; against a
+   * rounded corner the button's own hover and focus rectangle cuts across the
+   * arc. Nothing sits hard against a rounded parent's border.
+   */
+  padding: var(--nb-overlay-inset, 0);
+  padding-inline-start: 0;
 }
 
 .nb-modal--title {
@@ -323,10 +370,15 @@ $modal-sizes: (
 }
 
 .nb-modal--close {
-  width: calc(var(--nb-base-unit) * 7);
-  height: calc(var(--nb-base-unit) * 7);
+  width: calc(var(--nb-base-unit) * 5);
+  height: calc(var(--nb-base-unit) * 5);
   border: none;
   background: transparent;
+  /*
+   * Its highlight is ours, and it is concentric with the dialog: the dialog's
+   * corner, less the inset the header holds it at.
+   */
+  @include radius.inset(var(--nb-overlay-inset, 0px));
   font-size: 20px;
   line-height: 1;
   color: var(--nb-c-text-muted);
@@ -342,6 +394,13 @@ $modal-sizes: (
   &:hover {
     background: var(--nb-c-bg-soft);
     color: var(--nb-c-text);
+  }
+
+  // Without this the browser draws its own ring, which is a square box in the
+  // dialog's corner and belongs to no design language we control.
+  &:focus-visible {
+    outline: 2px solid var(--nb-c-focus-ring);
+    outline-offset: -2px;
   }
 }
 

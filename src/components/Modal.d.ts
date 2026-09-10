@@ -54,6 +54,45 @@ interface IModalProps {
    * to `false` when a wrapper (NbConfirm) answers the key itself.
    */
   closeOnEscape?: boolean
+  /**
+   * Whether the dialog holds keyboard focus while it is open: focus moves to
+   * the first control on open, Tab and Shift+Tab cycle within the dialog
+   * instead of reaching the page behind it, and focus returns to whatever
+   * opened the dialog on close.
+   *
+   * On by default, which is what `aria-modal="true"` already promises the
+   * assistive technology reading this dialog. Set it to `false` only when a
+   * wrapper runs its own trap (NbConfirm does, for its pending state and its
+   * type-to-confirm gate); two traps on one surface fight over focus.
+   */
+  trapFocus?: boolean
+  /**
+   * Where focus lands when the dialog opens. A CSS selector resolved inside
+   * the dialog, or a function returning the element.
+   *
+   * The default is the first focusable control, which in a dialog with a
+   * header is the close button. That is a fine landing for a dialog you only
+   * read, and the wrong one for a form: point this at the first field so the
+   * user can start typing.
+   *
+   * ```vue
+   * <NbModal :open="open" initial-focus=".name-field input" @close="..." />
+   * ```
+   *
+   * Never point it at a destructive control. A dialog that opens with Delete
+   * focused turns a stray Space into a deletion.
+   */
+  initialFocus?: string | (() => HTMLElement | null)
+  /**
+   * Extra selectors for popups that teleport out of the dialog but belong to
+   * it, such as a third-party combobox list rendered to `<body>` by a control
+   * inside the dialog. Focus landing inside one of these is not an escape.
+   *
+   * Our own teleported popups (NbSelect, NbMenu, NbDatePicker) are already
+   * covered. Use `registerConfirmFloatingSelector()` to teach every dialog
+   * about one instead of passing it per dialog.
+   */
+  floatingSelectors?: readonly string[]
 }
 
 export { IModalProps, TModalSize, TModalRole }
