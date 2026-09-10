@@ -6,7 +6,61 @@ tabs: ['Usage', 'Style', 'Accessibility', 'Api']
 
 <doc-tab name="Usage">
 
-The `Button` component is a versatile, accessible button with multiple variants and sizes.
+`NbButton` is the library's action control. Its job on any given screen is to
+make one action obvious and keep the rest available without competing.
+
+## Action hierarchy
+
+Three variants carry the hierarchy. Reach for these first; the status colours
+below are a different tool for a different job.
+
+<preview dir="row">
+  <NbButton variant="ghost">Cancel</NbButton>
+  <NbButton variant="secondary">Save draft</NbButton>
+  <NbButton variant="primary">Publish</NbButton>
+</preview>
+
+```vue
+<NbButton variant="ghost">Cancel</NbButton>
+<NbButton variant="secondary">Save draft</NbButton>
+<NbButton variant="primary">Publish</NbButton>
+```
+
+| Variant     | Use it for                                                  |
+| ----------- | ----------------------------------------------------------- |
+| `primary`   | The one action the screen exists for. At most one per view. |
+| `secondary` | A real alternative the user might reasonably take instead.  |
+| `ghost`     | Everything else: Cancel, Back, and toolbar actions.         |
+
+**One primary per view.** Two filled buttons side by side is two screens'
+worth of emphasis on one, and the eye picks neither.
+
+**Cancel is never `danger`.** Cancel does not destroy anything; the button it
+sits next to might.
+
+### When a status colour is right
+
+`success`, `info`, `warning` and `danger` say what a press _means_, not how
+loud it should be. Use one only when the semantics match:
+
+<preview dir="row">
+  <NbButton variant="ghost">Cancel</NbButton>
+  <NbButton variant="danger">Delete environment</NbButton>
+</preview>
+
+```vue
+<NbButton variant="ghost">Cancel</NbButton>
+<NbButton variant="danger">Delete environment</NbButton>
+```
+
+`danger` belongs on a control that destroys something. It is not a way to make
+a button louder, and a screen with three red buttons has told the user nothing.
+`success` on a Save button is the common mistake: saving is the primary action,
+not a positive outcome, so it takes `primary`.
+
+For a destructive action, the dialog does the guarding: see
+[NbConfirm](/ui/components/confirm) and
+[Dialogs](/patterns/dialogs).
 
 ## Basic Usage
 
@@ -75,37 +129,38 @@ The `Button` component is a versatile, accessible button with multiple variants 
   </div>
 </preview>
 
-### Contextual Usage Examples
+### Realistic groups
 
 <preview>
-  <div class="demo-container">
-    <div class="context-examples">
-      <div class="context-section">
-        <h4>Form Actions</h4>
-        <div class="button-group">
-          <NbButton tint="success" @click="handleSave">Save Changes</NbButton>
-          <NbButton tint="secondary" @click="handleCancel">Cancel</NbButton>
-        </div>
-      </div>
-      <div class="context-section">
-        <h4>Alert Dialog</h4>
-        <div class="button-group">
-          <NbButton tint="danger" @click="handleDelete">Delete Permanently</NbButton>
-          <NbButton tint="warning" @click="handleArchive">Archive Instead</NbButton>
-          <NbButton tint="secondary" @click="handleCancel">Cancel</NbButton>
-        </div>
-      </div>
-      <div class="context-section">
-        <h4>Navigation</h4>
-        <div class="button-group">
-          <NbButton tint="primary" @click="handleNext">Continue</NbButton>
-          <NbButton tint="info" @click="handleHelp">Get Help</NbButton>
-          <NbButton tint="secondary" @click="handleBack">Go Back</NbButton>
-        </div>
-      </div>
-    </div>
-  </div>
+  <NbGrid dir="col" gap="lg">
+    <NbGrid dir="col" gap="xs">
+      <strong>Form footer</strong>
+      <NbGrid dir="row" gap="sm">
+        <NbButton variant="ghost">Cancel</NbButton>
+        <NbButton variant="primary">Save changes</NbButton>
+      </NbGrid>
+    </NbGrid>
+    <NbGrid dir="col" gap="xs">
+      <strong>Destructive confirmation</strong>
+      <NbGrid dir="row" gap="sm">
+        <NbButton variant="ghost">Cancel</NbButton>
+        <NbButton variant="danger">Delete permanently</NbButton>
+      </NbGrid>
+    </NbGrid>
+    <NbGrid dir="col" gap="xs">
+      <strong>Toolbar</strong>
+      <NbGrid dir="row" gap="xs">
+        <NbButton variant="ghost" size="sm" icon="funnel">Filter</NbButton>
+        <NbButton variant="ghost" size="sm" icon="arrow-clockwise">Refresh</NbButton>
+        <NbButton variant="primary" size="sm" icon="plus">New</NbButton>
+      </NbGrid>
+    </NbGrid>
+  </NbGrid>
 </preview>
+
+Every group above has exactly one filled button, and the exit is always
+`ghost`. See the whole pattern working on a real screen in
+[Team management](/patterns/team-management).
 
 </doc-tab>
 
@@ -113,7 +168,16 @@ The `Button` component is a versatile, accessible button with multiple variants 
 
 ## Button Sizes
 
-<preview gap="lg">
+<!--
+  A row, and a large one.
+
+  The preview defaults to a column, so its gap was vertical while the
+  `<measure>` wrappers are `inline-flex` and flowed horizontally: the gap never
+  applied on the axis the buttons actually sat on, and they ran together. The
+  ruler overlay draws its dimension label OUTSIDE the measured element, so each
+  label landed on the next button along.
+-->
+<preview dir="row" gap="xxl">
   <measure>
     <NbButton variant="primary" icon="plus" size="xxs">xxs</NbButton>
   </measure>
@@ -253,18 +317,18 @@ The button uses CSS custom properties from the design system:
 
 ## Props
 
-| Prop       | Type                                                                                  | Default     | Description                                                          |
-| ---------- | ------------------------------------------------------------------------------------- | ----------- | -------------------------------------------------------------------- |
-| `variant`  | `'primary' \| 'secondary' \| 'ghost' \| 'danger' \| 'success' \| 'warning' \| 'info'` | `'primary'` | Color and style variant                                              |
-| `outlined` | `boolean`                                                                             | `false`     | Transparent bg with colored border/text                              |
-| `size`     | `'xxs' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| 'xxl'`                              | `'md'`      | Button size. The full scale, all seven backed by CSS (since 1.55.0)  |
-| `disabled` | `boolean`                                                                             | `false`     | Disables the button                                                  |
-| `loading`  | `boolean`                                                                             | `false`     | Shows a spinner and prevents interaction                             |
-| `type`     | `'button' \| 'submit' \| 'reset'`                                                     | `'button'`  | Native `<button>` type. Ignored when `href` is set                   |
-| `href`     | `string`                                                                              | -           | When provided, renders as `<a>` instead of `<button>`                |
-| `target`   | `string`                                                                              | -           | Forwarded to `<a>`. Only used when `href` is set (e.g. `_blank`)     |
-| `rel`      | `string`                                                                              | -           | Forwarded to `<a>`. Only used when `href` is set (e.g. `noopener`)   |
-| `to`       | `string \| object`                                                                    | -           | When provided, renders as a `<RouterLink>` for Vue Router navigation |
+| Prop       | Type                                                                                  | Default    | Description                                                                |
+| ---------- | ------------------------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------- |
+| `variant`  | `'primary' \| 'secondary' \| 'ghost' \| 'danger' \| 'success' \| 'warning' \| 'info'` | —          | Visual role. Omitted, the button renders the high-contrast base treatment. |
+| `outlined` | `boolean`                                                                             | `false`    | Transparent bg with colored border/text                                    |
+| `size`     | `'xxs' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| 'xxl'`                              | `'md'`     | Button size. The full scale, all seven backed by CSS (since 1.55.0)        |
+| `disabled` | `boolean`                                                                             | `false`    | Disables the button                                                        |
+| `loading`  | `boolean`                                                                             | `false`    | Shows a spinner and prevents interaction                                   |
+| `type`     | `'button' \| 'submit' \| 'reset'`                                                     | `'button'` | Native `<button>` type. Ignored when `href` is set                         |
+| `href`     | `string`                                                                              | -          | When provided, renders as `<a>` instead of `<button>`                      |
+| `target`   | `string`                                                                              | -          | Forwarded to `<a>`. Only used when `href` is set (e.g. `_blank`)           |
+| `rel`      | `string`                                                                              | -          | Forwarded to `<a>`. Only used when `href` is set (e.g. `noopener`)         |
+| `to`       | `string \| object`                                                                    | -          | When provided, renders as a `<RouterLink>` for Vue Router navigation       |
 
 ### Link buttons
 
@@ -299,18 +363,24 @@ Disabled state is communicated via `aria-disabled` instead of the `disabled` att
 | ------- | ------------ | --------------------- |
 | `click` | `MouseEvent` | Fired on button click |
 
-### Color Mapping
+### Which token each variant paints
 
-The button tints map to design system colors:
+Every variant reads a **semantic** token, never a ramp name. That is what lets
+a white-label product retheme the library without the accent leaking through:
 
-| Tint        | Color Variable                  | Hex Value | Use Case              |
-| ----------- | ------------------------------- | --------- | --------------------- |
-| `primary`   | `--nb-c-grape-hyacinth-500`     | `#5856a9` | Main actions          |
-| `secondary` | `--nb-c-nouveau-gray-500`       | `#6b7280` | Secondary actions     |
-| `success`   | `--nb-c-emerald-reflection-500` | `#4acf7b` | Positive actions      |
-| `info`      | `--nb-c-the-blues-brothers-500` | `#214da6` | Informational actions |
-| `warning`   | `--nb-c-phoenix-flames-500`     | `#f59e0b` | Cautionary actions    |
-| `danger`    | `--nb-c-chicken-comb-500`       | `#dc2626` | Destructive actions   |
+| Variant     | Token              | Means               |
+| ----------- | ------------------ | ------------------- |
+| `primary`   | `--nb-c-primary`   | The screen's action |
+| `secondary` | `--nb-c-secondary` | An alternative      |
+| `ghost`     | `--nb-c-contrast`  | Text only, no fill  |
+| `success`   | `--nb-c-success`   | A positive outcome  |
+| `info`      | `--nb-c-info`      | Informational       |
+| `warning`   | `--nb-c-warning`   | Proceed with care   |
+| `danger`    | `--nb-c-danger`    | Destroys something  |
+
+Each also uses the matching `-hover`, `-active` and `-a11y` tokens, so a
+retheme moves the whole state set together. Override the semantic token, not
+the button.
 
 </doc-tab>
 
@@ -418,35 +488,6 @@ const handleFormSubmit = () => {
 const clearForm = () => {
   form.value = { name: '', email: '', message: '' }
   formSubmitted.value = false
-}
-
-// Contextual example handlers
-const handleSave = () => {
-  alert('Changes saved!')
-}
-
-const handleCancel = () => {
-  alert('Action cancelled')
-}
-
-const handleDelete = () => {
-  alert('Item deleted!')
-}
-
-const handleArchive = () => {
-  alert('Item archived!')
-}
-
-const handleNext = () => {
-  alert('Continuing to next step...')
-}
-
-const handleHelp = () => {
-  alert('Opening help documentation...')
-}
-
-const handleBack = () => {
-  alert('Going back...')
 }
 </script>
 
@@ -580,31 +621,13 @@ button:disabled {
   font-size: 0.9rem;
 }
 
-.context-examples {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-}
 
-.context-section {
-  padding: 1.5rem;
-  background: var(--vp-c-bg);
-  border: 1px solid var(--vp-c-border);
-  border-radius: 8px;
-}
 
-.context-section h4 {
-  margin: 0 0 1rem 0;
-  color: var(--vp-c-text-1);
-}
 
 @media (max-width: 768px) {
   .flavors-grid {
     grid-template-columns: 1fr;
   }
 
-  .context-examples {
-    grid-template-columns: 1fr;
-  }
 }
 </style>

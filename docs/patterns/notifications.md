@@ -445,7 +445,7 @@ yourself and never build a host: see
 
 **It must contain** a past-tense sentence with no full stop ("Draft saved"), the
 right `variant`, and, if it carries one, exactly one action whose label is a
-verb from [Action labels](/content/action-labels) (`Retry`, `Undo`, `Reload`,
+verb (`Retry`, `Undo`, `Reload`,
 never `OK` or `Dismiss`). The close button is the exit; a second control meaning
 "go away" is a coin toss for anyone reading the stack through a screen reader.
 
@@ -890,7 +890,7 @@ More in [Accessibility overview](/accessibility/overview) and
 ## The words
 
 Message copy is decided once, in [Writing style](/content/writing-style), and
-action labels once, in [Action labels](/content/action-labels). Read the
+action labels once, in [Writing style](/content/writing-style). Read the
 [error construction rule](/content/writing-style#the-three-parts) there rather
 than inventing a sentence shape per product; it is the same three parts (what
 happened, why, what to do) on every surface on this page.
@@ -1068,7 +1068,6 @@ template and the handlers, and each failure names the fix.
 - [Building an inspector](/patterns/inspectors) for messages inside a dense
   panel.
 - [Writing style](/content/writing-style) and
-  [Action labels](/content/action-labels) for the words.
 - [Accessibility overview](/accessibility/overview) and
   [Keyboard interaction](/accessibility/keyboard) for live regions and focus.
 - [Layout](/principles/layout), [Spacing](/principles/spacing),

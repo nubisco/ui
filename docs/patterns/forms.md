@@ -1243,7 +1243,7 @@ Across twelve applications: 25 "Cancel", 6 "Done", 5 "Delete", 4 "Close",
 Create are used interchangeably for commit; Close, Cancel, Dismiss and Back
 interchangeably for exit. There is no rule anyone could have followed.
 
-[Action labels](/content/action-labels) is the lookup table. For a form footer:
+[Writing style](/content/writing-style) covers the wording. For a form footer:
 
 - **The commit button names what it does to the object**: "Save changes",
   "Create project", "Send invite", "Delete environment". Not "OK", not "Submit",

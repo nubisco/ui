@@ -41,6 +41,239 @@ You don't need to touch SCSS. Override CSS custom properties in your own stylesh
 
 That is all. Every component that references `--nb-c-primary` or `--nb-base-unit` inherits the change automatically.
 
+## Appearance
+
+Square or rounded geometry, for the whole library, independently of light and
+dark. **Square is the default and is what every existing application already
+renders**, so upgrading and calling nothing changes no pixels. Rounded is an
+explicit opt-in.
+
+Rounding is not a modernisation and is not a default in waiting. The square
+treatment is part of what makes this library recognisable and it stays
+supported, unchanged, forever.
+
+```ts
+import { configureAppearance } from '@nubisco/ui'
+
+configureAppearance({ defaultAppearance: 'rounded' })
+```
+
+At runtime, without a rebuild or a reload:
+
+```vue
+<script setup lang="ts">
+import { useAppearance } from '@nubisco/ui'
+
+const { appearance, isRounded, setAppearance, toggle } = useAppearance()
+</script>
+```
+
+It writes `data-nb-appearance` to `<html>`, which is where the dark class lives
+too, so teleported overlays (modals, menus, select lists) inherit it rather
+than being left behind on the other scale.
+
+### Independence from colour mode
+
+The two settings never touch each other. Appearance writes an attribute, the
+theme writes a class; switching one cannot reset the other, and neither shares
+storage with the other. A theme exported by the theme builder carries colours
+only, never a baked-in corner.
+
+| Setting     | Written to                 | Stored under         |
+| ----------- | -------------------------- | -------------------- |
+| Colour mode | `class="dark"` on `<html>` | `nubisco.theme`      |
+| Appearance  | `data-nb-appearance`       | `nubisco.appearance` |
+
+Pass `persist: false` when the application owns the setting from its own
+backend, so a stale stored value cannot override what it just asked for.
+
+### The radius scale
+
+Rounded is not square with the corners knocked off. It is a different design
+language, and the reference is Apple's: **controls are capsules**, and every
+container carries a generous corner that its contents are concentric with.
+
+| Role                     | Square | Rounded | Used by                                |
+| ------------------------ | ------ | ------- | -------------------------------------- |
+| `--nb-radius-control`    | `0`    | capsule | Buttons, single-line fields, tags      |
+| `--nb-radius-control-sm` | `0`    | `8px`   | Checkboxes, sidebar rows, step markers |
+| `--nb-radius-popover`    | `0`    | `12px`  | Menus, select lists, tooltips          |
+| `--nb-radius-panel`      | `0`    | `14px`  | Cards, panels, tables                  |
+| `--nb-radius-modal`      | `0`    | `20px`  | Modals, drawers                        |
+
+"Capsule" is a radius larger than half the height, which CSS clamps, so both
+ends are semicircles at any control size.
+
+Two control roles exist because one cannot serve both. A checkbox at capsule
+radius is a circle, which is a radio button; a sidebar row at capsule radius is
+a lozenge fighting the rows above and below it. Those take `control-sm`.
+
+The container values are deliberately generous. Concentric geometry is only
+visible when the outer radius exceeds the inset, and at the previous 8px
+against 16px of padding an inset surface always collapsed to square: correct
+arithmetic, wasted mechanism.
+
+### Fields change shape, not idiom
+
+In **square**, a field is what it has always been: a filled box with a single
+bottom rule, no side borders, no corners. That treatment is untouched.
+
+In **rounded**, a field is a capsule, and a capsule cannot be described by an
+underline, so the appearance setting supplies the outline the shape needs. A
+textarea steps down to the panel corner instead: a pill around several lines of
+text reads as a speech bubble.
+
+::: warning One pixel
+A rounded field is 1px taller than a square one, because rounded adds the side
+borders that square does not draw. Drawing a transparent border in square would
+make the two pixel-identical and would also make every square field 1px taller
+than it is today, which is a change to what every existing application renders.
+Square compatibility won.
+:::
+
+### Which components participate
+
+| Role         | Components                                                                            |
+| ------------ | ------------------------------------------------------------------------------------- |
+| `control`    | Button, single-line fields, Banner and Toast close buttons                            |
+| `control-sm` | Checkbox, SidebarLink, SidebarMenuItem, StepperStep, InlineEdit, BottomPanel          |
+| `popover`    | Menu, Select's list, CommandPalette, Message, InfoHint, Walkthrough, BlueprintMinimap |
+| `panel`      | Card, Panel, DataTable, ShellPanel, EmptyState, Tabs, Board                           |
+| `modal`      | Modal, and Confirm through it                                                         |
+
+`NbSlider` and `NbFileUploader` follow `panel`.
+
+### Intentional exceptions
+
+These do not follow the setting, and that is deliberate:
+
+- **Circular by nature** — avatars, `NbRadio`, `NbUserMenu`, status dots on
+  `NbBadge` and `NbNotificationCenterItem`. A square radio is a checkbox.
+- **Pills** — `NbBadge`'s pill shape, `NbSwitch`'s track, `NbSkeleton`. A
+  switch track is a track at any appearance.
+- **`NbToast` and `NbBanner`** — square by design. Both carry a straight status
+  accent bar on one edge, and a corner fights it.
+- **Blueprint canvas** — graphical primitives, not chrome. The minimap _frame_
+  participates because it is chrome around the canvas; the canvas does not.
+- **Attached surfaces** — a table's toolbar, sticky header and footer run to
+  the shell's edges and are clipped by its corner rather than taking one of
+  their own. Two rounded boxes meeting at a shared edge leave a visible notch.
+
+### Geometry that never changes
+
+`--nb-radius-circle` (50%) and `--nb-radius-pill` are not part of the
+appearance switch. Avatars and radios are round because of what they are, a
+switch track is a track, and squaring them would not look more geometric, it
+would look broken. Charts and canvas content are untouched.
+
+### Concentric nesting
+
+Nested surfaces derive their corner from the surface enclosing them:
+
+```
+inner = max(0, outer - inset)
+```
+
+where `inset` is the real border-box-to-border-box distance, padding **and**
+border. A surface publishes its corner as `--nb-radius-context`; an inset
+surface reads it. Nothing is measured at runtime.
+
+```scss
+@use '@nubisco/ui/styles/logic/radius' as radius;
+
+.my-card {
+  padding: 16px;
+  border: 1px solid;
+  @include radius.surface(panel);
+}
+.my-card__media {
+  @include radius.inset(17px); // 16 padding + 1 border
+}
+.my-card__body {
+  @include radius.publish-inner(); // so a third level can derive too
+}
+```
+
+Standalone controls do **not** derive. A button in the middle of a panel does
+not run parallel to the panel's edges, so it keeps the control radius wherever
+it sits; use `radius.standalone(control)`. DOM nesting alone does not establish
+a geometric relationship.
+
+Insets larger than the outer radius floor at zero, which is correct: with the
+library's own 16-20px padding and 8-12px corners, an inset panel is genuinely
+square inside a rounded one.
+
+For an inset that differs per axis, `radius.inset-xy($x, $y)` emits the
+two-axis form.
+
+## Field presets
+
+Fields are a filled box with a single bottom rule. That idiom is deliberate:
+**no side borders, no corner rounding**, and the treatment below changes none
+of it. Corner geometry is a separate, global concern, covered in
+[Appearance](#appearance).
+
+What did change is the fill. The enabled fill used to be `#cacbcc`
+in the light theme: a mid grey, darker than every surface it sat on. A grey box
+with no outline is what most interfaces use to mean "unavailable", so the
+enabled state was wearing the disabled state's clothes, and `disabled` on top
+of it was only a `0.45` opacity. The two differed in brightness rather than in
+kind, and the enabled field read as the heavier of the two.
+
+The default now lightens the enabled fill and gives disabled and read-only
+their own boundary contrast:
+
+| State         | Before                     | Now                                     |
+| ------------- | -------------------------- | --------------------------------------- |
+| **Enabled**   | Mid grey fill, bottom rule | Lighter fill, same bottom rule          |
+| **Disabled**  | Same fill, 0.45 opacity    | Keeps the historic grey fill, rule dims |
+| **Read-only** | No fill, bottom rule       | No fill, quieter rule                   |
+
+Geometry is identical in every column: filled box, one bottom rule, square
+corners, same height, padding and alignment.
+
+The measured numbers, because a control boundary is held to 3:1 by WCAG 1.4.11:
+
+| Pair                               | Light  | Dark   |
+| ---------------------------------- | ------ | ------ |
+| Enabled rule against its own fill  | 5.21:1 | 4.29:1 |
+| Disabled rule against its own fill | 1.85:1 | 1.95:1 |
+
+The disabled figures are deliberately below 3:1. That threshold applies to
+controls the user can operate, and this one cannot be.
+
+In the dark theme the fill cannot carry the distinction at all: every surface
+in the dark ramp sits within 1.21:1 of every other, so no choice of fill
+separates enabled from disabled there. The bottom rule does that work instead,
+which is why the boundary contrast moved and not only the background.
+
+### Keeping the old fills
+
+An application with calibrated screenshots or visual-regression baselines can
+opt out and move on its own schedule:
+
+```html
+<html data-nb-preset="classic-fields"></html>
+```
+
+It can also be scoped to a subtree. It restores fills and boundary contrast
+only, so it composes with the appearance setting exactly as the default does.
+
+### The tokens
+
+| Token                          | Meaning                           |
+| ------------------------------ | --------------------------------- |
+| `--nb-c-field-bg`              | Fill for an editable field        |
+| `--nb-c-field-border`          | Bottom rule for an editable field |
+| `--nb-c-field-bg-disabled`     | Fill for a disabled field         |
+| `--nb-c-field-border-disabled` | Bottom rule for a disabled field  |
+| `--nb-c-field-border-readonly` | Bottom rule for a read-only field |
+
+The disabled and read-only tokens fall back to the enabled ones when unset, so
+a theme that defines only the first two still renders coherently.
+
+Applies to `NbTextInput` and `NbSelect`.
+
 ## Light and dark
 
 Both ramps ship in the CSS. The dark one is emitted under a `.dark` class on

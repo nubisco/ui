@@ -8,6 +8,7 @@ import enUS from '../../locales/en-US.json'
 import ptPT from '../../locales/pt-PT.json'
 import Nubisco from './Nubisco.vue'
 import { rulersDirective } from './directives/rulers'
+import DocsLayout from './DocsLayout.vue'
 
 import '@nubisco/ui/styles'
 // import '@nubisco/ui/dist/ui.css'
@@ -27,6 +28,9 @@ import '@nubisco/ui/flags/all'
 
 export default {
   extends: DefaultTheme,
+  // Wraps the default layout to put the colour-mode and appearance switches
+  // into the header on every page.
+  Layout: DocsLayout,
   enhanceApp({ app }: { app: import('vue').App }) {
     enhanceAppWithTabs(app)
     app.directive('rulers', rulersDirective)

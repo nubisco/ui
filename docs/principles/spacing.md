@@ -267,6 +267,27 @@ Two supporting tokens travel with them and are the reason a mixed row of control
 - `--nb-field-padding-h` is `16px` (2 base units), the horizontal inset of every field box.
 - `--nb-field-label-gap` is `6px` (0.75 base units), the vertical gap between a label and its control. This is deliberately **not** a spacing step. Every control reads the same token, so a row mixing `NbTextInput`, `NbSelect` and `NbDatePicker` lines its field tops up to the pixel. Do not substitute `--nb-spacing-8` for it in one component: you will break the alignment for the whole row.
 
+### A table and its pager are one density
+
+`NbDataTable` and `NbPagination` take the same three-step `sm | md | lg` scale
+and now resolve to the same heights, because a pager is almost always the
+footer of a table:
+
+| `size` | Table row | Pager bar | Base units |
+| ------ | --------- | --------- | ---------- |
+| `sm`   | `32px`    | `32px`    | 4          |
+| `md`   | `48px`    | `48px`    | 6          |
+| `lg`   | `64px`    | `64px`    | 8          |
+
+They used to disagree at both ends: `sm` was 40px on the pager against 32px on
+the table, and `lg` was 56px against 64px, so a compact table sat above a
+footer eight pixels taller than its own rows, and the two dense modes also
+disagreed by a pixel of type. If your application pinned either component to a
+size to work around that, the workaround can go.
+
+Neither takes `xs`. Fields and `NbButton` do, so `sm` is the floor for a row
+that mixes a table with its controls.
+
 ### Pick one density per surface
 
 The `size` prop belongs to the surface, not to the control. A panel is dense or it is not. Mixing `sm` and `md` fields in one form produces two competing baselines and no amount of gap tuning rescues it.

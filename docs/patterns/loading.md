@@ -1031,7 +1031,7 @@ rather than pretending the list is empty.
 ## Words
 
 Loading copy is copy. Full rules in [Writing style](/content/writing-style) and
-[Action labels](/content/action-labels); the loading-specific ones:
+[Writing style](/content/writing-style); the loading-specific ones:
 
 - **Present participle while running, past tense when done.** `Saving` then
   `Saved`. `Publishing` then `Published`.

@@ -147,7 +147,7 @@ Ask these three questions in order. The first "yes" is your answer.
 3. **Does the action reach further than the control implies, cost money, affect
    another person, or destroy something no copy of exists?** Then confirm, and
    size the guard by the blast radius (see
-   [Action labels](/content/action-labels#how-much-guard-by-blast-radius)).
+   [Rule 6](#rule-6-type-to-confirm-is-for-blast-radius-not-for-severity)).
 
 Anything that survives all three questions with a "no" needs no dialog at all.
 Just do it.
@@ -458,7 +458,7 @@ The reason is mechanical rather than aesthetic. A screen reader user can pull a
 list of the page's actions, where each label appears with no sentence around it.
 `Yes`, `No`, `Cancel` conveys nothing at all. `Delete environment`, `Cancel`
 conveys the entire dialog. The full register of verbs and what each one promises
-lives in [Action labels](/content/action-labels#the-verb-precisely); use it,
+is the verb itself; use it,
 because "Remove" and "Delete" mean different things and the fleet uses them
 interchangeably.
 
@@ -948,7 +948,7 @@ confirmation. That inversion is in the fleet today.
       it is. Someone else's data names the owner.
 - [ ] `confirmLabel` is the verb phrase. It is not `Confirm`, `Yes`, `OK`,
       `Continue` or `Done`, and the verb is the right one from the
-      [register](/content/action-labels#the-verb-precisely) (`Remove` and
+      register (`Remove` and
       `Delete` are not synonyms).
 - [ ] `tone` is `danger` for anything destructive, `neutral` only for a
       consequential but non-destructive commit.
@@ -991,7 +991,6 @@ Only relevant where the view drives an `NbModal` itself.
 - [Modal](/ui/components/modal) for dialogs that carry a task.
 - [Toast](/ui/components/toast) and [Toaster](/ui/components/toaster) for undo
   and for reporting results.
-- [Action labels](/content/action-labels) for the verb register and the ban
   list.
 - [Building a form](/patterns/forms) for forms inside modals and for unsaved
   work.
