@@ -1041,6 +1041,8 @@ defineExpose({
 </script>
 
 <style lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-date-picker {
   position: relative;
   display: flex;
@@ -1078,7 +1080,24 @@ defineExpose({
   align-items: center;
   flex: 1;
   background: var(--nb-c-field-bg);
+  // The same box the other fields draw.
+  /*
+   * One colour for all four sides, and the WIDTH decides which are drawn.
+   *
+   * The colour must not be aliased through a second token set by the
+   * appearance block. That block lives on `<html>`, so `var()` inside it
+   * substitutes there, against the palette in force at the root, and the
+   * resolved value then inherits down unchanged. A page that switches mode
+   * on a wrapper rather than on `<html>` (which is how the documentation
+   * previews and any per-region dark area work) therefore got LIGHT sides
+   * and a DARK bottom rule on the same field. Naming the token here instead
+   * resolves it against the element's own palette, so all four edges always
+   * agree.
+   */
+  border: var(--nb-field-border-width, 0) solid var(--nb-c-field-border);
+  // Always 1px, and the only edge square draws.
   border-bottom: 1px solid var(--nb-c-field-border);
+  border-radius: var(--nb-field-radius, 0);
   transition:
     border-color 0.15s,
     box-shadow 0.15s;
@@ -1088,14 +1107,26 @@ defineExpose({
     outline-offset: -2px;
   }
 
+  /*
+   * `border-color` sets all four sides, but only the sides that have a width
+   * can show: square draws none, so the state reads on the bottom rule alone;
+   * rounded draws all four, so the state rings the capsule. One rule, both
+   * idioms, and the same one the other fields use.
+   *
+   * The doubled bottom shadow is switched off under rounded by
+   * `--nb-field-status-emphasis`, because a one-sided inset shadow smears
+   * across an arc instead of thickening a straight rule.
+   */
   &--error {
-    border-bottom-color: var(--nb-c-danger);
-    box-shadow: inset 0 -1px 0 0 var(--nb-c-danger);
+    border-color: var(--nb-c-danger);
+    box-shadow: inset 0 calc(-1px * var(--nb-field-status-emphasis, 1)) 0 0
+      var(--nb-c-danger);
   }
 
   &--warning {
-    border-bottom-color: var(--nb-c-warning);
-    box-shadow: inset 0 -1px 0 0 var(--nb-c-warning);
+    border-color: var(--nb-c-warning);
+    box-shadow: inset 0 calc(-1px * var(--nb-field-status-emphasis, 1)) 0 0
+      var(--nb-c-warning);
   }
 
   &--disabled {
@@ -1213,6 +1244,8 @@ defineExpose({
   background: var(--nb-c-surface);
   border: 1px solid var(--nb-c-border);
   box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.2);
+  // Teleported: its own outer corner, like any popover.
+  @include radius.surface(popover);
   padding: 4px 4px 8px;
   box-sizing: border-box;
 }
@@ -1319,8 +1352,17 @@ defineExpose({
       width: 4px;
       height: 4px;
       background: var(--nb-c-primary);
+      // A dot, at every appearance.
+      border-radius: var(--nb-radius-circle);
     }
   }
+
+  /*
+   * A day cell is roughly square, so the control radius resolves to a circle
+   * under rounded and to nothing under square. That is the shape a date
+   * highlight wants in both languages.
+   */
+  border-radius: var(--nb-radius-control);
 
   &--selected {
     background: var(--nb-c-primary);
@@ -1340,8 +1382,23 @@ defineExpose({
     }
   }
 
+  /*
+   * A range is one continuous band, not a row of separate pills, so the cells
+   * inside it drop their corner and only the two ends keep a cap.
+   */
   &--in-range {
     background: color-mix(in srgb, var(--nb-c-primary) 15%, transparent);
+    border-radius: 0;
+  }
+
+  &--range-start {
+    border-start-start-radius: var(--nb-radius-control);
+    border-end-start-radius: var(--nb-radius-control);
+  }
+
+  &--range-end {
+    border-start-end-radius: var(--nb-radius-control);
+    border-end-end-radius: var(--nb-radius-control);
   }
 
   &--range-start {

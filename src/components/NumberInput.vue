@@ -359,7 +359,25 @@ defineExpose({ focus: () => inputRef.value?.focus() })
     display: flex;
     align-items: stretch;
     background: var(--nb-c-field-bg);
+    // The same box NbTextInput and NbSelect draw, so a number sitting in a row
+    // of fields keeps their silhouette under either appearance.
+    /*
+     * One colour for all four sides, and the WIDTH decides which are drawn.
+     *
+     * The colour must not be aliased through a second token set by the
+     * appearance block. That block lives on `<html>`, so `var()` inside it
+     * substitutes there, against the palette in force at the root, and the
+     * resolved value then inherits down unchanged. A page that switches mode
+     * on a wrapper rather than on `<html>` (which is how the documentation
+     * previews and any per-region dark area work) therefore got LIGHT sides
+     * and a DARK bottom rule on the same field. Naming the token here instead
+     * resolves it against the element's own palette, so all four edges always
+     * agree.
+     */
+    border: var(--nb-field-border-width, 0) solid var(--nb-c-field-border);
+    // Always 1px, and the only edge square draws.
     border-bottom: 1px solid var(--nb-c-field-border);
+    border-radius: var(--nb-field-radius, 0);
     height: var(--field-h);
     box-sizing: border-box;
     transition:
@@ -372,13 +390,27 @@ defineExpose({ focus: () => inputRef.value?.focus() })
     }
 
     &--error {
-      border: 1px solid var(--nb-c-danger);
-      box-shadow: none;
+      /*
+       * `border-color` sets all four sides, but only the sides that have a
+       * width can show: square draws none, so the state reads on the bottom
+       * rule alone; rounded draws all four, so the state rings the capsule.
+       * One rule, both idioms.
+       */
+      border-color: var(--nb-c-danger);
+      box-shadow: inset 0 calc(-1px * var(--nb-field-status-emphasis, 1)) 0 0
+        var(--nb-c-danger);
     }
 
     &--warning {
-      border: 1px solid var(--nb-c-warning);
-      box-shadow: none;
+      /*
+       * `border-color` sets all four sides, but only the sides that have a
+       * width can show: square draws none, so the state reads on the bottom
+       * rule alone; rounded draws all four, so the state rings the capsule.
+       * One rule, both idioms.
+       */
+      border-color: var(--nb-c-warning);
+      box-shadow: inset 0 calc(-1px * var(--nb-field-status-emphasis, 1)) 0 0
+        var(--nb-c-warning);
     }
 
     &--disabled {

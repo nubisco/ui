@@ -465,10 +465,18 @@ defineExpose({
 </script>
 
 <style lang="scss">
+@use '../styles/logic/radius' as radius;
+
 // Dropdown is teleported to body: cannot use scoped styles
 .nb-select__dropdown {
   background: var(--nb-c-field-bg);
   border: 1px solid var(--nb-c-field-border);
+  // Teleported to <body>: its own outer surface, not a derivative of the
+  // trigger it was opened from.
+  @include radius.surface(popover);
+  // Inset on all four sides so a highlighted row floats inside the list's
+  // corner instead of running into it.
+  padding: 4px;
   max-height: 240px;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -480,20 +488,23 @@ defineExpose({
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
+  padding: 10px 12px;
   font-size: 14px;
   font-weight: 400;
   color: var(--nb-c-text);
   cursor: pointer;
   position: relative;
   transition: background 0.1s;
+  // Concentric with the list: its corner, less the 4px it insets its rows by.
+  // 4px of padding plus the container's 1px border.
+  @include radius.inset(5px);
 
   &::after {
     content: '';
     position: absolute;
     bottom: 0;
-    left: 16px;
-    right: 16px;
+    left: 12px;
+    right: 12px;
     height: 1px;
     background: var(--nb-c-component-plain-border);
   }
@@ -607,9 +618,25 @@ defineExpose({
     padding: 0 var(--nb-field-padding-h);
     gap: 8px;
     background: var(--nb-c-field-bg);
-    border: none;
+    // Same treatment as NbTextInput, so a select and a field on one row keep
+    // the same silhouette under either appearance.
+    /*
+     * One colour for all four sides, and the WIDTH decides which are drawn.
+     *
+     * The colour must not be aliased through a second token set by the
+     * appearance block. That block lives on `<html>`, so `var()` inside it
+     * substitutes there, against the palette in force at the root, and the
+     * resolved value then inherits down unchanged. A page that switches mode
+     * on a wrapper rather than on `<html>` (which is how the documentation
+     * previews and any per-region dark area work) therefore got LIGHT sides
+     * and a DARK bottom rule on the same field. Naming the token here instead
+     * resolves it against the element's own palette, so all four edges always
+     * agree.
+     */
+    border: var(--nb-field-border-width, 0) solid var(--nb-c-field-border);
+    // Always 1px, and the only edge square draws.
     border-bottom: 1px solid var(--nb-c-field-border);
-    border-radius: 0;
+    border-radius: var(--nb-field-radius, 0);
     cursor: pointer;
     user-select: none;
     font: inherit;
@@ -628,7 +655,9 @@ defineExpose({
         var(--nb-c-field-border) 15%,
         var(--nb-c-field-bg)
       );
-      border-bottom-color: color-mix(
+      // The whole edge warms on hover, so a capsule does not light up
+      // along one arc only.
+      border-color: color-mix(
         in srgb,
         var(--nb-c-primary) 50%,
         var(--nb-c-field-border)
@@ -636,6 +665,17 @@ defineExpose({
     }
 
     &:disabled {
+      background: var(--nb-c-field-bg-disabled, var(--nb-c-field-bg));
+      /*
+       * The rule dims too. In a dark theme every candidate fill sits within
+       * 1.2:1 of every other, so a fill alone cannot carry
+       * enabled-versus-disabled there and the border has to.
+       *
+       * `border-color`, not `border-bottom-color`: square draws one edge and
+       * rounded draws four, and a disabled capsule with three live edges and
+       * one dimmed one reads as a defect rather than as a state.
+       */
+      border-color: var(--nb-c-field-border-disabled, var(--nb-c-field-border));
       opacity: var(--nb-field-disabled-opacity);
       cursor: not-allowed;
     }
@@ -651,13 +691,27 @@ defineExpose({
   }
 
   &--error &__trigger {
-    border: 1px solid var(--nb-c-danger);
-    box-shadow: none;
+    /*
+     * `border-color` sets all four sides, but only the sides that have a
+     * width can show: square draws none, so the state reads on the bottom
+     * rule alone; rounded draws all four, so the state rings the capsule.
+     * One rule, both idioms.
+     */
+    border-color: var(--nb-c-danger);
+    box-shadow: inset 0 calc(-1px * var(--nb-field-status-emphasis, 1)) 0 0
+      var(--nb-c-danger);
   }
 
   &--warning &__trigger {
-    border: 1px solid var(--nb-c-warning);
-    box-shadow: none;
+    /*
+     * `border-color` sets all four sides, but only the sides that have a
+     * width can show: square draws none, so the state reads on the bottom
+     * rule alone; rounded draws all four, so the state rings the capsule.
+     * One rule, both idioms.
+     */
+    border-color: var(--nb-c-warning);
+    box-shadow: inset 0 calc(-1px * var(--nb-field-status-emphasis, 1)) 0 0
+      var(--nb-c-warning);
   }
 
   &__value {
