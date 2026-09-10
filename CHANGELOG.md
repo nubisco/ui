@@ -1,3 +1,42 @@
+# [5.0.0](https://github.com/nubisco/ui/compare/v4.1.4...v5.0.0) (2026-09-10)
+
+
+* feat(appearance)!: add a square and rounded axis with concentric geometry ([1c3951e](https://github.com/nubisco/ui/commit/1c3951ec9e6a31b9e272d21849cfc1da3d9365db))
+* fix(components)!: align pagination density, span the shell topbar, tidy actions ([8135462](https://github.com/nubisco/ui/commit/81354628693bcef64301c82e6d6a9b6d53542f81))
+
+
+### Bug Fixes
+
+* **fields:** resolve every border edge against the element's own palette ([626ac57](https://github.com/nubisco/ui/commit/626ac57375a5f8fa03ccce43b4c302025213bd9d))
+* **modal:** trap focus, and give it back to whatever opened the dialog ([8edeeb2](https://github.com/nubisco/ui/commit/8edeeb2d309b9cc701cdc1ae30fa35d011bbdde4))
+* **vite-plugin:** only warn about the full stylesheet when it is really duplicated ([b038b51](https://github.com/nubisco/ui/commit/b038b51dde6b5a6cd06d44422fb0fd943c4755ed))
+
+
+### Features
+
+* **theme-api:** author named themes from a palette, with a11y pairing ([c16d3e8](https://github.com/nubisco/ui/commit/c16d3e8f613739ba9a749a702b7ce8d4447f15db))
+
+
+### BREAKING CHANGES
+
+* NbPagination `size="sm"` is 32px tall (was 40) and
+`size="lg"` is 64px (was 56), matching NbDataTable. `size="md"` is unchanged,
+so only applications passing `sm` or `lg` are affected.
+* NbShell moves the notification, menubar and topbar regions
+out of `.nb-shell__body` and above `.nb-shell__content-row`. Applications
+that style or query those regions by their position in the shell's DOM need
+updating; the class names, slots and public API are unchanged.
+
+Claude-Session: https://claude.ai/code/session_01CHYNhTHozqkq8GFFZNQ1y4
+* the default field fill has changed. Enabled fields were
+`#cacbcc` in light, a mid grey that sat closer to the disabled fill than to
+the page and made "you can type here" hard to read; they are now `#f1f2f3`,
+with the old value kept as the disabled fill. Dark follows the same shape.
+Applications that want the previous treatment can import the
+`styles/presets/classic-fields` opt-out, which restores it exactly.
+
+Claude-Session: https://claude.ai/code/session_01CHYNhTHozqkq8GFFZNQ1y4
+
 ## [4.1.4](https://github.com/nubisco/ui/compare/v4.1.3...v4.1.4) (2026-09-09)
 
 
