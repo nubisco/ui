@@ -77,25 +77,35 @@ what it must never hold.
 
 Where they sit, at a viewport above `collapse-at`:
 
+The topbar spans the whole frame and the inspector begins beneath it. Under the
+[rounded appearance](/theming#appearance) the inspector and the bottom panel
+detach from the frame's edges and carry their own corner; under square they sit
+flush, exactly as they always have. A panel sharing an edge with the topbar
+could not detach without leaving a notch where the two met, which is why the
+inspector moved down a row.
+
+The fixedbar's rule ends with the body rather than running under the inspector,
+since the inspector is now beside it.
+
 ```text
 ┌───────────────────────────────────────────────────────────────────────────┐
 │  outer-menu    spans the rail, the body and the inspector                 │
 ├───────────┬───────────────────────────────────────────────────────────────┤
 │  sidebar- │  inner-menu   over the body and the inspector                 │
-│    logo   ├───────────────────────────────────────────────┬───────────────┤
-├───────────┤  notification                                 ║               │
-│           ├───────────────────────────────────────────────┤               │
-│  sidebar- │  topbar-left                    topbar-right  ║  inspector    │
-│    nav    ├───────────────────────────────────────────────┤               │
-│           │  fixedbar   tabs, filters, a search           ║               │
-│  scrolls  ├───────────────────────────────────────────────┤               │
-│  inside   │                                               ║               │
-│  itself   │  <main>     the only scroll                   ║  scrolls      │
-│           │             container, one <h1>               ║  on its own   │
-├───────────┤                                               ║               │
-│  sidebar- ├───────────────────────────────────────────────┤               │
-│   bottom  │  bottom     pinned under main                 ║               │
-└───────────┴───────────────────────────────────────────────┴───────────────┘
+│    logo   ├───────────────────────────────────────────────────────────────┤
+├───────────┤  notification                                                 │
+│           ├───────────────────────────────────────────────────────────────┤
+│  sidebar- │  topbar-left                                    topbar-right  │
+│    nav    ├───────────────────────────────────────┬───────────────────────┤
+│           │  fixedbar   tabs, filters, a search   ║                       │
+│  scrolls  ├───────────────────────────────────────┤  inspector            │
+│  inside   │                                       ║                       │
+│  itself   │  <main>     the only scroll           ║  scrolls              │
+│           │             container, one <h1>       ║  on its own           │
+├───────────┤                                       ║                       │
+│  sidebar- ├───────────────────────────────────────┤                       │
+│   bottom  │  bottom     pinned under main         ║                       │
+└───────────┴───────────────────────────────────────┴───────────────────────┘
 ```
 
 `║` is the inspector's resize handle, on its left edge. Below `collapse-at` the
@@ -862,7 +872,7 @@ The narrow thing that is **not** a back button and remains correct: a full-page
 task (a wizard, a checkout, an import) may offer **Cancel**, and a multi-step
 one may offer **Back** _within the step sequence_. Both are about the task, not
 about the application's structure, and both are labelled by what they do. See
-[Action labels](/content/action-labels).
+[Writing style](/content/writing-style).
 
 The pair, running, because the back button's defect is not visible in a
 screenshot: it is what the control **cannot say**.
@@ -1687,7 +1697,7 @@ not a licence for a selector. Raise it.
 [Empty states](/patterns/empty-states) ·
 [Layout and breakpoints](/principles/layout) ·
 [Writing style](/content/writing-style) ·
-[Action labels](/content/action-labels) ·
+[Writing style](/content/writing-style) ·
 [Keyboard interaction](/accessibility/keyboard) ·
 [Colour contrast](/accessibility/color-contrast)
 

@@ -104,7 +104,7 @@ For anything that is genuinely a toast, use the host.
 
 ## Writing one
 
-The words are covered once, in [Writing style](/content/writing-style) and [Action labels](/content/action-labels). Three things are peculiar to a message that removes itself:
+The words are covered once, in [Writing style](/content/writing-style). Three things are peculiar to a message that removes itself:
 
 - Past tense, no full stop: "Draft saved", not "Your draft has been saved.".
 - The `title` carries what went wrong and the `message` carries the recovery: `toast.error('Could not reach the server', { title: 'Save failed' })`.

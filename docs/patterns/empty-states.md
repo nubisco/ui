@@ -497,7 +497,7 @@ A page-level empty state does not replace the page header. The header carries
 the page's identity and its primary action, and both are still true when the
 page is empty. Duplicating that action inside the empty state is correct and
 expected, with the same label in both places. See
-[action labels](/content/action-labels).
+[Writing style](/content/writing-style).
 
 Both frames below are the real `NbShell` at a fixed height, the way
 [shell](/ui/components/shell) demonstrates itself: the frame stands in for the
@@ -635,7 +635,7 @@ must be a real `null` binding, not the string `"null"`.
 ## Rule 6: what it says
 
 The general rules live in [writing style](/content/writing-style), and the
-button text lives in [action labels](/content/action-labels), including the
+button text lives in [Writing style](/content/writing-style), including the
 per-kind table of titles and calls to action. Read those. Only four things are
 specific to this pattern:
 

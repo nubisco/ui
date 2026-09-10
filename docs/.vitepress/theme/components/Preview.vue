@@ -29,7 +29,7 @@
         >
           <NbGrid
             :dir="dir"
-            gap="md"
+            :gap="gap"
             :style="{
               width: '100%',
               padding: 'var(--nb-base-unit)',
@@ -50,13 +50,14 @@
           grow
           distributed
           tabindex="-1"
-          :style="{ background: 'lightgrey', gap: '1px' }"
+          :style="{ background: 'var(--nb-c-layer-2)', gap: '1px' }"
         >
           <template v-if="themeable">
             <NbSelect
-              v-model="themeClass"
+              :model-value="themeClass"
               variant="fluid"
               label="Theme selector"
+              @update:model-value="pinTheme"
               :options="[
                 { label: 'light', value: 'light' },
                 { label: 'dark', value: 'dark' },
@@ -172,6 +173,7 @@
 import { computed, useSlots, provide, reactive, watch, ref } from 'vue'
 import { useRoute, useRouter } from 'vitepress'
 import { PreviewProps, PreviewDirection } from './Preview.d'
+import { useTheme } from '../../../../src/composables/useTheme.composable'
 
 const slots = useSlots()
 const route = useRoute()
@@ -184,6 +186,7 @@ const props = withDefaults(defineProps<PreviewProps>(), {
   demo: false,
   backgroundColor: undefined,
   dir: PreviewDirection.Column,
+  gap: 'md',
   raw: true,
   constrained: false,
   props: () => [],
@@ -192,7 +195,27 @@ const props = withDefaults(defineProps<PreviewProps>(), {
   propsPosition: 'bottom',
 })
 
-const themeClass = ref('light')
+/*
+ * The preview follows the site's colour mode, and can then be overridden.
+ *
+ * This was pinned to `'light'`, so every demo on every page stayed light while
+ * the documentation around it went dark: a bright rectangle in a dark page,
+ * showing components in the wrong mode. It now starts from the resolved site
+ * theme and tracks it, until the reader picks a mode for this preview, at
+ * which point their choice wins and stops following.
+ */
+const { resolved } = useTheme()
+const themeClass = ref(resolved.value)
+const pinned = ref(false)
+
+watch(resolved, (mode) => {
+  if (!pinned.value) themeClass.value = mode
+})
+
+function pinTheme(mode: string) {
+  pinned.value = true
+  themeClass.value = mode
+}
 
 const previewClasses = computed(() => ({
   'preview--slot': true,
@@ -458,7 +481,7 @@ const previewWrapperClasses = computed(() => ({
 /* Grid demo container styles */
 .preview--grid-demo {
   padding: 24px 12px;
-  background: #f4f4f4;
+  background: var(--nb-c-layer-2);
   border-radius: 4px;
   margin: 1rem 0;
   position: relative;

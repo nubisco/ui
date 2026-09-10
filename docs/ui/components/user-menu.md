@@ -9,12 +9,12 @@ tabs: ['Usage', 'Api']
 `NbUserMenu` is the account menu every Nubisco product hangs off its shell: who you are signed in as, which other identities this browser holds, and the way out. It renders an avatar trigger and a panel teleported to `<body>`, so a sidebar with `overflow: hidden` cannot clip it.
 
 <preview dir="col">
-  <!-- align-self keeps the trigger at its own width: the panel is anchored to
-       the right edge of the component root, which a stretching flex column
-       would otherwise widen to the full preview. -->
+  <!-- Trailing edge, which is where this lives in a real shell topbar. The
+       panel anchors to the right edge of the component root, so a trigger
+       pinned to the LEFT of a wide preview opened its panel away from it. -->
   <NbUserMenu
     :user="{ email: 'jose@nubisco.io', name: 'José Silva' }"
-    style="align-self: flex-start"
+    style="align-self: flex-end"
   />
 </preview>
 

@@ -70,18 +70,24 @@ Nineteen of the fifty-two component pages currently carry that heading. The rest
 
 Stated here rather than buried, because a consumer who finds these on their own after shipping has been failed twice.
 
-::: danger `NbModal` does not trap focus
-[`docs/introduction.md`](/introduction) claims that `NbModal` "uses Vue's `Teleport` and a proper focus trap". The `Teleport` half is true. The focus trap does not exist. `Modal.vue` has a comment reading `// Trap focus / prevent body scroll` above a watcher that sets `document.body.style.overflow` and nothing else.
+::: tip Resolved: `NbModal` now traps focus
+This entry used to read "`NbModal` does not trap focus", and it was the oldest
+gap on this page. It is fixed. `NbModal` moves focus into the dialog on open,
+cycles <kbd>Tab</kbd> and <kbd>Shift</kbd>+<kbd>Tab</kbd> inside it, recovers
+focus that leaves by a route no keystroke explains, and returns focus to the
+trigger on every route out. The mechanism is shared with `NbConfirm` rather
+than reimplemented, and `initialFocus` directs the landing for a form dialog.
 
-Concretely, `NbModal` on its own:
+See [Focus is handled](/ui/components/modal#focus-is-handled). If you copied the
+`useDialogFocus` composable this page used to recommend, delete it, or keep it
+and set `:trap-focus="false"` on that dialog so the two do not pull against
+each other.
 
-- does not move focus into the dialog when it opens, so the first <kbd>Tab</kbd> lands on whatever followed the trigger in the page behind the scrim;
-- does not keep focus inside, so <kbd>Tab</kbd> walks out into the inert page;
-- does not restore focus to the trigger on close;
-- sets `role="dialog" aria-modal="true"` but never `aria-labelledby`, so a screen reader announces "dialog" and stops, even when you passed a `title`;
-- locks body scroll from a watcher with no `immediate`, so a modal that mounts already `open` never locks it at all.
-
-**What to do.** Use [`NbConfirm`](/ui/components/confirm) or `useConfirm` for anything destructive: it implements the trap, the initial focus, the focus restore and the `aria-labelledby` wiring on top of `NbModal`, and it is the pattern the fix will generalise from. For a bespoke dialog, do the same work yourself for now, and read `Confirm.vue` before you invent it: the fleet's hand-rolled versions all get the restore wrong.
+Three claims that stood in this entry alongside the focus ones were already
+wrong when it was written, and are recorded here so the correction is not
+silent: `NbModal` does set `aria-labelledby` from its own title, it does lock
+body scroll when it mounts already `open` (the watcher is `immediate`), and the
+`// Trap focus / prevent body scroll` comment it quoted is not in the source.
 :::
 
 ::: danger `NbDataTable`'s `row-click` is pointer-only

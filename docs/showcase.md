@@ -3,7 +3,24 @@ layout: nubisco
 title: Showcase
 ---
 
-A tour of NubiscoUI components. All demos are live. The components below are the real thing.
+A tour of NubiscoUI components. All demos are live. The components below are the
+real thing.
+
+---
+
+## A complete screen
+
+Before the parts, the whole. This is a working application screen built only
+from library components: search, filters, sorting, selection, paging, an
+editing dialog, a destructive confirmation and every state a real list reaches.
+It is functional, so try it.
+
+<team-management />
+
+Its own controls switch the table between loading, error and empty, between
+compact and comfortable, and between square and rounded. The full walkthrough,
+and the decisions behind it, are in
+[Team management](/patterns/team-management).
 
 ---
 
@@ -85,7 +102,7 @@ Seven variants, seven sizes, icon support, and loading/disabled states. All from
 </preview>
 
 <preview dir="row">
-  <NbButton variant="primary" icon="plus" />
+  <NbButton variant="primary" icon="plus" aria-label="Add item" />
   <NbButton variant="primary" icon="plus">With icon</NbButton>
   <NbButton variant="primary" loading>Loading</NbButton>
   <NbButton variant="primary" disabled>Disabled</NbButton>
@@ -115,11 +132,19 @@ Contextual feedback with `NbMessage`, compact labels with `NbLabel`, and count i
 
 ## Overlays
 
-`NbModal` uses Vue's `Teleport` to render above all other content. Correct stacking, focus trap included.
+`NbModal` uses Vue's `Teleport` to render above all other content, so stacking
+is correct wherever it is declared. While it is open it holds keyboard focus:
+focus moves into the dialog, Tab and Shift+Tab cycle within it rather than
+reaching the page behind, Escape emits `close`, and focus returns to the
+control that opened it.
+
+`open` is a one-way prop and the dialog reports dismissal through `close`, so a
+dialog that is never given an `@close` handler cannot be closed by Escape, the
+close button or the scrim.
 
 <preview>
   <NbButton variant="primary" @click="isModalOpen = true">Open Modal</NbButton>
-  <NbModal :open="isModalOpen">
+  <NbModal :open="isModalOpen" @close="isModalOpen = false">
     <template #header>Confirm deletion</template>
     <p>This will permanently delete the selected items. This action cannot be undone.</p>
     <template #footer>
@@ -159,8 +184,13 @@ Contextual feedback with `NbMessage`, compact labels with `NbLabel`, and count i
     <template #cell-status="{ value }">
       <NbBadge>{{ value }}</NbBadge>
     </template>
-    <template #row-actions>
-      <NbButton variant="ghost" size="sm" icon="dots-three-vertical" />
+    <template #row-actions="{ row }">
+      <NbButton
+        variant="ghost"
+        size="sm"
+        icon="dots-three-vertical"
+        :aria-label="`More actions for ${row.name}`"
+      />
     </template>
     <template #footer>
       <NbPagination

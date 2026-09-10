@@ -158,6 +158,15 @@ export default withMermaid(
           {
             text: 'Theming',
             items: [
+              /*
+               * `/theme-builder` is deliberately NOT linked here yet.
+               *
+               * The page works and is tested end to end, but its flow needs
+               * design work before it is put in front of readers: it presents
+               * the palette, the role mapping and the contrast report all at
+               * once, with no sequence to follow. It stays reachable by URL so
+               * that work can continue against a real page.
+               */
               { text: 'Overview', link: '/theming' },
               { text: 'Colors', link: '/principles/color' },
               { text: 'Typography', link: '/principles/typography' },
@@ -180,9 +189,13 @@ export default withMermaid(
           {
             text: 'Patterns',
             items: [
+              {
+                text: 'Team management',
+                link: '/patterns/team-management',
+              },
               { text: 'The app frame', link: '/patterns/app-frame' },
               {
-                text: 'Dialogs and destructive confirmation',
+                text: 'Dialogs and confirmation',
                 link: '/patterns/dialogs',
               },
               { text: 'Building a form', link: '/patterns/forms' },
@@ -202,10 +215,7 @@ export default withMermaid(
           },
           {
             text: 'Content',
-            items: [
-              { text: 'Writing style', link: '/content/writing-style' },
-              { text: 'Action labels', link: '/content/action-labels' },
-            ],
+            items: [{ text: 'Writing style', link: '/content/writing-style' }],
           },
           {
             text: 'Accessibility',
@@ -234,8 +244,6 @@ export default withMermaid(
                   { text: 'AI Label', link: '/ui/components/ai-label' },
                   { text: 'Badge', link: '/ui/components/badge' },
                   { text: 'Banner', link: '/ui/components/banner' },
-                  { text: 'Board', link: '/ui/components/board' },
-                  { text: 'Card Grid', link: '/ui/components/card-grid' },
                   {
                     text: 'Blueprint',
                     items: [
@@ -243,11 +251,11 @@ export default withMermaid(
                         text: 'Overview',
                         link: '/ui/components/blueprint/overview',
                       },
-                      { text: 'Card', link: '/ui/components/blueprint/card' },
                       {
                         text: 'Background',
                         link: '/ui/components/blueprint/background',
                       },
+                      { text: 'Card', link: '/ui/components/blueprint/card' },
                       {
                         text: 'Controls',
                         link: '/ui/components/blueprint/controls',
@@ -258,8 +266,14 @@ export default withMermaid(
                       },
                     ],
                   },
-                  { text: 'Calendar', link: '/ui/components/calendar' },
+                  { text: 'Board', link: '/ui/components/board' },
+                  {
+                    text: 'Brand Marks',
+                    link: '/ui/components/nubisco-mark',
+                  },
                   { text: 'Button', link: '/ui/components/button/button' },
+                  { text: 'Calendar', link: '/ui/components/calendar' },
+                  { text: 'Card Grid', link: '/ui/components/card-grid' },
                   {
                     text: 'Charts',
                     items: [
@@ -283,11 +297,11 @@ export default withMermaid(
                     ],
                   },
                   { text: 'Checkbox', link: '/ui/components/checkbox' },
+                  { text: 'Color Strip', link: '/ui/components/color-strip' },
                   {
                     text: 'Command Palette',
                     link: '/ui/components/command-palette',
                   },
-                  { text: 'Color Strip', link: '/ui/components/color-strip' },
                   { text: 'Confirm', link: '/ui/components/confirm' },
                   { text: 'Data Table', link: '/ui/components/data-table' },
                   { text: 'Date Picker', link: '/ui/components/date-picker' },
@@ -305,6 +319,11 @@ export default withMermaid(
                   { text: 'Grid', link: '/ui/components/grid' },
                   { text: 'Icon', link: '/ui/components/icon' },
                   {
+                    text: 'Image Cropper',
+                    link: '/ui/components/image-cropper',
+                  },
+                  { text: 'Info Hint', link: '/ui/components/info-hint' },
+                  {
                     text: 'Inline Edit',
                     link: '/ui/components/inline-edit',
                   },
@@ -312,21 +331,12 @@ export default withMermaid(
                     text: 'Inline Loading',
                     link: '/ui/components/inline-loading',
                   },
-                  { text: 'Info Hint', link: '/ui/components/info-hint' },
-                  {
-                    text: 'Image Cropper',
-                    link: '/ui/components/image-cropper',
-                  },
                   { text: 'JSON Tree', link: '/ui/components/json-tree' },
                   { text: 'Label', link: '/ui/components/label' },
                   { text: 'Menu', link: '/ui/components/menu' },
                   { text: 'Menu Bar', link: '/ui/components/menu-bar' },
                   { text: 'Message', link: '/ui/components/message' },
                   { text: 'Modal', link: '/ui/components/modal' },
-                  {
-                    text: 'Brand Marks',
-                    link: '/ui/components/nubisco-mark',
-                  },
                   {
                     text: 'Notification Center',
                     link: '/ui/components/notification-center',
@@ -341,9 +351,9 @@ export default withMermaid(
                   { text: 'Radio', link: '/ui/components/radio' },
                   { text: 'Reorder List', link: '/ui/components/reorder-list' },
                   { text: 'Select', link: '/ui/components/select' },
-                  { text: 'Skeleton', link: '/ui/components/skeleton' },
                   { text: 'Shell', link: '/ui/components/shell' },
                   { text: 'Shell Panel', link: '/ui/components/shell-panel' },
+                  { text: 'Skeleton', link: '/ui/components/skeleton' },
                   { text: 'Slider', link: '/ui/components/slider' },
                   { text: 'Spinner', link: '/ui/components/spinner' },
                   { text: 'Stepper', link: '/ui/components/stepper' },

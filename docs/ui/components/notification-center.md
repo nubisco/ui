@@ -15,8 +15,10 @@ Claims about "the audit" refer to a review of the twelve applications that consu
 :::
 
 <preview dir="col">
+  <!-- Trailing edge, matching the shell topbar this belongs in; the panel
+       anchors to the trigger's right edge. -->
   <NbNotificationCenter
-    style="align-self: flex-start"
+    style="align-self: flex-end"
     :items="[
       { id: 1, title: 'Build failed on main', body: 'stagewright · 2 failing specs', time: '2026-09-03T12:41:00Z', variant: 'error' },
       { id: 2, title: 'Ana approved “Pricing page”', body: 'Ready to publish to production.', time: '2026-09-03T09:12:00Z', variant: 'success' },

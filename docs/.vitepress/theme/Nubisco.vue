@@ -146,7 +146,15 @@ const editLink = computed(() => {
     top: var(--vp-nav-height, 0px);
     z-index: var(--nb-zindex-titlebar);
     display: flex;
-    background: var(--nb-c-black);
+    /*
+     * The same chrome colour as the header and the page banner above it.
+     *
+     * It was `--nb-c-black`, pure #000, which put a hard seam between the
+     * banner and the tabs directly under it: two dark bands that were not the
+     * same dark. The header, the banner and this bar are one continuous piece
+     * of chrome, so they take one colour.
+     */
+    background: var(--nb-shell-sidebar-bg);
     padding: 0 calc(var(--nb-base-unit) * 4);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
@@ -220,20 +228,28 @@ const editLink = computed(() => {
       margin-top: 1.5em;
       margin-bottom: 1.5em;
 
+      /*
+       * Prose tables follow the theme.
+       *
+       * These were a literal `--nb-c-white` header row and two black-alpha
+       * rules, all of which assume a light page: in dark mode the header row
+       * stayed white under light text, and the row rules disappeared into the
+       * background entirely.
+       */
       thead tr {
-        background: var(--nb-c-white);
+        background: var(--nb-c-layer-1);
       }
 
       th {
         font-weight: 600;
         text-align: left;
         padding: 12px 16px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        border-bottom: 1px solid var(--nb-c-border);
       }
 
       td {
         padding: 12px 16px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+        border-bottom: 1px solid var(--nb-c-layer-border-1);
       }
 
       tbody tr:last-child td {
@@ -245,7 +261,9 @@ const editLink = computed(() => {
     :deep(:not(pre) > code) {
       font-family: var(--nb-font-family-mono, 'Courier New', monospace);
       font-size: 0.875em;
-      background: rgba(0, 0, 0, 0.06);
+      // A tint of the surface, not of black: a black wash is invisible on a
+      // dark page.
+      background: var(--nb-c-layer-2);
       color: var(--nb-c-text);
       padding: 2px 6px;
       border-radius: 4px;

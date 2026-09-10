@@ -1,3 +1,4 @@
+import type { TGapSize } from '../../../../src/components/Grid.d'
 export enum PreviewDirection {
   Row = 'row',
   Column = 'col',
@@ -106,6 +107,15 @@ export interface PreviewProps {
   themeable?: boolean
   backgroundColor?: string | null
   dir?: PreviewDirection
+  /**
+   * Gap between the items in the preview.
+   *
+   * Defaults to `md`, which is what the slot container always used. Raise it
+   * for demos whose items need room beside them rather than just between
+   * them: the ruler overlay draws its dimension label outside the element it
+   * measures, so a tight row puts each label on top of the next item.
+   */
+  gap?: TGapSize
   raw?: boolean
   constrained?: boolean
   props?: PreviewPropDef[]

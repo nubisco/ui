@@ -206,7 +206,7 @@ The words in a dialog carry more weight than anywhere else in the product, becau
 
 - **The title names the action, in sentence case.** "Rename workspace", "Delete environment", "Choose a template". Not "Confirm Action", not "Are you sure?", not "Warning".
 - **The body says what will happen and to what.** One sentence, present tense, naming the record: "Every entry, release and API key in `production` is deleted." A body that only restates the title is noise the user learns to skip.
-- **The buttons say the verb.** The commit repeats the title's verb, the exit is "Cancel". `OK`, `Yes`, `Done` and `Dismiss` are on the ban list in [Action labels](/content/action-labels), which is where the full register lives.
+- **The buttons say the verb.** The commit repeats the title's verb, the exit is "Cancel". `OK`, `Yes`, `Done` and `Dismiss` say nothing about what is about to happen, so none of them belong on a commit button.
 - **Do not use a dialog to apologise.** "Something went wrong" in a dialog is a failure the user must dismiss before they can look at the thing that failed. Put it in place, in an inline banner.
 
 Tone, capitalisation and sentence shape are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
@@ -339,7 +339,7 @@ Once the commit has been fired, the dialog owes the user three things, and they 
 </NbModal>
 ```
 
-Two things that example is honest about. `closeDisabled` also switches off the <kbd>Esc</kbd> route, because `Modal.vue`'s key handler returns early on it, so the dialog above has no keyboard exit at all while `saving` is true. That is correct for an irreversible commit already in flight and wrong for anything else, which is why it is bound to `saving` and not left on. And once every control in the dialog is disabled, the browser drops focus onto `<body>`, outside the dialog: see [Focus is yours](#focus-is-yours) for the two lines that recover it.
+Two things that example is honest about. `closeDisabled` also switches off the <kbd>Esc</kbd> route, because `Modal.vue`'s key handler returns early on it, so the dialog above has no keyboard exit at all while `saving` is true. That is correct for an irreversible commit already in flight and wrong for anything else, which is why it is bound to `saving` and not left on. And once every control in the dialog is disabled, the browser drops focus onto `<body>`, outside the dialog. `NbModal` recovers it onto the dialog box itself, which carries `tabindex="-1"` for exactly this: see [Focus is handled](#focus-is-handled).
 
 A confirmation gets all of this without you writing any of it. This example exists to show the shape for the dialogs that are not confirmations.
 
@@ -448,140 +448,73 @@ What the component does for you:
 - An overflowing body is a labelled, focusable `role="region"`, so it can be scrolled from the keyboard.
 - `busy` and `closeDisabled` express "work is in flight" in ARIA rather than only in colour.
 
-### Focus is yours
+### Focus is handled
 
-`NbModal` does not move focus into the dialog when it opens, does not trap <kbd>Tab</kbd> inside it, and does not return focus to the trigger when it closes. Nothing behind the scrim is marked `inert` either, so a keyboard or screen reader user can walk straight out of an open dialog into the page it is covering, which behind a delete dialog is the list they are deleting from.
+`NbModal` holds keyboard focus for as long as it is open. You do not wire this
+up, and there is nothing to copy into your application:
 
-That is why a confirmation must be `NbConfirm`: it implements all of it, including recovering focus that leaves by a route no keystroke explains (a click on the scrim, a `focus()` from application code, a control disabled out from under the caret).
+- **Focus moves in on open.** The first focusable control takes it, or the
+  dialog box itself when the dialog has no controls at all.
+- **<kbd>Tab</kbd> and <kbd>Shift</kbd>+<kbd>Tab</kbd> cycle inside the
+  dialog.** They do not reach the page behind the scrim, which behind a delete
+  dialog is the list the user is deleting from.
+- **Focus comes back to the trigger on every route out**, including
+  <kbd>Esc</kbd>, the close button and the scrim. A trigger that has since been
+  unmounted (the row action of a row this dialog just deleted) is skipped
+  rather than throwing.
+- **Focus that leaves by a route no keystroke explains is recovered**: a click
+  on the scrim, a `focus()` from application code, or a control disabled out
+  from under the caret.
+- **A popup teleported out of the dialog still counts as inside it.** An open
+  `NbSelect` list, `NbMenu` or `NbDatePicker` calendar is a sibling of the
+  dialog in the DOM, not a descendant, and the trap knows it.
+- **Only the topmost dialog answers.** A confirmation raised from inside a
+  dialog takes the keys; the surface underneath keeps its state.
 
-For every other dialog, this is the whole mechanism. It is about thirty lines, it has no dependencies beyond Vue, and it is the same shape `Confirm.vue` uses internally. Copy it into your application as `src/composables/useDialogFocus.composable.ts`:
+Nothing behind the scrim is marked `inert`, because these overlays teleport to
+`<body>` next to an application root the library does not own. The trap is what
+stands in for it.
 
-```ts
-import { nextTick, onScopeDispose, watch, type Ref } from 'vue'
+#### Directing initial focus
 
-const FOCUSABLE = [
-  'a[href]',
-  'button:not([disabled])',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])',
-].join(',')
-
-/**
- * The three focus obligations NbModal leaves to you: focus in on open, Tab
- * cycles inside, focus back to the trigger on every route out.
- *
- * `dialog` is a getter because the box does not exist until the dialog has
- * opened and rendered. NbModal exposes exactly this shape.
- */
-export function useDialogFocus(
-  open: Ref<boolean>,
-  dialog: () => HTMLElement | null | undefined,
-  initial?: () => HTMLElement | null | undefined,
-) {
-  let previous: HTMLElement | null = null
-
-  const items = (): HTMLElement[] => {
-    const box = dialog()
-    if (!box) return []
-    return Array.from(box.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-      (el) => el.getAttribute('aria-disabled') !== 'true',
-    )
-  }
-
-  function onKeydown(event: KeyboardEvent) {
-    if (event.key !== 'Tab' || !open.value) return
-    const box = dialog()
-    if (!box) return
-    const list = items()
-    const active = document.activeElement as HTMLElement | null
-    const inside = !!active && box.contains(active)
-    // Everything disabled (the pending state) leaves no control to cycle
-    // between. Focus stays on the box rather than escaping to the page.
-    if (list.length === 0) {
-      event.preventDefault()
-      if (!inside) box.focus()
-      return
-    }
-    const first = list[0]
-    const last = list[list.length - 1]
-    if (!inside) {
-      event.preventDefault()
-      ;(event.shiftKey ? last : first).focus()
-    } else if (event.shiftKey && active === first) {
-      event.preventDefault()
-      last.focus()
-    } else if (!event.shiftKey && active === last) {
-      event.preventDefault()
-      first.focus()
-    }
-  }
-
-  function stop() {
-    document.removeEventListener('keydown', onKeydown, true)
-  }
-
-  watch(open, async (isOpen) => {
-    if (isOpen) {
-      previous = document.activeElement as HTMLElement | null
-      // Capture phase, so the cycle runs before anything inside reacts.
-      document.addEventListener('keydown', onKeydown, true)
-      await nextTick()
-      ;(initial?.() ?? items()[0] ?? dialog())?.focus()
-    } else {
-      stop()
-      if (previous?.isConnected) previous.focus()
-      previous = null
-    }
-  })
-
-  onScopeDispose(stop)
-}
-```
-
-Wiring it takes three lines, and the getter call form matters: `dialogEl` is exposed as a **function**, so it is `modalRef.value?.dialogEl()`, not `modalRef.value?.dialogEl`.
+The default landing is the first focusable control, which in a dialog with a
+header is the close button. That is right for a dialog you only read and wrong
+for a form, so point `initialFocus` at the field:
 
 ```vue
-<template>
-  <NbButton @click="open = true">Invite member</NbButton>
-  <NbModal
-    ref="modalRef"
-    :open="open"
-    title="Invite member"
-    @close="open = false"
-  >
-    <NbTextInput ref="firstFieldRef" v-model="email" label="Email" />
-    <template #footer>
-      <NbButton size="lg" variant="ghost" @click="open = false"
-        >Cancel</NbButton
-      >
-      <NbButton size="lg" variant="primary" @click="invite"
-        >Send invite</NbButton
-      >
-    </template>
-  </NbModal>
-</template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useDialogFocus } from '@/composables/useDialogFocus.composable'
-
-const open = ref(false)
-const email = ref('')
-const modalRef = ref<{ dialogEl: () => HTMLElement | null } | null>(null)
-const firstFieldRef = ref<{ nativeEl: HTMLInputElement | null } | null>(null)
-
-// Third argument: focus the field, not the close button the DOM offers first.
-useDialogFocus(
-  open,
-  () => modalRef.value?.dialogEl(),
-  () => firstFieldRef.value?.nativeEl,
-)
-</script>
+<NbModal :open="open" title="Invite teammate" initial-focus="input" @close="open = false">
 ```
 
-The demo below is that composable, wired to a real `NbModal`. Open it from the keyboard and hold <kbd>Tab</kbd>: focus cycles close, name, notes, Cancel, Save and back to close, never reaching the page behind. Close it any way you like, including <kbd>Esc</kbd> and the scrim, and the trigger button is focused again. The readout is `document.activeElement`.
+`initialFocus` takes a CSS selector resolved inside the dialog, or a function
+returning the element, for a component ref: `NbTextInput` exposes its native
+element as `nativeEl`, so it is `:initial-focus="() => firstFieldRef?.nativeEl"`.
+
+Three rules it does not decide for you:
+
+1. **Never point it at a destructive control.** Focus Cancel, or leave the
+   default. A stray <kbd>Space</kbd> on an autofocused Delete is a deleted
+   record. Focus Cancel, or the dialog box itself.
+2. **Focus a text control only when typing is the point.** In a read-only
+   detail dialog, leave it alone so a screen reader starts at the title instead
+   of halfway down.
+3. **A confirmation is still `NbConfirm`**, not an `NbModal` you focused
+   carefully. It runs its own trap with extra rules for its pending state and
+   its type-to-confirm gate, and it sets `:trap-focus="false"` so the two do
+   not pull against each other.
+
+::: tip Upgrading from a hand-rolled trap
+Earlier versions of this page shipped a `useDialogFocus` composable to copy
+into your application, because `NbModal` did not do any of the above. If you
+copied it, delete it: the library now does this. If you would rather keep your
+own for a dialog with unusual requirements, set `:trap-focus="false"` on that
+dialog and `NbModal` will keep its hands off focus entirely, exactly as before.
+:::
+
+The demo below is a plain `NbModal` with no focus code of its own. Open it from
+the keyboard and hold <kbd>Tab</kbd>: focus cycles close, name, notes, Cancel,
+Save and back to close, never reaching the page behind. Close it any way you
+like, including <kbd>Esc</kbd> and the scrim, and the trigger button is focused
+again. The readout is `document.activeElement`.
 
 <preview>
   <NbGrid dir="col" gap="sm" align="start">
@@ -599,13 +532,6 @@ The demo below is that composable, wired to a real `NbModal`. Open it from the k
     </template>
   </NbModal>
 </preview>
-
-Four rules the composable does not decide for you:
-
-1. **Focus the first meaningful control, not the first control in the DOM.** The default above is the first focusable element, which in a dialog with a header is the X. For a form dialog, pass the field as the third argument, as above. `NbTextInput` exposes its native element as `nativeEl`, so it is `() => firstFieldRef.value?.nativeEl`.
-2. **Never autofocus a destructive control.** Focus Cancel, or the box itself. A stray <kbd>Space</kbd> on an autofocused Delete is a deleted record. See [Focus order in a confirmation](/content/action-labels#focus-order-in-a-confirmation).
-3. **Focus a text control only when typing is the point.** In a read-only detail dialog, focus the box (`tabindex="-1"` is there for it) so a screen reader starts at the title instead of halfway down.
-4. **Return focus on every route out**, including <kbd>Esc</kbd> and the scrim. The watcher above covers all of them because they all go through `open`, which is the reason the composable watches the prop rather than listening for a close event.
 
 The general rules those come from are in [Keyboard](/accessibility/keyboard#after-a-dialog-closes) and [Dialogs, rule 9](/patterns/dialogs#rule-9-focus-is-the-whole-accessibility-story).
 
@@ -637,7 +563,6 @@ The open and close transition is a fixed 200ms of opacity and a small scale, and
 - [`NbShellPanel`](/ui/components/shell-panel) and [Inspectors](/patterns/inspectors) for editing a selection in place.
 - [Forms](/patterns/forms) for what a dialog may and may not contain.
 - [`NbSkeleton`](/ui/components/skeleton) and [`NbEmptyState`](/ui/components/empty-state) for a body that is still loading or came back empty.
-- [Action labels](/content/action-labels) for the words on the two buttons.
 
 </doc-tab>
 
@@ -694,7 +619,7 @@ modalRef.value?.dialogEl()?.focus()
 | `dialogEl` | `modalRef.value?.dialogEl()` | `HTMLElement \| null` | The dialog box, for a wrapper that manages focus (this is how `NbConfirm` finds it) |
 | `bodyEl`   | `modalRef.value?.bodyEl()`   | `HTMLElement \| null` | The scrolling body element                                                          |
 
-Both return `null` until the dialog is open and rendered, which is why [`useDialogFocus`](#focus-is-yours) takes a getter and reads it after `nextTick()`.
+Both return `null` until the dialog is open and rendered. `NbModal` handles its own focus (see [Focus is handled](#focus-is-handled)), so these are for a wrapper that needs the element for something else.
 
 ## Z-index
 
@@ -703,7 +628,7 @@ The overlay uses `--nb-zindex-modal`. Components that render inside a dialog and
 </doc-tab>
 
 <script setup lang="ts">
-import { nextTick, onScopeDispose, ref, watch, type Ref } from 'vue'
+import { nextTick, onScopeDispose, ref, watch } from 'vue'
 import { useConfirm } from '../../../src'
 
 const confirm = useConfirm()
@@ -732,86 +657,15 @@ const regions = [
 ]
 
 /*
- * The focus-trap demo. This is the composable printed above, verbatim, so the
- * page cannot document one implementation and demonstrate another.
+ * The focus-trap demo has no focus code of its own. NbModal holds focus
+ * itself, so this page cannot demonstrate behaviour the component does not
+ * ship: what you see here is what a consumer gets from the component alone.
  */
-const FOCUSABLE = [
-  'a[href]',
-  'button:not([disabled])',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])',
-].join(',')
-
-function useDialogFocus(
-  open: Ref<boolean>,
-  dialog: () => HTMLElement | null | undefined,
-  initial?: () => HTMLElement | null | undefined,
-) {
-  let previous: HTMLElement | null = null
-
-  const items = (): HTMLElement[] => {
-    const box = dialog()
-    if (!box) return []
-    return Array.from(box.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-      (el) => el.getAttribute('aria-disabled') !== 'true',
-    )
-  }
-
-  function onKeydown(event: KeyboardEvent) {
-    if (event.key !== 'Tab' || !open.value) return
-    const box = dialog()
-    if (!box) return
-    const list = items()
-    const active = document.activeElement as HTMLElement | null
-    const inside = !!active && box.contains(active)
-    if (list.length === 0) {
-      event.preventDefault()
-      if (!inside) box.focus()
-      return
-    }
-    const first = list[0]
-    const last = list[list.length - 1]
-    if (!inside) {
-      event.preventDefault()
-      ;(event.shiftKey ? last : first).focus()
-    } else if (event.shiftKey && active === first) {
-      event.preventDefault()
-      last.focus()
-    } else if (!event.shiftKey && active === last) {
-      event.preventDefault()
-      first.focus()
-    }
-  }
-
-  function stop() {
-    document.removeEventListener('keydown', onKeydown, true)
-  }
-
-  watch(open, async (isOpen) => {
-    if (isOpen) {
-      previous = document.activeElement as HTMLElement | null
-      document.addEventListener('keydown', onKeydown, true)
-      await nextTick()
-      ;(initial?.() ?? items()[0] ?? dialog())?.focus()
-    } else {
-      stop()
-      if (previous?.isConnected) previous.focus()
-      previous = null
-    }
-  })
-
-  onScopeDispose(stop)
-}
-
 const openTrap = ref(false)
 const trapName = ref('')
 const trapNotes = ref('')
 const trapModal = ref<{ dialogEl: () => HTMLElement | null } | null>(null)
 const focusLabel = ref('nothing yet')
-
-useDialogFocus(openTrap, () => trapModal.value?.dialogEl())
 
 function describeFocus() {
   const el = document.activeElement as HTMLElement | null

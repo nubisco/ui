@@ -33,6 +33,28 @@
   --vp-c-text-3: var(--nb-c-text-subtle);
 }
 
+/*
+ * The dark half of the same mapping.
+ *
+ * The `--vp-*` tokens above are declared on `:root`, which ties VitePress's own
+ * `.dark` rules on specificity and wins on source order, so without this block
+ * the page chrome stayed light while every component on it went dark. The
+ * library's own tokens already flip on `.dark`; these point the site's tokens
+ * at them so the documentation and the components it documents are in the same
+ * mode.
+ *
+ * `--nb-c-document` is deliberately not used here: it is the light page ground
+ * and does not flip. Layer 0 is the dark equivalent.
+ */
+.dark {
+  --vp-c-bg: var(--nb-c-layer-0);
+  --vp-c-bg-alt: var(--nb-c-layer-1);
+  --vp-c-bg-elv: var(--nb-c-surface);
+  --vp-c-bg-soft: var(--nb-c-layer-1);
+  --vp-c-divider: var(--nb-c-border);
+  --vp-c-gutter: var(--nb-c-layer-0);
+}
+
 /* ─── Nav bar — Carbon style: dark background, light text ───────────────── */
 /*
  * Dark nav is scoped to .has-sidebar pages (doc pages using the nubisco layout).
@@ -40,38 +62,85 @@
  * avoiding the broken split at mobile breakpoints where only .title was painted.
  */
 
+/*
+ * The header takes the library's own application-chrome colour rather than
+ * `--nb-c-contrast`, which is pure #000. A documentation site headed by a band
+ * of absolute black reads as heavier than anything the library itself ships,
+ * and it is the one surface here that is not made of Nubisco parts.
+ *
+ * `--nb-shell-sidebar-bg` is what NbShell paints its own chrome with: a deep
+ * purple-black (#120b27) that carries the accent instead of dropping it. White
+ * on it measures 19.04:1.
+ */
 .VPNavBar.has-sidebar,
 .VPNavBar.has-sidebar .wrapper,
 .VPNavBar.has-sidebar .container,
 .VPNavBar.has-sidebar .content,
 .VPNavBar.has-sidebar .content-body,
 .VPNavBar.has-sidebar .title {
-  background-color: var(--nb-c-contrast);
+  background-color: var(--nb-shell-sidebar-bg);
 }
 
 /* Dark background token overrides — keeps text, icons, and dividers readable */
 .VPNavBar.has-sidebar {
-  --vp-nav-bg-color: var(--nb-c-contrast);
+  --vp-nav-bg-color: var(--nb-shell-sidebar-bg);
   --vp-c-text-1: var(--nb-c-white);
   --vp-c-text-2: rgba(255, 255, 255, 0.7);
   --vp-c-neutral: var(--nb-c-white);
-  --vp-c-neutral-inverse: var(--nb-c-contrast);
-  --vp-c-gutter: var(--nb-c-contrast);
+  --vp-c-neutral-inverse: var(--nb-shell-sidebar-bg);
+  --vp-c-gutter: var(--nb-shell-sidebar-bg);
   /* bg-alt drives .DocSearch-Button:hover background — use a dark tint, not light */
   --vp-c-bg-alt: rgba(255, 255, 255, 0.08);
   --vp-c-bg-soft: rgba(255, 255, 255, 0.08);
   --vp-c-bg-mute: rgba(255, 255, 255, 0.06);
 }
 
-/* Hide the 1px divider line VitePress renders below the nav bar */
+/*
+ * Hide the divider VitePress renders below the nav bar.
+ *
+ * Hiding `.divider-line` alone was not enough: its `.divider` parent stays in
+ * the layout at 1px with a transparent background, so the page behind showed
+ * through as a hairline gap between the header and the sidebar. The container
+ * is what has to go.
+ */
+.VPNavBar .divider,
 .VPNavBar .divider-line {
   display: none;
+}
+
+/*
+ * The other half of that same divider.
+ *
+ * With a sidebar, VitePress draws the rule in two pieces: `.divider` over the
+ * content, and a `border-bottom` on the nav TITLE over the sidebar column.
+ * Hiding the first left the second behind as a grey line under the logo,
+ * sitting on the seam between the header and the sidebar.
+ *
+ * Kept as a transparent border rather than removed, so the title box is the
+ * same height it was and the logo does not shift by a pixel.
+ */
+.VPNav .VPNavBar .VPNavBarTitle.has-sidebar .title {
+  /*
+   * Four class selectors, because VitePress sets this from a SCOPED style
+   * (`.VPNavBarTitle.has-sidebar .title[data-v-...]`) inside a
+   * `min-width: 960px` query, which outranks the same selector written
+   * unscoped. Measured, not assumed: at three classes the computed colour
+   * stayed rgb(226, 226, 227).
+   *
+   * Below 960px VitePress already draws this edge transparent, so making it
+   * transparent at every width matches what the component does anyway.
+   */
+  border-bottom-color: transparent;
 }
 
 /* Active / hover nav link gets brand accent instead of white */
 .VPNavBar.has-sidebar .VPNavBarMenuLink:hover,
 .VPNavBar.has-sidebar .VPNavBarMenuGroup:hover .button {
-  color: var(--nb-c-primary) !important;
+  /*
+   * A lighter step of the accent ramp, not `--nb-c-primary`. The 500 measures
+   * 1.13:1 on this chrome and was unreadable; the 350 measures 5.07:1.
+   */
+  color: var(--nb-c-grape-hyacinth-350) !important;
   opacity: 1;
 }
 
@@ -145,9 +214,28 @@
 div[class*='language-'] {
   position: relative;
   border-radius: 8px;
-  background: var(--nb-c-white) !important;
+  /*
+   * The panel surface, not `--nb-c-white`. A literal white ground stayed white
+   * in dark mode, which left every code block on the site as a bright slab in
+   * an otherwise dark page. `--nb-c-layer-1` is the panel colour and flips
+   * with the theme.
+   */
+  background: var(--nb-c-layer-1) !important;
   margin: 16px 0;
   overflow: hidden;
+}
+
+/*
+ * Shiki emits inline `color` on every token from the light palette, so the
+ * code itself has to be told about the dark ground or it stays near-black on
+ * near-black. VitePress ships a dark token set; this points at it.
+ */
+.dark div[class*='language-'] code {
+  color: var(--nb-c-text);
+}
+
+.dark div[class*='language-'] .shiki span {
+  color: var(--shiki-dark, inherit) !important;
 }
 
 /* The <pre> inside must share the same bg so shiki doesn't override it */
@@ -385,4 +473,112 @@ div[class*='language-']:hover .has-focused-lines .line:not(.has-focus) {
   content: 'SH';
   color: #374151;
   background: #f1f5f9;
+}
+
+/* ─── Component tables are not prose tables ───────────────────────────────── */
+/*
+ * The documentation theme styles every <table> inside page content, because in
+ * a prose page every table IS prose. NbDataTable renders genuine table
+ * semantics, so those rules land on it too and the component ends up wearing
+ * the theme's clothes: prose row backgrounds that do not follow the library's
+ * dark ramp (light rows under light text, which is unreadable), `display:
+ * block` replacing the table's own formatting context so column widths are
+ * computed wrongly, prose borders doubling the component's row separators, and
+ * a 20px prose margin inside a bordered shell.
+ *
+ * Specificity matters here and a first attempt got it wrong. The theme's
+ * `.vp-doc tr:nth-child(2n)` is (0,2,1), which TIES `.vp-doc .nb-data-table tr`,
+ * so the winner was decided by stylesheet order and the reset silently lost.
+ * Targeting the component's own BEM classes takes it to (0,3,0) and settles it
+ * by specificity rather than by luck.
+ *
+ * The theme also puts a 0.5s transition on those backgrounds, which is worth
+ * knowing when measuring: read the computed value too early and the old colour
+ * is still on its way out.
+ *
+ * Only what the theme adds is reset; everything else is the component's own.
+ * VitePress's `vp-raw` opt-out is not enough by itself, as it relies on
+ * postcss-prefix-selector, which this site does not install.
+ */
+.vp-doc .nb-data-table table {
+  display: table;
+  margin: 0;
+  overflow-x: visible;
+}
+
+.vp-doc .nb-data-table .nb-data-table__row,
+.vp-doc .nb-data-table thead tr {
+  background-color: transparent;
+  border-top: 0;
+  transition: none;
+}
+
+.vp-doc .nb-data-table th,
+.vp-doc .nb-data-table td {
+  border: 0;
+}
+
+.vp-doc .nb-data-table th {
+  background-color: transparent;
+  color: inherit;
+  font-size: inherit;
+  text-align: inherit;
+}
+
+/* ─── Sidebar width ──────────────────────────────────────────────────────── */
+/*
+ * VitePress ships a 272px sidebar, which this catalogue has outgrown: with 56
+ * components plus the pattern and principle pages, entries like "Dialogs and
+ * destructive confirmation" wrapped to two lines and the rail read as a wall
+ * of broken phrases rather than a list.
+ *
+ * 300px is the smallest step that holds the long labels on one line without
+ * taking width the content needs. VitePress reserves the same value for the
+ * content offset, so the one variable moves both and nothing has to be
+ * re-aligned by hand.
+ */
+:root {
+  --vp-sidebar-width: 300px;
+}
+
+/* ─── Header controls: position and spacing ──────────────────────────────── */
+/*
+ * `nav-bar-content-after` is the only slot the default theme offers at this
+ * end of the bar, and it lands AFTER the social links, so the GitHub icon sat
+ * between the nav menu and the controls. The bar is a flex row, so explicit
+ * `order` puts each part where it belongs without patching the theme's markup:
+ * menu, then the two switches, then GitHub last.
+ */
+.VPNavBar .content-body > .VPNavBarSearch {
+  order: 1;
+}
+.VPNavBar .content-body > .VPNavBarMenu {
+  order: 2;
+}
+.VPNavBar .content-body > .docs-controls {
+  order: 3;
+}
+.VPNavBar .content-body > .VPSocialLinks {
+  order: 4;
+}
+.VPNavBar .content-body > .VPFlyout {
+  order: 5;
+}
+.VPNavBar .content-body > .VPNavBarHamburger {
+  order: 6;
+}
+
+/*
+ * Breathing room around the switches. The menu ends, the controls sit as one
+ * cluster, and GitHub is pushed off them rather than touching the first
+ * button. The theme puts its own margin on the social links, which is why the
+ * left side needs a larger value than the right.
+ */
+.VPNavBar .content-body > .docs-controls {
+  margin-left: 24px;
+  margin-right: 4px;
+}
+
+.VPNavBar .content-body > .VPSocialLinks {
+  margin-left: 16px;
 }

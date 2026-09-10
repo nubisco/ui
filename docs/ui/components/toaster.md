@@ -389,7 +389,7 @@ Say what happened, in the past tense, without a full stop. Put anything the user
 
 Tense, capitalisation and the sentence shapes are the fleet's, not this component's: [Writing style](/content/writing-style) is the source, and this section only adds what is peculiar to a message that removes itself.
 
-Label the action with its verb, from the shared list in [Action labels](/content/action-labels): `Retry`, `Reload`, `Undo`. The audit found `Cancel`, `Done`, `Close` and `Dismiss` used interchangeably across 12 products, so a toast's action should never be one of them: the close button is the exit, and a second control that also means "go away" is a coin toss for anyone reading the stack through a screen reader.
+Label the action with its verb: `Retry`, `Reload`, `Undo`. The audit found `Cancel`, `Done`, `Close` and `Dismiss` used interchangeably across 12 products, so a toast's action should never be one of them: the close button is the exit, and a second control that also means "go away" is a coin toss for anyone reading the stack through a screen reader.
 
 ## Not in English
 
