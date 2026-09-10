@@ -1,0 +1,55 @@
+/// The pre-4.2 field treatment, as an opt-out.
+///
+/// The library's default field fill changed: the enabled state used to be
+/// `#cacbcc` in the light theme, a mid grey darker than every surface it sat
+/// on, which is what most interfaces use to mean "unavailable". Enabled was
+/// wearing the disabled state's clothes, and `disabled` on top of it was only
+/// a `0.45` opacity, so the two differed in brightness rather than in kind.
+///
+/// The new default lightens the enabled fill and gives disabled and read-only
+/// their own boundary contrast. **Geometry is identical**: still a filled box
+/// with a single bottom rule, still square, same height, padding and
+/// alignment. Corner rounding is a separate, global concern and is not
+/// something a field treatment decides.
+///
+/// This preset exists for an application that has calibrated screenshots,
+/// visual regression baselines or printed material against the old fills and
+/// wants to move on its own schedule:
+///
+/// ```html
+/// <html data-nb-preset="classic-fields">
+/// ```
+///
+/// It can also be scoped to a subtree. It restores fills and boundary
+/// contrast only, so it composes with the appearance setting exactly as the
+/// default does.
+///
+/// @group @nubisco/presets
+
+@use '../variables/layers';
+
+@mixin classic-fields {
+  [data-nb-preset='classic-fields'] {
+    --nb-c-field-bg: #{layers.token(layers.$light, field-bg)};
+    --nb-c-field-border: #{layers.token(layers.$light, field-border)};
+    // The old treatment had no separate disabled or read-only values: both
+    // fell back to the enabled ones and leaned on opacity alone.
+    --nb-c-field-bg-disabled: #{layers.token(layers.$light, field-bg)};
+    --nb-c-field-border-disabled: #{layers.token(layers.$light, field-border)};
+    --nb-c-field-border-readonly: #{layers.token(layers.$light, field-border)};
+  }
+
+  /*
+   * Two selectors because the theme class and the preset attribute can land on
+   * the same element or on different ones, and a compound `.dark[data-...]`
+   * alone would miss the nested case.
+   */
+  .dark[data-nb-preset='classic-fields'],
+  .dark [data-nb-preset='classic-fields'] {
+    --nb-c-field-bg: #{layers.token(layers.$dark, field-bg)};
+    --nb-c-field-border: #{layers.token(layers.$dark, field-border)};
+    --nb-c-field-bg-disabled: #{layers.token(layers.$dark, field-bg)};
+    --nb-c-field-border-disabled: #{layers.token(layers.$dark, field-border)};
+    --nb-c-field-border-readonly: #{layers.token(layers.$dark, field-border)};
+  }
+}

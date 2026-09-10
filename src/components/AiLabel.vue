@@ -36,10 +36,14 @@ const classes = computed(() => {
 </script>
 
 <style lang="scss" scoped>
+@use '../styles/logic/radius' as radius;
+
 .nb-ai-label {
   width: calc(var(--nb-base-unit) * 4);
   height: calc(var(--nb-base-unit) * 4);
   border: solid 1px var(--nb-c-border);
+  // A small mark, so it follows the control corner.
+  @include radius.standalone(control-sm);
   &--dot {
     width: var(--nb-base-unit);
     height: var(--nb-base-unit);

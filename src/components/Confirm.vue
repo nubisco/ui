@@ -9,6 +9,7 @@
     :close-on-overlay="!locked"
     :close-disabled="locked"
     :close-on-escape="false"
+    :trap-focus="false"
     @close="onDismiss"
   >
     <template #header>

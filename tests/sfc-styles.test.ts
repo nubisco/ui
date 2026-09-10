@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { parse } from 'vue/compiler-sfc'
 import { compileString } from 'sass-embedded'
+import { pathToFileURL } from 'node:url'
 
 // Guards the failure mode that shipped a broken port label in 3.0.1: CSS was
 // written above <template>, outside every SFC block, where the compiler drops
@@ -69,6 +70,35 @@ describe('SFC styles reach the build', () => {
       .trim()
 
     expect(orphaned, `${file} has text outside every SFC block`).toBe('')
+  })
+})
+
+/**
+ * Every component's SCSS has to compile.
+ *
+ * Only one component was ever compiled here, so a syntax error anywhere else
+ * passed the whole suite and only surfaced as a blank page in the dev server:
+ * a dropped semicolon in NbBanner and NbToast did exactly that, and 2335
+ * green tests said nothing about it. Compiling each block is cheap and turns
+ * that class of mistake into a failing test instead of a broken page.
+ *
+ * The file's own URL is passed so a relative `@use` of a shared mixin resolves
+ * the way it does in the real build.
+ */
+describe('every component stylesheet compiles', () => {
+  it.each(sfcs)('%s', (file) => {
+    const path = join(dir, file)
+    const { descriptor } = parse(readFileSync(path, 'utf8'))
+    if (!descriptor.styles.length) return
+
+    for (const style of descriptor.styles) {
+      expect(() =>
+        compileString(style.content, {
+          syntax: style.lang === 'scss' ? 'scss' : 'css',
+          url: pathToFileURL(path),
+        }),
+      ).not.toThrow()
+    }
   })
 })
 

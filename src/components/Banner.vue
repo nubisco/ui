@@ -98,6 +98,8 @@ const iconMap = {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-banner {
   display: flex;
   align-items: flex-start;
@@ -108,9 +110,10 @@ const iconMap = {
   // notification readable at a glance from across the page, before any of the
   // words are: the ground alone is too pale to carry the status on its own.
   border-inline-start: 3px solid var(--nb-banner-accent);
-  // Square by design: a banner is a strip of page furniture, not a card, and
-  // even a small radius fights the straight status bar on its edge.
-  border-radius: 0;
+  // The accent bar runs down the leading edge and the corner follows it. This
+  // was pinned square with a note written when square was the only appearance;
+  // under rounded a banner is a surface like any other.
+  @include radius.surface(panel);
   background: var(--nb-banner-bg);
   color: var(--nb-banner-fg);
   font-family: var(--nb-font-family-sans);
@@ -231,7 +234,7 @@ const iconMap = {
     height: 22px;
     padding: 0;
     border: none;
-    border-radius: 4px;
+    @include radius.standalone(control);
     background: none;
     color: currentColor;
     cursor: pointer;

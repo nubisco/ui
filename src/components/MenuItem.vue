@@ -89,6 +89,8 @@ defineExpose({ el: itemRef })
 </script>
 
 <style lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-menu-item {
   // --nb-menu-item-h base default lives at :root in styles/_theme.scss; the
   // .nb-menu--xs/sm/md/lg variants below override it (state, kept local).
@@ -96,7 +98,11 @@ defineExpose({ el: itemRef })
   align-items: center;
   gap: 8px;
   height: var(--nb-menu-item-h);
-  padding: 0 16px;
+  padding: 0 12px;
+  // Concentric with the menu enclosing it: the menu insets its items by 4px,
+  // so an item's corner is the menu's less that inset.
+  // 4px of padding plus the container's 1px border.
+  @include radius.inset(5px);
   font-size: 14px;
   font-weight: 400;
   color: var(--nb-c-text);

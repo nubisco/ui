@@ -196,10 +196,13 @@ function onPointerUp(ev: PointerEvent): void {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-blueprint-minimap {
   position: absolute;
   z-index: 1;
-  border-radius: 8px;
+  // Chrome around the canvas, not the canvas itself.
+  @include radius.surface(popover);
   box-shadow: 0 4px 16px rgb(0 0 0 / 18%);
   cursor: pointer;
   touch-action: none;

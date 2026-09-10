@@ -525,6 +525,26 @@ export type {
   IThemeOptions,
   IThemeController,
 } from './composables/useTheme.composable'
+export {
+  useAppearance,
+  configureAppearance,
+  appearanceAttribute,
+} from './composables/useAppearance.composable'
+export type {
+  TAppearance,
+  IAppearanceOptions,
+  IAppearanceController,
+} from './composables/useAppearance.composable'
+export {
+  useNamedTheme,
+  configureNamedTheme,
+  isValidThemeId,
+} from './composables/useNamedTheme.composable'
+export type {
+  TNamedTheme,
+  INamedThemeOptions,
+  INamedThemeController,
+} from './composables/useNamedTheme.composable'
 export { useBlueprint } from './composables/useBlueprint.composable'
 export {
   useSurfaceLayer,

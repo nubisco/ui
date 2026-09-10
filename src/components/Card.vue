@@ -99,6 +99,8 @@ function onKeydown(event: KeyboardEvent) {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-card {
   display: flex;
   flex-direction: column;
@@ -106,7 +108,10 @@ function onKeydown(event: KeyboardEvent) {
   padding: var(--nb-spacing-16);
   background: var(--nb-c-surface);
   border: 1px solid var(--nb-c-border);
-  border-radius: var(--nb-radius-xs);
+  // A card is a panel-role surface, and it publishes its corner so that
+  // anything inset inside it (a media strip, a nested panel) can be
+  // concentric with it rather than guessing.
+  @include radius.surface(panel);
   color: inherit;
   text-decoration: none;
   // Cards in a grid are stretched to the row's height by default; this is what

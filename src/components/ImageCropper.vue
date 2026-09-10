@@ -858,7 +858,9 @@ $background-color: var(--nb-c-surface);
     position: absolute;
     right: calc(var(--nb-base-unit, 8px) * 2);
     bottom: calc(var(--nb-base-unit, 8px) * 2);
-    border-radius: var(--nb-border-radius-sm, 6px);
+    // `--nb-border-radius-sm` was never a token in this library, so this
+    // silently used its 6px fallback and ignored the appearance setting.
+    border-radius: var(--nb-radius-control-sm);
     overflow: hidden;
     height: calc(var(--nb-base-unit, 8px) * 14);
     margin-top: 20px;

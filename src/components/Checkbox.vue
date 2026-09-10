@@ -58,6 +58,8 @@ function handleChange(e: Event) {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-checkbox {
   display: inline-flex;
   // Top-align so the box stays on the first line of multi-line labels
@@ -95,7 +97,8 @@ function handleChange(e: Event) {
     width: 16px;
     height: 16px;
     border: 1px solid var(--nb-c-field-border);
-    border-radius: 0;
+    // a checkbox at capsule radius is a circle, which is a radio
+    @include radius.standalone(control-sm);
     transition:
       background 0.15s,
       border-color 0.15s,

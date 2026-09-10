@@ -361,6 +361,8 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-command-palette__overlay {
   position: fixed;
   inset: 0;
@@ -381,6 +383,9 @@ onBeforeUnmount(() => {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
+  // The palette is a dialog-scale surface, so it takes the modal corner. It
+  // clips its own input row and results list to that corner.
+  @include radius.surface(modal);
   overflow: hidden;
 }
 
@@ -417,7 +422,7 @@ onBeforeUnmount(() => {
   flex: 1;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 4px 0;
+  padding: 4px;
 }
 
 .nb-command-palette__group-header {
@@ -434,8 +439,11 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 10px;
   height: 40px;
-  padding: 0 16px;
+  padding: 0 12px;
   cursor: pointer;
+  // Concentric with the results list that insets it.
+  // 4px of padding plus the container's 1px border.
+  @include radius.inset(5px);
   transition: background 0.08s;
 
   &:hover,
@@ -480,7 +488,8 @@ onBeforeUnmount(() => {
   color: var(--nb-c-text-muted);
   background: var(--nb-c-layer-hover-3);
   border: 1px solid var(--nb-c-layer-border-3);
-  border-radius: 4px;
+  // Teleported: establishes its own outer corner.
+  @include radius.surface(popover);
   box-sizing: border-box;
 }
 

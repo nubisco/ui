@@ -213,6 +213,8 @@ watch(
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 @use '../styles/variables/breakpoints' as bp;
 
 /*
@@ -230,9 +232,8 @@ watch(
   padding: var(--nb-spacing-12) var(--nb-spacing-14);
   background: var(--nb-c-bg);
   border: 1px solid var(--nb-c-border);
-  // Square by design, the same call NbBanner made: a toast carries the same
-  // straight status accent bar on its edge, and a radius fights it.
-  border-radius: 0;
+  // Follows NbBanner: the status bar on the edge and the corner coexist.
+  @include radius.surface(panel);
   box-shadow: 0 var(--nb-spacing-4) var(--nb-spacing-16)
     color-mix(in srgb, var(--nb-c-scrim) 35%, transparent);
   /* Narrower than the content box on a small phone, so the stack can never
@@ -360,7 +361,7 @@ watch(
   height: var(--nb-spacing-24);
   border: none;
   background: transparent;
-  border-radius: var(--nb-radius-sm);
+  @include radius.standalone(control);
   color: var(--nb-c-text-subtle);
   cursor: pointer;
   transition:

@@ -242,6 +242,11 @@ function getEventsForDate(dateStr: string): ICalendarEvent[] {
 </script>
 
 <style lang="scss">
+/*
+ * The month grid keeps its cell borders square in both appearances: it is a
+ * ruled grid, and rounding every cell would break the continuous rules that
+ * make it read as one. The container and its markers follow the appearance.
+ */
 .nb-calendar {
   font-family: var(--nb-font-family-sans, sans-serif);
   background: var(--nb-c-surface);
@@ -344,6 +349,8 @@ function getEventsForDate(dateStr: string): ICalendarEvent[] {
         width: 4px;
         height: 4px;
         background: var(--nb-c-primary);
+        // A dot, at every appearance.
+        border-radius: var(--nb-radius-circle);
         margin: 2px auto 0;
       }
     }

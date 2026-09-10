@@ -1,0 +1,146 @@
+/// Concentric corner geometry.
+///
+/// Two nested rounded boxes only look like one object if their corners are
+/// concentric: the inner arc has to be the outer arc moved inwards by the
+/// distance between them. The rule is
+///
+///   inner = max(0, outer - inset)
+///
+/// where `inset` is the real distance between the two boundaries. Give both
+/// boxes the same radius and the inner corner looks too round; give the inner
+/// box an unrelated smaller value and the two arcs run at different centres
+/// and the gap between them visibly pinches at the corner.
+///
+/// ## How the context travels
+///
+/// A surface that draws a corner publishes it as `--nb-radius-context`. Custom
+/// properties inherit, so any descendant can read the corner of the nearest
+/// enclosing surface without knowing how deep it is or what is in between.
+///
+/// An inset surface then derives from that context, passing the distance from
+/// the enclosing surface's border-box edge to its own border-box edge. That
+/// distance is a fact the inner component's own stylesheet already knows,
+/// because it is the enclosing surface's padding plus its border, which is
+/// exactly what the layout is built from. Nothing is measured at runtime and
+/// no layout is read back, so this costs nothing and cannot desynchronise.
+///
+/// ## What does *not* derive
+///
+/// DOM nesting alone does not establish a geometric relationship. A button in
+/// the middle of a panel is not an inset boundary of it: it does not follow
+/// the panel's corners, and its radius should not shrink because someone put
+/// it inside something round. Standalone controls use `standalone()` and take
+/// their own semantic role.
+///
+/// Only elements whose edges actually run parallel to the enclosing surface's
+/// edges, at a uniform distance, use `inset()`.
+///
+/// @group @nubisco/radius
+
+/// Declares an element as a surface with its own corner, and publishes that
+/// corner to its descendants.
+///
+/// @param {String} $role - a semantic role: control, popover, panel, modal
+/// @param {String} $radius [null] - an explicit value, for the rare surface
+///   whose corner is not one of the roles
+@mixin surface($role: null, $radius: null) {
+  @if $radius {
+    border-radius: #{$radius};
+    --nb-radius-context: #{$radius};
+  } @else {
+    border-radius: var(--nb-radius-#{$role});
+    --nb-radius-context: var(--nb-radius-#{$role});
+  }
+}
+
+/// Derives this element's corner from the enclosing surface's.
+///
+/// `$inset` is the distance from the enclosing surface's border-box edge to
+/// this element's border-box edge: its padding plus its border width. Pass the
+/// same expression the layout uses, so the two cannot drift apart.
+///
+/// `max()` floors the result at zero, which is what CSS wants anyway and what
+/// keeps a deeply inset surface from trying to go negative.
+///
+/// The result is also written to `--nb-radius-self`, which is what
+/// `publish-inner()` republishes one level down. This mixin deliberately does
+/// NOT write `--nb-radius-context` itself: a custom property that reads the
+/// same name it declares is self-referential, which CSS treats as invalid at
+/// computed-value time, and the whole chain silently collapses to zero. That
+/// is not a theoretical hazard, it is the bug the first version of this file
+/// shipped with.
+///
+/// @param {String} $inset - distance between the two boundaries
+@mixin inset($inset) {
+  --nb-radius-self: max(0px, calc(var(--nb-radius-context, 0px) - #{$inset}));
+
+  border-radius: var(--nb-radius-self);
+}
+
+/// Republishes a derived corner as the context for the next level down.
+///
+/// Goes on an element that does not itself derive: a component's inner content
+/// wrapper, typically. Because that element declares `--nb-radius-context` but
+/// never declares `--nb-radius-self`, there is no cycle, and concentric
+/// geometry composes to any depth.
+///
+/// ```scss
+/// .card { @include radius.surface(panel); }
+/// .card__media { @include radius.inset(16px); }
+/// .card__body { @include radius.publish-inner(); }
+/// ```
+@mixin publish-inner {
+  --nb-radius-context: var(--nb-radius-self, 0px);
+}
+
+/// The two-axis form, for an inset that differs horizontally and vertically.
+///
+/// A padded card whose image bleeds to the left and right edges but not to the
+/// top and bottom is inset by zero on one axis and by the padding on the
+/// other, and a single radius cannot describe that. CSS takes the two axes
+/// either side of a slash.
+///
+/// @param {String} $inset-x - horizontal distance between the boundaries
+/// @param {String} $inset-y - vertical distance between the boundaries
+@mixin inset-xy($inset-x, $inset-y) {
+  --nb-radius-self-x: max(
+    0px,
+    calc(var(--nb-radius-context, 0px) - #{$inset-x})
+  );
+  --nb-radius-self-y: max(
+    0px,
+    calc(var(--nb-radius-context, 0px) - #{$inset-y})
+  );
+
+  border-radius: var(--nb-radius-self-x) / var(--nb-radius-self-y);
+}
+
+/// A control that lives inside a surface without following its corners.
+///
+/// Takes its own semantic role and stops the context there, so that anything
+/// nested inside the control derives from the control rather than from the
+/// panel two levels up.
+///
+/// @param {String} $role - a semantic role: control, popover, panel, modal
+@mixin standalone($role: control) {
+  border-radius: var(--nb-radius-#{$role});
+  --nb-radius-context: var(--nb-radius-#{$role});
+}
+
+/// Geometry that never follows the appearance setting.
+///
+/// Avatars, radios and status dots are round because of what they are, not
+/// because of a style preference, and a switch track is a track at any
+/// appearance. This exists so those cases read as deliberate in the source
+/// rather than looking like values someone forgot to tokenise.
+@mixin circular {
+  border-radius: var(--nb-radius-circle);
+  // A circle is not a corner anything can be concentric with, and a child
+  // deriving from 50% would get a meaningless percentage of its own box.
+  --nb-radius-context: 0px;
+}
+
+@mixin pill {
+  border-radius: var(--nb-radius-pill);
+  --nb-radius-context: 0px;
+}

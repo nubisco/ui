@@ -334,6 +334,8 @@ defineExpose({ open, toggle, close })
 </script>
 
 <style lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-user-menu {
   position: relative;
   display: flex;
@@ -367,7 +369,8 @@ defineExpose({ open, toggle, close })
   background: var(--nb-c-layer-3);
   border: 1px solid var(--nb-c-layer-border-3);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
-  padding: 0.6rem 0;
+  @include radius.surface(popover);
+  padding: 4px;
   z-index: var(--nb-zindex-menu);
 }
 
@@ -416,8 +419,10 @@ defineExpose({ open, toggle, close })
   width: 100%;
   border: 0;
   background: none;
-  padding: 0.45rem 1rem;
+  padding: 0.45rem 0.75rem;
   font-size: 0.82rem;
+  // 4px of padding plus the container's 1px border.
+  @include radius.inset(5px);
   font-family: inherit;
   color: var(--nb-c-text);
   cursor: pointer;

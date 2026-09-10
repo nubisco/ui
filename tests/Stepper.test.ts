@@ -7,6 +7,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { compileStyle, parse } from 'vue/compiler-sfc'
 import { compileString } from 'sass-embedded'
+import { pathToFileURL } from 'node:url'
 
 interface IStepFixture {
   label: string
@@ -735,14 +736,19 @@ describe('Stepper', () => {
     const SCOPE = 'data-v-stepper'
 
     const css = (file: string) => {
-      const src = readFileSync(
-        join(__dirname, '../src/components', file),
-        'utf8',
-      )
+      const path = join(__dirname, '../src/components', file)
+      const src = readFileSync(path, 'utf8')
       const { descriptor } = parse(src)
       const sass = compileString(
         descriptor.styles.map((s) => s.content).join('\n'),
-        { syntax: 'scss' },
+        {
+          syntax: 'scss',
+          // Compiled as the component's own file, so a relative `@use` of a
+          // shared mixin resolves exactly as it does in the real build.
+          // Without this the block compiles in a vacuum and any component
+          // that imports something fails here for the wrong reason.
+          url: pathToFileURL(path),
+        },
       ).css
       const compiled = compileStyle({
         source: sass,

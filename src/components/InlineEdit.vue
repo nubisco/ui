@@ -96,6 +96,8 @@ defineExpose({ start })
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 @mixin scale($set) {
   font-family: var(--nb-type-#{$set}-family, var(--nb-font-family-sans));
   font-size: var(--nb-type-#{$set}-size);
@@ -113,7 +115,8 @@ defineExpose({ start })
   padding: calc(var(--nb-base-unit) * 0.25) calc(var(--nb-base-unit) * 0.75);
   margin-inline-start: calc(var(--nb-base-unit) * -0.75);
   border: 0;
-  border-radius: var(--nb-radius-sm);
+  // an inline value box, not a control the eye reads as a pill
+  @include radius.standalone(control-sm);
   background: transparent;
   color: inherit;
   text-align: start;
@@ -163,7 +166,9 @@ defineExpose({ start })
   padding: calc(var(--nb-base-unit) * 0.25) calc(var(--nb-base-unit) * 0.75);
   margin-inline-start: calc(var(--nb-base-unit) * -0.75);
   border: 1px solid var(--nb-c-primary);
-  border-radius: var(--nb-radius-sm);
+  // The editing box is a field, so it takes the field corner: square when
+  // square, a capsule when round. `--nb-radius-sm` was 4px in both.
+  border-radius: var(--nb-field-radius, 0);
   background: var(--nb-c-surface);
   color: inherit;
 

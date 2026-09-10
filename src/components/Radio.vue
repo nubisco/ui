@@ -157,7 +157,13 @@ function optionClasses(option: IRadioOption) {
     width: 18px;
     height: 18px;
     border: 1px solid var(--nb-c-field-border);
-    border-radius: 50%;
+    /*
+     * A radio is round by convention, but the square appearance squares the
+     * library's controls, and a round radio beside a square checkbox is the
+     * one place the two languages visibly disagree. It follows the control
+     * corner and keeps its own shape only where that resolves to one.
+     */
+    border-radius: var(--nb-radius-control);
     transition:
       border-color 0.15s,
       box-shadow 0.15s;
@@ -167,7 +173,13 @@ function optionClasses(option: IRadioOption) {
   &__dot {
     width: 9px;
     height: 9px;
-    border-radius: 50%;
+    /*
+     * A radio is round by convention, but the square appearance squares the
+     * library's controls, and a round radio beside a square checkbox is the
+     * one place the two languages visibly disagree. It follows the control
+     * corner and keeps its own shape only where that resolves to one.
+     */
+    border-radius: var(--nb-radius-control);
     background: var(--nb-c-contrast);
     animation: nb-radio-pop 0.12s ease;
   }

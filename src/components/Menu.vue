@@ -204,6 +204,8 @@ defineExpose({
 </script>
 
 <style lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-menu {
   // Teleported to body but previously had no z-index at all, so any
   // positioned page element (sticky column headers, shell chrome) painted
@@ -212,7 +214,14 @@ defineExpose({
   background: var(--nb-c-layer-3);
   border: 1px solid var(--nb-c-layer-border-3);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  padding: 4px 0;
+  // Teleported to <body>, so it inherits the appearance attribute from the
+  // document and establishes its own outer corner rather than deriving one
+  // from whatever it was opened from.
+  @include radius.surface(popover);
+  // Inset on all four sides, not just top and bottom: a highlighted item is a
+  // rounded row floating inside the menu's corner rather than a band running
+  // into it, which is what makes the first and last item look right.
+  padding: 4px;
   margin: 0;
   list-style: none;
   max-height: 50vh;

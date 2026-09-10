@@ -116,6 +116,13 @@ const messageVariant = computed(() =>
   }
 
   // ── Track ─────────────────────────────────────────────────────────────────────
+  // A progress track and the bar inside it are capsules under rounded, which
+  // is the shape a meter takes; both go square together.
+  &__track,
+  &__bar {
+    border-radius: var(--nb-radius-control);
+  }
+
   &__track {
     position: relative;
     overflow: hidden;

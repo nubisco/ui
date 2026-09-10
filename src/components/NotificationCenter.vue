@@ -1149,6 +1149,8 @@ defineExpose({ show, close, toggle, isOpen, unreadCount })
 </script>
 
 <style lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-notification-center {
   position: relative;
   display: inline-flex;
@@ -1209,6 +1211,7 @@ defineExpose({ show, close, toggle, isOpen, unreadCount })
   flex-direction: column;
   background: var(--nb-c-layer-3);
   border: 1px solid var(--nb-c-layer-border-3);
+  @include radius.surface(popover);
   // The library's panel elevation, byte for byte what NbUserMenu uses, but
   // behind an override so a dark or a high-contrast theme can replace it
   // without a :deep() from outside. There is no shadow token in
