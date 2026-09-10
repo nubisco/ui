@@ -251,9 +251,30 @@
         layers.token(layers.$light, text-subtle)
       )};
 
-    // Form field tokens: heights and padding relative to --nb-base-unit (8px)
-    --nb-c-field-bg: #{layers.token(layers.$light, field-bg)};
+    /*
+     * Form fields.
+     *
+     * The enabled fill used to be `field-bg` (#cacbcc): a mid grey, darker
+     * than every surface it sits on. A grey box with no outline is what most
+     * interfaces use to mean "unavailable", so the enabled state was wearing
+     * the disabled state's clothes, and `disabled` on top of it was only a
+     * 0.45 opacity. The two differed in brightness rather than in kind, and
+     * the enabled field read as the heavier of the two.
+     *
+     * The geometry is untouched: still a filled box with a single bottom
+     * rule, still square. Only the fills and the boundary contrast moved.
+     * `[data-nb-preset='classic-fields']` restores the old values.
+     */
+    --nb-c-field-bg: #f1f2f3;
     --nb-c-field-border: #{layers.token(layers.$light, field-border)};
+    // The historic enabled fill, now carrying the disabled state.
+    --nb-c-field-bg-disabled: #{layers.token(layers.$light, field-bg)};
+    // Disabled loses boundary contrast as well as gaining the darker fill,
+    // so the two states differ in kind. Deliberately under the 3:1 that WCAG
+    // 1.4.11 asks of an *operable* control boundary: this one is not operable.
+    --nb-c-field-border-disabled: #949596;
+    // Read-only sits between the two: quieter than editable, but still a rule.
+    --nb-c-field-border-readonly: #949596;
 
     // ── Status foregrounds ────────────────────────────────────────────────
     // Drawn as glyphs and outlines directly on a layer surface, so they are
@@ -388,6 +409,55 @@
     --nb-radius-md: var(--nb-base-unit); // 8px
     --nb-radius-lg: calc(var(--nb-base-unit) * 1.5); // 12px
     --nb-radius-pill: 9999px;
+
+    /*
+     * Semantic radius roles.
+     *
+     * The scale above is a set of sizes; these are the roles components
+     * actually consume, and they are what the square/rounded appearance
+     * setting switches. A component asks for "the radius a popover has", not
+     * for "4px", so one setting moves all of them coherently and nothing has
+     * to be hunted down by hand.
+     *
+     * These values are the SQUARE scale, and square is the default. They are
+     * not aspirational zeroes: they are what the library renders today, so an
+     * application that upgrades and calls nothing gets the pixels it had
+     * before. The rounded scale lives in the `appearance` mixin below.
+     *
+     * Roles are proportionate rather than uniform. A 12px corner on a modal
+     * and a 12px corner on a checkbox are not the same design; the larger the
+     * surface, the more corner it can carry before it stops reading as
+     * geometric.
+     */
+    --nb-radius-control: 0; // buttons and single-line fields (capsule when round)
+    --nb-radius-control-sm: 0; // checkboxes, sidebar rows, step markers
+    --nb-radius-popover: 0; // menus, dropdowns, tooltips
+    --nb-radius-panel: 0; // cards, panels, inspectors, table shells
+    --nb-radius-modal: 0; // modals, drawers
+
+    /*
+     * Geometry that is not decoration and never follows the appearance
+     * setting. An avatar is round because it is an avatar, a radio is round
+     * because a square radio is a checkbox, and a switch track is a track.
+     * Squaring these would not make the library look more geometric, it would
+     * make it look broken.
+     */
+    --nb-radius-circle: 50%;
+
+    /*
+     * The concentric context.
+     *
+     * A surface that draws a corner publishes it here, and any inset surface
+     * that follows that corner derives from it rather than picking its own
+     * value: `inner = max(0, outer - inset)`, which is the geometry that makes
+     * two nested rounded boxes look like one object instead of two.
+     *
+     * At the document root there is no enclosing surface, so the context is
+     * zero and a derived radius collapses to its own floor. Components that
+     * are standalone rather than inset ignore this entirely.
+     */
+    --nb-radius-context: 0px;
+    --nb-radius-inset: 0px;
 
     --nb-grid-max-width: #{grid.$grid-max-width}px;
     --nb-grid-columns: #{grid.$grid-columns};
@@ -756,9 +826,25 @@
     --nb-c-bg: var(--nb-c-layer-0);
     --nb-c-bg-soft: var(--nb-c-layer-1);
 
-    // Form fields
-    --nb-c-field-bg: #{layers.token(layers.$dark, field-bg)};
-    --nb-c-field-border: #{layers.token(layers.$dark, field-border)};
+    /*
+     * Form fields. The dark ramp's old fill was an inset near-black rather
+     * than a mid grey, so it never had the light theme's "looks disabled"
+     * problem; it moves up one surface so an enabled field reads as raised
+     * out of the page, matching the relationship the light half now has.
+     *
+     * The dark ramp cannot separate enabled from disabled by fill at all
+     * (every surface in it sits within 1.21:1 of every other), so in this
+     * theme the bottom rule is the whole signal.
+     */
+    --nb-c-field-bg: #{layers.level(layers.$dark, surface, 1)};
+    // Picked against that fill directly rather than taken from the layer
+    // border ramp, whose brightest step (#696a6b) measures 3.05:1 here and
+    // clears 1.4.11 by four hundredths. This is 4.29:1.
+    --nb-c-field-border: #818283;
+    // Flush with the page ground: enabled is raised, disabled is not.
+    --nb-c-field-bg-disabled: #{layers.level(layers.$dark, surface, 0)};
+    --nb-c-field-border-disabled: #{layers.level(layers.$dark, border, 0)};
+    --nb-c-field-border-readonly: #{layers.level(layers.$dark, border, 1)};
 
     // Status foregrounds. The light values are mid-ramp fills that fall to
     // ~3:1 or below on the dark surfaces, so the dark theme steps up the

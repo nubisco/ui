@@ -227,7 +227,11 @@ function onKeydown(e: KeyboardEvent) {
 </script>
 
 <style lang="scss" scoped>
+@use '../styles/logic/radius' as radius;
+
 .nb-tree-node {
+  // A tree row is a nav row: a rounded rectangle under rounded, never a pill.
+  @include radius.standalone(control-sm);
   list-style: none;
   outline: none;
   color: var(--nb-c-text-muted);
@@ -247,6 +251,14 @@ function onKeydown(e: KeyboardEvent) {
     align-items: center;
     gap: 0;
     inline-size: 100%;
+    /*
+     * The corner lives on the row, not on its selected state.
+     *
+     * The focus ring is an `outline`, and an outline follows the element's
+     * radius: with the corner only on `--selected`, a focused row drew a
+     * square ring around what was meant to be a rounded row.
+     */
+    border-radius: var(--nb-radius-control-sm);
     min-block-size: 2rem; // 32px
     padding-inline-end: 1rem; // 16px
     transition: background 0.1s;

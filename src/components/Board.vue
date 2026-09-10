@@ -622,6 +622,8 @@ function onColumnDragEnd() {
 </script>
 
 <style lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-board {
   overflow: auto;
   font-family: var(--nb-font-family-sans, sans-serif);
@@ -775,7 +777,7 @@ function onColumnDragEnd() {
   position: relative;
   background: var(--nb-c-surface);
   border: 1px solid var(--nb-c-border);
-  border-radius: 5px;
+  @include radius.surface(panel);
   padding: 0.5rem 0.6rem;
   cursor: grab;
   margin-bottom: 0.35rem;

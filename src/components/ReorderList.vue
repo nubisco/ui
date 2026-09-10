@@ -277,6 +277,8 @@ onBeforeUnmount(cleanupPointer)
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-reorder-list {
   // The gap between rows is the drop indicator's home, so it is owned here as
   // a token rather than left to a `margin-top` on the rows: a host that styles
@@ -319,9 +321,9 @@ onBeforeUnmount(cleanupPointer)
   padding: var(--nb-spacing-8);
   background: var(--nb-c-surface);
   border: 1px solid var(--nb-c-border);
-  // Squared, like the rest of the library. NbPanel sets no radius at all and
-  // the scale stops early on purpose; a list row is not the place to spend it.
-  border-radius: 0;
+  // A draggable row is a small surface of its own, so it follows the panel
+  // corner. The note that used to sit here predated the appearance setting.
+  @include radius.surface(panel);
   transition:
     background 70ms linear,
     margin 110ms cubic-bezier(0, 0, 0.38, 0.9);

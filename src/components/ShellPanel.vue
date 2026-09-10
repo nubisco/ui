@@ -157,6 +157,8 @@ defineExpose({ setSize })
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-shell-panel {
   // --nb-shell-panel-* defaults live at :root in styles/_theme.scss so consumer
   // apps can override them on :root without fighting scoped-style specificity.
@@ -164,7 +166,7 @@ defineExpose({ setSize })
   flex-direction: column;
   background: var(--nb-shell-panel-bg);
   border: var(--nb-shell-panel-border);
-  border-radius: 2px;
+  @include radius.surface(panel);
   margin: var(--nb-shell-panel-gap);
   min-height: 0;
   overflow: hidden;

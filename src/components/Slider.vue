@@ -36,46 +36,57 @@
           :class="trackAreaClasses"
           grow
         >
-          <div
-            ref="trackRef"
-            class="nb-slider__track"
-            @mousedown="onTrackMousedown"
-            @touchstart.passive="onTrackTouchstart"
-          >
-            <!-- Filled segment -->
-            <div class="nb-slider__track__fill" :style="fillStyle" />
+          <!--
+            The bounds flank the track rather than sitting under its ends.
 
-            <!-- Single handle (circle) -->
+            Underneath, they pushed the track to the full width of the row
+            while the number input beside it is inset by its own capsule, so
+            nothing lined up: the track ran past everything else on the line.
+            Inline, the track is shorter and its ends are the component's ends.
+          -->
+          <div class="nb-slider__track-row">
+            <span v-if="showBounds" class="nb-slider__track-label">{{
+              min
+            }}</span>
             <div
-              v-if="!range"
-              class="nb-slider__track__handle"
-              :style="{ left: `${valueToPercent(singleValue)}%` }"
-              @mousedown.stop="onHandleMousedown(null, $event)"
-              @touchstart.stop.passive="onHandleTouchstart(null, $event)"
-            />
+              ref="trackRef"
+              class="nb-slider__track"
+              @mousedown="onTrackMousedown"
+              @touchstart.passive="onTrackTouchstart"
+            >
+              <!-- Filled segment -->
+              <div class="nb-slider__track__fill" :style="fillStyle" />
 
-            <!-- Range handles (triangles) -->
-            <template v-else>
+              <!-- Single handle (circle) -->
               <div
-                class="nb-slider__track__handle nb-slider__track__handle--low"
-                :style="{ left: `${valueToPercent(lowValue)}%` }"
-                @mousedown.stop="onHandleMousedown('low', $event)"
-                @touchstart.stop.passive="onHandleTouchstart('low', $event)"
+                v-if="!range"
+                class="nb-slider__track__handle"
+                :style="{ left: `${valueToPercent(singleValue)}%` }"
+                @mousedown.stop="onHandleMousedown(null, $event)"
+                @touchstart.stop.passive="onHandleTouchstart(null, $event)"
               />
-              <div
-                class="nb-slider__track__handle nb-slider__track__handle--high"
-                :style="{ left: `${valueToPercent(highValue)}%` }"
-                @mousedown.stop="onHandleMousedown('high', $event)"
-                @touchstart.stop.passive="onHandleTouchstart('high', $event)"
-              />
-              <div class="nb-slider__tick" />
-            </template>
-          </div>
 
-          <!-- Min / max labels below track -->
-          <div class="nb-slider__track-labels">
-            <span class="nb-slider__track-label">{{ min }}</span>
-            <span class="nb-slider__track-label">{{ max }}</span>
+              <!-- Range handles (triangles) -->
+              <template v-else>
+                <div
+                  class="nb-slider__track__handle nb-slider__track__handle--low"
+                  :style="{ left: `${valueToPercent(lowValue)}%` }"
+                  @mousedown.stop="onHandleMousedown('low', $event)"
+                  @touchstart.stop.passive="onHandleTouchstart('low', $event)"
+                />
+                <div
+                  class="nb-slider__track__handle nb-slider__track__handle--high"
+                  :style="{ left: `${valueToPercent(highValue)}%` }"
+                  @mousedown.stop="onHandleMousedown('high', $event)"
+                  @touchstart.stop.passive="onHandleTouchstart('high', $event)"
+                />
+                <div class="nb-slider__tick" />
+              </template>
+            </div>
+
+            <span v-if="showBounds" class="nb-slider__track-label">{{
+              max
+            }}</span>
           </div>
         </NbGrid>
 
@@ -133,6 +144,7 @@ const props = withDefaults(defineProps<ISliderProps>(), {
   range: false,
   disabled: false,
   showInput: true,
+  showBounds: true,
   size: ESizeShort.Medium,
   variant: 'default',
 })
@@ -554,12 +566,29 @@ const trackAreaClasses = computed(() => ({
     pointer-events: none;
   }
 
-  &__track-labels {
+  /*
+   * The track and its bounds on one line.
+   *
+   * `min-width: 0` on the track is what lets it shrink between two labels
+   * instead of pushing them out of the row.
+   */
+  &__track-row {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    gap: var(--nb-spacing-8);
+    width: 100%;
+    min-width: 0;
+  }
+
+  &__track-row .nb-slider__track {
+    flex: 1;
+    min-width: 0;
   }
 
   &__track-label {
+    flex-shrink: 0;
+    // Tabular figures so the track does not shift as the bounds change width.
+    font-variant-numeric: tabular-nums;
     font-size: 11px;
     color: var(--nb-c-field-border);
     line-height: 1;

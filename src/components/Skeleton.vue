@@ -214,30 +214,46 @@ const rootStyle = computed(() => {
   width: 100%;
 
   --nb-skeleton-height: calc(var(--nb-base-unit) * 8);
-  --nb-skeleton-radius: var(--nb-radius-sm);
+  // The appearance roles, not the fixed size scale: `--nb-radius-sm` is 4px
+  // in both appearances, so a skeleton stayed rounded on a square page.
+  --nb-skeleton-radius: var(--nb-radius-control-sm);
 
   &--radius-none {
-    --nb-skeleton-radius: var(--nb-radius-none);
+    --nb-skeleton-radius: 0;
   }
 
   &--radius-xs {
-    --nb-skeleton-radius: var(--nb-radius-xs);
+    --nb-skeleton-radius: var(--nb-radius-control-sm);
   }
 
+  /*
+   * The named steps map onto the appearance roles rather than the fixed size
+   * scale. `--nb-radius-sm|md|lg` are 4/8/12px in BOTH appearances, so a
+   * skeleton asking for one stayed rounded on a square page: the default was
+   * fixed earlier and these three were not.
+   */
   &--radius-sm {
-    --nb-skeleton-radius: var(--nb-radius-sm);
+    --nb-skeleton-radius: var(--nb-radius-control-sm);
   }
 
   &--radius-md {
-    --nb-skeleton-radius: var(--nb-radius-md);
+    --nb-skeleton-radius: var(--nb-radius-panel);
   }
 
   &--radius-lg {
-    --nb-skeleton-radius: var(--nb-radius-lg);
+    --nb-skeleton-radius: var(--nb-radius-modal);
   }
 
+  /*
+   * Even the pill follows the appearance.
+   *
+   * A skeleton's pill is decoration standing in for a line of text, not
+   * geometry that means something the way a switch track or an avatar does.
+   * On a square page it squares with everything else; rounded, it is a
+   * capsule.
+   */
   &--radius-pill {
-    --nb-skeleton-radius: var(--nb-radius-pill);
+    --nb-skeleton-radius: var(--nb-radius-control);
   }
 
   // The shapes themselves. Separated from the root because the root is the
@@ -299,8 +315,9 @@ const rootStyle = computed(() => {
     height: 100%;
   }
 
+  // `circle` names its own shape, so it keeps it at every appearance.
   &--circle &__fill {
-    border-radius: var(--nb-radius-pill);
+    border-radius: var(--nb-radius-circle);
   }
 
   &--static &__fill {

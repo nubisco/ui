@@ -235,6 +235,8 @@ function onFlyoutLeave() {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-sidebar-menu-item {
   list-style: none;
   margin: 0;
@@ -252,7 +254,8 @@ function onFlyoutLeave() {
   // a global `* { box-sizing: border-box }` reset, or overrides it for anchors.
   box-sizing: border-box;
   padding: 0.45rem 0.75rem;
-  border-radius: 6px;
+  // a nav row is a rounded rectangle, not a pill
+  @include radius.standalone(control-sm);
   border: none;
   background: none;
   color: var(--nb-shell-sidebar-link-color);

@@ -45,6 +45,8 @@ const iconMap = {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-message {
   display: inline-flex;
   align-items: center;
@@ -99,7 +101,7 @@ const iconMap = {
     background: var(--nb-c-contrast);
     color: var(--nb-c-surface);
     padding: 6px 10px;
-    border-radius: 4px;
+    @include radius.surface(popover);
     font-size: 11px;
     font-weight: 400;
     white-space: nowrap;

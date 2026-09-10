@@ -582,6 +582,8 @@ function onRowClick(row: T, rowIndex: number) {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-data-table {
   --nb-dt-row-height: calc(var(--nb-base-unit) * 6);
   --nb-dt-cell-pad-x: calc(var(--nb-base-unit) * 2);
@@ -593,6 +595,15 @@ function onRowClick(row: T, rowIndex: number) {
   background: var(--nb-c-surface);
   color: var(--nb-c-text);
   border: 1px solid var(--nb-c-border);
+  /*
+   * The shell is a panel-role surface. `overflow: hidden` was already here and
+   * is what makes the corner work: the toolbar, the sticky header and the
+   * footer are attached surfaces that run to the shell's edges, so they are
+   * clipped by its corner rather than each needing a corner of their own.
+   * That is also why they must not round themselves: two rounded boxes meeting
+   * at a shared edge leave a visible notch.
+   */
+  @include radius.surface(panel);
   overflow: hidden;
   font-size: var(--nb-dt-font-size);
 
@@ -835,10 +846,23 @@ function onRowClick(row: T, rowIndex: number) {
     width: calc(var(--nb-base-unit) * 6);
   }
 
+  /*
+   * The control columns must not be squeezable.
+   *
+   * A `width` on a <col> is a suggestion under `table-layout: auto`, not a
+   * floor: as soon as another column asks for the remaining space, the browser
+   * is free to compress these, and the select column collapsed from 48px to
+   * 17px with the checkbox pressed up against the column divider. A min-width
+   * on the cells is honoured, so the floor goes there.
+   *
+   * At the floor the control centres with even clearance either side, which
+   * is what keeps it off the divider.
+   */
   &__select-cell,
   &__actions-cell {
     text-align: center;
     white-space: nowrap;
+    min-width: calc(var(--nb-base-unit) * 6);
   }
 
   &__select-cell {

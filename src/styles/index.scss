@@ -8,6 +8,8 @@
 @use 'typography';
 @use 'utils';
 @use 'patterns/inspector';
+@use 'presets/classic-fields';
+@use 'appearance';
 
 @include theme.base;
 @include theme.classes;
@@ -15,3 +17,9 @@
 @include theme.dark;
 @include directives.tooltip;
 @include grid.grid;
+// Opt-out only: every rule inside is scoped to [data-nb-preset], so including
+// it changes nothing until an application asks for the old field fills.
+@include classic-fields.classic-fields;
+// The rounded scale. Square needs no rules: the semantic roles are already
+// the square values, so this only adds the opt-in half.
+@include appearance.appearance;

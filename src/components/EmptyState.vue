@@ -67,6 +67,8 @@ const resolvedIcon = computed(() =>
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-empty-state {
   display: flex;
   flex-direction: column;
@@ -90,7 +92,7 @@ const resolvedIcon = computed(() =>
 
   &--bordered {
     border: 1px dashed var(--nb-c-border);
-    border-radius: var(--nb-radius-xs);
+    @include radius.surface(panel);
   }
 }
 

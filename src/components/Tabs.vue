@@ -183,6 +183,8 @@ function onKeydown(event: KeyboardEvent): void {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-tabs {
   display: flex;
   flex-direction: column;
@@ -285,7 +287,7 @@ function onKeydown(event: KeyboardEvent): void {
     gap: 2px;
     padding: 2px;
     border: 1px solid var(--nb-c-border);
-    border-radius: 8px;
+    @include radius.surface(panel);
     background: var(--nb-c-bg-soft);
     align-self: flex-start;
   }
@@ -296,7 +298,13 @@ function onKeydown(event: KeyboardEvent): void {
 
   &--contained &__tab {
     height: calc(var(--nb-tabs-height) - 8px);
-    border-radius: 6px;
+    /*
+     * Concentric with the list that encloses it. The list is 2px of padding
+     * plus a 1px border, so the tab's border-box sits 3px inside the list's:
+     * inner = outer - 3px. The hand-picked 6px against the list's 8px was a
+     * 1px mismatch, which is exactly the pinch a shared corner shows.
+     */
+    @include radius.inset(3px);
   }
 
   &--contained &__tab--active {

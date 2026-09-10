@@ -215,6 +215,8 @@ defineExpose({ files, setFileStatus })
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-file-uploader {
   display: flex;
   flex-direction: column;
@@ -251,7 +253,7 @@ defineExpose({ files, setFileStatus })
     justify-content: center;
     padding: 2rem 1.5rem;
     border: 2px dashed var(--nb-c-border);
-    border-radius: 6px;
+    @include radius.surface(panel);
     cursor: pointer;
     text-align: center;
     transition:

@@ -18,9 +18,12 @@ const { layerProps } = useSurfaceLayer({ level: () => props.layer })
 </script>
 
 <style lang="scss" scoped>
+@use '../styles/logic/radius' as radius;
+
 .nb-panel {
   background: var(--nb-c-surface);
   border: 1px solid var(--nb-c-border);
   padding: calc(var(--nb-base-unit) * 2);
+  @include radius.surface(panel);
 }
 </style>

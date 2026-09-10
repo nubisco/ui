@@ -178,6 +178,8 @@ function onSelect() {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-stepper__step {
   position: relative;
   display: flex;
@@ -209,7 +211,8 @@ function onSelect() {
   inline-size: var(--nb-stepper-marker);
   block-size: var(--nb-stepper-marker);
   border: 1px solid var(--nb-c-border);
-  border-radius: var(--nb-radius-sm);
+  // a step marker is a small square affordance
+  @include radius.standalone(control-sm);
   background: var(--nb-c-surface);
   color: var(--nb-c-text-muted);
   font-size: var(--nb-stepper-marker-size);

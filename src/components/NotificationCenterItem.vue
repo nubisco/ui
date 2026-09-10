@@ -245,6 +245,8 @@ function onActivate(event: Event) {
 </script>
 
 <style lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-notification-item {
   display: flex;
   align-items: stretch;
@@ -264,6 +266,9 @@ function onActivate(event: Event) {
   width: 100%;
   margin: 0;
   padding: var(--nb-spacing-10) var(--nb-spacing-12);
+  // Concentric with the panel that lists it.
+  // 4px of padding plus the container's 1px border.
+  @include radius.inset(5px);
   border: 0;
   background: none;
   font-family: inherit;

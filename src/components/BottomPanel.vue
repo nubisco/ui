@@ -134,6 +134,8 @@ defineExpose({ setSize })
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-bottom-panel {
   // --nb-bottom-panel-* defaults live at :root in styles/_theme.scss so consumer
   // apps can override them on :root without fighting scoped-style specificity.
@@ -206,7 +208,8 @@ defineExpose({ setSize })
   width: 22px;
   height: 22px;
   border: none;
-  border-radius: 3px;
+  // a small square icon affordance
+  @include radius.standalone(control-sm);
   background: transparent;
   color: var(--nb-c-text-muted);
   cursor: pointer;

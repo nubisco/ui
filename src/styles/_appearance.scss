@@ -1,0 +1,144 @@
+/// Square and rounded geometry.
+///
+/// One attribute on `<html>` selects the scale:
+///
+/// ```html
+/// <html data-nb-appearance="rounded">
+/// ```
+///
+/// which is what `configureAppearance()` and `useAppearance()` write. It is on
+/// the document element rather than the application root so that teleported
+/// overlays, which mount as siblings of that root, inherit it too.
+///
+/// Square is the default and needs no rules at all: the semantic roles in
+/// `_theme.scss` are already the square scale, and they are the geometry the
+/// library renders today. Everything here is the opt-in half.
+///
+/// ## Independence
+///
+/// Nothing in this file mentions a colour. Appearance and colour mode are
+/// selected by different selectors (`[data-nb-appearance]` and `.dark`) that
+/// never appear in the same rule, so the two cannot interfere: switching one
+/// cannot reset the other, and a theme exported by the theme builder carries
+/// colours only, never a baked-in corner.
+///
+/// @group @nubisco/appearance
+
+@use 'sass:map';
+
+/// The rounded scale.
+///
+/// This is not "square with the corners knocked off". Rounded is a different
+/// design language, and the reference is Apple's: controls are capsules, and
+/// every container carries a generous corner that its contents are concentric
+/// with.
+///
+/// Two families, because one radius cannot serve both:
+///
+/// - **`control`** is a capsule. A button, a single-line field or a tag is a
+///   pill: the radius exceeds half the height, so CSS clamps it and both ends
+///   are semicircles. This is what "round" means on a control, and it is why
+///   4px was wrong.
+/// - **`control-sm`** is a rounded rectangle, for the small square-ish
+///   affordances a capsule would destroy. A checkbox at capsule radius is a
+///   circle, which is a radio button; a sidebar row at capsule radius is a
+///   lozenge that fights the rows above and below it.
+///
+/// Containers step up with their size: a popover is small and close to the
+/// pointer, a modal is the largest surface on screen and can carry the most
+/// corner before it stops reading as geometric.
+///
+/// The container values are deliberately larger than the previous 6/8/12, so
+/// that an inset surface still has a corner left after the enclosing padding
+/// is subtracted. Concentric geometry is only visible when the outer radius
+/// exceeds the inset; at 8px against 16px of padding it always collapsed to
+/// square, which is correct arithmetic and a wasted mechanism.
+$rounded: (
+  control: '9999px',
+  control-sm: 'var(--nb-base-unit)',
+  // 8px
+  popover: 'calc(var(--nb-base-unit) * 1.5)',
+  // 12px
+  panel: 'calc(var(--nb-base-unit) * 1.75)',
+  // 14px
+  modal: 'calc(var(--nb-base-unit) * 2.5)',
+);
+
+@mixin appearance {
+  [data-nb-appearance='rounded'] {
+    --nb-radius-control: #{map.get($rounded, control)};
+    --nb-radius-control-sm: #{map.get($rounded, control-sm)};
+    --nb-radius-popover: #{map.get($rounded, popover)};
+    --nb-radius-panel: #{map.get($rounded, panel)};
+    --nb-radius-modal: #{map.get($rounded, modal)};
+
+    /*
+     * Fields become boxes.
+     *
+     * Square keeps the library's own idiom: a filled box with one bottom rule.
+     * A capsule cannot be drawn with a bottom rule alone, so rounded gives the
+     * field the outline the shape needs. Both are deliberate, and the square
+     * treatment is untouched.
+     *
+     * A textarea is not a capsule. It is a box of text, and a pill around
+     * several lines reads as a speech bubble, so multiline steps down to the
+     * panel corner.
+     *
+     * The side borders are added by ROUNDED, not neutralised by square, and
+     * only their WIDTH is set here. The colour stays `--nb-c-field-border`,
+     * named by each field component itself: a `var()` written in this block
+     * would substitute against the root palette and inherit that resolved
+     * value into a nested `.dark` region, giving one field light sides and a
+     * dark bottom rule.
+     *
+     * Drawing a transparent 1px side border in square too would keep the two
+     * appearances pixel-identical, and was tried: it makes every square field
+     * one pixel taller than it is today, which is a change to the default
+     * every existing application renders. Square compatibility is worth more
+     * than a pixel of parity on an opt-in switch, so a field is 1px taller in
+     * rounded and square is exactly what it was.
+     */
+    --nb-field-border-width: 1px;
+    --nb-field-radius: var(--nb-radius-control);
+    --nb-field-radius-multiline: var(--nb-radius-panel);
+    /*
+     * A validation state colours the whole box under rounded, because the
+     * whole box is drawn. The doubled bottom rule square uses would smear a
+     * one-sided shadow across a capsule, so it is switched off here and the
+     * border colour carries the state on its own.
+     */
+    --nb-field-status-emphasis: 0;
+
+    /*
+     * How far a child is held off a rounded parent's edge.
+     *
+     * Apple's rule, and the reason a rounded interface reads as calm: nothing
+     * sits hard against a rounded border, because a square child in a rounded
+     * corner cuts the arc. Square needs none of this, so it is zero there and
+     * every flush layout stays exactly as it was.
+     */
+    --nb-overlay-inset: calc(var(--nb-base-unit) * 0.75);
+  }
+
+  /*
+   * Square is written out as well as being the default.
+   *
+   * An application can nest the attribute to pin one region square inside a
+   * rounded page (a dense report inside a rounded shell, say). Without this
+   * block the inner region would inherit the rounded values, because custom
+   * properties inherit and "default" is not a thing the cascade knows about.
+   */
+  [data-nb-appearance='square'] {
+    --nb-radius-control: 0;
+    --nb-radius-control-sm: 0;
+    --nb-radius-popover: 0;
+    --nb-radius-panel: 0;
+    --nb-radius-modal: 0;
+    --nb-field-border-width: 0;
+    --nb-field-radius: 0;
+    --nb-field-radius-multiline: 0;
+    // Square states the validation on the one edge it draws.
+    --nb-field-status-emphasis: 1;
+    --nb-overlay-inset: 0px;
+  }
+}

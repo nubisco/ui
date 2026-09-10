@@ -62,13 +62,16 @@ const anchorAttrs = computed(() =>
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-sidebar-link {
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  // a nav row is a rounded rectangle; a lozenge fights the rows above and below
+  @include radius.standalone(control-sm);
   text-decoration: none;
   color: var(--nb-shell-sidebar-link-color);
   background: none;

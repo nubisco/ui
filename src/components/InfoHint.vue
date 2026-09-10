@@ -287,6 +287,8 @@ defineExpose({ open, close, isOpen })
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-info-hint {
   display: inline-flex;
   align-items: center;
@@ -330,7 +332,7 @@ defineExpose({ open, close, isOpen })
   max-width: calc(var(--nb-base-unit) * 34); // 272px
   padding: calc(var(--nb-base-unit) * 1.25) calc(var(--nb-base-unit) * 1.5);
   border: 1px solid var(--nb-c-border);
-  border-radius: var(--nb-radius-md);
+  @include radius.surface(popover);
   background: var(--nb-c-surface);
   color: var(--nb-c-text);
   box-shadow: 0 calc(var(--nb-base-unit) * 0.5) calc(var(--nb-base-unit) * 2)

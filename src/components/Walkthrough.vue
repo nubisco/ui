@@ -539,6 +539,8 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-walkthrough {
   position: fixed;
   inset: 0;
@@ -578,7 +580,7 @@ defineExpose({
   max-width: calc(100vw - var(--nb-base-unit) * 4);
   padding: calc(var(--nb-base-unit) * 2);
   border: 1px solid var(--nb-c-border);
-  border-radius: var(--nb-radius-lg);
+  @include radius.surface(popover);
   background: var(--nb-c-surface);
   color: var(--nb-c-text);
   box-shadow: 0 calc(var(--nb-base-unit) * 1.5) calc(var(--nb-base-unit) * 4)
