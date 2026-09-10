@@ -336,8 +336,30 @@ const wrapperClasses = computed(() => ({
     display: flex;
     align-items: center;
     background: var(--nb-c-field-bg);
-    // Always 1px border: never changes width, so no layout shift on focus
+    /*
+     * Square draws one bottom rule; rounded draws the whole box.
+     *
+     * A capsule cannot be described by an underline, so the appearance
+     * setting supplies the side borders and the radius together. Both default
+     * to zero, so nothing changes for anyone who has not opted into rounded.
+     */
+    /*
+     * One colour for all four sides, and the WIDTH decides which are drawn.
+     *
+     * The colour must not be aliased through a second token set by the
+     * appearance block. That block lives on `<html>`, so `var()` inside it
+     * substitutes there, against the palette in force at the root, and the
+     * resolved value then inherits down unchanged. A page that switches mode
+     * on a wrapper rather than on `<html>` (which is how the documentation
+     * previews and any per-region dark area work) therefore got LIGHT sides
+     * and a DARK bottom rule on the same field. Naming the token here instead
+     * resolves it against the element's own palette, so all four edges always
+     * agree.
+     */
+    border: var(--nb-field-border-width, 0) solid var(--nb-c-field-border);
+    // Always 1px, and the only edge square draws.
     border-bottom: 1px solid var(--nb-c-field-border);
+    border-radius: var(--nb-field-radius, 0);
     transition:
       border-color 0.15s,
       box-shadow 0.15s;
@@ -348,25 +370,63 @@ const wrapperClasses = computed(() => ({
     }
 
     &--error {
-      border-bottom-color: var(--nb-c-danger);
-      box-shadow: inset 0 -1px 0 0 var(--nb-c-danger);
+      /*
+       * `border-color` sets all four sides, but only the sides that have a
+       * width can show: square draws none, so the state reads on the bottom
+       * rule alone; rounded draws all four, so the state rings the capsule.
+       * One rule, both idioms.
+       */
+      border-color: var(--nb-c-danger);
+      box-shadow: inset 0 calc(-1px * var(--nb-field-status-emphasis, 1)) 0 0
+        var(--nb-c-danger);
     }
 
     &--warning {
-      border-bottom-color: var(--nb-c-warning);
-      box-shadow: inset 0 -1px 0 0 var(--nb-c-warning);
+      /*
+       * `border-color` sets all four sides, but only the sides that have a
+       * width can show: square draws none, so the state reads on the bottom
+       * rule alone; rounded draws all four, so the state rings the capsule.
+       * One rule, both idioms.
+       */
+      border-color: var(--nb-c-warning);
+      box-shadow: inset 0 calc(-1px * var(--nb-field-status-emphasis, 1)) 0 0
+        var(--nb-c-warning);
     }
 
+    /*
+     * Disabled is a fill as well as an opacity, so "you cannot type here"
+     * does not rest on a 0.45 alpha alone. The fallback is the enabled fill,
+     * which leaves the historic look untouched for anyone not on a preset.
+     */
     &--disabled {
+      background: var(--nb-c-field-bg-disabled, var(--nb-c-field-bg));
+      /*
+       * The rule dims too. In a dark theme every candidate fill sits within
+       * 1.2:1 of every other, so a fill alone cannot carry
+       * enabled-versus-disabled there and the border has to.
+       *
+       * `border-color`, not `border-bottom-color`: square draws one edge and
+       * rounded draws four, and a disabled capsule with three live edges and
+       * one dimmed one reads as a defect rather than as a state.
+       */
+      border-color: var(--nb-c-field-border-disabled, var(--nb-c-field-border));
       opacity: var(--nb-field-disabled-opacity);
       cursor: not-allowed;
     }
 
+    /*
+     * Read-only is text that happens to live in a form: no fill, and a
+     * quieter underline. It keeps the underline rather than losing it, so the
+     * value still reads as a field rather than as loose prose.
+     */
     &--readonly {
       background: transparent;
+      // All four edges, for the same reason disabled uses all four.
+      border-color: var(--nb-c-field-border-readonly, var(--nb-c-field-border));
     }
 
     &--multiline {
+      border-radius: var(--nb-field-radius-multiline, 0);
       align-items: stretch;
       min-width: 0;
       max-width: 100%;
