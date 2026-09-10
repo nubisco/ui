@@ -1,5 +1,6 @@
 import { glyphStubComputed } from './__mocks__/glyphStub'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
+import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import Modal from '../src/components/Modal.vue'
 
@@ -132,5 +133,239 @@ describe('Modal', () => {
   it('has role dialog on content', () => {
     const wrapper = createWrapper({ open: true })
     expect(wrapper.find('.nb-modal--content').attributes('role')).toBe('dialog')
+  })
+})
+
+/**
+ * The showcase reproduced all of this in three keypresses: open the dialog,
+ * focus stayed on the trigger; Tab, focus landed on a heading anchor behind
+ * the scrim; Escape, nothing. The page above it promised a focus trap.
+ *
+ * These mount against the real document, because the thing under test is
+ * where `document.activeElement` ends up, and they keep Teleport unstubbed so
+ * the dialog sits where it really sits.
+ */
+describe('Modal focus management', () => {
+  const mountOpen = (props = {}, slots = {}) =>
+    mount(Modal, {
+      props: { open: true, ...props },
+      slots: {
+        default:
+          '<button class="inside-a">A</button><button class="inside-b">B</button>',
+        ...slots,
+      },
+      attachTo: document.body,
+      global: {
+        stubs: {
+          NbIcon: NbIconStub,
+          NbGrid: NbGridStub,
+          Transition: { template: '<div><slot /></div>' },
+        },
+      },
+    })
+
+  const pressTab = (shiftKey = false) => {
+    const event = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      shiftKey,
+      bubbles: true,
+      cancelable: true,
+    })
+    document.dispatchEvent(event)
+    return event
+  }
+
+  afterEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  it('moves focus into the dialog when it opens', async () => {
+    const trigger = document.createElement('button')
+    document.body.appendChild(trigger)
+    trigger.focus()
+    expect(document.activeElement).toBe(trigger)
+
+    const wrapper = mount(Modal, {
+      props: { open: false },
+      slots: { default: '<button class="inside-a">A</button>' },
+      attachTo: document.body,
+      global: {
+        stubs: {
+          NbIcon: NbIconStub,
+          NbGrid: NbGridStub,
+          Transition: { template: '<div><slot /></div>' },
+        },
+      },
+    })
+
+    await wrapper.setProps({ open: true })
+    await nextTick()
+
+    expect(document.activeElement).toBe(document.querySelector('.inside-a'))
+    wrapper.unmount()
+  })
+
+  it('keeps Tab inside the dialog instead of reaching the page behind it', async () => {
+    const behind = document.createElement('a')
+    behind.href = '#behind'
+    document.body.appendChild(behind)
+
+    const wrapper = mountOpen()
+    await nextTick()
+
+    const last = document.querySelector<HTMLElement>('.inside-b')!
+    last.focus()
+
+    const event = pressTab()
+
+    expect(event.defaultPrevented).toBe(true)
+    expect(document.activeElement).not.toBe(behind)
+    // Teleport is unstubbed here, so the dialog lives on document.body
+    // rather than inside the wrapper's own tree.
+    const dialog = document.querySelector('.nb-modal--content')!
+    expect(dialog.contains(document.activeElement)).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('cycles backwards from the first control to the last on Shift+Tab', async () => {
+    const wrapper = mountOpen()
+    await nextTick()
+
+    const first = document.querySelector<HTMLElement>('.inside-a')!
+    first.focus()
+
+    const event = pressTab(true)
+
+    expect(event.defaultPrevented).toBe(true)
+    expect(document.activeElement).toBe(document.querySelector('.inside-b'))
+    wrapper.unmount()
+  })
+
+  it('pulls focus back when it is outside the dialog entirely', async () => {
+    const behind = document.createElement('button')
+    document.body.appendChild(behind)
+
+    const wrapper = mountOpen()
+    await nextTick()
+
+    behind.focus()
+    const event = pressTab()
+
+    expect(event.defaultPrevented).toBe(true)
+    expect(document.activeElement).toBe(document.querySelector('.inside-a'))
+    wrapper.unmount()
+  })
+
+  it('returns focus to the trigger when the dialog closes', async () => {
+    const trigger = document.createElement('button')
+    document.body.appendChild(trigger)
+    trigger.focus()
+
+    const wrapper = mount(Modal, {
+      props: { open: false },
+      slots: { default: '<button class="inside-a">A</button>' },
+      attachTo: document.body,
+      global: {
+        stubs: {
+          NbIcon: NbIconStub,
+          NbGrid: NbGridStub,
+          Transition: { template: '<div><slot /></div>' },
+        },
+      },
+    })
+
+    await wrapper.setProps({ open: true })
+    await nextTick()
+    expect(document.activeElement).not.toBe(trigger)
+
+    await wrapper.setProps({ open: false })
+    await nextTick()
+
+    expect(document.activeElement).toBe(trigger)
+    wrapper.unmount()
+  })
+
+  // A trigger inside the row the dialog just deleted is gone by the time
+  // focus is handed back. The restore must not throw, and must not leave
+  // focus on a detached node.
+  it('survives a trigger that no longer exists on close', async () => {
+    const trigger = document.createElement('button')
+    document.body.appendChild(trigger)
+    trigger.focus()
+
+    const wrapper = mount(Modal, {
+      props: { open: false },
+      slots: { default: '<button class="inside-a">A</button>' },
+      attachTo: document.body,
+      global: {
+        stubs: {
+          NbIcon: NbIconStub,
+          NbGrid: NbGridStub,
+          Transition: { template: '<div><slot /></div>' },
+        },
+      },
+    })
+
+    await wrapper.setProps({ open: true })
+    await nextTick()
+    trigger.remove()
+
+    await expect(wrapper.setProps({ open: false })).resolves.not.toThrow()
+    expect((document.activeElement as HTMLElement)?.isConnected).toBe(true)
+    wrapper.unmount()
+  })
+
+  // NbConfirm runs its own trap and switches this one off. Two traps on one
+  // surface pull focus in opposite directions.
+  it('leaves focus alone when trapFocus is false', async () => {
+    const trigger = document.createElement('button')
+    document.body.appendChild(trigger)
+    trigger.focus()
+
+    const wrapper = mount(Modal, {
+      props: { open: false, trapFocus: false },
+      slots: { default: '<button class="inside-a">A</button>' },
+      attachTo: document.body,
+      global: {
+        stubs: {
+          NbIcon: NbIconStub,
+          NbGrid: NbGridStub,
+          Transition: { template: '<div><slot /></div>' },
+        },
+      },
+    })
+
+    await wrapper.setProps({ open: true })
+    await nextTick()
+
+    expect(document.activeElement).toBe(trigger)
+    wrapper.unmount()
+  })
+
+  // Escape already emitted `close`; the showcase simply never listened. This
+  // pins the emit down so the documentation fix stays honest.
+  it('emits close on Escape', async () => {
+    const wrapper = mountOpen()
+    await nextTick()
+
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    )
+    await nextTick()
+
+    expect(wrapper.emitted('close')).toBeTruthy()
+    wrapper.unmount()
+  })
+
+  // The dialog box carries tabindex="-1" so there is somewhere to stand when
+  // every control in it is disabled, which is the pending state.
+  it('holds focus on the dialog when it has no focusable controls', async () => {
+    const wrapper = mountOpen({}, { default: '<p>Nothing to focus</p>' })
+    await nextTick()
+
+    expect(document.activeElement).toBe(
+      document.querySelector('.nb-modal--content'),
+    )
+    wrapper.unmount()
   })
 })
