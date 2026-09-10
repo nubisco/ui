@@ -186,3 +186,24 @@ describe('Button as a link', () => {
     expect(wrapper.classes()).toContain('nb-button--sm')
   })
 })
+
+/**
+ * `variant` is optional, so it must not reach the class list unguarded.
+ * Interpolating it directly put a literal `nb-button--undefined` on every
+ * button that did not pass one, which is a class consumers could match on by
+ * accident and a confusing thing to find in devtools.
+ */
+describe('variant class', () => {
+  it('emits no variant class when none is given', () => {
+    const wrapper = mount(Button)
+    const classes = wrapper.classes()
+    expect(classes).toContain('nb-button')
+    expect(classes.some((c) => c.includes('undefined'))).toBe(false)
+  })
+
+  it('emits the variant class when one is given', () => {
+    expect(
+      mount(Button, { props: { variant: 'primary' } }).classes(),
+    ).toContain('nb-button--primary')
+  })
+})

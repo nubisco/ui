@@ -107,15 +107,20 @@ describe('Shell', () => {
       {},
       { notification: '<div>Notice</div>', 'topbar-left': '<h1>Page</h1>' },
     )
-    const body = wrapper.find('.nb-shell__body')
-    const children = body.element.children
-    const notificationIndex = Array.from(children).findIndex((el) =>
-      el.classList.contains('nb-shell__notification'),
-    )
-    const topbarIndex = Array.from(children).findIndex((el) =>
-      el.classList.contains('nb-shell__topbar'),
-    )
-    expect(notificationIndex).toBeLessThan(topbarIndex)
+    /*
+     * Document order, not position within one container. Both rows now span
+     * the frame and live above the content row rather than inside the body,
+     * so asserting on `.nb-shell__body`'s children pinned the implementation
+     * rather than the claim. What has to hold is that the notice comes first.
+     */
+    const notification = wrapper.find('.nb-shell__notification').element
+    const topbar = wrapper.find('.nb-shell__topbar').element
+    expect(notification).toBeTruthy()
+    expect(topbar).toBeTruthy()
+    expect(
+      notification.compareDocumentPosition(topbar) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
   })
 
   // ── Fixedbar slot ──────────────────────────────────────────────────────────

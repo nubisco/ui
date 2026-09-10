@@ -89,64 +89,70 @@
           <slot name="inner-menu" />
         </div>
 
+        <!--
+          The frame-wide rows.
+
+          The topbar spans the whole frame and the inspector begins beneath it,
+          rather than the inspector running the full height beside the topbar.
+          That is what lets the inspector detach under the rounded appearance:
+          a panel that shares an edge with the topbar cannot carry a margin
+          without leaving a notch where the two meet.
+
+          It also matches what a shell without a topbar already did, where the
+          inspector has always sat beside the content alone.
+        -->
+        <div
+          v-if="showRegion('notification')"
+          :ref="regionRef('notification')"
+          class="nb-shell__notification"
+          :class="regionClass('notification')"
+        >
+          <slot name="notification" />
+        </div>
+
+        <!-- Legacy menubar slot. It spans the frame with the topbar now. -->
+        <div v-if="hasSlotContent('menubar')" class="nb-shell__menubar">
+          <slot name="menubar" />
+        </div>
+
+        <div v-if="showTopbar" class="nb-shell__topbar">
+          <!-- The drawer toggle lives in the topbar's flow rather than
+                 floating over the page, so it cannot cover content and it
+                 inherits the bar's own alignment. It is why `showTopbar`
+                 forces the bar on while the drawer is collapsed: the frame
+                 must not hide its only way back to the navigation. -->
+          <button
+            v-if="showNavToggle"
+            ref="navToggleRef"
+            type="button"
+            class="nb-shell__nav-toggle"
+            :aria-label="navToggleLabel"
+            :aria-expanded="drawerOpen"
+            :aria-controls="sidebarId"
+            @click="setDrawerOpen(!drawerOpen)"
+          >
+            <span class="nb-shell__nav-toggle-glyph" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
+          </button>
+          <div :ref="regionRef('topbar-left')" class="nb-shell__topbar-left">
+            <slot name="topbar-left" />
+          </div>
+          <div :ref="regionRef('topbar-right')" class="nb-shell__topbar-right">
+            <slot name="topbar-right" />
+          </div>
+        </div>
+
         <!-- Content + Inspector row -->
         <div class="nb-shell__content-row">
-          <!-- ═══ BODY (topbar + main + bottom) ═══ -->
+          <!-- ═══ BODY (fixedbar + main + bottom) ═══ -->
           <div
             class="nb-shell__body"
             :inert="bodyInert || undefined"
             :aria-hidden="bodyInert || undefined"
           >
-            <div
-              v-if="showRegion('notification')"
-              :ref="regionRef('notification')"
-              class="nb-shell__notification"
-              :class="regionClass('notification')"
-            >
-              <slot name="notification" />
-            </div>
-
-            <!-- Legacy menubar slot (inside body, does NOT span inspector) -->
-            <div v-if="hasSlotContent('menubar')" class="nb-shell__menubar">
-              <slot name="menubar" />
-            </div>
-
-            <div v-if="showTopbar" class="nb-shell__topbar">
-              <!-- The drawer toggle lives in the topbar's flow rather than
-                   floating over the page, so it cannot cover content and it
-                   inherits the bar's own alignment. It is why `showTopbar`
-                   forces the bar on while the drawer is collapsed: the frame
-                   must not hide its only way back to the navigation. -->
-              <button
-                v-if="showNavToggle"
-                ref="navToggleRef"
-                type="button"
-                class="nb-shell__nav-toggle"
-                :aria-label="navToggleLabel"
-                :aria-expanded="drawerOpen"
-                :aria-controls="sidebarId"
-                @click="setDrawerOpen(!drawerOpen)"
-              >
-                <span class="nb-shell__nav-toggle-glyph" aria-hidden="true">
-                  <span />
-                  <span />
-                  <span />
-                </span>
-              </button>
-              <div
-                :ref="regionRef('topbar-left')"
-                class="nb-shell__topbar-left"
-              >
-                <slot name="topbar-left" />
-              </div>
-              <div
-                :ref="regionRef('topbar-right')"
-                class="nb-shell__topbar-right"
-              >
-                <slot name="topbar-right" />
-              </div>
-            </div>
-
             <div
               v-if="showRegion('fixedbar')"
               :ref="regionRef('fixedbar')"
@@ -1088,6 +1094,8 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 // Shell-level CSS variables (--nb-shell-*) are declared at :root in
 // styles/_theme.scss so consuming apps can override them on :root without
 // fighting scoped-style specificity. Only layout rules live here.
@@ -1248,6 +1256,15 @@ defineExpose({
   display: flex;
   min-height: 0;
   overflow: hidden;
+  /*
+   * One ground behind the detached panels.
+   *
+   * The body paints `--nb-shell-body-bg` and the row painted nothing, so the
+   * margin around a detached inspector showed the shell's colour on one side
+   * of the seam and the body's on the other. The row carries the body colour
+   * so every gap between floating panels is the same page underneath them.
+   */
+  background: var(--nb-shell-body-bg);
   // Containing block for the inspector when it becomes an overlay. Same
   // reasoning as `.nb-shell__middle` above.
   position: relative;
@@ -1266,6 +1283,18 @@ defineExpose({
 
 .nb-shell__notification {
   flex-shrink: 0;
+
+  /*
+   * A pinned notice stays square in both appearances.
+   *
+   * It spans the frame edge to edge and is part of the chrome, like the
+   * topbar under it. Rounded, it read as a floating card wedged into a slot
+   * it did not fit, which is the same call NbToast and NbBanner make for
+   * their own status bar.
+   */
+  :deep(.nb-banner) {
+    border-radius: 0;
+  }
 }
 
 // ── Ordered regions ───────────────────────────────────────────────────────────
@@ -1325,6 +1354,15 @@ defineExpose({
   flex-shrink: 0;
   display: flex;
   padding: 0 var(--nb-shell-chrome-padding-x);
+  /*
+   * The rule stops with the body.
+   *
+   * It used to run the full width of the frame, under the inspector too. Now
+   * the inspector sits beside the fixedbar rather than beside the topbar, so a
+   * full-width rule would cut straight across the detached panel's margin.
+   * Living on the body, it ends where the content ends, which is what it was
+   * always describing.
+   */
   border-bottom: var(--nb-shell-fixedbar-border);
   background: var(--nb-shell-fixedbar-bg);
   color: var(--nb-shell-fixedbar-color);
@@ -1476,6 +1514,10 @@ defineExpose({
   display: flex;
   flex-direction: column;
   min-height: 0;
+  // Detaches alongside the inspector, evenly: the right edge had no gap while
+  // the left did, so the panel looked pushed against the frame.
+  margin: 0 var(--nb-overlay-inset, 0) var(--nb-overlay-inset, 0);
+  @include radius.surface(panel);
 }
 
 // When the bottom panel is maximized, collapse the main area so the panel
@@ -1501,6 +1543,25 @@ defineExpose({
   background: var(--nb-shell-inspector-bg);
   border-left: 0 solid transparent;
   overflow: hidden;
+  /*
+   * Under rounded the inspector detaches: a margin on the three edges that
+   * face the frame, and its own corner. It cannot round while it is flush,
+   * because a rounded corner against a straight frame edge leaves a sliver of
+   * the page showing through the gap.
+   *
+   * `--nb-overlay-inset` is zero under square, so the panel stays flush and
+   * every existing frame is untouched.
+   */
+  /*
+   * All four sides, including the one facing the content.
+   *
+   * Leaving the content-facing edge flush meant the panel's rounded left
+   * corners sat directly on the body, so the body's colour showed through the
+   * arc and the panel read as cut out of the page rather than floating on it.
+   * A panel that detaches has to detach on every edge.
+   */
+  margin: var(--nb-overlay-inset, 0);
+  @include radius.surface(panel);
   display: flex;
   flex-direction: column;
   transition:

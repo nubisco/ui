@@ -155,6 +155,30 @@ describe('ColorStrip', () => {
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
   })
 
+  /*
+   * A read-only strip is a display of a ramp, not a control. The null swatch
+   * is the "clear my selection" affordance, and there is no selection to
+   * clear, so it was an empty slot at the front of every ramp.
+   */
+  it('offers no null swatch when it cannot be selected', () => {
+    const wrapper = createWrapper({
+      onlyView: true,
+      modelValue: null,
+      options: ['#FF0000', '#00FF00'],
+    })
+    expect(wrapper.findAll('button.nb-color-strip-color')).toHaveLength(2)
+  })
+
+  it('still shows one when asked explicitly, for a legend', () => {
+    const wrapper = createWrapper({
+      onlyView: true,
+      showNull: true,
+      modelValue: null,
+      options: ['#FF0000', '#00FF00'],
+    })
+    expect(wrapper.findAll('button.nb-color-strip-color')).toHaveLength(3)
+  })
+
   it('respects allowMultiple prop', () => {
     const wrapper = createWrapper({
       allowMultiple: true,
