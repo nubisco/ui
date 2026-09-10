@@ -630,13 +630,24 @@ function mixInSrgb(value: string, mode: 'light' | 'dark'): string {
 
 // ─── the brand leak in Button ───────────────────────────────────────────────
 
-describe('ghost button hover border', () => {
-  it('names a semantic role, not a brand ramp', () => {
+describe('the brand leak in Button', () => {
+  /*
+   * This used to also assert that the ghost hover drew
+   * `border-color: var(--nb-c-primary-subtle)`. That edge is gone: the ghost
+   * hover fills the button, and the pale bottom border on top of the fill was
+   * a leftover from an older ghost whose hover WAS the underline.
+   *
+   * The defect this guards is unchanged and is the half that matters: no rule
+   * in Button.vue may name a brand ramp directly, or a white-label product
+   * gets violet it never asked for. The two specs below still hold
+   * `--nb-c-primary-subtle` itself to deriving from the brand, because other
+   * components read it.
+   */
+  it('names no brand ramp anywhere', () => {
     const source = readFileSync(
       resolve(ROOT, 'src/components/Button.vue'),
       'utf8',
     )
-    expect(source).toContain('border-color: var(--nb-c-primary-subtle)')
     for (const line of source.split('\n')) {
       if (line.trim().startsWith('//') || line.trim().startsWith('*')) continue
       if (line.includes('/*') || line.includes('*/')) continue

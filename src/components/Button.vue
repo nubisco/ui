@@ -3,7 +3,9 @@
     :is="linkTag"
     :class="[
       'nb-button',
-      `nb-button--${variant}`,
+      // `variant` is optional, and interpolating it unguarded put a literal
+      // `nb-button--undefined` class on every button that did not pass one.
+      variant ? `nb-button--${variant}` : null,
       `nb-button--${size}`,
       { 'nb-button--outlined': outlined },
       { 'nb-button--loading': loading },
@@ -97,16 +99,46 @@ const iconSizeMap: Record<string, number> = {
   xl: 16,
   xxl: 20,
 }
-const iconSize = computed(() => iconSizeMap[props.size ?? 'md'] ?? 14)
+/*
+ * Icon-only buttons size their icon differently, and the stylesheet already
+ * said so: `--nb-button-icon-size` is set per size and then set AGAIN, larger,
+ * under `--icon-only`. Only the spinner read it, so an icon-only button showed
+ * a 14px icon and an 18px spinner in the same slot and jumped between them
+ * when it started loading.
+ */
+const iconOnlySizeMap: Record<string, number> = {
+  xxs: 12,
+  xs: 14,
+  sm: 16,
+  md: 18,
+  lg: 20,
+  xl: 20,
+  xxl: 26,
+}
+
+const iconSize = computed(() => {
+  const map = isIconOnly.value ? iconOnlySizeMap : iconSizeMap
+  return map[props.size ?? 'md'] ?? (isIconOnly.value ? 18 : 14)
+})
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/radius' as radius;
+
 .nb-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   border: none;
+  /*
+   * Standalone, not inset. A button in the middle of a panel does not run
+   * parallel to the panel's edges, so it does not follow the panel's corner:
+   * it keeps the control radius wherever it is placed. It also stops the
+   * concentric context here, so an icon inside it derives from the button
+   * rather than from a surface two levels up.
+   */
+  @include radius.standalone(control);
   // Not inherited from anywhere: a <button> defaults to border-box and an <a>
   // defaults to content-box, so the SAME button was two different sizes
   // depending on whether `href` was set. It showed up on icon-only, where the
@@ -263,13 +295,17 @@ const iconSize = computed(() => iconSizeMap[props.size ?? 'md'] ?? 14)
     &:hover:not(:disabled) {
       background: var(--nb-c-primary-hover);
       color: var(--nb-c-primary-hover-a11y);
-      /* A pale wash of the brand, not the grape-hyacinth ramp this used to
-         name: a white-label product had to write the vendor's colour into
-         its own stylesheet to stop violet leaking onto this edge.
-         --nb-c-primary-subtle is mixed from --nb-c-primary, so setting the
-         brand is enough and the rendered border does not visibly move
-         (dE2000 0.71 in light, 0.00 in dark, against what shipped). */
-      border-color: var(--nb-c-primary-subtle);
+      /*
+       * No coloured edge on hover.
+       *
+       * The hover already fills the button, and the pale bottom border drawn
+       * on top of that fill was left from an older ghost whose hover WAS the
+       * underline. Two affordances for one state, and under the rounded
+       * appearance the straight line cut across the capsule's arc.
+       *
+       * The transparent border above stays: it reserves the pixel so the
+       * button does not move between states.
+       */
     }
     &:active:not(:disabled) {
       background: var(--nb-c-primary-active);

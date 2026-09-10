@@ -43,7 +43,8 @@
       >
         <NbIcon
           v-if="!onlyView && isSelected(option.value) && !isNullOption(option)"
-          name="check-light"
+          name="check"
+          weight="light"
           :color="getContrastingColor(option)"
         />
         <NbIcon
@@ -119,6 +120,17 @@ watch(
 
 const shouldShowNullOption = computed(() => {
   if (props.allowMultiple) return false
+
+  /*
+   * A read-only strip offers nothing to clear.
+   *
+   * The null swatch exists so a selection can be undone, and `onlyView`
+   * disables selection entirely, so on a strip used to DISPLAY a ramp it was
+   * an empty slot at the front with no meaning. An explicit `showNull` is
+   * still honoured, for the legend case where "no colour" is one of the
+   * things being shown.
+   */
+  if (props.onlyView) return props.showNull
 
   return props.showNull || hasNullState.value
 })
@@ -309,6 +321,9 @@ $nb-color-diameter: 30px;
     border: 1px solid transparent;
     cursor: pointer;
     padding: 0;
+    // A swatch is a small control, so it follows the control corner: a circle
+    // under rounded, a square under square.
+    border-radius: var(--nb-radius-control);
     transition:
       border 0.2s,
       box-shadow 0.2s;

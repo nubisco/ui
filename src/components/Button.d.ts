@@ -19,8 +19,30 @@ enum EButtonType {
  */
 type TButtonSize = `${ESize}`
 
+/** The action hierarchy, then the four status roles. */
+type TButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'ghost'
+  | 'success'
+  | 'info'
+  | 'warning'
+  | 'danger'
+
 interface IButtonProps {
-  variant?: string
+  /**
+   * Visual role. Typed rather than left as `string`, which accepted any typo
+   * silently: `varaint="primary"` and `variant="primry"` both compiled and
+   * both rendered the base button.
+   *
+   * `primary` / `secondary` / `ghost` are the action hierarchy. The four
+   * status roles say what a press MEANS, not how loud it is, so they belong on
+   * a control whose semantics match: `danger` on something destructive, not on
+   * whatever the page wants to emphasise.
+   *
+   * Omitted, the button renders the high-contrast base treatment.
+   */
+  variant?: TButtonVariant
   outlined?: boolean
   size?: TButtonSize
   disabled?: boolean
@@ -43,6 +65,8 @@ interface IButtonProps {
    */
   to?: string | Record<string, unknown>
 }
+
+export type { TButtonVariant }
 
 export { EButtonType, IButtonProps }
 export type { TButtonSize }

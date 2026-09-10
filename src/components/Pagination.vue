@@ -206,20 +206,44 @@ function onPageSizeChange(value: unknown) {
   // as part of the bar rather than as floating buttons. Chained classes so
   // this outranks NbButton's own per-size `height` and icon-only `width`
   // rules, which otherwise tie on specificity and win on source order.
+  /*
+   * The arrows are part of the bar, not floating buttons.
+   *
+   * They inherit NbButton's control radius, which under rounded is a capsule;
+   * on a square, bar-height button that renders as two semicircles bolted to
+   * the end of the pager. They are divider-led chrome, so they stay square in
+   * both appearances and the bar's own corner does the rounding.
+   */
   &__nav.nb-button.nb-button--icon-only {
     width: var(--nb-pg-bar-h);
     height: var(--nb-pg-bar-h);
     border-inline-start: 1px solid var(--nb-c-border);
+    border-radius: 0;
   }
 
-  // Density
+  /*
+   * Density, matched to NbDataTable's.
+   *
+   * A pager is almost always the footer of a table, and the two scales used to
+   * disagree at both ends: `sm` was 5 base units here against the table's 4,
+   * and `lg` was 7 against the table's 8, so a compact table sat above a pager
+   * 8px taller than its own rows. The font sizes disagreed by a pixel too.
+   * These are now the same numbers NbDataTable uses, so `size="sm"` on both
+   * lines up.
+   *
+   * `md` is written out rather than left as the absence of a modifier, so the
+   * default is a value that can be read and overridden like the other two.
+   */
+  &--md {
+    --nb-pg-bar-h: calc(var(--nb-base-unit) * 6);
+  }
   &--sm {
-    --nb-pg-bar-h: calc(var(--nb-base-unit) * 5);
+    --nb-pg-bar-h: calc(var(--nb-base-unit) * 4);
 
-    font-size: var(--nb-font-size-12);
+    font-size: var(--nb-font-size-13);
   }
   &--lg {
-    --nb-pg-bar-h: calc(var(--nb-base-unit) * 7);
+    --nb-pg-bar-h: calc(var(--nb-base-unit) * 8);
   }
 }
 </style>
