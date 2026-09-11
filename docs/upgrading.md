@@ -1,5 +1,179 @@
 # Upgrading
 
+## To 5.0.0 from 4.1.x
+
+Three changes can alter how an existing application renders: the default
+**field fill**, the **`NbShell` frame**, and the **`NbPagination`** heights at
+`sm` and `lg`. Everything else in this release is a fix or is opt-in. An
+application that changes nothing keeps square corners and its current colour
+theme.
+
+### What changed
+
+**Field fills.** The enabled fill was a mid grey, darker than every surface it
+sat on, which is what most interfaces use to mean "unavailable". Enabled fields
+are now lighter, and disabled and read-only fields get their own values instead
+of leaning on opacity alone. Geometry is unchanged: still a filled box with a
+single bottom rule, same height, same padding.
+
+| Token                 | Theme | 4.1.x     | 5.0.0     |
+| --------------------- | ----- | --------- | --------- |
+| `--nb-c-field-bg`     | light | `#cacbcc` | `#f1f2f3` |
+| `--nb-c-field-border` | light | `#646566` | `#646566` |
+| `--nb-c-field-bg`     | dark  | `#141516` | `#1e1f20` |
+| `--nb-c-field-border` | dark  | `#626364` | `#818283` |
+
+Three tokens are new: `--nb-c-field-bg-disabled` (which holds the old light
+fill, `#cacbcc`), `--nb-c-field-border-disabled` and
+`--nb-c-field-border-readonly`. Each falls back to the enabled value when
+unset, so a theme that overrides only `--nb-c-field-bg` and
+`--nb-c-field-border` still renders coherently.
+
+To keep the 4.1.x fills, set an attribute. It is not an import: the rules
+already ship in `@nubisco/ui/styles` and do nothing until something asks for
+them.
+
+```html
+<html data-nb-preset="classic-fields"></html>
+```
+
+It can be scoped to a subtree instead of the whole document. See
+[Keeping the old fills](/theming#keeping-the-old-fills).
+
+**`NbShell` frame.** The topbar used to stop at the inspector's edge, and the
+inspector ran the full height of the window beside it. The topbar now spans the
+whole frame and the inspector starts underneath it:
+
+```text
+4.1.x                                  5.0.0
+
+┌─────┬─────────────────┬─────────┐    ┌─────┬───────────────────────────┐
+│     │ topbar          │         │    │     │ topbar                    │
+│     ├─────────────────┤         │    │     ├─────────────────┬─────────┤
+│side │ main            │inspector│    │side │ main            │inspector│
+│bar  │                 │         │    │bar  │                 │         │
+│     ├─────────────────┤         │    │     ├─────────────────┤         │
+│     │ bottom          │         │    │     │ bottom          │         │
+└─────┴─────────────────┴─────────┘    └─────┴─────────────────┴─────────┘
+```
+
+The notification, menubar and topbar regions moved out of `.nb-shell__body`
+and now sit above `.nb-shell__content-row`, as siblings of it. The bottom panel
+stays where it was, beside the inspector. Slots, class names and props are all
+unchanged, so an application that only fills slots needs no code change: its
+topbar simply gets wider and its inspector gets shorter by the topbar's height.
+
+**`NbPagination` heights.** `sm` and `lg` disagreed with `NbDataTable` by 8px
+in both directions, which showed whenever a table and its pager sat together.
+They now use the same numbers.
+
+| Size | 4.1.x           | 5.0.0           |
+| ---- | --------------- | --------------- |
+| `sm` | 40px, 12px text | 32px, 13px text |
+| `md` | 48px            | 48px            |
+| `lg` | 56px            | 64px            |
+
+Only applications passing `size="sm"` or `size="lg"` are affected.
+
+**`NbButton`.** `variant` is typed as
+`'primary' | 'secondary' | 'ghost' | 'success' | 'info' | 'warning' | 'danger'`
+instead of `string`, so an arbitrary value is now a type error rather than a
+silently unstyled button. At runtime, a button with no `variant` no longer
+carries a stray `nb-button--undefined` class, and a ghost button no longer
+draws a bottom border on hover on top of its hover fill.
+
+**`NbModal` traps focus.** Tab and Shift+Tab stay inside an open dialog instead
+of walking onto the page behind the scrim, and closing it returns focus to
+whatever opened it. This is on by default. Pass `:trap-focus="false"` for a
+surface that should not hold the keyboard, and `initial-focus` to choose where
+focus lands on open (a selector, or a function returning an element).
+
+**Also fixed.** Under the rounded appearance, a field's four edges now always
+resolve to the same colour; before, a page that turned dark on a wrapper rather
+than on `<html>` drew light sides with a dark bottom rule. `NbColorStrip`
+renders its selected tick again (it asked for an icon that does not exist) and
+no longer shows an empty "no colour" swatch on a read-only strip. The Vite
+plugin no longer warns about a duplicated stylesheet in a build that resolved
+no components through it.
+
+### What is new
+
+Both of these are opt-in and change nothing until used.
+
+**Square or rounded.** A second geometry, independent of light and dark.
+Rounded controls are capsules and nested surfaces are concentric, so an inset
+corner follows the one around it. Square stays the default and renders exactly
+as before.
+
+```ts
+import { configureAppearance } from '@nubisco/ui'
+
+configureAppearance({ defaultAppearance: 'rounded' })
+```
+
+`useAppearance()` reads and changes it at runtime. See
+[Appearance](/theming#appearance).
+
+**Named colour themes.** A theme is declared in SCSS against a public entry
+point that emits nothing when imported. Name base colours in `$palette` and
+each is expanded into the same seventeen-step ramp the library builds for its
+own colours, with an `-a11y` foreground for every step. Roles then point at
+steps rather than restating colours:
+
+```scss
+@use '@nubisco/ui/styles/theme-api' as nb;
+
+@include nb.theme(
+  'ocean',
+  $palette: (accent: #0f6f8c, neutral: #5b7683),
+  $light: ('primary': 'accent-500', 'layer-0': #ffffff),
+  $dark: ('primary': 'accent-350', 'layer-0': 'neutral-900')
+);
+```
+
+```ts
+import './themes/ocean.scss'
+import { configureNamedTheme } from '@nubisco/ui'
+
+configureNamedTheme({ themes: ['ocean'], defaultTheme: 'ocean' })
+```
+
+A role that points at a step also carries that step's readable foreground, so
+text on a themed button stays legible without the pairing being maintained by
+hand.
+
+### What to check
+
+- **Screenshots and visual baselines** will differ wherever a field is
+  visible. Either accept the new fills or set
+  `data-nb-preset="classic-fields"` and move on your own schedule.
+- **CSS written against the shell's DOM.** Search for selectors that place the
+  topbar, menubar or notification inside the body, such as
+  `.nb-shell__body .nb-shell__topbar` or `.nb-shell__body > .nb-shell__menubar`.
+  They no longer match. Selectors that use the region classes on their own are
+  fine.
+- **Anything that assumed the inspector reached the top of the window**, such
+  as an inspector header drawn to line up with the topbar, or code that
+  measures the inspector's height. It is now shorter by the topbar's height.
+- **`NbPagination` with `size="sm"` or `size="lg"`**, if the surrounding layout
+  depended on its height.
+- **`NbButton` variants from untyped sources**, for example a value read from
+  configuration. `vue-tsc` now rejects anything outside the union.
+- **Modals that relied on focus leaving them**, such as a dialog that expected
+  the page behind to stay reachable by keyboard. Pass `:trap-focus="false"` to
+  restore that.
+
+### Why
+
+The field fill was the most visible defect: enabled fields looked disabled, and
+disabled fields differed from them only in brightness. The shell change makes a
+docked inspector sit under the application's header, the way a docked panel is
+expected to, rather than competing with it for the top of the window. The
+pagination heights were a plain mismatch with the table they are drawn beside.
+
+All three are visible changes to a default, which is why this is a major
+version rather than a minor one.
+
 ## To 4.1.x from 4.0.x
 
 Nothing here is breaking. Two of these are worth reading anyway: one fixes
