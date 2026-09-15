@@ -1,3 +1,10 @@
+# [5.1.0](https://github.com/nubisco/ui/compare/v5.0.0...v5.1.0) (2026-09-15)
+
+
+### Features
+
+* **command-palette:** let the host supply query-driven results ([add5b3d](https://github.com/nubisco/ui/commit/add5b3d9004128f0b8305faed14cf31e6f90f8f7))
+
 # [5.0.0](https://github.com/nubisco/ui/compare/v4.1.4...v5.0.0) (2026-09-10)
 
 
