@@ -75,8 +75,11 @@
           </div>
 
           <!-- Empty state -->
+          <div v-else-if="suggesting" class="nb-command-palette__empty">
+            Searching...
+          </div>
           <div v-else-if="query" class="nb-command-palette__empty">
-            No matching commands
+            No matches
           </div>
           <div v-else class="nb-command-palette__empty">
             Type to search commands
@@ -115,6 +118,8 @@ const props = withDefaults(defineProps<ICommandPaletteProps>(), {
   openShortcut: 'Meta+k',
   placeholder: 'Search commands...',
   maxResults: 50,
+  suggest: undefined,
+  suggestDebounce: 150,
 })
 
 const state = inject<ICommandPaletteState>(NB_COMMAND_PALETTE_KEY)!
@@ -122,6 +127,68 @@ const state = inject<ICommandPaletteState>(NB_COMMAND_PALETTE_KEY)!
 const inputRef = ref<HTMLInputElement | null>(null)
 const query = ref('')
 const highlightedId = ref<string | null>(null)
+
+/**
+ * Query-driven results from the host, kept apart from the registered
+ * commands so the palette's own filter never touches them.
+ */
+const suggested = ref<ICommand[]>([])
+const suggesting = ref(false)
+let suggestTimer: ReturnType<typeof setTimeout> | null = null
+/**
+ * Only the newest request may write. Without this a slow response for "inv"
+ * can land after a fast one for "invoice" and replace the right answers with
+ * stale ones, which reads as the palette ignoring what was typed.
+ */
+let suggestToken = 0
+
+function clearSuggestTimer(): void {
+  if (suggestTimer !== null) {
+    clearTimeout(suggestTimer)
+    suggestTimer = null
+  }
+}
+
+function resetSuggestions(): void {
+  clearSuggestTimer()
+  // Bump the token so anything already in flight is discarded on arrival.
+  suggestToken++
+  suggested.value = []
+  suggesting.value = false
+}
+
+async function runSuggest(value: string): Promise<void> {
+  const suggester = props.suggest
+  if (!suggester) return
+  const token = ++suggestToken
+  suggesting.value = true
+  try {
+    const found = await suggester(value)
+    if (token !== suggestToken) return
+    suggested.value = found
+  } catch {
+    // A failed lookup leaves the registered commands working. The palette is
+    // still a command palette when the network is down.
+    if (token === suggestToken) suggested.value = []
+  } finally {
+    if (token === suggestToken) suggesting.value = false
+  }
+}
+
+watch(query, (value) => {
+  if (!props.suggest) return
+  clearSuggestTimer()
+  const trimmed = value.trim()
+  if (!trimmed) {
+    resetSuggestions()
+    return
+  }
+  suggesting.value = true
+  suggestTimer = setTimeout(
+    () => void runSuggest(trimmed),
+    props.suggestDebounce,
+  )
+})
 
 // Fuzzy scoring
 function fuzzyScore(text: string, pattern: string): number {
@@ -193,18 +260,40 @@ interface ICommandGroup {
 
 const groupedResults = computed<ICommandGroup[]>(() => {
   const groups = new Map<string, ICommand[]>()
+  // Suggestions first within their namespace, in the order the suggester
+  // returned them: it ranked them against the query, and re-sorting its
+  // output alphabetically would throw that ranking away.
   for (const cmd of filteredCommands.value) {
     const ns = cmd.namespace ?? ''
     if (!groups.has(ns)) groups.set(ns, [])
     groups.get(ns)!.push(cmd)
   }
   // Sort groups alphabetically by namespace, commands alphabetically within each group
-  return Array.from(groups.entries())
+  const registered = Array.from(groups.entries())
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([namespace, commands]) => ({
       namespace,
       commands: commands.sort((a, b) => a.label.localeCompare(b.label)),
     }))
+
+  if (suggested.value.length === 0) return registered
+
+  // Suggested results keep the suggester's order and group, and lead: what
+  // somebody typed a name to find should not sit below an unrelated action
+  // that happens to start with an earlier letter.
+  const found = new Map<string, ICommand[]>()
+  for (const cmd of suggested.value.slice(0, props.maxResults)) {
+    const ns = cmd.namespace ?? ''
+    if (!found.has(ns)) found.set(ns, [])
+    found.get(ns)!.push(cmd)
+  }
+  return [
+    ...Array.from(found.entries()).map(([namespace, commands]) => ({
+      namespace,
+      commands,
+    })),
+    ...registered,
+  ]
 })
 
 // Flat list follows the sorted group order for arrow key navigation
@@ -215,6 +304,7 @@ const flatResults = computed(() =>
 function executeCommand(cmd: ICommand) {
   state.close()
   query.value = ''
+  resetSuggestions()
   cmd.handler()
 }
 
@@ -224,6 +314,7 @@ function onKeydown(e: KeyboardEvent) {
     e.preventDefault()
     state.close()
     query.value = ''
+    resetSuggestions()
     return
   }
 
@@ -275,13 +366,25 @@ watch(
       lockScroll()
     } else {
       query.value = ''
+      // A reopened palette must not show the last query's results for the
+      // instant before the new query is typed.
+      resetSuggestions()
       unlockScroll()
     }
   },
 )
 
-// Keep highlighted in bounds when results change
-watch(filteredCommands, (cmds) => {
+/**
+ * Keep the highlight on a row that is actually on screen.
+ *
+ * This watched `filteredCommands`, which is neither grouped nor sorted, so
+ * the highlight could land on a command that renders halfway down the list
+ * while the top row looked unselected. It also knows nothing about suggested
+ * results, which would leave Enter doing nothing whenever a query matched
+ * only those. `flatResults` is the rendered order, which is the one the
+ * arrow keys walk.
+ */
+watch(flatResults, (cmds) => {
   if (cmds.length > 0 && !cmds.find((c) => c.id === highlightedId.value)) {
     highlightedId.value = cmds[0].id
   } else if (cmds.length === 0) {
@@ -356,6 +459,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', onGlobalKeydown)
+  // A pending debounce would otherwise fire into a component that is gone.
+  clearSuggestTimer()
   unlockScroll()
 })
 </script>

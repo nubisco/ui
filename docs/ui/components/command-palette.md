@@ -173,6 +173,60 @@ Supported modifiers: `Meta`, `Cmd`, `Ctrl`, `Control`, `Shift`, `Alt`.
 | `Enter`               | Execute highlighted command  |
 | `Escape`              | Always dismisses the palette |
 
+## Searching your own data
+
+Registered commands are a fixed list, which is right for actions and not
+enough for content: an application cannot register a command per ticket,
+document or customer. The optional `suggest` prop is asked for results on each
+keystroke, so one overlay answers both "what can I do" and "where is that
+thing".
+
+```vue
+<template>
+  <NbCommandPalette :suggest="findThings" />
+</template>
+
+<script setup>
+import { api } from '@/api/client'
+
+async function findThings(query) {
+  const { hits } = await api.search(query)
+  return hits.map((hit) => ({
+    id: `hit:${hit.id}`,
+    label: hit.title,
+    namespace: 'Results',
+    icon: 'file',
+    handler: () => open(hit),
+  }))
+}
+</script>
+```
+
+The palette takes care of the parts that are easy to get wrong:
+
+- **Debounced.** The suggester is asked at most once per `suggestDebounce`
+  milliseconds (150 by default), not once per keystroke.
+- **Race-guarded.** Only the newest request may write its results. Without
+  this a slow answer for `inv` can land after a fast one for `invoice` and
+  replace the right results with stale ones, which reads to the user as the
+  palette ignoring what they typed.
+- **Unfiltered.** Results are shown in the order the suggester returned them
+  and are deliberately **not** put through the palette's own fuzzy matcher.
+  The suggester already ranked them against the query, and a result that
+  matched on a document's body has nothing in its label to match a second
+  time, so re-filtering would throw it away the moment it arrived.
+- **Non-fatal.** If the suggester throws, the registered commands keep
+  working. The palette is still a command palette when the network is down.
+
+Suggested results are grouped by their `namespace` like any other command, and
+lead the list: something a person typed a name to find should not sit below an
+unrelated action that happens to start with an earlier letter.
+
+::: tip
+Omit `suggest` and the palette behaves exactly as it always has. Nothing about
+the registered-command path changes.
+:::
+
 ## Search behavior
 
 The command palette uses fuzzy matching with weighted scoring:
@@ -192,11 +246,23 @@ The search matches against the command label, namespace, and optional keywords.
 
 ### Props
 
-| Prop           | Type     | Default                | Description                                      |
-| -------------- | -------- | ---------------------- | ------------------------------------------------ |
-| `openShortcut` | `string` | `'Meta+k'`             | Keyboard shortcut string (e.g. `'Ctrl+Shift+p'`) |
-| `placeholder`  | `string` | `'Search commands...'` | Search input placeholder                         |
-| `maxResults`   | `number` | `50`                   | Maximum results to display                       |
+| Prop              | Type                | Default                | Description                                                                       |
+| ----------------- | ------------------- | ---------------------- | --------------------------------------------------------------------------------- |
+| `openShortcut`    | `string`            | `'Meta+k'`             | Keyboard shortcut string (e.g. `'Ctrl+Shift+p'`)                                  |
+| `placeholder`     | `string`            | `'Search commands...'` | Search input placeholder                                                          |
+| `maxResults`      | `number`            | `50`                   | Maximum results to display                                                        |
+| `suggest`         | `TCommandSuggester` | `undefined`            | Optional source of query-driven results, merged in beside the registered commands |
+| `suggestDebounce` | `number`            | `150`                  | Milliseconds to wait after a keystroke before asking `suggest`                    |
+
+### TCommandSuggester
+
+```ts
+type TCommandSuggester = (query: string) => ICommand[] | Promise<ICommand[]>
+```
+
+Called with the trimmed query whenever it is non-empty. Return commands built
+from whatever was found. See
+[Searching your own data](#searching-your-own-data).
 
 ## ICommand
 

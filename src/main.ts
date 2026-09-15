@@ -213,6 +213,7 @@ export type {
   ICommand,
   ICommandPaletteProps,
   ICommandPaletteState,
+  TCommandSuggester,
 } from './components/CommandPalette.d'
 export { default as NbMessage } from './components/Message.vue'
 export { default as NbModal } from './components/Modal.vue'
