@@ -1,3 +1,10 @@
+## [5.4.1](https://github.com/nubisco/ui/compare/v5.4.0...v5.4.1) (2026-09-16)
+
+
+### Bug Fixes
+
+* **definition-list:** lay out rows written into the slot ([a6465f5](https://github.com/nubisco/ui/commit/a6465f5e9fff1abf8d4f696e1f577751c67ba855))
+
 # [5.4.0](https://github.com/nubisco/ui/compare/v5.3.0...v5.4.0) (2026-09-16)
 
 
