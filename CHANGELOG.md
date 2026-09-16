@@ -1,3 +1,16 @@
+# [5.2.0](https://github.com/nubisco/ui/compare/v5.1.0...v5.2.0) (2026-09-16)
+
+
+### Bug Fixes
+
+* **user-menu:** fill the collapsed avatar and keep the account row in scale ([6cf206a](https://github.com/nubisco/ui/commit/6cf206a720d4dd08f1c3c4a37e6de2526ad60ede))
+
+
+### Features
+
+* **shell:** standard rail collapse and a labelled account row ([05d2fe9](https://github.com/nubisco/ui/commit/05d2fe94d8a1f94f970fcaae3240ef3e01a543cc)), closes [#fff](https://github.com/nubisco/ui/issues/fff)
+* **sidebar:** open the collapsed flyout by click, tap and keyboard ([cbd308d](https://github.com/nubisco/ui/commit/cbd308dd4d28dcfe31feb10d43a9129eabfd8b96))
+
 # [5.1.0](https://github.com/nubisco/ui/compare/v5.0.0...v5.1.0) (2026-09-15)
 
 
