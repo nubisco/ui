@@ -108,6 +108,8 @@ export type {
 export { default as NbBreadcrumbs } from './components/Breadcrumbs.vue'
 export { default as NbCalendar } from './components/Calendar.vue'
 export type { ICalendarEvent, ICalendarProps } from './components/Calendar.d'
+export { default as NbAvatar } from './components/Avatar.vue'
+export type { IAvatarProps, TAvatarSize } from './components/Avatar.d'
 export { default as NbBadge } from './components/Badge.vue'
 export { default as NbBanner } from './components/Banner.vue'
 export type { IBannerProps } from './components/Banner.d'

@@ -10,6 +10,7 @@ export const COMPONENT_MANIFEST = {
   NbAccordion: 'Accordion',
   NbAccordionItem: 'AccordionItem',
   NbAiLabel: 'AiLabel',
+  NbAvatar: 'Avatar',
   NbBadge: 'Badge',
   NbBanner: 'Banner',
   NbBarChart: 'Charts/BarChart',

@@ -192,6 +192,7 @@ import { useI18n } from 'vue-i18n'
 import NbIcon from './Icon.vue'
 import NbNubiscoPlatformMark from './NubiscoPlatformMark.vue'
 import type { IUserMenuAccount, IUserMenuProps } from './UserMenu.d'
+import { initialsOf } from '@/utils/initials.helper'
 
 // Resolution order per string: the host app's global catalog under
 // `userMenu.*` for the active locale, else the built-in default for the
@@ -318,14 +319,7 @@ const open = ref(false)
 const panelStyle = ref<Record<string, string>>({})
 
 function initials(entity: { email: string; name?: string | null }): string {
-  const name = entity.name?.trim()
-  if (name) {
-    const parts = name.split(/\s+/)
-    const first = parts[0]?.[0] ?? ''
-    const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? '') : ''
-    return (first + last).toUpperCase()
-  }
-  return (entity.email.split('@')[0] ?? '').slice(0, 2).toUpperCase()
+  return initialsOf(entity)
 }
 
 // Shells commonly clip their sidebars (overflow: hidden), so the panel is
