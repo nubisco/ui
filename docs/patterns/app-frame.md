@@ -285,9 +285,16 @@ being set by copy-paste rather than by decision. Here is the decision.
   and no grouping. The icons become muscle memory, and the width is given back
   to the page. Every graphical product is compact: a canvas wants the pixels.
 - **`verbose`** (a 240px labelled rail) when destinations **exceed eight**, or
-  when they fall into named sections, or when they nest. `NbSidebarMenuGroup`
-  and nested `NbSidebarMenuItem`s only exist in this variant, so a product with
-  sub-navigation has no choice.
+  when they fall into named sections, or when they nest.
+
+Both variants render groups and nested items; they differ in how. In `compact`,
+an `NbSidebarMenuGroup` becomes a divider whose label is announced to assistive
+technology, and a nested `NbSidebarMenuItem` shows its children in a flyout
+beside the rail. (This page used to say groups and nested items existed only in
+`verbose`. The components have supported both for some time; the page had not
+caught up.) But see
+[the flyout gap](#collapsed-sub-items-and-the-flyout-gap) below before relying
+on nested items in a collapsed rail.
 
 The tie-break, when it is genuinely eight or nine: **do the labels repeat?** A
 rail of Devices, Reports, Alerts, Settings is compact. A rail of six report types
@@ -296,6 +303,59 @@ needs words, because six chart icons are one icon.
 The variant is a **product-level** decision, not a per-route one. Switching it at
 runtime is legal (see [Shell](/ui/components/shell#switching-between-compact-and-verbose-at-runtime))
 and is for a user preference, never for a route.
+
+### Expanding and collapsing the rail
+
+**Rule.** A product whose destinations suit `verbose` offers the person a way to
+collapse it, and that choice is a **preference that persists**, never a function
+of the route. Use `useSidebarVariant` for the state and `NbSidebarCollapseToggle`
+for the control:
+
+```vue
+<script setup lang="ts">
+const nav = useSidebarVariant({ storageKey: 'product.sidebar' })
+</script>
+
+<template>
+  <NbShell :sidebar-variant="nav.variant.value">
+    <template #sidebar-bottom>
+      <NbSidebarMenu>
+        <!-- product items first: notifications, settings -->
+        <NbSidebarCollapseToggle @toggle="nav.toggle" />
+      </NbSidebarMenu>
+      <NbUserMenu :user="user" trigger="identity" @sign-out="signOut" />
+    </template>
+  </NbShell>
+</template>
+```
+
+**One element per destination, in both variants.** `NbSidebarMenuItem` already
+renders as a labelled row when expanded and as an icon when collapsed. Do not
+keep a second, icon-only set of `NbSidebarLink`s for the collapsed rail beside a
+set of menu items for the expanded one: the audit found exactly that, and the
+two sets drift apart one edit at a time.
+
+**Never per route.** Deriving the variant from where someone is means the rail
+changes shape as they move, with nothing they did to cause it, and it undoes a
+choice they made a moment ago. The `defaultVariant` given to `useSidebarVariant`
+is the product's decision; after that it is theirs.
+
+**Order in `#sidebar-bottom`**, top to bottom: the product's own bottom items
+(notifications, settings), the collapse toggle, then the user menu last, so the
+account sits in the corner in every product.
+
+### Collapsed sub-items and the flyout gap
+
+In a collapsed rail, a nested `NbSidebarMenuItem` shows its children in a flyout.
+**Today that flyout opens on pointer hover only.** A click on the parent does not
+open it, and nothing opens it from the keyboard, so in a collapsed rail those
+children cannot be reached by keyboard or on a touch screen.
+
+Until the library fixes that, **do not put a destination only a flyout can
+reach.** Every page a nested item leads to must also be reachable another way:
+the parent's own page linking to it, or the expanded rail. Do not build a
+hand-positioned `NbMenu` as a replacement flyout either: it is the local
+workaround this page warns against, and it would need the same keyboard work.
 
 ### `inspector-size`: `xs` to `xl`, default `md`
 
@@ -965,6 +1025,20 @@ the frame's.
 
 **Rule.** One `NbUserMenu`, at the bottom of the rail (`#sidebar-bottom`), with
 `placement="right-end"`. Never two, and never a second sign-out anywhere else.
+
+In a rail that can be expanded, give it `trigger="identity"`: expanded, it shows
+the avatar with the person's name and email as a row aligned to the items above;
+collapsed, the avatar alone. A lone avatar in an expanded rail sits out of line
+with every labelled row above it and does not say whose account it is.
+
+Pass the person's avatar as `user.picture` when the identity provider supplies
+one (Nubisco Platform sends it as the OIDC `picture` claim). The menu falls back
+to initials when it is absent or fails to load, so it needs no guarding.
+
+**The platform lockup** (`brand`) is shown only when the product signs people in
+**through Nubisco Platform**, and hidden (`brand="none"`) otherwise. An
+open-source product run by someone else, against their own identity provider,
+must not tell its users about infrastructure they are not using.
 
 ```vue
 <template #sidebar-bottom>

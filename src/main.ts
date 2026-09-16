@@ -144,6 +144,7 @@ export type {
   IUserMenuAccount,
   TUserMenuPlacement,
   TUserMenuBrand,
+  TUserMenuTrigger,
 } from './components/UserMenu.d'
 export { default as NbCheckbox } from './components/Checkbox.vue'
 export { default as NbCheckboxGroup } from './components/CheckboxGroup.vue'
@@ -242,6 +243,8 @@ export type {
   TShellCollapseAt,
 } from './components/Shell.d'
 export { default as NbSidebarBrand } from './components/SidebarBrand.vue'
+export { default as NbSidebarCollapseToggle } from './components/SidebarCollapseToggle.vue'
+export type { ISidebarCollapseToggleProps } from './components/SidebarCollapseToggle.d'
 export type { ISidebarBrandProps } from './components/SidebarBrand.d'
 export { default as NbSidebarLink } from './components/SidebarLink.vue'
 export { default as NbSidebarMenu } from './components/SidebarMenu.vue'
@@ -541,6 +544,11 @@ export {
   configureNamedTheme,
   isValidThemeId,
 } from './composables/useNamedTheme.composable'
+export { useSidebarVariant } from './composables/useSidebarVariant.composable'
+export type {
+  ISidebarVariantOptions,
+  ISidebarVariantController,
+} from './composables/useSidebarVariant.composable'
 export type {
   TNamedTheme,
   INamedThemeOptions,

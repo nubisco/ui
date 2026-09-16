@@ -28,6 +28,30 @@ tabs: ['Usage', 'Api']
 </template>
 ```
 
+## Picture
+
+Give `user.picture` an image URL, such as the platform's OIDC `picture` claim, and the trigger shows it instead of initials:
+
+```vue
+<NbUserMenu :user="{ email: me.email, name: me.name, picture: me.picture }" />
+```
+
+It is optional and it is allowed to fail. Without a picture, or when the image does not load, the trigger shows initials exactly as it did before. That second case is ordinary rather than exceptional: the platform gives a replaced avatar a new URL and answers the old one with a 404, so a product holding a stale URL would otherwise show a broken image. A new URL gets a fresh attempt.
+
+## In a rail that expands
+
+A bare avatar belongs in a collapsed rail, where every item is an icon. In an expanded rail, where every item above it is a labelled row, it floats out of line and does not say whose account it is. `trigger="identity"` follows the rail instead:
+
+```vue
+<template #sidebar-bottom>
+  <NbUserMenu :user="user" trigger="identity" @sign-out="signOut" />
+</template>
+```
+
+In an expanded rail it renders a row with the avatar, the name and the email, aligned to the menu items above it: the avatar's centre sits on the same line as their icons. In a collapsed rail it renders the avatar alone. It reads the rail's state from `NbShell`, so it changes when the rail does, with nothing to wire up. Outside a shell it shows the row. The row's accessible name is the visible name; nothing overrides it.
+
+The default is `trigger="avatar"`, which is unchanged: a product that does not opt in renders exactly as before. Pair `identity` with [NbSidebarCollapseToggle](/ui/components/sidebar-collapse-toggle) and [useSidebarVariant](/ui/composables/use-sidebar-variant), as the [app frame](/patterns/app-frame#expanding-and-collapsing-the-rail) describes.
+
 ## Accounts
 
 Pass `accounts` when the product can enumerate the identities signed in on this browser: each one becomes a row, the current one is checked and inert, and the rest emit `switch`. Set `accountsUnknown` when that lookup failed, and the menu offers a generic **Switch account** action instead, so the identity provider can show its own chooser. Single-account products turn the whole section off with `:show-account-actions="false"`.
@@ -140,13 +164,14 @@ createI18n({
 
 | Prop                 | Type                         | Default       | Description                                                                                            |
 | -------------------- | ---------------------------- | ------------- | ------------------------------------------------------------------------------------------------------ |
-| `user`               | `IUserMenuUser`              | —             | The identity the product is signed in as. `{ email, name? }`.                                          |
+| `user`               | `IUserMenuUser`              | (required)    | The identity the product is signed in as. `{ email, name?, picture? }`. See [Picture](#picture).       |
 | `accounts`           | `IUserMenuAccount[]`         | —             | Identities signed in on this browser, rendered as an inline switch list.                               |
 | `accountsUnknown`    | `boolean`                    | `false`       | The identities could not be determined. Renders a generic "Switch account" action instead of the list. |
 | `showAccountActions` | `boolean`                    | `true`        | Hides the whole switch / add section for single-account products.                                      |
 | `showProfile`        | `boolean`                    | `true`        | Hides the Profile entry when the product has no profile page.                                          |
 | `brand`              | `'footer' \| 'none'`         | `'footer'`    | `'footer'` renders the non-interactive Nubisco Platform lockup; `'none'` renders nothing.              |
 | `placement`          | `'right-end' \| 'top-start'` | `'right-end'` | Where the panel opens relative to the trigger.                                                         |
+| `trigger`            | `'avatar' \| 'identity'`     | `'avatar'`    | `'identity'` follows the rail: a labelled row when expanded, the avatar alone when collapsed.          |
 | `disabled`           | `boolean`                    | `false`       | Renders the trigger inert.                                                                             |
 
 ## Events
