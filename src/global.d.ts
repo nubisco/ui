@@ -29,10 +29,12 @@ import DataTable from './components/DataTable.vue'
 import DatePicker from './components/DatePicker.vue'
 import DefinitionList from './components/DefinitionList.vue'
 import DefinitionListItem from './components/DefinitionListItem.vue'
+import DragHandle from './components/DragHandle.vue'
 import EmptyState from './components/EmptyState.vue'
 import Field from './components/Field.vue'
 import FileUploader from './components/FileUploader.vue'
 import Flag from './components/Flag.vue'
+import FloatingToolbar from './components/FloatingToolbar.vue'
 import Form from './components/Form.vue'
 import GanttChart from './components/Charts/GanttChart.vue'
 import Grid from './components/Grid.vue'
@@ -123,10 +125,12 @@ declare module 'vue' {
     NbDatePicker: typeof DatePicker
     NbDefinitionList: typeof DefinitionList
     NbDefinitionListItem: typeof DefinitionListItem
+    NbDragHandle: typeof DragHandle
     NbEmptyState: typeof EmptyState
     NbField: typeof Field
     NbFileUploader: typeof FileUploader
     NbFlag: typeof Flag
+    NbFloatingToolbar: typeof FloatingToolbar
     NbForm: typeof Form
     NbGanttChart: typeof GanttChart
     NbGrid: typeof Grid

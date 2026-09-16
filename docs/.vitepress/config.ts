@@ -309,6 +309,7 @@ export default withMermaid(
                     text: 'Definition List',
                     link: '/ui/components/definition-list',
                   },
+                  { text: 'Drag Handle', link: '/ui/components/drag-handle' },
                   { text: 'Empty State', link: '/ui/components/empty-state' },
                   { text: 'Field', link: '/ui/components/field' },
                   {
@@ -316,6 +317,10 @@ export default withMermaid(
                     link: '/ui/components/file-uploader',
                   },
                   { text: 'Flag', link: '/ui/components/flag' },
+                  {
+                    text: 'Floating Toolbar',
+                    link: '/ui/components/floating-toolbar',
+                  },
                   { text: 'Grid', link: '/ui/components/grid' },
                   { text: 'Icon', link: '/ui/components/icon' },
                   {

@@ -323,6 +323,13 @@ Most component libraries impose styling opinions that are hard to override. Nubi
 | `NbSlider`      | Range slider with single value and range modes                                     |
 | `NbColorStrip`  | Color strip with single/multi-select                                               |
 
+### Actions
+
+| Component           | Description                                                                          |
+| :------------------ | :----------------------------------------------------------------------------------- |
+| `NbFloatingToolbar` | Toolbar floating at an element or a plain rectangle (a text selection), focus-safe   |
+| `NbDragHandle`      | Six-dot grip that reports a pointer, keyboard or native drag without owning the move |
+
 ### Data Display
 
 | Component               | Description                                                                                             |

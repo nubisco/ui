@@ -169,6 +169,22 @@ export type {
   IPaginationEmits,
 } from './components/Pagination.d'
 export { default as NbFlag } from './components/Flag.vue'
+export { default as NbFloatingToolbar } from './components/FloatingToolbar.vue'
+export type {
+  IFloatingToolbarProps,
+  IFloatingToolbarVirtualAnchor,
+  TFloatingToolbarAnchor,
+  TFloatingToolbarOrientation,
+  TFloatingToolbarPlacement,
+} from './components/FloatingToolbar.d'
+export { default as NbDragHandle } from './components/DragHandle.vue'
+export type {
+  IDragHandleEvent,
+  IDragHandleProps,
+  TDragHandleAxis,
+  TDragHandleDirection,
+  TDragHandleVia,
+} from './components/DragHandle.d'
 export { default as NbGanttChart } from './components/Charts/GanttChart.vue'
 export type {
   IGanttTask,

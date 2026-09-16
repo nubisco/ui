@@ -18,11 +18,13 @@ import NbColorStrip from './ColorStrip.vue'
 import NbDataTable from './DataTable.vue'
 import NbDefinitionList from './DefinitionList.vue'
 import NbDefinitionListItem from './DefinitionListItem.vue'
+import NbDragHandle from './DragHandle.vue'
 import NbEmptyState from './EmptyState.vue'
 import NbPagination from './Pagination.vue'
 import NbFileUploader from './FileUploader.vue'
 import NbGanttChart from './Charts/GanttChart.vue'
 import NbFlag from './Flag.vue'
+import NbFloatingToolbar from './FloatingToolbar.vue'
 import NbForm from './Form.vue'
 import NbGrid from './Grid.vue'
 import NbIcon from './Icon.vue'
@@ -105,6 +107,7 @@ const components = {
   NbCheckboxGroup,
   NbDefinitionList,
   NbDefinitionListItem,
+  NbDragHandle,
   NbEmptyState,
   NbReorderList,
   NbColorStrip,
@@ -113,6 +116,7 @@ const components = {
   NbFileUploader,
   NbGanttChart,
   NbFlag,
+  NbFloatingToolbar,
   NbForm,
   NbGrid,
   NbIcon,
