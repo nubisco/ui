@@ -1,3 +1,10 @@
+# [5.3.0](https://github.com/nubisco/ui/compare/v5.2.0...v5.3.0) (2026-09-16)
+
+
+### Features
+
+* **components:** add NbFloatingToolbar and NbDragHandle ([191b1df](https://github.com/nubisco/ui/commit/191b1dfe162b2bd75104d6a31f042db6a0ecd246))
+
 # [5.2.0](https://github.com/nubisco/ui/compare/v5.1.0...v5.2.0) (2026-09-16)
 
 
