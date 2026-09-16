@@ -51,4 +51,11 @@ export interface IMenuContext {
   highlightedIndex: number
   registerItem: (el: HTMLElement) => number
   unregisterItem: (el: HTMLElement) => void
+  /**
+   * A submenu's list is teleported to `<body>`, outside the menu element, so
+   * the menu is told about it. A press inside a registered surface is not an
+   * outside press and does not close the menu.
+   */
+  registerSurface: (el: HTMLElement) => void
+  unregisterSurface: (el: HTMLElement) => void
 }

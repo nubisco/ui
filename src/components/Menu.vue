@@ -86,12 +86,26 @@ function unregisterItem(el: HTMLElement) {
   if (idx >= 0) items.splice(idx, 1)
 }
 
+// Submenu lists, teleported out of this element. Not reactive: only read when
+// a press has to be classified as inside or outside.
+const surfaces = new Set<HTMLElement>()
+
+function registerSurface(el: HTMLElement) {
+  surfaces.add(el)
+}
+
+function unregisterSurface(el: HTMLElement) {
+  surfaces.delete(el)
+}
+
 provide<IMenuContext>('nb-menu', {
   size: props.size,
   close,
   highlightedIndex: highlighted.value,
   registerItem,
   unregisterItem,
+  registerSurface,
+  unregisterSurface,
 })
 
 function getMenuItems(): HTMLElement[] {
@@ -114,6 +128,11 @@ function focusItem(index: number) {
 function onKeydown(e: KeyboardEvent) {
   const menuItems = getMenuItems()
   if (!menuItems.length) return
+
+  // Start from the focused item when there is one. Focus can arrive without
+  // an arrow key: a submenu hands it back to its trigger when it closes.
+  const focused = menuItems.indexOf(document.activeElement as HTMLElement)
+  if (focused >= 0) highlighted.value = focused
 
   if (e.key === 'ArrowDown') {
     e.preventDefault()
@@ -149,9 +168,14 @@ function onKeydown(e: KeyboardEvent) {
 
 function onClickOutside(e: MouseEvent) {
   const target = e.target as Node
-  if (menuRef.value && !menuRef.value.contains(target)) {
-    close()
+  if (!menuRef.value || menuRef.value.contains(target)) return
+  // Pressing an item in a submenu used to count as outside: the menu closed on
+  // mousedown, the submenu unmounted before mouseup, and the click, which is
+  // what selects the item, never happened.
+  for (const surface of surfaces) {
+    if (surface.contains(target)) return
   }
+  close()
 }
 
 function adjustPosition() {

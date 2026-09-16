@@ -134,7 +134,7 @@ Disabled items are visually muted and cannot be activated.
 
 ## Submenus
 
-Use `NbSubmenu` to nest menus. The submenu opens on hover or arrow-right, and closes on mouse-leave or arrow-left.
+Use `NbSubmenu` to nest menus. The submenu opens on hover, on click, or from the keyboard with `ArrowRight`, `Enter` or `Space`, which also moves focus to its first item. It closes on mouse-leave, or with `ArrowLeft` or `Escape`, which hand focus back to the trigger.
 
 <preview>
   <NbButton ref="subTrigger" @click="openSubMenu">File</NbButton>
@@ -183,14 +183,18 @@ Menus support four item sizes: `xs` (24px), `sm` (32px), `md` (40px, default), a
 
 ## Keyboard navigation
 
-| Key               | Action                |
-| ----------------- | --------------------- |
-| `ArrowDown`       | Move to next item     |
-| `ArrowUp`         | Move to previous item |
-| `Enter` / `Space` | Activate item         |
-| `ArrowRight`      | Open submenu          |
-| `ArrowLeft`       | Close submenu         |
-| `Escape`          | Close menu            |
+| Key                              | Action                                                          |
+| -------------------------------- | --------------------------------------------------------------- |
+| `ArrowDown`                      | Move to next item                                               |
+| `ArrowUp`                        | Move to previous item                                           |
+| `Enter` / `Space`                | Activate item                                                   |
+| `ArrowRight` / `Enter` / `Space` | On a submenu trigger: open the submenu and focus its first item |
+| `ArrowLeft` / `Escape` (submenu) | Close the submenu and return focus to its trigger               |
+| `Escape` (top level)             | Close menu                                                      |
+| `Tab`                            | Close the menu, from any level                                  |
+
+Disabled items are skipped. Opening a submenu on hover leaves focus where it
+is, so pointer users are not interrupted.
 
 </doc-tab>
 
