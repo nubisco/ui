@@ -215,6 +215,36 @@ describe('NbInfoHint', () => {
     )
   })
 
+  it('centres on the trigger from its layout size, not its animated rect', async () => {
+    vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1200)
+    vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(800)
+    // The entrance animation scales the popover to 0.96, so a transformed
+    // measurement reports a narrower box than the one that ends up painted.
+    const rects = new Map<string, DOMRect>([
+      ['nb-info-hint--trigger', new DOMRect(593, 400, 14, 14)],
+      ['nb-info-hint--popover', new DOMRect(0, 0, 272 * 0.96, 80 * 0.96)],
+    ])
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: Element) {
+        const match = [...rects.keys()].find((c) => this.classList.contains(c))
+        return match ? rects.get(match)! : new DOMRect()
+      },
+    )
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(272)
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(80)
+
+    const wrapper = createWrapper({ text: 'body' })
+    await wrapper.find('.nb-info-hint--trigger').trigger('click')
+    await nextTick()
+
+    const popover = wrapper.find('.nb-info-hint--popover')
+      .element as HTMLElement
+    const left = parseFloat(popover.style.left)
+    // Trigger centre is 600. A 272px popover centred on it starts at 464.
+    expect(left + 272 / 2).toBe(600)
+    vi.restoreAllMocks()
+  })
+
   it('stays inert when disabled', async () => {
     const wrapper = createWrapper({ text: 'body', disabled: true })
     const trigger = wrapper.find('.nb-info-hint--trigger')
