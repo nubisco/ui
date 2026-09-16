@@ -60,11 +60,6 @@ the user never saw. Narrowing the results narrows the selection with it.
 leaves the page number past the end. Unclamped, that renders an empty page with
 a working "previous" button, which reads as data loss.
 
-**One primary action.** The header has a single filled button. "Reset demo" is
-quiet because it is not what the screen is for, and neither is coloured by
-status. `danger` is used exactly twice, both times on a control that destroys
-data.
-
 **Icon-only row actions carry names.** Each one is labelled with the person it
 acts on ("Edit Ama Boateng"), so a screen reader user hears which row a button
 belongs to instead of "button, button" twenty-two times.
@@ -77,6 +72,32 @@ over an address, which made it 48px tall and pinned the row height there: the
 density control moved the table's own token and changed nothing visible.
 Compact now drops the second line and shrinks the avatar, so the control means
 something. A cell that ignores density silently overrides it.
+
+## Where the primary action goes
+
+One primary action per screen or section, as a **single filled button in the
+header of the thing it acts on**. Never a row of buttons underneath the list.
+
+A filled button stranded below a table reads as a footer for the page rather
+than the control for that list, and it is the last thing a person looking for
+"how do I add one" will find. The heading is where they are already looking,
+because it is what told them which list they are in.
+
+The rest follows from there:
+
+- **Everything else stays quiet.** On this screen "Reset demo" is secondary
+  because it is not what the screen is for. Neither button is coloured by
+  status, because a control's colour says what it does, not how things are.
+- **`danger` is for destroying data**, and nothing else. It is used exactly
+  twice here, both times on a control that deletes.
+- **A section is a screen for this purpose.** A page made of several panels
+  gets one primary action per panel, in each panel's own header, rather than
+  one button at the bottom standing in for all of them.
+
+This is about actions on a region _inside_ a page. For actions on the page as
+a whole, the frame owns the answer: they belong in `topbar-right`, and
+explicitly not in `fixedbar` or the sidebar. See
+[Anatomy: what each region is for](/patterns/app-frame#anatomy-what-each-region-is-for).
 
 ## Demo controls
 
