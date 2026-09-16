@@ -13,7 +13,9 @@
     :tabindex="-1"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
-    @keydown.right.prevent="openSubmenu"
+    @keydown.right.prevent="openFromKeyboard"
+    @keydown.enter.prevent="openFromKeyboard"
+    @keydown.space.prevent="openFromKeyboard"
     @keydown.left.prevent="closeSubmenu"
     @keydown.escape.prevent="closeSubmenu"
     @click="onActivate"
@@ -34,6 +36,7 @@
         :style="submenuStyle"
         @mouseenter="onSubmenuMouseEnter"
         @mouseleave="onSubmenuMouseLeave"
+        @keydown="onSubmenuKeydown"
       >
         <slot />
       </ul>
@@ -43,7 +46,7 @@
 
 <script setup lang="ts">
 import NbIcon from './Icon.vue'
-import { ref, computed, inject, nextTick, onBeforeUnmount } from 'vue'
+import { ref, computed, inject, nextTick, onBeforeUnmount, watch } from 'vue'
 import type { ISubmenuProps, IMenuContext } from './Menu.d'
 
 const props = withDefaults(defineProps<ISubmenuProps>(), {
@@ -126,8 +129,76 @@ function openSubmenu() {
 
 function closeSubmenu() {
   clearTimers()
+  if (!isOpen.value) return
+  // Focus inside a list that is about to unmount would fall to <body> and
+  // strand a keyboard user, so it goes back to the item that opened the list.
+  const hadFocus = !!submenuRef.value?.contains(document.activeElement)
   isOpen.value = false
+  if (hadFocus) triggerRef.value?.focus()
 }
+
+/** The submenu's own items, in order. Items of a nested submenu are teleported
+ *  elsewhere, so they are not in this list. */
+function submenuItems(): HTMLElement[] {
+  if (!submenuRef.value) return []
+  return Array.from(
+    submenuRef.value.querySelectorAll<HTMLElement>(
+      '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]',
+    ),
+  )
+}
+
+function focusEnabled(from: number, step: 1 | -1) {
+  const items = submenuItems()
+  for (let i = from; i >= 0 && i < items.length; i += step) {
+    if (items[i].getAttribute('aria-disabled') !== 'true') {
+      items[i].focus()
+      return
+    }
+  }
+}
+
+/**
+ * Enter, Space and ArrowRight open the submenu and move focus into it. Opening
+ * on hover leaves focus alone, as it always has.
+ */
+function openFromKeyboard() {
+  if (props.disabled) return
+  openSubmenu()
+  nextTick(() => focusEnabled(0, 1))
+}
+
+function onSubmenuKeydown(e: KeyboardEvent) {
+  const items = submenuItems()
+  const current = items.indexOf(document.activeElement as HTMLElement)
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    e.stopPropagation()
+    focusEnabled(current + 1, 1)
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    e.stopPropagation()
+    if (current > 0) focusEnabled(current - 1, -1)
+  } else if (e.key === 'ArrowLeft' || e.key === 'Escape') {
+    // ArrowLeft on a nested submenu's own trigger closes the list it sits in,
+    // which is this one. Escape closes one level at a time.
+    e.preventDefault()
+    e.stopPropagation()
+    closeSubmenu()
+  } else if (e.key === 'Tab') {
+    // Tab leaves the menu altogether, the same as it does from the top level.
+    closeSubmenu()
+    menuContext?.close()
+  }
+}
+
+// The list is registered while it exists, so pressing one of its items is not
+// taken by the menu as a press outside it.
+watch(submenuRef, (el, previous) => {
+  if (previous) menuContext?.unregisterSurface(previous)
+  if (el) menuContext?.registerSurface(el)
+})
 
 function clearTimers() {
   if (openTimer) {
@@ -167,6 +238,7 @@ function onActivate() {
 
 onBeforeUnmount(() => {
   clearTimers()
+  if (submenuRef.value) menuContext?.unregisterSurface(submenuRef.value)
 })
 </script>
 
