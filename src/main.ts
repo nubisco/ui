@@ -353,6 +353,12 @@ export {
 } from './components/Charts/shared/palette'
 export type { TChartMark } from './components/Charts/shared/palette'
 export { default as NbSelect } from './components/Select.vue'
+export { default as NbTableOfContents } from './components/TableOfContents.vue'
+export type {
+  ITableOfContentsItem,
+  ITableOfContentsProps,
+  TTableOfContentsVariant,
+} from './components/TableOfContents.d'
 export { default as NbTabs } from './components/Tabs.vue'
 export type { ITabItem, ITabsProps } from './components/Tabs.d'
 export { default as NbTextInput } from './components/TextInput.vue'

@@ -63,6 +63,7 @@ const PRIVATE_COMPONENTS = new Set<string>([
   'NbSurfaceLayerScope',
   'NbNotificationCenterItem',
   'NbStepperStep',
+  'NbTableOfContentsList',
 ])
 
 /** Every .vue in the folder, as the Nb name it would be exported under. */

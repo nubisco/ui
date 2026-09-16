@@ -342,9 +342,10 @@ Most component libraries impose styling opinions that are hard to override. Nubi
 
 ### Navigation
 
-| Component | Description                                               |
-| :-------- | :-------------------------------------------------------- |
-| `NbTabs`  | Tab bar with optional panels, line and contained variants |
+| Component           | Description                                                                            |
+| :------------------ | :------------------------------------------------------------------------------------- |
+| `NbTabs`            | Tab bar with optional panels, line and contained variants                              |
+| `NbTableOfContents` | In-page contents: nested section links, scroll-following highlight, docked or floating |
 
 ### Onboarding
 

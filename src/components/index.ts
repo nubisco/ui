@@ -74,6 +74,7 @@ import NbInlineLoading from './InlineLoading.vue'
 import NbSkeleton from './Skeleton.vue'
 import NbSparkline from './Charts/Sparkline.vue'
 import NbSwitch from './Switch.vue'
+import NbTableOfContents from './TableOfContents.vue'
 import NbTabs from './Tabs.vue'
 import NbTextInput from './TextInput.vue'
 import NbToast from './Toast.vue'
@@ -164,6 +165,7 @@ const components = {
   NbSkeleton,
   NbSparkline,
   NbSwitch,
+  NbTableOfContents,
   NbTabs,
   NbTextInput,
   NbToast,

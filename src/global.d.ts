@@ -86,6 +86,8 @@ import StepperStep from './components/StepperStep.vue'
 import Submenu from './components/Submenu.vue'
 import SurfaceLayerScope from './components/SurfaceLayerScope.vue'
 import Switch from './components/Switch.vue'
+import TableOfContents from './components/TableOfContents.vue'
+import TableOfContentsList from './components/TableOfContentsList.vue'
 import Tabs from './components/Tabs.vue'
 import TextInput from './components/TextInput.vue'
 import Toast from './components/Toast.vue'
@@ -183,6 +185,8 @@ declare module 'vue' {
     NbSubmenu: typeof Submenu
     NbSurfaceLayerScope: typeof SurfaceLayerScope
     NbSwitch: typeof Switch
+    NbTableOfContents: typeof TableOfContents
+    NbTableOfContentsList: typeof TableOfContentsList
     NbTabs: typeof Tabs
     NbTextInput: typeof TextInput
     NbToast: typeof Toast
