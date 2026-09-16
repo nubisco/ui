@@ -292,9 +292,8 @@ an `NbSidebarMenuGroup` becomes a divider whose label is announced to assistive
 technology, and a nested `NbSidebarMenuItem` shows its children in a flyout
 beside the rail. (This page used to say groups and nested items existed only in
 `verbose`. The components have supported both for some time; the page had not
-caught up.) But see
-[the flyout gap](#collapsed-sub-items-and-the-flyout-gap) below before relying
-on nested items in a collapsed rail.
+caught up.) [The flyout](#collapsed-sub-items-and-the-flyout) below covers how
+it opens by pointer, touch and keyboard.
 
 The tie-break, when it is genuinely eight or nine: **do the labels repeat?** A
 rail of Devices, Reports, Alerts, Settings is compact. A rail of six report types
@@ -349,18 +348,22 @@ is the product's decision; after that it is theirs.
 (notifications, settings), the collapse toggle, then the user menu last, so the
 account sits in the corner in every product.
 
-### Collapsed sub-items and the flyout gap
+### Collapsed sub-items and the flyout
 
-In a collapsed rail, a nested `NbSidebarMenuItem` shows its children in a flyout.
-**Today that flyout opens on pointer hover only.** A click on the parent does not
-open it, and nothing opens it from the keyboard, so in a collapsed rail those
-children cannot be reached by keyboard or on a touch screen.
+In a collapsed rail, a nested `NbSidebarMenuItem` shows its children in a flyout,
+and that flyout works without a mouse:
 
-Until the library fixes that, **do not put a destination only a flyout can
-reach.** Every page a nested item leads to must also be reachable another way:
-the parent's own page linking to it, or the expanded rail. Do not build a
-hand-positioned `NbMenu` as a replacement flyout either: it is the local
-workaround this page warns against, and it would need the same keyboard work.
+- **Pointer:** hovering opens it and leaving closes it. A click pins it open
+  until the next click on the parent, a press outside, or a choice inside.
+- **Touch:** a tap opens and pins it.
+- **Keyboard:** Enter, Space, ArrowRight or ArrowDown on the parent opens it and
+  moves focus to the first child. ArrowUp and ArrowDown move between children,
+  Home and End jump to the ends, Escape or ArrowLeft closes it and returns focus
+  to the parent, and Tab closes it and continues from the rail.
+
+The parent announces `aria-haspopup="menu"` and its `aria-expanded` state.
+Nothing needs wiring in the product. Do not replace the flyout with a
+hand-positioned `NbMenu`: it is the local workaround this page warns against.
 
 ### `inspector-size`: `xs` to `xl`, default `md`
 

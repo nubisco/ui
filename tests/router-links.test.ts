@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { createSSRApp, h } from 'vue'
+import { createSSRApp, h, ref } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { createRouter, createMemoryHistory, type Router } from 'vue-router'
 import Button from '../src/components/Button.vue'
@@ -68,6 +68,26 @@ describe('`to` links carry an href when a router is installed', () => {
       ...withRouter(),
     })
     expect(w.get('a').attributes('href')).toBe('/contact')
+  })
+
+  // The compact label flyout measured the row through its ref, which for a
+  // RouterLink row is the component instance, not the element. Hovering threw
+  // inside the handler and no label ever appeared in a collapsed rail.
+  it('NbSidebarMenuItem: compact RouterLink row shows its label on hover', async () => {
+    const opts = withRouter()
+    const w = mount(SidebarMenuItem, {
+      props: { label: 'Contact', to: '/contact', icon: 'gauge' },
+      attachTo: document.body,
+      ...opts,
+      global: {
+        ...opts.global,
+        provide: { 'nb-shell-sidebar-variant': ref('compact') },
+      },
+    })
+    await w.find('.nb-sidebar-menu-item').trigger('mouseenter')
+    const flyout = document.querySelector('.nb-sidebar-menu-item__flyout')
+    expect(flyout?.textContent).toContain('Contact')
+    w.unmount()
   })
 
   it('NbSidebarMenuItem: named-route `to`', () => {

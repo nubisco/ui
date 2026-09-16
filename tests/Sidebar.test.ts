@@ -263,3 +263,119 @@ describe('NbSidebarMenuItem', () => {
     w.unmount()
   })
 })
+
+describe('NbSidebarMenuItem compact flyout without a mouse', () => {
+  function mountParent() {
+    const Harness = defineComponent({
+      setup() {
+        return () =>
+          h(
+            SidebarMenuItem,
+            { label: 'Library', icon: 'gauge' },
+            {
+              default: () => [
+                h(SidebarMenuItem, { label: 'Books', href: '/books' }),
+                h(SidebarMenuItem, { label: 'Films', href: '/films' }),
+              ],
+            },
+          )
+      },
+    })
+    return mount(Harness, {
+      attachTo: document.body,
+      ...withVariant('compact'),
+    })
+  }
+  const flyout = () => document.querySelector('.nb-sidebar-menu-item__flyout')
+  const flush = () => new Promise((r) => setTimeout(r, 0))
+  // test-utils cannot set MouseEvent.detail, which is how the component tells a
+  // keyboard activation (0) from a pointer one.
+  async function press(el: Element, detail: number) {
+    el.dispatchEvent(new MouseEvent('click', { bubbles: true, detail }))
+    await flush()
+  }
+
+  it('announces the popup on the parent row', async () => {
+    const w = mountParent()
+    const row = w.find('.nb-sidebar-menu-item__row')
+    expect(row.attributes('aria-haspopup')).toBe('menu')
+    expect(row.attributes('aria-expanded')).toBe('false')
+    await press(row.element, 1)
+    expect(row.attributes('aria-expanded')).toBe('true')
+    w.unmount()
+  })
+
+  it('opens on click, stays open when the pointer leaves, closes on a second click', async () => {
+    const w = mountParent()
+    const row = w.find('.nb-sidebar-menu-item__row')
+    await press(row.element, 1)
+    expect(flyout()).not.toBeNull()
+    await w.find('.nb-sidebar-menu-item').trigger('mouseleave')
+    await new Promise((r) => setTimeout(r, 200))
+    expect(flyout()).not.toBeNull()
+    await press(row.element, 1)
+    expect(flyout()).toBeNull()
+    w.unmount()
+  })
+
+  it('pins a flyout a tap already opened through emulated hover', async () => {
+    const w = mountParent()
+    await w.find('.nb-sidebar-menu-item').trigger('mouseenter')
+    await press(w.find('.nb-sidebar-menu-item__row').element, 1)
+    expect(flyout()).not.toBeNull()
+    await w.find('.nb-sidebar-menu-item').trigger('mouseleave')
+    await new Promise((r) => setTimeout(r, 200))
+    expect(flyout()).not.toBeNull()
+    w.unmount()
+  })
+
+  it('moves focus into the flyout when opened from the keyboard, and Escape returns it', async () => {
+    const w = mountParent()
+    const row = w.find('.nb-sidebar-menu-item__row')
+    ;(row.element as HTMLElement).focus()
+    await press(row.element, 0)
+    await flush()
+    expect(document.activeElement?.textContent).toContain('Books')
+    document.activeElement!.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+    )
+    expect(document.activeElement?.textContent).toContain('Films')
+    document.activeElement!.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    )
+    await flush()
+    expect(flyout()).toBeNull()
+    expect(document.activeElement).toBe(row.element)
+    w.unmount()
+  })
+
+  it('opens with ArrowRight on the row', async () => {
+    const w = mountParent()
+    await w.find('.nb-sidebar-menu-item__row').trigger('keydown', {
+      key: 'ArrowRight',
+    })
+    await flush()
+    expect(flyout()).not.toBeNull()
+    expect(document.activeElement?.textContent).toContain('Books')
+    w.unmount()
+  })
+
+  it('closes on a press outside and when a destination is chosen', async () => {
+    const w = mountParent()
+    const row = w.find('.nb-sidebar-menu-item__row')
+    await press(row.element, 1)
+    document.body.dispatchEvent(new Event('pointerdown', { bubbles: true }))
+    await flush()
+    expect(flyout()).toBeNull()
+
+    await press(row.element, 1)
+    const books = Array.from(
+      flyout()!.querySelectorAll<HTMLElement>('[role="menuitem"]'),
+    ).find((el) => el.textContent?.includes('Books'))!
+    books.addEventListener('click', (e) => e.preventDefault())
+    books.click()
+    await flush()
+    expect(flyout()).toBeNull()
+    w.unmount()
+  })
+})
