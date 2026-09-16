@@ -1,3 +1,10 @@
+# [5.4.0](https://github.com/nubisco/ui/compare/v5.3.0...v5.4.0) (2026-09-16)
+
+
+### Features
+
+* **avatar:** add NbAvatar, a picture with an initials fallback ([70b3d56](https://github.com/nubisco/ui/commit/70b3d56f91dda0f579822f3c6eade0f56b693784))
+
 # [5.3.0](https://github.com/nubisco/ui/compare/v5.2.0...v5.3.0) (2026-09-16)
 
 
