@@ -74,22 +74,28 @@ function isEmpty(value: unknown): boolean {
   }
 }
 
-.nb-definition-list__row {
+// Every row selector is `:deep`. A row written into the default slot is an
+// NbDefinitionListItem rendered by the CONSUMER's template, so its root carries
+// the consumer's scope attribute, not this component's. Without `:deep` the
+// grid never applied to slotted rows: terms and values stacked with no columns
+// and no row spacing, while the dt/dd rules below (already `:deep`) still did.
+:deep(.nb-definition-list__row) {
   display: grid;
   gap: var(--nb-spacing-4) var(--nb-spacing-16);
   padding-block: var(--nb-definition-list-row-y);
   align-items: baseline;
-
-  .nb-definition-list--dividers & + & {
-    border-top: 1px solid var(--nb-c-border);
-  }
 }
 
-.nb-definition-list--columns .nb-definition-list__row {
+.nb-definition-list--dividers
+  :deep(.nb-definition-list__row + .nb-definition-list__row) {
+  border-top: 1px solid var(--nb-c-border);
+}
+
+.nb-definition-list--columns :deep(.nb-definition-list__row) {
   grid-template-columns: var(--nb-definition-list-term-w) 1fr;
 }
 
-.nb-definition-list--stacked .nb-definition-list__row {
+.nb-definition-list--stacked :deep(.nb-definition-list__row) {
   grid-template-columns: 1fr;
 }
 
@@ -99,19 +105,18 @@ function isEmpty(value: unknown): boolean {
   container-type: inline-size;
 }
 
-.nb-definition-list--auto .nb-definition-list__row {
+.nb-definition-list--auto :deep(.nb-definition-list__row) {
   grid-template-columns: 1fr;
 }
 
 @container (min-width: 360px) {
-  .nb-definition-list--auto .nb-definition-list__row {
+  .nb-definition-list--auto :deep(.nb-definition-list__row) {
     grid-template-columns: var(--nb-definition-list-term-w) 1fr;
   }
 }
 
-// `:deep` because these also have to reach an NbDefinitionListItem's own dt and
-// dd. A child component's ROOT inherits the parent's scope attribute, so the
-// row selector above matches without help, but its descendants do not.
+// `:deep` for the same reason: these also have to reach the dt and dd of rows
+// written into the slot.
 :deep(.nb-definition-list__term) {
   margin: 0;
   font-size: var(--nb-font-size-12);
