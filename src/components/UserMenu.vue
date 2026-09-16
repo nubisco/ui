@@ -263,9 +263,15 @@ const showIdentity = computed(
 const displayName = computed(() => props.user.name?.trim() || props.user.email)
 // The email as a second line only when a name took the first; otherwise the
 // email is already the first line.
-const secondaryLine = computed(() =>
-  props.user.name?.trim() ? props.user.email : '',
-)
+// A name that merely repeats the email (common for accounts that never set
+// one) is treated as no name, so the email is not printed twice.
+const secondaryLine = computed(() => {
+  const name = props.user.name?.trim()
+  if (!name) return ''
+  return name.toLowerCase() === props.user.email.trim().toLowerCase()
+    ? ''
+    : props.user.email
+})
 
 // An avatar URL can stop resolving (the platform 404s a replaced avatar's old
 // URL), so a failed load falls back to initials, and a new URL gets a fresh try.
@@ -425,7 +431,12 @@ defineExpose({ open, toggle, close })
   width: 100%;
 }
 
-.nb-user-menu__avatar {
+// Scoped under the root class on purpose. The collapsed-rail avatar is a
+// <button>, and the global reset's `button, [type='button']` rule sets a
+// transparent background at the same specificity as a lone class. Whichever
+// stylesheet the consumer's bundler emitted last won, which left the avatar
+// unfilled (and its initials unreadable in dark mode) in some apps.
+.nb-user-menu .nb-user-menu__avatar {
   flex-shrink: 0;
   width: 28px;
   height: 28px;
@@ -477,6 +488,9 @@ defineExpose({ open, toggle, close })
   color: var(--nb-shell-sidebar-link-hover-color, #fff);
   text-align: left;
   font: inherit;
+  // The nav rows' size. `font: inherit` alone picks up the shell's 16px, which
+  // made the account label visibly larger than the items above it.
+  font-size: 0.8125rem;
   cursor: pointer;
   transition: background 0.12s ease;
 

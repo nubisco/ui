@@ -138,6 +138,18 @@ describe('NbUserMenu identity trigger', () => {
     w.unmount()
   })
 
+  it('does not repeat the email when the name is the email', () => {
+    const w = mountMenu({
+      trigger: 'identity',
+      user: { email: 'jose@nubisco.io', name: ' Jose@Nubisco.io ' },
+    })
+    expect(w.find('.nb-user-menu__identity-name').text()).toBe(
+      'Jose@Nubisco.io',
+    )
+    expect(w.find('.nb-user-menu__identity-email').exists()).toBe(false)
+    w.unmount()
+  })
+
   it('opens the same panel as the avatar does', async () => {
     const w = mountMenu({ trigger: 'identity' })
     await w.find('button.nb-user-menu__identity').trigger('click')
