@@ -368,6 +368,10 @@ export default withMermaid(
                   { text: 'Spinner', link: '/ui/components/spinner' },
                   { text: 'Stepper', link: '/ui/components/stepper' },
                   { text: 'Switch', link: '/ui/components/switch' },
+                  {
+                    text: 'Table of Contents',
+                    link: '/ui/components/table-of-contents',
+                  },
                   { text: 'Tabs', link: '/ui/components/tabs' },
                   { text: 'Text Input', link: '/ui/components/text-input' },
                   { text: 'Toast', link: '/ui/components/toast' },

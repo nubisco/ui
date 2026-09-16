@@ -80,6 +80,7 @@ export const COMPONENT_MANIFEST = {
   NbSkeleton: 'Skeleton',
   NbSparkline: 'Charts/Sparkline',
   NbSwitch: 'Switch',
+  NbTableOfContents: 'TableOfContents',
   NbTabs: 'Tabs',
   NbTextInput: 'TextInput',
   NbToast: 'Toast',
