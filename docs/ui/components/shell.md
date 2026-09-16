@@ -304,7 +304,7 @@ Use `NbSidebarMenu` as the container and `NbSidebarMenuItem` for rows. Wrap rela
 
 - **With vue-router** (the app called `app.use(router)`): pass `to` and the row renders as a `<RouterLink>`. `to` accepts anything valid for RouterLink, either a string path (`to="/orders"`) or a location object (`:to="{ name: 'orders' }"`). Client-side navigation and the router's active class work as usual.
 - **Without vue-router**: a string `to` (or `href`) renders a plain `<a>`; use `href` for external links. An object `to` has no meaning without a router, so the row gracefully falls back to a `<button>` that emits `click` (no broken anchor is produced).
-- **Items with sub-items** never navigate. In verbose mode the row is a `<button>` that toggles the submenu; in compact mode it opens the hover flyout. Any `to`/`href` on a parent item is ignored.
+- **Items with sub-items** never navigate. In verbose mode the row is a `<button>` that toggles the submenu; in compact mode it opens the flyout (hover, click, tap, or Enter/Space/ArrowRight). Any `to`/`href` on a parent item is ignored.
 
 Mark the current route with `active`. Listen for `@click` to drive navigation manually when you are not using `to`.
 
@@ -324,7 +324,7 @@ Mark the current route with `active`. Listen for `@click` to drive navigation ma
 In compact mode:
 
 - `NbSidebarBrand` renders only its icon (title and subtitle are hidden).
-- `NbSidebarMenuItem` collapses to a 40×40 icon button. Hovering reveals a flyout with the label, badge, and any child items.
+- `NbSidebarMenuItem` collapses to a 40×40 icon button. Hovering reveals a flyout with the label, badge, and any child items. For an item with children, a click, a tap, or the keyboard opens and pins the flyout and moves focus into it; see [the app frame](/patterns/app-frame#collapsed-sub-items-and-the-flyout).
 - `NbSidebarMenuGroup` becomes a thin separator (the group label is dropped visually but kept for screen readers).
 - Badges with a `badgeVariant` become a small coloured dot in the icon's corner.
 

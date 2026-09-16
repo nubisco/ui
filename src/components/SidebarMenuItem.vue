@@ -25,11 +25,17 @@
       "
       :aria-disabled="disabled || undefined"
       :aria-expanded="
-        hasChildren && variant === 'verbose' ? expanded : undefined
+        hasChildren
+          ? variant === 'verbose'
+            ? expanded
+            : flyoutVisible
+          : undefined
       "
+      :aria-haspopup="hasChildren && variant === 'compact' ? 'menu' : undefined"
       :aria-label="variant === 'compact' ? label : undefined"
       role="menuitem"
       @click="onClick"
+      @keydown="onRowKeydown"
     >
       <NbIcon
         v-if="icon"
@@ -75,10 +81,14 @@
     <!-- Compact: teleported flyout with label + (optionally) children -->
     <Teleport v-if="variant === 'compact' && flyoutVisible" to="body">
       <div
+        ref="flyoutRef"
         class="nb-sidebar-menu-item__flyout"
         :style="flyoutStyle"
         @mouseenter="onFlyoutEnter"
         @mouseleave="onFlyoutLeave"
+        @keydown="onFlyoutKeydown"
+        @focusout="onFlyoutFocusOut"
+        @click="onFlyoutClick"
       >
         <div class="nb-sidebar-menu-item__flyout-header">
           <span class="nb-sidebar-menu-item__flyout-label">{{ label }}</span>
@@ -91,7 +101,11 @@
           </span>
         </div>
         <SidebarVariantScope v-if="hasChildren" variant="verbose">
-          <ul class="nb-sidebar-menu-item__flyout-children">
+          <ul
+            class="nb-sidebar-menu-item__flyout-children"
+            role="menu"
+            :aria-label="label"
+          >
             <slot />
           </ul>
         </SidebarVariantScope>
@@ -101,7 +115,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, useSlots, type Component, type Ref } from 'vue'
+import {
+  computed,
+  inject,
+  nextTick,
+  onBeforeUnmount,
+  ref,
+  useSlots,
+  watch,
+  type Component,
+  type Ref,
+} from 'vue'
 import { ISidebarMenuItemProps } from './SidebarMenuItem.d'
 import NbIcon from './Icon.vue'
 import SidebarVariantScope from './SidebarVariantScope.vue'
@@ -183,13 +207,21 @@ function onClick(event: MouseEvent) {
     expanded.value = !expanded.value
     return
   }
+  if (isParentTrigger.value && variant.value === 'compact') {
+    toggleFlyoutFromClick(event)
+  }
   emit('click', event)
 }
 
 // ── Compact flyout ──────────────────────────────────────────────────────────
 
 const rowRef = ref<HTMLElement | null>(null)
+const flyoutRef = ref<HTMLElement | null>(null)
 const flyoutVisible = ref(false)
+// Opened deliberately (click, tap or keyboard) rather than by hover. A pinned
+// flyout ignores the pointer leaving and stays until it is dismissed, so it can
+// be used without a mouse.
+const pinned = ref(false)
 const flyoutStyle = ref<Record<string, string>>({})
 let closeTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -199,7 +231,7 @@ function openFlyout() {
     clearTimeout(closeTimer)
     closeTimer = null
   }
-  const el = rowRef.value
+  const el = rowElement()
   if (!el) return
   const rect = el.getBoundingClientRect()
   flyoutStyle.value = {
@@ -210,6 +242,7 @@ function openFlyout() {
 }
 
 function scheduleClose() {
+  if (pinned.value) return
   if (closeTimer) clearTimeout(closeTimer)
   closeTimer = setTimeout(() => {
     flyoutVisible.value = false
@@ -232,6 +265,144 @@ function onFlyoutEnter() {
 function onFlyoutLeave() {
   scheduleClose()
 }
+
+// A leaf row can be a RouterLink, whose ref is the component instance rather
+// than the element.
+function rowElement(): HTMLElement | null {
+  const row = rowRef.value as HTMLElement | { $el?: HTMLElement } | null
+  if (!row) return null
+  return row instanceof HTMLElement ? row : (row.$el ?? null)
+}
+
+function closeFlyout(returnFocus = false) {
+  if (closeTimer) {
+    clearTimeout(closeTimer)
+    closeTimer = null
+  }
+  flyoutVisible.value = false
+  pinned.value = false
+  if (returnFocus) rowElement()?.focus()
+}
+
+// The reachable items in the flyout, in order. A collapsed nested group hides
+// its children with v-show, so those are skipped.
+function flyoutItems(): HTMLElement[] {
+  const root = flyoutRef.value
+  if (!root) return []
+  return Array.from(
+    root.querySelectorAll<HTMLElement>('[role="menuitem"]'),
+  ).filter(
+    (el) =>
+      !el.hasAttribute('disabled') &&
+      el.getAttribute('aria-disabled') !== 'true' &&
+      !el.closest('[style*="display: none"]'),
+  )
+}
+
+async function openPinned(focusFirst: boolean) {
+  openFlyout()
+  pinned.value = true
+  if (!focusFirst) return
+  await nextTick()
+  flyoutItems()[0]?.focus()
+}
+
+// On a touch screen the browser emulates mouseenter before the click, so the
+// flyout is often already open (unpinned) when the click arrives. That click
+// pins it instead of closing it; only a click on a pinned flyout closes it.
+function toggleFlyoutFromClick(event: MouseEvent) {
+  if (flyoutVisible.value && pinned.value) {
+    closeFlyout()
+    return
+  }
+  // detail is 0 when Enter or Space activated the button.
+  void openPinned(event.detail === 0)
+}
+
+function onRowKeydown(event: KeyboardEvent) {
+  if (!isParentTrigger.value || variant.value !== 'compact') return
+  if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+    event.preventDefault()
+    void openPinned(true)
+  } else if (event.key === 'Escape' && flyoutVisible.value) {
+    event.preventDefault()
+    closeFlyout(true)
+  }
+}
+
+function onFlyoutKeydown(event: KeyboardEvent) {
+  const items = flyoutItems()
+  const index = items.indexOf(document.activeElement as HTMLElement)
+  switch (event.key) {
+    case 'Escape':
+    case 'ArrowLeft':
+      event.preventDefault()
+      event.stopPropagation()
+      closeFlyout(true)
+      return
+    case 'ArrowDown':
+      event.preventDefault()
+      items[(index + 1) % items.length]?.focus()
+      return
+    case 'ArrowUp':
+      event.preventDefault()
+      items[(index - 1 + items.length) % items.length]?.focus()
+      return
+    case 'Home':
+      event.preventDefault()
+      items[0]?.focus()
+      return
+    case 'End':
+      event.preventDefault()
+      items[items.length - 1]?.focus()
+      return
+    case 'Tab':
+      // The flyout is teleported to <body>, so the browser's next tab stop from
+      // inside it is the end of the document. Handing focus back to the row
+      // first, without preventing the default, lets Tab continue from the rail.
+      closeFlyout(true)
+      return
+  }
+}
+
+function onFlyoutFocusOut(event: FocusEvent) {
+  const next = event.relatedTarget as Node | null
+  // null means focus went nowhere focusable, which the outside-press handler
+  // below deals with; closing here too would fight a click inside the flyout.
+  if (!next) return
+  if (flyoutRef.value?.contains(next) || rowElement()?.contains(next)) return
+  closeFlyout()
+}
+
+// Choosing a destination closes the flyout. A nested group's own toggle
+// (it carries aria-expanded) keeps it open.
+function onFlyoutClick(event: MouseEvent) {
+  const item = (event.target as Element | null)?.closest('[role="menuitem"]')
+  if (item && !item.hasAttribute('aria-expanded')) closeFlyout()
+}
+
+function onDocumentPointerDown(event: PointerEvent) {
+  const target = event.target as Node | null
+  if (!target) return
+  if (flyoutRef.value?.contains(target) || rowElement()?.contains(target))
+    return
+  closeFlyout()
+}
+
+watch(flyoutVisible, (visible) => {
+  if (typeof document === 'undefined') return
+  if (visible)
+    document.addEventListener('pointerdown', onDocumentPointerDown, true)
+  else document.removeEventListener('pointerdown', onDocumentPointerDown, true)
+})
+
+watch(variant, () => closeFlyout())
+
+onBeforeUnmount(() => {
+  if (closeTimer) clearTimeout(closeTimer)
+  if (typeof document !== 'undefined')
+    document.removeEventListener('pointerdown', onDocumentPointerDown, true)
+})
 </script>
 
 <style scoped lang="scss">
