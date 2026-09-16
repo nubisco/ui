@@ -1,7 +1,15 @@
 import { glyphStubComputed } from './__mocks__/glyphStub'
-import { describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import { mount, flushPromises } from '@vue/test-utils'
+import {
+  defineComponent,
+  h,
+  resolveDirective,
+  withDirectives,
+  type Directive,
+} from 'vue'
 import Button from '../src/components/Button.vue'
+import tooltipDirective from '@/directives/ToolTip.directive'
 
 const NbIconStub = {
   name: 'NbIcon',
@@ -205,5 +213,73 @@ describe('variant class', () => {
     expect(
       mount(Button, { props: { variant: 'primary' } }).classes(),
     ).toContain('nb-button--primary')
+  })
+})
+
+describe('Button accessible name warning', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  // Warnings are remembered per icon for the whole session, so every case
+  // uses an icon no other case uses.
+  const warnings = () => {
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    return () =>
+      spy.mock.calls.filter((call) => String(call[0]).startsWith('[NbButton]'))
+  }
+
+  it('warns once for an icon-only button with no accessible name', async () => {
+    const calls = warnings()
+    mount(Button, { props: { icon: 'trash' } })
+    mount(Button, { props: { icon: 'trash' } })
+    await flushPromises()
+    expect(calls()).toHaveLength(1)
+    expect(String(calls()[0][0])).toContain('icon "trash"')
+  })
+
+  it.each([
+    ['aria-label', { 'aria-label': 'Delete' }],
+    ['aria-labelledby', { 'aria-labelledby': 'label-id' }],
+    ['title', { title: 'Delete' }],
+  ])('does not warn when named with %s', async (_, attrs) => {
+    const calls = warnings()
+    mount(Button, { props: { icon: 'pencil' }, attrs })
+    await flushPromises()
+    expect(calls()).toHaveLength(0)
+  })
+
+  it('does not warn for a button with text', async () => {
+    const calls = warnings()
+    mount(Button, { props: { icon: 'plus' }, slots: { default: 'Add' } })
+    await flushPromises()
+    expect(calls()).toHaveLength(0)
+  })
+
+  it('does not warn when v-nb-tooltip names the button', async () => {
+    const calls = warnings()
+    const Host = defineComponent({
+      render: () =>
+        withDirectives(h(Button, { icon: 'gear' }), [
+          [resolveDirective('nb-tooltip') as Directive, { body: 'Settings' }],
+        ]),
+    })
+    const wrapper = mount(Host, {
+      global: { plugins: [tooltipDirective] },
+      attachTo: document.body,
+    })
+    await flushPromises()
+    expect(wrapper.element.getAttribute('aria-label')).toBe('Settings')
+    expect(calls()).toHaveLength(0)
+    wrapper.unmount()
+  })
+
+  it('stays silent in production builds', async () => {
+    const calls = warnings()
+    vi.stubEnv('NODE_ENV', 'production')
+    mount(Button, { props: { icon: 'bell' } })
+    await flushPromises()
+    vi.unstubAllEnvs()
+    expect(calls()).toHaveLength(0)
   })
 })

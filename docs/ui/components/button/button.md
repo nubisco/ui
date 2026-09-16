@@ -80,11 +80,24 @@ For a destructive action, the dialog does the guarding: see
 ## Icon Button
 
 <preview dir="row">
-  <NbButton icon="plus" />
-  <NbButton variant="primary" icon="minus" />
-  <NbButton variant="danger" icon="trash" loading />
-  <NbButton variant="danger" icon="trash" disabled />
+  <NbButton icon="plus" aria-label="Add" />
+  <NbButton variant="primary" icon="minus" aria-label="Remove" />
+  <NbButton variant="danger" icon="trash" aria-label="Delete" loading />
+  <NbButton variant="danger" icon="trash" aria-label="Delete" disabled />
 </preview>
+
+An icon-only button has no text for a screen reader to announce, so give it a
+name. `aria-label` is the usual way. `v-nb-tooltip` also works, because it
+writes the tooltip text to `aria-label` when the button has no other name.
+
+```vue
+<NbButton icon="trash" aria-label="Delete" />
+<NbButton v-nb-tooltip="{ body: 'Delete' }" icon="trash" />
+```
+
+In development, an icon-only button that renders without `aria-label`,
+`aria-labelledby`, `title` or text logs a warning naming the icon, once per
+icon. Production builds stay silent.
 
 ## Features
 
