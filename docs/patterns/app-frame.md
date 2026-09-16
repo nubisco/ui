@@ -306,6 +306,11 @@ and is for a user preference, never for a route.
 
 ### Expanding and collapsing the rail
 
+**Scope.** The rail rules below (collapse, flyouts, the account row) are for
+web products that navigate through `NbShell`'s sidebar. Stagewright is a desktop
+application with its own window chrome and does not use this rail, so none of
+them apply to it; do not retrofit them there.
+
 **Rule.** A product whose destinations suit `verbose` offers the person a way to
 collapse it, and that choice is a **preference that persists**, never a function
 of the route. Use `useSidebarVariant` for the state and `NbSidebarCollapseToggle`
