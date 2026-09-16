@@ -33,8 +33,29 @@
   </component>
 </template>
 
+<script lang="ts">
+const warnedIcons = new Set<string>()
+
+/** A readable key for an icon given by name, glyph module or component. */
+function iconKey(icon: unknown): string {
+  if (typeof icon === 'string') return icon
+  if (icon && (typeof icon === 'object' || typeof icon === 'function')) {
+    const named = icon as { glyphName?: unknown }
+    if (typeof named.glyphName === 'string') return named.glyphName
+  }
+  return ''
+}
+</script>
+
 <script setup lang="ts">
-import { computed, useSlots, type Component } from 'vue'
+import {
+  computed,
+  getCurrentInstance,
+  nextTick,
+  onMounted,
+  useSlots,
+  type Component,
+} from 'vue'
 import { ESize } from '@/types/Size.d'
 import { EButtonType, IButtonProps } from './Button.d'
 import NbIcon from './Icon.vue'
@@ -119,6 +140,40 @@ const iconOnlySizeMap: Record<string, number> = {
 const iconSize = computed(() => {
   const map = isIconOnly.value ? iconOnlySizeMap : iconSizeMap
   return map[props.size ?? 'md'] ?? (isIconOnly.value ? 18 : 14)
+})
+
+/*
+ * An icon-only button has no text, so without an aria-label it is announced as
+ * just "button". Nothing stopped that, and it only came out right when a caller
+ * remembered the attribute. Warn in development instead of changing the API:
+ * the check reads the rendered element after mount, so a name supplied any way
+ * that works (aria-label, aria-labelledby, title, visually hidden text, or
+ * v-nb-tooltip, which writes aria-label) counts. One warning per icon, so a
+ * table of unnamed row actions does not flood the console.
+ */
+const instance = getCurrentInstance()
+onMounted(() => {
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
+    return
+  }
+  if (!isIconOnly.value) return
+  void nextTick(() => {
+    const el = instance?.proxy?.$el as Element | null | undefined
+    if (!el || typeof el.getAttribute !== 'function') return
+    const named = ['aria-label', 'aria-labelledby', 'title'].some(
+      (attr) => (el.getAttribute(attr) ?? '').trim().length > 0,
+    )
+    if (named || (el.textContent ?? '').trim().length > 0) return
+    const key = iconKey(props.icon)
+    if (warnedIcons.has(key)) return
+    warnedIcons.add(key)
+    console.warn(
+      `[NbButton] An icon-only button${key ? ` (icon "${key}")` : ''} has no ` +
+        'accessible name, so a screen reader announces it as "button". Add ' +
+        'aria-label, or name it with v-nb-tooltip.',
+      el,
+    )
+  })
 })
 </script>
 
