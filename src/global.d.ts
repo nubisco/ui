@@ -3,6 +3,7 @@
 import Accordion from './components/Accordion.vue'
 import AccordionItem from './components/AccordionItem.vue'
 import AiLabel from './components/AiLabel.vue'
+import Avatar from './components/Avatar.vue'
 import Badge from './components/Badge.vue'
 import Banner from './components/Banner.vue'
 import BarChart from './components/Charts/BarChart.vue'
@@ -99,6 +100,7 @@ declare module 'vue' {
     NbAccordion: typeof Accordion
     NbAccordionItem: typeof AccordionItem
     NbAiLabel: typeof AiLabel
+    NbAvatar: typeof Avatar
     NbBadge: typeof Badge
     NbBanner: typeof Banner
     NbBarChart: typeof BarChart

@@ -2,6 +2,7 @@ import type { App } from 'vue'
 import NbAccordion from './Accordion.vue'
 import NbAccordionItem from './AccordionItem.vue'
 import NbAiLabel from './AiLabel.vue'
+import NbAvatar from './Avatar.vue'
 import NbBadge from './Badge.vue'
 import NbBanner from './Banner.vue'
 import NbBarChart from './Charts/BarChart.vue'
@@ -93,6 +94,7 @@ const components = {
   NbAccordion,
   NbAccordionItem,
   NbAiLabel,
+  NbAvatar,
   NbBadge,
   NbBanner,
   NbBarChart,
