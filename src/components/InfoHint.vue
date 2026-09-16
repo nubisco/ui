@@ -138,12 +138,16 @@ function reposition() {
   if (!trigger || !popover) return
 
   const anchor = trigger.getBoundingClientRect()
-  const rect = popover.getBoundingClientRect()
-  const placement = placeAnchored(
-    anchor,
-    { width: rect.width, height: rect.height },
-    { side: props.placement as TAnchorSide, viewport: viewportSize() },
-  )
+  // Layout size, not getBoundingClientRect: both measurements run during the
+  // entrance animation, whose scale(0.96) shrinks the transformed rectangle.
+  // Placing from that size left the popover off centre by 2% of its width
+  // (5.44px on a 272px popover, measured in Chromium), and nothing measured it
+  // again once the animation finished.
+  const size = { width: popover.offsetWidth, height: popover.offsetHeight }
+  const placement = placeAnchored(anchor, size, {
+    side: props.placement as TAnchorSide,
+    viewport: viewportSize(),
+  })
 
   placedSide.value = placement.side
   position.value = {
