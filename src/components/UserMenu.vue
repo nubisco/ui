@@ -1,7 +1,42 @@
 <template>
-  <div ref="rootRef" class="nb-user-menu">
+  <div
+    ref="rootRef"
+    class="nb-user-menu"
+    :class="{ 'nb-user-menu--identity': showIdentity }"
+  >
     <slot name="trigger" :open="open" :toggle="toggle">
+      <!-- Expanded rail: a labelled row, so the account lines up with the
+           labelled items above it instead of floating as a lone circle. The
+           visible name is the accessible name; no aria-label overrides it. -->
       <button
+        v-if="showIdentity"
+        type="button"
+        class="nb-user-menu__identity"
+        :title="props.user.email"
+        aria-haspopup="menu"
+        :aria-expanded="open"
+        :disabled="disabled"
+        @click="toggle"
+      >
+        <span class="nb-user-menu__avatar" aria-hidden="true">
+          <img
+            v-if="showPicture"
+            class="nb-user-menu__picture"
+            :src="props.user.picture ?? undefined"
+            alt=""
+            @error="pictureFailed = true"
+          />
+          <template v-else>{{ initials(props.user) }}</template>
+        </span>
+        <span class="nb-user-menu__identity-text">
+          <span class="nb-user-menu__identity-name">{{ displayName }}</span>
+          <span v-if="secondaryLine" class="nb-user-menu__identity-email">{{
+            secondaryLine
+          }}</span>
+        </span>
+      </button>
+      <button
+        v-else
         type="button"
         class="nb-user-menu__avatar"
         :title="props.user.email"
@@ -11,7 +46,14 @@
         :disabled="disabled"
         @click="toggle"
       >
-        {{ initials(props.user) }}
+        <img
+          v-if="showPicture"
+          class="nb-user-menu__picture"
+          :src="props.user.picture ?? undefined"
+          alt=""
+          @error="pictureFailed = true"
+        />
+        <template v-else>{{ initials(props.user) }}</template>
       </button>
     </slot>
 
@@ -137,7 +179,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import {
+  computed,
+  inject,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+  type Ref,
+} from 'vue'
 import { useI18n } from 'vue-i18n'
 import NbIcon from './Icon.vue'
 import NbNubiscoPlatformMark from './NubiscoPlatformMark.vue'
@@ -195,8 +245,38 @@ const props = withDefaults(defineProps<IUserMenuProps>(), {
   // the product's own line. Flip this default to 'none' in the next major.
   brand: 'footer',
   placement: 'right-end',
+  trigger: 'avatar',
   disabled: false,
 })
+
+// The rail's variant, as NbShell provides it. Absent outside a shell, where an
+// identity trigger has no rail to follow and shows the row.
+const railVariant = inject<Ref<'compact' | 'verbose'> | null>(
+  'nb-shell-sidebar-variant',
+  null,
+)
+const showIdentity = computed(
+  () =>
+    props.trigger === 'identity' &&
+    (railVariant?.value ?? 'verbose') === 'verbose',
+)
+const displayName = computed(() => props.user.name?.trim() || props.user.email)
+// The email as a second line only when a name took the first; otherwise the
+// email is already the first line.
+const secondaryLine = computed(() =>
+  props.user.name?.trim() ? props.user.email : '',
+)
+
+// An avatar URL can stop resolving (the platform 404s a replaced avatar's old
+// URL), so a failed load falls back to initials, and a new URL gets a fresh try.
+const pictureFailed = ref(false)
+watch(
+  () => props.user.picture,
+  () => {
+    pictureFailed.value = false
+  },
+)
+const showPicture = computed(() => !!props.user.picture && !pictureFailed.value)
 
 // "Nubisco Platform" is a product name and stays untranslated inside the
 // localised sentence, so the emphasis is found rather than hardcoded per
@@ -341,13 +421,22 @@ defineExpose({ open, toggle, close })
   display: flex;
 }
 
+.nb-user-menu--identity {
+  width: 100%;
+}
+
 .nb-user-menu__avatar {
+  flex-shrink: 0;
   width: 28px;
   height: 28px;
   border-radius: 50%;
   border: 1px solid var(--nb-c-layer-border-3);
   background: var(--nb-c-primary, #6b46c1);
-  color: #fff;
+  // The readable foreground paired with primary, not a literal white: a theme
+  // with a light primary (Prelo's dark mode is #9f9398) left white initials at
+  // under 3:1. For the default purple this resolves to white, unchanged.
+  color: var(--nb-c-primary-a11y, #fff);
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -361,6 +450,75 @@ defineExpose({ open, toggle, close })
     opacity: 0.6;
     cursor: default;
   }
+}
+
+.nb-user-menu__picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// Matches NbSidebarMenuItem's row: same gap, vertical padding, colours, hover
+// and radius, so the account row reads as part of the same list.
+.nb-user-menu__identity {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  box-sizing: border-box;
+  // The avatar is 28px where a nav icon is 16px. Starting 6px earlier than a nav
+  // row's 0.75rem puts the avatar's centre on the icons' centre line, which is
+  // the misalignment this row exists to fix.
+  padding: 0.45rem 0.75rem 0.45rem calc(0.75rem - 6px);
+  @include radius.standalone(control-sm);
+  border: none;
+  background: none;
+  color: var(--nb-shell-sidebar-link-hover-color, #fff);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.12s ease;
+
+  &:hover:not(:disabled) {
+    background: var(
+      --nb-shell-sidebar-link-hover-bg,
+      rgba(255, 255, 255, 0.08)
+    );
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--nb-c-focus-ring);
+    outline-offset: -2px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.nb-user-menu__identity-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.nb-user-menu__identity-name,
+.nb-user-menu__identity-email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nb-user-menu__identity-name {
+  font-weight: 600;
+}
+
+.nb-user-menu__identity-email {
+  font-size: 0.75em;
+  color: var(--nb-shell-sidebar-link-color);
 }
 
 .nb-user-menu__panel {

@@ -63,6 +63,7 @@ export const COMPONENT_MANIFEST = {
   NbSelect: 'Select',
   NbShell: 'Shell',
   NbSidebarBrand: 'SidebarBrand',
+  NbSidebarCollapseToggle: 'SidebarCollapseToggle',
   NbSidebarLink: 'SidebarLink',
   NbSidebarMenu: 'SidebarMenu',
   NbSidebarMenuGroup: 'SidebarMenuGroup',

@@ -68,6 +68,7 @@ import Select from './components/Select.vue'
 import Shell from './components/Shell.vue'
 import ShellPanel from './components/ShellPanel.vue'
 import SidebarBrand from './components/SidebarBrand.vue'
+import SidebarCollapseToggle from './components/SidebarCollapseToggle.vue'
 import SidebarLink from './components/SidebarLink.vue'
 import SidebarMenu from './components/SidebarMenu.vue'
 import SidebarMenuGroup from './components/SidebarMenuGroup.vue'
@@ -161,6 +162,7 @@ declare module 'vue' {
     NbShell: typeof Shell
     NbShellPanel: typeof ShellPanel
     NbSidebarBrand: typeof SidebarBrand
+    NbSidebarCollapseToggle: typeof SidebarCollapseToggle
     NbSidebarLink: typeof SidebarLink
     NbSidebarMenu: typeof SidebarMenu
     NbSidebarMenuGroup: typeof SidebarMenuGroup

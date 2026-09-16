@@ -1,7 +1,21 @@
 interface IUserMenuUser {
   email: string
   name?: string | null
+  /**
+   * An avatar image URL, such as the platform's OIDC `picture` claim. Optional:
+   * without it, or if the image fails to load (a replaced avatar's old URL may
+   * 404), the trigger shows initials exactly as before.
+   */
+  picture?: string | null
 }
+
+/**
+ * `'avatar'` is the round initials button, the long-standing trigger.
+ * `'identity'` is a labelled row (avatar, name and email) for an expanded
+ * rail, where a bare avatar sits out of line with the labelled items above it;
+ * in a collapsed rail it renders as the avatar alone.
+ */
+type TUserMenuTrigger = 'avatar' | 'identity'
 
 interface IUserMenuAccount {
   /** Stable identifier for the account (e.g. the platform `sub`). */
@@ -52,6 +66,12 @@ interface IUserMenuProps {
   brand?: TUserMenuBrand
   /** Where the panel opens relative to the trigger. */
   placement?: TUserMenuPlacement
+  /**
+   * How the trigger is drawn. Defaults to `'avatar'`, unchanged. Opt into
+   * `'identity'` in a rail that can be expanded: it follows the rail, showing
+   * the person's name when expanded and only the avatar when collapsed.
+   */
+  trigger?: TUserMenuTrigger
   disabled?: boolean
 }
 
@@ -60,5 +80,6 @@ export {
   IUserMenuAccount,
   TUserMenuPlacement,
   TUserMenuBrand,
+  TUserMenuTrigger,
   IUserMenuProps,
 }

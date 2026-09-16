@@ -353,6 +353,10 @@ export default withMermaid(
                   { text: 'Select', link: '/ui/components/select' },
                   { text: 'Shell', link: '/ui/components/shell' },
                   { text: 'Shell Panel', link: '/ui/components/shell-panel' },
+                  {
+                    text: 'Sidebar Collapse Toggle',
+                    link: '/ui/components/sidebar-collapse-toggle',
+                  },
                   { text: 'Skeleton', link: '/ui/components/skeleton' },
                   { text: 'Slider', link: '/ui/components/slider' },
                   { text: 'Spinner', link: '/ui/components/spinner' },
@@ -389,6 +393,10 @@ export default withMermaid(
                   {
                     text: 'useShellSlot',
                     link: '/ui/composables/use-shell-slot',
+                  },
+                  {
+                    text: 'useSidebarVariant',
+                    link: '/ui/composables/use-sidebar-variant',
                   },
                   {
                     text: 'useStableId',
