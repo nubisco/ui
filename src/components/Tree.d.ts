@@ -40,6 +40,20 @@ export interface ITreeNodeProps {
   depth?: number | null
   /** Override tree-level draggable for this node (opt-in or opt-out) */
   draggable?: boolean | null
+  /**
+   * Whether the node shows an expand caret, toggles, and is announced as
+   * expandable. `null` (default) decides from whether the default slot renders
+   * any children. `true` shows the caret before children exist, for children
+   * loaded on expand. `false` never shows one.
+   */
+  expandable?: boolean | null
+  /**
+   * Whether a dragged node can be dropped inside this one, becoming its child.
+   * `null` (default) allows it on nodes that have children, as before. `true`
+   * allows it on a leaf too, so a drop can turn a leaf into a parent. `false`
+   * only allows before and after.
+   */
+  droppable?: boolean | null
 }
 
 export interface ITreeDragState {

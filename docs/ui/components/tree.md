@@ -107,10 +107,36 @@ function onDrop({ sourceId, targetId, position }) {
 Visual indicators during drag:
 
 - **Before/After**: A colored line appears at the top or bottom edge of the target row.
-- **Inside** (branch nodes only): The target row highlights with a tinted background and border, indicating the dragged node will become a child.
+- **Inside** (branch nodes, or any node with `droppable`): The target row highlights with a tinted background and border, indicating the dragged node will become a child.
 - The dragged node fades to 40% opacity while in flight.
 
 Individual nodes can opt out of dragging by setting `:draggable="false"`, or you can enable it per-node instead of globally.
+
+### Dropping onto a leaf
+
+By default a node only takes a drop inside it when it already has children. Set `droppable` to let a leaf take one too, so a drop can turn it into a parent without the leaf showing a caret first:
+
+```vue
+<NbTree draggable @drop="onDrop">
+  <NbTreeNode
+    v-for="page in pages"
+    :id="page.id"
+    :key="page.id"
+    :label="page.title"
+    droppable
+  >
+    <NbTreeNode
+      v-for="child in page.children"
+      :id="child.id"
+      :key="child.id"
+      :label="child.title"
+      droppable
+    />
+  </NbTreeNode>
+</NbTree>
+```
+
+A node is a branch when its default slot renders at least one child, checked on every render. A slot that renders nothing (an empty `v-for`, as for `page` above before it has children) leaves a plain leaf: no caret, no toggle on click, and no `aria-expanded`. When the first child arrives the caret appears without the node remounting. For children loaded only on expand, set `expandable` to show the caret before they exist.
 
 ## Actions Slot
 
@@ -242,14 +268,16 @@ Nodes are focusable via `tabindex="-1"`. Arrow key navigation managed by the tre
 
 ## NbTreeNode Props
 
-| Prop        | Type              | Default     | Description                                   |
-| ----------- | ----------------- | ----------- | --------------------------------------------- |
-| `id`        | `string`          | required    | Unique node identifier                        |
-| `label`     | `string`          | required    | Display text                                  |
-| `icon`      | `string`          | `undefined` | Icon name (NbIcon)                            |
-| `disabled`  | `boolean`         | `false`     | Disable interaction                           |
-| `depth`     | `number \| null`  | `null`      | Nesting depth (auto-computed, 16px per level) |
-| `draggable` | `boolean \| null` | `null`      | Override tree-level draggable for this node   |
+| Prop         | Type              | Default     | Description                                                           |
+| ------------ | ----------------- | ----------- | --------------------------------------------------------------------- |
+| `id`         | `string`          | required    | Unique node identifier                                                |
+| `label`      | `string`          | required    | Display text                                                          |
+| `icon`       | `string`          | `undefined` | Icon name (NbIcon)                                                    |
+| `disabled`   | `boolean`         | `false`     | Disable interaction                                                   |
+| `depth`      | `number \| null`  | `null`      | Nesting depth (auto-computed, 16px per level)                         |
+| `draggable`  | `boolean \| null` | `null`      | Override tree-level draggable for this node                           |
+| `expandable` | `boolean \| null` | `null`      | Show the caret. `null` decides from whether the slot renders children |
+| `droppable`  | `boolean \| null` | `null`      | Allow a drop inside. `null` allows it on nodes that have children     |
 
 ## NbTreeNode Slots
 
