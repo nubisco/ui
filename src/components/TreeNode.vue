@@ -3,7 +3,7 @@
     role="treeitem"
     tabindex="-1"
     :draggable="isDraggable || undefined"
-    :aria-expanded="hasChildren ? isExpanded : undefined"
+    :aria-expanded="isBranch() ? isExpanded : undefined"
     :aria-selected="isSelected"
     :aria-disabled="disabled || undefined"
     :aria-grabbed="isDraggable ? isDragging : undefined"
@@ -11,8 +11,8 @@
     :class="{
       'nb-tree-node--selected': isSelected,
       'nb-tree-node--disabled': disabled,
-      'nb-tree-node--branch': hasChildren,
-      'nb-tree-node--leaf': !hasChildren,
+      'nb-tree-node--branch': isBranch(),
+      'nb-tree-node--leaf': !isBranch(),
       'nb-tree-node--dragging': isDragging,
       'nb-tree-node--drop-before': dropPosition === 'before',
       'nb-tree-node--drop-after': dropPosition === 'after',
@@ -34,7 +34,7 @@
     >
       <!-- Chevron toggle (branches only) -->
       <span
-        v-if="hasChildren"
+        v-if="isBranch()"
         class="nb-tree-node__toggle"
         @click="handleChevronClick"
       >
@@ -65,7 +65,7 @@
 
     <!-- Children (expanded branches only) -->
     <ul
-      v-if="hasChildren && isExpanded"
+      v-if="isBranch() && isExpanded"
       role="group"
       class="nb-tree-node__children"
     >
@@ -75,7 +75,18 @@
 </template>
 
 <script setup lang="ts">
-import { inject, computed, provide, useSlots } from 'vue'
+import {
+  Comment,
+  Fragment,
+  Text,
+  computed,
+  inject,
+  onBeforeMount,
+  onBeforeUpdate,
+  provide,
+  useSlots,
+  type VNode,
+} from 'vue'
 import NbIcon from './Icon.vue'
 import { NB_TREE_KEY, NB_TREE_DEPTH_KEY } from './TreeContext'
 import type { ITreeNodeProps, ITreeContext, TTreeDropPosition } from './Tree.d'
@@ -85,6 +96,8 @@ const props = withDefaults(defineProps<ITreeNodeProps>(), {
   disabled: false,
   depth: null,
   draggable: null,
+  expandable: null,
+  droppable: null,
 })
 
 const emit = defineEmits<{
@@ -103,7 +116,51 @@ const depth = computed(() => props.depth ?? parentDepth)
 // Provide depth + 1 to children so nesting auto-increments
 provide(NB_TREE_DEPTH_KEY, depth.value + 1)
 
-const hasChildren = computed(() => !!slots.default)
+/*
+ * Whether the node has children is read from what its default slot renders,
+ * on every render. It used to be `computed(() => !!slots.default)`, which had
+ * two faults: slots are not reactive, so a node that gained its first child
+ * kept no caret until it remounted, and a slot that rendered nothing (an empty
+ * v-for) still counted, so a leaf could not accept drops without also showing
+ * a caret and toggling an empty group.
+ *
+ * Calling the slot inside render also subscribes this row to whatever the
+ * slot reads, which is what makes it update when children arrive. The answer
+ * is kept for the rest of the render pass, so the template's several checks
+ * render the slot once.
+ */
+let renderPass = 0
+let checkedPass = -1
+let renderedChildren = false
+onBeforeMount(() => renderPass++)
+onBeforeUpdate(() => renderPass++)
+
+function rendersContent(nodes: VNode[] | undefined): boolean {
+  return !!nodes?.some((node) => {
+    if (node.type === Comment) return false
+    if (node.type === Fragment) return rendersContent(node.children as VNode[])
+    if (node.type === Text) return String(node.children ?? '').trim() !== ''
+    return true
+  })
+}
+
+function hasRenderedChildren(): boolean {
+  if (checkedPass !== renderPass) {
+    checkedPass = renderPass
+    renderedChildren = rendersContent(slots.default?.())
+  }
+  return renderedChildren
+}
+
+/** Shows a caret, toggles, and is announced as expandable. */
+function isBranch(): boolean {
+  return props.expandable ?? hasRenderedChildren()
+}
+
+/** Accepts a drop in its middle, which makes the dragged node its child. */
+function acceptsInside(): boolean {
+  return props.droppable ?? isBranch()
+}
 const isExpanded = computed(() => tree?.expandedIds.has(props.id) ?? false)
 const isSelected = computed(() => tree?.selectedId === props.id)
 const isCompact = computed(() => tree?.compact ?? false)
@@ -130,7 +187,7 @@ function handleClick() {
   if (props.disabled || !tree) return
   tree.select(props.id)
   emit('select', props.id)
-  if (hasChildren.value) {
+  if (isBranch()) {
     tree.toggle(props.id)
     emit('toggle', props.id, !isExpanded.value)
   }
@@ -145,7 +202,7 @@ function handleChevronClick(e: Event) {
 
 function handleDblClick() {
   if (props.disabled) return
-  if (hasChildren.value && tree) tree.toggle(props.id)
+  if (isBranch() && tree) tree.toggle(props.id)
   emit('dblclick', props.id)
 }
 
@@ -174,7 +231,7 @@ function getDropPosition(e: DragEvent, el: HTMLElement): TTreeDropPosition {
   const height = rect.height
   if (y < height * 0.25) return 'before'
   if (y > height * 0.75) return 'after'
-  return hasChildren.value ? 'inside' : y < height * 0.5 ? 'before' : 'after'
+  return acceptsInside() ? 'inside' : y < height * 0.5 ? 'before' : 'after'
 }
 
 function onDragOver(e: DragEvent) {
@@ -214,7 +271,7 @@ function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Enter') {
     e.preventDefault()
     handleClick()
-  } else if (e.key === 'ArrowRight' && hasChildren.value) {
+  } else if (e.key === 'ArrowRight' && isBranch()) {
     e.preventDefault()
     if (!isExpanded.value) {
       tree.toggle(props.id)

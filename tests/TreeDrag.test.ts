@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
-import { defineComponent, h, nextTick } from 'vue'
+import { defineComponent, h, nextTick, ref, type Ref } from 'vue'
 import NbTree from '../src/components/Tree.vue'
 import NbTreeNode from '../src/components/TreeNode.vue'
 import type { ITreeDropEvent } from '../src/components/Tree.d'
@@ -95,5 +95,135 @@ describe('NbTree drag', () => {
     document.body.addEventListener('dragstart', () => seen++)
     row('The Nubisco Manual').dispatchEvent(dragEvent('dragstart'))
     expect(seen).toBe(1)
+  })
+})
+
+describe('NbTreeNode children and drop inside', () => {
+  const nodeRow = (id: string) =>
+    document.querySelector<HTMLElement>(`[data-test-id="${id}"]`)!
+
+  function mountList(
+    children: Ref<string[]>,
+    nodeProps: Record<string, unknown> = {},
+    drops: ITreeDropEvent[] = [],
+  ) {
+    const Host = defineComponent({
+      setup() {
+        return () =>
+          h(
+            NbTree,
+            { draggable: true, onDrop: (e: ITreeDropEvent) => drops.push(e) },
+            () => [
+              h(
+                NbTreeNode,
+                {
+                  id: 'page',
+                  label: 'Page',
+                  'data-test-id': 'page',
+                  ...nodeProps,
+                },
+                // Always a slot, sometimes empty: the shape of a tree rendered
+                // from data, which is where the old check went wrong.
+                () =>
+                  children.value.map((id) => h(NbTreeNode, { id, label: id })),
+              ),
+              h(NbTreeNode, {
+                id: 'moved',
+                label: 'Moved',
+                'data-test-id': 'moved',
+              }),
+            ],
+          )
+      },
+    })
+    const wrapper = mount(Host, { attachTo: document.body })
+    mounted.push(wrapper)
+    return wrapper
+  }
+
+  it('a node whose slot renders nothing is a leaf', async () => {
+    mountList(ref([]))
+    await nextTick()
+    const page = nodeRow('page')
+    expect(page.classList.contains('nb-tree-node--leaf')).toBe(true)
+    expect(page.querySelector('.nb-tree-node__toggle')).toBeNull()
+    expect(page.hasAttribute('aria-expanded')).toBe(false)
+  })
+
+  it('gains a caret when its first child arrives, without remounting', async () => {
+    const children = ref<string[]>([])
+    mountList(children)
+    await nextTick()
+    const page = nodeRow('page')
+    expect(page.querySelector('.nb-tree-node__toggle')).toBeNull()
+
+    children.value = ['child']
+    await nextTick()
+    await nextTick()
+    expect(nodeRow('page')).toBe(page)
+    expect(page.classList.contains('nb-tree-node--branch')).toBe(true)
+    expect(page.querySelector('.nb-tree-node__toggle')).not.toBeNull()
+    expect(page.getAttribute('aria-expanded')).toBe('false')
+
+    children.value = []
+    await nextTick()
+    await nextTick()
+    expect(page.querySelector('.nb-tree-node__toggle')).toBeNull()
+  })
+
+  it('expandable forces the caret on or off', async () => {
+    mountList(ref([]), { expandable: true })
+    await nextTick()
+    expect(
+      nodeRow('page').querySelector('.nb-tree-node__toggle'),
+    ).not.toBeNull()
+    mounted.splice(0).forEach((w) => w.unmount())
+
+    mountList(ref(['child']), { expandable: false })
+    await nextTick()
+    expect(nodeRow('page').querySelector('.nb-tree-node__toggle')).toBeNull()
+  })
+
+  /** Drags "Moved" over the middle of "Page" and drops it. */
+  async function dropInMiddle(drops: ITreeDropEvent[]) {
+    nodeRow('moved').dispatchEvent(dragEvent('dragstart'))
+    await nextTick()
+    const page = nodeRow('page')
+    const label = page.querySelector<HTMLElement>('.nb-tree-node__label')!
+    label.getBoundingClientRect = () => ({ top: 100, height: 32 }) as DOMRect
+    const over = dragEvent('dragover')
+    Object.assign(over, { clientY: 116 })
+    page.dispatchEvent(over)
+    page.dispatchEvent(dragEvent('drop'))
+    return drops[0]
+  }
+
+  it('a leaf only takes before and after by default, as before', async () => {
+    const drops: ITreeDropEvent[] = []
+    mountList(ref([]), {}, drops)
+    await nextTick()
+    expect((await dropInMiddle(drops)).position).not.toBe('inside')
+  })
+
+  it('droppable lets a leaf take a drop inside, with no caret', async () => {
+    const drops: ITreeDropEvent[] = []
+    mountList(ref([]), { droppable: true }, drops)
+    await nextTick()
+    expect(nodeRow('page').querySelector('.nb-tree-node__toggle')).toBeNull()
+    const drop = await dropInMiddle(drops)
+    expect(drop).toMatchObject({
+      sourceId: 'moved',
+      targetId: 'page',
+      position: 'inside',
+    })
+  })
+
+  it('clicking a leaf does not toggle an empty group', async () => {
+    const toggles: unknown[] = []
+    mountList(ref([]), { onToggle: (...args: unknown[]) => toggles.push(args) })
+    await nextTick()
+    nodeRow('page').querySelector<HTMLElement>('.nb-tree-node__label')!.click()
+    await nextTick()
+    expect(toggles).toHaveLength(0)
   })
 })
