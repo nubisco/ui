@@ -155,6 +155,13 @@ function handleContextMenu(e: MouseEvent) {
 
 // Drag event handlers
 function onDragStart(e: DragEvent) {
+  // Rows nest, so a child row's dragstart bubbles through every ancestor row.
+  // Each one used to take the drag over, and the outermost ran last, so the
+  // dragged id was always the top-level ancestor. Only the row that owns the
+  // dragged element handles it. Not stopPropagation: a host listening higher up
+  // still sees the event.
+  const target = e.target as Element | null
+  if (target?.closest?.('.nb-tree-node') !== e.currentTarget) return
   if (!isDraggable.value || !tree || !e.dataTransfer) return
   e.dataTransfer.effectAllowed = 'move'
   e.dataTransfer.setData('text/plain', props.id)
