@@ -1,3 +1,19 @@
+# [5.5.0](https://github.com/nubisco/ui/compare/v5.4.1...v5.5.0) (2026-09-17)
+
+
+### Bug Fixes
+
+* **info-hint:** centre the popover from its layout size ([26be64f](https://github.com/nubisco/ui/commit/26be64ff8bcc308ebf114dfb8854ff115010ae8a))
+* **submenu:** reach submenu items from the keyboard and select them by click ([48f4117](https://github.com/nubisco/ui/commit/48f411776b850826af5e5e7fe7ee589089816939))
+* **tree:** drag the node that was grabbed, not its top-level ancestor ([60943b4](https://github.com/nubisco/ui/commit/60943b4ee7b7094ed9b228de10c4cf3800905229))
+* **tree:** read children from what the slot renders, and add droppable ([39bae5d](https://github.com/nubisco/ui/commit/39bae5df333ae3c5c7baee03704a7526920fa538))
+
+
+### Features
+
+* **button:** warn in development when an icon-only button has no name ([0650776](https://github.com/nubisco/ui/commit/06507765e6fd0c2c80c1bb1030eaf035177e1046))
+* **components:** add NbTableOfContents ([1032805](https://github.com/nubisco/ui/commit/1032805d159558fc7978022cc7d2874ad8b340cc))
+
 ## [5.4.1](https://github.com/nubisco/ui/compare/v5.4.0...v5.4.1) (2026-09-16)
 
 
