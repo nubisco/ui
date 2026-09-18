@@ -460,6 +460,20 @@ export {
   WALKTHROUGH_STORAGE_PREFIX,
 } from './utils/walkthroughStorage.helper'
 export {
+  ancestorsOf,
+  subtreeOf,
+  isInvalidTarget,
+  moveTargets,
+  planTreeMove,
+  nestByDepth,
+} from './utils/treeMove.helper'
+export type {
+  ITreeMoveNode,
+  ITreeMovePlan,
+  ITreeMoveTarget,
+  TTreeMovePlacement,
+} from './utils/treeMove.helper'
+export {
   resolveTourTarget,
   tourStepSelector,
   isTargetVisible,

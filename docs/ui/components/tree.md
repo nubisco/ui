@@ -137,6 +137,42 @@ Every node takes a drop in its middle by default, including a node with no child
 
 A node is a branch when its default slot renders at least one child, checked on every render. A slot that renders nothing (an empty `v-for`, as for `page` above before it has children) leaves a plain leaf: no caret, no toggle on click, and no `aria-expanded`. When the first child arrives the caret appears without the node remounting. For children loaded only on expand, set `expandable` to show the caret before they exist.
 
+### A node can never go inside itself
+
+A node dropped into its own subtree is detached from the root, and in a stored tree everything under it disappears. The tree refuses it: while a node is being dragged, itself and every row under it show no drop indicator and fire no `drop` event, so the pointer keeps the browser's "cannot drop" cursor. Nothing is needed from the product.
+
+### Working out the move
+
+A `drop` event says what was dropped where. Turning that into a new tree, and offering the same move from a keyboard "Move to" picker, is the same work in every product, so the library ships it as plain functions. They take any tree of `{ id, children }`, never change the one they are given, and enforce the same subtree rule the drag does.
+
+```ts
+import { planTreeMove, moveTargets, isInvalidTarget } from '@nubisco/ui'
+
+function onDrop(event) {
+  const plan = planTreeMove(pages.value, event.sourceId, {
+    kind: event.position, // 'before' | 'after' | 'inside'
+    target: event.targetId,
+  })
+  // null when the move is refused or would change nothing.
+  if (!plan) return
+
+  const previous = pages.value
+  pages.value = plan.tree // optimistic
+  api.move(event.sourceId, plan).catch(() => (pages.value = previous))
+}
+```
+
+| Function                            | Answers                                                                     |
+| ----------------------------------- | --------------------------------------------------------------------------- |
+| `planTreeMove(tree, id, placement)` | The tree after the move, plus `parentId`, `index`, `afterId` and `beforeId` |
+| `moveTargets(tree, id)`             | Every node it may move to, in reading order with depth, for a picker        |
+| `isInvalidTarget(tree, source, id)` | Whether a target is the node itself or inside it                            |
+| `ancestorsOf(tree, id)`             | The ids above a node, outermost first, to expand its parents                |
+| `subtreeOf(tree, id)`               | A node and everything under it                                              |
+| `nestByDepth(rows)`                 | A flat, depth-ordered API response rebuilt into a tree                      |
+
+`planTreeMove` returns `null` when the move is refused or would leave the tree as it is, so a product never sends a pointless write. `placement` is `{ kind: 'inside' | 'before' | 'after', target }` or `{ kind: 'root' }` for the top level. "Inside" appends as the last child.
+
 ## Actions Slot
 
 Use the `actions` slot on `NbTreeNode` to render action buttons or badges on the right side. Actions are visible on hover and when the node is selected.

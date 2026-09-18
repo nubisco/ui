@@ -88,7 +88,11 @@ import {
   type VNode,
 } from 'vue'
 import NbIcon from './Icon.vue'
-import { NB_TREE_KEY, NB_TREE_DEPTH_KEY } from './TreeContext'
+import {
+  NB_TREE_KEY,
+  NB_TREE_DEPTH_KEY,
+  NB_TREE_ANCESTORS_KEY,
+} from './TreeContext'
 import type { ITreeNodeProps, ITreeContext, TTreeDropPosition } from './Tree.d'
 
 const props = withDefaults(defineProps<ITreeNodeProps>(), {
@@ -115,6 +119,22 @@ const depth = computed(() => props.depth ?? parentDepth)
 
 // Provide depth + 1 to children so nesting auto-increments
 provide(NB_TREE_DEPTH_KEY, depth.value + 1)
+
+const ancestorIds = inject(NB_TREE_ANCESTORS_KEY, [])
+provide(NB_TREE_ANCESTORS_KEY, [...ancestorIds, props.id])
+
+/*
+ * A node cannot be dropped into itself or into its own subtree. Dropping a
+ * parent onto its own child detaches the subtree from the root, which in a
+ * stored tree means the pages under it vanish. Nothing refused it, so every
+ * product had to find the rule for itself. Refused here means no drop
+ * indicator and no drop event: the row does not call preventDefault, so the
+ * pointer keeps the browser's "cannot drop" cursor.
+ */
+function isInsideDraggedSubtree(): boolean {
+  const dragId = tree?.drag.dragId
+  return !!dragId && (dragId === props.id || ancestorIds.includes(dragId))
+}
 
 /*
  * Whether the node has children is read from what its default slot renders,
@@ -242,7 +262,7 @@ function getDropPosition(e: DragEvent, el: HTMLElement): TTreeDropPosition {
 }
 
 function onDragOver(e: DragEvent) {
-  if (!tree || tree.drag.dragId === props.id || props.disabled) return
+  if (!tree || props.disabled || isInsideDraggedSubtree()) return
   e.preventDefault()
   e.stopPropagation()
   if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
@@ -262,9 +282,9 @@ function onDragLeave(e: DragEvent) {
 }
 
 function onDrop(e: DragEvent) {
+  if (!tree || isInsideDraggedSubtree()) return
   e.preventDefault()
   e.stopPropagation()
-  if (!tree) return
   tree.onDrop()
 }
 
