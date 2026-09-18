@@ -1,7 +1,8 @@
 <template>
   <span
     class="nb-avatar"
-    :class="[`nb-avatar--${size}`]"
+    :class="[typeof size === 'number' ? null : `nb-avatar--${size}`]"
+    :style="sizeStyle"
     :role="decorative ? undefined : 'img'"
     :aria-label="decorative ? undefined : accessibleName || undefined"
     :aria-hidden="decorative ? 'true' : undefined"
@@ -30,6 +31,8 @@ const props = withDefaults(defineProps<IAvatarProps>(), {
   email: undefined,
   picture: undefined,
   size: 'md',
+  background: undefined,
+  color: undefined,
   decorative: false,
 })
 
@@ -41,6 +44,29 @@ watch(
     failed.value = false
   },
 )
+
+/*
+ * A number sizes the avatar directly, for the sizes the named scale does not
+ * carry: products show people at whatever their rows are tall, and a fixed
+ * four-step scale meant re-implementing the whole avatar to get 18px.
+ *
+ * The initials follow the circle. The named steps run from 0.40 of the box at
+ * 20px down to 0.35 at 40px, because bigger circles need proportionally less,
+ * and this continues that line rather than picking a new ratio.
+ */
+const sizeStyle = computed(() => {
+  const style: Record<string, string> = {}
+  if (typeof props.size === 'number') {
+    const px = Math.max(1, props.size)
+    const ratio = Math.min(0.42, Math.max(0.3, 0.4 - (px - 20) * 0.0025))
+    style.width = `${px}px`
+    style.height = `${px}px`
+    style.fontSize = `${Math.round(px * ratio * 100) / 100}px`
+  }
+  if (props.background) style.background = props.background
+  if (props.color) style.color = props.color
+  return style
+})
 
 const showPicture = computed(() => !!props.picture && !failed.value)
 const initials = computed(() => initialsOf(props))

@@ -72,4 +72,40 @@ describe('NbAvatar', () => {
       'nb-avatar--lg',
     )
   })
+
+  it('takes a size in pixels, and scales the initials with it', () => {
+    const w = mount(Avatar, { props: { name: 'Ana Costa', size: 18 } })
+    // No step class: the number sizes it, so nothing from the scale applies.
+    expect(w.classes().some((c) => /^nb-avatar--/.test(c))).toBe(false)
+    const style = w.attributes('style')!
+    expect(style).toContain('width: 18px')
+    expect(style).toContain('height: 18px')
+    expect(style).toMatch(/font-size: 7\.?\d*px/)
+
+    const big = mount(Avatar, { props: { name: 'Ana Costa', size: 56 } })
+    expect(big.attributes('style')).toContain('width: 56px')
+    // Bigger circles take proportionally smaller initials.
+    const ratio = (el: string) =>
+      parseFloat(/font-size: ([\d.]+)px/.exec(el)![1])
+    expect(ratio(big.attributes('style')!) / 56).toBeLessThan(ratio(style) / 18)
+  })
+
+  it('paints a background and foreground when given them', () => {
+    const w = mount(Avatar, {
+      props: {
+        name: 'Ana Costa',
+        background: 'var(--nb-c-chart-3)',
+        color: '#101112',
+      },
+    })
+    const style = w.attributes('style')!
+    expect(style).toContain('background: var(--nb-c-chart-3)')
+    expect(style).toContain('color: rgb(16, 17, 18)')
+  })
+
+  it('carries no inline style when it is left alone', () => {
+    expect(
+      mount(Avatar, { props: { name: 'Ana Costa' } }).attributes('style'),
+    ).toBeUndefined()
+  })
 })
