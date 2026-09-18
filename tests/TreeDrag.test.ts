@@ -198,16 +198,9 @@ describe('NbTreeNode children and drop inside', () => {
     return drops[0]
   }
 
-  it('a leaf only takes before and after by default, as before', async () => {
+  it('a childless node takes a drop inside by default, with no caret', async () => {
     const drops: ITreeDropEvent[] = []
     mountList(ref([]), {}, drops)
-    await nextTick()
-    expect((await dropInMiddle(drops)).position).not.toBe('inside')
-  })
-
-  it('droppable lets a leaf take a drop inside, with no caret', async () => {
-    const drops: ITreeDropEvent[] = []
-    mountList(ref([]), { droppable: true }, drops)
     await nextTick()
     expect(nodeRow('page').querySelector('.nb-tree-node__toggle')).toBeNull()
     const drop = await dropInMiddle(drops)
@@ -216,6 +209,13 @@ describe('NbTreeNode children and drop inside', () => {
       targetId: 'page',
       position: 'inside',
     })
+  })
+
+  it('droppable false leaves only before and after', async () => {
+    const drops: ITreeDropEvent[] = []
+    mountList(ref([]), { droppable: false }, drops)
+    await nextTick()
+    expect((await dropInMiddle(drops)).position).not.toBe('inside')
   })
 
   it('clicking a leaf does not toggle an empty group', async () => {
