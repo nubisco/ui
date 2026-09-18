@@ -33,6 +33,11 @@ They work on any tree of `{ id, children }` and answer what a drop or a
 product. See [Working out the move](/ui/components/tree#working-out-the-move).
 Nothing is required: existing drop handlers keep working.
 
+**`NbAvatar` takes a size in pixels and a background.** `size` still accepts
+`xs`, `sm`, `md` and `lg`, and now a number as well, for the sizes a product
+shows people at that the scale does not carry. `background` and `color` paint
+the initials, for giving each person their own colour. Defaults are unchanged.
+
 `droppable` and the caret are independent. `expandable` still decides whether a
 node shows a caret, so a node can accept children while showing no caret until
 it has some. See [Tree](/ui/components/tree#dropping-onto-a-leaf).
