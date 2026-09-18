@@ -2,7 +2,8 @@
 
 ## To 5.6.0 from 5.5.0
 
-One change, and it undoes a silent behaviour change 5.5.0 introduced.
+Two changes to `NbTree`, plus new helpers. One of them undoes a silent
+behaviour change 5.5.0 introduced.
 
 **Dropping a node inside another.** In a draggable `NbTree`, every node now
 accepts a drop in its middle, which makes the dragged node its child. That
@@ -18,6 +19,19 @@ To keep a node from taking children, opt out per node:
 ```vue
 <NbTreeNode id="leaf" label="Cannot take children" :droppable="false" />
 ```
+
+**A node can no longer be dropped into its own subtree.** The tree used to
+allow it, which detaches the subtree from the root and loses everything under
+it. Rows inside the dragged node now show no drop indicator and fire no `drop`
+event. A product that guarded this itself can drop its guard, and one that did
+not is no longer exposed to it.
+
+**New move helpers**, exported from `@nubisco/ui`: `planTreeMove`,
+`moveTargets`, `isInvalidTarget`, `ancestorsOf`, `subtreeOf` and `nestByDepth`.
+They work on any tree of `{ id, children }` and answer what a drop or a
+"Move to" picker needs, so the move maths does not have to be written per
+product. See [Working out the move](/ui/components/tree#working-out-the-move).
+Nothing is required: existing drop handlers keep working.
 
 `droppable` and the caret are independent. `expandable` still decides whether a
 node shows a caret, so a node can accept children while showing no caret until

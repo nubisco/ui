@@ -87,6 +87,43 @@ describe('NbTree drag', () => {
     expect(drops[0].targetId).toBe('other')
   })
 
+  it.each([
+    ['its own child', 'The Nubisco Manual'],
+    ['its own grandchild', 'Chapter one'],
+    ['itself', 'Nubisco Home'],
+  ])('refuses a drop into %s', async (_, targetLabel) => {
+    const drops: ITreeDropEvent[] = []
+    mountTree(drops)
+    await expand('Nubisco Home')
+    await expand('The Nubisco Manual')
+
+    row('Nubisco Home').dispatchEvent(dragEvent('dragstart'))
+    await nextTick()
+    const target = row(targetLabel)
+    const over = dragEvent('dragover')
+    target.dispatchEvent(over)
+    // Not accepted, so the browser keeps showing "cannot drop".
+    expect(over.defaultPrevented).toBe(false)
+    expect(document.querySelector('.nb-tree-node--drop-inside')).toBeNull()
+
+    target.dispatchEvent(dragEvent('drop'))
+    expect(drops).toHaveLength(0)
+  })
+
+  it('still accepts a drop onto a node outside the dragged subtree', async () => {
+    const drops: ITreeDropEvent[] = []
+    mountTree(drops)
+    await expand('Nubisco Home')
+
+    row('Nubisco Home').dispatchEvent(dragEvent('dragstart'))
+    await nextTick()
+    const target = row('Other')
+    target.dispatchEvent(dragEvent('dragover'))
+    target.dispatchEvent(dragEvent('drop'))
+    expect(drops).toHaveLength(1)
+    expect(drops[0]).toMatchObject({ sourceId: 'home', targetId: 'other' })
+  })
+
   it('still lets the dragstart reach listeners above the tree', async () => {
     const drops: ITreeDropEvent[] = []
     mountTree(drops)
