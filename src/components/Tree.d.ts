@@ -49,9 +49,8 @@ export interface ITreeNodeProps {
   expandable?: boolean | null
   /**
    * Whether a dragged node can be dropped inside this one, becoming its child.
-   * `null` (default) allows it on nodes that have children, as before. `true`
-   * allows it on a leaf too, so a drop can turn a leaf into a parent. `false`
-   * only allows before and after.
+   * Every node accepts one by default, including a childless node, which is how
+   * a leaf becomes a parent. `false` opts out, leaving only before and after.
    */
   droppable?: boolean | null
 }

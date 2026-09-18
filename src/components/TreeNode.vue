@@ -157,9 +157,16 @@ function isBranch(): boolean {
   return props.expandable ?? hasRenderedChildren()
 }
 
-/** Accepts a drop in its middle, which makes the dragged node its child. */
+/*
+ * Accepts a drop in its middle, which makes the dragged node its child.
+ *
+ * Every node does, unless it opts out. Tying this to having children, as this
+ * did until 5.6.0, meant a childless node could never be made a parent by
+ * dragging something into it, and that was invisible: the drop simply landed
+ * before or after instead.
+ */
 function acceptsInside(): boolean {
-  return props.droppable ?? isBranch()
+  return props.droppable ?? true
 }
 const isExpanded = computed(() => tree?.expandedIds.has(props.id) ?? false)
 const isSelected = computed(() => tree?.selectedId === props.id)

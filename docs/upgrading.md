@@ -1,5 +1,58 @@
 # Upgrading
 
+## To 5.6.0 from 5.5.0
+
+One change, and it undoes a silent behaviour change 5.5.0 introduced.
+
+**Dropping a node inside another.** In a draggable `NbTree`, every node now
+accepts a drop in its middle, which makes the dragged node its child. That
+includes a node with no children, which is how a leaf becomes a parent.
+
+In 5.5.0 a node only accepted one when it already rendered children, so a
+product that upgraded lost the ability to drag an item into a childless node.
+Nothing announced it: typecheck, tests and build all stayed green, and the drop
+quietly landed before or after the target instead.
+
+To keep a node from taking children, opt out per node:
+
+```vue
+<NbTreeNode id="leaf" label="Cannot take children" :droppable="false" />
+```
+
+`droppable` and the caret are independent. `expandable` still decides whether a
+node shows a caret, so a node can accept children while showing no caret until
+it has some. See [Tree](/ui/components/tree#dropping-onto-a-leaf).
+
+## To 5.5.0 from 5.4.x
+
+Everything here is a fix or is additive, except one change to `NbTreeNode`,
+which 5.6.0 then reversed. Skip straight to 5.6.0 if you can.
+
+**What a tree node counts as a branch.** A node used to be a branch whenever it
+was given a default slot, even one that rendered nothing. It is now a branch
+only when that slot actually renders a child, and the check runs on every
+render rather than once.
+
+This is what a tree built from data wants: a row written as a `v-for` over
+`page.children` renders an empty slot for a page with no subpages, and used to
+show a caret that opened an empty group, toggled on click, and was announced as
+expandable. Those rows are now plain leaves. A node that gains its first child
+grows a caret without remounting, which it did not do before.
+
+Two props follow from it. `expandable` forces the caret on, for children loaded
+when the node opens, or off. `droppable` decides whether a node accepts a drop
+inside it, independently of the caret.
+
+**In 5.5.0 only**, a node whose slot rendered nothing also stopped accepting a
+drop inside it. If you are on 5.5.0 and your tree lets people drag an item into
+a childless node, either move to 5.6.0 or set `droppable` on those nodes.
+
+**Menus, hints and buttons.** Submenu items became reachable with the keyboard
+and selectable with a mouse click, which never worked. `NbInfoHint` popovers
+are now centred on their trigger, moving by up to 2% of the popover's width.
+An icon-only `NbButton` with no accessible name logs a development warning,
+once per icon. Production builds are unaffected.
+
 ## To 5.0.0 from 4.1.x
 
 Three changes can alter how an existing application renders: the default
