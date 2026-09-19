@@ -56,6 +56,67 @@ describe('Select', () => {
       attachTo: document.body,
     })
 
+  describe('an icon per option', () => {
+    const marked = [
+      { label: 'LinkedIn', value: 'linkedin', icon: 'linkedin-logo' },
+      { label: 'Instagram', value: 'instagram', icon: 'instagram-logo' },
+      { label: 'Anywhere', value: 'generic' },
+    ]
+
+    it('shows the mark beside each option it has one for', async () => {
+      const wrapper = createWrapper({ options: marked })
+      await wrapper.find('button').trigger('click')
+      const rows = document.querySelectorAll('.nb-select__option')
+      expect(
+        rows[0]
+          .querySelector('.nb-select__option-icon')
+          ?.getAttribute('data-name'),
+      ).toBe('linkedin-logo')
+      expect(
+        rows[1]
+          .querySelector('.nb-select__option-icon')
+          ?.getAttribute('data-name'),
+      ).toBe('instagram-logo')
+      // An option without one is a label, not a gap with a missing glyph.
+      expect(rows[2].querySelector('.nb-select__option-icon')).toBeNull()
+      wrapper.unmount()
+    })
+
+    it('shows the selected mark on the closed select', () => {
+      const wrapper = createWrapper({
+        options: marked,
+        modelValue: 'instagram',
+      })
+      const icon = wrapper.find('.nb-select__value-icon')
+      expect(icon.exists()).toBe(true)
+      expect(icon.attributes('data-name')).toBe('instagram-logo')
+      expect(wrapper.find('.nb-select__value').classes()).toContain(
+        'nb-select__value--with-icon',
+      )
+      wrapper.unmount()
+    })
+
+    it('leaves a select without icons exactly as it was', () => {
+      const wrapper = createWrapper({ modelValue: 'apple' })
+      expect(wrapper.find('.nb-select__value-icon').exists()).toBe(false)
+      expect(wrapper.find('.nb-select__value').classes()).not.toContain(
+        'nb-select__value--with-icon',
+      )
+      expect(wrapper.find('.nb-select__value').text()).toBe('Apple')
+      wrapper.unmount()
+    })
+
+    it('shows no mark for a multiple select, where the count is the value', () => {
+      const wrapper = createWrapper({
+        options: marked,
+        multiple: true,
+        modelValue: ['linkedin'],
+      })
+      expect(wrapper.find('.nb-select__value-icon').exists()).toBe(false)
+      wrapper.unmount()
+    })
+  })
+
   it('renders the trigger button', () => {
     const wrapper = createWrapper()
     expect(wrapper.find('.nb-select__trigger').exists()).toBe(true)

@@ -29,9 +29,18 @@
         <span
           :class="[
             'nb-select__value',
-            { 'nb-select__value--placeholder': !displayValue },
+            {
+              'nb-select__value--placeholder': !displayValue,
+              'nb-select__value--with-icon': !!selectedIcon,
+            },
           ]"
         >
+          <NbIcon
+            v-if="selectedIcon"
+            class="nb-select__value-icon"
+            :name="selectedIcon"
+            :size="16"
+          />
           <slot v-if="displayValue" name="value" :values="selectedValues">{{
             displayValue
           }}</slot>
@@ -116,9 +125,18 @@
           <span
             :class="[
               'nb-select__value',
-              { 'nb-select__value--placeholder': !displayValue },
+              {
+                'nb-select__value--placeholder': !displayValue,
+                'nb-select__value--with-icon': !!selectedIcon,
+              },
             ]"
           >
+            <NbIcon
+              v-if="selectedIcon"
+              class="nb-select__value-icon"
+              :name="selectedIcon"
+              :size="16"
+            />
             <slot v-if="displayValue" name="value" :values="selectedValues">{{
               displayValue
             }}</slot>
@@ -193,6 +211,12 @@
             />
           </svg>
         </span>
+        <NbIcon
+          v-if="option.icon"
+          class="nb-select__option-icon"
+          :name="option.icon"
+          :size="16"
+        />
         <span class="nb-select__option-label">
           <!-- Rich option rows (avatar + name, icon + label) without the
                consumer re-implementing the listbox. -->
@@ -278,6 +302,18 @@ const inputId = computed(() => props.id ?? autoId)
 const selectedValues = computed<Array<string | number>>(() => {
   if (props.modelValue == null) return []
   return Array.isArray(props.modelValue) ? props.modelValue : [props.modelValue]
+})
+
+/**
+ * The selected option's icon, for the closed select.
+ *
+ * Single selection only: two marks and a "2 selected" label would say less
+ * than the label alone.
+ */
+const selectedIcon = computed(() => {
+  if (props.multiple || selectedValues.value.length !== 1) return undefined
+  return (props.options ?? []).find((o) => o.value === selectedValues.value[0])
+    ?.icon
 })
 
 const displayValue = computed(() => {
@@ -543,6 +579,23 @@ defineExpose({
   color: var(--nb-c-primary);
   display: flex;
   align-items: center;
+}
+
+// Only when an option carries an icon, so a select without one lays out
+// exactly as it did before.
+.nb-select__value--with-icon {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.nb-select__option-icon,
+.nb-select__value-icon {
+  flex-shrink: 0;
+  // The mark identifies the option; the label names it. Keeping the icon
+  // quieter than the text stops a list of logos reading as the content.
+  opacity: 0.9;
 }
 
 .nb-select__option-label {

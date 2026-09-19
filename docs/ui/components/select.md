@@ -151,6 +151,44 @@ function onCreate(value: string) {
 | `id`                | `string`                                            | auto           | Native input id (auto-generated if omitted) |
 | `name`              | `string`                                            | -              | Native form name                            |
 
+## An icon per option
+
+Give an option an `icon` when people recognise it by mark before they read the
+word: a platform, a provider, a file kind. It appears in the list and on the
+closed select, so the two cannot drift apart.
+
+<preview>
+  <NbSelect v-model="platform" label="Platform" :options="platformOptions" />
+</preview>
+
+```vue
+<script setup lang="ts">
+const options = [
+  { label: 'LinkedIn', value: 'linkedin', icon: 'linkedin-logo' },
+  { label: 'Instagram', value: 'instagram', icon: 'instagram-logo' },
+  { label: 'X', value: 'x', icon: 'x-logo' },
+  { label: 'Anywhere', value: 'generic' },
+]
+</script>
+
+<template>
+  <NbSelect v-model="platform" label="Platform" :options="options" />
+</template>
+```
+
+Three things worth knowing:
+
+- **An option without an icon is a plain row**, not a gap where a mark should
+  be, so a list can mix the two.
+- **A multiple select shows no mark on the trigger.** Its value is a count, and
+  one mark beside "2 selected" would say less than the label alone.
+- **The name is resolved at runtime.** With the glyph catalogue off, register
+  the names you pass (`registerIcons`), the same as anywhere else an icon name
+  is computed rather than written in a template.
+
+For a row this cannot express, an avatar and two lines of text for example, the
+`option` and `value` slots are still there.
+
 ## Option interface
 
 ```typescript
@@ -158,6 +196,8 @@ interface ISelectOption {
   label: string
   value: string | number
   disabled?: boolean
+  /** Artwork before the label, in the list and on the closed select. */
+  icon?: string
 }
 ```
 
@@ -198,6 +238,14 @@ import { ref } from 'vue'
 
 const locale = ref('en')
 const selectedLocales = ref<string[]>([])
+const platform = ref('linkedin')
+
+const platformOptions = [
+  { label: 'LinkedIn', value: 'linkedin', icon: 'linkedin-logo' },
+  { label: 'Instagram', value: 'instagram', icon: 'instagram-logo' },
+  { label: 'X', value: 'x', icon: 'x-logo' },
+  { label: 'Anywhere', value: 'generic' },
+]
 
 const localeOptions = [
   { label: 'English', value: 'en' },
