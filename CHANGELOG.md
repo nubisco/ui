@@ -1,3 +1,10 @@
+# [5.6.0](https://github.com/nubisco/ui/compare/v5.5.0...v5.6.0) (2026-09-19)
+
+
+### Features
+
+* **select:** an icon per option, in the list and on the trigger ([b62b7a7](https://github.com/nubisco/ui/commit/b62b7a78bbc09056f49184263a00076aec915e9d))
+
 # [5.5.0](https://github.com/nubisco/ui/compare/v5.4.1...v5.5.0) (2026-09-17)
 
 
