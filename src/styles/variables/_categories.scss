@@ -1,0 +1,169 @@
+@use 'sass:list';
+@use 'sass:map';
+@use 'sass:meta';
+@use '../logic/a11y' as a11y;
+@use 'layers';
+
+/// The audience categories, and the accent pair each one resolves to.
+///
+/// Nubisco groups its products by audience: creatives, engineers, home, fun.
+/// These are the four accents that grouping resolves to, each a
+/// `(light, dark)` pair.
+///
+/// ## What is deliberately not here
+///
+/// There is no product list. The library holds the four values and nothing
+/// else: it does not know which product belongs to which category, and it must
+/// not. A registry of product ids here would mean cutting a library release
+/// every time a product is added or renamed, and it would invert the
+/// dependency, making the design system know about the things that consume it.
+/// An app names its own category when it themes itself, so a new product needs
+/// no change to this file. The product-to-category map is a portfolio fact and
+/// lives in the workspace standards.
+///
+/// ## Why these exact values
+///
+/// Every value clears WCAG AA (4.5:1) against all four surface layers of the
+/// mode it belongs to. That is a stricter bar than measuring against pure
+/// white and pure black, and it is the one that matters: the library never
+/// renders a pure-white surface. Light accents are measured against the
+/// darkest light layer (`layer-2`, `#e7e8e9`) and dark accents against the
+/// lightest dark layer (`layer-3`, `#3d3e3f`), because those are the worst
+/// cases. `tests/categoryContrast.test.ts` measures the compiled values and
+/// fails if an edit drops one below the bar.
+///
+/// Hover and active are the adjacent steps of the same ramp, darker in light
+/// mode and lighter in dark, so both are strictly further from the surface
+/// than the base. The base is therefore the worst case, and testing it is
+/// enough.
+///
+/// @type Map
+/// @access public
+/// @group @nubisco/colors
+$categories: (
+  creatives: (
+    #846201,
+    #e8c15a,
+  ),
+  engineers: (
+    #5b48c9,
+    #a99dff,
+  ),
+  home: (
+    #086f9e,
+    #5ec1e8,
+  ),
+  fun: (
+    #b83266,
+    #f686ae,
+  ),
+);
+
+/// The `(light, dark)` accent pair for a category.
+///
+/// An unknown name is a build error rather than a silent fallback: a typo that
+/// quietly resolved to the default accent would ship a product in the wrong
+/// colour and nothing would say so.
+///
+/// @param {String} $name - a key of `$categories`
+/// @return {List} the `(light, dark)` pair
+/// @access public
+/// @group @nubisco/colors
+@function category($name) {
+  @if not map.has-key($categories, $name) {
+    @error "Unknown category #{$name}. Expected one of: #{map.keys($categories)}.";
+  }
+  @return map.get($categories, $name);
+}
+
+/// Validates a `(light, dark)` accent pair supplied by an app.
+///
+/// An app with an established identity of its own passes its own pair rather
+/// than taking its category's. This checks the shape so a malformed value
+/// fails at build time instead of emitting nonsense custom properties.
+///
+/// @param {List} $accent - a two-item list of colours
+/// @return {List} the same pair, once validated
+/// @access public
+/// @group @nubisco/colors
+@function accent-pair($accent) {
+  @if meta.type-of($accent) != list or list.length($accent) != 2 {
+    @error "An accent must be a (light, dark) pair of colours, got #{$accent}.";
+  }
+  @each $value in $accent {
+    @if meta.type-of($value) != color {
+      @error "An accent pair must hold colours, got #{$value}.";
+    }
+  }
+  @return $accent;
+}
+
+/// The surfaces an accent is measured against, per mode.
+///
+/// These are the library's own layers, resolved from
+/// `variables/_layers.scss`, not pure white and pure black. That distinction
+/// is the point: an accent verified against a surface the product never
+/// renders has not been verified. The worst case is the darkest light layer
+/// and the lightest dark layer, and both are in here.
+///
+/// @type Map
+/// @access private
+/// @group @nubisco/colors
+/// Read from the layer ramps rather than restated, so a change to the surface
+/// system is measured against automatically instead of silently invalidating
+/// numbers copied out of it.
+$_grounds: (
+  light: (
+    layers.level(layers.$light, surface, 0),
+    layers.level(layers.$light, surface, 1),
+    layers.level(layers.$light, surface, 2),
+    layers.level(layers.$light, surface, 3),
+  ),
+  dark: (
+    layers.level(layers.$dark, surface, 0),
+    layers.level(layers.$dark, surface, 1),
+    layers.level(layers.$dark, surface, 2),
+    layers.level(layers.$dark, surface, 3),
+  ),
+);
+
+/// Fails the build if an accent pair does not clear WCAG AA on every surface.
+///
+/// The library measures the accents it ships, in
+/// `tests/categoryContrast.test.ts`. It cannot measure an accent an app
+/// supplies, because it never sees it. An app that overrides its accent calls
+/// this so its own build holds it to the same bar.
+///
+/// ```scss
+/// @debug nb.assert-accent-contrast((#0b7285, #41d6e0));
+/// ```
+///
+/// @param {List} $accent - a `(light, dark)` pair
+/// @param {Number} $minimum - the ratio to clear, 4.5 by default
+/// @return {String} a summary, so the call reads as an assertion that returns
+/// @access public
+/// @group @nubisco/colors
+@function assert-accent-contrast($accent, $minimum: 4.5) {
+  $pair: accent-pair($accent);
+  $worst: 21;
+
+  @each $mode, $grounds in $_grounds {
+    $value: list.nth($pair, 2);
+    $direction: 'lighter';
+    @if $mode == light {
+      $value: list.nth($pair, 1);
+      $direction: 'darker';
+    }
+    @each $ground in $grounds {
+      $ratio: a11y.contrast-ratio($value, $ground);
+      @if $ratio < $minimum {
+        @error "Accent #{$value} is #{$ratio}:1 on #{$mode} surface #{$ground}, below #{$minimum}:1. Pick a #{$direction} value.";
+      }
+      @if $ratio < $worst {
+        $worst: $ratio;
+      }
+    }
+  }
+
+  @return 'accent clears #{$minimum}:1 on every surface (worst #{$worst}:1)';
+}

@@ -89,12 +89,17 @@ export function compile(mixins) {
 /** Collects `--nb-*` declarations from every block whose selector matches. */
 export function propsFrom(css, selector) {
   const out = {}
-  const re = new RegExp(`(^|})\\s*([^{}]*)\\{([^{}]*)\\}`, 'g')
+  // The closing brace must NOT be consumed by the previous iteration: with the
+  // `g` flag, a leading `(^|})` would eat the delimiter the next block needs
+  // and the scan would see only every OTHER rule. That failed silently for a
+  // long time, because the blocks this helper is usually pointed at happened
+  // to land on visible positions.
+  const re = /([^{}]*)\{([^{}]*)\}/g
   let m
   while ((m = re.exec(css))) {
-    const sel = m[2].trim()
+    const sel = m[1].trim()
     if (!selector.test(sel)) continue
-    for (const [, name, value] of m[3].matchAll(
+    for (const [, name, value] of m[2].matchAll(
       /(--nb-[\w-]+)\s*:\s*([^;}]+)/g,
     )) {
       out[name] = value.trim()
