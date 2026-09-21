@@ -1,0 +1,75 @@
+/// Tokens derived from `--nb-c-primary`.
+///
+/// ## Why these cannot be plain aliases at `:root`
+///
+/// A custom property is substituted at computed-value time **on the element
+/// that declares it**. `--nb-c-focus-ring: var(--nb-c-primary)` written at
+/// `:root` therefore freezes to `:root`'s primary, and every descendant
+/// inherits that frozen literal. Re-pointing `--nb-c-primary` further down the
+/// tree, which is exactly what a named theme does, does not reach it.
+///
+/// Measured in Chrome against a document whose `:root` primary was the default
+/// and whose themed scope set its own:
+///
+/// ```text
+///                         :root      inside [data-nb-theme]
+/// --nb-c-primary          #5c35c4    #5b48c9   follows
+/// --nb-c-focus-ring       #5c35c4    #5c35c4   does not
+/// --nb-c-primary-subtle   #5c35c4…   #5c35c4…  does not
+/// ```
+///
+/// So any scope that re-points the primary has to re-emit these alongside it.
+/// They live here, as mixins, so the formulas exist once: `_theme.scss` calls
+/// them for the default theme and `_theme-api.scss` calls them for every named
+/// theme. Two copies would agree today and drift the first time one is edited.
+///
+/// @group @nubisco/theme-api
+
+/// The pale wash of the accent, for an edge drawn ON a primary fill.
+///
+/// @param {Number} $weight - how much accent the mix carries. The light half
+///   uses 39% and the dark half 50%, because the dark primary is already a
+///   lighter step of the ramp and needs less white to land on the same wash.
+@mixin subtle($weight) {
+  --nb-c-primary-subtle: color-mix(
+    in srgb,
+    var(--nb-c-primary) #{$weight},
+    var(--nb-c-white)
+  );
+}
+
+/// The focus ring, used by every interactive control via `:focus-visible`.
+@mixin focus-ring {
+  --nb-c-focus-ring: var(--nb-c-primary);
+}
+
+/// The shell chrome that carries the accent.
+///
+/// The sidebar is a near-black tint of the accent rather than a raw palette
+/// tint, so re-pointing the primary re-tints the rail with it. That is
+/// deliberate: it is what makes the shell follow a product's identity instead
+/// of the vendor's.
+@mixin shell {
+  --nb-shell-sidebar-bg: color-mix(
+    in srgb,
+    var(--nb-c-primary) 20%,
+    var(--nb-c-black)
+  );
+  --nb-shell-sidebar-link-active-bg: color-mix(
+    in srgb,
+    var(--nb-c-primary) 25%,
+    transparent
+  );
+  // Light tint of --nb-c-primary: keeps the accent on-brand and rebrandable
+  // while staying legible (~6:1) on the dark rail, where --nb-c-primary itself
+  // is too dark (~2.5:1).
+  --nb-shell-sidebar-link-active-color: color-mix(
+    in srgb,
+    var(--nb-c-primary) 60%,
+    var(--nb-c-white)
+  );
+  // The grab-line on the inspector's resize handle. A token, not a literal
+  // brand hex: a white-label product should never have to name the vendor's
+  // ramp to restyle the frame.
+  --nb-shell-inspector-resize-color: var(--nb-c-primary);
+}

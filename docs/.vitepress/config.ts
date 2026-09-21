@@ -168,6 +168,7 @@ export default withMermaid(
                * that work can continue against a real page.
                */
               { text: 'Overview', link: '/theming' },
+              { text: 'App theming', link: '/app-theming' },
               { text: 'Colors', link: '/principles/color' },
               { text: 'Typography', link: '/principles/typography' },
             ],

@@ -1,0 +1,21 @@
+// The four category themes, plus one accent override, compiled for the docs.
+//
+// A product emits exactly one of these, in its own repo, for itself. The docs
+// emit all of them so a reader can switch between them on one page and see
+// what the choice actually does.
+
+@use '../../../src/styles/theme-api' as nb;
+
+@include nb.app-theme('demo-creatives', $category: 'creatives');
+@include nb.app-theme('demo-engineers', $category: 'engineers');
+@include nb.app-theme('demo-home', $category: 'home');
+@include nb.app-theme('demo-fun', $category: 'fun');
+
+// An app whose own identity predates the category system. It keeps its colour
+// and still declares its category, so anything grouping products by audience
+// still places it correctly.
+@include nb.app-theme(
+  'demo-override',
+  $category: 'creatives',
+  $accent: (#0b7285, #41d6e0)
+);

@@ -1,5 +1,6 @@
 @use 'sass:color';
 @use 'sass:map';
+@use 'accent';
 @use 'config';
 @use 'variables/layout';
 @use 'variables/colors';
@@ -158,11 +159,7 @@
     // hover border visibly moves. The dark theme repeats the mix at 50%
     // because its --nb-c-primary is already a lighter step of the same ramp
     // and needs less white to land on the same wash (dE2000 0.00 there).
-    --nb-c-primary-subtle: color-mix(
-      in srgb,
-      var(--nb-c-primary) 39%,
-      var(--nb-c-white)
-    );
+    @include accent.subtle(39%);
 
     --nb-c-secondary: var(--nb-c-plain-black-700);
     --nb-c-secondary-a11y: var(--nb-c-plain-black-700-a11y);
@@ -375,7 +372,7 @@
     --nb-c-component-discrete-text: var(--nb-c-nouveau-gray-700);
 
     // Focus ring — used by all interactive controls via :focus-visible
-    --nb-c-focus-ring: var(--nb-c-primary);
+    @include accent.focus-ring;
 
     // ── Scrim / overlay ───────────────────────────────────────────────────
     // The dim laid over the page by anything that takes over the viewport:
@@ -588,11 +585,7 @@
     // Dark chrome derived from the brand: a near-black tint of --nb-c-primary so
     // rebranding the primary colour re-tints the sidebar too (semantic, not a
     // raw palette tint).
-    --nb-shell-sidebar-bg: color-mix(
-      in srgb,
-      var(--nb-c-primary) 20%,
-      var(--nb-c-black)
-    );
+    @include accent.shell;
     --nb-shell-sidebar-width: calc(var(--nb-base-unit) * 7); // 56px
     // The verbose variant's rail width. A token rather than a literal inside
     // Shell.vue's variant rule, so a product with long navigation labels can
@@ -612,19 +605,6 @@
       in srgb,
       var(--nb-c-white) 90%,
       transparent
-    );
-    --nb-shell-sidebar-link-active-bg: color-mix(
-      in srgb,
-      var(--nb-c-primary) 25%,
-      transparent
-    );
-    // Light tint of --nb-c-primary: keeps the accent on-brand and rebrandable
-    // while staying legible (~6:1) on the dark rail, where --nb-c-primary itself
-    // is too dark (~2.5:1).
-    --nb-shell-sidebar-link-active-color: color-mix(
-      in srgb,
-      var(--nb-c-primary) 60%,
-      var(--nb-c-white)
     );
     --nb-shell-topbar-height: calc(var(--nb-base-unit) * 6.25); // 50px
 
@@ -672,10 +652,6 @@
     --nb-shell-inspector-max-width: max(calc(var(--nb-base-unit) * 36), 50vw);
     --nb-shell-inspector-border: 1px solid var(--nb-c-border);
     --nb-shell-inspector-bg: var(--nb-c-surface);
-    // The grab-line on the inspector's resize handle. A token, not a literal
-    // brand hex: a white-label product should never have to name the vendor's
-    // ramp to restyle the frame.
-    --nb-shell-inspector-resize-color: var(--nb-c-primary);
     // The dimmer behind the navigation drawer at collapsed widths. Black at
     // 45% reads on both themes because it darkens whatever is under it rather
     // than painting a colour of its own.
@@ -707,11 +683,7 @@
     --nb-c-primary: #{colors.get-color('grape-hyacinth', 400)};
     // Same wash, re-mixed: the dark --nb-c-primary is a 400, so it takes less
     // white than the light 500 does to reach the tint this token used to alias.
-    --nb-c-primary-subtle: color-mix(
-      in srgb,
-      var(--nb-c-primary) 50%,
-      var(--nb-c-white)
-    );
+    @include accent.subtle(50%);
     --nb-c-primary-a11y: #{colors.color-contrast(
         colors.get-color('grape-hyacinth', 400)
       )};
