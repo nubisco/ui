@@ -1,3 +1,16 @@
+# [5.7.0](https://github.com/nubisco/ui/compare/v5.6.0...v5.7.0) (2026-09-21)
+
+
+### Bug Fixes
+
+* **tree:** let every node take a drop inside it, and record it in upgrading ([7dcf2e4](https://github.com/nubisco/ui/commit/7dcf2e4a9ddec7672e6f2eb85f88fd9b68ef64bc))
+
+
+### Features
+
+* **avatar:** take a size in pixels and a per-person background ([ce25377](https://github.com/nubisco/ui/commit/ce253776ef0d53c1eaeb0ef19159d6016e707674))
+* **tree:** refuse a drop into a node's own subtree, and ship the move maths ([3b72e2a](https://github.com/nubisco/ui/commit/3b72e2a4f7ae2d236f44ba07923439105144e8e2))
+
 # [5.6.0](https://github.com/nubisco/ui/compare/v5.5.0...v5.6.0) (2026-09-19)
 
 
