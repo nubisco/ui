@@ -1,3 +1,10 @@
+# [5.8.0](https://github.com/nubisco/ui/compare/v5.7.0...v5.8.0) (2026-09-21)
+
+
+### Features
+
+* **theme:** app accents from audience categories ([c6e5561](https://github.com/nubisco/ui/commit/c6e5561e11b38e16aa93ddc85ccb14a937fa1fca))
+
 # [5.7.0](https://github.com/nubisco/ui/compare/v5.6.0...v5.7.0) (2026-09-21)
 
 
