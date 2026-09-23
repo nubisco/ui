@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test'
 
 test.describe('NbFloatingToolbar', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/ui/components/floating-toolbar')
+    await page.goto('/components/floating-toolbar')
   })
 
   test('floats over a selection and keeps it through a button press', async ({
@@ -66,7 +66,7 @@ test.describe('NbFloatingToolbar', () => {
 
 test.describe('NbDragHandle', () => {
   test('keeps a held block through a keyboard reorder', async ({ page }) => {
-    await page.goto('/ui/components/drag-handle')
+    await page.goto('/components/drag-handle')
     const handle = page.getByRole('button', { name: 'Move Introduction' })
     await handle.focus()
 

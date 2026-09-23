@@ -12,7 +12,7 @@ const focusedText = (page: Page) =>
 
 test.describe('NbSubmenu', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/ui/components/menu')
+    await page.goto('/components/menu')
     const file = page.getByRole('button', { name: 'File', exact: true })
     await file.scrollIntoViewIfNeeded()
     await file.click()
@@ -62,7 +62,7 @@ test.describe('NbSubmenu', () => {
 
 test.describe('NbInfoHint', () => {
   test('centres its popover on the trigger', async ({ page }) => {
-    await page.goto('/ui/components/info-hint')
+    await page.goto('/components/info-hint')
     const triggers = page.locator('.nb-info-hint--trigger')
     await triggers.first().waitFor()
     const count = await triggers.count()
@@ -100,7 +100,7 @@ test.describe('NbInfoHint', () => {
 
 test.describe('NbTableOfContents', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/ui/components/table-of-contents')
+    await page.goto('/components/table-of-contents')
     await page.locator('.nb-toc nav').first().waitFor()
   })
 
