@@ -606,8 +606,8 @@ Point this at any view. Every line is answerable by reading the template.
 
 **Related:** [Building a form](/patterns/forms) ·
 [Status indicators](/patterns/status-indicators) ·
-[Button](/ui/components/button/button) · [Text input](/ui/components/text-input) ·
-[Definition list](/ui/components/definition-list) · [Banner](/ui/components/banner)
+[Button](/components/button/button) · [Text input](/components/text-input) ·
+[Definition list](/components/definition-list) · [Banner](/components/banner)
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'

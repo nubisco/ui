@@ -81,7 +81,7 @@ Two consequences worth stating outright, because both have been shipped:
 
 - **`NbFlag` is not a status indicator.** It takes a `name` and renders a
   country flag from the flag catalogue. There is no status meaning in it
-  at all. See [Flag](/ui/components/flag).
+  at all. See [Flag](/components/flag).
 - **A `NbMessage` is not a page status.** `NbMessage` is 12px text with a 14px
   icon designed to sit under a field. It has no title, no action slot and no
   dismiss. A page-level condition rendered as a stray `NbMessage` reads as an
@@ -277,7 +277,7 @@ status and goes back to being a number:
 </preview>
 
 For colour-encoded quantities in charts, the palette rules live in
-[Chart colour](/ui/components/charts/color). Status colour and data colour are
+[Chart colour](/components/charts/color). Status colour and data colour are
 different systems and must not be mixed in one view.
 
 ---
@@ -727,8 +727,8 @@ Point this at any view. Every line is answerable by reading the template.
 
 **Related:** [Building a form](/patterns/forms) ·
 [Disabled and read-only](/patterns/disabled-and-read-only) ·
-[Badge](/ui/components/badge) · [Banner](/ui/components/banner) ·
-[Message](/ui/components/message) · [Inline loading](/ui/components/inline-loading)
+[Badge](/components/badge) · [Banner](/components/banner) ·
+[Message](/components/message) · [Inline loading](/components/inline-loading)
 
 <script setup lang="ts">
 /* Every value here is data for the demos above. Nothing is a prop the library

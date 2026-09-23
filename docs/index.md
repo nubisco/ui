@@ -31,7 +31,7 @@ features:
       src: /icons/grid.svg
     title: Geometry-First Grid
     details: NbGrid is a first-class layout primitive. Five breakpoints, 16 columns, a semantic gap scale (xxs–xxl), and full flex alignment control. Layout is not an afterthought.
-    link: /ui/components/grid
+    link: /components/grid
     linkText: Grid docs
 
   - icon:

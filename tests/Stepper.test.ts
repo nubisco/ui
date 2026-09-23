@@ -993,12 +993,12 @@ describe('Stepper', () => {
 
     it('is reachable from the docs sidebar', () => {
       expect(read('docs/.vitepress/config.ts')).toContain(
-        "link: '/ui/components/stepper'",
+        "link: '/components/stepper'",
       )
     })
 
     it('has the docs page the sidebar points at, using only shipped tags', () => {
-      const page = resolve(root, 'docs/ui/components/stepper.md')
+      const page = resolve(root, 'docs/components/stepper.md')
       expect(existsSync(page)).toBe(true)
       const md = readFileSync(page, 'utf8')
       const tags = new Set([...md.matchAll(/<(Nb[A-Za-z]+)/g)].map((m) => m[1]))

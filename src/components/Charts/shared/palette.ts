@@ -23,7 +23,7 @@
 //
 // Guidance on choosing between the three scales, on how many series colour can
 // carry, and on the measured contrast and colour-vision numbers behind the
-// defaults, lives in docs/ui/components/charts/color.md.
+// defaults, lives in docs/components/charts/color.md.
 
 /** Number of categorical roles before `colorAt` wraps. */
 const CHART_ROLE_COUNT = 8
@@ -78,7 +78,7 @@ type TChartMark = 'fill' | 'line'
 // Two orderings over the same eight roles, each chosen so that EVERY prefix is
 // the best available set of that size, not just the full list.
 //
-// The numbers behind them are in docs/ui/components/charts/color.md and are
+// The numbers behind them are in docs/components/charts/color.md and are
 // recomputed in tests/chartRoles.test.ts off the compiled stylesheet: for each
 // candidate subset we take the smallest CIEDE2000 distance between any two of
 // its members, simulated for deuteranopia and protanopia in both themes, and

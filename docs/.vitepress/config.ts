@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import { writeLegacyRedirects } from './redirects'
 import svgLoader from 'vite-svg-loader'
 import path from 'path'
 import { tabsMarkdownPlugin } from './plugins/tabs/markdown'
@@ -94,7 +95,7 @@ export default withMermaid(
           // Same reason: these subpaths point at `dist`, which the docs build
           // does not produce, so they resolve to the source they are built
           // from instead.
-          '@nubisco/ui/composables': path.resolve(
+          '@nubisco/composables': path.resolve(
             __dirname,
             '../../src/composables',
           ),
@@ -138,7 +139,7 @@ export default withMermaid(
         { text: 'Home', link: '/' },
         { text: 'Showcase', link: '/showcase' },
         { text: 'Theming', link: '/theming' },
-        { text: 'Components', link: '/ui/components/button/button' },
+        { text: 'Components', link: '/components/button/button' },
       ],
       sidebar: {
         '/': [
@@ -241,145 +242,145 @@ export default withMermaid(
               {
                 text: 'Components',
                 items: [
-                  { text: 'Accordion', link: '/ui/components/accordion' },
-                  { text: 'AI Label', link: '/ui/components/ai-label' },
-                  { text: 'Avatar', link: '/ui/components/avatar' },
-                  { text: 'Badge', link: '/ui/components/badge' },
-                  { text: 'Banner', link: '/ui/components/banner' },
+                  { text: 'Accordion', link: '/components/accordion' },
+                  { text: 'AI Label', link: '/components/ai-label' },
+                  { text: 'Avatar', link: '/components/avatar' },
+                  { text: 'Badge', link: '/components/badge' },
+                  { text: 'Banner', link: '/components/banner' },
                   {
                     text: 'Blueprint',
                     items: [
                       {
                         text: 'Overview',
-                        link: '/ui/components/blueprint/overview',
+                        link: '/components/blueprint/overview',
                       },
                       {
                         text: 'Background',
-                        link: '/ui/components/blueprint/background',
+                        link: '/components/blueprint/background',
                       },
-                      { text: 'Card', link: '/ui/components/blueprint/card' },
+                      { text: 'Card', link: '/components/blueprint/card' },
                       {
                         text: 'Controls',
-                        link: '/ui/components/blueprint/controls',
+                        link: '/components/blueprint/controls',
                       },
                       {
                         text: 'Minimap',
-                        link: '/ui/components/blueprint/minimap',
+                        link: '/components/blueprint/minimap',
                       },
                     ],
                   },
-                  { text: 'Board', link: '/ui/components/board' },
+                  { text: 'Board', link: '/components/board' },
                   {
                     text: 'Brand Marks',
-                    link: '/ui/components/nubisco-mark',
+                    link: '/components/nubisco-mark',
                   },
-                  { text: 'Button', link: '/ui/components/button/button' },
-                  { text: 'Calendar', link: '/ui/components/calendar' },
-                  { text: 'Card Grid', link: '/ui/components/card-grid' },
+                  { text: 'Button', link: '/components/button/button' },
+                  { text: 'Calendar', link: '/components/calendar' },
+                  { text: 'Card Grid', link: '/components/card-grid' },
                   {
                     text: 'Charts',
                     items: [
                       {
                         text: 'Overview',
-                        link: '/ui/components/charts/overview',
+                        link: '/components/charts/overview',
                       },
-                      { text: 'Bar', link: '/ui/components/charts/bar' },
-                      { text: 'Color', link: '/ui/components/charts/color' },
-                      { text: 'Gantt', link: '/ui/components/charts/gantt' },
+                      { text: 'Bar', link: '/components/charts/bar' },
+                      { text: 'Color', link: '/components/charts/color' },
+                      { text: 'Gantt', link: '/components/charts/gantt' },
                       {
                         text: 'Interpolation',
-                        link: '/ui/components/charts/interpolation',
+                        link: '/components/charts/interpolation',
                       },
-                      { text: 'Line', link: '/ui/components/charts/line' },
-                      { text: 'Pie', link: '/ui/components/charts/pie' },
+                      { text: 'Line', link: '/components/charts/line' },
+                      { text: 'Pie', link: '/components/charts/pie' },
                       {
                         text: 'Sparkline',
-                        link: '/ui/components/charts/sparkline',
+                        link: '/components/charts/sparkline',
                       },
                     ],
                   },
-                  { text: 'Checkbox', link: '/ui/components/checkbox' },
-                  { text: 'Color Strip', link: '/ui/components/color-strip' },
+                  { text: 'Checkbox', link: '/components/checkbox' },
+                  { text: 'Color Strip', link: '/components/color-strip' },
                   {
                     text: 'Command Palette',
-                    link: '/ui/components/command-palette',
+                    link: '/components/command-palette',
                   },
-                  { text: 'Confirm', link: '/ui/components/confirm' },
-                  { text: 'Data Table', link: '/ui/components/data-table' },
-                  { text: 'Date Picker', link: '/ui/components/date-picker' },
+                  { text: 'Confirm', link: '/components/confirm' },
+                  { text: 'Data Table', link: '/components/data-table' },
+                  { text: 'Date Picker', link: '/components/date-picker' },
                   {
                     text: 'Definition List',
-                    link: '/ui/components/definition-list',
+                    link: '/components/definition-list',
                   },
-                  { text: 'Drag Handle', link: '/ui/components/drag-handle' },
-                  { text: 'Empty State', link: '/ui/components/empty-state' },
-                  { text: 'Field', link: '/ui/components/field' },
+                  { text: 'Drag Handle', link: '/components/drag-handle' },
+                  { text: 'Empty State', link: '/components/empty-state' },
+                  { text: 'Field', link: '/components/field' },
                   {
                     text: 'File Uploader',
-                    link: '/ui/components/file-uploader',
+                    link: '/components/file-uploader',
                   },
-                  { text: 'Flag', link: '/ui/components/flag' },
+                  { text: 'Flag', link: '/components/flag' },
                   {
                     text: 'Floating Toolbar',
-                    link: '/ui/components/floating-toolbar',
+                    link: '/components/floating-toolbar',
                   },
-                  { text: 'Grid', link: '/ui/components/grid' },
-                  { text: 'Icon', link: '/ui/components/icon' },
+                  { text: 'Grid', link: '/components/grid' },
+                  { text: 'Icon', link: '/components/icon' },
                   {
                     text: 'Image Cropper',
-                    link: '/ui/components/image-cropper',
+                    link: '/components/image-cropper',
                   },
-                  { text: 'Info Hint', link: '/ui/components/info-hint' },
+                  { text: 'Info Hint', link: '/components/info-hint' },
                   {
                     text: 'Inline Edit',
-                    link: '/ui/components/inline-edit',
+                    link: '/components/inline-edit',
                   },
                   {
                     text: 'Inline Loading',
-                    link: '/ui/components/inline-loading',
+                    link: '/components/inline-loading',
                   },
-                  { text: 'JSON Tree', link: '/ui/components/json-tree' },
-                  { text: 'Label', link: '/ui/components/label' },
-                  { text: 'Menu', link: '/ui/components/menu' },
-                  { text: 'Menu Bar', link: '/ui/components/menu-bar' },
-                  { text: 'Message', link: '/ui/components/message' },
-                  { text: 'Modal', link: '/ui/components/modal' },
+                  { text: 'JSON Tree', link: '/components/json-tree' },
+                  { text: 'Label', link: '/components/label' },
+                  { text: 'Menu', link: '/components/menu' },
+                  { text: 'Menu Bar', link: '/components/menu-bar' },
+                  { text: 'Message', link: '/components/message' },
+                  { text: 'Modal', link: '/components/modal' },
                   {
                     text: 'Notification Center',
-                    link: '/ui/components/notification-center',
+                    link: '/components/notification-center',
                   },
-                  { text: 'Number Input', link: '/ui/components/number-input' },
-                  { text: 'Pagination', link: '/ui/components/pagination' },
-                  { text: 'Panel', link: '/ui/components/panel' },
+                  { text: 'Number Input', link: '/components/number-input' },
+                  { text: 'Pagination', link: '/components/pagination' },
+                  { text: 'Panel', link: '/components/panel' },
                   {
                     text: 'Progress Bar',
-                    link: '/ui/components/progress-bar',
+                    link: '/components/progress-bar',
                   },
-                  { text: 'Radio', link: '/ui/components/radio' },
-                  { text: 'Reorder List', link: '/ui/components/reorder-list' },
-                  { text: 'Select', link: '/ui/components/select' },
-                  { text: 'Shell', link: '/ui/components/shell' },
-                  { text: 'Shell Panel', link: '/ui/components/shell-panel' },
+                  { text: 'Radio', link: '/components/radio' },
+                  { text: 'Reorder List', link: '/components/reorder-list' },
+                  { text: 'Select', link: '/components/select' },
+                  { text: 'Shell', link: '/components/shell' },
+                  { text: 'Shell Panel', link: '/components/shell-panel' },
                   {
                     text: 'Sidebar Collapse Toggle',
-                    link: '/ui/components/sidebar-collapse-toggle',
+                    link: '/components/sidebar-collapse-toggle',
                   },
-                  { text: 'Skeleton', link: '/ui/components/skeleton' },
-                  { text: 'Slider', link: '/ui/components/slider' },
-                  { text: 'Spinner', link: '/ui/components/spinner' },
-                  { text: 'Stepper', link: '/ui/components/stepper' },
-                  { text: 'Switch', link: '/ui/components/switch' },
+                  { text: 'Skeleton', link: '/components/skeleton' },
+                  { text: 'Slider', link: '/components/slider' },
+                  { text: 'Spinner', link: '/components/spinner' },
+                  { text: 'Stepper', link: '/components/stepper' },
+                  { text: 'Switch', link: '/components/switch' },
                   {
                     text: 'Table of Contents',
-                    link: '/ui/components/table-of-contents',
+                    link: '/components/table-of-contents',
                   },
-                  { text: 'Tabs', link: '/ui/components/tabs' },
-                  { text: 'Text Input', link: '/ui/components/text-input' },
-                  { text: 'Toast', link: '/ui/components/toast' },
-                  { text: 'Toaster', link: '/ui/components/toaster' },
-                  { text: 'Tree', link: '/ui/components/tree' },
-                  { text: 'User Menu', link: '/ui/components/user-menu' },
-                  { text: 'Walkthrough', link: '/ui/components/walkthrough' },
+                  { text: 'Tabs', link: '/components/tabs' },
+                  { text: 'Text Input', link: '/components/text-input' },
+                  { text: 'Toast', link: '/components/toast' },
+                  { text: 'Toaster', link: '/components/toaster' },
+                  { text: 'Tree', link: '/components/tree' },
+                  { text: 'User Menu', link: '/components/user-menu' },
+                  { text: 'Walkthrough', link: '/components/walkthrough' },
                 ],
               },
               {
@@ -387,47 +388,47 @@ export default withMermaid(
                 items: [
                   {
                     text: 'useCommandPalette',
-                    link: '/ui/composables/use-command-palette',
+                    link: '/composables/use-command-palette',
                   },
                   {
                     text: 'useConfirm',
-                    link: '/ui/composables/use-confirm',
+                    link: '/composables/use-confirm',
                   },
                   {
                     text: 'useContextMenu',
-                    link: '/ui/composables/use-context-menu',
+                    link: '/composables/use-context-menu',
                   },
                   {
                     text: 'useWalkthrough',
-                    link: '/ui/composables/use-walkthrough',
+                    link: '/composables/use-walkthrough',
                   },
                   {
                     text: 'useShellSlot',
-                    link: '/ui/composables/use-shell-slot',
+                    link: '/composables/use-shell-slot',
                   },
                   {
                     text: 'useSidebarVariant',
-                    link: '/ui/composables/use-sidebar-variant',
+                    link: '/composables/use-sidebar-variant',
                   },
                   {
                     text: 'useStableId',
-                    link: '/ui/composables/use-stable-id',
+                    link: '/composables/use-stable-id',
                   },
                   {
                     text: 'useTheme',
-                    link: '/ui/composables/use-theme',
+                    link: '/composables/use-theme',
                   },
                   {
                     text: 'useToast',
-                    link: '/ui/composables/use-toast',
+                    link: '/composables/use-toast',
                   },
                 ],
               },
               {
                 text: 'Directives',
                 items: [
-                  { text: 'Tooltip', link: '/ui/directives/tooltip' },
-                  { text: 'Tour Step', link: '/ui/directives/tour-step' },
+                  { text: 'Tooltip', link: '/directives/tooltip' },
+                  { text: 'Tour Step', link: '/directives/tour-step' },
                 ],
               },
             ],
@@ -435,7 +436,7 @@ export default withMermaid(
           {
             text: 'Labs',
             collapsed: false,
-            items: [{ text: 'Spreadsheet', link: '/ui/labs/spreadsheet' }],
+            items: [{ text: 'Spreadsheet', link: '/labs/spreadsheet' }],
           },
         ],
       },
@@ -458,6 +459,23 @@ export default withMermaid(
     },
     sitemap: {
       hostname: 'https://docs.nubisco.io/ui/',
+    },
+
+    /**
+     * The component docs used to live in docs/ui/, under a site whose base is
+     * already /ui/, so every page was published twice-prefixed
+     * (/ui/ui/components/badge.html). They now sit where the sidebar always
+     * said they were. GitHub Pages cannot issue a 301, so the old paths keep a
+     * stub that points at the new one; see redirects.ts. Temporary, and safe to
+     * delete once Search Console reports the doubled URLs gone.
+     */
+    buildEnd(siteConfig) {
+      const n = writeLegacyRedirects(
+        siteConfig.outDir,
+        siteConfig.site.base,
+        siteConfig.srcDir,
+      )
+      console.log(`[redirects] wrote ${n} stub(s) for the old /ui/ui/ paths`)
     },
   }),
 )

@@ -1857,11 +1857,11 @@ describe('NbNotificationCenter ships', () => {
       resolve(root, 'docs/.vitepress/config.ts'),
       'utf8',
     )
-    expect(config).toContain("link: '/ui/components/notification-center'")
+    expect(config).toContain("link: '/components/notification-center'")
   })
 
   it('has the docs page the sidebar points at', () => {
-    const page = resolve(root, 'docs/ui/components/notification-center.md')
+    const page = resolve(root, 'docs/components/notification-center.md')
     const md = readFileSync(page, 'utf8')
     // Every Nb tag the page renders has to be registered, or that preview is
     // a blank rectangle on the published site.

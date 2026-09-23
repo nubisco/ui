@@ -296,7 +296,7 @@ const props = withDefaults(defineProps<IGanttChartProps>(), {
 // a white-label product could retint every other chart and still get a violet
 // bar for an unset status. The five roles chosen resolve to exactly the ramps
 // that were here, so the light theme is unchanged; the dark theme moves with
-// every other chart colour, see docs/ui/components/charts/color.md.
+// every other chart colour, see docs/components/charts/color.md.
 //
 // These are chart roles rather than --nb-c-success / -warning / -danger on
 // purpose: a Gantt bar is a large fill on a busy grid, and the status inks are

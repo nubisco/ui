@@ -78,7 +78,7 @@ focus that leaves by a route no keystroke explains, and returns focus to the
 trigger on every route out. The mechanism is shared with `NbConfirm` rather
 than reimplemented, and `initialFocus` directs the landing for a form dialog.
 
-See [Focus is handled](/ui/components/modal#focus-is-handled). If you copied the
+See [Focus is handled](/components/modal#focus-is-handled). If you copied the
 `useDialogFocus` composable this page used to recommend, delete it, or keep it
 and set `:trap-focus="false"` on that dialog so the two do not pull against
 each other.
@@ -181,4 +181,4 @@ Automated coverage is a floor. The four passes above are the test.
 
 - [Keyboard interaction](/accessibility/keyboard): tab order, focus management, arrow-key composites, skip links.
 - [Colour and contrast](/accessibility/color-contrast): the ratios, the `-a11y` shade system, dark theme and forced colours.
-- [`NbConfirm`](/ui/components/confirm): the reference implementation of a correctly focused dialog.
+- [`NbConfirm`](/components/confirm): the reference implementation of a correctly focused dialog.

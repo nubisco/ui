@@ -138,7 +138,7 @@ Neutral colours for controls that are not carrying intent.
 | `--nb-c-chart-diverging-low`, `-mid`, `-high`                | A two-hue scale meeting at a neutral zero. Cool to warm, not green to red.            |
 | `--nb-c-port-bg`, `--nb-c-port-border`, `--nb-c-node-row-bg` | The node-graph canvas primitives used by `NbBlueprint`.                               |
 
-Chart colour has its own rules (how many series colour can carry, what the measured separations are under colour-vision deficiency). Read [Charts, Colour](/ui/components/charts/color) before assigning a series a colour.
+Chart colour has its own rules (how many series colour can carry, what the measured separations are under colour-vision deficiency). Read [Charts, Colour](/components/charts/color) before assigning a series a colour.
 
 ### Roles that do not exist yet
 
@@ -268,7 +268,7 @@ Every state you paint needs at least two of: a colour, a glyph, and a word.
 
 - `NbBanner` ships an icon per status and takes a `title`. Its `hideIcon` prop exists for the case where the surrounding layout already carries the glyph, and its own prop documentation says so. Setting `hideIcon` on a status-coloured block with no other cue is a bug.
 - A destructive action needs the word. `danger` styling on a button that says "Done" is a colour-only signal.
-- A chart caps colour-only encoding at five series, and that number comes from measurement, not taste. See [Charts, Colour](/ui/components/charts/color).
+- A chart caps colour-only encoding at five series, and that number comes from measurement, not taste. See [Charts, Colour](/components/charts/color).
 - A loading state and an empty state are not the same state. One consuming app renders both through a single `.empty-text` element, so a failed fetch reads as "no contacts yet". Colour cannot fix that and neither can a spinner: the words have to differ.
 
 The audit's sharpest finding on this is not about colour at all. Across twelve apps the commit action is labelled Save, Done, Apply or Create interchangeably, and the exit action Close, Cancel, Dismiss or Back. If the words are inconsistent, colour is the only thing left carrying meaning, and it is the one channel that does not survive a colour-blind user, a monochrome print, or a bright afternoon.
@@ -294,7 +294,7 @@ const { setTheme } = useTheme()
 setTheme('dark')
 ```
 
-`useTheme` holds a three-state preference (`light`, `dark`, `system`, defaulting to `system`), persists it, and follows the OS mid-session. Read [useTheme](/ui/composables/use-theme) before rolling your own toggle.
+`useTheme` holds a three-state preference (`light`, `dark`, `system`, defaulting to `system`), persists it, and follows the OS mid-session. Read [useTheme](/composables/use-theme) before rolling your own toggle.
 
 ::: warning The library still has ramp names in it
 Two chart components name ramps directly today: `Charts/InterpolationChart.vue` line 201 (`--nb-c-grape-hyacinth-500`) and `Charts/GanttChart.vue` lines 296 to 300 (five ramps for its status map). Those are the last five in `src/`, and they are bugs rather than precedent. More broadly, the style blocks across 93 SFCs hold 846 `var(--nb-c-*)` references against 74 raw hex and `rgba()` literals. Do not take the remaining literals as a licence.
