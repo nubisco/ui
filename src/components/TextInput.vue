@@ -290,8 +290,10 @@ const messageVariant = computed(() => {
   return 'helper'
 })
 
+// Falls through on empty, like messageVariant above: every message prop
+// defaults to '', which ?? would treat as set, so error would always win.
 const messageText = computed(
-  () => props.error ?? props.warning ?? props.helper ?? '',
+  () => props.error || props.warning || props.helper || '',
 )
 const hasMessage = computed(() => !!messageText.value)
 

@@ -89,6 +89,22 @@ describe('TextInput', () => {
     expect(msg.text()).toBe('Invalid email')
   })
 
+  // All three message props default to '', so the text has to fall through on
+  // empty values, not just nullish ones, or error's '' shadows the other two.
+  it('shows helper text when only helper is set', () => {
+    const wrapper = createWrapper({ helper: 'We never share it' })
+    const msg = wrapper.find('[data-testid="nb-message"]')
+    expect(msg.attributes('data-variant')).toBe('helper')
+    expect(msg.text()).toBe('We never share it')
+  })
+
+  it('shows warning text when only warning is set', () => {
+    const wrapper = createWrapper({ warning: 'Check format' })
+    const msg = wrapper.find('[data-testid="nb-message"]')
+    expect(msg.attributes('data-variant')).toBe('warning')
+    expect(msg.text()).toBe('Check format')
+  })
+
   it('applies warning class to field wrapper', () => {
     const wrapper = createWrapper({ warning: 'Check format' })
     expect(wrapper.find('.nb-text-input__field-wrapper').classes()).toContain(
