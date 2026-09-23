@@ -1,3 +1,11 @@
+## [5.8.3](https://github.com/nubisco/ui/compare/v5.8.2...v5.8.3) (2026-09-23)
+
+
+### Bug Fixes
+
+* **modal:** fill the header corner with the close button ([88f0bd9](https://github.com/nubisco/ui/commit/88f0bd96d6ee4c9bb4c5d17e62bf22985aa51ca2))
+* **text-input:** show helper and warning text, not only errors ([f1a3d1a](https://github.com/nubisco/ui/commit/f1a3d1a80c95252a27647f5d29635bdba6ae46de))
+
 ## [5.8.2](https://github.com/nubisco/ui/compare/v5.8.1...v5.8.2) (2026-09-23)
 
 
