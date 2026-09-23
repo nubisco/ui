@@ -1,3 +1,10 @@
+## [5.8.2](https://github.com/nubisco/ui/compare/v5.8.1...v5.8.2) (2026-09-23)
+
+
+### Bug Fixes
+
+* **shell:** make a bottom panel's intermediate and maximized sizes mean what they say ([01f7e91](https://github.com/nubisco/ui/commit/01f7e918a0d0a0afd080cb60a25959d4d1670a86))
+
 ## [5.8.1](https://github.com/nubisco/ui/compare/v5.8.0...v5.8.1) (2026-09-23)
 
 
