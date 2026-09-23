@@ -32,8 +32,25 @@ import {
 /** WCAG AA for body text. An accent is text-on-surface, so this is the bar. */
 const AA = 4.5
 
-/** Every category the library ships. Adding one here is intentional work. */
-const CATEGORIES = ['creatives', 'engineers', 'home', 'fun'] as const
+/**
+ * Every category the library ships, read from the map rather than restated.
+ *
+ * A hardcoded list here would mean a category added to `$categories` is never
+ * measured, which is the one failure this file exists to prevent: the new
+ * value would ship unverified and the suite would still be green. Adding a
+ * category to the SCSS is enough to put it under the bar.
+ */
+const CATEGORIES: string[] = (() => {
+  const { css } = sass.compileString(
+    `@use 'sass:map';
+     @use 'variables/categories' as c;
+     a { keys: '#{map.keys(c.$categories)}'; }`,
+    { loadPaths: [resolve(ROOT, 'src/styles')] },
+  )
+  const names = css.match(/keys:\s*"([^"]+)"/)?.[1]
+  if (!names) throw new Error('could not read $categories from the SCSS')
+  return names.split(',').map((n) => n.trim())
+})()
 
 /** The surface layers an accent can land on, per mode. */
 const LEVELS = [0, 1, 2, 3] as const
