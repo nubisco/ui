@@ -370,8 +370,16 @@ $modal-sizes: (
 }
 
 .nb-modal--close {
-  width: calc(var(--nb-base-unit) * 5);
-  height: calc(var(--nb-base-unit) * 5);
+  /*
+   * As tall as the title row (16px padding, 24px line, 16px padding), so it
+   * fills the header's corner. A shorter button is centred in the taller row
+   * and leaves a strip of surface above its highlight, which reads as a gap
+   * against the dialog's top edge. Pinned to the start so a title that wraps
+   * to a second line cannot pull it back down out of the corner.
+   */
+  width: calc(var(--nb-base-unit) * 7);
+  height: calc(var(--nb-base-unit) * 7);
+  align-self: flex-start;
   border: none;
   background: transparent;
   /*
