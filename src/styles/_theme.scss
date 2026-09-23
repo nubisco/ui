@@ -667,6 +667,11 @@
     // when a product wants the header bar tinted against its own content.
     --nb-shell-panel-header-bg: transparent;
     --nb-shell-panel-header-border: 1px solid var(--nb-c-border);
+    // How much of the body a bottom panel claims at its intermediate (`default`)
+    // size. A share rather than a length: the point of that size is to show part
+    // of the panel and part of the page at once, which has to hold at any window
+    // height. Products that want a taller or shorter console override it.
+    --nb-shell-bottom-height: 33%;
     --nb-bottom-panel-header-height: calc(var(--nb-base-unit) * 3.5); // 28px
     --nb-bottom-panel-bg: var(--nb-c-layer-0, var(--nb-c-bg));
     --nb-bottom-panel-border: var(--nb-c-border);

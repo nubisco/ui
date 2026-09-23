@@ -1520,13 +1520,36 @@ defineExpose({
   @include radius.surface(panel);
 }
 
+// A bottom panel at its intermediate (`default`) size has to be given a share
+// of the body, because the region it lives in never grows on its own.
+//
+// `default` on a panel means "share the space with your siblings", which it
+// expresses as `flex: 1 1 0%`. Inside `.nb-shell__bottom` there are no
+// siblings to share with, and the region is `flex-shrink: 0` with no grow, so
+// its height is its content height. A flex basis of zero measured against a
+// container that only ever sized itself to its content resolved to zero, and
+// the panel rendered header-only: indistinguishable from `collapsed`. The
+// intermediate size the three size buttons exist for was never reachable.
+.nb-shell__body:has(> .nb-shell__bottom > .nb-bottom-panel.default),
+.nb-shell__body:has(> .nb-shell__bottom > .nb-shell-panel.default) {
+  > .nb-shell__bottom {
+    flex: 0 0 var(--nb-shell-bottom-height, 33%);
+  }
+}
+
 // When the bottom panel is maximized, collapse the main area so the panel
 // fills the body below the topbar. `:has()` lets the parent react to the
 // size class set on the child. Scoped to .nb-shell__bottom so that panels
 // placed inside the main content area do not trigger this rule.
+//
+// The row, not `.nb-shell__main` inside it. Hiding only main left
+// `.nb-shell__main-row` holding its `flex: 1`, so the wrapper went on
+// claiming half the body as blank space and a "maximized" panel reached
+// halfway with the page gone: the worst of both sizes, and the reason this
+// looked like the two buttons were wired backwards.
 .nb-shell__body:has(> .nb-shell__bottom > .nb-bottom-panel.full),
 .nb-shell__body:has(> .nb-shell__bottom > .nb-shell-panel.full) {
-  .nb-shell__main {
+  .nb-shell__main-row {
     display: none;
   }
   .nb-shell__bottom {
