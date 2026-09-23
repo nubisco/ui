@@ -1,3 +1,10 @@
+## [5.8.1](https://github.com/nubisco/ui/compare/v5.8.0...v5.8.1) (2026-09-23)
+
+
+### Bug Fixes
+
+* **theme:** measure every category, not a list of four ([eeeb03d](https://github.com/nubisco/ui/commit/eeeb03d38a0f8bfdb10a7fbf5fcda983c4d53e07))
+
 # [5.8.0](https://github.com/nubisco/ui/compare/v5.7.0...v5.8.0) (2026-09-21)
 
 
