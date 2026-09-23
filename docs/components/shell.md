@@ -554,6 +554,16 @@ Views can also claim it per route with `useShellSlot('contextbar')`, which is th
 
 The `#bottom` slot is an empty region pinned below the main content area. The shell does not provide any built-in controls here; it is simply a layout slot where you can place any component. A common pattern is to drop an `NbShellPanel` (or the legacy `NbBottomPanel`) inside it to get a resizable, collapsible panel with a header and toolbar. See the [Shell Panel](/components/shell-panel) documentation for details on that component.
 
+A panel placed here gets its height from the shell rather than from its own content, which is what makes the three sizes mean the same thing in every application:
+
+| Size        | Bottom region                                | Main content   |
+| ----------- | -------------------------------------------- | -------------- |
+| `collapsed` | Header only                                  | Keeps the rest |
+| `default`   | `--nb-shell-bottom-height` (33% of the body) | Keeps the rest |
+| `full`      | The whole body                               | Hidden         |
+
+The share at `default` is deliberate. A console sized to its own content grows without limit as lines arrive, and since the region does not shrink it would push the page off screen, which defeats the point of having an intermediate size at all. Override `--nb-shell-bottom-height` for a taller or shorter console.
+
 <preview>
   <div style="height: 480px; border: 1px solid var(--nb-c-border, #e8e8f0); border-radius: 8px; overflow: hidden;">
     <NbShell style="height: 100%">
@@ -1323,6 +1333,7 @@ All of these are declared at `:root`, so an application overrides them there wit
 | `--nb-shell-menu-bg`         | `var(--nb-shell-chrome-bg)`        | Background of `outer-menu`, `inner-menu`, `menubar` |
 | `--nb-shell-menu-color`      | `var(--nb-shell-chrome-color)`     | Text colour of the same three strips                |
 | `--nb-shell-menu-border`     | `var(--nb-shell-chrome-border)`    | Bottom border of the same three strips              |
+| `--nb-shell-bottom-height`   | `33%`                              | Share of the body a bottom panel takes at `default` |
 
 ### Sidebar and inspector
 
