@@ -9,7 +9,7 @@ do about it?** There are exactly four answers, and the whole cost of this patter
 comes from products that ship one message for all four.
 
 `NbEmptyState` already exists, already types the four cases, and already has a
-[component page](/ui/components/empty-state). Across the twelve applications
+[component page](/components/empty-state). Across the twelve applications
 built on this library it is used **zero times**. Not misused. Not used. Every
 product wrote its own muted paragraph instead, and each one lost something
 different in the process:
@@ -261,13 +261,13 @@ the three is a fact.
   vocabulary.
 - **A short request needs no placeholder at all.** `NbSpinner`'s `delay` prop
   exists for this: a spinner that appears for 80ms is noise. See
-  [spinner](/ui/components/spinner).
+  [spinner](/components/spinner).
 - **Optimistic states are not empty states.** If you have created the first item
   locally and are waiting for the server, the view has one row, not zero.
 - **Never use an empty state as an error banner.** A page that loaded fine but
   whose _save_ failed still has content. Report that with `NbBanner`
   `variant="inline"`, not by replacing the view. See
-  [banner](/ui/components/banner).
+  [banner](/components/banner).
 
 ### Inside `NbDataTable` this is already done for you
 
@@ -500,7 +500,7 @@ expected, with the same label in both places. See
 [Writing style](/content/writing-style).
 
 Both frames below are the real `NbShell` at a fixed height, the way
-[shell](/ui/components/shell) demonstrates itself: the frame stands in for the
+[shell](/components/shell) demonstrates itself: the frame stands in for the
 viewport, and nothing about the component is changed. The heading row inside the
 content is the application's own markup, because the library ships no
 page-header component, and it is exactly the part that has to survive.

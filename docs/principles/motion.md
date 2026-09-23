@@ -254,7 +254,7 @@ If you build a panel that genuinely slides, for example an inspector over conten
 
 `NbMenu`, `NbSubmenu`, `NbNotificationCenter`, the `v-tooltip` directive. `0.12s`, opacity plus a 4px translate toward the trigger. `NbSubmenu` drops the translate entirely and fades only, because a submenu appears beside its parent row and a 4px rise would read as it detaching.
 
-The tooltip directive is the outlier: `animationTime` defaults to `300ms` with `ease-in-out`, and its exit is pinned to `HIDE_ANIMATION_MS = 200` in `src/directives/ToolTip.directive.ts`, which must equal the `tooltipDisappear` keyframe duration or the chip is detached mid-animation. If you change one, change both. See [Tooltip](/ui/directives/tooltip).
+The tooltip directive is the outlier: `animationTime` defaults to `300ms` with `ease-in-out`, and its exit is pinned to `HIDE_ANIMATION_MS = 200` in `src/directives/ToolTip.directive.ts`, which must equal the `tooltipDisappear` keyframe duration or the chip is detached mid-animation. If you change one, change both. See [Tooltip](/directives/tooltip).
 
 ### A toast entering and leaving
 
@@ -450,5 +450,5 @@ Every file the second command prints is one you must open and check: either the 
 - [Status indicators](/patterns/status-indicators) for choosing between `NbSpinner`, `NbInlineLoading`, `NbSkeleton` and `NbProgressBar`. That page owns which indicator; this page owns how it moves.
 - [Dialogs](/patterns/dialogs) and [Inspectors](/patterns/inspectors) for the surfaces whose enters and exits are described here.
 - [Accessibility overview](/accessibility/overview) for where reduced motion sits among the other obligations.
-- [Toaster](/ui/components/toaster) and [useToast](/ui/composables/use-toast) for toast lifetimes, placement and the shift property.
-- [Tooltip](/ui/directives/tooltip) for `animationTime` and the exit duration that has to match the keyframe.
+- [Toaster](/components/toaster) and [useToast](/composables/use-toast) for toast lifetimes, placement and the shift property.
+- [Tooltip](/directives/tooltip) for `animationTime` and the exit duration that has to match the keyframe.

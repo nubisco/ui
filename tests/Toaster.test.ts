@@ -1924,9 +1924,9 @@ describe('delivery', () => {
  */
 describe('documentation', () => {
   const root = join(__dirname, '..')
-  const page = readFileSync(join(root, 'docs/ui/components/toaster.md'), 'utf8')
+  const page = readFileSync(join(root, 'docs/components/toaster.md'), 'utf8')
   const composablePage = readFileSync(
-    join(root, 'docs/ui/composables/use-toast.md'),
+    join(root, 'docs/composables/use-toast.md'),
     'utf8',
   )
   const source = readFileSync(
@@ -2130,8 +2130,8 @@ describe('delivery: every documented identifier is importable', () => {
 
   const uses: IUse[] = []
   for (const page of [
-    'docs/ui/components/toaster.md',
-    'docs/ui/composables/use-toast.md',
+    'docs/components/toaster.md',
+    'docs/composables/use-toast.md',
   ]) {
     const text = readFileSync(join(root, page), 'utf8')
     const fences = [...text.matchAll(/```(ts|js|vue)\n([\s\S]*?)```/g)]

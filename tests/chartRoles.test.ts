@@ -11,7 +11,7 @@
 //     surfaces a chart lands on, in both themes. The light theme carries one
 //     documented exception (role 4) and the dark theme one documented ceiling
 //     (layer-3); both are asserted here so they cannot silently grow.
-//  3. The numbers in docs/ui/components/charts/color.md are real. The page caps
+//  3. The numbers in docs/components/charts/color.md are real. The page caps
 //     colour-only encoding at five series on the strength of measured CIEDE2000
 //     distances, including under simulated colour-vision deficiency. Those
 //     numbers are measured here, off the compiled stylesheet, so the guidance
@@ -475,7 +475,7 @@ describe('chart role tokens', () => {
     // Two assertions per figure, and the pair is the point.
     //
     // `near` is a change detector: it says the number printed in
-    // docs/ui/components/charts/color.md is still the number the stylesheet
+    // docs/components/charts/color.md is still the number the stylesheet
     // produces, so the page cannot quietly drift away from the palette. On its
     // own it is a bad guard, because improving the palette fails it and the
     // only way out is editing the expectation, which is indistinguishable from

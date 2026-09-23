@@ -30,7 +30,7 @@ not is no longer exposed to it.
 `moveTargets`, `isInvalidTarget`, `ancestorsOf`, `subtreeOf` and `nestByDepth`.
 They work on any tree of `{ id, children }` and answer what a drop or a
 "Move to" picker needs, so the move maths does not have to be written per
-product. See [Working out the move](/ui/components/tree#working-out-the-move).
+product. See [Working out the move](/components/tree#working-out-the-move).
 Nothing is required: existing drop handlers keep working.
 
 **`NbAvatar` takes a size in pixels and a background.** `size` still accepts
@@ -40,7 +40,7 @@ the initials, for giving each person their own colour. Defaults are unchanged.
 
 `droppable` and the caret are independent. `expandable` still decides whether a
 node shows a caret, so a node can accept children while showing no caret until
-it has some. See [Tree](/ui/components/tree#dropping-onto-a-leaf).
+it has some. See [Tree](/components/tree#dropping-onto-a-leaf).
 
 ## To 5.5.0 from 5.4.x
 
@@ -296,7 +296,7 @@ import type {
 Interactivity is opt-in. With no listener bound, nothing about the chart
 changes: no pointer cursor, no focus ring, no button semantics. Bind one and
 each bar or slice becomes a focusable button. See
-[Bar Chart](/ui/components/charts/bar) for the payload and the accessibility
+[Bar Chart](/components/charts/bar) for the payload and the accessibility
 behaviour.
 
 ### The glyph plugin sees through more expressions
@@ -340,7 +340,7 @@ because a static reference to all of them inside `install()` is reachable from
 every app and pinned the whole library into every bundle.
 
 Add the bundler plugin instead. It resolves `<NbButton>` to an import of
-`@nubisco/ui/components/Button` in the file that used it:
+`@nubisco/components/Button` in the file that used it:
 
 ```ts
 // vite.config.ts
@@ -359,7 +359,7 @@ deep import resolved its types and failed on its runtime. Every component is now
 a real entry point, importable with or without the plugin:
 
 ```ts
-import { NbButton } from '@nubisco/ui/components/Button'
+import { NbButton } from '@nubisco/components/Button'
 ```
 
 The package also declares `sideEffects`, so bundlers can drop what a barrel
@@ -456,7 +456,7 @@ import '@nubisco/ui/css'
 
 **Composables and utilities.** `exports["./composables/*"]` pointed at `./src/`,
 which `files` never published, so
-`import { useTheme } from '@nubisco/ui/composables/useTheme.composable'`
+`import { useTheme } from '@nubisco/composables/useTheme.composable'`
 resolved its types and then failed on its runtime. Both subpaths are real entry
 points now. The specifiers are unchanged.
 
@@ -561,13 +561,13 @@ upgrade itself is a version bump. The work is in what you can now delete.
 
 ### What is new
 
-| Component                                                                     | Replaces the hand-rolled                                                                                                              |
-| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| [`NbAccordion`](/ui/components/accordion) + `NbAccordionItem`                 | Click-to-reveal sections in page body. `NbShellPanel` is still the right thing for an inspector section; this is for everything else. |
-| [`NbCardGrid`](/ui/components/card-grid) + `NbCard`                           | A responsive catalogue of cards, and the card surface itself.                                                                         |
-| [`NbDefinitionList`](/ui/components/definition-list) + `NbDefinitionListItem` | Label-and-value fact blocks.                                                                                                          |
-| [`NbReorderList`](/ui/components/reorder-list)                                | A vertical list whose rows drag to reorder, with a keyboard path.                                                                     |
-| [`NbEmptyState`](/ui/components/empty-state)                                  | The centred block a view shows when it has nothing to show.                                                                           |
+| Component                                                                  | Replaces the hand-rolled                                                                                                              |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| [`NbAccordion`](/components/accordion) + `NbAccordionItem`                 | Click-to-reveal sections in page body. `NbShellPanel` is still the right thing for an inspector section; this is for everything else. |
+| [`NbCardGrid`](/components/card-grid) + `NbCard`                           | A responsive catalogue of cards, and the card surface itself.                                                                         |
+| [`NbDefinitionList`](/components/definition-list) + `NbDefinitionListItem` | Label-and-value fact blocks.                                                                                                          |
+| [`NbReorderList`](/components/reorder-list)                                | A vertical list whose rows drag to reorder, with a keyboard path.                                                                     |
+| [`NbEmptyState`](/components/empty-state)                                  | The centred block a view shows when it has nothing to show.                                                                           |
 
 ### What to delete, and what to watch for
 
@@ -1297,4 +1297,4 @@ button works without a passthrough prop:
 The enums themselves (`ESwitchSize`, `EButtonType`, …) are not re-exported from
 the package root, so `import { ESwitchSize } from '@nubisco/ui'` does not
 resolve. Use the plain string values, which is the supported form, or reach an
-enum through its component path (`@nubisco/ui/components/Switch`).
+enum through its component path (`@nubisco/components/Switch`).

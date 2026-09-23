@@ -32,11 +32,11 @@ That last one is the whole point of this page in one line. A loading state that
 is not distinguished from an empty state is not a styling problem. It is the
 interface stating something false about the user's data.
 
-The components exist now: [`NbSkeleton`](/ui/components/skeleton),
-[`NbSpinner`](/ui/components/spinner),
-[`NbInlineLoading`](/ui/components/inline-loading) and
-[`NbProgressBar`](/ui/components/progress-bar), plus
-[`useInlineLoading`](/ui/components/inline-loading#useinlineloading) and the
+The components exist now: [`NbSkeleton`](/components/skeleton),
+[`NbSpinner`](/components/spinner),
+[`NbInlineLoading`](/components/inline-loading) and
+[`NbProgressBar`](/components/progress-bar), plus
+[`useInlineLoading`](/components/inline-loading#useinlineloading) and the
 shared announcer behind `completeLabel`. Nothing on this page asks you to build
 anything. It tells you which one to reach for, and when the correct answer is
 none of them.
@@ -199,7 +199,7 @@ second forty. Past roughly ten seconds it has stopped informing and the honest
 reading is that something is stuck. At that point you owe one of three things,
 in this order of preference:
 
-1. **A number.** Switch to [`NbProgressBar`](/ui/components/progress-bar) with a
+1. **A number.** Switch to [`NbProgressBar`](/components/progress-bar) with a
    real `value`.
 2. **A way out.** `NbSpinner`'s default slot renders below the ring inside the
    one subtree a page overlay does not inert, so a `Cancel` button placed there
@@ -218,13 +218,13 @@ by closing the tab.
 
 Once the wait is known, the shape of the knowledge picks the component.
 
-| You know                                                        | Show                                                        | Because                                       |
-| --------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------- |
-| It will be over in under 300 ms                                 | **Nothing**                                                 | A flash of feedback is worse than no feedback |
-| The layout that is coming, before the data arrives              | [`NbSkeleton`](/ui/components/skeleton)                     | It reserves the space the content will occupy |
-| Only that work is happening, and it blocks a region or the page | [`NbSpinner`](/ui/components/spinner)                       | It promises nothing about shape or duration   |
-| The user pressed something and is waiting for an outcome        | [`NbInlineLoading`](/ui/components/inline-loading)          | The outcome is the half everybody forgets     |
-| A total: files, bytes, records, steps                           | [`NbProgressBar`](/ui/components/progress-bar) with `value` | You can answer "how much longer", so you must |
+| You know                                                        | Show                                                     | Because                                       |
+| --------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------- |
+| It will be over in under 300 ms                                 | **Nothing**                                              | A flash of feedback is worse than no feedback |
+| The layout that is coming, before the data arrives              | [`NbSkeleton`](/components/skeleton)                     | It reserves the space the content will occupy |
+| Only that work is happening, and it blocks a region or the page | [`NbSpinner`](/components/spinner)                       | It promises nothing about shape or duration   |
+| The user pressed something and is waiting for an outcome        | [`NbInlineLoading`](/components/inline-loading)          | The outcome is the half everybody forgets     |
+| A total: files, bytes, records, steps                           | [`NbProgressBar`](/components/progress-bar) with `value` | You can answer "how much longer", so you must |
 
 These are not exclusive. A real screen loads in stages and each stage gets its
 own answer: skeletons on first paint, a container spinner on the late chart, the
@@ -357,7 +357,7 @@ labels announce themselves forty times.
 
 ### Tables never hand-build skeleton rows
 
-[`NbDataTable`](/ui/components/data-table) takes `loading` and renders
+[`NbDataTable`](/components/data-table) takes `loading` and renders
 `skeletonRows` placeholder rows (default 5) inside its own column structure,
 with `aria-busy` on the table. The columns already know their widths, so the
 placeholder is correct by construction and the header stays readable while the
@@ -411,7 +411,7 @@ The second one has two halves, and the fleet consistently ships only the first:
 with nothing at all.** The spinner stops, the button comes back, and the user is
 left to infer from the absence of an error that their work was kept.
 
-Silence is not confirmation. [`NbInlineLoading`](/ui/components/inline-loading)
+Silence is not confirmation. [`NbInlineLoading`](/components/inline-loading)
 is the confirmation, and it lives next to the control that fired, because that
 is where the user is looking.
 
@@ -525,11 +525,11 @@ the button, or a toast for work whose result outlives the screen.
 
 ### Where the confirmation goes
 
-| The user is                                          | Confirm with                                           |
-| ---------------------------------------------------- | ------------------------------------------------------ |
-| Still looking at the thing they changed              | `NbInlineLoading` beside the control                   |
-| Going to leave, or already left, the surface         | [`NbToaster`](/ui/components/toaster) via `useToast()` |
-| Owed a standing statement about the page's condition | [`NbBanner`](/ui/components/banner) `variant="inline"` |
+| The user is                                          | Confirm with                                        |
+| ---------------------------------------------------- | --------------------------------------------------- |
+| Still looking at the thing they changed              | `NbInlineLoading` beside the control                |
+| Going to leave, or already left, the surface         | [`NbToaster`](/components/toaster) via `useToast()` |
+| Owed a standing statement about the page's condition | [`NbBanner`](/components/banner) `variant="inline"` |
 
 Do not confirm the same save twice on two surfaces. Pick the one the user will
 be looking at when it lands.
@@ -538,7 +538,7 @@ be looking at when it lands.
 
 ## Rule 5: determinate when you can count, and never fake a bar
 
-[`NbProgressBar`](/ui/components/progress-bar) with a `value` is the strongest
+[`NbProgressBar`](/components/progress-bar) with a `value` is the strongest
 loading statement we make, because it answers "how much longer". Use it whenever
 you can count the units the work is made of: files, bytes, records, migration
 steps.
@@ -596,7 +596,7 @@ which is the subject of the next paragraph.
 does not report a position it does not have. That is correct for the seconds
 between starting an upload and learning its size. A bar that sweeps forever is a
 promise of a percentage that never arrives: if there will never be a number, the
-component is [`NbSpinner`](/ui/components/spinner).
+component is [`NbSpinner`](/components/spinner).
 
 ::: danger Never simulate progress
 A bar driven by a timer, an easing curve, or an interval that creeps toward 90%
@@ -635,7 +635,7 @@ quotes.
 `status="finished"` and `status="error"` both fill the track and recolour it,
 and both pair the colour with an icon and the `helper` text, so the outcome is
 never carried by colour alone. A multi-step task the user navigates through is
-not a progress bar at all: that is [`NbStepper`](/ui/components/stepper).
+not a progress bar at all: that is [`NbStepper`](/components/stepper).
 
 ---
 
@@ -729,8 +729,8 @@ belongs here is the boundary: **the loading state owns the screen until the
 response lands, and it hands over to exactly one successor.**
 
 One more boundary, on the error side. A failed load is a page-level condition,
-so it goes in [`NbBanner`](/ui/components/banner) with `variant="inline"`, not
-in [`NbMessage`](/ui/components/message), which is a 12px inline helper sized
+so it goes in [`NbBanner`](/components/banner) with `variant="inline"`, not
+in [`NbMessage`](/components/message), which is a 12px inline helper sized
 for a form field. The fleet gets this wrong at scale: one product uses
 `NbMessage` for 30 page-level errors, and cms renders a failed media upload as
 an inline `NbMessage` in an application that already uses `NbBanner` in the
@@ -815,7 +815,7 @@ races itself.
   the `click` emit, so the second press cannot reach your handler. On a link
   button (`href` or `to`), where `disabled` does not exist, it sets
   `aria-disabled` and still drops the emit.
-- **Confirmations.** [`NbConfirm`](/ui/components/confirm) already solves this,
+- **Confirmations.** [`NbConfirm`](/components/confirm) already solves this,
   and it solves it in the composable rather than at the call site. While the
   work is pending, `busy` locks both buttons and the type-to-confirm gate, and
   Escape, the overlay click and the close button all stop dismissing, because an
@@ -1021,8 +1021,8 @@ handle.update({ variant: 'success', message: 'Export ready' })
 `duration: 0` keeps it up while the work runs, `retain: true` lets it survive a
 route change (the news is true wherever the user ends up), and `update()` keeps
 the toast's slot so the stack does not jump. Details in
-[`NbToaster`](/ui/components/toaster). For a queue of such reports, that is
-[`NbNotificationCenter`](/ui/components/notification-center), which has its own
+[`NbToaster`](/components/toaster). For a queue of such reports, that is
+[`NbNotificationCenter`](/components/notification-center), which has its own
 `loading`, `error` and empty states and keeps stale rows on a failed refresh
 rather than pretending the list is empty.
 
@@ -1099,10 +1099,10 @@ rg -n "setInterval" src | rg -i "progress|percent"
 
 ## Related
 
-- [Spinner](/ui/components/spinner), [Skeleton](/ui/components/skeleton),
-  [Inline Loading](/ui/components/inline-loading),
-  [Progress Bar](/ui/components/progress-bar),
-  [Data Table](/ui/components/data-table)
+- [Spinner](/components/spinner), [Skeleton](/components/skeleton),
+  [Inline Loading](/components/inline-loading),
+  [Progress Bar](/components/progress-bar),
+  [Data Table](/components/data-table)
 - [Empty states](/patterns/empty-states) ·
   [Status indicators](/patterns/status-indicators) ·
   [Dialogs](/patterns/dialogs) · [Building a form](/patterns/forms) ·

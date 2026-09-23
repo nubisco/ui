@@ -274,7 +274,7 @@ behalf:
 
 ```vue
 <script setup lang="ts">
-import { NbButton } from '@nubisco/ui/components/Button'
+import { NbButton } from '@nubisco/components/Button'
 import GithubLogo from '@nubisco/ui/icons/github-logo'
 import Portugal from '@nubisco/ui/flags/pt'
 </script>

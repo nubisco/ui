@@ -105,7 +105,7 @@ way of naming a glyph, and how to ship the whole collection when you want it.
 Every component is a real entry point:
 
 ```ts
-import { NbButton } from '@nubisco/ui/components/Button'
+import { NbButton } from '@nubisco/components/Button'
 ```
 
 And if you cannot add a build step at all, one explicit import registers
@@ -135,5 +135,5 @@ import '@nubisco/ui/css'
 
 - [Showcase](/showcase): see all components in action
 - [Theming](/theming): customise colors, spacing, and type for your brand
-- [Grid](/ui/components/grid/overview): understand the layout system
-- [Components](/ui/components/button/button): browse the full component library
+- [Grid](/components/grid/overview): understand the layout system
+- [Components](/components/button/button): browse the full component library

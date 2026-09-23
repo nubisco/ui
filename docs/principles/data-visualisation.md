@@ -9,7 +9,7 @@ description: Choosing a chart, or choosing not to draw one. Axis rules, legends,
 The result is visible in the fleet. A white-label white-label product passes six hardcoded hex values into every chart because it could not see how else to escape a violet first series. Another product asks `NbBarChart` for `orientation="horizontal"`, does not get it, and works around the collided axis labels by shipping a second set of abbreviated category names in its translation files. A device dashboard draws four sparklines from arrays that start empty, so every metric card shows a blank box until the second poll lands, while a desktop app avoids the same blank box only because someone happened to pre-fill its history array with zeros. None of those are careless. All of them are decisions this page should have made for them.
 
 ::: tip Colour has its own page
-Which of the three scales your data needs, in what order the eight roles are assigned, the measured separations under colour-vision deficiency, and the full white-label override recipe are on [Charts, Colour](/ui/components/charts/color). This page decides everything except which colours; where the two touch, this page states the rule and links.
+Which of the three scales your data needs, in what order the eight roles are assigned, the measured separations under colour-vision deficiency, and the full white-label override recipe are on [Charts, Colour](/components/charts/color). This page decides everything except which colours; where the two touch, this page states the rule and links.
 :::
 
 ## Before the chart: is a chart the answer
@@ -95,7 +95,7 @@ Not a chart. It is a form control that happens to look like one: `v-model` over 
 
 ## How many series before colour stops working
 
-**Five.** Above five simultaneous categorical colours, telling any two apart becomes a lookup task rather than a perception task, and under the common colour-vision deficiencies some pairs stop being distinguishable at all. The measured numbers behind that limit are on [Charts, Colour](/ui/components/charts/color).
+**Five.** Above five simultaneous categorical colours, telling any two apart becomes a lookup task rather than a perception task, and under the common colour-vision deficiencies some pairs stop being distinguishable at all. The measured numbers behind that limit are on [Charts, Colour](/components/charts/color).
 
 Two facts about our implementation make the limit sharper than it looks:
 
@@ -163,7 +163,7 @@ This is the section the fleet fails. `NbDataTable` has `loading`, `skeletonRows`
 | One point, `NbSparkline`      | An empty box of the right height                                                                              | The first poll of every metrics dashboard looks broken |
 | All values zero, `NbPieChart` | No slices. `slices` returns `[]` when the total is zero                                                       | A legend with no circle above it                       |
 
-Handle the states outside the chart, and **name the case**. [`NbEmptyState`](/ui/components/empty-state) takes a `kind` of `empty`, `no-results`, `error` or `forbidden` precisely so that a failed request never renders as "no data yet":
+Handle the states outside the chart, and **name the case**. [`NbEmptyState`](/components/empty-state) takes a `kind` of `empty`, `no-results`, `error` or `forbidden` precisely so that a failed request never renders as "no data yet":
 
 ```vue
 <template>
@@ -205,7 +205,7 @@ Handle the states outside the chart, and **name the case**. [`NbEmptyState`](/ui
 Four rules that fall out of that:
 
 1. **The skeleton must be the height the chart will be.** `variant="block"` with the same `height` you pass the chart. A shorter placeholder buys a layout shift at exactly the moment the reader starts looking.
-2. **One `label` per loading region, not per skeleton.** A dashboard of six charts that each announce themselves is six announcements. See [Skeleton](/ui/components/skeleton).
+2. **One `label` per loading region, not per skeleton.** A dashboard of six charts that each announce themselves is six announcements. See [Skeleton](/components/skeleton).
 3. **Set `points` when a single point is possible.** It is the only thing that makes a one-point line chart visible. `:points="series[0]?.data.length === 1"` is enough, or pass `points` always if your line is short.
 4. **Guard sparklines on length.** `v-if="history.length > 1"`, with the number alone until the second sample arrives. Never render a blank box and hope.
 
@@ -251,12 +251,12 @@ For a chart, accessible means two things beyond the usual: **there is a text alt
 **The text alternative.** Every cartesian chart sets `role="img"` and an `aria-label` from `title`. That is a name, not content: it tells a screen reader user what the chart is called and nothing about what it shows. The data itself has to exist somewhere else on the page. In order of preference:
 
 - The numbers are already on the page (a table the chart summarises, a metric row above it). This is the best case and it is common. Nothing more is needed.
-- An [`NbDataTable`](/ui/components/data-table) of the same data in a second tab or behind a disclosure, named with `title` or `aria-label`. This is what every dashboard chart should have.
+- An [`NbDataTable`](/components/data-table) of the same data in a second tab or behind a disclosure, named with `title` or `aria-label`. This is what every dashboard chart should have.
 - An `NbDefinitionList` for small categorical sets, which is often less markup than the chart.
 
 **Colour is never the only encoding.** Every non-colour channel our charts have is mouse-only. `ChartTooltip` appears on `mousemove`; the bar chart's dimming is a `mouseenter` on an invisible hover rectangle; the legend has no interaction at all. There is no keyboard path to a data point in any chart in this library. So a fact that lives only in a tooltip does not exist for a keyboard user, and a series identified only by hue does not exist for a reader with a colour-vision deficiency. Cover it by: passing `points` so line series have marks as well as a stroke, giving `NbPieChart` `labels` so the slices carry values, keeping to five colours, and providing the table.
 
-**Contrast.** Chart marks are not text and are held to 3:1 against the surface they sit on rather than 4.5:1. Two of the eight light-theme roles miss that today, and four of the dark-theme roles miss it on layer 3. `seriesColors(n, { mark: 'line' })` routes around them for thin marks, which is exactly where it matters most. The measurements are on [Charts, Colour](/ui/components/charts/color) and the general rule is on [Colour and contrast](/accessibility/color-contrast).
+**Contrast.** Chart marks are not text and are held to 3:1 against the surface they sit on rather than 4.5:1. Two of the eight light-theme roles miss that today, and four of the dark-theme roles miss it on layer 3. `seriesColors(n, { mark: 'line' })` routes around them for thin marks, which is exactly where it matters most. The measurements are on [Charts, Colour](/components/charts/color) and the general rule is on [Colour and contrast](/accessibility/color-contrast).
 
 **Motion.** The animation in a chart is small: a 120ms opacity fade on bar hover, and a fade on the tooltip. Both are opacity-only and safe. The Gantt group caret animates a transform and is not gated on `prefers-reduced-motion`, which is a bug and is listed below. Do not add animated draw-in transitions to charts: a line that grows from the left delays the answer to look busy.
 
@@ -305,7 +305,7 @@ Then pass nothing. Charts fall back to the roles when `colors` is absent, `var()
 
 The status map on `NbGanttChart` is the one place a semantic override still belongs at the component, through `statusColors`, because "at risk" is your word and not ours.
 
-Full recipe, contrast measurements and the sequential and diverging ramps: [Charts, Colour](/ui/components/charts/color) and [Colours](/principles/color).
+Full recipe, contrast measurements and the sequential and diverging ramps: [Charts, Colour](/components/charts/color) and [Colours](/principles/color).
 
 ## Known gaps
 

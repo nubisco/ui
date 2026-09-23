@@ -280,7 +280,7 @@ Both ramps ship in the CSS. The dark one is emitted under a `.dark` class on
 `<html>`, so switching themes is a matter of putting that class there and taking
 it away.
 
-[`useTheme`](/ui/composables/use-theme) does that, and the rest of what a real
+[`useTheme`](/composables/use-theme) does that, and the rest of what a real
 product needs around it: a three-state preference (`light`, `dark`, `system`,
 with `system` as the default), persistence, and following the OS when it changes
 mid-session.

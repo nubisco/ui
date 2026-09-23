@@ -54,7 +54,7 @@ and the decisions behind it, are in
   </NbGrid>
 </preview>
 
-[Full Grid documentation →](/ui/components/grid/overview)
+[Full Grid documentation →](/components/grid/overview)
 
 ---
 
@@ -108,7 +108,7 @@ Seven variants, seven sizes, icon support, and loading/disabled states. All from
   <NbButton variant="primary" disabled>Disabled</NbButton>
 </preview>
 
-[Full Button documentation →](/ui/components/button/button)
+[Full Button documentation →](/components/button/button)
 
 ---
 
@@ -221,7 +221,7 @@ Over 9,000 icons from the [Phosphor](https://phosphoricons.com) set, available i
   <NbIcon name="magnifying-glass" :size="32" />
 </preview>
 
-[Browse the full icon library →](/ui/components/icon)
+[Browse the full icon library →](/components/icon)
 
 ---
 
@@ -240,7 +240,7 @@ ISO 3166-1 country flags, loaded as async SVG components via the same virtual mo
   <NbFlag name="in" :size="32" />
 </preview>
 
-[Browse all flags →](/ui/components/flag)
+[Browse all flags →](/components/flag)
 
 ---
 

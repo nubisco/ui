@@ -241,7 +241,7 @@ const props = withDefaults(defineProps<IUserMenuProps>(), {
   // brand inside its own account menu. It stays 'footer' here only because
   // flipping it would silently remove the footer from every product already
   // shipping one, which is a breaking change. Two escapes exist today and
-  // are documented under "White-labelling" in docs/ui/components/user-menu:
+  // are documented under "White-labelling" in docs/components/user-menu:
   // brand="none" removes the footer, and the #brand slot replaces it with
   // the product's own line. Flip this default to 'none' in the next major.
   brand: 'footer',

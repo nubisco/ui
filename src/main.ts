@@ -280,7 +280,7 @@ export { default as NbProgressBar } from './components/ProgressBar.vue'
 export type { IProgressBarProps } from './components/ProgressBar.d'
 // ── Loading ──────────────────────────────────────────────────────────────────
 // Indeterminate waiting. NbProgressBar above covers the determinate case; pick
-// between them in docs/ui/components/spinner.md.
+// between them in docs/components/spinner.md.
 export { default as NbSpinner } from './components/Spinner.vue'
 export type { ISpinnerProps } from './components/Spinner.d'
 export {
@@ -340,7 +340,7 @@ export { default as NbSparkline } from './components/Charts/Sparkline.vue'
 // The chart colour contract. Charts paint through the eight `--nb-c-chart-*`
 // role tokens, but the sequential and diverging ramps cannot be expressed by
 // setting a custom property: they are built with `color-mix()`, so a consumer
-// needs these builders. Documented in docs/ui/components/charts/color.md.
+// needs these builders. Documented in docs/components/charts/color.md.
 export {
   CHART_ROLE_COUNT,
   DEFAULT_PALETTE,

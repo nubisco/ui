@@ -35,7 +35,7 @@ because a rule whose reason is missing gets re-litigated in the next product.
 
 ::: tip This page is rules, not mechanics
 How the regions render, every prop, every token and every edge case lives in
-[Shell](/ui/components/shell) and [`useShellSlot`](/ui/composables/use-shell-slot).
+[Shell](/components/shell) and [`useShellSlot`](/composables/use-shell-slot).
 Read those for the API. Read this for what belongs where and why.
 :::
 
@@ -155,7 +155,7 @@ Two consequences worth stating outright, because both shipped:
 ### The regions, running
 
 Both frames below are one real `NbShell`, given a fixed height the way
-[Shell](/ui/components/shell) demonstrates itself. Nothing is drawn by hand:
+[Shell](/components/shell) demonstrates itself. Nothing is drawn by hand:
 every label sits in the region whose slot name it carries, so a label in the
 strip above `<main>` is proof that the strip is `topbar-left`, not an
 illustration of one.
@@ -300,7 +300,7 @@ rail of Devices, Reports, Alerts, Settings is compact. A rail of six report type
 needs words, because six chart icons are one icon.
 
 The variant is a **product-level** decision, not a per-route one. Switching it at
-runtime is legal (see [Shell](/ui/components/shell#switching-between-compact-and-verbose-at-runtime))
+runtime is legal (see [Shell](/components/shell#switching-between-compact-and-verbose-at-runtime))
 and is for a user preference, never for a route.
 
 ### Expanding and collapsing the rail
@@ -483,7 +483,7 @@ frame scope.
 ## A view contributes controls with `useShellSlot`, never a DOM id
 
 **Rule.** A view that needs something in the frame calls
-[`useShellSlot`](/ui/composables/use-shell-slot) and renders into the outlet it
+[`useShellSlot`](/composables/use-shell-slot) and renders into the outlet it
 gets back. It never queries the DOM, never teleports to a selector, and the
 layout never declares an empty `<div id="...">` for it to find.
 
@@ -556,8 +556,8 @@ strip exists only while this view is on screen.
 `Outlet` is a component object, so `<component :is="crumbs.Outlet">` and the
 dotted shorthand `<crumbs.Outlet>` compile to the same thing. **This docs set
 writes `<component :is="…">` everywhere**, including
-[Shell](/ui/components/shell#contributing-controls-from-a-view) and
-[`useShellSlot`](/ui/composables/use-shell-slot#basic-usage), because it is the
+[Shell](/components/shell#contributing-controls-from-a-view) and
+[`useShellSlot`](/composables/use-shell-slot#basic-usage), because it is the
 form that survives a rename of the local variable in review. Pick one per
 product; do not mix them in one file.
 
@@ -818,7 +818,7 @@ states, three rulings.
 
 - **Loading, error and empty inside the page are not the frame's problem** and
   are ruled on in [Status indicators](/patterns/status-indicators) and
-  [Empty states](/ui/components/empty-state). The frame rule is only this: the
+  [Empty states](/components/empty-state). The frame rule is only this: the
   frame does not join in. The topbar keeps its actions (disabled if they need
   data), the rail keeps its selection, the trail keeps its links.
 
@@ -1106,13 +1106,13 @@ Three destinations, three scopes, no overlap. Getting this wrong is what made
 three products hand-build a notification bell (312, 343 and 308 lines) and three
 more hand-build a toast host.
 
-| The message is about                                   | Where it goes                                | Component                                                                  |
-| ------------------------------------------------------ | -------------------------------------------- | -------------------------------------------------------------------------- |
-| The action the user just took                          | A toast, bottom of the viewport              | [`useToast()`](/ui/composables/use-toast) with one `NbToaster` at the root |
-| A standing condition of the account or the application | The `notification` region, above the topbar  | [`NbBanner`](/ui/components/banner) with `flush`                           |
-| A page or a region                                     | Inside the page, above the thing it is about | `NbBanner`                                                                 |
-| Something that happened while the user was elsewhere   | The bell in `topbar-right`                   | [`NbNotificationCenter`](/ui/components/notification-center)               |
-| One field                                              | Under the control                            | `NbMessage`                                                                |
+| The message is about                                   | Where it goes                                | Component                                                               |
+| ------------------------------------------------------ | -------------------------------------------- | ----------------------------------------------------------------------- |
+| The action the user just took                          | A toast, bottom of the viewport              | [`useToast()`](/composables/use-toast) with one `NbToaster` at the root |
+| A standing condition of the account or the application | The `notification` region, above the topbar  | [`NbBanner`](/components/banner) with `flush`                           |
+| A page or a region                                     | Inside the page, above the thing it is about | `NbBanner`                                                              |
+| Something that happened while the user was elsewhere   | The bell in `topbar-right`                   | [`NbNotificationCenter`](/components/notification-center)               |
+| One field                                              | Under the control                            | `NbMessage`                                                             |
 
 The full carrier decision, including the nine status words and the badge versus
 banner boundary, is [Status indicators](/patterns/status-indicators). The frame
@@ -1232,7 +1232,7 @@ part that twelve products each got partly right. This section is the whole
 contract; nothing about frame accessibility is stated anywhere else on this page.
 
 `NbShell` implements all of it except where a rule says "the product". Component
-level detail is in [Shell's own accessibility notes](/ui/components/shell#accessibility);
+level detail is in [Shell's own accessibility notes](/components/shell#accessibility);
 the general rules are in [Keyboard interaction](/accessibility/keyboard) and
 [Accessibility overview](/accessibility/overview). What follows is what a
 **product** owes on top.
@@ -1637,9 +1637,9 @@ competing with our scoped styles.
 }
 ```
 
-The reasoning is [Theming the chrome](/ui/components/shell#theming-the-chrome)
+The reasoning is [Theming the chrome](/components/shell#theming-the-chrome)
 and the full list is the
-[CSS custom properties](/ui/components/shell#css-custom-properties) table
+[CSS custom properties](/components/shell#css-custom-properties) table
 underneath it. The frame ground, each chrome strip (background, text colour,
 border), the rail, the scrim and the inspector's border are all tokens, and each
 of them is declared at `:root` and read where it is used, so a `:root` override
@@ -1772,8 +1772,8 @@ not a licence for a selector. Raise it.
 
 ---
 
-**Related:** [Shell](/ui/components/shell) ·
-[`useShellSlot`](/ui/composables/use-shell-slot) ·
+**Related:** [Shell](/components/shell) ·
+[`useShellSlot`](/composables/use-shell-slot) ·
 [Building an inspector](/patterns/inspectors) ·
 [Status indicators](/patterns/status-indicators) ·
 [Empty states](/patterns/empty-states) ·

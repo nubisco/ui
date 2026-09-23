@@ -361,4 +361,4 @@ Before you ship a view:
 
 - [Accessibility overview](/accessibility/overview): the contract, the standard, and the four testing passes.
 - [Colour and contrast](/accessibility/color-contrast): making the focus ring visible on every surface.
-- [`NbConfirm`](/ui/components/confirm): a working focus trap to read before you write one.
+- [`NbConfirm`](/components/confirm): a working focus trap to read before you write one.

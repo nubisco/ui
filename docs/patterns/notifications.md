@@ -36,7 +36,7 @@ Notifications were the widest defect in the audit, because every product has
 them and no product had a rule.
 
 - **Three applications hand-built a toast host and queue**, because
-  [`docs/ui/components/toast.md`](/ui/components/toast) used to state as policy
+  [`docs/components/toast.md`](/components/toast) used to state as policy
   that the library shipped no container. Each lost something different: one had
   no auto-dismiss at all, so success toasts accumulated for the life of the
   route; one dropped `role="alert"`, the variant icon, the action and
@@ -75,15 +75,15 @@ left to each call site.
 
 ## The seven surfaces
 
-| Surface                                                      | What it is                                                    | Lifetime                                   | Scope                              | Blocks  | Re-readable                       |
-| ------------------------------------------------------------ | ------------------------------------------------------------- | ------------------------------------------ | ---------------------------------- | ------- | --------------------------------- |
-| [`NbMessage`](/ui/components/message)                        | 12px text with a 14px icon, positioned by a control           | As long as the value is wrong              | **One field**                      | No      | Yes, while the field is on screen |
-| [`NbBanner`](/ui/components/banner) `variant="inline"`       | A filled block above the content it concerns                  | Until dismissed, or until the page changes | **One page, form or region**       | No      | Yes                               |
-| [`NbBanner`](/ui/components/banner) `variant="callout"`      | The same block, not dismissible                               | As long as the fact is true                | **One page or one region**         | No      | Yes                               |
-| The shell `notification` region                              | A `flush` banner in [`NbShell`](/ui/components/shell)'s strip | As long as the fact is true                | **The account or the whole app**   | No      | Yes                               |
-| [`useToast()`](/ui/composables/use-toast) + `NbToaster`      | A stack in one viewport corner                                | Seconds, by variant                        | **One action, just taken**         | No      | **No**                            |
-| [`NbNotificationCenter`](/ui/components/notification-center) | The bell, and the panel of what happened                      | Until the host drops the row               | **Things that happened offscreen** | No      | Yes, on demand                    |
-| [`useConfirm()`](/ui/composables/use-confirm) / `NbModal`    | A dialog over an inert page                                   | Until answered                             | **One decision**                   | **Yes** | Only while open                   |
+| Surface                                                   | What it is                                                 | Lifetime                                   | Scope                              | Blocks  | Re-readable                       |
+| --------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------ | ---------------------------------- | ------- | --------------------------------- |
+| [`NbMessage`](/components/message)                        | 12px text with a 14px icon, positioned by a control        | As long as the value is wrong              | **One field**                      | No      | Yes, while the field is on screen |
+| [`NbBanner`](/components/banner) `variant="inline"`       | A filled block above the content it concerns               | Until dismissed, or until the page changes | **One page, form or region**       | No      | Yes                               |
+| [`NbBanner`](/components/banner) `variant="callout"`      | The same block, not dismissible                            | As long as the fact is true                | **One page or one region**         | No      | Yes                               |
+| The shell `notification` region                           | A `flush` banner in [`NbShell`](/components/shell)'s strip | As long as the fact is true                | **The account or the whole app**   | No      | Yes                               |
+| [`useToast()`](/composables/use-toast) + `NbToaster`      | A stack in one viewport corner                             | Seconds, by variant                        | **One action, just taken**         | No      | **No**                            |
+| [`NbNotificationCenter`](/components/notification-center) | The bell, and the panel of what happened                   | Until the host drops the row               | **Things that happened offscreen** | No      | Yes, on demand                    |
+| [`useConfirm()`](/composables/use-confirm) / `NbModal`    | A dialog over an inert page                                | Until answered                             | **One decision**                   | **Yes** | Only while open                   |
 
 Two of those seven are not really "notifications" and are on the list because
 products keep using them as one: a dialog is a **question**, and the notification
@@ -120,7 +120,7 @@ order. The first one that answers "yes" ends the procedure.
 
 Only one thing qualifies: **a decision that cannot be taken back, taken by
 someone who might not have meant to take it.** That is
-[`useConfirm()`](/ui/composables/use-confirm), and the whole contract for it is
+[`useConfirm()`](/composables/use-confirm), and the whole contract for it is
 [Dialogs and destructive confirmation](/patterns/dialogs).
 
 If the answer is "no, but it is very important", it still does not block. There
@@ -188,10 +188,10 @@ and take the cell.
 | **One page or region, right now**                  | `NbBanner variant="inline"`                  | `NbBanner variant="inline"` with an action                          | Above the content it concerns                                                               |
 | **One page or region, for as long as it is open**  | `NbBanner variant="callout"`                 | `NbBanner variant="callout"` with an action                         | Top of the page body, not dismissible                                                       |
 | **The account or the application**                 | `NbBanner flush variant="callout"`           | The same, with an action                                            | `NbShell`'s `notification` region. [The app frame](/patterns/app-frame)                     |
-| **An action the user just took, offscreen result** | `toast.success()` / `toast.info()`           | `toast.error()` with a `cta`, or a banner if there is a page for it | The toaster. [useToast](/ui/composables/use-toast)                                          |
-| **Something that happened while they were away**   | A row in the notification centre             | A row **and** the surface the task actually lives on                | [`NbNotificationCenter`](/ui/components/notification-center)                                |
+| **An action the user just took, offscreen result** | `toast.success()` / `toast.info()`           | `toast.error()` with a `cta`, or a banner if there is a page for it | The toaster. [useToast](/composables/use-toast)                                             |
+| **Something that happened while they were away**   | A row in the notification centre             | A row **and** the surface the task actually lives on                | [`NbNotificationCenter`](/components/notification-center)                                   |
 | **An irreversible decision, not yet taken**        | Not applicable                               | `useConfirm()`                                                      | [Dialogs](/patterns/dialogs)                                                                |
-| **A task with its own fields and its own commit**  | Not applicable                               | `NbModal`                                                           | [Modal](/ui/components/modal)                                                               |
+| **A task with its own fields and its own commit**  | Not applicable                               | `NbModal`                                                           | [Modal](/components/modal)                                                                  |
 | **An operation still running**                     | `NbInlineLoading`, `NbSpinner`, `NbSkeleton` | Same, then report the outcome                                       | Beside the thing that is running. Not a notification at all                                 |
 | **An exception the user cannot act on**            | Nothing on screen but a generic failure      | A mapped, human failure on the surface above                        | The raw one goes to your logger. [Writing style](/content/writing-style#raw-exception-text) |
 
@@ -373,14 +373,14 @@ borders so it spans the strip edge to edge:
 ```
 
 A view that has to raise one of these from inside the page contributes to the
-region with [`useShellSlot('notification')`](/ui/composables/use-shell-slot)
+region with [`useShellSlot('notification')`](/composables/use-shell-slot)
 rather than reaching for a DOM id. Eight of the twelve applications had
 hand-rolled ids for this class of problem. Placement inside the frame, and the
 rest of the region rules, are in [The app frame](/patterns/app-frame).
 
 The region is part of `NbShell`, so demonstrating it means running a shell. Both
 frames below are the real `NbShell` with its real `#notification` slot, shrunk
-into a fixed-height box the way [Shell](/ui/components/shell) demonstrates
+into a fixed-height box the way [Shell](/components/shell) demonstrates
 itself. Nothing about the region is faked, only the viewport it sits in:
 
 <preview dir="col">
@@ -419,7 +419,7 @@ itself. Nothing about the region is faked, only the viewport it sits in:
 ## `useToast()`: news that expires
 
 Mount **one** `<NbToaster />` beside `NbShell` at the application root, and call
-[`useToast()`](/ui/composables/use-toast) from anywhere. Never render `NbToast`
+[`useToast()`](/composables/use-toast) from anywhere. Never render `NbToast`
 yourself and never build a host: see
 [Never hand-roll any of this](#never-hand-roll-any-of-this).
 
@@ -910,18 +910,18 @@ Three things are peculiar to a message that removes itself:
 Every surface on this page is library code, and every one of them was
 hand-rolled by at least one product before it was.
 
-| Do not build           | Use                                                                       | What the hand-built ones lost                                                   |
-| ---------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| A toast host or queue  | `<NbToaster />` + [`useToast()`](/ui/composables/use-toast)               | Auto-dismiss, `role="alert"`, the icon, the action, pause-on-hover, the z-index |
-| A notification bell    | [`NbNotificationCenter`](/ui/components/notification-center)              | 963 lines across three products, and a placement agreed by comment              |
-| A spinner              | [`NbSpinner`](/ui/components/spinner)                                     | `prefers-reduced-motion`, one accessible name, one spelling of "Loading"        |
-| A skeleton             | [`NbSkeleton`](/ui/components/skeleton)                                   | Five shapes, and one that shares its element with the empty state               |
-| A save-state indicator | [`NbInlineLoading`](/ui/components/inline-loading) + `useInlineLoading()` | The confirmation, every time the `finally` cleared the flag first               |
-| A confirmation dialog  | [`useConfirm()`](/ui/composables/use-confirm)                             | Seven mechanics across twelve products, including `window.confirm`              |
-| A field error style    | `NbMessage`, or the control's `error` prop                                | Bound zero times across 58 call sites in one product                            |
+| Do not build           | Use                                                                    | What the hand-built ones lost                                                   |
+| ---------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| A toast host or queue  | `<NbToaster />` + [`useToast()`](/composables/use-toast)               | Auto-dismiss, `role="alert"`, the icon, the action, pause-on-hover, the z-index |
+| A notification bell    | [`NbNotificationCenter`](/components/notification-center)              | 963 lines across three products, and a placement agreed by comment              |
+| A spinner              | [`NbSpinner`](/components/spinner)                                     | `prefers-reduced-motion`, one accessible name, one spelling of "Loading"        |
+| A skeleton             | [`NbSkeleton`](/components/skeleton)                                   | Five shapes, and one that shares its element with the empty state               |
+| A save-state indicator | [`NbInlineLoading`](/components/inline-loading) + `useInlineLoading()` | The confirmation, every time the `finally` cleared the flag first               |
+| A confirmation dialog  | [`useConfirm()`](/composables/use-confirm)                             | Seven mechanics across twelve products, including `window.confirm`              |
+| A field error style    | `NbMessage`, or the control's `error` prop                             | Bound zero times across 58 call sites in one product                            |
 
 If you have a local `Toaster.vue`, the replacement is four steps:
-[Replacing a hand-built host](/ui/components/toaster#replacing-a-hand-built-host).
+[Replacing a hand-built host](/components/toaster#replacing-a-hand-built-host).
 
 **Tokens.** A notification surface touches the tokens its component already
 uses. It does not invent one. `--nb-z-toast` does not exist and never has; the
@@ -1042,17 +1042,17 @@ template and the handlers, and each failure names the fix.
 
 ## Related
 
-- [Toast](/ui/components/toast), [Toaster](/ui/components/toaster) and
-  [useToast](/ui/composables/use-toast) for the queue, the durations, the cap
+- [Toast](/components/toast), [Toaster](/components/toaster) and
+  [useToast](/composables/use-toast) for the queue, the durations, the cap
   and the handle.
-- [Banner](/ui/components/banner) and [Message](/ui/components/message) for the
+- [Banner](/components/banner) and [Message](/components/message) for the
   two inline surfaces.
-- [Notification Center](/ui/components/notification-center) for the bell, the
+- [Notification Center](/components/notification-center) for the bell, the
   four feed states and the slot contracts.
-- [Modal](/ui/components/modal), [Confirm](/ui/components/confirm) and
-  [useConfirm](/ui/composables/use-confirm) for the two that block.
-- [Inline Loading](/ui/components/inline-loading),
-  [Spinner](/ui/components/spinner) and [Skeleton](/ui/components/skeleton) for
+- [Modal](/components/modal), [Confirm](/components/confirm) and
+  [useConfirm](/composables/use-confirm) for the two that block.
+- [Inline Loading](/components/inline-loading),
+  [Spinner](/components/spinner) and [Skeleton](/components/skeleton) for
   work still in progress.
 - [Dialogs and destructive confirmation](/patterns/dialogs) for when a question
   is worth stopping someone.

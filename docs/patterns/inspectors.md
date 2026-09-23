@@ -110,7 +110,7 @@ check that the size you passed is one the component actually styles.
 
 Do not restyle a sidebar by hand, and do not invent a new one per view. Wrap
 your stacked `NbShellPanel`s in a `.nb-inspector` container, and put each row in
-an [`NbField`](/ui/components/field). The row is a real component (label +
+an [`NbField`](/components/field). The row is a real component (label +
 control on one grid), so alignment is **structural**: no `:has()` coercion, no
 per-field CSS:
 
