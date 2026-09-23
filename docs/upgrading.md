@@ -1,5 +1,23 @@
 # Upgrading
 
+## To 5.8.3 from 5.8.x
+
+Two fixes, no API changes. Both change what a user sees, so look over the
+screens they touch.
+
+**`NbTextInput` now shows `helper` and `warning` text.** It used to render only
+`error`: the other two were accepted and silently dropped. Every text input
+that passes either prop will now show the message under the field. That is the
+intended behaviour, but a screen that relied on it staying hidden, or that
+passes a placeholder string, will now show it.
+
+**The modal close button fills the header's corner.** It was shorter than the
+title row and sat centred in it, which left a strip of surface above its
+highlight. It is now as tall as the row (56px, up from 40px), flush in the
+corner under the square appearance and evenly inset under rounded. The header's
+height does not change. This applies to `NbModal` and to everything built on it
+(`NbConfirm`, `NbCommandPalette`, `NbNotificationCenter`).
+
 ## To 5.6.0 from 5.5.0
 
 Two changes to `NbTree`, plus new helpers. One of them undoes a silent
