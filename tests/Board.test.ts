@@ -313,3 +313,163 @@ describe('NbBoard column reorder', () => {
     expect(w.emitted('column-move')).toBeUndefined()
   })
 })
+
+/**
+ * Dropping a card ONTO another, when `nestable`.
+ *
+ * Off by default, and off has to be exactly what every board did before this
+ * existed: twelve products consume this component and none of them asked for
+ * a second meaning for a drop.
+ *
+ * jsdom gives every element a zero-sized rect, so the zone arithmetic cannot
+ * run on its own here. Each of these stubs the target card's rect, which is
+ * also the only way to aim at a specific third of it.
+ */
+describe('NbBoard nesting', () => {
+  const cells = (w: ReturnType<typeof mountBoard>) =>
+    w.findAll('.nb-board__cell')
+
+  /** Aim a pointer at `fraction` of the way down a card of `height` px. */
+  const dragOverCard = async (
+    w: ReturnType<typeof mountBoard>,
+    id: string,
+    fraction: number,
+    height = 60,
+  ) => {
+    const target = card(w, id)
+    ;(target.element as HTMLElement).getBoundingClientRect = () =>
+      ({
+        top: 0,
+        height,
+        bottom: height,
+        left: 0,
+        right: 100,
+        width: 100,
+      }) as DOMRect
+    await target.trigger('dragover', { clientY: height * fraction })
+  }
+
+  const nestable = () => mountBoard({ nestable: true })
+
+  it('says nothing about nesting unless it is asked to', async () => {
+    const w = mountBoard()
+    await card(w, 'a').trigger('dragstart')
+    await dragOverCard(w, 'c', 0.5)
+
+    // The middle of a card is still an insertion point on an ordinary board.
+    expect(card(w, 'c').classes()).not.toContain('nb-board__card--drop-into')
+    await cells(w)[0].trigger('drop')
+    expect(w.emitted('nest')).toBeUndefined()
+    expect(w.emitted('move')).toHaveLength(1)
+  })
+
+  it('nests from the middle of a card', async () => {
+    const w = nestable()
+    await card(w, 'a').trigger('dragstart')
+    await dragOverCard(w, 'c', 0.5)
+
+    expect(card(w, 'c').classes()).toContain('nb-board__card--drop-into')
+    await cells(w)[0].trigger('drop')
+
+    expect(w.emitted('nest')?.at(-1)?.[0]).toMatchObject({
+      itemId: 'a',
+      ontoItemId: 'c',
+      fromColumnId: 'todo',
+    })
+  })
+
+  it('does not also move the card it nested', async () => {
+    const w = nestable()
+    await card(w, 'a').trigger('dragstart')
+    await dragOverCard(w, 'c', 0.5)
+    await cells(w)[0].trigger('drop')
+
+    // A card dropped onto another has not been given a position. Emitting
+    // both would have the host reorder it as well as reparent it.
+    expect(w.emitted('move')).toBeUndefined()
+  })
+
+  it('still inserts from the top and bottom quarters', async () => {
+    const w = nestable()
+    await card(w, 'a').trigger('dragstart')
+    await dragOverCard(w, 'c', 0.1)
+    expect(card(w, 'c').classes()).not.toContain('nb-board__card--drop-into')
+
+    await dragOverCard(w, 'c', 0.9)
+    expect(card(w, 'c').classes()).not.toContain('nb-board__card--drop-into')
+
+    await cells(w)[0].trigger('drop')
+    expect(w.emitted('nest')).toBeUndefined()
+    expect(w.emitted('move')).toHaveLength(1)
+  })
+
+  it('refuses to nest a card into itself', async () => {
+    const w = nestable()
+    await card(w, 'a').trigger('dragstart')
+    await dragOverCard(w, 'a', 0.5)
+
+    expect(card(w, 'a').classes()).not.toContain('nb-board__card--drop-into')
+    await cells(w)[0].trigger('drop')
+    expect(w.emitted('nest')).toBeUndefined()
+  })
+
+  it('goes back to two zones on a card too small to hold three', async () => {
+    const w = nestable()
+    await card(w, 'a').trigger('dragstart')
+    // Below the minimum a middle band would be a few pixels tall, which is a
+    // target nobody can hit on purpose and everybody hits by accident.
+    await dragOverCard(w, 'c', 0.5, 20)
+
+    expect(card(w, 'c').classes()).not.toContain('nb-board__card--drop-into')
+    await cells(w)[0].trigger('drop')
+    expect(w.emitted('nest')).toBeUndefined()
+  })
+
+  it('shows one answer at a time, never a line and a ring together', async () => {
+    const w = nestable()
+    await card(w, 'a').trigger('dragstart')
+    await dragOverCard(w, 'c', 0.1)
+    expect(card(w, 'c').classes()).toContain('nb-board__card--drop-before')
+
+    await dragOverCard(w, 'c', 0.5)
+    const classes = card(w, 'c').classes()
+    expect(classes).toContain('nb-board__card--drop-into')
+    expect(classes).not.toContain('nb-board__card--drop-before')
+    expect(classes).not.toContain('nb-board__card--drop-after')
+  })
+
+  it('nests with the keyboard, and only with Shift', async () => {
+    const w = nestable()
+    await card(w, 'a').trigger('keydown', { key: ' ' })
+    await card(w, 'a').trigger('keydown', { key: 'ArrowDown' })
+
+    // Without Shift the ghost drops into the gap, as it always has.
+    await card(w, 'a').trigger('keydown', { key: 'Enter' })
+    expect(w.emitted('nest')).toBeUndefined()
+    expect(w.emitted('move')).toHaveLength(1)
+  })
+
+  it('drops onto the card below the ghost when Shift is held', async () => {
+    const w = nestable()
+    await card(w, 'a').trigger('keydown', { key: ' ' })
+    await card(w, 'a').trigger('keydown', { key: 'Enter', shiftKey: true })
+
+    expect(w.emitted('nest')?.at(-1)?.[0]).toMatchObject({
+      itemId: 'a',
+      ontoItemId: 'b',
+    })
+    expect(w.emitted('move')).toBeUndefined()
+  })
+
+  it('ignores Shift on a board that is not nestable', async () => {
+    const w = mountBoard()
+    await card(w, 'a').trigger('keydown', { key: ' ' })
+    // Moved first, because dropping a card back where it started emits
+    // nothing at all and would prove only that.
+    await card(w, 'a').trigger('keydown', { key: 'ArrowDown' })
+    await card(w, 'a').trigger('keydown', { key: 'Enter', shiftKey: true })
+
+    expect(w.emitted('nest')).toBeUndefined()
+    expect(w.emitted('move')).toHaveLength(1)
+  })
+})

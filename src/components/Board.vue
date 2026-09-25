@@ -73,6 +73,7 @@
                     col.id,
                     index,
                   ),
+                  'nb-board__card--drop-into': isNestTarget(lane, col.id, item),
                 }"
                 role="listitem"
                 tabindex="0"
@@ -82,7 +83,7 @@
                 draggable="true"
                 @dragstart="onDragStart(item, lane, col.id)"
                 @dragover.prevent.stop="
-                  onCardDragOver($event, lane, col.id, index)
+                  onCardDragOver($event, lane, col.id, index, item)
                 "
                 @dragend="onDragEnd"
                 @keydown="onCardKeydown($event, item, lane, col.id)"
@@ -117,7 +118,10 @@
          pointer user watches the card move; a keyboard user gets told. -->
     <span :id="`${uid}-hint`" class="nb-board__sr">
       Press Space or Enter to pick up, arrow keys to move, Space or Enter to
-      drop, Escape to cancel.
+      drop, Escape to cancel.<template v-if="nestable">
+        Shift with Space or Enter drops onto the card below instead, putting
+        this one inside it.</template
+      >
     </span>
     <span class="nb-board__sr" aria-live="assertive">{{ announcement }}</span>
   </div>
@@ -131,6 +135,7 @@ import type {
   IBoardLane,
   IBoardItem,
   IBoardMoveEvent,
+  IBoardNestEvent,
   IBoardColumnMoveEvent,
 } from './Board.d'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
@@ -139,6 +144,7 @@ import { useStableId } from '@/composables/useStableId.composable'
 const props = withDefaults(defineProps<IBoardProps>(), {
   lanes: undefined,
   reorderableColumns: false,
+  nestable: false,
 })
 
 // Board owns the surfaces its column headers and cards paint, and those cards
@@ -148,6 +154,7 @@ const { layerProps } = useSurfaceLayer()
 
 const emit = defineEmits<{
   move: [event: IBoardMoveEvent]
+  nest: [event: IBoardNestEvent]
   'column-move': [event: IBoardColumnMoveEvent]
 }>()
 
@@ -292,6 +299,19 @@ const dragOverTarget = ref<{
   colId: string
   index: number
 } | null>(null)
+/**
+ * The card an in-flight card would be dropped ONTO, when `nestable`.
+ *
+ * Held apart from `dragOverTarget` rather than folded into it, and the two
+ * are never both set: the point of a third zone is that it is not an
+ * insertion point, and a single nullable field is what makes that
+ * impossible to get wrong in the template.
+ */
+const nestTarget = ref<{
+  laneId: string | null
+  colId: string
+  itemId: string
+} | null>(null)
 
 function onDragStart(item: IBoardItem, lane: IBoardLane | null, colId: string) {
   // A card picked up by keyboard is stale the moment a pointer takes over.
@@ -303,14 +323,43 @@ function onDragStart(item: IBoardItem, lane: IBoardLane | null, colId: string) {
   }
 }
 
+/**
+ * How much of a card's height nests rather than inserts, when `nestable`.
+ *
+ * The middle half, so a quarter at each end still inserts. Reordering has to
+ * keep working, and a card whose only insertion targets are hairlines is a
+ * card you fight with. Below this height the card is too small to hold three
+ * zones a hand can hit, so it goes back to two and only inserts.
+ */
+const NEST_BAND = 0.5
+const NEST_MIN_CARD_HEIGHT = 44
+
 function onCardDragOver(
   event: DragEvent,
   lane: IBoardLane | null,
   colId: string,
   index: number,
+  item: IBoardItem,
 ) {
   if (!dragging.value) return
   const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+
+  if (props.nestable && rect.height >= NEST_MIN_CARD_HEIGHT) {
+    const offset = (event.clientY - rect.top) / rect.height
+    const edge = (1 - NEST_BAND) / 2
+    // Never onto itself: a card cannot become part of the card it is.
+    if (
+      offset > edge &&
+      offset < 1 - edge &&
+      item.id !== dragging.value.item.id
+    ) {
+      nestTarget.value = { laneId: laneIdOf(lane), colId, itemId: item.id }
+      dragOverTarget.value = null
+      return
+    }
+  }
+
+  nestTarget.value = null
   const after = event.clientY >= rect.top + rect.height / 2
   dragOverTarget.value = {
     laneId: laneIdOf(lane),
@@ -327,11 +376,13 @@ function onCellDragOver(lane: IBoardLane | null, colId: string) {
 
 function onDragLeave() {
   dragOverTarget.value = null
+  nestTarget.value = null
 }
 
 function onDragEnd() {
   dragging.value = null
   dragOverTarget.value = null
+  nestTarget.value = null
 }
 
 function isDragOver(lane: IBoardLane | null, colId: string): boolean {
@@ -359,6 +410,20 @@ function cellIndicator(lane: IBoardLane | null, colId: string): number | null {
   return null
 }
 
+function isNestTarget(
+  lane: IBoardLane | null,
+  colId: string,
+  item: IBoardItem,
+): boolean {
+  const t = nestTarget.value
+  return (
+    t !== null &&
+    t.laneId === laneIdOf(lane) &&
+    t.colId === colId &&
+    t.itemId === item.id
+  )
+}
+
 function isDropAfter(
   lane: IBoardLane | null,
   colId: string,
@@ -371,10 +436,28 @@ function isDropAfter(
 function onDrop(lane: IBoardLane | null, toColId: string) {
   if (dragColumnIndex.value !== null) return
   const target = dragOverTarget.value
+  const nest = nestTarget.value
   dragOverTarget.value = null
+  nestTarget.value = null
   const drag = dragging.value
   dragging.value = null
   if (!drag) return
+
+  // Nesting is a different event and not also a move. A card dropped onto
+  // another has not been given a position, and emitting both would have the
+  // host reorder it as well as reparent it.
+  if (nest) {
+    emit('nest', {
+      itemId: drag.item.id,
+      ontoItemId: nest.itemId,
+      fromColumnId: drag.fromColumnId,
+      ...(props.lanes ? { fromLaneId: drag.fromLaneId } : {}),
+    })
+    announcement.value = `${labelOf(drag.item)} dropped onto ${labelOf(
+      props.items.find((i) => i.id === nest.itemId) ?? drag.item,
+    )}`
+    return
+  }
 
   const toLaneId = laneIdOf(lane)
   const cell = getCell(toLaneId, toColId)
@@ -426,8 +509,19 @@ function onCardKeydown(
 
   if (event.key === ' ' || event.key === 'Enter') {
     event.preventDefault()
-    if (lifted.value?.item.id === item.id) dropLifted()
-    else pickUp(item, laneId, colId)
+    if (lifted.value?.item.id !== item.id) {
+      pickUp(item, laneId, colId)
+      return
+    }
+    // Shift drops onto the card the ghost is sitting above rather than into
+    // the gap. One key, no change to where the ghost can be, which is what
+    // keeps every existing keyboard move working exactly as it did: arrow to
+    // the card you mean, then say "inside that one" instead of "here".
+    if (props.nestable && event.shiftKey && nestTargetUnderGhost()) {
+      dropLiftedOnto()
+      return
+    }
+    dropLifted()
     return
   }
 
@@ -508,6 +602,33 @@ function moveGhost(key: string) {
   }
 
   announcement.value = `${labelOf(g.item)}, ${ghostPosition()}`
+}
+
+/**
+ * The card a Shift-drop would nest into: the one directly below the ghost,
+ * or the last card in the cell when the ghost is at the bottom. Null when
+ * the cell holds nothing else, because there is nothing to go inside.
+ */
+function nestTargetUnderGhost(): IBoardItem | null {
+  const g = lifted.value
+  if (!g) return null
+  const rest = getCell(g.laneId, g.colId).filter((i) => i.id !== g.item.id)
+  if (rest.length === 0) return null
+  return rest[Math.min(g.index, rest.length - 1)] ?? null
+}
+
+function dropLiftedOnto() {
+  const g = lifted.value
+  const onto = nestTargetUnderGhost()
+  if (!g || !onto) return
+  lifted.value = null
+  emit('nest', {
+    itemId: g.item.id,
+    ontoItemId: onto.id,
+    fromColumnId: g.fromColumnId,
+    ...(props.lanes ? { fromLaneId: g.fromLaneId } : {}),
+  })
+  announcement.value = `${labelOf(g.item)} dropped onto ${labelOf(onto)}`
 }
 
 function dropLifted() {
@@ -807,6 +928,24 @@ function onColumnDragEnd() {
 .nb-board__card--lifted {
   border-color: var(--nb-c-primary);
   box-shadow: inset 0 0 0 1px var(--nb-c-primary);
+}
+
+// Dropping ONTO a card, when `nestable`. Deliberately not a line: a line
+// means "it will land here, between these two", and this does not land
+// between anything. The whole target is filled and ringed, so the two
+// answers to "where is it going" cannot be mistaken for each other at a
+// glance, which is the only way a three-zone card is usable at speed.
+.nb-board__card--drop-into {
+  border-color: var(--nb-c-primary);
+  box-shadow: inset 0 0 0 2px var(--nb-c-primary);
+  background: color-mix(in srgb, var(--nb-c-primary) 10%, var(--nb-c-surface));
+
+  // A card can be a nest target and, a moment earlier, have carried an
+  // insertion line. Both at once would be two promises about one drag.
+  &::before,
+  &::after {
+    content: none;
+  }
 }
 
 // The drop indicator, a line in the gap the card would land in.
