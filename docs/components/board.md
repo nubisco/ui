@@ -171,17 +171,52 @@ During a drag operation:
 
 Every card is focusable and can be moved without a pointer, the same pick-up-move-drop model as `NbReorderList`.
 
-| Key                                   | Does                                                                                                                                      |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| <kbd>Tab</kbd>                        | Moves to the next card                                                                                                                    |
-| <kbd>Space</kbd> / <kbd>Enter</kbd>   | Picks the card up, or drops it (which emits `move`)                                                                                       |
-| <kbd>&uarr;</kbd> / <kbd>&darr;</kbd> | Moves the held card within its cell, or moves focus when nothing is held; past the edge of a cell it continues into the neighbouring lane |
-| <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> | Moves the held card to the adjacent column, or moves focus when nothing is held                                                           |
-| <kbd>Esc</kbd>                        | Cancels the pick-up                                                                                                                       |
+| Key                                                    | Does                                                                                                                                      |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| <kbd>Tab</kbd>                                         | Moves to the next card                                                                                                                    |
+| <kbd>Space</kbd> / <kbd>Enter</kbd>                    | Picks the card up, or drops it (which emits `move`)                                                                                       |
+| <kbd>&uarr;</kbd> / <kbd>&darr;</kbd>                  | Moves the held card within its cell, or moves focus when nothing is held; past the edge of a cell it continues into the neighbouring lane |
+| <kbd>&larr;</kbd> / <kbd>&rarr;</kbd>                  | Moves the held card to the adjacent column, or moves focus when nothing is held                                                           |
+| <kbd>Shift</kbd> + <kbd>Space</kbd> / <kbd>Enter</kbd> | Drops the held card **onto** the card below the ghost, emitting `nest` (requires `nestable`)                                              |
+| <kbd>Esc</kbd>                                         | Cancels the pick-up                                                                                                                       |
 
 Arrow keys **browse** until a card is picked up, and only then **move** it. A held card does not travel until it is dropped: the board shows a ghost drop line at the target position and emits the same `move` event a pointer drop would.
 
 Every pick-up, move and drop is announced through a live region, because a keyboard user does not see the card travel.
+
+## Dropping a Card Onto a Card
+
+Set `nestable` and a card can be dropped **onto** another card, not only
+between cards. The board emits `nest` with the two ids and changes nothing
+itself, the same contract as `move`.
+
+```vue
+<NbBoard :columns="columns" :items="items" nestable @nest="onNest" />
+```
+
+```ts
+function onNest({ itemId, ontoItemId }: NbBoardNestEvent) {
+  // Whatever nesting means in your product: a subtask, a child, a part.
+  // The board has no opinion and does not move the card.
+}
+```
+
+**A card's middle half nests, and its top and bottom quarters still insert.**
+Reordering has to keep working, so every card keeps an insertion target at each
+end. A card shorter than 44px goes back to two zones and only inserts, because
+below that a middle band is a target nobody can hit on purpose and everybody
+hits by accident.
+
+The two answers look deliberately unalike. An insertion point is a line in the
+gap the card would land in. A nest target is the whole card, filled and ringed,
+because it is not landing between anything. They are never shown at the same
+time.
+
+`nest` and `move` are mutually exclusive for one drop. A card dropped onto
+another has not been given a position, so emitting both would have you reparent
+it and reorder it.
+
+A card cannot be nested into itself.
 
 ## Reordering Columns
 
@@ -219,12 +254,13 @@ function onColumnMove(e: IBoardColumnMoveEvent) {
 
 ## Props
 
-| Prop                 | Type             | Default     | Description                                        |
-| -------------------- | ---------------- | ----------- | -------------------------------------------------- |
-| `columns`            | `IBoardColumn[]` | required    | Column definitions (one per status/stage)          |
-| `items`              | `IBoardItem[]`   | required    | Items to display on the board                      |
-| `lanes`              | `IBoardLane[]`   | `undefined` | Optional swim lanes for horizontal grouping        |
-| `reorderableColumns` | `boolean`        | `false`     | Make column headers draggable; emits `column-move` |
+| Prop                 | Type             | Default     | Description                                           |
+| -------------------- | ---------------- | ----------- | ----------------------------------------------------- |
+| `columns`            | `IBoardColumn[]` | required    | Column definitions (one per status/stage)             |
+| `items`              | `IBoardItem[]`   | required    | Items to display on the board                         |
+| `lanes`              | `IBoardLane[]`   | `undefined` | Optional swim lanes for horizontal grouping           |
+| `reorderableColumns` | `boolean`        | `false`     | Make column headers draggable; emits `column-move`    |
+| `nestable`           | `boolean`        | `false`     | Allow a card to be dropped onto another; emits `nest` |
 
 ## Interfaces
 
@@ -269,6 +305,7 @@ interface IBoardColumnMoveEvent {
 | Event         | Payload                 | Description                                                                                           |
 | ------------- | ----------------------- | ----------------------------------------------------------------------------------------------------- |
 | `move`        | `IBoardMoveEvent`       | Emitted when a card is dropped into a different cell or at a different position within its own column |
+| `nest`        | `IBoardNestEvent`       | Emitted when a card is dropped onto another card (requires `nestable`). Never alongside `move`        |
 | `column-move` | `IBoardColumnMoveEvent` | Emitted when a column header is dropped on a new position (requires `reorderableColumns`)             |
 
 ## Slots
@@ -286,13 +323,14 @@ interface IBoardColumnMoveEvent {
 
 ## Keyboard
 
-| Key                                   | Does                                                                                                                  |
-| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| <kbd>Tab</kbd>                        | Moves to the next card                                                                                                |
-| <kbd>Space</kbd> / <kbd>Enter</kbd>   | Picks the card up, or drops it (emits `move`)                                                                         |
-| <kbd>&uarr;</kbd> / <kbd>&darr;</kbd> | Moves the held card within its cell (continuing into the next lane at the edges), or moves focus when nothing is held |
-| <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> | Moves the held card across columns, or moves focus when nothing is held                                               |
-| <kbd>Esc</kbd>                        | Cancels the pick-up                                                                                                   |
+| Key                                                    | Does                                                                                                                  |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| <kbd>Tab</kbd>                                         | Moves to the next card                                                                                                |
+| <kbd>Space</kbd> / <kbd>Enter</kbd>                    | Picks the card up, or drops it (emits `move`)                                                                         |
+| <kbd>&uarr;</kbd> / <kbd>&darr;</kbd>                  | Moves the held card within its cell (continuing into the next lane at the edges), or moves focus when nothing is held |
+| <kbd>&larr;</kbd> / <kbd>&rarr;</kbd>                  | Moves the held card across columns, or moves focus when nothing is held                                               |
+| <kbd>Shift</kbd> + <kbd>Space</kbd> / <kbd>Enter</kbd> | Drops the held card onto the card below the ghost, emitting `nest` (requires `nestable`)                              |
+| <kbd>Esc</kbd>                                         | Cancels the pick-up                                                                                                   |
 
 </doc-tab>
 

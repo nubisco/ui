@@ -1,5 +1,24 @@
 # Upgrading
 
+## To 5.9.0 from 5.8.x
+
+One addition, opt-in, and nothing changes on a board that does not ask for it.
+
+**`NbBoard` can nest.** Set `nestable` and a card can be dropped onto another
+card rather than only between cards, which emits a new `nest` event carrying
+the dragged id and the id it was dropped onto. The board changes nothing
+itself, the same contract `move` already had, because what nesting means is the
+product's business: a subtask, a child, a part.
+
+A card's middle half nests and its top and bottom quarters still insert, so
+reordering keeps a target at both ends of every card. A card shorter than 44px
+goes back to two zones. The nest target is drawn as a filled, ringed card
+rather than an insertion line, and the two are never shown together. By
+keyboard, Shift with Space or Enter drops onto the card below the ghost.
+
+**Nothing to do on upgrade.** `nestable` defaults to false, and with it off the
+drag behaviour, the classes and the events are what they were.
+
 ## To 5.8.3 from 5.8.x
 
 Two fixes, no API changes. Both change what a user sees, so look over the

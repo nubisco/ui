@@ -47,6 +47,17 @@ interface IBoardMoveEvent {
   afterItemId: string | null
 }
 
+interface IBoardNestEvent {
+  /** The ID of the item that was dropped onto another. */
+  itemId: string
+  /** The ID of the item it was dropped onto. */
+  ontoItemId: string
+  /** The column the dragged item came from. */
+  fromColumnId: string
+  /** The lane it came from (only when lanes are used). */
+  fromLaneId?: string | null
+}
+
 interface IBoardColumnMoveEvent {
   /** The ID of the column that was moved. */
   columnId: string
@@ -66,6 +77,18 @@ interface IBoardProps {
    * when on, dropping a header on another column emits `column-move`.
    */
   reorderableColumns?: boolean
+  /**
+   * Allow a card to be dropped ONTO another card, rather than only between
+   * cards. Off by default, and off is exactly what every board did before
+   * this existed.
+   *
+   * With it on, a card's middle half nests and its top and bottom quarters
+   * still insert, so reordering keeps a target at both ends of every card.
+   * The board emits `nest` and changes nothing itself, the same contract as
+   * `move`: what nesting means is the host's business, and this component
+   * has no opinion about whether the result is a subtask, a child or a part.
+   */
+  nestable?: boolean
 }
 
 export type {
@@ -73,6 +96,7 @@ export type {
   IBoardLane,
   IBoardItem,
   IBoardMoveEvent,
+  IBoardNestEvent,
   IBoardColumnMoveEvent,
   IBoardProps,
 }
@@ -82,6 +106,7 @@ export type {
   IBoardLane as NbBoardLane,
   IBoardItem as NbBoardItem,
   IBoardMoveEvent as NbBoardMoveEvent,
+  IBoardNestEvent as NbBoardNestEvent,
   IBoardColumnMoveEvent as NbBoardColumnMoveEvent,
   IBoardProps as NbBoardProps,
 }
