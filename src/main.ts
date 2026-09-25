@@ -102,6 +102,7 @@ export type {
   IBoardLane,
   IBoardItem,
   IBoardMoveEvent,
+  IBoardNestEvent,
   IBoardColumnMoveEvent,
   IBoardProps,
 } from './components/Board.d'
