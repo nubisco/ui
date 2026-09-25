@@ -1,3 +1,10 @@
+## [5.9.1](https://github.com/nubisco/ui/compare/v5.9.0...v5.9.1) (2026-09-25)
+
+
+### Bug Fixes
+
+* **board:** export IBoardNestEvent from the package entry point ([f5534e7](https://github.com/nubisco/ui/commit/f5534e746fce6ffbff130b1615999dcc906da238))
+
 # [5.9.0](https://github.com/nubisco/ui/compare/v5.8.3...v5.9.0) (2026-09-25)
 
 
