@@ -1,3 +1,10 @@
+# [5.9.0](https://github.com/nubisco/ui/compare/v5.8.3...v5.9.0) (2026-09-25)
+
+
+### Features
+
+* **board:** drop a card onto a card, not only between cards ([4c67c55](https://github.com/nubisco/ui/commit/4c67c55401dc0b71d7d823ac9ee6239ce20ddedc))
+
 ## [5.8.3](https://github.com/nubisco/ui/compare/v5.8.2...v5.8.3) (2026-09-23)
 
 
