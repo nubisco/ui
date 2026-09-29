@@ -1,3 +1,10 @@
+## [5.11.1](https://github.com/nubisco/ui/compare/v5.11.0...v5.11.1) (2026-09-29)
+
+
+### Bug Fixes
+
+* **wireframe:** a picture never pushes the rest of the frame out of view ([dceb164](https://github.com/nubisco/ui/commit/dceb1647b0108a5f0737d06f736c6c9c4282bca2))
+
 # [5.11.0](https://github.com/nubisco/ui/compare/v5.10.1...v5.11.0) (2026-09-29)
 
 
