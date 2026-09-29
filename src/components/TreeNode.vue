@@ -57,6 +57,14 @@
         <slot name="label">{{ label }}</slot>
       </span>
 
+      <!-- Meta slot (right side, ALWAYS visible): what a row IS, such as a
+           status or a count. Actions below are what you can DO with it, so they
+           stay quiet until hover or selection; a state that only appeared on
+           hover would hide the one thing the reader is scanning for. -->
+      <span v-if="$slots.meta" class="nb-tree-node__meta">
+        <slot name="meta" />
+      </span>
+
       <!-- Actions slot (right side, visible on hover/selected) -->
       <span v-if="$slots.actions" class="nb-tree-node__actions">
         <slot name="actions" />
@@ -512,6 +520,20 @@ function onKeydown(e: KeyboardEvent) {
     margin-inline-start: auto;
     opacity: 0;
     transition: opacity 0.1s;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--nb-base-unit, 8px) * 1);
+    margin-inline-start: auto;
+    min-width: 0;
+    color: var(--nb-c-text-muted);
+  }
+
+  // With meta present it takes the free space, and the actions sit after it.
+  &__meta + &__actions {
+    margin-inline-start: calc(var(--nb-base-unit, 8px) * 1);
   }
 
   &__label:hover .nb-tree-node__actions,
