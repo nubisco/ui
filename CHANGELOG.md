@@ -1,3 +1,10 @@
+# [5.11.0](https://github.com/nubisco/ui/compare/v5.10.1...v5.11.0) (2026-09-29)
+
+
+### Features
+
+* **wireframe:** NbWireframe, a schematic thumbnail of a layout ([969364e](https://github.com/nubisco/ui/commit/969364edb887de404e1ba54fe9320309f1656d02))
+
 ## [5.10.1](https://github.com/nubisco/ui/compare/v5.10.0...v5.10.1) (2026-09-29)
 
 
