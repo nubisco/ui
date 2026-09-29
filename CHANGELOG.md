@@ -1,3 +1,10 @@
+## [5.10.1](https://github.com/nubisco/ui/compare/v5.10.0...v5.10.1) (2026-09-29)
+
+
+### Bug Fixes
+
+* **reset:** links get the pointer cursor back ([90c9751](https://github.com/nubisco/ui/commit/90c97510c9b19d1cb0eb5f79c695ce88d3a54799))
+
 # [5.10.0](https://github.com/nubisco/ui/compare/v5.9.1...v5.10.0) (2026-09-29)
 
 
