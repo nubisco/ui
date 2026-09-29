@@ -46,7 +46,12 @@ A spec is rows of columns. Each column spans part of the 12-column grid and list
   <div style="width: 240px">
     <NbWireframe :spec="{ tone: 'dark', rows: [[{ align: 'center', parts: ['title', 'text', 'input'] }]] }" />
   </div>
+  <div style="width: 240px">
+    <NbWireframe :spec="{ rows: [[{ parts: ['image', 'text:1'] }]] }" />
+  </div>
 </preview>
+
+A picture never takes more than part of the frame's height, so whatever sits under it (a caption, a button) stays in view.
 
 ## Parts
 
