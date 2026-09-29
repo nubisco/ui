@@ -227,6 +227,10 @@ const rows = computed(() =>
   justify-content: center;
   gap: 8px;
   aspect-ratio: 16 / 10;
+  // A size container, so a picture can be capped at a share of the frame's
+  // HEIGHT: a full-width 4:3 box is taller than a 16:10 frame and would push
+  // everything under it out of view.
+  container-type: size;
   padding: 10px 12px;
   overflow: hidden;
   background: var(--nb-wireframe-bg);
@@ -354,10 +358,16 @@ const rows = computed(() =>
 
   &--image {
     aspect-ratio: 4 / 3;
+    width: auto;
+    max-width: 100%;
+    max-height: 62cqh;
   }
 
   &--device {
     aspect-ratio: 16 / 11;
+    width: auto;
+    max-width: 100%;
+    max-height: 72cqh;
     opacity: 1;
     background: transparent;
     border: 2px solid currentColor;
