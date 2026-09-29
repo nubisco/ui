@@ -91,6 +91,16 @@
     box-sizing: border-box;
   }
 
+  /* `all: unset` also takes the browser's own `cursor: pointer` off every
+   * link, so each product's links showed the arrow or the text caret
+   * (nubisco.io, measured 2026-09-29: computed `auto` on every nav, footer
+   * and product bar link). This gives the hand back to anything that is
+   * actually a link. `:where()` keeps it at the reset's own specificity, so
+   * a component that sets its own cursor on a link still wins. */
+  a:where([href]) {
+    cursor: pointer;
+  }
+
   /**
   * 1. Remove the bottom border in Chrome 57-
   * 2. Add the correct text decoration in Chrome, Edge, IE, Opera, and Safari.
