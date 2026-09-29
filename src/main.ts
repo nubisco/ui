@@ -308,6 +308,13 @@ export { EInlineLoadingStatus } from './components/InlineLoading.d'
 export { default as NbSkeleton } from './components/Skeleton.vue'
 export type { ISkeletonProps, TSkeletonTypeSet } from './components/Skeleton.d'
 export { ESkeletonVariant } from './components/Skeleton.d'
+export { default as NbWireframe } from './components/Wireframe.vue'
+export type {
+  IWireframeProps,
+  IWireframeSpec,
+  IWireframeColumn,
+  TWireframePart,
+} from './components/Wireframe.d'
 export { default as NbRadio } from './components/Radio.vue'
 export { default as NbNotificationCenter } from './components/NotificationCenter.vue'
 export type {

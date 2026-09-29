@@ -98,6 +98,7 @@ export const COMPONENT_MANIFEST = {
   NbBlueprintControls: 'BlueprintControls',
   NbBlueprintMinimap: 'BlueprintMinimap',
   NbWalkthrough: 'Walkthrough',
+  NbWireframe: 'Wireframe',
 } as const
 
 export type TComponentName = keyof typeof COMPONENT_MANIFEST
