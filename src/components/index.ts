@@ -90,6 +90,7 @@ import NbBlueprintCard from './BlueprintCard.vue'
 import NbBlueprintControls from './BlueprintControls.vue'
 import NbBlueprintMinimap from './BlueprintMinimap.vue'
 import NbWalkthrough from './Walkthrough.vue'
+import NbWireframe from './Wireframe.vue'
 
 const components = {
   NbAccordion,
@@ -183,6 +184,7 @@ const components = {
   NbBlueprintControls,
   NbBlueprintMinimap,
   NbWalkthrough,
+  NbWireframe,
 }
 
 export default {

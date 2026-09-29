@@ -381,6 +381,7 @@ export default withMermaid(
                   { text: 'Tree', link: '/components/tree' },
                   { text: 'User Menu', link: '/components/user-menu' },
                   { text: 'Walkthrough', link: '/components/walkthrough' },
+                  { text: 'Wireframe', link: '/components/wireframe' },
                 ],
               },
               {
