@@ -1,3 +1,10 @@
+# [5.10.0](https://github.com/nubisco/ui/compare/v5.9.1...v5.10.0) (2026-09-29)
+
+
+### Features
+
+* **tree:** a meta slot on NbTreeNode, always visible ([9175fbd](https://github.com/nubisco/ui/commit/9175fbd313fddab198edb0bcd53b8a51ceae9bf9))
+
 ## [5.9.1](https://github.com/nubisco/ui/compare/v5.9.0...v5.9.1) (2026-09-25)
 
 
