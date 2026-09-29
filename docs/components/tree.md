@@ -189,6 +189,25 @@ Use the `actions` slot on `NbTreeNode` to render action buttons or badges on the
   </NbTree>
 </preview>
 
+## Meta Slot
+
+Use the `meta` slot for what a row **is** rather than what you can do with it: a status, a count, a date. Unlike `actions`, it is always visible, because a status that only appeared on hover would hide the thing a reader scans the tree for. When both are used, `meta` sits first and the actions follow it.
+
+<preview>
+  <NbTree>
+    <NbTreeNode id="m1" label="Home" icon="file">
+      <template #meta>
+        <NbBadge variant="green" size="sm">Live</NbBadge>
+      </template>
+      <NbTreeNode id="m2" label="pricing" icon="file">
+        <template #meta>
+          <NbBadge variant="orange" size="sm">In review</NbBadge>
+        </template>
+      </NbTreeNode>
+    </NbTreeNode>
+  </NbTree>
+</preview>
+
 ## Custom Label Slot
 
 Use the `label` slot to render custom content (e.g., inline rename inputs).
@@ -316,11 +335,12 @@ Nodes are focusable via `tabindex="-1"`. Arrow key navigation managed by the tre
 
 ## NbTreeNode Slots
 
-| Slot      | Description                                      |
-| --------- | ------------------------------------------------ |
-| `default` | Child NbTreeNode elements (makes this a branch)  |
-| `label`   | Custom label content (e.g., inline rename input) |
-| `actions` | Right-side content (visible on hover/selected)   |
+| Slot      | Description                                        |
+| --------- | -------------------------------------------------- |
+| `default` | Child NbTreeNode elements (makes this a branch)    |
+| `label`   | Custom label content (e.g., inline rename input)   |
+| `meta`    | Right-side content, always visible (status, count) |
+| `actions` | Right-side content (visible on hover/selected)     |
 
 ## NbTreeNode Events
 
