@@ -1,3 +1,10 @@
+## [5.11.2](https://github.com/nubisco/ui/compare/v5.11.1...v5.11.2) (2026-10-08)
+
+
+### Bug Fixes
+
+* **a11y:** touch-sized drawer rows and tabs ([bfd8f57](https://github.com/nubisco/ui/commit/bfd8f5782e7d1b52d909ad60dee8ac756f057f10))
+
 ## [5.11.1](https://github.com/nubisco/ui/compare/v5.11.0...v5.11.1) (2026-09-29)
 
 
