@@ -96,6 +96,7 @@ import Tree from './components/Tree.vue'
 import TreeNode from './components/TreeNode.vue'
 import UserMenu from './components/UserMenu.vue'
 import Walkthrough from './components/Walkthrough.vue'
+import Wireframe from './components/Wireframe.vue'
 
 declare module 'vue' {
   interface GlobalComponents {
@@ -195,6 +196,7 @@ declare module 'vue' {
     NbTreeNode: typeof TreeNode
     NbUserMenu: typeof UserMenu
     NbWalkthrough: typeof Walkthrough
+    NbWireframe: typeof Wireframe
   }
 }
 
