@@ -307,19 +307,6 @@ function onKeydown(event: KeyboardEvent): void {
     @include radius.inset(3px);
   }
 
-  // ── Touch ─────────────────────────────────────────────────────────────────────
-  //
-  // A small contained tab is 24px, which is right for a mouse and too small for
-  // a finger. On a coarse primary pointer every tab grows to at least 40px.
-  // Keyed on the pointer rather than the width, so a desktop toolbar keeps its
-  // height in a narrow window and a tablet gets the bigger target at any width.
-  @media (pointer: coarse) {
-    &__tab,
-    &--contained &__tab {
-      min-height: 40px;
-    }
-  }
-
   &--contained &__tab--active {
     background: var(--nb-c-primary);
     color: var(--nb-c-white);
