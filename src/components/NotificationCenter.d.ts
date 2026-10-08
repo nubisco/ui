@@ -136,6 +136,17 @@ export interface INotificationCenterProps {
   maxHeight?: number
   /** Which trigger edge the panel lines up with. */
   align?: 'start' | 'end'
+  /**
+   * Where the panel opens. `vertical`, the default, opens below the trigger
+   * and flips above it when below is cramped: right for a bell in a topbar.
+   * `right` opens beside the trigger, for a bell in a sidebar, where opening
+   * above or below lays the panel over the sidebar's own items. With
+   * `right`, `align` picks the edge on the other axis: `end` lines the
+   * panel's bottom up with the trigger's bottom (the way NbUserMenu opens at
+   * `right-end`), `start` lines the tops up. When there is not room for the
+   * panel to the right, it falls back to `vertical`.
+   */
+  side?: 'vertical' | 'right'
   showMarkAll?: boolean
   /**
    * Whether rows are activatable. `false` renders genuinely inert rows: no
@@ -162,6 +173,8 @@ export interface INotificationCenterProps {
 
 export interface IPanelPlacementOptions {
   align: 'start' | 'end'
+  /** Absent means `vertical`, which is what every caller before it got. */
+  side?: 'vertical' | 'right'
   /** Panel width in px. */
   width: number
   /** Tallest the scrolling list may get. */
@@ -173,8 +186,15 @@ export interface IPanelPlacement {
   /** Viewport (`position: fixed`) coordinates. */
   top: number
   left: number
-  /** The side actually used, after any flip. */
-  side: 'top' | 'bottom'
+  /** The side actually used, after any flip or fallback. */
+  side: 'top' | 'bottom' | 'right'
+  /**
+   * Distance from the viewport's bottom edge, set when the panel's bottom is
+   * pinned to the trigger's (`side: 'right'` with `align: 'end'`). `top` is
+   * then only an estimate: the panel's real height depends on its content,
+   * and pinning the bottom is what keeps a short feed against its trigger.
+   */
+  bottom?: number
   /** What the list may scroll to before it clips, after the viewport clamp. */
   maxListHeight: number
 }
