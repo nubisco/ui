@@ -80,6 +80,26 @@ By default opening a section closes the last one, which keeps the page short. Se
   </div>
 </preview>
 
+## A hint and actions
+
+`info` puts an info hint beside the title, for a section whose name alone does not say what belongs in it. The `actions` slot holds controls that act on the section rather than open it, such as a remove button. Both sit beside the header's button, never inside it, because a button cannot hold another control. A click anywhere else on the row still opens and closes the section.
+
+<preview>
+  <div style="max-width: 34rem; width: 100%;">
+    <NbAccordion multiple>
+      <NbAccordionItem title="Plan" meta="2" info="What this waits on, and what waits on it.">
+        Two cards depend on this one.
+      </NbAccordionItem>
+      <NbAccordionItem title="Checklist" meta="3/7" info="Steps to tick off inside this card.">
+        <template #actions>
+          <NbButton size="xxs" variant="ghost" icon="trash-simple" aria-label="Delete checklist" />
+        </template>
+        Seven steps, three done.
+      </NbAccordionItem>
+    </NbAccordion>
+  </div>
+</preview>
+
 ## Flush, for panels and sidebars
 
 `flush` drops the side inset so titles line up with the content above them, and stops two nearly-touching rule lines appearing where a bordered accordion meets a bordered panel. Hover and focus still reach into the gutter, so a row is still a row.
@@ -184,14 +204,16 @@ The heading is a `role="heading"` div rather than an `<h3>` on purpose. A real `
 | `title`    | `string`  | `''`    | Header text. Use the `title` slot for anything richer.                      |
 | `icon`     | `string`  | —       | Icon name, rendered before the title.                                       |
 | `meta`     | `string`  | `''`    | Short text after the title: a count, a status.                              |
+| `info`     | `string`  | —       | An info hint beside the title, saying what the section is.                  |
 | `disabled` | `boolean` | `false` | Renders muted and cannot be toggled.                                        |
 
 ## NbAccordionItem slots
 
-| Slot      | Description                |
-| --------- | -------------------------- |
-| `default` | The panel's content.       |
-| `title`   | Replaces the `title` prop. |
-| `meta`    | Replaces the `meta` prop.  |
+| Slot      | Description                                     |
+| --------- | ----------------------------------------------- |
+| `default` | The panel's content.                            |
+| `title`   | Replaces the `title` prop.                      |
+| `meta`    | Replaces the `meta` prop.                       |
+| `actions` | Controls beside the header, outside its button. |
 
 </doc-tab>

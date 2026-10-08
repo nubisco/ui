@@ -148,4 +148,80 @@ describe('NbAccordion', () => {
     expect(w.find('[role="heading"]').attributes('aria-level')).toBe('2')
     expect(w.find('h3').exists()).toBe(false)
   })
+
+  describe('a hint and actions beside the title', () => {
+    const withAside = (props: Record<string, unknown>, actions = false) =>
+      mount(Accordion, {
+        props: { multiple: true },
+        slots: {
+          default: () =>
+            h(
+              AccordionItem,
+              { id: 'a', title: 'Plan', meta: '2', ...props },
+              {
+                default: () => 'Body',
+                ...(actions
+                  ? {
+                      actions: () =>
+                        h('button', { class: 'remove', type: 'button' }, 'x'),
+                    }
+                  : {}),
+              },
+            ),
+        },
+      })
+
+    it('changes nothing when neither is given', () => {
+      const w = mountAccordion({}, 1)
+      expect(w.find('.nb-accordion-item__heading--aside').exists()).toBe(false)
+      expect(w.find('.nb-info-hint').exists()).toBe(false)
+    })
+
+    it('puts the hint and the actions beside the button, never in it', () => {
+      const w = withAside({ info: 'What depends on what.' }, true)
+      const header = w.find('.nb-accordion-item__header')
+      expect(header.find('button').exists()).toBe(false)
+      expect(header.find('.nb-info-hint').exists()).toBe(false)
+      const heading = w.find('[role="heading"]')
+      expect(heading.find('.nb-info-hint').exists()).toBe(true)
+      expect(heading.find('.nb-accordion-item__actions .remove').exists()).toBe(
+        true,
+      )
+      expect(
+        heading.find('.nb-info-hint button').attributes('aria-label'),
+      ).toBe('About Plan')
+    })
+
+    it('still toggles from the header, and an action does not', async () => {
+      const w = withAside({ info: 'x' }, true)
+      const header = w.find('.nb-accordion-item__header')
+      await w.find('.remove').trigger('click')
+      expect(header.attributes('aria-expanded')).toBe('false')
+      await header.trigger('click')
+      expect(header.attributes('aria-expanded')).toBe('true')
+    })
+
+    it('keeps the meta and ties it to the button', () => {
+      const w = withAside({ info: 'x' })
+      const meta = w.find('.nb-accordion-item__meta')
+      expect(meta.text()).toBe('2')
+      expect(
+        w.find('.nb-accordion-item__header').attributes('aria-describedby'),
+      ).toBe(meta.attributes('id'))
+    })
+
+    it('opens the section from its meta, which sits above the row', async () => {
+      const w = withAside({ info: 'x' })
+      await w.find('.nb-accordion-item__meta').trigger('click')
+      expect(
+        w.find('.nb-accordion-item__header').attributes('aria-expanded'),
+      ).toBe('true')
+    })
+
+    it('takes the actions slot alone, without a hint', () => {
+      const w = withAside({}, true)
+      expect(w.find('.nb-accordion-item__heading--aside').exists()).toBe(true)
+      expect(w.find('.nb-info-hint').exists()).toBe(false)
+    })
+  })
 })
