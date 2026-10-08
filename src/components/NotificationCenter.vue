@@ -302,8 +302,45 @@ const CRAMPED = 200
 
 export function placeNotificationPanel(
   anchor: IAnchorRect,
-  { align, width, maxHeight, viewport }: IPanelPlacementOptions,
+  { align, side: wanted, width, maxHeight, viewport }: IPanelPlacementOptions,
 ): IPanelPlacement {
+  // Beside the trigger, when asked and when it fits. Measured against the
+  // trigger's right edge, so a full-width sidebar row opens the panel beside
+  // the sidebar rather than over it.
+  const right = anchor.left + anchor.width
+  if (wanted === 'right' && viewport.width - right - GAP - EDGE >= width) {
+    const anchorBottom = anchor.top + anchor.height
+    // Room along the trigger's own axis: upwards from its bottom when the
+    // bottoms line up, downwards from its top when the tops do.
+    const available =
+      align === 'end'
+        ? anchorBottom - EDGE
+        : viewport.height - anchor.top - EDGE
+    const roomy = Math.max(MIN_LIST + PANEL_CHROME, available)
+    const height = Math.min(maxHeight + PANEL_CHROME, roomy)
+    const maxListHeight = Math.max(
+      MIN_LIST,
+      Math.min(maxHeight, roomy - PANEL_CHROME),
+    )
+    return align === 'end'
+      ? {
+          top: Math.max(EDGE, anchorBottom - height),
+          bottom: Math.max(EDGE, viewport.height - anchorBottom),
+          left: right + GAP,
+          side: 'right',
+          maxListHeight,
+        }
+      : {
+          top: Math.max(
+            EDGE,
+            Math.min(anchor.top, viewport.height - EDGE - height),
+          ),
+          left: right + GAP,
+          side: 'right',
+          maxListHeight,
+        }
+  }
+
   const edgeAligned =
     align === 'start' ? anchor.left : anchor.left + anchor.width - width
   const left = Math.min(
@@ -399,6 +436,7 @@ const props = withDefaults(defineProps<INotificationCenterProps>(), {
   width: 360,
   maxHeight: 384,
   align: 'end',
+  side: 'vertical',
   showMarkAll: true,
   interactive: true,
   closeOnSelect: true,
@@ -628,17 +666,28 @@ function position() {
   if (!anchor) return
   placement.value = placeNotificationPanel(anchor, {
     align: props.align,
+    side: props.side,
     width: props.width,
     maxHeight: props.maxHeight,
     viewport: viewport(),
   })
 }
 
-const panelStyle = computed(() => ({
-  top: `${Math.round(placement.value.top)}px`,
-  left: `${Math.round(placement.value.left)}px`,
-  width: `${props.width}px`,
-}))
+const panelStyle = computed(() =>
+  // A bottom-pinned panel is placed by its bottom edge, so a feed shorter
+  // than the room it was given still sits against its trigger.
+  placement.value.bottom !== undefined
+    ? {
+        bottom: `${Math.round(placement.value.bottom)}px`,
+        left: `${Math.round(placement.value.left)}px`,
+        width: `${props.width}px`,
+      }
+    : {
+        top: `${Math.round(placement.value.top)}px`,
+        left: `${Math.round(placement.value.left)}px`,
+        width: `${props.width}px`,
+      },
+)
 
 // The header and footer stay put; only the list scrolls, so a long feed never
 // pushes "Mark all as read" off the bottom of the screen.
@@ -649,6 +698,7 @@ const listStyle = computed(() => ({
 const panelClass = computed(() => ({
   'nb-notification-center__panel--start': props.align === 'start',
   'nb-notification-center__panel--above': placement.value.side === 'top',
+  'nb-notification-center__panel--beside': placement.value.side === 'right',
 }))
 
 // ── Open and close ──────────────────────────────────────────────────────
@@ -1371,6 +1421,14 @@ defineExpose({ show, close, toggle, isOpen, unreadCount })
   &.nb-notification-center-pop-enter-from,
   &.nb-notification-center-pop-leave-to {
     transform: translateY(4px);
+  }
+}
+
+// Beside its trigger, it arrives from the trigger's side.
+.nb-notification-center__panel--beside {
+  &.nb-notification-center-pop-enter-from,
+  &.nb-notification-center-pop-leave-to {
+    transform: translateX(-4px);
   }
 }
 

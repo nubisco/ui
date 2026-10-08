@@ -857,6 +857,84 @@ describe('NbNotificationCenter placement arithmetic', () => {
     expect(tiny.left).toBe(8)
   })
 
+  /**
+   * A bell at the foot of an expanded sidebar. Its trigger is the whole
+   * sidebar row, 240px wide, and opening above it laid the panel over the
+   * sidebar's own items, which is what Acta showed (reported 2026-10-08).
+   */
+  const sidebarRow = { top: 820, left: 12, width: 240, height: 32 }
+
+  it('opens beside the trigger, bottoms lined up, when asked', () => {
+    const beside = placeNotificationPanel(sidebarRow, {
+      align: 'end',
+      side: 'right',
+      width: 360,
+      maxHeight: 384,
+      viewport,
+    })
+    expect(beside.side).toBe('right')
+    // Past the row's right edge, never over it: 12 + 240 + 8.
+    expect(beside.left).toBe(260)
+    // Pinned by its bottom to the row's bottom: 900 - (820 + 32).
+    expect(beside.bottom).toBe(48)
+    expect(beside.maxListHeight).toBe(384)
+  })
+
+  it('lines the tops up instead with align start', () => {
+    const beside = placeNotificationPanel(
+      { ...sidebarRow, top: 100 },
+      { align: 'start', side: 'right', width: 360, maxHeight: 384, viewport },
+    )
+    expect(beside.side).toBe('right')
+    expect(beside.top).toBe(100)
+    expect(beside.bottom).toBeUndefined()
+  })
+
+  it('falls back to opening vertically when there is no room beside', () => {
+    const narrow = placeNotificationPanel(sidebarRow, {
+      align: 'end',
+      side: 'right',
+      width: 360,
+      maxHeight: 384,
+      viewport: { width: 500, height: 900 },
+    })
+    expect(narrow.side).not.toBe('right')
+    expect(narrow.bottom).toBeUndefined()
+  })
+
+  it('opens exactly as before when no side is given', () => {
+    const before = placeNotificationPanel(bell, {
+      align: 'end',
+      width: 360,
+      maxHeight: 384,
+      viewport,
+    })
+    const vertical = placeNotificationPanel(bell, {
+      align: 'end',
+      side: 'vertical',
+      width: 360,
+      maxHeight: 384,
+      viewport,
+    })
+    expect(vertical).toEqual(before)
+    expect(before.bottom).toBeUndefined()
+  })
+
+  it('keeps a short list against a short viewport beside the trigger', () => {
+    const short = placeNotificationPanel(
+      { top: 150, left: 12, width: 240, height: 32 },
+      {
+        align: 'end',
+        side: 'right',
+        width: 360,
+        maxHeight: 384,
+        viewport: { width: 1280, height: 200 },
+      },
+    )
+    expect(short.maxListHeight).toBeGreaterThanOrEqual(88)
+    expect(short.top).toBeGreaterThanOrEqual(8)
+  })
+
   it('flips above only when below is unusable and above is better', () => {
     // A bell at the bottom of the window: 60px below, 700 above.
     const flipped = placeNotificationPanel(
