@@ -1,3 +1,10 @@
+# [5.14.0](https://github.com/nubisco/ui/compare/v5.13.0...v5.14.0) (2026-10-08)
+
+
+### Features
+
+* **accordion:** an info hint and actions beside a section's title ([ab99344](https://github.com/nubisco/ui/commit/ab99344eef907a1f7c548f4fff082b6b1c4e723d))
+
 # [5.13.0](https://github.com/nubisco/ui/compare/v5.12.0...v5.13.0) (2026-10-08)
 
 
