@@ -1,6 +1,6 @@
 # Upgrading
 
-## To 5.12.1 from 5.12.x
+## To 5.13.0 from 5.12.x
 
 One revert, no API changes.
 
@@ -26,7 +26,7 @@ keeps its density. Two new tokens tune it: `--nb-shell-drawer-row-height` and
 **`NbTabs` are at least 40px on a touch screen.** Under `pointer: coarse`, every
 tab grows to 40px, which takes a small contained bar from 24px to 40px and its
 frame from 30px to 46px. A toolbar holding one gets taller on touch devices.
-Reverted in 5.12.1.
+Reverted in 5.13.0.
 
 ## To 5.9.0 from 5.8.x
 
