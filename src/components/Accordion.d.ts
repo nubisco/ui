@@ -70,6 +70,13 @@ export interface IAccordionItemProps {
   icon?: TIconSource
   /** Short text after the title, for a count or a status. */
   meta?: string
+  /**
+   * What the section is, as a hoverable info hint beside the title. For a
+   * section whose name alone does not say what belongs in it. Setting it, or
+   * filling the `actions` slot, lays the header out around its button so the
+   * hint and the actions are controls of their own, never nested in it.
+   */
+  info?: string
   /** Non-interactive: the header renders muted and cannot be toggled. */
   disabled?: boolean
 }

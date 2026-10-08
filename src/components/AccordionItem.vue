@@ -8,6 +8,7 @@
   >
     <div
       class="nb-accordion-item__heading"
+      :class="{ 'nb-accordion-item__heading--aside': hasAside }"
       role="heading"
       :aria-level="headingLevel"
     >
@@ -18,6 +19,7 @@
         class="nb-accordion-item__header"
         :aria-expanded="isOpen"
         :aria-controls="`${uid}-panel`"
+        :aria-describedby="hasAside && hasMeta ? `${uid}-meta` : undefined"
         :disabled="disabled"
         @click="onToggle"
         @keydown="onKeydown"
@@ -32,10 +34,37 @@
         <span class="nb-accordion-item__title">
           <slot name="title">{{ title }}</slot>
         </span>
-        <span v-if="meta || $slots.meta" class="nb-accordion-item__meta">
+        <span v-if="!hasAside && hasMeta" class="nb-accordion-item__meta">
           <slot name="meta">{{ meta }}</slot>
         </span>
       </button>
+      <!-- With a hint or actions the row is laid out around the button
+           rather than inside it, because a button cannot hold another
+           control. The button stays the whole row's click target through a
+           stretched overlay, and the hint and the actions sit above it. -->
+      <template v-if="hasAside">
+        <NbInfoHint
+          v-if="info"
+          class="nb-accordion-item__info"
+          :text="info"
+          :size="14"
+          :label="`About ${title || 'this section'}`"
+        />
+        <span class="nb-accordion-item__spacer" aria-hidden="true" />
+        <!-- Above the overlay, so a tooltip on the meta can be hovered. It
+             still opens the section when clicked, like the rest of the row. -->
+        <span
+          v-if="hasMeta"
+          :id="`${uid}-meta`"
+          class="nb-accordion-item__meta nb-accordion-item__meta--raised"
+          @click="onToggle"
+        >
+          <slot name="meta">{{ meta }}</slot>
+        </span>
+        <span v-if="$slots.actions" class="nb-accordion-item__actions">
+          <slot name="actions" />
+        </span>
+      </template>
     </div>
 
     <!-- Kept in the DOM and hidden, rather than removed. An accordion is
@@ -58,10 +87,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onBeforeUnmount, ref } from 'vue'
+import { computed, inject, onBeforeUnmount, ref, useSlots } from 'vue'
 import type { IAccordionItemProps } from './Accordion.d'
 import { NB_ACCORDION_CONTEXT } from './Accordion.context'
 import NbIcon from './Icon.vue'
+import NbInfoHint from './InfoHint.vue'
 import { useStableId } from '../composables/useStableId.composable'
 
 const props = withDefaults(defineProps<IAccordionItemProps>(), {
@@ -69,8 +99,15 @@ const props = withDefaults(defineProps<IAccordionItemProps>(), {
   title: '',
   icon: undefined,
   meta: '',
+  info: undefined,
   disabled: false,
 })
+
+const slots = useSlots()
+const hasMeta = computed(() => !!props.meta || !!slots.meta)
+// Only these switch the row to the aside layout. Without them the header is
+// the same single button it has always been.
+const hasAside = computed(() => !!props.info || !!slots.actions)
 
 const group = inject(NB_ACCORDION_CONTEXT, null)
 
@@ -230,9 +267,108 @@ function onKeydown(event: KeyboardEvent) {
   }
 }
 
+// The aside layout. The heading carries the row's padding, hover and focus
+// ring, and the button inside it only holds the chevron and the title. Its
+// ::after stretches over the whole heading, so a click anywhere that is not
+// the hint or an action still toggles the section, exactly as before.
+.nb-accordion-item__heading--aside {
+  position: relative;
+  align-items: center;
+  gap: var(--nb-spacing-8);
+  min-height: var(--nb-accordion-row-h);
+  padding: var(--nb-accordion-pad-y) var(--nb-accordion-pad-x);
+  transition: background 70ms linear;
+
+  &:hover {
+    background: var(--nb-c-surface-hover);
+  }
+
+  &:has(.nb-accordion-item__header:focus-visible) {
+    outline: 2px solid var(--nb-c-focus-ring);
+    outline-offset: -2px;
+  }
+
+  .nb-accordion--flush & {
+    padding-left: var(--nb-spacing-16);
+    padding-right: var(--nb-spacing-16);
+    margin-left: calc(-1 * var(--nb-spacing-16));
+    margin-right: calc(-1 * var(--nb-spacing-16));
+  }
+
+  .nb-accordion-item__header {
+    flex: 0 1 auto;
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+
+    &:hover {
+      background: transparent;
+    }
+
+    &:focus-visible {
+      outline: none;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+    }
+  }
+
+  // Trailing chevron, drawn last in the row rather than after the title.
+  .nb-accordion--align-end & .nb-accordion-item__chevron {
+    position: absolute;
+    right: var(--nb-accordion-pad-x);
+    margin: 0;
+  }
+
+  .nb-accordion--align-end.nb-accordion--flush & .nb-accordion-item__chevron {
+    right: var(--nb-spacing-16);
+  }
+
+  .nb-accordion--align-end & {
+    padding-right: calc(var(--nb-accordion-pad-x) + var(--nb-spacing-24));
+  }
+
+  .nb-accordion--align-end.nb-accordion--flush & {
+    padding-right: calc(var(--nb-spacing-16) + var(--nb-spacing-24));
+  }
+}
+
+.nb-accordion-item__spacer {
+  flex: 1 1 auto;
+}
+
+.nb-accordion-item__info,
+.nb-accordion-item__meta--raised,
+.nb-accordion-item__actions {
+  position: relative;
+  z-index: 1;
+}
+
+.nb-accordion-item__info {
+  display: inline-flex;
+  color: var(--nb-c-text-subtle);
+}
+
+.nb-accordion-item__meta--raised {
+  cursor: pointer;
+}
+
+.nb-accordion-item__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nb-spacing-4);
+  flex: 0 0 auto;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .nb-accordion-item__chevron,
-  .nb-accordion-item__header {
+  .nb-accordion-item__header,
+  .nb-accordion-item__heading--aside {
     transition: none;
   }
 }
