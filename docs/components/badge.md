@@ -56,17 +56,48 @@ Add `dot` to prepend a status indicator before the label.
 </template>
 ```
 
+## With an icon
+
+`icon` puts a glyph before the text, sized to the badge.
+
+<preview dir="row">
+  <NbBadge variant="orange" icon="calendar-blank">Tomorrow</NbBadge>
+  <NbBadge variant="red" size="sm" icon="calendar-blank">2 days late</NbBadge>
+</preview>
+
+## Placeholder
+
+`placeholder` stands in for a value that is not set yet: a dashed outline and quiet italic text instead of a fill. It is exactly as tall as a filled badge of the same size, so a row that holds either keeps its shape. Add `interactive` when pressing it sets the value: it becomes a real `<button type="button">` with hover and focus states. Name it with `aria-label` when its text does not say what pressing it does, which is always the case for an icon on its own.
+
+<preview dir="row">
+  <NbBadge size="sm" variant="green">Feature</NbBadge>
+  <NbBadge size="sm" placeholder>No labels</NbBadge>
+  <NbBadge size="sm" placeholder interactive icon="tag">No labels</NbBadge>
+  <NbBadge size="sm" placeholder interactive icon="calendar-blank" aria-label="Set a due date" />
+</preview>
+
+```vue
+<template>
+  <NbBadge size="sm" placeholder interactive icon="tag" @click="pickLabels">
+    No labels
+  </NbBadge>
+</template>
+```
+
 </doc-tab>
 
 <doc-tab name="Api">
 
 ## Props
 
-| Prop      | Type             | Default  | Description                    |
-| --------- | ---------------- | -------- | ------------------------------ |
-| `variant` | `NbBadgeVariant` | `'grey'` | Color variant                  |
-| `size`    | `NbBadgeSize`    | `'md'`   | Badge size (`'sm'` or `'md'`)  |
-| `dot`     | `boolean`        | `false`  | Show a status dot before label |
+| Prop          | Type             | Default  | Description                                                                           |
+| ------------- | ---------------- | -------- | ------------------------------------------------------------------------------------- |
+| `variant`     | `NbBadgeVariant` | `'grey'` | Color variant                                                                         |
+| `size`        | `NbBadgeSize`    | `'md'`   | Badge size (`'sm'` or `'md'`)                                                         |
+| `dot`         | `boolean`        | `false`  | Show a status dot before label                                                        |
+| `icon`        | `TIconSource`    | none     | A leading icon, sized to the badge                                                    |
+| `placeholder` | `boolean`        | `false`  | A value not set yet: dashed outline, quiet italic text, same height as a filled badge |
+| `interactive` | `boolean`        | `false`  | Render a `<button type="button">` with hover and focus states. Listen with `@click`   |
 
 ## Variant values
 
