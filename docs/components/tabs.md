@@ -93,10 +93,6 @@ panels, and `lg` when the tabs head a full page.
   <NbTabs :items="clientTabs" size="lg" />
 </preview>
 
-On a touch screen (`pointer: coarse`) every tab is at least 40px tall whatever
-its size, so a small contained bar of filters grows from 24px to a target a
-finger can hit. A mouse keeps the sizes above, including in a narrow window.
-
 ## Icons and badges
 
 An item can carry an `icon` before its label and a `badge` after it. Keep the
@@ -199,7 +195,6 @@ pattern recommends when showing a panel is cheap.
 - `aria-controls` is set only when a panel is actually rendered, so it never
   points at a missing element.
 - Name the bar with `ariaLabel` when a page carries more than one set of tabs.
-- Tabs are at least 40px tall on a coarse pointer, at every size and variant.
 
 </doc-tab>
 

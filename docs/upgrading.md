@@ -1,5 +1,16 @@
 # Upgrading
 
+## To 5.12.1 from 5.12.x
+
+One revert, no API changes.
+
+**`NbTabs` keep their size on a touch screen again.** 5.11.2 made every tab at
+least 40px tall under `pointer: coarse`. That change answered a report about
+filter chips that turned out to be a product's own component, not `NbTabs`, so
+it is gone: tabs are 24px (small contained), 32px (small line), 40px and 48px
+on every pointer, as they were before 5.11.2. A screen tuned around the taller
+bars on touch will see them shrink back. The 5.11.2 drawer rows are unaffected.
+
 ## To 5.11.2 from 5.11.x
 
 Two touch-target fixes, no API changes. Both change what a user sees on a phone
@@ -15,6 +26,7 @@ keeps its density. Two new tokens tune it: `--nb-shell-drawer-row-height` and
 **`NbTabs` are at least 40px on a touch screen.** Under `pointer: coarse`, every
 tab grows to 40px, which takes a small contained bar from 24px to 40px and its
 frame from 30px to 46px. A toolbar holding one gets taller on touch devices.
+Reverted in 5.12.1.
 
 ## To 5.9.0 from 5.8.x
 
