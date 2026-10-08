@@ -1,3 +1,16 @@
+# [5.13.0](https://github.com/nubisco/ui/compare/v5.12.0...v5.13.0) (2026-10-08)
+
+
+### Bug Fixes
+
+* **menu:** a select or date picker inside a menu can be used ([cd3bab8](https://github.com/nubisco/ui/commit/cd3bab86c05358dc2b4207c93d825902c3ac6631))
+* **tabs:** revert the coarse-pointer minimum height ([7130872](https://github.com/nubisco/ui/commit/7130872a9e052f187e1b638e73c69da95f682a16))
+
+
+### Features
+
+* **badge:** a placeholder badge that can be pressed, with an icon ([1064ea6](https://github.com/nubisco/ui/commit/1064ea6b682748611669b5782df13aaca5572809))
+
 # [5.12.0](https://github.com/nubisco/ui/compare/v5.11.2...v5.12.0) (2026-10-08)
 
 
