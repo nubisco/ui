@@ -163,6 +163,18 @@ Use `NbSubmenu` to nest menus. The submenu opens on hover, on click, or from the
 </NbMenu>
 ```
 
+## A form in a menu
+
+A menu can hold fields instead of items: a filter panel, or a quick edit opened from a placeholder. `NbSelect` and `NbDatePicker` draw their list and calendar outside the menu, and the menu knows they belong to it, so picking an option or a day does not count as a press outside and does not close it. Escape closes the menu from any field in it. When a field's list or calendar is open, the first Escape closes only that.
+
+```vue
+<template>
+  <NbMenu ref="menu" v-model:open="open">
+    <NbSelect id="goal" v-model="goal" :options="goals" />
+  </NbMenu>
+</template>
+```
+
 ## Sizes
 
 Menus support four item sizes: `xs` (24px), `sm` (32px), `md` (40px, default), and `lg` (48px).

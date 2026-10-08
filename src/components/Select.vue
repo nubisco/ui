@@ -247,6 +247,7 @@ import NbGrid from './Grid.vue'
 import NbIcon from './Icon.vue'
 import { ref, computed, watch, nextTick, onBeforeUnmount, useId } from 'vue'
 import { ISelectOption, ISelectProps } from './Select'
+import { useMenuSurface } from '../composables/useMenuSurface.composable'
 
 const props = withDefaults(defineProps<ISelectProps>(), {
   modelValue: null,
@@ -288,6 +289,9 @@ const highlighted = ref(-1)
 const rootRef = ref<HTMLElement | null>(null)
 const triggerRef = ref<HTMLElement | null>(null)
 const dropdownRef = ref<HTMLElement | null>(null)
+// Inside an NbMenu (a filter panel), picking an option is not a press
+// outside the menu.
+useMenuSurface(dropdownRef)
 const dropdownStyle = ref({
   position: 'fixed' as const,
   top: '0px',

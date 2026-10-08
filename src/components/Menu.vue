@@ -126,6 +126,18 @@ function focusItem(index: number) {
 }
 
 function onKeydown(e: KeyboardEvent) {
+  // Escape closes any menu, including one that holds a form rather than
+  // items (a filter panel, a quick edit), which the early return below used
+  // to leave open. A field that spent the Escape closing its own list or
+  // calendar has prevented it, and that press is not also the menu's.
+  if (e.key === 'Escape') {
+    if (e.defaultPrevented) return
+    e.preventDefault()
+    e.stopPropagation()
+    close()
+    return
+  }
+
   const menuItems = getMenuItems()
   if (!menuItems.length) return
 
@@ -157,10 +169,6 @@ function onKeydown(e: KeyboardEvent) {
       prev--
     }
     if (prev >= 0) focusItem(prev)
-  } else if (e.key === 'Escape') {
-    e.preventDefault()
-    e.stopPropagation()
-    close()
   } else if (e.key === 'Tab') {
     close()
   }
