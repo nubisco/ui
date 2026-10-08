@@ -394,6 +394,7 @@ import NbMessage from './Message.vue'
 import NbIcon from './Icon.vue'
 import NbGrid from './Grid.vue'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
+import { useMenuSurface } from '@/composables/useMenuSurface.composable'
 
 defineOptions({ inheritAttrs: false })
 
@@ -452,6 +453,8 @@ const rootRef = ref<HTMLElement | null>(null)
 const inputRef = ref<HTMLInputElement | null>(null)
 const endInputRef = ref<HTMLInputElement | null>(null)
 const calendarRef = ref<HTMLElement | null>(null)
+// Inside an NbMenu, picking a day is not a press outside the menu.
+useMenuSurface(calendarRef)
 const calendarStyle = ref({
   position: 'fixed' as const,
   top: '0px',
