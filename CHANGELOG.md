@@ -1,3 +1,15 @@
+# [5.12.0](https://github.com/nubisco/ui/compare/v5.11.2...v5.12.0) (2026-10-08)
+
+
+### Bug Fixes
+
+* **types:** register NbWireframe in the global component types ([6f8fce1](https://github.com/nubisco/ui/commit/6f8fce14b5029f904a49d8a5bb8eba2505117725))
+
+
+### Features
+
+* **notification-center:** open beside the trigger, for a bell in a sidebar ([b3c647d](https://github.com/nubisco/ui/commit/b3c647d69af1ba3890a2bb41c45a659e4768c0d7))
+
 ## [5.11.2](https://github.com/nubisco/ui/compare/v5.11.1...v5.11.2) (2026-10-08)
 
 
