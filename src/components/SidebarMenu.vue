@@ -23,7 +23,8 @@ withDefaults(defineProps<ISidebarMenuProps>(), {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  // Wider inside the mobile drawer, where NbShell sets it (see Shell.vue).
+  gap: var(--nb-shell-sidebar-row-gap, 1px);
   width: 100%;
   color: var(--nb-shell-sidebar-link-color);
   font-size: 0.8125rem;

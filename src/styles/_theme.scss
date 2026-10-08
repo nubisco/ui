@@ -656,6 +656,11 @@
     // 45% reads on both themes because it darkens whatever is under it rather
     // than painting a colour of its own.
     --nb-shell-scrim-bg: color-mix(in srgb, var(--nb-c-black) 45%, transparent);
+    // Navigation rows inside that drawer, sized for a finger: 44px with room
+    // between them so the neighbouring row is not the one that takes the tap.
+    // The permanent column never reads these and keeps its desktop density.
+    --nb-shell-drawer-row-height: 44px;
+    --nb-shell-drawer-row-gap: 4px;
 
     // Panels — emitted at :root so consumer apps can override on :root without
     // fighting the components' scoped-style specificity.

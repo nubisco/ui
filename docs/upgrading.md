@@ -1,5 +1,21 @@
 # Upgrading
 
+## To 5.11.2 from 5.11.x
+
+Two touch-target fixes, no API changes. Both change what a user sees on a phone
+or tablet, so look over those screens. Nothing changes under a mouse on a
+desktop.
+
+**Navigation rows in the `NbShell` drawer are 44px.** Below `collapse-at`, the
+`NbSidebarMenuItem` rows inside the drawer were about 30px, sized for a mouse.
+They are now at least 44px tall with 4px between them. The permanent column
+keeps its density. Two new tokens tune it: `--nb-shell-drawer-row-height` and
+`--nb-shell-drawer-row-gap`.
+
+**`NbTabs` are at least 40px on a touch screen.** Under `pointer: coarse`, every
+tab grows to 40px, which takes a small contained bar from 24px to 40px and its
+frame from 30px to 46px. A toolbar holding one gets taller on touch devices.
+
 ## To 5.9.0 from 5.8.x
 
 One addition, opt-in, and nothing changes on a board that does not ask for it.
