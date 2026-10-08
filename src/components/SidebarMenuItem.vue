@@ -424,6 +424,9 @@ onBeforeUnmount(() => {
   // it must stay border-box even if a consumer (or the docs host) doesn't apply
   // a global `* { box-sizing: border-box }` reset, or overrides it for anchors.
   box-sizing: border-box;
+  // Unset in the permanent column, where the padding alone sets the height
+  // (about 30px). NbShell sets it to a touch target inside the mobile drawer.
+  min-height: var(--nb-shell-sidebar-row-min-height, 0);
   padding: 0.45rem 0.75rem;
   // a nav row is a rounded rectangle, not a pill
   @include radius.standalone(control-sm);
@@ -462,8 +465,8 @@ onBeforeUnmount(() => {
 
   // Compact: icon-only square button, label is shown in the flyout.
   &--compact {
-    width: 40px;
-    height: 40px;
+    width: var(--nb-shell-sidebar-row-min-height, 40px);
+    height: var(--nb-shell-sidebar-row-min-height, 40px);
     padding: 0;
     margin: 0 auto;
     justify-content: center;
@@ -566,7 +569,7 @@ onBeforeUnmount(() => {
   padding: 0 0 0 1.625rem;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: var(--nb-shell-sidebar-row-gap, 1px);
   border-left: 1px solid var(--nb-shell-sidebar-link-hover-bg);
   margin-left: 0.875rem;
 }

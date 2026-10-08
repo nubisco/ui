@@ -1786,6 +1786,15 @@ defineExpose({
     transform: translateX(-100%);
     transition: transform 0.18s ease;
     box-shadow: none;
+
+    // The drawer is only ever on screen at phone and small-tablet widths, so
+    // its rows are sized for a finger. Handed down as custom properties
+    // because the rows belong to NbSidebarMenuItem, and the permanent column
+    // keeps its desktop density by never setting them. The public knobs are
+    // the `--nb-shell-drawer-row-*` tokens: these two are the plumbing, set
+    // here on the rail, so a value a product puts on :root still reaches it.
+    --nb-shell-sidebar-row-min-height: var(--nb-shell-drawer-row-height, 44px);
+    --nb-shell-sidebar-row-gap: var(--nb-shell-drawer-row-gap, 4px);
   }
 
   // The inspector becomes a sheet over the content row rather than a column
