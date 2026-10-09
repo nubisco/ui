@@ -1,3 +1,10 @@
+# [5.17.0](https://github.com/nubisco/ui/compare/v5.16.0...v5.17.0) (2026-10-09)
+
+
+### Features
+
+* **modal:** closeAppearance="button" for one close control everywhere ([dfedc0f](https://github.com/nubisco/ui/commit/dfedc0fb9f86604b95cd06c40a48c63883b43d66))
+
 # [5.16.0](https://github.com/nubisco/ui/compare/v5.15.1...v5.16.0) (2026-10-09)
 
 
