@@ -131,7 +131,7 @@ const asIndexable = (v: TJsonValue): Record<string | number, TJsonValue> =>
 .nb-json-tree {
   display: flex;
   font-family: var(--nb-font-family-sans);
-  font-weight: var(--nb-front-weight-regular);
+  font-weight: var(--nb-font-weight-regular);
   font-size: var(--nb-font-size-14);
   text-align: left;
   line-height: 24px;
