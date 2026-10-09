@@ -1,3 +1,10 @@
+## [5.15.1](https://github.com/nubisco/ui/compare/v5.15.0...v5.15.1) (2026-10-09)
+
+
+### Bug Fixes
+
+* **select:** read the field font size token that exists ([306c691](https://github.com/nubisco/ui/commit/306c6910ca4f709d3045b4720ee4929e75bd2c37))
+
 # [5.15.0](https://github.com/nubisco/ui/compare/v5.14.0...v5.15.0) (2026-10-09)
 
 
