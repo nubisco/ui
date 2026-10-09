@@ -873,7 +873,7 @@ defineExpose({
   &__value {
     flex: 1;
     min-width: 0;
-    font-size: var(--nb-c-field-font-size);
+    font-size: var(--nb-field-font-size);
     font-weight: 400;
     line-height: 1.5;
     color: var(--nb-c-text);
