@@ -1,3 +1,10 @@
+## [5.18.1](https://github.com/nubisco/ui/compare/v5.18.0...v5.18.1) (2026-10-09)
+
+
+### Bug Fixes
+
+* **board:** the batch bar's Clear selection reads on the brand colour ([e77aba1](https://github.com/nubisco/ui/commit/e77aba1a178f1cd29416c797de9a3bf2d4005019))
+
 # [5.18.0](https://github.com/nubisco/ui/compare/v5.17.0...v5.18.0) (2026-10-09)
 
 
