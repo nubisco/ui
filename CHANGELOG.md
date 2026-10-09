@@ -1,3 +1,10 @@
+# [5.16.0](https://github.com/nubisco/ui/compare/v5.15.1...v5.16.0) (2026-10-09)
+
+
+### Features
+
+* **switch:** hideLabel keeps the accessible name without showing it ([b16e866](https://github.com/nubisco/ui/commit/b16e8669f19fc054111909bbe584b211bb3e6a37))
+
 ## [5.15.1](https://github.com/nubisco/ui/compare/v5.15.0...v5.15.1) (2026-10-09)
 
 
