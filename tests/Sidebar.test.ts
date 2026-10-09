@@ -287,7 +287,11 @@ describe('NbSidebarMenuItem compact flyout without a mouse', () => {
     })
   }
   const flyout = () => document.querySelector('.nb-sidebar-menu-item__flyout')
-  const flush = () => new Promise((r) => setTimeout(r, 0))
+  // Long enough for the clock to move on, not just a macrotask. Vue drops an
+  // event on a listener attached in the same millisecond the event was first
+  // handled (runtime-dom's `_vts` guard), so a click inside a flyout that
+  // mounted a moment ago could skip the flyout's own handler.
+  const flush = () => new Promise((r) => setTimeout(r, 2))
   // test-utils cannot set MouseEvent.detail, which is how the component tells a
   // keyboard activation (0) from a pointer one.
   async function press(el: Element, detail: number) {

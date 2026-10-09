@@ -55,6 +55,12 @@ async function mountMenuWithSelect() {
   open.value = true
   await nextTick()
   await nextTick()
+  // Let the clock move on. Vue drops an event on a listener attached in the
+  // same millisecond the event was first handled (runtime-dom's `_vts` guard),
+  // so a key dispatched straight after the menu mounts could skip the menu's
+  // own handler. A person never presses that fast, a test does, and it failed
+  // about one run in five.
+  await new Promise((resolve) => setTimeout(resolve, 2))
   return { open, picked }
 }
 
