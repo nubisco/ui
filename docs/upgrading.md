@@ -1,5 +1,12 @@
 # Upgrading
 
+## To 5.17.0 from 5.16.x
+
+One addition to `NbModal`, off by default: `closeAppearance="button"` draws
+the close control as a ghost icon `NbButton`, the same control that closes a
+panel or a drawer, instead of the modal's own square in the header corner.
+Nothing to do on upgrade.
+
 ## To 5.16.0 from 5.15.x
 
 One addition to `NbSwitch`, off by default: `hideLabel` keeps the label as the
