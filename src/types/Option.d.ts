@@ -20,6 +20,13 @@ interface IOption extends IDecoration {
 // #endregion IOption
 
 // #region IOptionGroup
+/**
+ * @deprecated Nothing consumes this shape. It described a grouped option list
+ * no component ever implemented, which is worse than an absence: a consumer
+ * reads it as a promise and builds a workaround when it finds none. Group a
+ * select's options with `ISelectOption['group']` instead. Kept until the next
+ * major so an import does not break.
+ */
 interface IOptionGroup {
   groupName?: string // Optional: Name of the group
   options: IOption[]

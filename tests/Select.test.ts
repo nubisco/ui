@@ -41,6 +41,13 @@ const options = [
 ]
 
 describe('Select', () => {
+  // A failing assertion skips the `unmount()` at the end of its test and
+  // leaves a teleported dropdown in the body, which the next test then reads
+  // as its own options. One real failure used to print as four.
+  afterEach(() => {
+    document.body.innerHTML = ''
+  })
+
   const createWrapper = (props = {}) =>
     mount(Select, {
       props: { options, ...props },
@@ -55,6 +62,162 @@ describe('Select', () => {
       },
       attachTo: document.body,
     })
+
+  /**
+   * NbSelect has two root nodes, the field and the teleported dropdown, so
+   * `wrapper.trigger` dispatches on the fragment and the root div's own
+   * `@keydown` never sees it. Press the key on the trigger button, where a
+   * real keystroke would land, and let it bubble.
+   */
+  const press = (wrapper: ReturnType<typeof createWrapper>, key: string) =>
+    wrapper.find('.nb-select__trigger').trigger('keydown', { key })
+
+  describe('grouped options', () => {
+    /**
+     * The case this was built for: two groups holding the same values, in a
+     * deliberate order that is not alphabetical in either direction.
+     */
+    const versions = [
+      { label: '1.9.0', value: 'aff-190', group: 'Affects version' },
+      { label: '1.11.0', value: 'aff-1110', group: 'Affects version' },
+      { label: '1.12.0', value: 'aff-1120', group: 'Affects version' },
+      { label: '1.9.0', value: 'fix-190', group: 'Fixes version' },
+      { label: '1.12.0', value: 'fix-1120', group: 'Fixes version' },
+    ]
+
+    it('draws one heading per run, named', async () => {
+      const wrapper = createWrapper({ options: versions })
+      await wrapper.find('button').trigger('click')
+      const headings = [
+        ...document.querySelectorAll('.nb-select__group-label'),
+      ].map((h) => h.textContent?.trim())
+      expect(headings).toEqual(['Affects version', 'Fixes version'])
+      wrapper.unmount()
+    })
+
+    it('names the group to a screen reader', async () => {
+      const wrapper = createWrapper({ options: versions })
+      await wrapper.find('button').trigger('click')
+      const group = document.querySelector('[role="group"][aria-labelledby]')!
+      const labelId = group.getAttribute('aria-labelledby')!
+      expect(document.getElementById(labelId)?.textContent?.trim()).toBe(
+        'Affects version',
+      )
+      wrapper.unmount()
+    })
+
+    it('keeps the order it was given rather than collecting by name', async () => {
+      // Runs, not buckets: the same name twice is two headings, because that
+      // is what the given order says. A caller that grouped its options has
+      // usually already arranged them.
+      const wrapper = createWrapper({
+        options: [
+          { label: 'A', value: 'a', group: 'One' },
+          { label: 'B', value: 'b', group: 'Two' },
+          { label: 'C', value: 'c', group: 'One' },
+        ],
+      })
+      await wrapper.find('button').trigger('click')
+      expect(
+        [...document.querySelectorAll('.nb-select__group-label')].map((h) =>
+          h.textContent?.trim(),
+        ),
+      ).toEqual(['One', 'Two', 'One'])
+      expect(
+        [...document.querySelectorAll('.nb-select__option-label')].map((o) =>
+          o.textContent?.trim(),
+        ),
+      ).toEqual(['A', 'B', 'C'])
+      wrapper.unmount()
+    })
+
+    it('a heading is not an option', async () => {
+      const wrapper = createWrapper({ options: versions })
+      await wrapper.find('button').trigger('click')
+      // Five options, two headings, and no heading counted among them. The
+      // workaround this replaces shipped headings as disabled options, which
+      // a screen reader reads as choices you may not make.
+      expect(document.querySelectorAll('[role="option"]')).toHaveLength(5)
+      expect(
+        document.querySelectorAll('.nb-select__group-label[role="option"]'),
+      ).toHaveLength(0)
+      wrapper.unmount()
+    })
+
+    it('selects the right one of two options sharing a label', async () => {
+      const wrapper = createWrapper({ options: versions })
+      await wrapper.find('button').trigger('click')
+      const rows = document.querySelectorAll('.nb-select__option')
+      // The second 1.12.0, the one under "Fixes version".
+      ;(rows[4] as HTMLElement).click()
+      expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['fix-1120'])
+      wrapper.unmount()
+    })
+
+    it('renders a list with no groups exactly as before', async () => {
+      const wrapper = createWrapper()
+      await wrapper.find('button').trigger('click')
+      expect(document.querySelectorAll('.nb-select__group-label')).toHaveLength(
+        0,
+      )
+      expect(
+        [...document.querySelectorAll('.nb-select__option-label')].map((o) =>
+          o.textContent?.trim(),
+        ),
+      ).toEqual(['Apple', 'Banana', 'Cherry'])
+      wrapper.unmount()
+    })
+  })
+
+  describe('arrowing past what cannot be chosen', () => {
+    const withDisabled = [
+      { label: 'Apple', value: 'apple' },
+      { label: 'Banana', value: 'banana', disabled: true },
+      { label: 'Cherry', value: 'cherry' },
+    ]
+
+    it('skips a disabled option on the way down', async () => {
+      const wrapper = createWrapper({ options: withDisabled })
+      await wrapper.find('button').trigger('click')
+      await press(wrapper, 'ArrowDown')
+      await press(wrapper, 'ArrowDown')
+      // Apple, then Cherry. Landing on Banana was a keystroke that did
+      // nothing, since Enter on it is already ignored.
+      expect(
+        document.querySelectorAll('.nb-select__option')[2].className,
+      ).toContain('nb-select__option--highlighted')
+      wrapper.unmount()
+    })
+
+    it('skips it on the way back up too', async () => {
+      const wrapper = createWrapper({
+        options: withDisabled,
+        modelValue: 'cherry',
+      })
+      await wrapper.find('button').trigger('click')
+      await press(wrapper, 'ArrowUp')
+      expect(
+        document.querySelectorAll('.nb-select__option')[0].className,
+      ).toContain('nb-select__option--highlighted')
+      wrapper.unmount()
+    })
+
+    it('stays put rather than wrapping when there is nowhere further', async () => {
+      const wrapper = createWrapper({
+        options: [
+          { label: 'Apple', value: 'apple' },
+          { label: 'Banana', value: 'banana', disabled: true },
+        ],
+      })
+      await wrapper.find('button').trigger('click')
+      await press(wrapper, 'ArrowDown')
+      await press(wrapper, 'ArrowDown')
+      expect(
+        document.querySelectorAll('.nb-select__option')[0].className,
+      ).toContain('nb-select__option--highlighted')
+      wrapper.unmount()
+    })
+  })
 
   describe('an icon per option', () => {
     const marked = [

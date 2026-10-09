@@ -5,6 +5,19 @@ interface ISelectOption {
   value: string | number
   disabled?: boolean
   /**
+   * The heading this option sits under.
+   *
+   * Options carrying the same group name, consecutively, are rendered under
+   * one heading inside a `role="group"`. The list is never reordered: runs
+   * are formed in the order given, because a caller that groups its options
+   * has usually already arranged them (versions, sizes, stages), and sorting
+   * would undo that.
+   *
+   * Omit it and nothing changes: a list where no option names a group
+   * renders exactly as it did before this existed.
+   */
+  group?: string
+  /**
    * Artwork shown before the label, in the list and on the closed select.
    *
    * For options a person recognises by mark before they read the word:
