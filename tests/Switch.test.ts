@@ -78,4 +78,22 @@ describe('Switch', () => {
       'nb-secondary',
     )
   })
+
+  describe('hideLabel', () => {
+    it('keeps the label as the accessible name but hides it from view', () => {
+      const wrapper = createWrapper({ label: 'Show Goals', hideLabel: true })
+      const label = wrapper.find('.nb-switch__label--hidden')
+      expect(label.exists()).toBe(true)
+      expect(label.text()).toBe('Show Goals')
+      // Still tied to the input, so the switch is announced by name.
+      const input = wrapper.find('input[type="checkbox"]')
+      expect(label.attributes('for')).toBe(input.attributes('id'))
+    })
+
+    it('shows the label as before when off, which is the default', () => {
+      const wrapper = createWrapper({ label: 'Show Goals' })
+      expect(wrapper.find('.nb-switch__label--hidden').exists()).toBe(false)
+      expect(wrapper.text()).toContain('Show Goals')
+    })
+  })
 })
