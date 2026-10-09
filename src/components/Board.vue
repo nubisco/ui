@@ -66,6 +66,9 @@
                 class="nb-board__card"
                 :class="{
                   'nb-board__card--lifted': lifted?.item.id === item.id,
+                  'nb-board__card--selected': isSelected(item.id),
+                  'nb-board__card--carried':
+                    !!dragging?.group && isSelected(item.id),
                   'nb-board__card--drop-before':
                     cellIndicator(lane, col.id) === index,
                   'nb-board__card--drop-after': isDropAfter(
@@ -78,6 +81,7 @@
                 role="listitem"
                 tabindex="0"
                 :data-item-id="item.id"
+                :aria-selected="selectable ? isSelected(item.id) : undefined"
                 :aria-label="cardLabel(item, lane, col)"
                 :aria-describedby="`${uid}-hint`"
                 draggable="true"
@@ -87,6 +91,7 @@
                 "
                 @dragend="onDragEnd"
                 @keydown="onCardKeydown($event, item, lane, col.id)"
+                @click.capture="onCardClick($event, item, lane, col.id)"
                 @blur="onCardBlur(item)"
               >
                 <slot
@@ -114,6 +119,34 @@
       </template>
     </div>
 
+    <!-- While cards are selected, what can be done to all of them at once.
+         The same pattern as NbDataTable's batch bar. -->
+    <div
+      v-if="selectable && selectedIds.length > 0 && $slots['batch-actions']"
+      class="nb-board__batch"
+      role="region"
+      aria-label="Actions for the selected cards"
+    >
+      <span class="nb-board__batch-count">
+        {{ selectedIds.length }} selected
+      </span>
+      <div class="nb-board__batch-actions">
+        <slot
+          name="batch-actions"
+          :selected="selectedIds"
+          :clear="clearSelection"
+        />
+      </div>
+      <NbButton
+        class="nb-board__batch-cancel"
+        variant="ghost"
+        size="sm"
+        @click="clearSelection"
+      >
+        Clear selection
+      </NbButton>
+    </div>
+
     <!-- Instructions, and the live region that reports what happened. A
          pointer user watches the card move; a keyboard user gets told. -->
     <span :id="`${uid}-hint`" class="nb-board__sr">
@@ -121,6 +154,10 @@
       drop, Escape to cancel.<template v-if="nestable">
         Shift with Space or Enter drops onto the card below instead, putting
         this one inside it.</template
+      ><template v-if="selectable">
+        X selects the card, or removes it from the selection. Picking up a
+        selected card moves every selected card. Escape clears the
+        selection.</template
       >
     </span>
     <span class="nb-board__sr" aria-live="assertive">{{ announcement }}</span>
@@ -129,6 +166,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
+import NbButton from './Button.vue'
 import type {
   IBoardProps,
   IBoardColumn,
@@ -137,6 +175,7 @@ import type {
   IBoardMoveEvent,
   IBoardNestEvent,
   IBoardColumnMoveEvent,
+  IBoardMoveManyEvent,
 } from './Board.d'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import { useStableId } from '@/composables/useStableId.composable'
@@ -145,6 +184,8 @@ const props = withDefaults(defineProps<IBoardProps>(), {
   lanes: undefined,
   reorderableColumns: false,
   nestable: false,
+  selectable: false,
+  selected: undefined,
 })
 
 // Board owns the surfaces its column headers and cards paint, and those cards
@@ -156,7 +197,128 @@ const emit = defineEmits<{
   move: [event: IBoardMoveEvent]
   nest: [event: IBoardNestEvent]
   'column-move': [event: IBoardColumnMoveEvent]
+  'move-many': [event: IBoardMoveManyEvent]
+  'update:selected': [ids: string[]]
 }>()
+
+// ── Selection ─────────────────────────────────────────────────────────
+//
+// Off unless `selectable`. The host owns the list (v-model:selected); the
+// board only reports what the reader asked for. Cmd or Ctrl-click toggles a
+// card, Shift-click takes a run of cards in one cell, X toggles the focused
+// card, Escape clears. Dragging or picking up a selected card moves them all.
+const selectedIds = computed(() =>
+  props.selectable ? (props.selected ?? []) : [],
+)
+const selectedSet = computed(() => new Set(selectedIds.value))
+let selectionAnchor: string | null = null
+
+function isSelected(id: string): boolean {
+  return selectedSet.value.has(id)
+}
+
+function setSelection(ids: string[]): void {
+  emit('update:selected', ids)
+  announcement.value =
+    ids.length === 0
+      ? 'Selection cleared'
+      : `${ids.length} ${ids.length === 1 ? 'card' : 'cards'} selected`
+}
+
+function clearSelection(): void {
+  selectionAnchor = null
+  setSelection([])
+}
+
+function toggleSelected(id: string): void {
+  selectionAnchor = id
+  setSelection(
+    isSelected(id)
+      ? selectedIds.value.filter((s) => s !== id)
+      : [...selectedIds.value, id],
+  )
+}
+
+/** Shift-click: from the last card toggled to this one, when both are in
+ *  the same cell; otherwise just this card. */
+function selectRange(
+  item: IBoardItem,
+  laneId: string | null,
+  colId: string,
+): void {
+  const cell = getCell(laneId, colId)
+  const from = selectionAnchor
+    ? cell.findIndex((i) => i.id === selectionAnchor)
+    : -1
+  const to = cell.findIndex((i) => i.id === item.id)
+  if (from === -1 || to === -1) return toggleSelected(item.id)
+  const run = cell
+    .slice(Math.min(from, to), Math.max(from, to) + 1)
+    .map((i) => i.id)
+  setSelection([...new Set([...selectedIds.value, ...run])])
+}
+
+function onCardClick(
+  event: MouseEvent,
+  item: IBoardItem,
+  lane: IBoardLane | null,
+  colId: string,
+): void {
+  if (!props.selectable) return
+  if (!(event.metaKey || event.ctrlKey || event.shiftKey)) return
+  // A modified click selects; it does not also open the card underneath.
+  event.preventDefault()
+  event.stopPropagation()
+  if (event.shiftKey) selectRange(item, laneIdOf(lane), colId)
+  else toggleSelected(item.id)
+}
+
+/** The selected cards in board order: column by column, top to bottom. */
+function selectionInOrder(): string[] {
+  const order: string[] = []
+  for (const col of props.columns)
+    for (const lane of renderLanes.value)
+      for (const i of getCell(laneIdOf(lane), col.id))
+        if (isSelected(i.id) && !order.includes(i.id)) order.push(i.id)
+  return order
+}
+
+/**
+ * Move the whole selection to one place. `index` is the insertion point in
+ * the destination cell counted with the dragged card excluded, as for a
+ * single move. The neighbours reported skip any card that is itself moving.
+ */
+function emitMoveMany(
+  ids: string[],
+  draggedId: string,
+  toLaneId: string | null,
+  toColId: string,
+  index: number,
+): void {
+  const moving = new Set(ids)
+  const rest = getCell(toLaneId, toColId).filter((i) => i.id !== draggedId)
+  let before: string | null = null
+  for (let i = Math.min(index, rest.length) - 1; i >= 0; i--)
+    if (!moving.has(rest[i].id)) {
+      before = rest[i].id
+      break
+    }
+  let after: string | null = null
+  for (let i = Math.max(index, 0); i < rest.length; i++)
+    if (!moving.has(rest[i].id)) {
+      after = rest[i].id
+      break
+    }
+  emit('move-many', {
+    itemIds: ids,
+    toColumnId: toColId,
+    ...(props.lanes ? { toLaneId } : {}),
+    beforeItemId: before,
+    afterItemId: after,
+  })
+  const col = columnOf(toColId)
+  announcement.value = `${ids.length} cards moved to ${col?.label ?? toColId}`
+}
 
 const uid = useStableId({})
 const boardRef = ref<HTMLElement | null>(null)
@@ -291,6 +453,8 @@ const dragging = ref<{
   item: IBoardItem
   fromLaneId: string | null
   fromColumnId: string
+  /** Set when the card picked up is part of a selection: every card moving. */
+  group?: string[]
 } | null>(null)
 // `index` is the insertion point in the cell's rendered sequence, which still
 // contains the dragged card when the drag stays in its own cell.
@@ -316,11 +480,17 @@ const nestTarget = ref<{
 function onDragStart(item: IBoardItem, lane: IBoardLane | null, colId: string) {
   // A card picked up by keyboard is stale the moment a pointer takes over.
   lifted.value = null
+  const group =
+    isSelected(item.id) && selectedIds.value.length > 1
+      ? selectionInOrder()
+      : undefined
   dragging.value = {
     item,
     fromLaneId: laneIdOf(lane),
     fromColumnId: colId,
+    group,
   }
+  if (group) announcement.value = `Moving ${group.length} cards`
 }
 
 /**
@@ -344,7 +514,13 @@ function onCardDragOver(
   if (!dragging.value) return
   const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
 
-  if (props.nestable && rect.height >= NEST_MIN_CARD_HEIGHT) {
+  // A selection drops between cards only: nesting several cards into one is
+  // not something a single drop can say clearly.
+  if (
+    props.nestable &&
+    !dragging.value.group &&
+    rect.height >= NEST_MIN_CARD_HEIGHT
+  ) {
     const offset = (event.clientY - rect.top) / rect.height
     const edge = (1 - NEST_BAND) / 2
     // Never onto itself: a card cannot become part of the card it is.
@@ -473,6 +649,10 @@ function onDrop(lane: IBoardLane | null, toColId: string) {
     draggedIndex !== -1 && draggedIndex < renderedIndex
       ? renderedIndex - 1
       : renderedIndex
+  if (drag.group) {
+    emitMoveMany(drag.group, drag.item.id, toLaneId, toColId, toIndex)
+    return
+  }
   emitMove(drag, toLaneId, toColId, toIndex)
 }
 
@@ -499,8 +679,24 @@ function onCardKeydown(
 ) {
   const laneId = laneIdOf(lane)
 
+  if (
+    props.selectable &&
+    (event.key === 'x' || event.key === 'X') &&
+    !lifted.value
+  ) {
+    event.preventDefault()
+    toggleSelected(item.id)
+    return
+  }
+
   if (event.key === 'Escape') {
-    if (!lifted.value) return
+    if (!lifted.value) {
+      if (props.selectable && selectedIds.value.length > 0) {
+        event.preventDefault()
+        clearSelection()
+      }
+      return
+    }
     event.preventDefault()
     lifted.value = null
     announcement.value = 'Move cancelled'
@@ -635,6 +831,11 @@ function dropLifted() {
   const g = lifted.value
   if (!g) return
   lifted.value = null
+  if (isSelected(g.item.id) && selectedIds.value.length > 1) {
+    emitMoveMany(selectionInOrder(), g.item.id, g.laneId, g.colId, g.index)
+    void refocusCard(g.item.id)
+    return
+  }
   const moved = emitMove(
     { item: g.item, fromLaneId: g.fromLaneId, fromColumnId: g.fromColumnId },
     g.laneId,
@@ -925,6 +1126,58 @@ function onColumnDragEnd() {
 
 // Picked up by keyboard: outlined, because there is no pointer to show where
 // the card is going and the outline is what says "this one is in your hand".
+// A selected card: the primary outline, kept clear of the card's own
+// border, so it reads as chosen rather than as focused.
+.nb-board__card--selected {
+  outline: 2px solid var(--nb-c-primary);
+  outline-offset: 2px;
+  border-radius: var(--nb-radius-control, 4px);
+}
+
+// The other selected cards while one of them is dragged: they travel too.
+.nb-board__card--carried {
+  opacity: 0.45;
+}
+
+.nb-board__batch {
+  position: sticky;
+  bottom: var(--nb-spacing-16, 16px);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--nb-spacing-12, 12px);
+  inline-size: fit-content;
+  max-inline-size: calc(100% - 32px);
+  margin: var(--nb-spacing-16, 16px) auto 0;
+  padding: var(--nb-spacing-8, 8px) var(--nb-spacing-16, 16px);
+  border-radius: var(--nb-radius-panel, 4px);
+  background: var(--nb-c-primary);
+  color: var(--nb-c-primary-a11y);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.2);
+}
+
+.nb-board__batch-count {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.nb-board__batch-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--nb-spacing-4, 4px);
+}
+
+// Ghost on brand: the bar's inverse foreground, as NbDataTable's batch bar.
+.nb-board__batch-cancel,
+.nb-board__batch-actions .nb-button--ghost {
+  color: inherit;
+
+  &:hover:not(:disabled) {
+    background: var(--nb-c-primary-hover, rgb(255 255 255 / 0.16));
+  }
+}
+
 .nb-board__card--lifted {
   border-color: var(--nb-c-primary);
   box-shadow: inset 0 0 0 1px var(--nb-c-primary);

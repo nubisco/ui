@@ -58,6 +58,20 @@ interface IBoardNestEvent {
   fromLaneId?: string | null
 }
 
+/** Several selected cards moved to one place together. */
+interface IBoardMoveManyEvent {
+  /** The cards that moved, in board order: column by column, top to bottom. */
+  itemIds: string[]
+  /** The column they all moved to. */
+  toColumnId: string
+  /** The lane they moved to (only when lanes are used). */
+  toLaneId?: string | null
+  /** The card left directly above them, or null at the top. Never one of them. */
+  beforeItemId: string | null
+  /** The card left directly below them, or null at the bottom. Never one of them. */
+  afterItemId: string | null
+}
+
 interface IBoardColumnMoveEvent {
   /** The ID of the column that was moved. */
   columnId: string
@@ -89,6 +103,18 @@ interface IBoardProps {
    * has no opinion about whether the result is a subtask, a child or a part.
    */
   nestable?: boolean
+  /**
+   * Let the reader select several cards: Cmd or Ctrl-click toggles one,
+   * Shift-click takes a run within a cell, X toggles the focused card and
+   * Escape clears. Dragging (or picking up with the keyboard) a selected card
+   * moves the whole selection and emits `move-many` instead of `move`. A
+   * `batch-actions` slot, when given, shows a bar of actions for the
+   * selection. Off by default, and off is exactly what every board did
+   * before this existed.
+   */
+  selectable?: boolean
+  /** The selected item ids. Use with `v-model:selected`. */
+  selected?: string[]
 }
 
 export type {
@@ -98,6 +124,7 @@ export type {
   IBoardMoveEvent,
   IBoardNestEvent,
   IBoardColumnMoveEvent,
+  IBoardMoveManyEvent,
   IBoardProps,
 }
 
@@ -108,5 +135,6 @@ export type {
   IBoardMoveEvent as NbBoardMoveEvent,
   IBoardNestEvent as NbBoardNestEvent,
   IBoardColumnMoveEvent as NbBoardColumnMoveEvent,
+  IBoardMoveManyEvent as NbBoardMoveManyEvent,
   IBoardProps as NbBoardProps,
 }

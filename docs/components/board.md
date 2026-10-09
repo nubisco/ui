@@ -218,6 +218,43 @@ it and reorder it.
 
 A card cannot be nested into itself.
 
+## Selecting Several Cards
+
+Set `selectable` and bind `v-model:selected` to let the reader act on several
+cards at once. Off by default.
+
+| Does                            | How                                                                          |
+| ------------------------------- | ---------------------------------------------------------------------------- |
+| Add or remove one card          | <kbd>Cmd</kbd> or <kbd>Ctrl</kbd>-click, or <kbd>X</kbd> on the focused card |
+| Take a run of cards in one cell | <kbd>Shift</kbd>-click                                                       |
+| Clear the selection             | <kbd>Esc</kbd>, or the bar's Clear                                           |
+
+A modified click selects and does not reach the card underneath, so a card
+that opens on click does not also open. Dragging a selected card, or picking
+one up with the keyboard, moves every selected card and emits `move-many`
+(`itemIds` in board order, the destination, and the neighbours left around
+them) instead of `move`. A selection drops between cards only, never onto one.
+
+Give a `batch-actions` slot and a bar of actions floats at the foot of the
+board while cards are selected, the same pattern as `NbDataTable`'s batch bar.
+The slot receives `selected` and `clear`.
+
+```vue
+<NbBoard
+  v-model:selected="selected"
+  :columns="columns"
+  :items="items"
+  selectable
+  @move-many="onMoveMany"
+>
+  <template #batch-actions="{ selected, clear }">
+    <NbButton variant="ghost" size="sm" @click="archive(selected, clear)">
+      Archive
+    </NbButton>
+  </template>
+</NbBoard>
+```
+
 ## Reordering Columns
 
 Set `reorderableColumns` and column headers become draggable. Dropping a header on another column emits `column-move` with the column's destination index; as with cards, the board does not mutate `columns` itself.

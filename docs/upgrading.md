@@ -1,5 +1,12 @@
 # Upgrading
 
+## To 5.18.0 from 5.17.x
+
+`NbBoard` can select several cards, off by default: `selectable` with
+`v-model:selected`, Cmd or Ctrl-click, Shift-click, X and Escape. Dragging a
+selected card emits the new `move-many` event, and a `batch-actions` slot shows
+a bar of actions for the selection. Nothing to do on upgrade.
+
 ## To 5.17.0 from 5.16.x
 
 One addition to `NbModal`, off by default: `closeAppearance="button"` draws
