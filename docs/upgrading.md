@@ -1,5 +1,10 @@
 # Upgrading
 
+## To 5.16.0 from 5.15.x
+
+One addition to `NbSwitch`, off by default: `hideLabel` keeps the label as the
+switch's accessible name but hides it from view. Nothing to do on upgrade.
+
 ## To 5.15.1 from 5.15.0
 
 A visual fix to `NbSelect`. **Look at your forms when you take it.**

@@ -41,6 +41,17 @@ When `verbose` is enabled, the switch shows the current state as a text label (`
   <NbSwitch name="dis2" disabled :model-value="true" label="Disabled on" />
 </preview>
 
+## A label only for assistive technology
+
+Every switch needs a label, because it is the input's accessible name. When the
+row around the switch already says what it controls, for example a list of
+panels each with its own title, set `hide-label`: the label stays the switch's
+name for a screen reader but is not shown.
+
+```vue
+<NbSwitch v-model="shown" name="panel-goals" label="Show Goals" hide-label />
+```
+
 </doc-tab>
 
 <doc-tab name="Api">

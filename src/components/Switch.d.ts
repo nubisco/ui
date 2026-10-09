@@ -15,6 +15,8 @@ interface ISwitchProps extends IHumanInputComponent, IWithLabel {
   modelValue?: boolean
   variant?: `${ESwitchVariant}`
   size?: `${ESwitchSize}`
+  /** Keep the label for assistive technology, but do not show it. */
+  hideLabel?: boolean
 }
 
 export { ESwitchSize, ESwitchVariant, ISwitchProps }

@@ -4,6 +4,7 @@
       v-if="label"
       :for="`${componentInternalId}-input`"
       :disabled="disabled"
+      :class="{ 'nb-switch__label--hidden': hideLabel }"
     >
       {{ label }}
     </NbLabel>
@@ -54,6 +55,11 @@ const props = defineProps({
       Object.values(ESwitchSize).includes(value as ESwitchSize),
   },
   verbose: Boolean,
+  /**
+   * Keep the label for assistive technology but do not show it, for a switch
+   * whose meaning the row around it already makes plain. Off by default.
+   */
+  hideLabel: Boolean,
   name: {
     type: String,
     required: true,
@@ -262,5 +268,18 @@ const wrapperClasses = computed(() => ({
       }
     }
   }
+}
+
+// hideLabel: visually hidden, still the input's accessible name.
+.nb-switch__label--hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 </style>
