@@ -1,5 +1,16 @@
 # Upgrading
 
+## To 5.15.1 from 5.15.0
+
+A visual fix to `NbSelect`. **Look at your forms when you take it.**
+
+The selected value's text read a token that does not exist, so it inherited
+the surrounding font size, usually 16px, while text inputs and date pickers
+beside it used the field size (14px, 13px at `size="sm"`). Selects now match
+the other fields, so a select that was sitting in 16px text gets smaller. A
+layout that leaned on the larger text (a select used as a heading, or sized to
+line up with 16px copy) needs a look. Nothing else changes.
+
 ## To 5.15.0 from 5.14.x
 
 One addition to `NbSelect`, opt-in, plus a keyboard fix.
