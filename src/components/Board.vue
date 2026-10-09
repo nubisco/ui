@@ -1169,8 +1169,9 @@ function onColumnDragEnd() {
 }
 
 // Ghost on brand: the bar's inverse foreground, as NbDataTable's batch bar.
-.nb-board__batch-cancel,
-.nb-board__batch-actions .nb-button--ghost {
+// Specific enough to beat the button's own ghost colour (.nb-button.nb-button--ghost),
+// which otherwise left Clear selection black on the brand bar.
+.nb-board__batch .nb-button.nb-button--ghost {
   color: inherit;
 
   &:hover:not(:disabled) {
