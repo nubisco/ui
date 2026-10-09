@@ -291,13 +291,15 @@ function onColumnMove(e: IBoardColumnMoveEvent) {
 
 ## Props
 
-| Prop                 | Type             | Default     | Description                                           |
-| -------------------- | ---------------- | ----------- | ----------------------------------------------------- |
-| `columns`            | `IBoardColumn[]` | required    | Column definitions (one per status/stage)             |
-| `items`              | `IBoardItem[]`   | required    | Items to display on the board                         |
-| `lanes`              | `IBoardLane[]`   | `undefined` | Optional swim lanes for horizontal grouping           |
-| `reorderableColumns` | `boolean`        | `false`     | Make column headers draggable; emits `column-move`    |
-| `nestable`           | `boolean`        | `false`     | Allow a card to be dropped onto another; emits `nest` |
+| Prop                 | Type             | Default     | Description                                                                  |
+| -------------------- | ---------------- | ----------- | ---------------------------------------------------------------------------- |
+| `columns`            | `IBoardColumn[]` | required    | Column definitions (one per status/stage)                                    |
+| `items`              | `IBoardItem[]`   | required    | Items to display on the board                                                |
+| `lanes`              | `IBoardLane[]`   | `undefined` | Optional swim lanes for horizontal grouping                                  |
+| `reorderableColumns` | `boolean`        | `false`     | Make column headers draggable; emits `column-move`                           |
+| `nestable`           | `boolean`        | `false`     | Allow a card to be dropped onto another; emits `nest`                        |
+| `selectable`         | `boolean`        | `false`     | Let the reader select several cards; emits `move-many` and `update:selected` |
+| `selected`           | `string[]`       | `undefined` | The selected item ids, for `v-model:selected`                                |
 
 ## Interfaces
 
@@ -329,6 +331,14 @@ interface IBoardMoveEvent {
   toIndex: number // index in the destination cell, moved item excluded
   beforeItemId: string | null // item ending up directly above, null at the top
   afterItemId: string | null // item ending up directly below, null at the bottom
+}
+
+interface IBoardMoveManyEvent {
+  itemIds: string[] // in board order
+  toColumnId: string
+  toLaneId?: string | null
+  beforeItemId: string | null // never one of the moving cards
+  afterItemId: string | null
 }
 
 interface IBoardColumnMoveEvent {
