@@ -1,3 +1,10 @@
+# [5.15.0](https://github.com/nubisco/ui/compare/v5.14.0...v5.15.0) (2026-10-09)
+
+
+### Features
+
+* **select:** group options under headings ([7042448](https://github.com/nubisco/ui/commit/70424486b3b623fbac57c107ff65c432b591b374))
+
 # [5.14.0](https://github.com/nubisco/ui/compare/v5.13.0...v5.14.0) (2026-10-08)
 
 
