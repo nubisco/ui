@@ -1,3 +1,10 @@
+# [5.18.0](https://github.com/nubisco/ui/compare/v5.17.0...v5.18.0) (2026-10-09)
+
+
+### Features
+
+* **board:** select several cards and move them together ([332f855](https://github.com/nubisco/ui/commit/332f85553f3f86bbe1ad492e2daf061908cfa62b))
+
 # [5.17.0](https://github.com/nubisco/ui/compare/v5.16.0...v5.17.0) (2026-10-09)
 
 
