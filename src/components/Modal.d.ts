@@ -49,6 +49,12 @@ interface IModalProps {
    */
   closeDisabled?: boolean
   /**
+   * How the close control looks. 'corner' (the default) is the modal's own
+   * square in the header corner. 'button' is a ghost icon NbButton, matching
+   * the close control of panels and drawers.
+   */
+  closeAppearance?: 'corner' | 'button'
+  /**
    * Whether Escape emits `close`. Escape is answered only by the topmost
    * open dialog either way, so a modal underneath keeps its state; set this
    * to `false` when a wrapper (NbConfirm) answers the key itself.

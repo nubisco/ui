@@ -59,6 +59,41 @@ describe('Modal', () => {
     expect(wrapper.emitted('close')).toBeTruthy()
   })
 
+  describe('closeAppearance', () => {
+    it('keeps the corner close by default', () => {
+      const wrapper = createWrapper({ open: true, title: 'T' })
+      expect(wrapper.find('.nb-modal--close').exists()).toBe(true)
+      expect(wrapper.find('.nb-modal--close-button').exists()).toBe(false)
+    })
+
+    it('renders a ghost icon button when asked', async () => {
+      const wrapper = createWrapper({
+        open: true,
+        title: 'T',
+        closeAppearance: 'button',
+      })
+      expect(wrapper.find('.nb-modal--close').exists()).toBe(false)
+      const button = wrapper.find('.nb-modal--close-button')
+      expect(button.exists()).toBe(true)
+      expect(button.classes()).toContain('nb-button')
+      expect(button.attributes('aria-label')).toBe('Close')
+      await button.trigger('click')
+      expect(wrapper.emitted('close')).toBeTruthy()
+    })
+
+    it('honours closeDisabled', () => {
+      const wrapper = createWrapper({
+        open: true,
+        title: 'T',
+        closeAppearance: 'button',
+        closeDisabled: true,
+      })
+      expect(
+        wrapper.find('.nb-modal--close-button').attributes('disabled'),
+      ).toBeDefined()
+    })
+  })
+
   it('emits close when overlay is clicked and closeOnOverlay is true', async () => {
     const wrapper = createWrapper({ open: true, closeOnOverlay: true })
     await wrapper.find('.nb-modal--overlay').trigger('click')

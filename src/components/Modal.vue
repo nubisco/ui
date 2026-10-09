@@ -18,7 +18,21 @@
             <span :id="titleId" class="nb-modal--title">
               <slot name="header">{{ title }}</slot>
             </span>
+            <!-- closeAppearance="button": the same ghost icon button that
+                 closes panels and drawers, so a product can have one close
+                 control everywhere. Off by default. -->
+            <NbButton
+              v-if="closeAppearance === 'button'"
+              class="nb-modal--close-button"
+              size="sm"
+              variant="ghost"
+              icon="x"
+              aria-label="Close"
+              :disabled="closeDisabled"
+              @click="emit('close')"
+            />
             <button
+              v-else
               class="nb-modal--close"
               aria-label="Close"
               :disabled="closeDisabled"
@@ -58,6 +72,7 @@
 
 <script setup lang="ts">
 import NbIcon from './Icon.vue'
+import NbButton from './Button.vue'
 import NbGrid from './Grid.vue'
 import {
   computed,
@@ -89,6 +104,7 @@ const props = withDefaults(defineProps<IModalProps>(), {
   describedBy: undefined,
   busy: false,
   closeDisabled: false,
+  closeAppearance: 'corner',
   closeOnEscape: true,
   trapFocus: true,
   floatingSelectors: undefined,
@@ -367,6 +383,14 @@ $modal-sizes: (
   font-size: 15px;
   font-weight: 600;
   color: var(--nb-c-text);
+}
+
+/* closeAppearance="button": inset beside the title like a panel's close, so
+   it lines up with the header's padding instead of filling the corner. */
+.nb-modal--close-button {
+  flex: none;
+  align-self: center;
+  margin-inline-end: var(--nb-spacing-12);
 }
 
 .nb-modal--close {
