@@ -102,6 +102,7 @@ export type {
   IBoardLane,
   IBoardItem,
   IBoardMoveEvent,
+  IBoardMoveManyEvent,
   IBoardNestEvent,
   IBoardColumnMoveEvent,
   IBoardProps,

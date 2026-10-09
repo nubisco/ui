@@ -473,3 +473,117 @@ describe('NbBoard nesting', () => {
     expect(w.emitted('move')).toHaveLength(1)
   })
 })
+
+describe('NbBoard selection', () => {
+  const cells = (w: ReturnType<typeof mountBoard>) =>
+    w.findAll('.nb-board__cell')
+  const selection = (w: ReturnType<typeof mountBoard>) =>
+    (w.emitted('update:selected')?.at(-1)?.[0] ?? []) as string[]
+
+  it('is off by default: a modified click selects nothing', async () => {
+    const w = mountBoard()
+    await card(w, 'a').trigger('click', { metaKey: true })
+    expect(w.emitted('update:selected')).toBeUndefined()
+    expect(card(w, 'a').attributes('aria-selected')).toBeUndefined()
+  })
+
+  it('toggles with Cmd or Ctrl-click, without opening the card', async () => {
+    const w = mountBoard({ selectable: true, selected: [] })
+    let opened = 0
+    card(w, 'a').element.firstElementChild?.addEventListener(
+      'click',
+      () => opened++,
+    )
+    await card(w, 'a').trigger('click', { metaKey: true })
+    expect(selection(w)).toEqual(['a'])
+    await w.setProps({ selected: ['a'] })
+    expect(card(w, 'a').classes()).toContain('nb-board__card--selected')
+    expect(card(w, 'a').attributes('aria-selected')).toBe('true')
+    await card(w, 'a').trigger('click', { ctrlKey: true })
+    expect(selection(w)).toEqual([])
+    expect(opened).toBe(0)
+  })
+
+  it('takes a run within a cell with Shift-click', async () => {
+    const w = mountBoard({ selectable: true, selected: [] })
+    await card(w, 'a').trigger('click', { metaKey: true })
+    await w.setProps({ selected: ['a'] })
+    await card(w, 'c').trigger('click', { shiftKey: true })
+    expect(selection(w)).toEqual(['a', 'b', 'c'])
+  })
+
+  it('selects the focused card with X and clears with Escape', async () => {
+    const w = mountBoard({ selectable: true, selected: [] })
+    await card(w, 'b').trigger('keydown', { key: 'x' })
+    expect(selection(w)).toEqual(['b'])
+    await w.setProps({ selected: ['b'] })
+    await card(w, 'b').trigger('keydown', { key: 'Escape' })
+    expect(selection(w)).toEqual([])
+  })
+
+  it('drags the whole selection, in board order, as one move-many', async () => {
+    const w = mountBoard({ selectable: true, selected: ['d', 'a'] })
+    await card(w, 'a').trigger('dragstart')
+    expect(card(w, 'd').classes()).toContain('nb-board__card--carried')
+    await cells(w)[2].trigger('dragover')
+    await cells(w)[2].trigger('drop')
+    expect(w.emitted('move')).toBeUndefined()
+    expect(w.emitted('move-many')?.at(-1)?.[0]).toEqual({
+      itemIds: ['a', 'd'],
+      toColumnId: 'done',
+      beforeItemId: null,
+      afterItemId: null,
+    })
+  })
+
+  it('skips moving cards when naming the neighbours', async () => {
+    const w = mountBoard({ selectable: true, selected: ['a', 'b'] })
+    await card(w, 'a').trigger('dragstart')
+    await card(w, 'c').trigger('dragover', { clientY: 0 })
+    await cells(w)[0].trigger('drop')
+    expect(w.emitted('move-many')?.at(-1)?.[0]).toMatchObject({
+      itemIds: ['a', 'b'],
+      toColumnId: 'todo',
+      beforeItemId: 'c',
+      afterItemId: null,
+    })
+  })
+
+  it('moves the selection when a selected card is picked up by keyboard', async () => {
+    const w = mountBoard({ selectable: true, selected: ['a', 'b'] })
+    await card(w, 'a').trigger('keydown', { key: ' ' })
+    await card(w, 'a').trigger('keydown', { key: 'ArrowRight' })
+    await card(w, 'a').trigger('keydown', { key: ' ' })
+    expect(w.emitted('move-many')?.at(-1)?.[0]).toMatchObject({
+      itemIds: ['a', 'b'],
+      toColumnId: 'doing',
+    })
+  })
+
+  it('drags an unselected card on its own', async () => {
+    const w = mountBoard({ selectable: true, selected: ['a', 'b'] })
+    await card(w, 'd').trigger('dragstart')
+    await cells(w)[0].trigger('dragover')
+    await cells(w)[0].trigger('drop')
+    expect(w.emitted('move-many')).toBeUndefined()
+    expect(lastMove(w)).toMatchObject({ itemId: 'd', toColumnId: 'todo' })
+  })
+
+  it('shows the batch bar with the selection, when given actions', async () => {
+    const w = mountBoard(
+      { selectable: true, selected: ['a', 'b'] },
+      {
+        slots: {
+          card: '<i>{{ params.item.title }}</i>',
+          'batch-actions':
+            '<button class="act">Archive {{ params.selected.length }}</button>',
+        },
+      },
+    )
+    const bar = w.find('.nb-board__batch')
+    expect(bar.text()).toContain('2 selected')
+    expect(bar.find('.act').text()).toBe('Archive 2')
+    await bar.findAll('button').at(-1)!.trigger('click')
+    expect(selection(w)).toEqual([])
+  })
+})
