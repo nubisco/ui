@@ -1,5 +1,27 @@
 # Upgrading
 
+## To 5.15.0 from 5.14.x
+
+One addition to `NbSelect`, opt-in, plus a keyboard fix.
+
+**Options can be grouped under headings.** Give an option a `group` and the
+consecutive options sharing it are drawn under one heading, inside a
+`role="group"` named by it. The list is never reordered: a new heading starts
+wherever the name changes. Two options may share a label, told apart by
+`value`. A heading is not an option, so it is never selectable or reachable by
+the arrow keys. If a product fakes headings with disabled options, replace them
+with `group`.
+
+**The arrow keys skip disabled options.** They used to land on them, a
+keystroke that did nothing. ArrowUp with nothing highlighted now stays put
+rather than jumping to the first row.
+
+**`IOptionGroup` is deprecated.** No component ever consumed it. It stays until
+the next major so an import does not break.
+
+**Nothing to do on upgrade.** A list where no option has a `group` renders as it
+did, apart from the keyboard fix above.
+
 ## To 5.13.0 from 5.12.x
 
 One revert, no API changes.

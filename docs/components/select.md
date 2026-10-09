@@ -92,6 +92,50 @@ const selected = ref<string[]>([])
 </script>
 ```
 
+## Groups
+
+Give options a `group` and the ones that share it, consecutively, are drawn
+under one heading. Reach for it when a value only means something under a
+field name: `1.12.0` says nothing on its own, `1.12.0` under **Fixes version**
+says what it answers.
+
+<preview>
+  <NbSelect v-model="version" label="Version" :options="versionOptions" />
+</preview>
+
+```vue
+<script setup lang="ts">
+const options = [
+  { label: '1.9.0', value: 'aff-190', group: 'Affects version' },
+  { label: '1.11.0', value: 'aff-1110', group: 'Affects version' },
+  { label: '1.12.0', value: 'aff-1120', group: 'Affects version' },
+  { label: '1.9.0', value: 'fix-190', group: 'Fixes version' },
+  { label: '1.12.0', value: 'fix-1120', group: 'Fixes version' },
+]
+</script>
+
+<template>
+  <NbSelect v-model="version" label="Version" :options="options" />
+</template>
+```
+
+Three things worth knowing:
+
+- **The order you give is the order you get.** A new heading starts wherever
+  the group name changes, so options are never collected together behind your
+  back. `1.9.0` before `1.11.0` stays that way, which alphabetical sorting
+  would undo, and the same name appearing twice is two headings.
+- **Two options may share a label.** They are told apart by `value`, so a
+  versions list where both groups hold `1.12.0` works without inventing
+  prefixes.
+- **A heading is not an option.** It carries no `role="option"`, the arrow
+  keys pass straight over it, and it is not selectable by any means. Faking
+  one with a `disabled` option gives a screen reader a choice it may not make
+  and costs a keystroke on the way past.
+
+Mixing is fine: options without a `group` render as plain rows, and a list
+where none of them has one is unchanged.
+
 ## Creatable
 
 Set `:creatable="true"` to show a text input at the bottom of the dropdown. When the user types a value and presses Enter, the `create` event fires with the entered string. You can then add it to your options array.
@@ -198,6 +242,8 @@ interface ISelectOption {
   disabled?: boolean
   /** Artwork before the label, in the list and on the closed select. */
   icon?: string
+  /** The heading this option sits under. Runs are formed in order given. */
+  group?: string
 }
 ```
 
@@ -239,6 +285,15 @@ import { ref } from 'vue'
 const locale = ref('en')
 const selectedLocales = ref<string[]>([])
 const platform = ref('linkedin')
+const version = ref('fix-1120')
+
+const versionOptions = [
+  { label: '1.9.0', value: 'aff-190', group: 'Affects version' },
+  { label: '1.11.0', value: 'aff-1110', group: 'Affects version' },
+  { label: '1.12.0', value: 'aff-1120', group: 'Affects version' },
+  { label: '1.9.0', value: 'fix-190', group: 'Fixes version' },
+  { label: '1.12.0', value: 'fix-1120', group: 'Fixes version' },
+]
 
 const platformOptions = [
   { label: 'LinkedIn', value: 'linkedin', icon: 'linkedin-logo' },

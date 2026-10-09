@@ -174,54 +174,67 @@
       :aria-multiselectable="multiple || undefined"
     >
       <div
-        v-for="(option, idx) in options"
-        :key="option.value"
-        :class="[
-          'nb-select__option',
-          {
-            'nb-select__option--selected': isSelected(option.value),
-            'nb-select__option--highlighted': highlighted === idx,
-            'nb-select__option--disabled': option.disabled,
-          },
-        ]"
-        role="option"
-        :aria-selected="isSelected(option.value)"
-        :aria-disabled="option.disabled || undefined"
-        @mouseenter="highlighted = idx"
-        @click="selectOption(option)"
+        v-for="run in optionRuns"
+        :key="run.key"
+        class="nb-select__group"
+        role="group"
+        :aria-labelledby="run.name ? run.labelId : undefined"
       >
-        <span
-          v-if="multiple"
-          class="nb-select__option-check"
-          aria-hidden="true"
+        <div v-if="run.name" :id="run.labelId" class="nb-select__group-label">
+          {{ run.name }}
+        </div>
+        <div
+          v-for="entry in run.entries"
+          :key="entry.option.value"
+          :class="[
+            'nb-select__option',
+            {
+              'nb-select__option--selected': isSelected(entry.option.value),
+              'nb-select__option--highlighted': highlighted === entry.index,
+              'nb-select__option--disabled': entry.option.disabled,
+            },
+          ]"
+          role="option"
+          :aria-selected="isSelected(entry.option.value)"
+          :aria-disabled="entry.option.disabled || undefined"
+          @mouseenter="highlighted = entry.index"
+          @click="selectOption(entry.option)"
         >
-          <svg
-            v-if="isSelected(option.value)"
-            viewBox="0 0 10 8"
-            fill="none"
-            width="10"
-            height="8"
+          <span
+            v-if="multiple"
+            class="nb-select__option-check"
+            aria-hidden="true"
           >
-            <path
-              d="M1 4l3 3 5-6"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </span>
-        <NbIcon
-          v-if="option.icon"
-          class="nb-select__option-icon"
-          :name="option.icon"
-          :size="16"
-        />
-        <span class="nb-select__option-label">
-          <!-- Rich option rows (avatar + name, icon + label) without the
-               consumer re-implementing the listbox. -->
-          <slot name="option" :option="option">{{ option.label }}</slot>
-        </span>
+            <svg
+              v-if="isSelected(entry.option.value)"
+              viewBox="0 0 10 8"
+              fill="none"
+              width="10"
+              height="8"
+            >
+              <path
+                d="M1 4l3 3 5-6"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <NbIcon
+            v-if="entry.option.icon"
+            class="nb-select__option-icon"
+            :name="entry.option.icon"
+            :size="16"
+          />
+          <span class="nb-select__option-label">
+            <!-- Rich option rows (avatar + name, icon + label) without the
+                 consumer re-implementing the listbox. -->
+            <slot name="option" :option="entry.option">{{
+              entry.option.label
+            }}</slot>
+          </span>
+        </div>
       </div>
       <div v-if="!options || options.length === 0" class="nb-select__empty">
         No options
@@ -347,6 +360,56 @@ function isSelected(value: string | number) {
   return selectedValues.value.includes(value)
 }
 
+/**
+ * The options as consecutive runs, so a group heading is drawn once above the
+ * options that carry its name.
+ *
+ * Runs rather than buckets: the array is walked in order and a new run starts
+ * whenever the group name changes. A caller that groups its options has
+ * usually already arranged them (versions, sizes, stages), so collecting all
+ * options of one name together would reorder the list behind its back. If the
+ * same name appears in two places, that is two headings, which is what the
+ * given order says.
+ *
+ * `index` is the option's position in `options` and nothing else, so
+ * `highlighted` keeps meaning exactly what it meant before groups existed.
+ */
+const optionRuns = computed(() => {
+  const runs: Array<{
+    key: string
+    name: string | undefined
+    labelId: string
+    entries: Array<{ option: ISelectOption; index: number }>
+  }> = []
+  ;(props.options ?? []).forEach((option, index) => {
+    const last = runs[runs.length - 1]
+    if (!last || last.name !== option.group) {
+      runs.push({
+        key: `${runs.length}:${option.group ?? ''}`,
+        name: option.group,
+        labelId: `${inputId.value}-group-${runs.length}`,
+        entries: [],
+      })
+    }
+    runs[runs.length - 1].entries.push({ option, index })
+  })
+  return runs
+})
+
+/**
+ * The next option an arrow key should land on, skipping any that cannot be
+ * chosen. Arrowing onto a disabled row was a keystroke that did nothing, and
+ * it is the reason products reached for a disabled option as a fake heading.
+ * Returns the current index when there is nowhere further to go.
+ */
+function nextSelectable(from: number, step: number): number {
+  const opts = props.options ?? []
+  for (let i = from + step; i >= 0 && i < opts.length; i += step) {
+    if (!opts[i].disabled) return i
+  }
+  return from
+}
+
 function selectOption(option: ISelectOption) {
   if (option.disabled) return
   let next: string | number | Array<string | number> | null
@@ -462,11 +525,14 @@ function onKeydown(e: KeyboardEvent) {
     closeDropdown()
   } else if (e.key === 'ArrowDown') {
     e.preventDefault()
-    highlighted.value = Math.min(highlighted.value + 1, opts.length - 1)
+    highlighted.value = nextSelectable(highlighted.value, 1)
     scrollToHighlighted()
   } else if (e.key === 'ArrowUp') {
     e.preventDefault()
-    highlighted.value = Math.max(highlighted.value - 1, 0)
+    // From nowhere, Up stays nowhere rather than jumping to the first row,
+    // which is what `Math.max(-1 - 1, 0)` used to do.
+    if (highlighted.value > 0)
+      highlighted.value = nextSelectable(highlighted.value, -1)
     scrollToHighlighted()
   } else if ((e.key === 'Enter' || e.key === ' ') && highlighted.value >= 0) {
     e.preventDefault()
@@ -575,6 +641,39 @@ defineExpose({
     opacity: 0.45;
     cursor: not-allowed;
   }
+}
+
+// A run of options, grouped or not. Every run is wrapped, so a list with no
+// groups gains one inert div and renders identically: the dropdown lays its
+// children out as blocks, and so does this.
+//
+// Deliberately not `display: contents`, which would lay out identically and
+// has a history of dropping the element, and therefore its role, out of the
+// accessibility tree. The grouping is the entire point of the wrapper.
+.nb-select__group {
+  display: block;
+}
+
+.nb-select__group-label {
+  // A heading, not a row: no hover, no pointer, and never reachable by the
+  // arrow keys. Products used to fake this with a disabled option, which
+  // reads to a screen reader as an option you may not choose and eats a
+  // keystroke on the way past.
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  // A real token rather than opacity on the option colour: the faked version
+  // measured 2.65:1 against the list, under the 4.5:1 this has to clear.
+  color: var(--nb-c-text-subtle);
+  user-select: none;
+  cursor: default;
+}
+
+// The first heading sits flush with the list's own inset.
+.nb-select__group:first-child .nb-select__group-label {
+  padding-top: 4px;
 }
 
 .nb-select__option-check {
