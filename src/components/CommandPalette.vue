@@ -467,6 +467,7 @@ onBeforeUnmount(() => {
 
 <style lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/variables/breakpoints' as bp;
 
 .nb-command-palette__overlay {
   position: fixed;
@@ -632,6 +633,31 @@ onBeforeUnmount(() => {
   .nb-command-palette {
     opacity: 0;
     transform: scale(0.97) translateY(-8px);
+  }
+}
+
+// ── Phone ─────────────────────────────────────────────────────────────────
+// A 640px card 15vh down a phone screen ran its results under the on-screen
+// keyboard, which is exactly where a typed search puts them. On a phone the
+// palette is a full-width sheet from the top edge, never taller than the part
+// of the screen the keyboard leaves (`--nb-vvh`, the visual viewport height
+// NbModal publishes while a dialog is open, with the dynamic viewport as the
+// fallback), and only the results scroll.
+@include bp.phone {
+  .nb-command-palette__overlay {
+    padding-top: 0;
+  }
+
+  .nb-command-palette {
+    max-width: none;
+    max-height: var(--nb-vvh, 100dvh);
+    border-width: 0 0 1px;
+    border-radius: 0;
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .nb-command-palette__results {
+    min-height: 0;
   }
 }
 </style>

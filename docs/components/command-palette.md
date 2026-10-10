@@ -227,6 +227,14 @@ Omit `suggest` and the palette behaves exactly as it always has. Nothing about
 the registered-command path changes.
 :::
 
+## On a phone
+
+On a phone (below 672px, or a touch phone held sideways) the palette is a
+full-width sheet from the top edge instead of a card 15% down the screen. It is
+never taller than the visual viewport (`--nb-vvh`, falling back to `100dvh`),
+so the results stay above the on-screen keyboard, and only the results scroll.
+Desktops are unchanged.
+
 ## Search behavior
 
 The command palette uses fuzzy matching with weighted scoring:

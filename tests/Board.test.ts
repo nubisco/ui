@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
+import { stubPhone, unstubPhone } from './__mocks__/phoneLayout'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import Board from '../src/components/Board.vue'
@@ -585,5 +586,150 @@ describe('NbBoard selection', () => {
     expect(bar.find('.act').text()).toBe('Archive 2')
     await bar.findAll('button').at(-1)!.trigger('click')
     expect(selection(w)).toEqual([])
+  })
+})
+
+describe('NbBoard select mode', () => {
+  const selection = (w: ReturnType<typeof mountBoard>) =>
+    (w.emitted('update:selected')?.at(-1)?.[0] ?? []) as string[]
+
+  it('selects on a plain tap instead of opening the card', async () => {
+    const w = mountBoard({ selectable: true, selected: [], selectMode: true })
+    let opened = 0
+    card(w, 'a').element.firstElementChild?.addEventListener(
+      'click',
+      () => opened++,
+    )
+    await card(w, 'a').find('i').trigger('click')
+    expect(selection(w)).toEqual(['a'])
+    await w.setProps({ selected: ['a'] })
+    await card(w, 'a').find('i').trigger('click')
+    expect(selection(w)).toEqual([])
+    expect(opened).toBe(0)
+  })
+
+  it('does nothing without selectable, and a plain tap still opens the card', async () => {
+    const w = mountBoard({ selectMode: true })
+    let opened = 0
+    card(w, 'a').element.firstElementChild?.addEventListener(
+      'click',
+      () => opened++,
+    )
+    await card(w, 'a').find('i').trigger('click')
+    expect(w.emitted('update:selected')).toBeUndefined()
+    expect(opened).toBe(1)
+    expect(w.classes()).not.toContain('nb-board--select-mode')
+  })
+
+  it('leaves select mode when the selection is cleared', async () => {
+    const w = mountBoard(
+      { selectable: true, selected: ['a'], selectMode: true },
+      {
+        slots: {
+          card: '<i>{{ params.item.title }}</i>',
+          'batch-actions': '<button class="act">Archive</button>',
+        },
+      },
+    )
+    expect(w.classes()).toContain('nb-board--select-mode')
+    await w.find('.nb-board__batch-cancel').trigger('click')
+    expect(selection(w)).toEqual([])
+    expect(w.emitted('update:selectMode')?.at(-1)).toEqual([false])
+  })
+
+  it('does not emit update:selectMode when select mode is off', async () => {
+    const w = mountBoard({ selectable: true, selected: ['b'] })
+    await card(w, 'b').trigger('keydown', { key: 'Escape' })
+    expect(selection(w)).toEqual([])
+    expect(w.emitted('update:selectMode')).toBeUndefined()
+  })
+})
+
+describe('NbBoard on a phone', () => {
+  afterEach(() => unstubPhone())
+
+  const lanes = () => [
+    { id: 'l1', label: 'Lane one' },
+    { id: 'l2', label: 'Lane two' },
+  ]
+
+  it('adds none of the phone markup when not on a phone', () => {
+    const w = mountBoard(
+      { selectable: true, selected: ['a'] },
+      {
+        slots: {
+          card: '<i>{{ params.item.title }}</i>',
+          'batch-actions': '<button class="act">Archive</button>',
+        },
+      },
+    )
+    expect(w.attributes('class')).toBe('nb-board nb-layer-1')
+    expect(w.find('.nb-board__grid').attributes('style')).not.toContain(
+      '--nb-board-cols',
+    )
+    // The bar stays inside the board, where it has always been.
+    expect(w.find('.nb-board__batch').exists()).toBe(true)
+  })
+
+  it('exposes the column count to the phone track', () => {
+    stubPhone()
+    const w = mountBoard()
+    expect(w.find('.nb-board__grid').attributes('style')).toContain(
+      '--nb-board-cols: 3',
+    )
+  })
+
+  it('marks a flat board, and not a swimlane one', () => {
+    stubPhone()
+    expect(mountBoard().classes()).toContain('nb-board--flat')
+    const laned = mountBoard({
+      lanes: lanes(),
+      items: items().map((i) => ({ ...i, laneId: 'l1' })),
+    })
+    expect(laned.classes()).not.toContain('nb-board--flat')
+  })
+
+  it('moves the batch bar to the body and tells the actions it is a phone', async () => {
+    stubPhone()
+    const w = mount(Board, {
+      props: {
+        columns: columns(),
+        items: items(),
+        selectable: true,
+        selected: ['a'],
+      },
+      slots: {
+        card: '<i>{{ params.item.title }}</i>',
+        'batch-actions':
+          '<button class="act">{{ params.phone ? "phone" : "desk" }}</button>',
+      },
+      attachTo: document.body,
+    })
+    await nextTick()
+    expect(w.find('.nb-board__batch').exists()).toBe(false)
+    const bar = document.body.querySelector('.nb-board__batch')
+    expect(bar).not.toBeNull()
+    expect(bar!.parentElement).toBe(document.body)
+    expect(bar!.querySelector('.act')!.textContent).toBe('phone')
+    expect(w.classes()).toContain('nb-board--batching')
+    // The cancel still works from its new home.
+    ;(bar!.querySelector('.nb-board__batch-cancel') as HTMLElement).click()
+    expect(w.emitted('update:selected')?.at(-1)).toEqual([[]])
+    w.unmount()
+    expect(document.body.querySelector('.nb-board__batch')).toBeNull()
+  })
+
+  it('gives the batch actions phone: false off a phone', () => {
+    const w = mountBoard(
+      { selectable: true, selected: ['a'] },
+      {
+        slots: {
+          card: '<i>{{ params.item.title }}</i>',
+          'batch-actions':
+            '<button class="act">{{ params.phone ? "phone" : "desk" }}</button>',
+        },
+      },
+    )
+    expect(w.find('.act').text()).toBe('desk')
   })
 })

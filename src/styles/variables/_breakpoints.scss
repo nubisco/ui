@@ -29,3 +29,39 @@ $breakpoints: (
     @error '`#{$key}` does not exist in the $breakpoints variable';
   }
 }
+
+// The phone layout. Below $bp-md (where NbShell already collapses), or a
+// touch screen too short to be anything but a phone held sideways. Desktops,
+// desktop app windows and touch laptops driven by a mouse report a fine
+// pointer or hover, so the second clause never matches them.
+//
+// Kept in step with NB_PHONE_QUERY in composables/usePhoneLayout.composable.ts
+// (a unit test compares the two), because script decisions need the same
+// answer as the styles.
+/// @type String
+/// @access public
+/// @group @nubisco/layout
+$phone-query: '(max-width: #{$bp-md - 0.02}px), (pointer: coarse) and (hover: none) and (max-height: 500px)' !default;
+
+// The phone layout on a touch screen: where hit areas grow to 44px and field
+// text to 16px. A narrow desktop window gets the layout but keeps its density.
+/// @type String
+/// @access public
+/// @group @nubisco/layout
+$phone-touch-query: '(max-width: #{$bp-md - 0.02}px) and (pointer: coarse), (pointer: coarse) and (hover: none) and (max-height: 500px)' !default;
+
+/// Styles for the phone layout only. Nothing inside reaches a desktop.
+/// @group @nubisco/layout
+@mixin phone {
+  @media #{$phone-query} {
+    @content;
+  }
+}
+
+/// Styles for the phone layout on a touch screen only.
+/// @group @nubisco/layout
+@mixin phone-touch {
+  @media #{$phone-touch-query} {
+    @content;
+  }
+}

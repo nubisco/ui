@@ -19,6 +19,11 @@ interface IInlineEditProps extends IDefaultProps {
   size?: TInlineEditSize
   /** Blocks entering edit mode without changing the presentation. */
   disabled?: boolean
+  /**
+   * Edit in a textarea that grows with its text instead of a one-line input.
+   * Enter commits and Shift+Enter inserts a newline. Off by default.
+   */
+  multiline?: boolean
 }
 
 export type { IInlineEditProps, TInlineEditSize }

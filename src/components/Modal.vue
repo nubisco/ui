@@ -91,6 +91,7 @@ import {
   releaseScrollLock,
 } from '@/composables/useScrollLock.composable'
 import { useFocusTrap } from '@/composables/useFocusTrap.composable'
+import { useVisualViewportVar } from '@/composables/useVisualViewportVar.composable'
 import { floatingSelector } from './Confirm.env'
 import type { IModalProps } from './Modal.d'
 
@@ -157,6 +158,11 @@ useFocusTrap({
   initialFocus: resolveInitialFocus,
   floatingSelector: () => floatingSelector(props.floatingSelectors),
 })
+
+// On a phone the dialog is a sheet sized to the visible part of the page, so
+// it follows the on-screen keyboard instead of hiding its footer behind it.
+// The share is held only while open and only in the phone layout.
+useVisualViewportVar(() => props.open)
 
 // This instance's share of the counted page-scroll lock.
 let locked = false
@@ -284,6 +290,8 @@ defineExpose({ dialogEl: () => contentRef.value, bodyEl: () => bodyRef.value })
 
 <style scoped lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/logic/touch' as touch;
+@use '../styles/variables/breakpoints' as bp;
 
 @use 'sass:list';
 
@@ -422,6 +430,9 @@ $modal-sizes: (
     background 0.15s,
     color 0.15s;
   flex-shrink: 0;
+  // The square is 28px, which a thumb misses. The target grows, the square
+  // does not.
+  @include touch.hit-area;
 
   &:hover {
     background: var(--nb-c-bg-soft);
@@ -475,6 +486,76 @@ $modal-sizes: (
   .nb-modal--content {
     transform: scale(0.96) translateY(-8px);
     opacity: 0;
+  }
+}
+
+// The phone layout. A centred box with a 20px margin wastes a third of a
+// phone's width and puts the actions out of the thumb's reach, so the dialog
+// comes up from the bottom edge instead: `sm` (confirmations, short forms) as
+// a sheet as tall as its content, every larger size as a full screen.
+//
+// Heights come from the visual viewport (useVisualViewportVar), not from the
+// overlay's inset: 0, because the layout viewport keeps its height when the
+// keyboard opens and the footer would sit under the keys. The overlay itself
+// is moved onto the visible box, so `flex-end` means "just above the
+// keyboard".
+@include bp.phone {
+  .nb-modal--overlay {
+    padding: 0;
+    align-items: flex-end;
+    inset: var(--nb-vvt, 0px) 0 auto;
+    height: var(--nb-vvh, 100dvh);
+  }
+
+  .nb-modal--content--sm {
+    max-width: 100%;
+    max-height: var(--nb-vvh, 100dvh);
+    // Square where the sheet meets the screen edge, rounded where it meets
+    // the page.
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+  }
+
+  .nb-modal--content--md,
+  .nb-modal--content--lg,
+  .nb-modal--content--xl,
+  .nb-modal--content--immersive {
+    max-width: 100%;
+    height: var(--nb-vvh, 100dvh);
+    max-height: var(--nb-vvh, 100dvh);
+    // Full screen has no corners, and the close control's highlight follows.
+    @include radius.surface(null, 0px);
+    // Clear of the status bar when the page draws under it (viewport-fit=cover).
+    // Zero everywhere else. Inside the height, not added to it.
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top);
+  }
+
+  // The footer is the last thing on the screen, so it clears the home
+  // indicator. The header and footer already never shrink, so they stay put
+  // while the body scrolls between them.
+  .nb-modal--footer {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  // A sheet slides up from the edge it belongs to. The scrim still fades.
+  .nb-modal-enter-from,
+  .nb-modal-leave-to {
+    .nb-modal--content {
+      transform: translateY(100%);
+      opacity: 1;
+    }
+  }
+
+  // Without motion the sheet only fades, like the scrim.
+  @media (prefers-reduced-motion: reduce) {
+    .nb-modal-enter-from,
+    .nb-modal-leave-to {
+      .nb-modal--content {
+        transform: none;
+        opacity: 0;
+      }
+    }
   }
 }
 </style>

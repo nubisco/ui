@@ -129,8 +129,13 @@ export interface INotificationCenterProps {
   showRetry?: boolean
   /** Counts above this render as "n+" on the badge. */
   maxCount?: number
-  /** Panel width in px. */
+  /** Panel width in px. Ignored on a phone, where the panel is a sheet. */
   width?: number
+  /**
+   * Accessible name of the close button the panel carries on a phone, where
+   * it is a full-screen sheet and nothing outside it is left to tap.
+   */
+  closeLabel?: string
   /** Tallest the scrolling list may get, in px. Clamped further when the
    *  viewport is shorter than that. */
   maxHeight?: number

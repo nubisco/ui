@@ -90,6 +90,7 @@ defineExpose({ el: itemRef })
 
 <style lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/variables/breakpoints' as bp;
 
 .nb-menu-item {
   // --nb-menu-item-h base default lives at :root in styles/_theme.scss; the
@@ -180,6 +181,15 @@ defineExpose({ el: itemRef })
     font-size: 12px;
     color: var(--nb-c-text-muted);
     font-family: var(--nb-font-family-sans, sans-serif);
+  }
+}
+
+// A row is a tap target on a touch phone, so none is shorter than 44px. The
+// floor beats the size variants' height without touching them, and a desktop
+// keeps its density.
+@include bp.phone-touch {
+  .nb-menu-item {
+    min-block-size: 44px;
   }
 }
 

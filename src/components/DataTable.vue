@@ -6,6 +6,8 @@
       { 'nb-data-table--zebra': zebra },
       { 'nb-data-table--sticky': stickyHeader },
       { 'nb-data-table--fill': fill },
+      { 'nb-data-table--stacked': stacked },
+      { 'nb-data-table--stacked-headless': stacked && !stackedHead },
     ]"
     v-bind="layerProps"
   >
@@ -72,6 +74,7 @@
     <div class="nb-data-table__scroll">
       <table
         class="nb-data-table__table"
+        :role="stacked ? 'table' : undefined"
         :aria-label="ariaLabel || title || undefined"
         :aria-busy="loading || undefined"
       >
@@ -85,8 +88,11 @@
           <col v-if="hasRowActions" class="nb-data-table__col-actions" />
         </colgroup>
 
-        <thead class="nb-data-table__head">
-          <tr>
+        <thead
+          class="nb-data-table__head"
+          :role="stacked ? 'rowgroup' : undefined"
+        >
+          <tr :role="stacked ? 'row' : undefined">
             <th
               v-if="hasSelectColumn"
               scope="col"
@@ -110,6 +116,7 @@
                 `nb-data-table__th--${col.align || 'left'}`,
                 { 'nb-data-table__th--sortable': col.sortable },
                 { 'nb-data-table__th--sorted': isSorted(col) },
+                stacked && col.phoneHidden && 'nb-data-table__th--phone-hidden',
               ]"
               :aria-sort="col.sortable ? ariaSortFor(col) : undefined"
             >
@@ -147,7 +154,10 @@
           </tr>
         </thead>
 
-        <tbody class="nb-data-table__body">
+        <tbody
+          class="nb-data-table__body"
+          :role="stacked ? 'rowgroup' : undefined"
+        >
           <!-- Loading: skeleton rows -->
           <template v-if="loading">
             <tr
@@ -222,6 +232,7 @@
                 { 'nb-data-table__row--selected': isSelected(row) },
                 { 'nb-data-table__row--clickable': clickableRows },
               ]"
+              :role="stacked ? 'row' : undefined"
               :aria-selected="
                 selectable !== 'none' ? isSelected(row) : undefined
               "
@@ -258,7 +269,10 @@
                   'nb-data-table__td',
                   `nb-data-table__td--${col.align || 'left'}`,
                   col.cellClass,
+                  stacked && phoneCellClass(col),
                 ]"
+                :role="stacked ? 'cell' : undefined"
+                :data-label="stackOnPhone ? col.header : undefined"
               >
                 <slot
                   :name="`cell-${col.key}`"
@@ -329,6 +343,7 @@ import NbIcon from './Icon.vue'
 import NbButton from './Button.vue'
 import NbGrid from './Grid.vue'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
+import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 
 const props = withDefaults(defineProps<IDataTableProps<T>>(), {
   size: ESizeShort.Medium,
@@ -345,6 +360,7 @@ const props = withDefaults(defineProps<IDataTableProps<T>>(), {
   title: undefined,
   description: undefined,
   ariaLabel: undefined,
+  stackOnPhone: false,
 })
 
 // The table paints the bordered surface its toolbar, header and rows sit on, so
@@ -379,6 +395,44 @@ const totalColumns = computed(
     (hasSelectColumn.value ? 1 : 0) +
     (hasRowActions.value ? 1 : 0),
 )
+
+// #region phone
+// Opt-in, and on a phone only: each row becomes a card. The table is still a
+// table to assistive tech (the roles restore what `display` takes away), and
+// off a phone, or without the prop, not one attribute of the markup changes.
+const { phone } = usePhoneLayout()
+const stacked = computed(() => props.stackOnPhone && phone.value)
+
+// The row's title. The column marked `primary`, or else the first one that is
+// neither hidden nor meta, so a table opted in with no other markup still
+// reads as a list of named things.
+const primaryKey = computed(
+  () =>
+    (
+      visibleColumns.value.find((col) => col.primary) ??
+      visibleColumns.value.find((col) => !col.phoneHidden && !col.phoneMeta)
+    )?.key,
+)
+
+function phoneCellClass(col: IDataTableColumn<T>): string {
+  if (col.phoneHidden) return 'nb-data-table__td--phone-hidden'
+  if (col.key === primaryKey.value) return 'nb-data-table__td--primary'
+  if (col.phoneMeta) return 'nb-data-table__td--meta'
+  return 'nb-data-table__td--field'
+}
+
+// The header shrinks to what still works on a card: the sortable headers, as
+// a row of sort chips, and the select-all box. With neither, or with no rows
+// to act on, it goes entirely.
+const stackedHead = computed(
+  () =>
+    !props.loading &&
+    !props.error &&
+    props.rows.length > 0 &&
+    (props.selectable === 'multiple' ||
+      visibleColumns.value.some((col) => col.sortable && !col.phoneHidden)),
+)
+// #endregion
 
 function colStyle(col: IDataTableColumn<T>) {
   if (col.width == null) return undefined
@@ -583,6 +637,7 @@ function onRowClick(row: T, rowIndex: number) {
 
 <style scoped lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/variables/breakpoints' as bp;
 
 .nb-data-table {
   --nb-dt-row-height: calc(var(--nb-base-unit) * 6);
@@ -963,6 +1018,207 @@ function onRowClick(row: T, rowIndex: number) {
 
   &__footer {
     // NbPagination brings its own top border; nothing needed here.
+  }
+}
+
+// ── Stacked on a phone (stackOnPhone) ──────────────────────
+// Each row becomes a card: the primary cell is its title, the meta cells share
+// one muted line under it, and every other cell is a label and value pair read
+// from `data-label`. The class only exists while the phone layout is on, and
+// the rules are inside the phone query as well, so neither can reach a desktop.
+//
+// Flex rather than grid, because the meta cells need to sit side by side on
+// one line however many there are. The `::before` of the row is a zero-height
+// line break between the title line and the meta line.
+@include bp.phone {
+  .nb-data-table.nb-data-table--stacked {
+    .nb-data-table__table,
+    .nb-data-table__body {
+      display: block;
+    }
+
+    // Widths were set for columns, and there are no columns any more.
+    colgroup {
+      display: none;
+    }
+
+    .nb-data-table__row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      column-gap: var(--nb-spacing-12);
+      padding: var(--nb-spacing-12) var(--nb-dt-cell-pad-x);
+      border-bottom: 1px solid var(--nb-c-border);
+
+      &::before {
+        content: '';
+        order: 2;
+        flex-basis: 100%;
+        height: 0;
+      }
+
+      // The row, not each cell, carries the hover and selected tints, or the
+      // gaps between cells would show through.
+      &:hover {
+        background: var(--nb-c-surface-hover);
+      }
+
+      &--selected {
+        background: var(--nb-c-bg-soft);
+      }
+    }
+
+    .nb-data-table__body .nb-data-table__row:last-child {
+      border-bottom: none;
+    }
+
+    .nb-data-table__row .nb-data-table__td,
+    .nb-data-table__row:hover .nb-data-table__td,
+    .nb-data-table__row--selected .nb-data-table__td,
+    &.nb-data-table--zebra .nb-data-table__row .nb-data-table__td {
+      height: auto;
+      min-width: 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+      text-align: start;
+    }
+
+    // First line: the select control, the title, the row actions.
+    .nb-data-table__select-cell,
+    .nb-data-table__actions-cell {
+      order: 1;
+      flex: none;
+      width: auto;
+      min-width: 0;
+    }
+
+    .nb-data-table__td--primary {
+      order: 1;
+      flex: 1 1 0;
+      font-weight: 600;
+      overflow-wrap: break-word;
+    }
+
+    .nb-data-table__td--meta {
+      order: 3;
+      flex: 0 1 auto;
+      margin-top: var(--nb-spacing-2);
+      font-size: var(--nb-font-size-13);
+      color: var(--nb-c-text-muted);
+    }
+
+    .nb-data-table__td--field {
+      order: 4;
+      display: flex;
+      align-items: baseline;
+      gap: var(--nb-spacing-8);
+      flex-basis: 100%;
+      margin-top: var(--nb-spacing-4);
+      overflow-wrap: break-word;
+
+      &[data-label]:not([data-label=''])::before {
+        content: attr(data-label);
+        flex: 0 0 min(40%, 8rem);
+        font-size: var(--nb-font-size-13);
+        color: var(--nb-c-text-muted);
+      }
+    }
+
+    .nb-data-table__td--phone-hidden,
+    .nb-data-table__th--phone-hidden {
+      display: none;
+    }
+
+    // Skeleton rows have no column roles, so they stack as plain lines.
+    .nb-data-table__row--skeleton .nb-data-table__td {
+      flex-basis: 100%;
+      order: 4;
+    }
+
+    // States are one cell spanning the table. As a block it no longer needs
+    // the colspan, and it gets a compact height that fits a phone screen.
+    .nb-data-table__state-row,
+    .nb-data-table__state {
+      display: block;
+    }
+
+    .nb-data-table__state {
+      padding: var(--nb-spacing-24) var(--nb-dt-cell-pad-x);
+    }
+
+    // The header becomes a strip of sort chips (and the select-all box). The
+    // strip, not each cell, is what sticks.
+    .nb-data-table__head {
+      display: block;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--nb-c-surface-raised);
+      border-bottom: 1px solid var(--nb-c-border);
+
+      tr {
+        display: flex;
+        align-items: center;
+        gap: var(--nb-spacing-4);
+        padding: var(--nb-spacing-4) var(--nb-spacing-8);
+        overflow-x: auto;
+        scrollbar-width: none;
+        overscroll-behavior-x: contain;
+      }
+    }
+
+    .nb-data-table__th {
+      display: none;
+      position: static;
+      height: auto;
+      padding: 0;
+      border: none;
+      background: transparent;
+    }
+
+    .nb-data-table__th--sortable:not(.nb-data-table__th--phone-hidden),
+    .nb-data-table__head .nb-data-table__select-cell {
+      display: flex;
+      flex: none;
+      align-items: center;
+    }
+
+    .nb-data-table__head .nb-data-table__select-cell {
+      padding-inline: var(--nb-spacing-8);
+      min-block-size: 32px;
+    }
+
+    .nb-data-table__sort {
+      width: auto;
+      height: 32px;
+      padding-inline: var(--nb-spacing-12);
+      border: 1px solid var(--nb-c-border);
+      @include radius.standalone(control);
+      font-weight: 500;
+    }
+
+    // There is no hover on a phone, so the arrows are always shown, or a
+    // sortable chip would look like a label.
+    .nb-data-table__sort-icon {
+      opacity: 1;
+    }
+
+    &.nb-data-table--stacked-headless .nb-data-table__head {
+      display: none;
+    }
+  }
+}
+
+@include bp.phone-touch {
+  .nb-data-table.nb-data-table--stacked {
+    .nb-data-table__sort {
+      height: 44px;
+    }
+
+    .nb-data-table__head .nb-data-table__select-cell {
+      min-block-size: 44px;
+    }
   }
 }
 

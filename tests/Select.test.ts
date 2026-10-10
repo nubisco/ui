@@ -72,6 +72,24 @@ describe('Select', () => {
   const press = (wrapper: ReturnType<typeof createWrapper>, key: string) =>
     wrapper.find('.nb-select__trigger').trigger('keydown', { key })
 
+  // The shell closes a phone inspector on Escape unless something inside it
+  // already handled the key. An open select handles it, and says so.
+  it('marks Escape as handled when it closes the list', async () => {
+    const wrapper = createWrapper()
+    await wrapper.find('.nb-select__trigger').trigger('click')
+    expect(wrapper.find('.nb-select--open').exists()).toBe(true)
+    const event = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      cancelable: true,
+    })
+    wrapper.find('.nb-select__trigger').element.dispatchEvent(event)
+    expect(event.defaultPrevented).toBe(true)
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('.nb-select--open').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
   describe('grouped options', () => {
     /**
      * The case this was built for: two groups holding the same values, in a

@@ -93,8 +93,20 @@ const wrapperClasses = computed(() => ({
 </script>
 
 <style lang="scss" scoped>
+@use '../styles/variables/breakpoints' as bp;
+@use '../styles/logic/touch' as touch;
+
 .nb-switch {
+  // On a phone touch screen the row is a fingertip tall, so the hit box around
+  // the track below never reaches into the row above or below it.
+  @include bp.phone-touch {
+    min-block-size: 44px;
+  }
+
   &-wrapper {
+    // The track is 32 by 16. Its own ::after is free (the ON/OFF text is drawn
+    // on the slider), so it takes the taps for a 44px box around it.
+    @include touch.hit-area($position: false);
     position: relative;
     display: inline-block;
     width: calc(var(--nb-base-unit) * 4);

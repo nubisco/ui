@@ -479,8 +479,10 @@ describe('v-nb-tooltip: touch', () => {
     document.body.innerHTML = ''
   })
 
+  // A span: a tap on a control presses it, so a control's tooltip does not
+  // open on touch at all (covered below).
   it('opens on tap and closes itself, since no pointer ever leaves', () => {
-    const wrapper = mountAnchor({ opts: { body: 'Body' } })
+    const wrapper = mountAnchor({ opts: { body: 'Body' }, tag: 'span' })
     el(wrapper).dispatchEvent(new Event('touchstart', { bubbles: true }))
     vi.advanceTimersByTime(1)
     expect(chips().length).toBe(1)
@@ -491,7 +493,7 @@ describe('v-nb-tooltip: touch', () => {
   })
 
   it('ignores the synthetic mouseenter a tap replays', () => {
-    const wrapper = mountAnchor({ opts: { body: 'Body' } })
+    const wrapper = mountAnchor({ opts: { body: 'Body' }, tag: 'span' })
     el(wrapper).dispatchEvent(new Event('touchstart', { bubbles: true }))
     vi.advanceTimersByTime(1)
 
@@ -505,10 +507,83 @@ describe('v-nb-tooltip: touch', () => {
   })
 
   it('can be opted out of for controls where tap means something else', () => {
-    const wrapper = mountAnchor({ opts: { body: 'Body', touch: false } })
+    const wrapper = mountAnchor({
+      opts: { body: 'Body', touch: false },
+      tag: 'span',
+    })
     el(wrapper).dispatchEvent(new Event('touchstart', { bubbles: true }))
     vi.advanceTimersByTime(SHOW_DELAY + 1)
     expect(chips().length).toBe(0)
+    wrapper.unmount()
+  })
+
+  it.each([
+    ['button', {}],
+    ['a', { href: '#x' }],
+    ['div', { role: 'button' }],
+    ['div', { role: 'tab' }],
+    ['div', { role: 'menuitem' }],
+    ['input', {}],
+    ['select', {}],
+    ['textarea', {}],
+    ['label', {}],
+  ])(
+    'does not open on a tap that presses a %s %o',
+    (tag, attrs: Record<string, string>) => {
+      const wrapper = mountAnchor({ opts: { body: 'Body' }, tag, attrs })
+      el(wrapper).dispatchEvent(new Event('touchstart', { bubbles: true }))
+      vi.advanceTimersByTime(SHOW_DELAY + 1)
+      expect(chips().length).toBe(0)
+      wrapper.unmount()
+    },
+  )
+
+  it('does not open on a tap when the anchor sits inside a control', () => {
+    const Host = defineComponent({
+      render() {
+        return h('button', { id: 'host' }, [
+          withDirectives(h('span', { id: 'inside' }, 'Label'), [
+            [resolveDirective('nb-tooltip') as Directive, { body: 'Body' }],
+          ]),
+        ])
+      },
+    })
+    const wrapper = mount(Host, {
+      global: { plugins: [tooltipDirective] },
+      attachTo: document.body,
+    })
+    const inside = document.getElementById('inside') as HTMLElement
+    inside.dispatchEvent(new Event('touchstart', { bubbles: true }))
+    vi.advanceTimersByTime(SHOW_DELAY + 1)
+    expect(chips().length).toBe(0)
+    wrapper.unmount()
+  })
+
+  it('still swallows the mouseenter replayed after a tap on a control', () => {
+    const wrapper = mountAnchor({ opts: { body: 'Body' } })
+    el(wrapper).dispatchEvent(new Event('touchstart', { bubbles: true }))
+    el(wrapper).dispatchEvent(new MouseEvent('mouseenter'))
+    vi.advanceTimersByTime(SHOW_DELAY + 1)
+    expect(chips().length).toBe(0)
+    wrapper.unmount()
+  })
+
+  it('opens on a tap on a disabled control, which presses nothing', () => {
+    const wrapper = mountAnchor({
+      opts: { body: 'Why it is disabled' },
+      attrs: { 'aria-disabled': 'true' },
+    })
+    el(wrapper).dispatchEvent(new Event('touchstart', { bubbles: true }))
+    vi.advanceTimersByTime(1)
+    expect(chips().length).toBe(1)
+    wrapper.unmount()
+  })
+
+  it('still opens a control tooltip on hover', () => {
+    const wrapper = mountAnchor({ opts: { body: 'Body' } })
+    el(wrapper).dispatchEvent(new MouseEvent('mouseenter'))
+    vi.advanceTimersByTime(SHOW_DELAY + 1)
+    expect(chips().length).toBe(1)
     wrapper.unmount()
   })
 })
@@ -821,15 +896,16 @@ describe('v-nb-tooltip: nested anchors', () => {
     wrapper.unmount()
   })
 
-  it('opens exactly one chip on a tap, the innermost', () => {
+  it('opens no chip on a tap on the inner button, not even the wrapper', () => {
     const wrapper = mountNested()
     const inner = document.getElementById('inner') as HTMLElement
 
+    // The inner anchor is a button, so the tap presses it and its chip stays
+    // shut. The wrapper must not take the tap over and open its own instead.
     inner.dispatchEvent(new Event('touchstart', { bubbles: true }))
-    vi.advanceTimersByTime(1)
+    vi.advanceTimersByTime(SHOW_DELAY + 1)
 
-    expect(chips().length).toBe(1)
-    expect(chip().textContent).toContain('Inner')
+    expect(chips().length).toBe(0)
     wrapper.unmount()
   })
 })

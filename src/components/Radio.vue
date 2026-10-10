@@ -82,6 +82,8 @@ function optionClasses(option: IRadioOption) {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/variables/breakpoints' as bp;
+
 .nb-radio {
   display: inline-flex;
   flex-direction: column;
@@ -116,6 +118,12 @@ function optionClasses(option: IRadioOption) {
     cursor: pointer;
     user-select: none;
     min-height: 20px;
+
+    // The whole option row is the target. On a phone touch screen it grows
+    // to a fingertip, 20px of first line plus 12px either side.
+    @include bp.phone-touch {
+      padding-block: 12px;
+    }
 
     &--disabled {
       opacity: var(--nb-field-disabled-opacity, 0.45);

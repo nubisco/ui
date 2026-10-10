@@ -3,9 +3,14 @@
     <div
       ref="listRef"
       class="nb-tabs__list"
+      :class="{
+        'nb-tabs__list--fade-start': phone && fadeStart,
+        'nb-tabs__list--fade-end': phone && fadeEnd,
+      }"
       role="tablist"
       :aria-label="ariaLabel || undefined"
       @keydown="onKeydown"
+      @scroll.passive="updateFades"
     >
       <button
         v-for="item in items"
@@ -55,10 +60,19 @@
 <script setup lang="ts">
 import NbIcon from './Icon.vue'
 import NbBadge from './Badge.vue'
-import { computed, ref, useSlots, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  useSlots,
+  watch,
+} from 'vue'
 import { ETabsSize, ETabsVariant, ITabItem, ITabsProps } from './Tabs.d'
 import { useStableId } from '@/composables/useStableId.composable'
 import { hasSlotContent } from '@/utils/slotContent.helper'
+import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 
 const props = withDefaults(defineProps<ITabsProps>(), {
   id: undefined,
@@ -161,6 +175,65 @@ function jump(item: ITabItem | undefined): void {
   focusTab(item.id)
 }
 
+// ── Phone: a bar that scrolls ────────────────────────────────────────────────
+//
+// On a phone the bar scrolls sideways instead of running off the screen, so
+// the tab that is active has to be brought into view by us: a tab chosen on
+// load, or by an arrow key, may sit past the edge. scrollLeft is set on the
+// list directly, never through scrollIntoView, which also scrolls every
+// scrollable ancestor (the page, a shell region) to line the tab up.
+const { phone } = usePhoneLayout()
+const fadeStart = ref(false)
+const fadeEnd = ref(false)
+
+// The width of the edge fade, which is also the margin kept around a tab
+// brought into view, so it never lands under the fade.
+const FADE_PX = 24
+
+function updateFades(): void {
+  const list = listRef.value
+  if (!phone.value || !list) return
+  const max = list.scrollWidth - list.clientWidth
+  fadeStart.value = list.scrollLeft > 1
+  fadeEnd.value = list.scrollLeft < max - 1
+}
+
+function revealActive(): void {
+  const list = listRef.value
+  if (!phone.value || !list) return
+  const tab = [...list.querySelectorAll<HTMLElement>('[data-tab-id]')].find(
+    (button) => button.dataset.tabId === activeId.value,
+  )
+  if (tab) {
+    const listRect = list.getBoundingClientRect()
+    const tabRect = tab.getBoundingClientRect()
+    const start = tabRect.left - listRect.left + list.scrollLeft
+    const end = start + tabRect.width
+    const first = tab === list.firstElementChild
+    const last = tab === list.lastElementChild
+    if (start < list.scrollLeft + (first ? 0 : FADE_PX))
+      list.scrollLeft = Math.max(0, first ? 0 : start - FADE_PX)
+    else if (end > list.scrollLeft + list.clientWidth - (last ? 0 : FADE_PX))
+      list.scrollLeft = end - list.clientWidth + (last ? 0 : FADE_PX)
+  }
+  updateFades()
+}
+
+watch([activeId, phone], () => nextTick(revealActive))
+
+function onResize(): void {
+  revealActive()
+}
+
+onMounted(() => {
+  revealActive()
+  window.addEventListener('resize', onResize, { passive: true })
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', onResize)
+})
+
 function onKeydown(event: KeyboardEvent): void {
   switch (event.key) {
     case 'ArrowRight':
@@ -184,6 +257,7 @@ function onKeydown(event: KeyboardEvent): void {
 
 <style scoped lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/variables/breakpoints' as bp;
 
 .nb-tabs {
   display: flex;
@@ -315,6 +389,70 @@ function onKeydown(event: KeyboardEvent): void {
 
   &--contained &__tab--active:hover:not(:disabled) {
     color: var(--nb-c-white);
+  }
+
+  // ── Phone: the bar scrolls sideways ──────────────────────────────────────────
+  // More tabs than fit used to run off the screen with no way to reach them.
+  // On a phone the bar scrolls instead, without a visible scrollbar, and an
+  // edge fades out on whichever side there is more to see.
+  @include bp.phone {
+    &__list {
+      min-width: 0;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x proximity;
+      -webkit-overflow-scrolling: touch;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    &__list--fade-start {
+      mask-image: linear-gradient(to right, transparent, #000 24px);
+    }
+
+    &__list--fade-end {
+      mask-image: linear-gradient(to left, transparent, #000 24px);
+    }
+
+    &__list--fade-start.nb-tabs__list--fade-end {
+      mask-image: linear-gradient(
+        to right,
+        transparent,
+        #000 24px,
+        #000 calc(100% - 24px),
+        transparent
+      );
+    }
+
+    &__tab {
+      flex-shrink: 0;
+      scroll-snap-align: start;
+    }
+
+    // A scrolling box clips at its padding edge, which would cut off the 2px
+    // the line tabs hang over the list's rule, and the active underline with
+    // it. The rule is drawn inside the list instead, where the tabs cover it
+    // exactly as they cover the border on desktop.
+    &--line &__list {
+      border-bottom: 0;
+      box-shadow: inset 0 -2px 0 var(--nb-c-border);
+    }
+
+    &--line &__tab {
+      margin-bottom: 0;
+    }
+  }
+
+  // A fingertip tall on a phone touch screen, the `sm` size included.
+  @include bp.phone-touch {
+    &__tab {
+      min-block-size: 44px;
+    }
   }
 
   // ── Panel ─────────────────────────────────────────────────────────────────────

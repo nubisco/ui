@@ -154,6 +154,8 @@ function onKeydown(event: KeyboardEvent) {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/variables/breakpoints' as bp;
+
 .nb-accordion-item {
   & + & {
     border-top: 1px solid var(--nb-c-border);
@@ -206,6 +208,13 @@ function onKeydown(event: KeyboardEvent) {
   &:disabled {
     color: var(--nb-c-text-subtle);
     cursor: not-allowed;
+  }
+
+  // A fingertip tall on a phone touch screen, even at the `sm` density. The
+  // aside layout zeroes this on the button and puts the floor on the heading
+  // instead (below), and its more specific rule still wins here.
+  @include bp.phone-touch {
+    min-height: max(44px, var(--nb-accordion-row-h, 40px));
   }
 
   // Hover and focus reach into the gutter on a flush accordion, so the target
@@ -278,6 +287,10 @@ function onKeydown(event: KeyboardEvent) {
   min-height: var(--nb-accordion-row-h);
   padding: var(--nb-accordion-pad-y) var(--nb-accordion-pad-x);
   transition: background 70ms linear;
+
+  @include bp.phone-touch {
+    min-height: max(44px, var(--nb-accordion-row-h, 40px));
+  }
 
   &:hover {
     background: var(--nb-c-surface-hover);

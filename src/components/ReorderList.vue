@@ -200,15 +200,44 @@ function onPointerDown(event: PointerEvent, index: number) {
   if (props.handle && !fromHandle) return
   if (!fromHandle && target.closest('button, a, input, select, textarea'))
     return
+  // A finger on the row body is a scroll, not a drag. The browser takes that
+  // gesture and cancels the pointer, so starting a drag there only dims the
+  // row for a moment. The grip opts out of panning, so a touch drag starts
+  // there and only there.
+  if (event.pointerType === 'touch' && !fromHandle) return
+  // A second finger landing mid-drag must not restart it on another row. A
+  // mouse has one pointer id, so it still restarts as it always has.
+  if (dragIndex.value !== null && event.pointerId !== activePointer) return
 
   // A row picked up by keyboard is stale the moment a pointer takes over, and
   // leaving it outlined says something is held when nothing is.
   liftedIndex.value = null
   dragIndex.value = index
   dropLine.value = index
+  activePointer = event.pointerId
+  // Keeps the moves coming to us while the finger travels over other rows.
+  // Not for a mouse: capture would freeze the other rows' hover state during
+  // the drag, which is a visible change on desktop for no gain.
+  if (event.pointerType && event.pointerType !== 'mouse') {
+    const grab = target.closest<HTMLElement>('.nb-reorder-list__grab')
+    try {
+      grab?.setPointerCapture?.(event.pointerId)
+    } catch {
+      // The pointer is already gone (released before the handler ran).
+    }
+  }
   suppressSelection()
   window.addEventListener('pointermove', onPointerMove)
   window.addEventListener('pointerup', onPointerUp)
+  window.addEventListener('pointercancel', onPointerCancel)
+}
+
+// The pointer the current drag belongs to. Moves and releases from any other
+// pointer (a second finger) are ignored.
+let activePointer: number | undefined
+
+function isActivePointer(event: PointerEvent): boolean {
+  return event.pointerId === activePointer
 }
 
 // Dragging a row otherwise paints a text selection across whatever the pointer
@@ -237,6 +266,7 @@ function restoreSelection() {
 
 function onPointerMove(event: PointerEvent) {
   if (dragIndex.value === null || !listRef.value) return
+  if (!isActivePointer(event)) return
   const rowEls = [
     ...listRef.value.querySelectorAll<HTMLElement>('[data-index]'),
   ]
@@ -254,7 +284,8 @@ function onPointerMove(event: PointerEvent) {
   dropLine.value = line
 }
 
-function onPointerUp() {
+function onPointerUp(event: PointerEvent) {
+  if (!isActivePointer(event)) return
   const from = dragIndex.value
   const line = dropLine.value
   cleanupPointer()
@@ -265,12 +296,23 @@ function onPointerUp() {
   move(from, to, 'pointer')
 }
 
+// The browser took the pointer away: a scroll won, the page lost focus, a
+// system gesture started. Nothing was dropped, so nothing moves. Without this
+// the row stayed held and the listeners stayed armed, and the next tap
+// anywhere on the page dropped the row wherever that tap happened to be.
+function onPointerCancel(event: PointerEvent) {
+  if (!isActivePointer(event)) return
+  cleanupPointer()
+}
+
 function cleanupPointer() {
   restoreSelection()
   dragIndex.value = null
   dropLine.value = null
+  activePointer = undefined
   window.removeEventListener('pointermove', onPointerMove)
   window.removeEventListener('pointerup', onPointerUp)
+  window.removeEventListener('pointercancel', onPointerCancel)
 }
 
 onBeforeUnmount(cleanupPointer)
@@ -278,6 +320,7 @@ onBeforeUnmount(cleanupPointer)
 
 <style scoped lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/logic/touch' as touch;
 
 .nb-reorder-list {
   // The gap between rows is the drop indicator's home, so it is owned here as
@@ -380,6 +423,12 @@ onBeforeUnmount(cleanupPointer)
   // Stops the browser starting its own native drag of the grip glyph, which
   // shows a ghost image and competes with the drop indicator.
   -webkit-user-drag: none;
+  // A finger on the grip drags the row instead of scrolling the page. Without
+  // it the browser claims the gesture and cancels the pointer. A mouse never
+  // pans, so this changes nothing for it.
+  touch-action: none;
+  // The grip is 16px, far too small for a fingertip.
+  @include touch.hit-area;
 
   &:focus-visible {
     outline: 2px solid var(--nb-c-focus-ring);

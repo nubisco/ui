@@ -399,12 +399,48 @@ Give that wrapper the same treatment and it works again:
 
 Leave `fill` off (the default) and the table sizes to its content exactly as before.
 
+## Stacked on a phone
+
+Set `stackOnPhone` and, on a phone layout (below 672px, or a phone held
+sideways), each row becomes a card instead of a squeezed table row. Off a phone
+the table renders exactly as without the prop.
+
+- The column marked `primary` is the card's title. Without one, the first
+  column that is neither `phoneHidden` nor `phoneMeta` is.
+- Columns marked `phoneMeta` share one muted line under the title: a key, an
+  owner, a date.
+- Every other column is a label and value pair, labelled with its `header`.
+- Columns marked `phoneHidden` are left out of the card.
+- Column widths are ignored, because there are no columns any more.
+- Sortable headers stay, as a strip of sort chips above the cards that cycle
+  the same way the headers do. The select-all box stays beside them. With
+  neither, or with no rows, the header is not shown, and the empty state is
+  compact.
+- Clickable rows stay clickable, and the row actions sit at the end of the
+  title line.
+
+```vue
+<NbDataTable
+  :columns="[
+    { key: 'title', header: 'Title', primary: true, sortable: true },
+    { key: 'key', header: 'Key', phoneMeta: true },
+    { key: 'owner', header: 'Owner', phoneMeta: true },
+    { key: 'status', header: 'Status' },
+    { key: 'type', header: 'Type', phoneHidden: true },
+  ]"
+  :rows="rows"
+  row-key="id"
+  stack-on-phone
+/>
+```
+
 ## Accessibility
 
 - Renders a real `<table>` with `<th scope="col">` header cells and a `<colgroup>` for widths.
 - Sortable headers are `<button>`s inside the `<th>` and expose `aria-sort` (`ascending` / `descending` / `none`), so sorting works with keyboard and screen readers.
 - Selection controls are labelled checkboxes / radios; selected rows carry `aria-selected`.
 - The table exposes `aria-busy` while loading, and uses `aria-label` (from `ariaLabel` or `title`).
+- Stacked on a phone, the table, rows and cells carry explicit `table`, `row` and `cell` roles, because the change of `display` that makes the cards would otherwise strip the table semantics in some browsers.
 
 </doc-tab>
 
@@ -431,6 +467,7 @@ Leave `fill` off (the default) and the table sizes to its content exactly as bef
 | `title`        | `string`                                  | `undefined` | Toolbar title                                       |
 | `description`  | `string`                                  | `undefined` | Toolbar sub-text                                    |
 | `ariaLabel`    | `string`                                  | `undefined` | Accessible name for the `<table>`                   |
+| `stackOnPhone` | `boolean`                                 | `false`     | On a phone, render each row as a stacked card       |
 
 ## Interfaces
 
@@ -444,6 +481,9 @@ interface IDataTableColumn<T = Record<string, unknown>> {
   render?: (row: T, value: unknown, rowIndex: number) => VNodeChild
   cellClass?: string
   hidden?: boolean
+  primary?: boolean // with stackOnPhone: the card's title on a phone
+  phoneHidden?: boolean // with stackOnPhone: left out of the card on a phone
+  phoneMeta?: boolean // with stackOnPhone: on the muted line under the title
 }
 
 type TSortDirection = 'asc' | 'desc' | 'none'

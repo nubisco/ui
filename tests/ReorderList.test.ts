@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import ReorderList from '../src/components/ReorderList.vue'
@@ -180,5 +180,121 @@ describe('NbReorderList text selection', () => {
     expect(document.body.style.userSelect).toBe('none')
     w.unmount()
     expect(document.body.style.userSelect).toBe('')
+  })
+})
+
+describe('NbReorderList touch', () => {
+  // Rows laid out 40px apart, so a pointer at clientY picks a gap the same way
+  // it would in a browser.
+  const layout = (w: ReturnType<typeof mountList>) => {
+    w.findAll('.nb-reorder-list__row').forEach((row, i) => {
+      ;(row.element as HTMLElement).getBoundingClientRect = () =>
+        ({ top: i * 40, height: 40, bottom: i * 40 + 40 }) as DOMRect
+    })
+  }
+  const pointer = (
+    type: string,
+    init: { pointerId?: number; clientY?: number; pointerType?: string } = {},
+  ) =>
+    new PointerEvent(type, {
+      bubbles: true,
+      button: 0,
+      pointerId: 7,
+      pointerType: 'touch',
+      ...init,
+    })
+
+  it('drags a row by its grip with a finger, end to end', async () => {
+    const w = mountList({}, true)
+    layout(w)
+    const grip = grabs(w)[0].element as HTMLElement
+    const capture = vi.fn()
+    grip.setPointerCapture = capture
+
+    grip.dispatchEvent(pointer('pointerdown'))
+    await nextTick()
+    expect(capture).toHaveBeenCalledWith(7)
+    expect(w.find('.nb-reorder-list__row--dragging').exists()).toBe(true)
+
+    window.dispatchEvent(pointer('pointermove', { clientY: 100 }))
+    window.dispatchEvent(pointer('pointerup', { clientY: 100 }))
+    await nextTick()
+    expect(order(w)).toEqual(['b', 'c', 'a'])
+    expect(w.emitted('reorder')?.at(-1)?.[0]).toMatchObject({
+      from: 0,
+      to: 2,
+      via: 'pointer',
+    })
+    expect(w.find('.nb-reorder-list__row--dragging').exists()).toBe(false)
+    w.unmount()
+  })
+
+  it('cleans up without moving when the browser cancels the pointer', async () => {
+    // The bug this guards: a cancelled touch left the row held and the
+    // listeners armed, so the next tap anywhere dropped the row there.
+    const w = mountList({}, true)
+    layout(w)
+    const grip = grabs(w)[0].element as HTMLElement
+    grip.setPointerCapture = vi.fn()
+
+    grip.dispatchEvent(pointer('pointerdown'))
+    window.dispatchEvent(pointer('pointermove', { clientY: 100 }))
+    window.dispatchEvent(pointer('pointercancel'))
+    await nextTick()
+    expect(w.find('.nb-reorder-list__row--dragging').exists()).toBe(false)
+    expect(w.find('.nb-reorder-list--dragging').exists()).toBe(false)
+    expect(document.body.style.userSelect).toBe('')
+
+    // A later tap lands nowhere in particular and must not move anything.
+    window.dispatchEvent(pointer('pointerup', { clientY: 100 }))
+    await nextTick()
+    expect(w.emitted('update:modelValue')).toBeUndefined()
+    w.unmount()
+  })
+
+  it('does not start a drag from the row body with a finger', async () => {
+    // That gesture belongs to the page scroll.
+    const w = mountList({}, true)
+    w.find('.nb-reorder-list__content').element.dispatchEvent(
+      pointer('pointerdown'),
+    )
+    await nextTick()
+    expect(w.find('.nb-reorder-list__row--dragging').exists()).toBe(false)
+    w.unmount()
+  })
+
+  it('ignores a second finger while one is dragging', async () => {
+    const w = mountList({}, true)
+    layout(w)
+    const grips = grabs(w).map((g) => g.element as HTMLElement)
+    grips.forEach((g) => (g.setPointerCapture = vi.fn()))
+
+    grips[0].dispatchEvent(pointer('pointerdown'))
+    grips[2].dispatchEvent(pointer('pointerdown', { pointerId: 8 }))
+    window.dispatchEvent(pointer('pointerup', { pointerId: 8, clientY: 0 }))
+    await nextTick()
+    expect(w.findAll('.nb-reorder-list__row')[0].classes()).toContain(
+      'nb-reorder-list__row--dragging',
+    )
+    expect(w.emitted('update:modelValue')).toBeUndefined()
+
+    window.dispatchEvent(pointer('pointermove', { clientY: 60 }))
+    window.dispatchEvent(pointer('pointerup', { clientY: 60 }))
+    await nextTick()
+    expect(order(w)).toEqual(['b', 'a', 'c'])
+    w.unmount()
+  })
+
+  it('does not capture a mouse, so desktop hover keeps working mid-drag', async () => {
+    const w = mountList({}, true)
+    const grip = grabs(w)[0].element as HTMLElement
+    const capture = vi.fn()
+    grip.setPointerCapture = capture
+    grip.dispatchEvent(pointer('pointerdown', { pointerType: 'mouse' }))
+    await nextTick()
+    expect(capture).not.toHaveBeenCalled()
+    expect(w.find('.nb-reorder-list__row--dragging').exists()).toBe(true)
+    window.dispatchEvent(pointer('pointerup', { pointerType: 'mouse' }))
+    w.unmount()
   })
 })

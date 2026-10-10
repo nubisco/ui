@@ -111,6 +111,8 @@ async function onReorder({ from, to }) {
 - **The dragged row stays put and dims** rather than following the pointer. A row moving under the cursor competes with the drop indicator, and the indicator is the part that says what will actually happen.
 - **Pointer events, not HTML5 drag and drop.** Drag events cannot be styled consistently, do not fire on touch without a polyfill, and give no control over where the drop indicator sits.
 - **A held row is dropped if focus leaves it.** A row still held after the user has tabbed away is a trap with nothing to cancel it.
+- **On a touch screen the grip is the handle.** A finger on the row body scrolls the page, as it should, and a finger on the grip drags. The grip opts out of panning (`touch-action: none`), holds on to the pointer for the whole drag, and takes taps in a 44px box on a phone touch screen.
+- **A drag the browser cancels moves nothing.** When a scroll, a system gesture or a lost focus takes the pointer away, the row is put down where it was and the list forgets the drag, so a later tap elsewhere cannot drop it somewhere random.
 - **The gap between rows opens while dragging**, from 4px to 12px, so the drop indicator is a bar sitting in a space rather than a hairline pinched between two borders. The indicator is centred in that gap, which is why the gap is a token the component owns rather than a margin on the rows.
 
 ## Styling

@@ -54,6 +54,7 @@ import * as iconInfo from '@nubisco/ui/icons/info'
 import NbIcon from './Icon.vue'
 import { useStableId } from '@/composables/useStableId.composable'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
+import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 import {
   placeAnchored,
   viewportSize,
@@ -251,6 +252,32 @@ function onDocumentKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') close()
 }
 
+const { phone } = usePhoneLayout()
+
+/**
+ * On a phone a scroll is a swipe, and a swipe means the user has moved on: a
+ * pinned hint that followed its trigger up the screen sat over the content
+ * they were scrolling to. So in the phone layout a scroll of anything that
+ * holds the trigger (the page, a list, a sheet) closes the hint. A scroll
+ * inside the popover is the user reading it, and a scroll of an unrelated
+ * container does not move the trigger, so both keep it. Elsewhere the hint
+ * follows its trigger, as it always has.
+ */
+function onScroll(event: Event) {
+  if (phone.value && scrolledAncestor(event.target)) {
+    close()
+    return
+  }
+  reposition()
+}
+
+function scrolledAncestor(target: EventTarget | null): boolean {
+  if (target === document || target === window) return true
+  if (!(target instanceof Node)) return false
+  if (popoverRef.value?.contains(target)) return false
+  return !!triggerRef.value && target.contains(triggerRef.value)
+}
+
 // Listeners exist only while the popover does. A hint is a leaf that can be
 // rendered hundreds of times in a table, so an always-on document listener per
 // instance would be a real cost.
@@ -262,12 +289,12 @@ watch(isOpen, (value) => {
     window.addEventListener('resize', reposition)
     // capture: true also catches scrolls in nested containers, which is where
     // a hint inside a scrolling table would otherwise drift off its anchor.
-    window.addEventListener('scroll', reposition, true)
+    window.addEventListener('scroll', onScroll, true)
   } else {
     document.removeEventListener('pointerdown', onDocumentPointerDown, true)
     document.removeEventListener('keydown', onDocumentKeydown)
     window.removeEventListener('resize', reposition)
-    window.removeEventListener('scroll', reposition, true)
+    window.removeEventListener('scroll', onScroll, true)
   }
 })
 
@@ -284,7 +311,7 @@ onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', onDocumentPointerDown, true)
   document.removeEventListener('keydown', onDocumentKeydown)
   window.removeEventListener('resize', reposition)
-  window.removeEventListener('scroll', reposition, true)
+  window.removeEventListener('scroll', onScroll, true)
 })
 
 defineExpose({ open, close, isOpen })
@@ -292,6 +319,7 @@ defineExpose({ open, close, isOpen })
 
 <style scoped lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/logic/touch' as touch;
 
 .nb-info-hint {
   display: inline-flex;
@@ -310,6 +338,9 @@ defineExpose({ open, close, isOpen })
   cursor: help;
   border-radius: var(--nb-radius-pill);
   transition: color var(--nb-animation-fast) ease;
+  // A 14px glyph is the whole control. On a touch phone the target grows to
+  // 44px around it, the glyph does not.
+  @include touch.hit-area;
 
   &:hover,
   &.nb-info-hint--trigger-open {

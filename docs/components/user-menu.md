@@ -156,6 +156,8 @@ createI18n({
 
 `right-end` (the default) opens the panel to the right of the trigger, aligned to its bottom, for a rail-style sidebar. `top-start` opens it above and left-aligned, for a trigger sitting at the bottom of a wide sidebar or in a header.
 
+On a phone (below 672px, or a touch phone held sideways) the rail is a drawer as wide as most of the screen, so `right-end` would open the panel past the right edge. There the panel always opens above the trigger, as `top-start` does, held 8px inside both screen edges. Desktops keep the placement you asked for.
+
 </doc-tab>
 
 <doc-tab name="Api">

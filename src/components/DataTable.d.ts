@@ -48,6 +48,19 @@ export interface IDataTableColumn<T = Record<string, unknown>> {
   cellClass?: string
   /** Accessible-but-hidden columns still occupy a `<col>`. Set to hide. */
   hidden?: boolean
+  /**
+   * With `stackOnPhone`, this column is the card's title on a phone. Without
+   * one, the first column that is neither `phoneHidden` nor `phoneMeta` is.
+   * No effect off a phone.
+   */
+  primary?: boolean
+  /** With `stackOnPhone`, leave this column out of the card on a phone. */
+  phoneHidden?: boolean
+  /**
+   * With `stackOnPhone`, show this column on the card's muted meta line under
+   * the title (a key, a date, an owner) instead of as a labelled field.
+   */
+  phoneMeta?: boolean
 }
 // #endregion
 
@@ -122,6 +135,16 @@ export interface IDataTableProps<T = Record<string, unknown>> {
   /** Accessible name for the `<table>` (rendered as a visually-hidden
    *  `<caption>` when no `title` is set). */
   ariaLabel?: string
+  /**
+   * On a phone, render each row as a stacked card instead of a table row: the
+   * `primary` column is the title, `phoneMeta` columns share a muted line
+   * under it, the rest are label and value pairs, and `phoneHidden` columns
+   * are left out. Sortable headers become a strip of sort chips. Off a phone
+   * the table renders exactly as without it.
+   *
+   * @default false
+   */
+  stackOnPhone?: boolean
 }
 
 /** Payload emitted by `NbDataTable` events. */

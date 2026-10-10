@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
+import { stubPhone, unstubPhone } from './__mocks__/phoneLayout'
 import { h } from 'vue'
 import { mount } from '@vue/test-utils'
 import DataTable from '../src/components/DataTable.vue'
@@ -420,5 +421,122 @@ describe('NbDataTable fill mode', () => {
     const wrapper = mountTable({ fill: true, stickyHeader: true })
     expect(wrapper.classes()).toContain('nb-data-table--fill')
     expect(wrapper.classes()).toContain('nb-data-table--sticky')
+  })
+})
+
+describe('NbDataTable stackOnPhone', () => {
+  interface Item {
+    id: number
+    title: string
+    key: string
+    owner: string
+    status: string
+    type: string
+  }
+  const itemColumns: IDataTableColumn<Item>[] = [
+    { key: 'key', header: 'Key', phoneMeta: true, width: 80 },
+    { key: 'title', header: 'Title', primary: true, sortable: true },
+    { key: 'owner', header: 'Owner', phoneMeta: true },
+    { key: 'status', header: 'Status' },
+    { key: 'type', header: 'Type', phoneHidden: true, sortable: true },
+  ]
+  const items: Item[] = [
+    {
+      id: 1,
+      title: 'Ship it',
+      key: 'WEB-1',
+      owner: 'Ada',
+      status: 'Open',
+      type: 'Task',
+    },
+  ]
+  const mountItems = (props: Record<string, unknown> = {}, attrs = {}) =>
+    mount(DataTable, {
+      props: { columns: itemColumns, rows: items, rowKey: 'id', ...props },
+      attrs,
+    })
+  const cells = (w: ReturnType<typeof mountItems>) =>
+    w.findAll('tbody td').map((td) => td.classes())
+
+  afterEach(() => unstubPhone())
+
+  it('changes nothing on a phone when the prop is not set', () => {
+    const desktop = mountItems().html()
+    stubPhone({ touch: true })
+    expect(mountItems().html()).toBe(desktop)
+  })
+
+  it('changes nothing on a desktop when the prop is set, beyond data-label', () => {
+    const plain = mountItems().html()
+    const opted = mountItems({ stackOnPhone: true }).html()
+    expect(opted).toContain('data-label="Status"')
+    expect(opted.replace(/ data-label="[^"]*"/g, '')).toBe(plain)
+  })
+
+  it('lays each row out as a card on a phone', () => {
+    stubPhone()
+    const w = mountItems({ stackOnPhone: true })
+    expect(w.classes()).toContain('nb-data-table--stacked')
+    expect(
+      cells(w).map((c) =>
+        c.find(
+          (n) =>
+            n.startsWith('nb-data-table__td--') &&
+            !/--(left|right|center)$/.test(n),
+        ),
+      ),
+    ).toEqual([
+      'nb-data-table__td--meta',
+      'nb-data-table__td--primary',
+      'nb-data-table__td--meta',
+      'nb-data-table__td--field',
+      'nb-data-table__td--phone-hidden',
+    ])
+    // The roles stand in for the table semantics `display` removes.
+    expect(w.find('table').attributes('role')).toBe('table')
+    expect(w.find('tbody tr').attributes('role')).toBe('row')
+    expect(w.find('tbody td').attributes('role')).toBe('cell')
+    // A field cell carries its column name for the label.
+    expect(w.findAll('tbody td')[3].attributes('data-label')).toBe('Status')
+  })
+
+  it('takes the first plain column as the title when none is marked primary', () => {
+    stubPhone()
+    const w = mountItems({
+      stackOnPhone: true,
+      columns: itemColumns.map((c) => ({ ...c, primary: false })),
+    })
+    // Key is meta, so Title is still the first plain column.
+    expect(cells(w)[1]).toContain('nb-data-table__td--primary')
+  })
+
+  it('keeps rows clickable', async () => {
+    stubPhone()
+    const w = mountItems({ stackOnPhone: true }, { onRowClick: () => {} })
+    await w.find('tbody tr').trigger('click')
+    expect(w.emitted('row-click')?.[0]?.[0]).toMatchObject({ id: 1 })
+    expect(w.find('tbody tr').classes()).toContain(
+      'nb-data-table__row--clickable',
+    )
+  })
+
+  it('keeps sorting through the header chips, hiding phone-hidden ones', async () => {
+    stubPhone()
+    const w = mountItems({ stackOnPhone: true })
+    expect(w.classes()).not.toContain('nb-data-table--stacked-headless')
+    const typeHeader = w.findAll('thead th')[4]
+    expect(typeHeader.classes()).toContain('nb-data-table__th--phone-hidden')
+    await w.find('.nb-data-table__sort').trigger('click')
+    expect(w.emitted('sort')?.[0]?.[0]).toEqual({
+      key: 'title',
+      direction: 'asc',
+    })
+  })
+
+  it('drops the header altogether when there are no rows', () => {
+    stubPhone()
+    const w = mountItems({ stackOnPhone: true, rows: [] })
+    expect(w.classes()).toContain('nb-data-table--stacked-headless')
+    expect(w.find('.nb-data-table__state--empty').exists()).toBe(true)
   })
 })

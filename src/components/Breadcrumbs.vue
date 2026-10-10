@@ -1,5 +1,9 @@
 <template>
-  <nav class="nb-breadcrumbs" aria-label="breadcrumb">
+  <nav
+    class="nb-breadcrumbs"
+    :class="{ 'nb-breadcrumbs--collapsed': collapsed }"
+    aria-label="breadcrumb"
+  >
     <!-- Brand prefix (title + subtitle) -->
     <span v-if="title || subtitle" class="nb-breadcrumbs__brand">
       <span v-if="title" class="nb-breadcrumbs__title">{{ title }}</span>
@@ -26,13 +30,24 @@
 <script setup lang="ts">
 import NbIcon from './Icon.vue'
 import { useSlots, computed, Comment, Fragment, Text, type VNode } from 'vue'
+import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 
-defineProps<{
-  /** Text rendered before the subtitle in regular weight. */
-  title?: string
-  /** Text rendered after the title in bold weight. */
-  subtitle?: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    /** Text rendered before the subtitle in regular weight. */
+    title?: string
+    /** Text rendered after the title in bold weight. */
+    subtitle?: string
+    /**
+     * How the trail fits a phone topbar. `'phone'` shows only the last crumb
+     * there, on one line with an ellipsis, and drops the brand: the page you
+     * are on is the one piece a 360px bar has room for. `'none'` (the default)
+     * renders the full trail at every width.
+     */
+    collapse?: 'none' | 'phone'
+  }>(),
+  { title: undefined, subtitle: undefined, collapse: 'none' },
+)
 
 const slots = useSlots()
 
@@ -56,6 +71,13 @@ function rendersContent(nodes: VNode[]): boolean {
 }
 
 const hasDefaultSlot = computed(() => rendersContent(slots.default?.() ?? []))
+
+const { phone } = usePhoneLayout()
+
+// Only with a crumb to show: a trail that is all brand keeps its brand.
+const collapsed = computed(
+  () => props.collapse === 'phone' && phone.value && hasDefaultSlot.value,
+)
 </script>
 
 <style lang="scss" scoped>
@@ -109,5 +131,40 @@ const hasDefaultSlot = computed(() => rendersContent(slots.default?.() ?? []))
   margin-inline-end: 0.35rem;
   color: var(--nb-c-text-subtle);
   font-weight: 400;
+}
+
+// Phone, opted in: the last crumb alone, shrinking into an ellipsis rather
+// than pushing the topbar's actions off screen. The class is only ever set by
+// the component on a phone, so nothing here reaches a desktop.
+.nb-breadcrumbs--collapsed {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+
+  .nb-breadcrumbs__brand,
+  .nb-breadcrumbs__sep {
+    display: none;
+  }
+
+  .nb-breadcrumbs__crumbs {
+    display: flex;
+    min-width: 0;
+  }
+
+  .nb-breadcrumbs__crumbs > :not(:last-child) {
+    display: none;
+  }
+
+  .nb-breadcrumbs__crumbs > :last-child {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &::before {
+      content: none;
+    }
+  }
 }
 </style>

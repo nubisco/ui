@@ -26,6 +26,7 @@ import {
   reactive,
 } from 'vue'
 import type { IMenuProps, IMenuContext } from './Menu.d'
+import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 
 const props = withDefaults(defineProps<IMenuProps>(), {
   open: false,
@@ -43,13 +44,27 @@ const menuRef = ref<HTMLElement | null>(null)
 const highlighted = ref(-1)
 const items = reactive<HTMLElement[]>([])
 
+const { phone } = usePhoneLayout()
+
+// On a phone a 288px menu can be most of the screen and a 160px floor can be
+// wider than the room left beside its trigger, so both widths stop 8px short
+// of each edge. A desktop keeps the plain pixel values it always had.
+function capWidth(px: number): string {
+  return phone.value ? `min(${px}px, calc(100vw - 16px))` : `${px}px`
+}
+
 const menuStyle = computed(() => ({
   position: 'fixed' as const,
   top: `${position.top}px`,
   left: `${position.left}px`,
-  minWidth: `${props.minWidth}px`,
-  maxWidth: `${props.maxWidth}px`,
-  zIndex: 'var(--nb-zindex-menu)',
+  minWidth: capWidth(props.minWidth),
+  maxWidth: capWidth(props.maxWidth),
+  // A phone shows the inspector as a sheet over the page (the shell puts it
+  // at 250) and every dialog as a sheet, so a menu opened from either has to
+  // clear both: the tier the library keeps for dropdowns inside a modal.
+  zIndex: phone.value
+    ? 'var(--nb-zindex-modal-dropdown)'
+    : 'var(--nb-zindex-menu)',
 }))
 
 const position = reactive({ top: 0, left: 0 })
@@ -62,11 +77,24 @@ function setPosition(rect: {
 }) {
   position.top = rect.bottom
   position.left = rect.left
+  reclampIfOpen()
 }
 
 function setPositionXY(x: number, y: number) {
   position.top = y
   position.left = x
+  reclampIfOpen()
+}
+
+/**
+ * The open watcher clamps the menu onto the screen once, on the frame it
+ * opens. A caller that positions the menu after that (open first, then
+ * measure the trigger) bypassed the clamp, and on a phone the menu hung off
+ * the right edge. Phone only: a desktop keeps exactly the positions it is
+ * given after opening, as it always has.
+ */
+function reclampIfOpen() {
+  if (props.open && phone.value) nextTick(adjustPosition)
 }
 
 function close() {
@@ -243,6 +271,7 @@ defineExpose({
   // positioned page element (sticky column headers, shell chrome) painted
   // over it. The scale already reserves a tier for menus; wear it.
   z-index: var(--nb-zindex-menu);
+
   background: var(--nb-c-layer-3);
   border: 1px solid var(--nb-c-layer-border-3);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);

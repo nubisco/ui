@@ -97,6 +97,18 @@
                 {{ markAllPending ? markAllPendingLabel : markAllLabel }}
               </button>
             </slot>
+            <!-- The sheet covers the whole screen, so there is nothing
+                 outside it left to tap: it carries its own way out. Phone
+                 only, where the panel is that sheet. -->
+            <NbButton
+              v-if="sheet"
+              class="nb-notification-center__close"
+              variant="ghost"
+              size="lg"
+              icon="x"
+              :aria-label="closeLabel"
+              @click="close()"
+            />
           </div>
 
           <!-- The button's own label change is not reliably announced, and a
@@ -412,6 +424,7 @@ import type {
   INotificationMarkAllProps,
   INotificationTriggerProps,
 } from './NotificationCenter.d'
+import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 
 const props = withDefaults(defineProps<INotificationCenterProps>(), {
   items: () => [],
@@ -434,6 +447,7 @@ const props = withDefaults(defineProps<INotificationCenterProps>(), {
   showRetry: true,
   maxCount: 99,
   width: 360,
+  closeLabel: 'Close notifications',
   maxHeight: 384,
   align: 'end',
   side: 'vertical',
@@ -673,10 +687,17 @@ function position() {
   })
 }
 
-const panelStyle = computed(() =>
+// On a phone a 360px popover hanging off a 32px bell is most of the screen and
+// none of its height, so the panel becomes a full-screen sheet instead. The
+// sheet is placed by its class, so the anchored arithmetic is skipped.
+const { phone } = usePhoneLayout()
+const sheet = computed(() => phone.value)
+
+const panelStyle = computed(() => {
+  if (sheet.value) return undefined
   // A bottom-pinned panel is placed by its bottom edge, so a feed shorter
   // than the room it was given still sits against its trigger.
-  placement.value.bottom !== undefined
+  return placement.value.bottom !== undefined
     ? {
         bottom: `${Math.round(placement.value.bottom)}px`,
         left: `${Math.round(placement.value.left)}px`,
@@ -686,19 +707,24 @@ const panelStyle = computed(() =>
         top: `${Math.round(placement.value.top)}px`,
         left: `${Math.round(placement.value.left)}px`,
         width: `${props.width}px`,
-      },
-)
+      }
+})
 
 // The header and footer stay put; only the list scrolls, so a long feed never
 // pushes "Mark all as read" off the bottom of the screen.
-const listStyle = computed(() => ({
-  maxHeight: `${Math.round(placement.value.maxListHeight)}px`,
-}))
+const listStyle = computed(() =>
+  sheet.value
+    ? undefined
+    : { maxHeight: `${Math.round(placement.value.maxListHeight)}px` },
+)
 
 const panelClass = computed(() => ({
+  'nb-notification-center__panel--sheet': sheet.value,
   'nb-notification-center__panel--start': props.align === 'start',
-  'nb-notification-center__panel--above': placement.value.side === 'top',
-  'nb-notification-center__panel--beside': placement.value.side === 'right',
+  'nb-notification-center__panel--above':
+    !sheet.value && placement.value.side === 'top',
+  'nb-notification-center__panel--beside':
+    !sheet.value && placement.value.side === 'right',
 }))
 
 // ── Open and close ──────────────────────────────────────────────────────
@@ -1089,6 +1115,9 @@ function cancelReposition() {
 
 function reposition() {
   if (!isOpen.value) return
+  // A sheet is not anchored, so a trigger that scrolled away (the page under
+  // it, or the drawer it lives in sliding shut) is no reason to close it.
+  if (sheet.value) return
   const anchor = rootRef.value?.getBoundingClientRect()
   // The trigger has scrolled out of the viewport. Repositioning would pin the
   // panel to an edge and leave it hovering over unrelated content, so it is
@@ -1282,6 +1311,62 @@ defineExpose({ show, close, toggle, isOpen, unreadCount })
 // reaches <body> overrides this without a :deep() from outside.
 .dark .nb-notification-center__panel {
   --nb-notification-center-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+// ── Phone: a full-screen sheet ──────────────────────────────────────────
+// The class is bound only on a phone (usePhoneLayout), so a desktop never
+// sees any of this. The sheet fills the screen inside the safe areas, the
+// header and footer stay put and the feed scrolls between them, and every
+// header control is at least 44px tall for a finger.
+.nb-notification-center__panel--sheet {
+  inset: 0;
+  max-width: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+
+  .nb-notification-center__header {
+    flex: 0 0 auto;
+    padding-block: var(--nb-spacing-4);
+    padding-inline-end: var(--nb-spacing-4);
+  }
+
+  .nb-notification-center__title {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: var(--nb-font-size-16);
+  }
+
+  .nb-notification-center__mark-all {
+    min-block-size: 44px;
+    padding-inline: var(--nb-spacing-8);
+  }
+
+  .nb-notification-center__close {
+    flex: 0 0 auto;
+  }
+
+  .nb-notification-center__list,
+  .nb-notification-center__loading,
+  .nb-notification-center__empty,
+  .nb-notification-center__error {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .nb-notification-center__footer {
+    flex: 0 0 auto;
+  }
+
+  // It rises from below, the way a phone sheet arrives, instead of dropping
+  // 4px from a trigger it is no longer attached to.
+  &.nb-notification-center-pop-enter-from,
+  &.nb-notification-center-pop-leave-to {
+    transform: translateY(16px);
+  }
 }
 
 .nb-notification-center__header {
