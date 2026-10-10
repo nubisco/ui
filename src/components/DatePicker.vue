@@ -679,10 +679,29 @@ function updateCalendarPosition() {
       ? wrappers[1]
       : wrappers[0]
   const rect = wrapper.getBoundingClientRect()
+  // Kept on screen once the calendar has a size to measure: a field near the
+  // right edge opened it with its weekend columns past the edge, and one near
+  // the bottom opened it below the fold. It moves left to stay 8px inside the
+  // viewport, and opens above the field when there is no room below.
+  const width = calendarRef.value?.offsetWidth ?? 0
+  const height = calendarRef.value?.offsetHeight ?? 0
+  const edge = 8
+  let left = rect.left
+  let top = rect.bottom + 4
+  if (width > 0) {
+    left = Math.max(edge, Math.min(left, window.innerWidth - width - edge))
+  }
+  if (
+    height > 0 &&
+    top + height > window.innerHeight - edge &&
+    rect.top - 4 - height >= edge
+  ) {
+    top = rect.top - 4 - height
+  }
   calendarStyle.value = {
     position: 'fixed',
-    top: `${rect.bottom + 4}px`,
-    left: `${rect.left}px`,
+    top: `${top}px`,
+    left: `${left}px`,
     zIndex: '9999',
   }
 }
@@ -704,6 +723,8 @@ function openCalendar() {
   focusedDate.value = targetDate || toIso(new Date())
 
   updateCalendarPosition()
+  // Again once it has rendered and can be measured, to keep it on screen.
+  void nextTick(updateCalendarPosition)
 }
 
 function closeCalendar() {

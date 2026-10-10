@@ -89,12 +89,12 @@ function setPositionXY(x: number, y: number) {
 /**
  * The open watcher clamps the menu onto the screen once, on the frame it
  * opens. A caller that positions the menu after that (open first, then
- * measure the trigger) bypassed the clamp, and on a phone the menu hung off
- * the right edge. Phone only: a desktop keeps exactly the positions it is
- * given after opening, as it always has.
+ * measure the trigger) bypassed the clamp, and the menu hung off the right
+ * edge: on a phone most of it, on a desktop whenever the trigger sat near
+ * that edge. A position set while open is clamped too.
  */
 function reclampIfOpen() {
-  if (props.open && phone.value) nextTick(adjustPosition)
+  if (props.open) nextTick(adjustPosition)
 }
 
 function close() {
