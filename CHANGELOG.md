@@ -1,3 +1,10 @@
+## [5.19.1](https://github.com/nubisco/ui/compare/v5.19.0...v5.19.1) (2026-10-10)
+
+
+### Bug Fixes
+
+* **overlays:** menus and the date picker stay on screen, and Escape closes only what it reached ([dd3b64c](https://github.com/nubisco/ui/commit/dd3b64c342e0efcda288b895981e7aaf520c8b20))
+
 # [5.19.0](https://github.com/nubisco/ui/compare/v5.18.1...v5.19.0) (2026-10-10)
 
 
