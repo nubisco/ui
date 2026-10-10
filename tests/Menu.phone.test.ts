@@ -95,7 +95,7 @@ describe('NbMenu in the phone layout', () => {
     wrapper.unmount()
   })
 
-  it('keeps a position set after opening exactly as given on a desktop', async () => {
+  it('clamps a position set after opening on a desktop too', async () => {
     stubMenuBox()
     const wrapper = mountMenu()
     await wrapper.setProps({ open: true })
@@ -103,7 +103,19 @@ describe('NbMenu in the phone layout', () => {
     ;(wrapper.vm as unknown as TMenu).setPositionXY(window.innerWidth - 20, 40)
     await nextTick()
     await nextTick()
-    expect(parseFloat(menuEl().style.left)).toBe(window.innerWidth - 20)
+    expect(parseFloat(menuEl().style.left)).toBe(window.innerWidth - 200 - 8)
+    wrapper.unmount()
+  })
+
+  it('leaves a position that fits where it was put', async () => {
+    stubMenuBox()
+    const wrapper = mountMenu()
+    await wrapper.setProps({ open: true })
+    await nextTick()
+    ;(wrapper.vm as unknown as TMenu).setPositionXY(100, 40)
+    await nextTick()
+    await nextTick()
+    expect(parseFloat(menuEl().style.left)).toBe(100)
     wrapper.unmount()
   })
 })

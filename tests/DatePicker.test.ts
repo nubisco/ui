@@ -239,6 +239,46 @@ describe('DatePicker', () => {
     expect((blocked.element as HTMLButtonElement).disabled).toBe(true)
   })
 
+  it('keeps the calendar on screen when its field is near the right edge', async () => {
+    const size = (prop: 'offsetWidth' | 'offsetHeight', value: number) => {
+      const original = Object.getOwnPropertyDescriptor(
+        HTMLElement.prototype,
+        prop,
+      )!
+      Object.defineProperty(HTMLElement.prototype, prop, {
+        configurable: true,
+        get(this: HTMLElement) {
+          return this.classList.contains('nb-date-picker__calendar')
+            ? value
+            : original.get!.call(this)
+        },
+      })
+      return () => Object.defineProperty(HTMLElement.prototype, prop, original)
+    }
+    const restoreWidth = size('offsetWidth', 300)
+    const restoreHeight = size('offsetHeight', 320)
+    try {
+      const wrapper = createWrapper()
+      wrapper.find(
+        '.nb-date-picker__input-wrapper',
+      ).element.getBoundingClientRect = () =>
+        ({
+          left: window.innerWidth - 100,
+          top: 20,
+          bottom: 40,
+        }) as unknown as DOMRect
+      await wrapper.find('input').trigger('focus')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+      expect(
+        wrapper.find('.nb-date-picker__calendar').attributes('style'),
+      ).toContain(`left: ${window.innerWidth - 300 - 8}px`)
+    } finally {
+      restoreWidth()
+      restoreHeight()
+    }
+  })
+
   it('anchors the calendar under the focused field in a range', async () => {
     const wrapper = createWrapper({ type: 'range' })
     const fieldWrappers = wrapper.findAll('.nb-date-picker__input-wrapper')

@@ -272,6 +272,9 @@ function isTopmost(): boolean {
 
 function onKeydown(e: KeyboardEvent) {
   if (e.key !== 'Escape') return
+  // A dropdown, menu or field inside the dialog that spent this Escape
+  // closing itself has prevented it, and the press is not also the dialog's.
+  if (e.defaultPrevented) return
   if (!props.open || !props.closeOnEscape || props.closeDisabled) return
   if (!isTopmost()) return
   emit('close')

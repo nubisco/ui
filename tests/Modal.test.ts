@@ -392,6 +392,25 @@ describe('Modal focus management', () => {
     wrapper.unmount()
   })
 
+  // A dropdown inside the dialog that closed itself on this Escape has
+  // prevented it. Closing the dialog as well lost the whole form.
+  it('leaves an Escape that something inside already spent', async () => {
+    const wrapper = mountOpen()
+    await nextTick()
+
+    const event = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      cancelable: true,
+    })
+    event.preventDefault()
+    document.dispatchEvent(event)
+    await nextTick()
+
+    expect(wrapper.emitted('close')).toBeFalsy()
+    wrapper.unmount()
+  })
+
   // The dialog box carries tabindex="-1" so there is somewhere to stand when
   // every control in it is disabled, which is the pending state.
   it('holds focus on the dialog when it has no focusable controls', async () => {
