@@ -1,3 +1,10 @@
+# [5.19.0](https://github.com/nubisco/ui/compare/v5.18.1...v5.19.0) (2026-10-10)
+
+
+### Features
+
+* **phone:** a phone layout for every component, without changing a desktop pixel ([102ca0b](https://github.com/nubisco/ui/commit/102ca0b80103cb400585297a8b60c436d1f2e237))
+
 ## [5.18.1](https://github.com/nubisco/ui/compare/v5.18.0...v5.18.1) (2026-10-09)
 
 
