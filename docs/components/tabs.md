@@ -132,6 +132,16 @@ keys never land on a tab that cannot be opened.
   <NbTabs :items="clientTabs" disabled />
 </preview>
 
+## On a phone
+
+There is nothing to opt into. On a phone layout (below 672px, or a phone held
+sideways) a bar with more tabs than fit scrolls sideways instead of running off
+the screen. It snaps loosely to tab edges, shows no scrollbar, and fades the
+edge that has more tabs behind it. The active tab is always brought fully into
+view, on load and whenever it changes, by scrolling the bar itself and never
+the page around it. On a phone touch screen every tab is at least 44px tall.
+Wider screens render the bar exactly as before.
+
 </doc-tab>
 
 <doc-tab name="Api">

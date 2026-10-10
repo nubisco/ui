@@ -182,12 +182,14 @@
 import {
   computed,
   inject,
+  nextTick,
   onBeforeUnmount,
   onMounted,
   ref,
   watch,
   type Ref,
 } from 'vue'
+import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 import { useI18n } from 'vue-i18n'
 import NbIcon from './Icon.vue'
 import NbNubiscoPlatformMark from './NubiscoPlatformMark.vue'
@@ -322,11 +324,30 @@ function initials(entity: { email: string; name?: string | null }): string {
   return initialsOf(entity)
 }
 
+const { phone } = usePhoneLayout()
+
+// The panel's CSS width, for the frame before it has rendered and can be
+// measured.
+const PANEL_WIDTH_PX = 260
+const EDGE_PX = 8
+
 // Shells commonly clip their sidebars (overflow: hidden), so the panel is
 // teleported and fixed-positioned from the trigger's viewport rect on open.
 function positionPanel() {
   const rect = rootRef.value?.getBoundingClientRect()
   if (!rect) return
+  if (phone.value) {
+    // On a phone the rail is a drawer as wide as most of the screen, so
+    // `right-end` opened the panel past the right edge, out of reach. It opens
+    // above the trigger instead, held 8px inside both edges.
+    const width = panelRef.value?.offsetWidth || PANEL_WIDTH_PX
+    const max = Math.max(EDGE_PX, window.innerWidth - width - EDGE_PX)
+    panelStyle.value = {
+      left: `${Math.round(Math.min(Math.max(rect.left, EDGE_PX), max))}px`,
+      bottom: `${Math.round(window.innerHeight - rect.top + 8)}px`,
+    }
+    return
+  }
   if (props.placement === 'top-start') {
     panelStyle.value = {
       left: `${Math.round(rect.left)}px`,
@@ -348,6 +369,9 @@ function toggle() {
     positionPanel()
     open.value = true
     emit('open')
+    // The first pass used the stylesheet's width. Once the panel is on screen
+    // its real width is known, so a phone places it again with that.
+    if (phone.value) void nextTick(positionPanel)
   }
 }
 
@@ -415,6 +439,7 @@ defineExpose({ open, toggle, close })
 
 <style lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/variables/breakpoints' as bp;
 
 .nb-user-menu {
   position: relative;
@@ -532,12 +557,20 @@ defineExpose({ open, toggle, close })
 .nb-user-menu__panel {
   position: fixed;
   width: 260px;
+
   background: var(--nb-c-layer-3);
   border: 1px solid var(--nb-c-layer-border-3);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
   @include radius.surface(popover);
   padding: 4px;
   z-index: var(--nb-zindex-menu);
+
+  // A phone: never wider than the screen less its two 8px margins, and above
+  // the navigation drawer it is opened from (the shell puts that at 300).
+  @include bp.phone {
+    max-width: calc(100vw - 16px);
+    z-index: var(--nb-zindex-modal-dropdown);
+  }
 }
 
 .nb-user-menu-pop-enter-active,

@@ -706,6 +706,24 @@ const isNearestAnchor = (el: TTooltipEl, event: Event): boolean => {
   return nearest === null || nearest === el
 }
 
+/** Controls a tap activates. A tooltip anchored on (or inside) one of these
+ *  does not open on touch: the same tap that would open it also presses the
+ *  control, so the chip lands over whatever the press opened, or lingers for
+ *  four seconds over a screen the user has already moved on from. Hover and
+ *  focus still open it. */
+const TOUCH_ACTIVATED =
+  'button, a[href], [role="button"], [role="tab"], [role="menuitem"], input, select, textarea, label'
+
+/** Whether a tap on this anchor presses a control rather than asking what it
+ *  is. A disabled control presses nothing, so its tooltip (usually the reason
+ *  it is disabled) is still the one thing a tap can tell the user. */
+const isTouchActivated = (el: HTMLElement): boolean => {
+  const control = el.closest(TOUCH_ACTIVATED)
+  if (!control) return false
+  if ((control as HTMLButtonElement).disabled === true) return false
+  return control.getAttribute('aria-disabled') !== 'true'
+}
+
 /** Flatten tooltip content to the string a screen reader should hear. Markup
  *  the chip renders (allowed inline tags, <br>) is meaningless to AT, so it is
  *  stripped rather than announced. */
@@ -1231,7 +1249,11 @@ const tooltipDirective = (app: App) => {
       el.__touchHandler__ = (event: Event) => {
         if (el.__tooltipBinding__?.touch === false) return
         if (!isNearestAnchor(el, event)) return
+        // Stamped before the control check, so the mouse sequence the browser
+        // replays after the tap is still swallowed. Otherwise its mouseenter
+        // would open the chip anyway, with no mouseleave to close it.
         el.__lastTouchAt__ = Date.now()
+        if (isTouchActivated(el)) return
         el.__showTooltip__?.('touch')
         el.__hideTooltip__?.(TOUCH_VISIBLE_MS, 'touch')
       }

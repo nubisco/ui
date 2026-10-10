@@ -572,6 +572,8 @@ defineExpose({
 
 <style lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/variables/breakpoints' as bp;
+@use '../styles/logic/touch' as touch;
 
 // Dropdown is teleported to body: cannot use scoped styles
 .nb-select__dropdown {
@@ -604,6 +606,13 @@ defineExpose({
   // Concentric with the list: its corner, less the 4px it insets its rows by.
   // 4px of padding plus the container's 1px border.
   @include radius.inset(5px);
+
+  // About 40px tall by default, a little short of a fingertip. The row's
+  // ::after is its divider, so the floor goes on the row itself.
+  @include bp.phone-touch {
+    box-sizing: border-box;
+    min-block-size: 44px;
+  }
 
   &::after {
     content: '';
@@ -732,6 +741,8 @@ defineExpose({
   outline: none;
   box-sizing: border-box;
   transition: border-color 0.15s;
+  // A real input: below 16px iOS zooms the page in when it takes focus.
+  @include touch.touch-field-text;
 
   &::placeholder {
     color: var(--nb-c-text-subtle);
@@ -874,6 +885,9 @@ defineExpose({
     flex: 1;
     min-width: 0;
     font-size: var(--nb-field-font-size);
+    // Not an input, so it cannot trigger the iOS focus zoom, but it sits in a
+    // form beside text inputs that grow to 16px, and should read the same.
+    @include touch.touch-field-text;
     font-weight: 400;
     line-height: 1.5;
     color: var(--nb-c-text);

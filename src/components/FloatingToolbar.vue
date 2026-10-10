@@ -7,13 +7,16 @@
         'nb-floating-toolbar',
         `nb-floating-toolbar--${placedSide}`,
         `nb-floating-toolbar--${orientation}`,
-        { 'nb-floating-toolbar--anchor-hidden': anchorHidden },
+        {
+          'nb-floating-toolbar--anchor-hidden': anchorHidden && !docked,
+          'nb-floating-toolbar--docked': docked,
+        },
       ]"
       v-bind="layerProps"
       role="toolbar"
       :aria-label="label"
       :aria-orientation="orientation"
-      :style="toolbarStyle"
+      :style="docked ? undefined : toolbarStyle"
       @mousedown="onMouseDown"
       @keydown="onKeydown"
       @focusin="onFocusIn"
@@ -26,6 +29,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
+import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
+import { useVisualViewportVar } from '@/composables/useVisualViewportVar.composable'
 import {
   placeAnchored,
   viewportSize,
@@ -44,6 +49,7 @@ const props = withDefaults(defineProps<IFloatingToolbarProps>(), {
   gap: 8,
   orientation: 'horizontal',
   teleportTo: 'body',
+  dock: 'none',
 })
 
 const emit = defineEmits<{
@@ -243,6 +249,22 @@ function detach() {
 
 const visible = computed(() => props.open && !!props.anchor)
 
+/*
+ * dock="phone": on a phone the toolbar leaves the selection and becomes a bar
+ * across the bottom of the visible viewport, on top of the keyboard. A
+ * toolbar floated over a selection on a phone covers the line being edited,
+ * fights the system's own selection menu and is half off a narrow screen.
+ *
+ * Positioning keeps running underneath, it is just not bound, so leaving the
+ * phone layout puts the toolbar straight back on its anchor. The anchor-hidden
+ * rule does not apply to the bar: it is the editor's toolbar while docked,
+ * and hiding it whenever the selection scrolls under the keyboard would only
+ * make it flicker.
+ */
+const { phone } = usePhoneLayout()
+const docked = computed(() => props.dock === 'phone' && phone.value)
+useVisualViewportVar(() => visible.value && props.dock === 'phone')
+
 watch(
   visible,
   (value) => {
@@ -277,6 +299,7 @@ defineExpose({ reposition, focus, el: toolbarRef })
 
 <style scoped lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/variables/breakpoints' as bp;
 
 .nb-floating-toolbar {
   // --nb-c-surface / --nb-c-border come from the nb-layer-* class that
@@ -305,6 +328,41 @@ defineExpose({ reposition, focus, el: toolbarRef })
 
 .nb-floating-toolbar--anchor-hidden {
   visibility: hidden;
+}
+
+// The class is only set in the phone layout. The media query repeats the
+// gate so that no rule here can ever reach a desktop.
+@include bp.phone {
+  .nb-floating-toolbar--docked {
+    inset-inline: 0;
+    top: auto;
+    // The bottom of the visible viewport, which is the top of the keyboard
+    // while one is up. Without the visual viewport properties it is the
+    // screen's bottom edge.
+    bottom: max(0px, calc(100% - var(--nb-vvt, 0px) - var(--nb-vvh, 100%)));
+    border-inline: 0;
+    border-bottom: 0;
+    border-radius: 0;
+    padding-bottom: calc(
+      var(--nb-base-unit) * 0.5 + env(safe-area-inset-bottom)
+    );
+    // More controls than fit scroll sideways rather than wrap or clip.
+    overflow-x: auto;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+    // A full-width bar growing out of a point reads as a glitch.
+    animation: none;
+
+    > :deep(*) {
+      flex-shrink: 0;
+    }
+
+    :deep(button),
+    :deep([role='button']) {
+      min-block-size: 44px;
+      min-inline-size: 44px;
+    }
+  }
 }
 
 @keyframes nb-floating-toolbar-in {

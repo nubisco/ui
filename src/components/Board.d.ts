@@ -115,6 +115,14 @@ interface IBoardProps {
   selectable?: boolean
   /** The selected item ids. Use with `v-model:selected`. */
   selected?: string[]
+  /**
+   * Select mode, for touch screens that have no modifier keys: while on, a
+   * tap (any click) on a card toggles it in the selection instead of
+   * activating it. Needs `selectable`. Clearing the selection turns it off
+   * again through `update:selectMode`. Use with `v-model:selectMode`. Off by
+   * default, and off is exactly what every board did before this existed.
+   */
+  selectMode?: boolean
 }
 
 export type {

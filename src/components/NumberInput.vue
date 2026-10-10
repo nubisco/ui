@@ -332,6 +332,8 @@ defineExpose({ focus: () => inputRef.value?.focus() })
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/touch' as touch;
+
 .nb-number-input {
   display: flex;
   flex-direction: column;
@@ -429,6 +431,8 @@ defineExpose({ focus: () => inputRef.value?.focus() })
     outline: none;
     font-family: inherit;
     font-size: var(--nb-field-font-size);
+    // Below 16px iOS zooms the page in when the field takes focus.
+    @include touch.touch-field-text;
     font-weight: 400;
     color: var(--nb-c-text);
 
@@ -557,6 +561,7 @@ defineExpose({ focus: () => inputRef.value?.focus() })
       flex: 1;
       padding: 6px var(--nb-field-padding-h) 10px;
       font-size: 15px;
+      @include touch.touch-field-text;
     }
 
     .nb-number-input__steppers {

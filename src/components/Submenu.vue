@@ -48,6 +48,13 @@
 import NbIcon from './Icon.vue'
 import { ref, computed, inject, nextTick, onBeforeUnmount, watch } from 'vue'
 import type { ISubmenuProps, IMenuContext } from './Menu.d'
+import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
+
+// The same tier as the menu it opens from: on a phone that menu stacks above
+// the inspector sheet and dialogs, and a submenu below it would be hidden.
+const { phone } = usePhoneLayout()
+const menuZ = () =>
+  phone.value ? 'var(--nb-zindex-modal-dropdown)' : 'var(--nb-zindex-menu)'
 
 const props = withDefaults(defineProps<ISubmenuProps>(), {
   icon: undefined,
@@ -71,7 +78,7 @@ const submenuStyle = ref({
   position: 'fixed' as const,
   top: '0px',
   left: '0px',
-  zIndex: 'var(--nb-zindex-menu)',
+  zIndex: menuZ(),
 })
 
 function updatePosition() {
@@ -95,7 +102,7 @@ function updatePosition() {
     position: 'fixed',
     top: `${top}px`,
     left: `${left}px`,
-    zIndex: 'var(--nb-zindex-menu)',
+    zIndex: menuZ(),
   }
 }
 
@@ -121,7 +128,7 @@ function openSubmenu() {
         position: 'fixed',
         top: `${top}px`,
         left: `${left}px`,
-        zIndex: 'var(--nb-zindex-menu)',
+        zIndex: menuZ(),
       }
     }
   })

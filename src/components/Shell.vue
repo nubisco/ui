@@ -54,6 +54,7 @@
         :tabindex="collapsed ? -1 : undefined"
         :inert="sidebarHidden || undefined"
         :aria-hidden="sidebarHidden || undefined"
+        @click.capture="onSidebarActivate"
       >
         <div class="nb-shell__sidebar-logo">
           <slot name="sidebar-logo" />
@@ -194,6 +195,7 @@
                 class="nb-shell__contextbar"
                 :class="regionClass('contextbar')"
                 :aria-label="contextbarLabel"
+                @click.capture="onContextbarActivate"
               >
                 <slot name="contextbar" />
               </aside>
@@ -270,7 +272,11 @@
               @dblclick="onResizeReset"
               @keydown="onResizeKeydown"
             />
-            <slot name="inspector" />
+            <slot
+              name="inspector"
+              :overlay="inspectorOverlay"
+              :close="closeInspector"
+            />
           </aside>
         </div>
       </div>
@@ -301,6 +307,7 @@ import {
   NB_SHELL_SLOT_KEY,
   type TShellSlotName,
 } from '@/composables/useShellSlot.composable'
+import { NB_SHELL_LAYOUT_KEY } from '@/composables/useShellLayout.composable'
 import SurfaceLayerScope from './SurfaceLayerScope.vue'
 
 const slots = useSlots()
@@ -509,8 +516,33 @@ function startWidthTracking() {
   window.addEventListener('resize', onWidthResize, { passive: true })
 }
 
+// A phone held sideways is 844px wide, comfortably past `md`, and got the
+// desktop frame: a 240px rail, a fixedbar taking half the height and a 422px
+// inspector column. Width alone cannot see it, so the frame also collapses on
+// a touch screen too short to be anything but a phone in landscape. Desktops,
+// Tauri windows and touch laptops driven by a mouse report a fine pointer or
+// hover, so this never matches them. It is the second clause of
+// NB_PHONE_QUERY (a unit test keeps the two in step), watched here on its own
+// because the width half is already handled by the latch above.
+const SHORT_TOUCH_QUERY =
+  '(pointer: coarse) and (hover: none) and (max-height: 500px)'
+
+const shortTouchMedia =
+  typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia(SHORT_TOUCH_QUERY)
+    : null
+const shortTouch = ref(shortTouchMedia?.matches === true)
+
+function onShortTouchChange(e: MediaQueryListEvent) {
+  shortTouch.value = e.matches
+}
+
 /** True when the frame is running its single-column, overlay layout. */
-const collapsed = computed(() => isBelowThreshold(viewportWidth.value))
+const collapsed = computed(
+  () =>
+    isBelowThreshold(viewportWidth.value) ||
+    (props.collapseAt !== 'none' && shortTouch.value),
+)
 
 // Which props the consumer actually passed, read off the vnode once at setup.
 // `props.x === undefined` cannot answer this: Vue casts an absent boolean prop
@@ -599,7 +631,12 @@ function setDrawerOpen(open: boolean) {
   emit('update:sidebarOpen', open)
 }
 
-function onFrameEscape() {
+function onFrameEscape(e: KeyboardEvent) {
+  // A control inside the frame that handled Escape itself (a Select closing
+  // its list, an InlineEdit cancelling) says so with preventDefault. That
+  // Escape was spent, and closing the sheet around the field as well threw the
+  // user out of the inspector they were editing in.
+  if (e.defaultPrevented) return
   // Escape closes whichever overlay the frame is currently holding, topmost
   // first (the drawer sits above the inspector sheet). When it holds neither,
   // the event keeps travelling, so a dialog or a menu inside the page still
@@ -609,6 +646,49 @@ function onFrameEscape() {
     return
   }
   if (inspectorOverlay.value) setInspectorVisible(false)
+}
+
+// ── Collapsed overlays follow navigation ──────────────────────────────────────
+//
+// The drawer and the folded contextbar are overlays only while collapsed, and
+// nothing closed them when the user picked a destination inside them: the
+// drawer stayed over the page it had just opened, and over the inspector sheet
+// too (the drawer is the higher layer). Choosing a link is the user saying
+// they are done with the navigation, so the frame closes it.
+//
+// Capture phase, so a row whose own handler stops propagation still counts.
+// A row that opens something rather than going somewhere (a submenu trigger,
+// a verbose group that expands) is not a destination and keeps the overlay
+// open, as does anything a product marks `data-nb-keep-open`.
+const DESTINATION = 'a[href], [role="menuitem"]'
+
+function isDestination(e: MouseEvent, root: Element | null): boolean {
+  const target = e.target as Element | null
+  const hit = target?.closest?.(DESTINATION)
+  if (!hit || !root?.contains(hit)) return false
+  const popup = hit.getAttribute('aria-haspopup')
+  if (popup != null && popup !== 'false') return false
+  if (hit.hasAttribute('aria-expanded')) return false
+  if (hit.getAttribute('aria-disabled') === 'true') return false
+  if (target?.closest?.('[data-nb-keep-open]')) return false
+  return true
+}
+
+function onSidebarActivate(e: MouseEvent) {
+  if (!collapsed.value || !drawerOpen.value) return
+  if (isDestination(e, sidebarRef.value)) setDrawerOpen(false)
+}
+
+function onContextbarActivate(e: MouseEvent) {
+  if (!collapsed.value || !contextbarOpen.value) return
+  if (isDestination(e, e.currentTarget as Element | null)) {
+    contextbarOpen.value = false
+  }
+}
+
+/** Open or close the folded contextbar. Only means anything while collapsed. */
+function setContextbarOpen(open: boolean) {
+  contextbarOpen.value = open
 }
 
 // Focus follows the drawer, in both directions: into it when it opens (so the
@@ -731,6 +811,24 @@ watch(inspectorOverlay, async (isOverlay) => {
     }
   }
 })
+
+// The inspector sheet opening is a navigation too (a card tapped on a list the
+// drawer was covering, a notification opened from the rail), and the drawer is
+// the higher layer: left open, it sat over the sheet the user had just asked
+// for. The overlay only exists while collapsed, so this never runs on desktop.
+watch(inspectorOverlay, (isOverlay) => {
+  if (isOverlay && showSidebar.value && drawerOpen.value) setDrawerOpen(false)
+})
+
+/** The slot's `close`: the same path as the sheet's own dismiss button. */
+function closeInspector() {
+  setInspectorVisible(false)
+}
+
+// Handed to everything inside the frame, so a product can reserve room for
+// the sheet's dismiss button and leave out a close control the frame already
+// gives it. Read-only on the way down: the frame owns both answers.
+provide(NB_SHELL_LAYOUT_KEY, { collapsed, inspectorOverlay })
 
 /**
  * The body is inert while the sheet covers it. That is what stops Tab from
@@ -1042,6 +1140,14 @@ onMounted(() => {
   viewportWidth.value = window.innerWidth
   window.addEventListener('resize', onThresholdResize, { passive: true })
   if (props.resizable) startWidthTracking()
+  if (shortTouchMedia) {
+    shortTouch.value = shortTouchMedia.matches
+    if (typeof shortTouchMedia.addEventListener === 'function') {
+      shortTouchMedia.addEventListener('change', onShortTouchChange)
+    } else {
+      shortTouchMedia.addListener?.(onShortTouchChange)
+    }
+  }
 })
 
 // Changing `collapseAt` at runtime is rare but legal (a product that flips it
@@ -1068,6 +1174,13 @@ onBeforeUnmount(() => {
   if (typeof window !== 'undefined') {
     window.removeEventListener('resize', onThresholdResize)
   }
+  if (shortTouchMedia) {
+    if (typeof shortTouchMedia.removeEventListener === 'function') {
+      shortTouchMedia.removeEventListener('change', onShortTouchChange)
+    } else {
+      shortTouchMedia.removeListener?.(onShortTouchChange)
+    }
+  }
 })
 
 /**
@@ -1090,11 +1203,18 @@ defineExpose({
   setSidebarOpen: setDrawerOpen,
   /** Show or hide the inspector, and emit `update:inspectorVisible`. */
   setInspectorVisible,
+  /** True while the frame runs its collapsed, drawer layout. */
+  collapsed,
+  /** True while the inspector is a sheet over the content. */
+  inspectorOverlay,
+  /** Open or close the folded contextbar. Only means anything while collapsed. */
+  setContextbarOpen,
 })
 </script>
 
 <style scoped lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/variables/breakpoints' as bp;
 
 // Shell-level CSS variables (--nb-shell-*) are declared at :root in
 // styles/_theme.scss so consuming apps can override them on :root without
@@ -1820,6 +1940,76 @@ defineExpose({
 
   .nb-shell__main {
     padding: 1rem;
+  }
+}
+
+// ── Collapsed frame: touch-sized frame controls ───────────────────────────────
+//
+// The frame's own controls exist only while collapsed, which is the phone and
+// small-tablet range, so they take the 44px a finger needs. The desktop layout
+// never renders them.
+.nb-shell--collapsed {
+  .nb-shell__nav-toggle,
+  .nb-shell__inspector-dismiss {
+    width: 44px;
+    height: 44px;
+  }
+
+  .nb-shell__contextbar-toggle {
+    min-block-size: 44px;
+  }
+
+  // Flex children keep `min-width: auto`, so a strip of tabs in the fixedbar
+  // grew the bar (and the page under it) to the tabs' full width, 755px for a
+  // Settings page. Letting them shrink hands the overflow to the child, which
+  // is the one that knows how to scroll it.
+  .nb-shell__fixedbar > * {
+    min-width: 0;
+  }
+
+  // The space the sheet's dismiss button covers, top right, for content that
+  // needs to keep a control clear of it: the button's offset plus its size.
+  // Set only on the overlay, so anywhere else it is unset and a product's
+  // `var(--nb-shell-inspector-dismiss-inset, 0px)` reads as nothing.
+  .nb-shell__inspector--overlay {
+    --nb-shell-inspector-dismiss-inset: calc(var(--nb-base-unit) * 1 + 44px);
+  }
+}
+
+// ── Collapsed phone topbar: the safety net ────────────────────────────────────
+//
+// The right half used to be `flex-shrink: 0` inside a frame that clips, so on a
+// phone the page actions a view put there were cut off with no way to reach
+// them, and the left half (the breadcrumb) was squeezed to nothing first. Here
+// the left half keeps a floor and the right half gives way instead, scrolling
+// sideways rather than clipping. A product that folds its actions into an
+// NbActionGroup never needs it, and every other product still gets a topbar
+// whose controls can all be reached.
+//
+// Absolutely positioned popovers inside the right half are clipped by the
+// scroll box. The library's own popovers teleport out, so this only affects a
+// product's hand-made dropdown.
+@include bp.phone {
+  .nb-shell--collapsed {
+    .nb-shell__topbar-left:not(:empty) {
+      min-width: min(40%, 10rem);
+    }
+
+    .nb-shell__topbar-right {
+      flex-shrink: 1;
+      min-width: 0;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+
+      > * {
+        flex-shrink: 0;
+      }
+    }
   }
 }
 

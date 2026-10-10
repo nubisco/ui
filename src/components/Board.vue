@@ -1,5 +1,14 @@
 <template>
-  <div ref="boardRef" class="nb-board" v-bind="layerProps">
+  <div
+    ref="boardRef"
+    class="nb-board"
+    :class="{
+      'nb-board--flat': phone && renderLanes[0] === null,
+      'nb-board--batching': phone && showBatch,
+      'nb-board--select-mode': selectModeOn,
+    }"
+    v-bind="layerProps"
+  >
     <div class="nb-board__grid" :style="gridStyle">
       <!-- Column headers -->
       <div
@@ -120,32 +129,50 @@
     </div>
 
     <!-- While cards are selected, what can be done to all of them at once.
-         The same pattern as NbDataTable's batch bar. -->
-    <div
-      v-if="selectable && selectedIds.length > 0 && $slots['batch-actions']"
-      class="nb-board__batch"
-      role="region"
-      aria-label="Actions for the selected cards"
-    >
-      <span class="nb-board__batch-count">
-        {{ selectedIds.length }} selected
-      </span>
-      <div class="nb-board__batch-actions">
-        <slot
-          name="batch-actions"
-          :selected="selectedIds"
-          :clear="clearSelection"
-        />
-      </div>
-      <NbButton
-        class="nb-board__batch-cancel"
-        variant="ghost"
-        size="sm"
-        @click="clearSelection"
+         The same pattern as NbDataTable's batch bar. On a phone it is pinned
+         to the foot of the screen, which a bar inside the board cannot be:
+         the board is a size container, and that makes it the containing
+         block of anything fixed inside it. So there it moves to <body>. -->
+    <Teleport to="body" :disabled="!phone">
+      <div
+        v-if="showBatch"
+        class="nb-board__batch"
+        role="region"
+        aria-label="Actions for the selected cards"
       >
-        Clear selection
-      </NbButton>
-    </div>
+        <span class="nb-board__batch-count">
+          {{ selectedIds.length }} selected
+        </span>
+        <div class="nb-board__batch-actions">
+          <slot
+            name="batch-actions"
+            :selected="selectedIds"
+            :clear="clearSelection"
+            :phone="phone"
+          />
+        </div>
+        <!-- An icon on a phone, where the bar is one row the width of the
+             screen and the actions need the room. -->
+        <NbButton
+          v-if="phone"
+          class="nb-board__batch-cancel"
+          variant="ghost"
+          size="sm"
+          icon="x"
+          aria-label="Clear selection"
+          @click="clearSelection"
+        />
+        <NbButton
+          v-else
+          class="nb-board__batch-cancel"
+          variant="ghost"
+          size="sm"
+          @click="clearSelection"
+        >
+          Clear selection
+        </NbButton>
+      </div>
+    </Teleport>
 
     <!-- Instructions, and the live region that reports what happened. A
          pointer user watches the card move; a keyboard user gets told. -->
@@ -158,6 +185,9 @@
         X selects the card, or removes it from the selection. Picking up a
         selected card moves every selected card. Escape clears the
         selection.</template
+      ><template v-if="selectModeOn">
+        Selecting: activating a card selects it, or removes it from the
+        selection.</template
       >
     </span>
     <span class="nb-board__sr" aria-live="assertive">{{ announcement }}</span>
@@ -165,7 +195,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, ref, useSlots } from 'vue'
 import NbButton from './Button.vue'
 import type {
   IBoardProps,
@@ -179,6 +209,7 @@ import type {
 } from './Board.d'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import { useStableId } from '@/composables/useStableId.composable'
+import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 
 const props = withDefaults(defineProps<IBoardProps>(), {
   lanes: undefined,
@@ -186,7 +217,15 @@ const props = withDefaults(defineProps<IBoardProps>(), {
   nestable: false,
   selectable: false,
   selected: undefined,
+  selectMode: false,
 })
+
+// On a phone the columns snap one at a time, a flat board scrolls each column
+// on its own, and the batch bar pins to the foot of the screen. Everything
+// that changes the markup for it is keyed on this, so off a phone the board
+// renders exactly as it always has.
+const { phone } = usePhoneLayout()
+const slots = useSlots()
 
 // Board owns the surfaces its column headers and cards paint, and those cards
 // hold consumer content. It takes the current layer so the cards separate from
@@ -199,6 +238,7 @@ const emit = defineEmits<{
   'column-move': [event: IBoardColumnMoveEvent]
   'move-many': [event: IBoardMoveManyEvent]
   'update:selected': [ids: string[]]
+  'update:selectMode': [on: boolean]
 }>()
 
 // ── Selection ─────────────────────────────────────────────────────────
@@ -228,7 +268,22 @@ function setSelection(ids: string[]): void {
 function clearSelection(): void {
   selectionAnchor = null
   setSelection([])
+  // Clearing is how a reader in select mode says they are done, and leaving
+  // the mode on would turn their next tap into a selection they did not ask
+  // for.
+  if (selectModeOn.value) emit('update:selectMode', false)
 }
+
+const showBatch = computed(
+  () =>
+    props.selectable &&
+    selectedIds.value.length > 0 &&
+    !!slots['batch-actions'],
+)
+
+// Select mode: a tap on a card selects it instead of activating it. The way
+// to select on a touch screen, which has no modifier keys and no X.
+const selectModeOn = computed(() => props.selectable && props.selectMode)
 
 function toggleSelected(id: string): void {
   selectionAnchor = id
@@ -265,8 +320,13 @@ function onCardClick(
   colId: string,
 ): void {
   if (!props.selectable) return
-  if (!(event.metaKey || event.ctrlKey || event.shiftKey)) return
-  // A modified click selects; it does not also open the card underneath.
+  if (
+    !selectModeOn.value &&
+    !(event.metaKey || event.ctrlKey || event.shiftKey)
+  )
+    return
+  // A modified click, or any click in select mode, selects. It does not also
+  // open the card underneath.
   event.preventDefault()
   event.stopPropagation()
   if (event.shiftKey) selectRange(item, laneIdOf(lane), colId)
@@ -325,6 +385,9 @@ const boardRef = ref<HTMLElement | null>(null)
 
 const gridStyle = computed(() => ({
   gridTemplateColumns: `repeat(${props.columns.length}, var(--nb-board-column-track, minmax(200px, 1fr)))`,
+  // The column count, for the phone track (see the styles). Only on a phone,
+  // where it is read, so the desktop style attribute stays as it was.
+  ...(phone.value ? { '--nb-board-cols': String(props.columns.length) } : {}),
 }))
 
 // One rendering pass covers both shapes: a board without lanes is a board
@@ -945,6 +1008,7 @@ function onColumnDragEnd() {
 
 <style lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/variables/breakpoints' as bp;
 
 .nb-board {
   overflow: auto;
@@ -1225,6 +1289,102 @@ function onColumnDragEnd() {
 
 .nb-board__empty-cell {
   min-height: 40px;
+}
+
+// In select mode a tap selects, so the card says "press", not "grab".
+.nb-board--select-mode .nb-board__card {
+  cursor: pointer;
+}
+
+// ── Phone ─────────────────────────────────────────────────────────────
+//
+// One column at a time, snapping, with the edge of the next one showing so
+// it is plain there is more to the side. The track is the board's own width
+// less 40px, read through a container query unit because the grid itself is
+// as wide as all its columns, and never wider than 22rem: a phone held
+// sideways shows two columns and a half rather than one 800px column. A host can set --nb-board-phone-track to choose
+// another width. !important because the desktop track is an inline style.
+@include bp.phone {
+  .nb-board {
+    container-type: inline-size;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+  }
+
+  .nb-board__grid {
+    grid-template-columns: repeat(
+      var(--nb-board-cols),
+      var(--nb-board-phone-track, min(calc(100cqi - 40px), 22rem))
+    ) !important;
+  }
+
+  .nb-board__col-header,
+  .nb-board__cell {
+    scroll-snap-align: start;
+  }
+
+  // Without lanes, each column scrolls on its own. One shared vertical
+  // scroll meant scrolling down a long column and swiping to the next one
+  // landed in the middle of it, or past its end. Swimlanes keep the shared
+  // scroll, because a lane is a row across every column. This needs the
+  // host to give the board a height, as a full-page board already has.
+  .nb-board--flat .nb-board__grid {
+    height: 100%;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .nb-board--flat .nb-board__cell {
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+
+  // The lane header spans every column, so its label scrolled off with the
+  // first one. It is held at the left edge instead, as wide as the board, so
+  // the lane's name and count are always in view.
+  .nb-board__lane-header {
+    position: sticky;
+    left: 0;
+    justify-self: start;
+    box-sizing: border-box;
+    inline-size: 100cqi;
+  }
+
+  // The batch bar, moved to <body>, pinned along the foot of the screen in one
+  // row clear of the home indicator. Actions that do not fit scroll sideways
+  // rather than wrap onto a second row over the cards.
+  .nb-board__batch {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: var(--nb-board-batch-z, 200);
+    flex-wrap: nowrap;
+    inline-size: auto;
+    max-inline-size: none;
+    margin: 0;
+    padding: var(--nb-spacing-8, 8px) var(--nb-spacing-12, 12px)
+      calc(var(--nb-spacing-8, 8px) + env(safe-area-inset-bottom, 0px));
+    border-radius: 0;
+  }
+
+  .nb-board__batch-actions {
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .nb-board__batch-cancel {
+    flex-shrink: 0;
+  }
+
+  // Room under the last cards for the pinned bar, so it never hides them. On
+  // whatever scrolls: each column of a flat board, the grid of a swimlane one.
+  // Not the board itself, whose height the host sets and padding would grow.
+  .nb-board--batching:not(.nb-board--flat) .nb-board__grid,
+  .nb-board--batching.nb-board--flat .nb-board__cell {
+    padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 // Visually hidden, still announced.

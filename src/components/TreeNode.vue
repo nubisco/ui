@@ -96,6 +96,7 @@ import {
   type VNode,
 } from 'vue'
 import NbIcon from './Icon.vue'
+import { usePhoneLayout } from '../composables/usePhoneLayout.composable'
 import {
   NB_TREE_KEY,
   NB_TREE_DEPTH_KEY,
@@ -200,7 +201,14 @@ const isExpanded = computed(() => tree?.expandedIds.has(props.id) ?? false)
 const isSelected = computed(() => tree?.selectedId === props.id)
 const isCompact = computed(() => tree?.compact ?? false)
 
-const rowHeight = computed(() => (isCompact.value ? '24px' : '32px'))
+// On a phone touch screen every row is a fingertip tall, compact or not: a
+// 24px row under a finger selects its neighbour as often as itself. Set here
+// rather than in CSS because the height is an inline style, which a
+// stylesheet cannot outrank without !important.
+const { phoneTouch } = usePhoneLayout()
+const rowHeight = computed(() =>
+  phoneTouch.value ? '44px' : isCompact.value ? '24px' : '32px',
+)
 // Carbon spec: 16px base padding + 16px per depth level
 const indentPx = computed(() => `${16 + depth.value * 16}px`)
 
@@ -327,6 +335,7 @@ function onKeydown(e: KeyboardEvent) {
 
 <style lang="scss" scoped>
 @use '../styles/logic/radius' as radius;
+@use '../styles/logic/touch' as touch;
 
 .nb-tree-node {
   // A tree row is a nav row: a rounded rectangle under rounded, never a pill.
@@ -456,6 +465,9 @@ function onKeydown(e: KeyboardEvent) {
     padding: 0;
     border: 0;
     cursor: pointer;
+    // The chevron is its own target (expand, not select), and at 24px it is
+    // too small to hit on purpose with a finger.
+    @include touch.hit-area;
 
     &:focus {
       outline: none;

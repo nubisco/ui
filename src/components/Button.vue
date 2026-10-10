@@ -179,6 +179,8 @@ onMounted(() => {
 
 <style scoped lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/variables/breakpoints' as bp;
+@use '../styles/logic/touch' as touch;
 
 .nb-button {
   display: inline-flex;
@@ -238,6 +240,23 @@ onMounted(() => {
     padding-inline: calc(var(--nb-base-unit) * 1.5);
     font-size: var(--nb-font-size-12);
     --nb-button-icon-size: var(--nb-font-size-12);
+  }
+  // The small sizes are 16 to 32px tall, under a fingertip's 44. On a phone
+  // touch screen an invisible box takes the taps around them, and the button
+  // looks exactly as it does everywhere else.
+  &--xxs,
+  &--xs,
+  &--sm {
+    @include touch.hit-area($position: false);
+
+    // The hit box needs a positioning context. At zero specificity, so a host
+    // that positions the button itself (absolute, sticky) still wins, and its
+    // box is the context instead.
+    @include bp.phone-touch {
+      @at-root :where(#{&}) {
+        position: relative;
+      }
+    }
   }
   &--md {
     height: calc(var(--nb-base-unit) * 5);

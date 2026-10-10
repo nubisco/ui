@@ -2,6 +2,7 @@
 // Re-run the build to update this file when components change
 import Accordion from './components/Accordion.vue'
 import AccordionItem from './components/AccordionItem.vue'
+import ActionGroup from './components/ActionGroup.vue'
 import AiLabel from './components/AiLabel.vue'
 import Avatar from './components/Avatar.vue'
 import Badge from './components/Badge.vue'
@@ -102,6 +103,7 @@ declare module 'vue' {
   interface GlobalComponents {
     NbAccordion: typeof Accordion
     NbAccordionItem: typeof AccordionItem
+    NbActionGroup: typeof ActionGroup
     NbAiLabel: typeof AiLabel
     NbAvatar: typeof Avatar
     NbBadge: typeof Badge

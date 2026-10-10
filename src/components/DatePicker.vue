@@ -274,15 +274,27 @@
 
   <!-- Calendar dialog teleported to body -->
   <Teleport to="body">
+    <!-- Phone only: the calendar is a sheet, and the page behind it is
+         dimmed and takes no taps. A tap here closes the sheet. -->
+    <div
+      v-if="calendarOpen && phone"
+      ref="scrimRef"
+      class="nb-date-picker__scrim"
+      aria-hidden="true"
+      @click="closeCalendar"
+    />
     <div
       v-if="calendarOpen"
       ref="calendarRef"
       role="dialog"
       aria-modal="true"
       :aria-label="label ? `${label} calendar` : 'Date picker'"
-      class="nb-date-picker__calendar"
+      :class="[
+        'nb-date-picker__calendar',
+        { 'nb-date-picker__calendar--sheet': phone },
+      ]"
       v-bind="layerProps"
-      :style="calendarStyle"
+      :style="phone ? undefined : calendarStyle"
       @keydown="onCalendarKeydown"
       @mousedown.prevent
     >
@@ -395,6 +407,8 @@ import NbIcon from './Icon.vue'
 import NbGrid from './Grid.vue'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import { useMenuSurface } from '@/composables/useMenuSurface.composable'
+import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
+import { useVisualViewportVar } from '@/composables/useVisualViewportVar.composable'
 
 defineOptions({ inheritAttrs: false })
 
@@ -455,6 +469,20 @@ const endInputRef = ref<HTMLInputElement | null>(null)
 const calendarRef = ref<HTMLElement | null>(null)
 // Inside an NbMenu, picking a day is not a press outside the menu.
 useMenuSurface(calendarRef)
+
+/*
+ * On a phone the calendar is a bottom sheet rather than a popover under the
+ * field. A 336px box anchored to a field's left edge runs off a 375px screen
+ * for any field not flush left, and the keyboard the focused field raises
+ * covers whatever is below it. The sheet sits on the visible part of the
+ * viewport (useVisualViewportVar), so it rests on top of the keyboard.
+ *
+ * The anchored path below still runs, it is simply not bound: the sheet's
+ * place comes from its class, and a desktop renders exactly what it did.
+ */
+const { phone } = usePhoneLayout()
+const scrimRef = ref<HTMLElement | null>(null)
+useVisualViewportVar(() => calendarOpen.value)
 const calendarStyle = ref({
   position: 'fixed' as const,
   top: '0px',
@@ -842,7 +870,11 @@ function onClickOutside(e: MouseEvent) {
   const target = e.target as Node
   const inRoot = rootRef.value?.contains(target) ?? false
   const inCalendar = calendarRef.value?.contains(target) ?? false
-  if (!inRoot && !inCalendar) closeCalendar()
+  // The scrim closes the sheet on its own click. Closing it on the press
+  // instead would unmount it before the click, which then lands on whatever
+  // page control was underneath.
+  const inScrim = scrimRef.value?.contains(target) ?? false
+  if (!inRoot && !inCalendar && !inScrim) closeCalendar()
 }
 
 function onScrollOrResize() {
@@ -1045,6 +1077,8 @@ defineExpose({
 
 <style lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/logic/touch' as touch;
+@use '../styles/variables/breakpoints' as bp;
 
 .nb-date-picker {
   position: relative;
@@ -1175,11 +1209,15 @@ defineExpose({
     cursor: default;
   }
 
+  // Below 16px iOS zooms the page in on focus and leaves it there.
+  @include touch.touch-field-text;
+
   .nb-date-picker__input-wrapper--fluid & {
     height: auto;
     flex: 1;
     padding: 0 var(--nb-field-padding-h) 10px;
     font-size: var(--nb-font-size-14);
+    @include touch.touch-field-text;
   }
 }
 
@@ -1194,6 +1232,9 @@ defineExpose({
   cursor: pointer;
   transition: color 0.15s;
   flex-shrink: 0;
+  // A 16px glyph is not something a thumb can find. The target grows, the
+  // glyph does not.
+  @include touch.hit-area;
 
   &:hover:not(:disabled) {
     color: var(--nb-c-text);
@@ -1270,6 +1311,7 @@ defineExpose({
   color: var(--nb-c-text-muted);
   cursor: pointer;
   transition: color 0.15s;
+  @include touch.hit-area;
 
   &:hover {
     color: var(--nb-c-text);
@@ -1424,6 +1466,35 @@ defineExpose({
   &:focus-visible {
     border-color: var(--nb-c-focus-ring, var(--nb-c-primary));
     outline: none;
+  }
+}
+
+// ── Phone: the calendar as a bottom sheet ──────────────────
+@include bp.phone {
+  .nb-date-picker__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    background: var(--nb-c-scrim);
+  }
+
+  .nb-date-picker__calendar--sheet {
+    position: fixed;
+    inset-inline: 0;
+    // The bottom of the visible viewport, which is the top of the keyboard
+    // when one is up. Without the visual viewport properties it is the
+    // screen's bottom edge.
+    bottom: max(0px, calc(100% - var(--nb-vvt, 0px) - var(--nb-vvh, 100%)));
+    z-index: 9999;
+    width: 100%;
+    max-height: var(--nb-vvh, 100dvh);
+    overflow-y: auto;
+    border-inline: 0;
+    border-bottom: 0;
+    // Rounded where it meets the page, square at the screen edge.
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
   }
 }
 </style>

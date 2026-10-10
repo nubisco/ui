@@ -1,6 +1,8 @@
 import { glyphStubComputed } from './__mocks__/glyphStub'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
+import { stubPhone, unstubPhone } from './__mocks__/phoneLayout'
 import Tabs from '../src/components/Tabs.vue'
 
 const NbIconStub = {
@@ -227,5 +229,108 @@ describe('Tabs', () => {
     const wrapper = createWrapper({ modelValue: 'settings' })
     await wrapper.setProps({ modelValue: 'invoices' })
     expect(tabs(wrapper)[2].attributes('aria-selected')).toBe('true')
+  })
+})
+
+describe('Tabs on a phone', () => {
+  const many = [
+    { id: 'account', label: 'Account' },
+    { id: 'members', label: 'Members' },
+    { id: 'labels', label: 'Labels' },
+    { id: 'automation', label: 'Automation' },
+    { id: 'billing', label: 'Billing' },
+  ]
+
+  // A 200px list holding five 100px tabs, laid out the way a browser would,
+  // so the scroll position the component writes is the one a phone would see.
+  function layout(list: HTMLElement) {
+    Object.defineProperty(list, 'clientWidth', {
+      value: 200,
+      configurable: true,
+    })
+    Object.defineProperty(list, 'scrollWidth', {
+      value: 500,
+      configurable: true,
+    })
+    list.getBoundingClientRect = () => ({ left: 0, width: 200 }) as DOMRect
+    list.querySelectorAll<HTMLElement>('[data-tab-id]').forEach((tab, i) => {
+      tab.getBoundingClientRect = () =>
+        ({ left: i * 100 - list.scrollLeft, width: 100 }) as DOMRect
+    })
+  }
+
+  // Mounted with layout applied before the first reveal runs, the way it is in
+  // a browser where the list has a size by the time it is mounted.
+  async function mountPhone(props = {}) {
+    const wrapper = mount(Tabs, {
+      props: { items: many, ...props },
+      attachTo: document.body,
+    })
+    const list = wrapper.find('[role="tablist"]').element as HTMLElement
+    layout(list)
+    window.dispatchEvent(new Event('resize'))
+    await nextTick()
+    return { wrapper, list }
+  }
+
+  afterEach(() => unstubPhone())
+
+  it('scrolls the list so the active tab is fully visible', async () => {
+    stubPhone()
+    const { wrapper, list } = await mountPhone({ modelValue: 'automation' })
+    // Automation spans 300..400. It ends past 200, so the list scrolls until
+    // its end sits one fade width inside the right edge.
+    expect(list.scrollLeft).toBe(224)
+    wrapper.unmount()
+  })
+
+  it('follows the active tab when it changes', async () => {
+    stubPhone()
+    const { wrapper, list } = await mountPhone({ modelValue: 'account' })
+    expect(list.scrollLeft).toBe(0)
+    await wrapper.setProps({ modelValue: 'billing' })
+    await nextTick()
+    // The last tab goes flush to the end: there is nothing past it to fade.
+    expect(list.scrollLeft).toBe(300)
+    await wrapper.setProps({ modelValue: 'members' })
+    await nextTick()
+    // Members spans 100..200, starting left of the scroll position, so it
+    // comes back one fade width in from the left edge.
+    expect(list.scrollLeft).toBe(76)
+    wrapper.unmount()
+  })
+
+  it('never calls scrollIntoView, which would scroll the page as well', async () => {
+    stubPhone()
+    const original = Element.prototype.scrollIntoView
+    const spy = vi.fn()
+    Element.prototype.scrollIntoView = spy
+    const { wrapper } = await mountPhone({ modelValue: 'billing' })
+    expect(spy).not.toHaveBeenCalled()
+    wrapper.unmount()
+    Element.prototype.scrollIntoView = original
+  })
+
+  it('fades the edge that has more tabs behind it', async () => {
+    stubPhone()
+    const { wrapper, list } = await mountPhone({ modelValue: 'account' })
+    const classes = () => wrapper.find('[role="tablist"]').classes()
+    expect(classes()).toContain('nb-tabs__list--fade-end')
+    expect(classes()).not.toContain('nb-tabs__list--fade-start')
+
+    list.scrollLeft = 300
+    await wrapper.find('[role="tablist"]').trigger('scroll')
+    expect(classes()).toContain('nb-tabs__list--fade-start')
+    expect(classes()).not.toContain('nb-tabs__list--fade-end')
+    wrapper.unmount()
+  })
+
+  it('leaves the desktop bar exactly as it was', async () => {
+    const { wrapper, list } = await mountPhone({ modelValue: 'billing' })
+    expect(list.scrollLeft).toBe(0)
+    expect(wrapper.find('[role="tablist"]').attributes('class')).toBe(
+      'nb-tabs__list',
+    )
+    wrapper.unmount()
   })
 })

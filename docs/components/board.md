@@ -239,9 +239,16 @@ Give a `batch-actions` slot and a bar of actions floats at the foot of the
 board while cards are selected, the same pattern as `NbDataTable`'s batch bar.
 The slot receives `selected` and `clear`.
 
+On a touch screen there are no modifier keys and no <kbd>X</kbd>, so bind
+`v-model:selectMode` as well and offer the reader a way to turn it on (a
+"Select cards" action, say). While it is on, a tap on a card selects it, or
+takes it out of the selection, instead of opening it. Clearing the selection
+turns select mode off again.
+
 ```vue
 <NbBoard
   v-model:selected="selected"
+  v-model:select-mode="selecting"
   :columns="columns"
   :items="items"
   selectable
@@ -254,6 +261,23 @@ The slot receives `selected` and `clear`.
   </template>
 </NbBoard>
 ```
+
+## On a Phone
+
+There is nothing to opt into. On a phone layout (below 672px, or a phone held
+sideways), wider screens being unchanged:
+
+- Columns snap one at a time, each as wide as the board less 40px, so the edge
+  of the next one shows. Set `--nb-board-phone-track` on the board to choose
+  another width.
+- Without lanes, each column scrolls on its own, so moving to the next column
+  starts at its top. This needs the board to have a height, as a full-page
+  board already does. Swimlanes keep one shared scroll.
+- A lane's header keeps its label and count at the left edge as the columns
+  scroll past.
+- The batch bar is pinned along the foot of the screen in one row, clear of
+  the home indicator, and the `batch-actions` slot receives `phone: true` so
+  the actions can drop to icons.
 
 ## Reordering Columns
 
@@ -291,15 +315,16 @@ function onColumnMove(e: IBoardColumnMoveEvent) {
 
 ## Props
 
-| Prop                 | Type             | Default     | Description                                                                  |
-| -------------------- | ---------------- | ----------- | ---------------------------------------------------------------------------- |
-| `columns`            | `IBoardColumn[]` | required    | Column definitions (one per status/stage)                                    |
-| `items`              | `IBoardItem[]`   | required    | Items to display on the board                                                |
-| `lanes`              | `IBoardLane[]`   | `undefined` | Optional swim lanes for horizontal grouping                                  |
-| `reorderableColumns` | `boolean`        | `false`     | Make column headers draggable; emits `column-move`                           |
-| `nestable`           | `boolean`        | `false`     | Allow a card to be dropped onto another; emits `nest`                        |
-| `selectable`         | `boolean`        | `false`     | Let the reader select several cards; emits `move-many` and `update:selected` |
-| `selected`           | `string[]`       | `undefined` | The selected item ids, for `v-model:selected`                                |
+| Prop                 | Type             | Default     | Description                                                                                  |
+| -------------------- | ---------------- | ----------- | -------------------------------------------------------------------------------------------- |
+| `columns`            | `IBoardColumn[]` | required    | Column definitions (one per status/stage)                                                    |
+| `items`              | `IBoardItem[]`   | required    | Items to display on the board                                                                |
+| `lanes`              | `IBoardLane[]`   | `undefined` | Optional swim lanes for horizontal grouping                                                  |
+| `reorderableColumns` | `boolean`        | `false`     | Make column headers draggable; emits `column-move`                                           |
+| `nestable`           | `boolean`        | `false`     | Allow a card to be dropped onto another; emits `nest`                                        |
+| `selectable`         | `boolean`        | `false`     | Let the reader select several cards; emits `move-many` and `update:selected`                 |
+| `selected`           | `string[]`       | `undefined` | The selected item ids, for `v-model:selected`                                                |
+| `selectMode`         | `boolean`        | `false`     | A tap selects a card instead of activating it (needs `selectable`), for `v-model:selectMode` |
 
 ## Interfaces
 
@@ -349,24 +374,24 @@ interface IBoardColumnMoveEvent {
 
 ## Events
 
-| Event         | Payload                 | Description                                                                                           |
-| ------------- | ----------------------- | ----------------------------------------------------------------------------------------------------- |
-| `move`        | `IBoardMoveEvent`       | Emitted when a card is dropped into a different cell or at a different position within its own column |
-| `nest`        | `IBoardNestEvent`       | Emitted when a card is dropped onto another card (requires `nestable`). Never alongside `move`        |
-| `column-move` | `IBoardColumnMoveEvent` | Emitted when a column header is dropped on a new position (requires `reorderableColumns`)             |
+| Event               | Payload                 | Description                                                                                           |
+| ------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| `move`              | `IBoardMoveEvent`       | Emitted when a card is dropped into a different cell or at a different position within its own column |
+| `nest`              | `IBoardNestEvent`       | Emitted when a card is dropped onto another card (requires `nestable`). Never alongside `move`        |
+| `column-move`       | `IBoardColumnMoveEvent` | Emitted when a column header is dropped on a new position (requires `reorderableColumns`)             |
+| `move-many`         | `IBoardMoveManyEvent`   | Emitted when a selection is dropped together (requires `selectable`)                                  |
+| `update:selected`   | `string[]`              | The selection changed (`v-model:selected`)                                                            |
+| `update:selectMode` | `boolean`               | Select mode turned off because the selection was cleared (`v-model:selectMode`)                       |
 
 ## Slots
 
 | Slot            | Scope                                                           | Description                                                                  |
 | --------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `card`          | `{ item: IBoardItem, column: IBoardColumn, lane?: IBoardLane }` | Content of each card                                                         |
-| `lane-header`   | `{ lane: IBoardLane }`                                          | Custom lane header content                                                   |
-| Slot            | Scope                                                           | Description                                                                  |
-| --------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `card`          | `{ item: IBoardItem, column: IBoardColumn, lane?: IBoardLane }` | Content of each card                                                         |
 | `column-header` | `{ column: IBoardColumn, count: number }`                       | Replaces the default column header (label and count); the color accent stays |
 | `column-footer` | `{ column: IBoardColumn, lane?: IBoardLane }`                   | Rendered at the bottom of each cell, e.g. an add-item composer               |
 | `lane-header`   | `{ lane: IBoardLane }`                                          | Custom lane header content                                                   |
+| `batch-actions` | `{ selected: string[], clear: () => void, phone: boolean }`     | Actions for the selection, shown in the batch bar (requires `selectable`)    |
 
 ## Keyboard
 

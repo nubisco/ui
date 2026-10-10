@@ -474,6 +474,17 @@ to opening vertically, exactly as without the prop.
 The default stays `vertical`, so every existing bell opens exactly where it
 did before.
 
+### On a phone
+
+On a phone (below 672px, or a touch phone held sideways) a 360px popover off a
+32px bell is most of the screen and none of its height, so the panel becomes a
+**full-screen sheet** instead. `width`, `align` and `side` are ignored there.
+The sheet sits inside the safe areas, its header controls are at least 44px
+tall, only the feed scrolls, and it carries its own close button, named by
+`closeLabel` (`Close notifications`), because nothing outside it is left to
+tap. It does not close when its trigger scrolls out of view, since it is no
+longer attached to it. Desktops are unchanged.
+
 ## Leaving the page
 
 A bell lives in a shell that outlives the view under it, so its panel can survive things it should not survive. Two of those are handled here:
@@ -606,7 +617,8 @@ Fetch, poll, subscribe, cache, mark read, deduplicate or decide what deserves a 
 | `retryLabel`          | `string`                    | `'Try again'`                                  | Label of the retry control in both failure presentations.                                                                                                                                              |
 | `showRetry`           | `boolean`                   | `true`                                         | Offer a retry control. Turn it off when you retry on your own and a button would be a lie.                                                                                                             |
 | `maxCount`            | `number`                    | `99`                                           | Counts above this render as `n+` on the badge only.                                                                                                                                                    |
-| `width`               | `number`                    | `360`                                          | Panel width in px.                                                                                                                                                                                     |
+| `width`               | `number`                    | `360`                                          | Panel width in px. Ignored on a phone, where the panel is a sheet.                                                                                                                                     |
+| `closeLabel`          | `string`                    | `'Close notifications'`                        | Accessible name of the close button the phone sheet carries.                                                                                                                                           |
 | `maxHeight`           | `number`                    | `384`                                          | Tallest the scrolling list may get, in px. Clamped further on a short viewport.                                                                                                                        |
 | `align`               | `'start' \| 'end'`          | `'end'`                                        | Which trigger edge the panel lines up with.                                                                                                                                                            |
 | `side`                | `'vertical' \| 'right'`     | `'vertical'`                                   | Where the panel opens. `vertical` opens below the trigger and flips above when below is cramped. `right` opens beside it, for a bell in a sidebar, and falls back to `vertical` when there is no room. |

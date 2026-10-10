@@ -1058,6 +1058,44 @@ Closing emits `update:inspectorVisible`, so `v-model:inspector-visible` is all y
 
 If you pass `:inspector-visible="true"` with nothing listening for the update, the shell still hides the sheet locally rather than leaving you trapped behind it. That override is scoped to the overlay and clears itself the moment you set the prop true again or the window grows past the breakpoint, so it can never desync your desktop column.
 
+### On a phone
+
+A few things change only while the frame is collapsed, so a desktop never sees them:
+
+- **Choosing a destination closes the overlay it was in.** A click on an `a[href]` or a `[role="menuitem"]` inside the drawer closes the drawer, and the same inside the folded contextbar closes the contextbar. Rows that open something rather than going somewhere (anything with `aria-haspopup` or `aria-expanded`) keep it open, as does anything inside an element marked `data-nb-keep-open`.
+- **The inspector sheet opening closes the drawer**, which would otherwise sit over the sheet the user just asked for.
+- **Escape that a field already handled is left alone.** A Select closing its list or an InlineEdit cancelling calls `preventDefault()`, and the frame no longer closes the sheet around it as well.
+- **A phone held sideways collapses too.** Width alone sees an 844px landscape phone as a desktop, so the frame also collapses on a touch screen with no hover that is at most 500px tall. Desktops, Tauri windows and touch laptops driven by a mouse never match. `collapse-at="none"` turns this off with the rest.
+- **The frame's own controls are 44px**: the drawer toggle, the sheet's dismiss button and the contextbar toggle.
+- **Fixedbar children may shrink** (`min-width: 0`), so a strip of tabs scrolls inside itself instead of widening the page.
+- **On a phone the topbar's right half scrolls sideways** instead of clipping, and the left half keeps at least `min(40%, 10rem)` for the breadcrumb. It is a safety net: fold page actions into an [`NbActionGroup`](/components/action-group) with `overflow="phone"` so they never need it. An absolutely positioned dropdown of your own inside `topbar-right` is clipped by that scroll box. The library's popovers teleport and are not.
+
+To keep your own controls clear of the sheet's dismiss button, read the inset the sheet publishes. It is set only on the overlay, so it falls back to zero everywhere else:
+
+```css
+.my-inspector-header {
+  padding-inline-end: var(--nb-shell-inspector-dismiss-inset, 0px);
+}
+```
+
+The inspector slot also tells you which mode it is in, and hands you the frame's own close:
+
+```vue
+<template #inspector="{ overlay, close }">
+  <PanelHeader :show-close="!overlay" @close="close" />
+</template>
+```
+
+Anything deeper in the tree can ask with `useShellLayout()`:
+
+```ts
+import { useShellLayout } from '@nubisco/ui'
+
+const { collapsed, inspectorOverlay } = useShellLayout()
+```
+
+Both are read-only refs. Outside a shell both are `false`.
+
 ### The cost of the breakpoint
 
 The breakpoint is evaluated in script, from `window.innerWidth`, and published as a class on the frame rather than being written as a media query. That is deliberate: `inert`, `aria-expanded` and the existence of the toggle button can only be set by script, and a media query would put the decision in two places that could disagree about which layout is on screen. The consequence is that a server-rendered first paint is the desktop layout until hydration, and that the pixel values live in the component next to the rest of the scale in `styles/variables/_breakpoints.scss` rather than in a custom property (a media query cannot read one anyway).
@@ -1275,14 +1313,17 @@ Contributions teleport, so contributed controls move in the DOM but keep their c
 
 The frame is the component most likely to be driven from outside: a command palette that focuses the page, a shortcut that opens the navigation, a route guard that closes the inspector before leaving. `ref` on `<NbShell>` gives you:
 
-| Name                     | Type                  | What it is                                                           |
-| ------------------------ | --------------------- | -------------------------------------------------------------------- |
-| `mainEl`                 | `HTMLElement \| null` | The `<main>` element, for scrolling or measuring the page ground     |
-| `sidebarEl`              | `HTMLElement \| null` | The sidebar `<nav>`, or `null` when no sidebar slot has content      |
-| `inspectorEl`            | `HTMLElement \| null` | The inspector `<aside>`. Always present: it animates from zero width |
-| `focusMain()`            | `() => void`          | Moves focus to the main region, exactly as the skip link does        |
-| `setSidebarOpen(open)`   | `(boolean) => void`   | Opens or closes the drawer and emits. No-op above `collapseAt`       |
-| `setInspectorVisible(v)` | `(boolean) => void`   | Shows or hides the inspector and emits                               |
+| Name                      | Type                  | What it is                                                           |
+| ------------------------- | --------------------- | -------------------------------------------------------------------- |
+| `mainEl`                  | `HTMLElement \| null` | The `<main>` element, for scrolling or measuring the page ground     |
+| `sidebarEl`               | `HTMLElement \| null` | The sidebar `<nav>`, or `null` when no sidebar slot has content      |
+| `inspectorEl`             | `HTMLElement \| null` | The inspector `<aside>`. Always present: it animates from zero width |
+| `focusMain()`             | `() => void`          | Moves focus to the main region, exactly as the skip link does        |
+| `setSidebarOpen(open)`    | `(boolean) => void`   | Opens or closes the drawer and emits. No-op above `collapseAt`       |
+| `setInspectorVisible(v)`  | `(boolean) => void`   | Shows or hides the inspector and emits                               |
+| `collapsed`               | `boolean`             | True while the frame runs its collapsed, drawer layout               |
+| `inspectorOverlay`        | `boolean`             | True while the inspector is a sheet over the content                 |
+| `setContextbarOpen(open)` | `(boolean) => void`   | Opens or closes the folded contextbar. Only means anything collapsed |
 
 ## Slots
 
@@ -1300,7 +1341,7 @@ The frame is the component most likely to be driven from outside: a command pale
 | `fixedbar`       | Non-scrolling bar between topbar and main content (e.g. tabs, filters). Only rendered when populated                          |
 | `default`        | Main scrollable content area                                                                                                  |
 | `bottom`         | Empty region pinned below the main content area. Place any component here (e.g. `NbShellPanel`). Only rendered when populated |
-| `inspector`      | Content for the optional inspector side panel                                                                                 |
+| `inspector`      | Content for the optional inspector side panel. Slot props: `overlay` (true while it is a sheet) and `close()`                 |
 
 Eight of these regions can also be filled from a view with [`useShellSlot`](/composables/use-shell-slot): `outer-menu`, `inner-menu`, `notification`, `topbar-left`, `topbar-right`, `fixedbar`, `bottom` and `inspector`. A contribution renders into the same element as the slot and counts as content for the "only rendered when populated" rules above. The three `sidebar-*` slots, the legacy `menubar` and the `default` slot are not contributable.
 
@@ -1357,6 +1398,7 @@ All of these are declared at `:root`, so an application overrides them there wit
 | `--nb-shell-inspector-border`          | `1px solid var(--nb-c-border)`                                   | Inspector left border                                                                                                                                                                                                                                         |
 | `--nb-shell-inspector-bg`              | `var(--nb-c-surface)`                                            | Inspector background                                                                                                                                                                                                                                          |
 | `--nb-shell-inspector-resize-color`    | `var(--nb-c-primary)`                                            | The grab-line on the resize handle                                                                                                                                                                                                                            |
+| `--nb-shell-inspector-dismiss-inset`   | unset (`52px` on the sheet)                                      | **Read it, do not set it.** The room the sheet's dismiss button takes at the top right, published only while the inspector is an overlay. Use `var(--nb-shell-inspector-dismiss-inset, 0px)` to keep a control clear of it                                    |
 
 </doc-tab>
 

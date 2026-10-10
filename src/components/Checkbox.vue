@@ -59,6 +59,7 @@ function handleChange(e: Event) {
 
 <style scoped lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/variables/breakpoints' as bp;
 
 .nb-checkbox {
   display: inline-flex;
@@ -69,6 +70,13 @@ function handleChange(e: Event) {
   cursor: pointer;
   user-select: none;
   font-family: var(--nb-font-family-sans);
+
+  // The whole label row is the target. On a phone touch screen it grows to a
+  // fingertip, 20px of first line plus 12px either side, without moving the
+  // box off the first line of a long label.
+  @include bp.phone-touch {
+    padding-block: 12px;
+  }
 
   &--disabled {
     opacity: var(--nb-field-disabled-opacity, 0.45);

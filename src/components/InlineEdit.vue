@@ -1,6 +1,24 @@
 <template>
+  <!-- multiline: a textarea that grows with its text, for values that wrap
+       (a title on a phone is two or three lines). Enter still commits, so
+       the one-line habit carries over, and Shift+Enter breaks the line. -->
+  <textarea
+    v-if="editing && multiline"
+    :id="id"
+    ref="input"
+    class="nb-inline-edit__input nb-inline-edit__input--multiline"
+    :class="`nb-inline-edit__input--${size}`"
+    rows="1"
+    :value="modelValue"
+    :aria-label="label"
+    :placeholder="placeholder"
+    @input="onTextareaInput"
+    @blur="commit"
+    @keydown.enter="onTextareaEnter"
+    @keydown.esc.prevent="cancel"
+  />
   <input
-    v-if="editing"
+    v-else-if="editing"
     :id="id"
     ref="input"
     class="nb-inline-edit__input"
@@ -49,6 +67,7 @@ const props = withDefaults(defineProps<IInlineEditProps>(), {
   placeholder: undefined,
   size: 'md',
   disabled: false,
+  multiline: false,
 })
 
 const emit = defineEmits<{
@@ -58,7 +77,7 @@ const emit = defineEmits<{
 }>()
 
 const editing = ref(false)
-const input = ref<HTMLInputElement | null>(null)
+const input = ref<HTMLInputElement | HTMLTextAreaElement | null>(null)
 let original = ''
 
 const pencilSize = computed(
@@ -70,6 +89,7 @@ function start(): void {
   original = props.modelValue
   editing.value = true
   void nextTick(() => {
+    autosize()
     input.value?.focus()
     input.value?.select()
   })
@@ -77,6 +97,28 @@ function start(): void {
 
 function onInput(event: Event): void {
   emit('update:modelValue', (event.target as HTMLInputElement).value)
+}
+
+// The textarea is as tall as its text, so it reads as the value being edited
+// rather than as a box. Height is reset first, or it could only ever grow.
+function autosize(): void {
+  const el = input.value
+  if (!props.multiline || !(el instanceof HTMLTextAreaElement)) return
+  el.style.height = 'auto'
+  el.style.height = `${el.scrollHeight}px`
+}
+
+function onTextareaInput(event: Event): void {
+  emit('update:modelValue', (event.target as HTMLTextAreaElement).value)
+  autosize()
+}
+
+// Enter commits and Shift+Enter is the newline. An Enter that confirms an IME
+// composition is the input method's, not ours.
+function onTextareaEnter(event: KeyboardEvent): void {
+  if (event.shiftKey || event.isComposing) return
+  event.preventDefault()
+  commit()
 }
 
 function commit(): void {
@@ -97,6 +139,7 @@ defineExpose({ start })
 
 <style scoped lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/variables/breakpoints' as bp;
 
 @mixin scale($set) {
   font-family: var(--nb-type-#{$set}-family, var(--nb-font-family-sans));
@@ -179,6 +222,14 @@ defineExpose({ start })
   }
 }
 
+// Only present with `multiline`. Grows with its text (see autosize), so it
+// never shows a scrollbar or a resize grip.
+.nb-inline-edit__input--multiline {
+  display: block;
+  resize: none;
+  overflow: hidden;
+}
+
 .nb-inline-edit__text--md,
 .nb-inline-edit__input--md {
   @include scale('body-md');
@@ -192,5 +243,15 @@ defineExpose({ start })
 .nb-inline-edit__text--xl,
 .nb-inline-edit__input--xl {
   @include scale('heading-02');
+}
+
+// The editor never shows text below 16px on a touch phone, or iOS zooms the
+// page in when it takes focus. The heading sizes are already above it.
+@include bp.phone-touch {
+  @each $size, $set in (md: 'body-md', lg: 'heading-01', xl: 'heading-02') {
+    .nb-inline-edit__input--#{$size} {
+      font-size: max(16px, var(--nb-type-#{$set}-size));
+    }
+  }
 }
 </style>

@@ -309,6 +309,8 @@ const wrapperClasses = computed(() => ({
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/touch' as touch;
+
 .nb-text-input {
   font-family: var(--nb-font-family-sans);
   gap: var(--nb-field-label-gap);
@@ -453,6 +455,9 @@ const wrapperClasses = computed(() => ({
     outline: none;
     font-family: inherit;
     font-size: var(--nb-field-font-size);
+    // Below 16px iOS zooms the page in when the field takes focus, and leaves
+    // it zoomed. Input and textarea alike.
+    @include touch.touch-field-text;
     font-weight: 400;
     color: var(--nb-c-text);
     line-height: var(--nb-field-line-height);
@@ -482,6 +487,9 @@ const wrapperClasses = computed(() => ({
     grid-area: 1 / 1; // overlap in the same grid cell
     font-family: inherit;
     font-size: var(--nb-field-font-size);
+    // Both halves of the overlay grow together, or the caret drifts off the
+    // mirrored text.
+    @include touch.touch-field-text;
     font-weight: 400;
     line-height: var(--nb-field-line-height);
     word-break: break-word;
@@ -611,6 +619,7 @@ const wrapperClasses = computed(() => ({
       flex: 1;
       padding: 0 var(--nb-field-padding-h) 10px;
       font-size: var(--nb-font-size-14);
+      @include touch.touch-field-text;
     }
   }
 }

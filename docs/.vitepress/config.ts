@@ -243,6 +243,10 @@ export default withMermaid(
                 text: 'Components',
                 items: [
                   { text: 'Accordion', link: '/components/accordion' },
+                  {
+                    text: 'Action Group',
+                    link: '/components/action-group',
+                  },
                   { text: 'AI Label', link: '/components/ai-label' },
                   { text: 'Avatar', link: '/components/avatar' },
                   { text: 'Badge', link: '/components/badge' },

@@ -46,12 +46,23 @@ interface IFloatingToolbarProps {
   orientation?: TFloatingToolbarOrientation
   /** Teleport target for the toolbar. */
   teleportTo?: string
+  /**
+   * `'phone'` docks the toolbar to the bottom of the visible viewport in the
+   * phone layout: full width, above the on-screen keyboard, scrolling
+   * sideways when its controls do not fit, with 44px buttons. Everywhere else
+   * it floats at its anchor as usual. `'none'` (the default) always floats.
+   */
+  dock?: TFloatingToolbarDock
 }
+
+/** Where the toolbar goes in the phone layout. */
+type TFloatingToolbarDock = 'none' | 'phone'
 
 export type {
   IFloatingToolbarProps,
   IFloatingToolbarVirtualAnchor,
   TFloatingToolbarAnchor,
+  TFloatingToolbarDock,
   TFloatingToolbarOrientation,
   TFloatingToolbarPlacement,
 }

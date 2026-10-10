@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
+import { stubPhone, unstubPhone } from './__mocks__/phoneLayout'
 import { mount } from '@vue/test-utils'
 import { h } from 'vue'
 import NbTree from '../src/components/Tree.vue'
@@ -39,5 +40,29 @@ describe('NbTreeNode meta slot', () => {
     })
     expect(w.find('.nb-tree-node__meta').exists()).toBe(false)
     w.unmount()
+  })
+})
+
+describe('NbTreeNode rows on a phone touch screen', () => {
+  afterEach(() => unstubPhone())
+
+  const mountTree = (compact: boolean) =>
+    mount(NbTree, {
+      props: { compact },
+      slots: { default: () => h(NbTreeNode, { id: 'a', label: 'about' }) },
+    })
+  const height = (w: ReturnType<typeof mountTree>) =>
+    (w.find('.nb-tree-node__label').element as HTMLElement).style.minHeight
+
+  it('keeps 32px and 24px rows off a touch phone', () => {
+    stubPhone()
+    expect(height(mountTree(false))).toBe('32px')
+    expect(height(mountTree(true))).toBe('24px')
+  })
+
+  it('makes every row a fingertip tall, compact or not', () => {
+    stubPhone({ touch: true })
+    expect(height(mountTree(false))).toBe('44px')
+    expect(height(mountTree(true))).toBe('44px')
   })
 })

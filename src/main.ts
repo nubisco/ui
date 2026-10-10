@@ -74,6 +74,12 @@ export type {
   TAccordionAlign,
   TAccordionSize,
 } from './components/Accordion.d'
+export { default as NbActionGroup } from './components/ActionGroup.vue'
+export type {
+  IActionGroupItem,
+  IActionGroupProps,
+  TActionGroupOverflow,
+} from './components/ActionGroup.d'
 export { default as NbCard } from './components/Card.vue'
 export { default as NbCardGrid } from './components/CardGrid.vue'
 export type { ICardProps, ICardGridProps } from './components/CardGrid.d'
@@ -536,6 +542,11 @@ export {
   useReducedMotion,
   prefersReducedMotion,
 } from './composables/useReducedMotion.composable'
+export {
+  usePhoneLayout,
+  NB_PHONE_QUERY,
+  NB_PHONE_TOUCH_QUERY,
+} from './composables/usePhoneLayout.composable'
 export { useContextMenu } from './composables/useContextMenu.composable'
 export { useInlineLoading } from './composables/useInlineLoading.composable'
 export type {
@@ -569,6 +580,10 @@ export type {
   IShellSlotOptions,
   IShellSlot,
 } from './composables/useShellSlot.composable'
+// Whether the surrounding NbShell has collapsed, and whether its inspector is a
+// sheet, so content can make room for the frame's own controls.
+export { useShellLayout } from './composables/useShellLayout.composable'
+export type { IShellLayout } from './composables/useShellLayout.composable'
 export { useTheme, configureTheme } from './composables/useTheme.composable'
 export type {
   TTheme,
