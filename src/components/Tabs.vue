@@ -1,11 +1,11 @@
 <template>
-  <div :class="rootClasses">
+  <div ref="rootRef" :class="rootClasses">
     <div
       ref="listRef"
       class="nb-tabs__list"
       :class="{
-        'nb-tabs__list--fade-start': phone && fadeStart,
-        'nb-tabs__list--fade-end': phone && fadeEnd,
+        'nb-tabs__list--fade-start': scrolls && fadeStart,
+        'nb-tabs__list--fade-end': scrolls && fadeEnd,
       }"
       role="tablist"
       :aria-label="ariaLabel || undefined"
@@ -123,6 +123,8 @@ const rootClasses = computed(() => [
   {
     'nb-tabs--full-width': props.fullWidth,
     'nb-tabs--disabled': props.disabled,
+    // Only while the tabs do not fit, so a bar that fits renders as it did
+    'nb-tabs--overflow': overflowing.value,
   },
 ])
 
@@ -175,14 +177,32 @@ function jump(item: ITabItem | undefined): void {
   focusTab(item.id)
 }
 
-// ── Phone: a bar that scrolls ────────────────────────────────────────────────
+// ── A bar that scrolls ───────────────────────────────────────────────────────
 //
-// On a phone the bar scrolls sideways instead of running off the screen, so
-// the tab that is active has to be brought into view by us: a tab chosen on
-// load, or by an arrow key, may sit past the edge. scrollLeft is set on the
-// list directly, never through scrollIntoView, which also scrolls every
-// scrollable ancestor (the page, a shell region) to line the tab up.
+// When the tabs do not fit, the bar scrolls sideways instead of running past
+// its container's edge. That is always the case on a phone, and at any width
+// once the tabs are wider than the space they have (a side panel, a split
+// view, simply many tabs). The tab that is active then has to be brought into
+// view by us: a tab chosen on load, or by an arrow key, may sit past the edge.
+// scrollLeft is set on the list directly, never through scrollIntoView, which
+// also scrolls every scrollable ancestor (the page, a shell region) to line
+// the tab up.
 const { phone } = usePhoneLayout()
+const rootRef = ref<HTMLElement | null>(null)
+const overflowing = ref(false)
+const scrolls = computed(() => phone.value || overflowing.value)
+
+// Measured against the root, not the list: a contained bar sizes itself to
+// its tabs, so its own scrollWidth never exceeds its own width. The list's
+// content width is the same whether or not it scrolls, so switching modes
+// cannot flip the answer back.
+function measureOverflow(): void {
+  const root = rootRef.value
+  const list = listRef.value
+  if (!root || !list) return
+  overflowing.value = list.scrollWidth > root.clientWidth + 1
+}
+
 const fadeStart = ref(false)
 const fadeEnd = ref(false)
 
@@ -192,7 +212,7 @@ const FADE_PX = 24
 
 function updateFades(): void {
   const list = listRef.value
-  if (!phone.value || !list) return
+  if (!scrolls.value || !list) return
   const max = list.scrollWidth - list.clientWidth
   fadeStart.value = list.scrollLeft > 1
   fadeEnd.value = list.scrollLeft < max - 1
@@ -200,7 +220,7 @@ function updateFades(): void {
 
 function revealActive(): void {
   const list = listRef.value
-  if (!phone.value || !list) return
+  if (!scrolls.value || !list) return
   const tab = [...list.querySelectorAll<HTMLElement>('[data-tab-id]')].find(
     (button) => button.dataset.tabId === activeId.value,
   )
@@ -219,19 +239,49 @@ function revealActive(): void {
   updateFades()
 }
 
-watch([activeId, phone], () => nextTick(revealActive))
+watch([activeId, scrolls], () => nextTick(revealActive))
 
 function onResize(): void {
+  measureOverflow()
   revealActive()
 }
 
+// The root and each tab, never the list: the list's own box changes when it
+// starts to scroll, and observing it would answer its own question.
+let observer: ResizeObserver | null = null
+function observeSizes(): void {
+  if (!observer || !rootRef.value || !listRef.value) return
+  observer.disconnect()
+  observer.observe(rootRef.value)
+  listRef.value
+    .querySelectorAll<HTMLElement>('[data-tab-id]')
+    .forEach((tab) => observer?.observe(tab))
+}
+
+watch(
+  () => props.items,
+  () =>
+    nextTick(() => {
+      observeSizes()
+      onResize()
+    }),
+  { deep: true },
+)
+
 onMounted(() => {
+  measureOverflow()
   revealActive()
   window.addEventListener('resize', onResize, { passive: true })
+  if (typeof ResizeObserver !== 'undefined') {
+    observer = new ResizeObserver(onResize)
+    observeSizes()
+  }
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', onResize)
+  observer?.disconnect()
+  observer = null
 })
 
 function onKeydown(event: KeyboardEvent): void {
@@ -258,6 +308,64 @@ function onKeydown(event: KeyboardEvent): void {
 <style scoped lang="scss">
 @use '../styles/logic/radius' as radius;
 @use '../styles/variables/breakpoints' as bp;
+
+// The scrolling bar, emitted twice: under the phone query with `$when` empty,
+// which gives exactly the selectors the phone has always had, and under
+// `.nb-tabs--overflow` for a bar that does not fit at any width.
+@mixin scrolling-bar($when: '') {
+  $r: &;
+
+  @at-root #{$when} #{$r}__list {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  @at-root #{$when} #{$r}__list--fade-start {
+    mask-image: linear-gradient(to right, transparent, #000 24px);
+  }
+
+  @at-root #{$when} #{$r}__list--fade-end {
+    mask-image: linear-gradient(to left, transparent, #000 24px);
+  }
+
+  @at-root #{$when} #{$r}__list--fade-start#{$r}__list--fade-end {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 24px,
+      #000 calc(100% - 24px),
+      transparent
+    );
+  }
+
+  @at-root #{$when} #{$r}__tab {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+
+  // A scrolling box clips at its padding edge, which would cut off the 2px
+  // the line tabs hang over the list's rule, and the active underline with
+  // it. The rule is drawn inside the list instead, where the tabs cover it
+  // exactly as they cover the border on desktop.
+  @at-root #{$r}--line#{$when} #{$r}__list {
+    border-bottom: 0;
+    box-shadow: inset 0 -2px 0 var(--nb-c-border);
+  }
+
+  @at-root #{$r}--line#{$when} #{$r}__tab {
+    margin-bottom: 0;
+  }
+}
 
 .nb-tabs {
   display: flex;
@@ -391,62 +499,16 @@ function onKeydown(event: KeyboardEvent): void {
     color: var(--nb-c-white);
   }
 
-  // ── Phone: the bar scrolls sideways ──────────────────────────────────────────
-  // More tabs than fit used to run off the screen with no way to reach them.
-  // On a phone the bar scrolls instead, without a visible scrollbar, and an
-  // edge fades out on whichever side there is more to see.
+  // ── The bar scrolls sideways when the tabs do not fit ────────────────────────
+  // More tabs than fit used to run off the edge with no way to reach them. The
+  // bar scrolls instead, without a visible scrollbar, and an edge fades out on
+  // whichever side there is more to see. Always on a phone, and at any width
+  // while the tabs are wider than their container (`--overflow`, measured).
   @include bp.phone {
-    &__list {
-      min-width: 0;
-      max-width: 100%;
-      overflow-x: auto;
-      overflow-y: hidden;
-      scrollbar-width: none;
-      overscroll-behavior-x: contain;
-      scroll-snap-type: x proximity;
-      -webkit-overflow-scrolling: touch;
-
-      &::-webkit-scrollbar {
-        display: none;
-      }
-    }
-
-    &__list--fade-start {
-      mask-image: linear-gradient(to right, transparent, #000 24px);
-    }
-
-    &__list--fade-end {
-      mask-image: linear-gradient(to left, transparent, #000 24px);
-    }
-
-    &__list--fade-start.nb-tabs__list--fade-end {
-      mask-image: linear-gradient(
-        to right,
-        transparent,
-        #000 24px,
-        #000 calc(100% - 24px),
-        transparent
-      );
-    }
-
-    &__tab {
-      flex-shrink: 0;
-      scroll-snap-align: start;
-    }
-
-    // A scrolling box clips at its padding edge, which would cut off the 2px
-    // the line tabs hang over the list's rule, and the active underline with
-    // it. The rule is drawn inside the list instead, where the tabs cover it
-    // exactly as they cover the border on desktop.
-    &--line &__list {
-      border-bottom: 0;
-      box-shadow: inset 0 -2px 0 var(--nb-c-border);
-    }
-
-    &--line &__tab {
-      margin-bottom: 0;
-    }
+    @include scrolling-bar;
   }
+
+  @include scrolling-bar('.nb-tabs--overflow');
 
   // A fingertip tall on a phone touch screen, the `sm` size included.
   @include bp.phone-touch {

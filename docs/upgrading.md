@@ -28,6 +28,13 @@ a value is selected. It emits `null`, or `[]` with `multiple`. A select without
 `clearable` renders as before. If you added a "None" option to make a select
 optional, `clearable` replaces it.
 
+**`NbTabs` scroll when they do not fit, at any width.** The scrolling bar with
+edge fades used to be wired only on a phone. It now also applies whenever the
+tabs are wider than their container, measured with a ResizeObserver rather than
+a media query. A bar that fits renders as before, and the phone is unchanged.
+If you reached into `.nb-tabs__list` with `:deep()` to make a desktop bar
+scroll, you can remove the override.
+
 ## To 5.18.0 from 5.17.x
 
 `NbBoard` can select several cards, off by default: `selectable` with
