@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { stubPhone, unstubPhone } from './__mocks__/phoneLayout'
 import { h } from 'vue'
 import { mount } from '@vue/test-utils'
@@ -538,5 +538,102 @@ describe('NbDataTable stackOnPhone', () => {
     const w = mountItems({ stackOnPhone: true, rows: [] })
     expect(w.classes()).toContain('nb-data-table--stacked-headless')
     expect(w.find('.nb-data-table__state--empty').exists()).toBe(true)
+  })
+})
+
+describe('NbDataTable toolbar wrapping', () => {
+  // jsdom has no layout, so the boxes the wrap check reads are set by hand,
+  // and a stand-in ResizeObserver lets a test say "the layout changed".
+  let notify: () => void = () => {}
+  class FakeResizeObserver {
+    constructor(cb: () => void) {
+      notify = cb
+    }
+    observe() {}
+    disconnect() {}
+  }
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    unstubPhone()
+  })
+
+  const box = (el: Element, top: number, height: number) => {
+    Object.defineProperty(el, 'offsetTop', { value: top, configurable: true })
+    Object.defineProperty(el, 'offsetHeight', {
+      value: height,
+      configurable: true,
+    })
+  }
+
+  function mountToolbar(props: Record<string, unknown> = {}) {
+    vi.stubGlobal('ResizeObserver', FakeResizeObserver)
+    return mountTable(
+      { title: 'Members', selectable: 'multiple', ...props },
+      {
+        slots: {
+          search: '<input class="search" />',
+          'toolbar-actions': '<button>Add</button>',
+          'batch-actions': '<button>Delete</button>',
+        },
+      },
+    )
+  }
+
+  async function layout(
+    wrapper: ReturnType<typeof mountTable>,
+    heading: [number, number],
+    tools: [number, number],
+  ) {
+    box(wrapper.find('.nb-data-table__toolbar-heading').element, ...heading)
+    box(wrapper.find('.nb-data-table__toolbar-tools').element, ...tools)
+    notify()
+    await wrapper.vm.$nextTick()
+  }
+
+  const toolbar = (wrapper: ReturnType<typeof mountTable>) =>
+    wrapper.find('.nb-data-table__toolbar')
+
+  it('leaves a toolbar on one line exactly as it was', async () => {
+    const wrapper = mountToolbar()
+    // A tall heading with the tools centred beside it: lower than the
+    // heading's top, but not below it
+    await layout(wrapper, [0, 56], [12, 32])
+    expect(toolbar(wrapper).attributes('class')).toBe('nb-data-table__toolbar')
+    expect(
+      wrapper.find('.nb-data-table__toolbar-tools').attributes('class'),
+    ).toBe('nb-data-table__toolbar-tools')
+  })
+
+  it('marks the toolbar wrapped once the tools sit below the heading', async () => {
+    const wrapper = mountToolbar()
+    await layout(wrapper, [12, 42], [62, 32])
+    expect(toolbar(wrapper).classes()).toContain(
+      'nb-data-table__toolbar--wrapped',
+    )
+    // The search field gets the line the actions leave
+    expect(wrapper.find('.nb-data-table__toolbar-tools').classes()).toContain(
+      'nb-data-table__toolbar-tools--grow-search',
+    )
+  })
+
+  it('goes back to one line when there is room again', async () => {
+    const wrapper = mountToolbar()
+    await layout(wrapper, [12, 42], [62, 32])
+    await layout(wrapper, [0, 42], [5, 32])
+    expect(toolbar(wrapper).classes()).not.toContain(
+      'nb-data-table__toolbar--wrapped',
+    )
+  })
+
+  it('keeps the batch bar over a wrapped toolbar', async () => {
+    const wrapper = mountToolbar({ selected: [1] })
+    await layout(wrapper, [12, 42], [62, 32])
+    // The bar is an overlay inside the toolbar, so it covers it at any height
+    const batch = toolbar(wrapper).find('.nb-data-table__batch')
+    expect(batch.exists()).toBe(true)
+    expect(toolbar(wrapper).classes()).toContain(
+      'nb-data-table__toolbar--wrapped',
+    )
   })
 })

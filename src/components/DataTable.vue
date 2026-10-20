@@ -17,8 +17,14 @@
          taller than the bar), shifting every row down the moment the first
          checkbox is ticked and moving the next checkbox out from under the
          user's cursor. -->
-    <div v-if="showToolbar" class="nb-data-table__toolbar">
+    <div
+      v-if="showToolbar"
+      ref="toolbarRef"
+      class="nb-data-table__toolbar"
+      :class="{ 'nb-data-table__toolbar--wrapped': toolbarWrapped }"
+    >
       <div
+        ref="toolbarHeadingRef"
         class="nb-data-table__toolbar-heading"
         :inert="showBatchBar || undefined"
         :aria-hidden="showBatchBar || undefined"
@@ -34,7 +40,12 @@
       </div>
       <div
         v-if="$slots.search || $slots['toolbar-actions']"
+        ref="toolbarToolsRef"
         class="nb-data-table__toolbar-tools"
+        :class="{
+          'nb-data-table__toolbar-tools--grow-search':
+            toolbarWrapped && !!$slots.search,
+        }"
         :inert="showBatchBar || undefined"
         :aria-hidden="showBatchBar || undefined"
       >
@@ -325,6 +336,7 @@ import * as iconArrowDown from '@nubisco/ui/icons/arrow-down'
 import {
   computed,
   getCurrentInstance,
+  onBeforeUnmount,
   ref,
   useId,
   useSlots,
@@ -585,6 +597,44 @@ const hasToolbarContent = computed(
 const showToolbar = computed(
   () => hasToolbarContent.value || canShowBatchBar.value,
 )
+
+// The toolbar wraps when the heading and the tools do not fit on one line.
+// Whether it has wrapped is read off the layout, not guessed from a width,
+// because it depends on how long the title is and how many tools there are.
+// It only adds the vertical padding a two-line toolbar needs: a toolbar that
+// fits on one line never gets the class, so it is exactly as it was.
+const toolbarRef = ref<HTMLElement | null>(null)
+const toolbarHeadingRef = ref<HTMLElement | null>(null)
+const toolbarToolsRef = ref<HTMLElement | null>(null)
+const toolbarWrapped = ref(false)
+
+function measureToolbar(): void {
+  const heading = toolbarHeadingRef.value
+  const tools = toolbarToolsRef.value
+  // Below the heading's bottom edge, not merely lower than its top: on one
+  // line the tools are centred against a heading that may be taller.
+  toolbarWrapped.value =
+    !!heading &&
+    !!tools &&
+    tools.offsetTop >= heading.offsetTop + heading.offsetHeight - 1
+}
+
+let toolbarObserver: ResizeObserver | null = null
+watch(
+  [toolbarRef, toolbarHeadingRef, toolbarToolsRef],
+  (els) => {
+    toolbarObserver?.disconnect()
+    measureToolbar()
+    if (typeof ResizeObserver === 'undefined') return
+    toolbarObserver ??= new ResizeObserver(measureToolbar)
+    for (const el of els) if (el) toolbarObserver.observe(el)
+  },
+  { flush: 'post' },
+)
+onBeforeUnmount(() => {
+  toolbarObserver?.disconnect()
+  toolbarObserver = null
+})
 // #endregion
 
 // #region sorting
@@ -677,14 +727,26 @@ function onRowClick(row: T, rowIndex: number) {
   &__toolbar {
     position: relative; // containing block for the batch overlay
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: calc(var(--nb-base-unit) * 2);
+    // Only ever seen once the tools have wrapped below the heading
+    row-gap: var(--nb-base-unit);
     min-height: calc(var(--nb-base-unit) * 6);
     padding-inline: var(--nb-dt-cell-pad-x);
     border-bottom: 1px solid var(--nb-c-border);
   }
 
+  // Two lines: room above the heading and below the tools, which one line
+  // gets from the toolbar's min-height instead.
+  &__toolbar--wrapped {
+    padding-block: calc(var(--nb-base-unit) * 1.5);
+  }
+
+  // Its natural one-line width (the default flex basis) decides the wrap:
+  // when the heading and the tools do not fit side by side, the tools take
+  // the next line, and the heading, alone on its own, shrinks to fit it.
   &__toolbar-heading {
     min-width: 0;
   }
@@ -704,9 +766,27 @@ function onRowClick(row: T, rowIndex: number) {
 
   &__toolbar-tools {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    justify-content: flex-end;
     gap: var(--nb-base-unit);
-    flex-shrink: 0;
+    // Pinned to the end of whichever line it is on. On one line this is where
+    // space-between already put it.
+    margin-inline-start: auto;
+    // Alone on its line and still too wide (a phone): the tools wrap among
+    // themselves rather than run past the edge.
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  // Wrapped, the tools have a line of their own, and the search field can
+  // take whatever of it the actions leave.
+  &__toolbar-tools--grow-search {
+    flex: 1 1 100%;
+
+    > :deep(:first-child) {
+      flex: 1 1 auto;
+    }
   }
 
   // Batch action bar (selection mode). Carbon overlays the toolbar with a
