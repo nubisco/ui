@@ -105,25 +105,51 @@ Toggle `points` to mark each data point with a circle.
   />
 </preview>
 
+## Formatting values
+
+Values of 1000 or more print as `1.2k` by default. `valueFormatter` replaces
+that on the axis and in the tooltip, and a point's `label`, when it has one, is
+shown in the tooltip instead of its value.
+
+<preview>
+  <NbLineChart
+    height="240"
+    :series="trendSeries"
+    :value-formatter="formatUsers"
+  />
+</preview>
+
+```vue
+<template>
+  <NbLineChart :series="series" :value-formatter="formatUsers" />
+</template>
+
+<script setup lang="ts">
+const users = new Intl.NumberFormat('en-GB')
+const formatUsers = (value: number) => `${users.format(value)} users`
+</script>
+```
+
 </doc-tab>
 
 <doc-tab name="Api">
 
 ## Props
 
-| Prop          | Type                             | Default         | Description                                        |
-| ------------- | -------------------------------- | --------------- | -------------------------------------------------- |
-| `series`      | `IChartSeries[]`                 | `[]`            | One or more named series of `{ x, y }` data points |
-| `title`       | `string`                         | -               | Chart title                                        |
-| `subtitle`    | `string`                         | -               | Secondary descriptive line                         |
-| `height`      | `number \| string`               | `280`           | Container height                                   |
-| `area`        | `boolean`                        | `false`         | Render filled area under each line                 |
-| `points`      | `boolean`                        | `false`         | Render a circle at each data point                 |
-| `curve`       | `'linear' \| 'smooth' \| 'step'` | `'smooth'`      | Path interpolation                                 |
-| `showLegend`  | `boolean`                        | `true`          | Render a legend below the chart                    |
-| `showTooltip` | `boolean`                        | `true`          | Show hover tooltip with vertical guide             |
-| `showGrid`    | `boolean`                        | `true`          | Render Y-axis gridlines                            |
-| `colors`      | `string[]`                       | default palette | Per-series colors                                  |
+| Prop             | Type                             | Default          | Description                                        |
+| ---------------- | -------------------------------- | ---------------- | -------------------------------------------------- |
+| `series`         | `IChartSeries[]`                 | `[]`             | One or more named series of `{ x, y }` data points |
+| `title`          | `string`                         | -                | Chart title                                        |
+| `subtitle`       | `string`                         | -                | Secondary descriptive line                         |
+| `height`         | `number \| string`               | `280`            | Container height                                   |
+| `area`           | `boolean`                        | `false`          | Render filled area under each line                 |
+| `points`         | `boolean`                        | `false`          | Render a circle at each data point                 |
+| `curve`          | `'linear' \| 'smooth' \| 'step'` | `'smooth'`       | Path interpolation                                 |
+| `showLegend`     | `boolean`                        | `true`           | Render a legend below the chart                    |
+| `showTooltip`    | `boolean`                        | `true`           | Show hover tooltip with vertical guide             |
+| `showGrid`       | `boolean`                        | `true`           | Render Y-axis gridlines                            |
+| `colors`         | `string[]`                       | default palette  | Per-series colors                                  |
+| `valueFormatter` | `(value: number) => string`      | `1.2k` shorthand | Formats axis ticks and tooltip values              |
 
 ## Notes
 
@@ -134,6 +160,9 @@ Toggle `points` to mark each data point with a circle.
 </doc-tab>
 
 <script setup lang="ts">
+const users = new Intl.NumberFormat('en-GB')
+const formatUsers = (value) => `${users.format(value)} users`
+
 const trendSeries = [
   {
     name: 'DAU',

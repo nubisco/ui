@@ -216,6 +216,56 @@ activated with <kbd>Enter</kbd> or <kbd>Space</kbd>, labelled with its category
 and value. The `<svg>` also stops presenting itself as a single image, so
 assistive technology can reach the controls inside it.
 
+## Formatting values
+
+By default a value of 1000 or more prints as `1.2k`, on the axis, in the
+tooltip and in each bar's accessible label. Pass `valueFormatter` to print
+values your way, for example as currency with `Intl.NumberFormat`. It formats
+the text only: the `select` payload still carries the raw number.
+
+<preview>
+  <NbBarChart
+    height="280"
+    title="Revenue per quarter"
+    :series="revenueSeries"
+    :value-formatter="formatEuro"
+  />
+</preview>
+
+```vue
+<template>
+  <NbBarChart
+    title="Revenue per quarter"
+    :series="series"
+    :value-formatter="formatEuro"
+  />
+</template>
+
+<script setup lang="ts">
+const euro = new Intl.NumberFormat('de-DE', {
+  style: 'currency',
+  currency: 'EUR',
+  maximumFractionDigits: 0,
+})
+const formatEuro = (value: number) => euro.format(value)
+
+const series = [
+  {
+    name: 'Revenue',
+    data: [
+      { x: 'Q1', y: 12500 },
+      { x: 'Q2', y: 18200 },
+      { x: 'Q3', y: 9800, label: 'Not yet closed' },
+      { x: 'Q4', y: 21400 },
+    ],
+  },
+]
+</script>
+```
+
+A point's `label` replaces its value in the tooltip, whether or not a
+`valueFormatter` is set. Hover Q3 above to see it.
+
 ## Without legend or tooltip
 
 For dense dashboard tiles, you can suppress the chrome.
@@ -236,18 +286,19 @@ For dense dashboard tiles, you can suppress the chrome.
 
 ## Props
 
-| Prop          | Type               | Default         | Description                                          |
-| ------------- | ------------------ | --------------- | ---------------------------------------------------- |
-| `series`      | `IChartSeries[]`   | `[]`            | One or more named series of `{ x, y }` data points   |
-| `title`       | `string`           | -               | Chart title                                          |
-| `subtitle`    | `string`           | -               | Secondary descriptive line                           |
-| `height`      | `number \| string` | `280`           | Container height                                     |
-| `showLegend`  | `boolean`          | `true`          | Render a legend below the chart                      |
-| `showTooltip` | `boolean`          | `true`          | Show hover tooltip                                   |
-| `showGrid`    | `boolean`          | `true`          | Render Y-axis gridlines                              |
-| `colors`      | `string[]`         | default palette | Per-series colors, recycled if shorter than `series` |
-| `orientation` | `TBarOrientation`  | `'vertical'`    | `'vertical'` or `'horizontal'`                       |
-| `stacked`     | `boolean`          | `false`         | Stack series within a category instead of grouping   |
+| Prop             | Type                        | Default          | Description                                          |
+| ---------------- | --------------------------- | ---------------- | ---------------------------------------------------- |
+| `series`         | `IChartSeries[]`            | `[]`             | One or more named series of `{ x, y }` data points   |
+| `title`          | `string`                    | -                | Chart title                                          |
+| `subtitle`       | `string`                    | -                | Secondary descriptive line                           |
+| `height`         | `number \| string`          | `280`            | Container height                                     |
+| `showLegend`     | `boolean`                   | `true`           | Render a legend below the chart                      |
+| `showTooltip`    | `boolean`                   | `true`           | Show hover tooltip                                   |
+| `showGrid`       | `boolean`                   | `true`           | Render Y-axis gridlines                              |
+| `colors`         | `string[]`                  | default palette  | Per-series colors, recycled if shorter than `series` |
+| `orientation`    | `TBarOrientation`           | `'vertical'`     | `'vertical'` or `'horizontal'`                       |
+| `stacked`        | `boolean`                   | `false`          | Stack series within a category instead of grouping   |
+| `valueFormatter` | `(value: number) => string` | `1.2k` shorthand | Formats axis ticks, tooltip values and bar labels    |
 
 ## Events
 
@@ -261,6 +312,7 @@ For dense dashboard tiles, you can suppress the chrome.
 interface IChartPoint {
   x: number | string | Date
   y: number
+  label?: string // shown in the tooltip instead of the value
 }
 
 interface IChartSeries {
@@ -332,6 +384,25 @@ const areaSeries = [
       { x: 'Reporting and exports', y: 6 },
       { x: 'Search relevance', y: 4 },
       { x: 'Localisation', y: 3 },
+    ],
+  },
+]
+
+const euro = new Intl.NumberFormat('de-DE', {
+  style: 'currency',
+  currency: 'EUR',
+  maximumFractionDigits: 0,
+})
+const formatEuro = (value) => euro.format(value)
+
+const revenueSeries = [
+  {
+    name: 'Revenue',
+    data: [
+      { x: 'Q1', y: 12500 },
+      { x: 'Q2', y: 18200 },
+      { x: 'Q3', y: 9800, label: 'Not yet closed' },
+      { x: 'Q4', y: 21400 },
     ],
   },
 ]
