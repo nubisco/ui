@@ -1,5 +1,21 @@
 # Upgrading
 
+## To 5.20.0 from 5.19.x
+
+**`NbDatePicker` reads typed dates in the locale's order.** A typed date used
+to go through `new Date(text)`, which reads `05/12/2024` month first whatever
+the `locale`, and it emitted on every keystroke that parsed, so typing `10`
+became 1 October 2001 and the field was rewritten mid-entry. Numeric text is
+now read in the field order of the resolved locale (the order the field
+already displays), needs a four-digit year, and emits only once it is a
+complete date that exists. ISO dates, text with a month name, clearing, and
+`min`, `max` and `disabledDates` behave as before. In a month-first locale such
+as `en-US`, a complete date gives the same value as before.
+
+**Check this if you relied on the old reading.** In a day-first locale, a
+typed `05/12/2024` used to store 12 May and now stores 5 December. A typed
+two-digit year (`5/12/24`) no longer parses. Use four digits, or the calendar.
+
 ## To 5.18.0 from 5.17.x
 
 `NbBoard` can select several cards, off by default: `selectable` with

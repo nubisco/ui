@@ -64,6 +64,12 @@ const date = ref<string | null>(null)
 </script>
 ```
 
+### Typing a date
+
+A typed date is read in the field order of the `locale`, the same order the field displays dates in. With `locale="pt-PT"`, `05/12/2024` is 5 December. With `locale="en-US"`, it is 12 May. Day, month and year can be separated by `/`, `.`, `-` or spaces, and the year needs four digits. An ISO date (`2024-12-05`) is accepted in any locale, and so is a date that starts with a four-digit year.
+
+Nothing is emitted until the text is a complete date that exists on the calendar, so the field is never rewritten while someone is still typing. `31/02/2024` emits nothing. Clearing the field emits `null`.
+
 ## Date Range Picker
 
 Two inputs for selecting a start and end date. Selecting the start date automatically moves focus to the end date input.
@@ -385,7 +391,7 @@ The calendar header also provides clickable previous/next month (single caret) a
 | `max`            | `string`                                | `undefined`    | Maximum selectable date (ISO YYYY-MM-DD)                                                             |
 | `disabledDates`  | `string[] \| (date: string) => boolean` | `undefined`    | Individual unselectable dates: ISO string array or predicate                                         |
 | `weekStart`      | `0 \| 1`                                | `1`            | First day of the week: 0 = Sunday, 1 = Monday                                                        |
-| `locale`         | `string`                                | browser locale | BCP 47 locale tag for month/weekday labels and format hint                                           |
+| `locale`         | `string`                                | browser locale | BCP 47 locale tag for month/weekday labels, the format hint and typed date order                     |
 | `helper`         | `string`                                | `''`           | Helper text below the field                                                                          |
 | `error`          | `string`                                | `''`           | Error message for the start field (takes precedence over warning and helper)                         |
 | `warning`        | `string`                                | `''`           | Warning message for the start field (shown when no error)                                            |
