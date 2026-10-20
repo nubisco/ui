@@ -220,8 +220,8 @@ function onCreate(value: string) {
 | `label`             | `string`                                            | -                   | Label text                                  |
 | `placeholder`       | `string`                                            | `'Select…'`         | Placeholder when nothing is selected        |
 | `helper`            | `string`                                            | -                   | Persistent helper text below the field      |
-| `error`             | `string`                                            | -                   | Error message — triggers error state        |
-| `warning`           | `string`                                            | -                   | Warning message — triggers warning state    |
+| `error`             | `string`                                            | -                   | Error message: triggers error state         |
+| `warning`           | `string`                                            | -                   | Warning message: triggers warning state     |
 | `disabled`          | `boolean`                                           | `false`             | Disables the select                         |
 | `required`          | `boolean`                                           | `false`             | Marks the field as required (adds `*`)      |
 | `id`                | `string`                                            | auto                | Native input id (auto-generated if omitted) |
