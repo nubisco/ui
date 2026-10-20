@@ -35,6 +35,13 @@ a media query. A bar that fits renders as before, and the phone is unchanged.
 If you reached into `.nb-tabs__list` with `:deep()` to make a desktop bar
 scroll, you can remove the override.
 
+**`NbDataTable`'s toolbar wraps instead of overflowing.** When the heading and
+the tools do not fit on one line, the tools move below the heading, at the
+end, and a `#search` field grows into the room the actions leave. It follows
+the table's width, so a table in a card or a split view wraps too. A toolbar
+that fits on one line is pixel-identical, and the batch bar still covers the
+whole toolbar. Global overrides added to stop the tools being clipped can go.
+
 ## To 5.18.0 from 5.17.x
 
 `NbBoard` can select several cards, off by default: `selectable` with

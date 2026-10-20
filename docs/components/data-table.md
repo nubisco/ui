@@ -183,6 +183,42 @@ The `toolbar` region hosts a `title` / `description`, a `#search` slot, and a `#
 </NbDataTable>
 ```
 
+### A toolbar that does not fit
+
+When the heading and the tools do not fit on one line, the tools move to a line
+of their own below the heading, at the end, and a `#search` field grows to take
+the room the actions leave. This follows the table's own width, not the
+screen's, so a table in a card or a side panel wraps the same way a phone does.
+A toolbar that fits on one line is unchanged. Tick a row: the batch bar still
+covers the whole toolbar, at whatever height it has.
+
+<preview>
+  <div style="max-width: 520px">
+    <NbDataTable
+      :columns="columns"
+      :rows="rows"
+      row-key="id"
+      title="Workspace members and pending invitations"
+      description="Everyone who can open this workspace, and the people invited who have not accepted yet."
+      selectable="multiple"
+      v-model:selected="selectedNarrow"
+    >
+      <template #search>
+        <NbTextInput placeholder="Search members" size="sm" />
+      </template>
+      <template #toolbar-actions>
+        <NbButton variant="secondary" size="sm" icon="export">Export</NbButton>
+        <NbButton variant="primary" size="sm" icon="plus">Invite</NbButton>
+      </template>
+      <template #batch-actions="{ selectedKeys, clear }">
+        <NbButton variant="ghost" icon="trash" @click="clear">
+          Remove {{ selectedKeys.length }}
+        </NbButton>
+      </template>
+    </NbDataTable>
+  </div>
+</preview>
+
 ## Custom cells
 
 Render custom cell content three ways, in precedence order: a `#cell-<key>` slot, a column `render` function, then the raw value. Headers can be overridden with a `#header-<key>` slot.
@@ -537,6 +573,7 @@ const rows = [
 
 const selected = ref([])
 const selectedToolbar = ref([1])
+const selectedNarrow = ref([])
 
 const sortState = ref({ key: 'name', direction: 'asc' })
 function onSort(state) {
