@@ -243,13 +243,17 @@ describe('Tabs on a phone', () => {
 
   // A 200px list holding five 100px tabs, laid out the way a browser would,
   // so the scroll position the component writes is the one a phone would see.
-  function layout(list: HTMLElement) {
+  function layout(list: HTMLElement, contentWidth = 500) {
+    Object.defineProperty(list.parentElement as HTMLElement, 'clientWidth', {
+      value: 200,
+      configurable: true,
+    })
     Object.defineProperty(list, 'clientWidth', {
       value: 200,
       configurable: true,
     })
     Object.defineProperty(list, 'scrollWidth', {
-      value: 500,
+      value: contentWidth,
       configurable: true,
     })
     list.getBoundingClientRect = () => ({ left: 0, width: 200 }) as DOMRect
@@ -261,13 +265,13 @@ describe('Tabs on a phone', () => {
 
   // Mounted with layout applied before the first reveal runs, the way it is in
   // a browser where the list has a size by the time it is mounted.
-  async function mountPhone(props = {}) {
+  async function mountPhone(props = {}, contentWidth = 500) {
     const wrapper = mount(Tabs, {
       props: { items: many, ...props },
       attachTo: document.body,
     })
     const list = wrapper.find('[role="tablist"]').element as HTMLElement
-    layout(list)
+    layout(list, contentWidth)
     window.dispatchEvent(new Event('resize'))
     await nextTick()
     return { wrapper, list }
@@ -325,12 +329,57 @@ describe('Tabs on a phone', () => {
     wrapper.unmount()
   })
 
-  it('leaves the desktop bar exactly as it was', async () => {
+  it('scrolls an overflowing bar at desktop width too', async () => {
     const { wrapper, list } = await mountPhone({ modelValue: 'billing' })
+    // 500px of tabs in a 200px container: the bar scrolls, as on a phone
+    expect(wrapper.classes()).toContain('nb-tabs--overflow')
+    expect(list.scrollLeft).toBe(300)
+    wrapper.unmount()
+  })
+
+  it('leaves a bar that fits exactly as it was at desktop width', async () => {
+    // Five tabs in exactly the 200px they have
+    const { wrapper, list } = await mountPhone({ modelValue: 'billing' }, 200)
     expect(list.scrollLeft).toBe(0)
+    expect(wrapper.classes()).not.toContain('nb-tabs--overflow')
     expect(wrapper.find('[role="tablist"]').attributes('class')).toBe(
       'nb-tabs__list',
     )
+    wrapper.unmount()
+  })
+
+  it('fades the edges of an overflowing bar at desktop width', async () => {
+    const { wrapper, list } = await mountPhone({ modelValue: 'account' })
+    const classes = () => wrapper.find('[role="tablist"]').classes()
+    expect(classes()).toContain('nb-tabs__list--fade-end')
+    list.scrollLeft = 300
+    await wrapper.find('[role="tablist"]').trigger('scroll')
+    expect(classes()).toContain('nb-tabs__list--fade-start')
+    expect(classes()).not.toContain('nb-tabs__list--fade-end')
+    wrapper.unmount()
+  })
+
+  it('stops scrolling once the tabs fit again', async () => {
+    const { wrapper, list } = await mountPhone({ modelValue: 'billing' })
+    expect(wrapper.classes()).toContain('nb-tabs--overflow')
+    Object.defineProperty(list, 'scrollWidth', {
+      value: 200,
+      configurable: true,
+    })
+    window.dispatchEvent(new Event('resize'))
+    await nextTick()
+    expect(wrapper.classes()).not.toContain('nb-tabs--overflow')
+    expect(wrapper.find('[role="tablist"]').attributes('class')).toBe(
+      'nb-tabs__list',
+    )
+    wrapper.unmount()
+  })
+
+  it('keeps the phone bar scrolling even when it fits', async () => {
+    stubPhone()
+    const { wrapper } = await mountPhone({ modelValue: 'account' }, 200)
+    // The phone always had the scrolling bar, overflow or not
+    expect(wrapper.classes()).not.toContain('nb-tabs--overflow')
     wrapper.unmount()
   })
 })

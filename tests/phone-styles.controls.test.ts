@@ -94,6 +94,11 @@ describe('phone rules stay behind the phone queries', () => {
   it.each(touched)('%s', (file) => {
     for (const r of rulesOf(file)) {
       if (isPhone(r.media)) continue
+      // The tab bar scrolls at any width once its tabs do not fit. That is
+      // gated on a class the component sets only while it measures overflow,
+      // so a bar that fits on a desktop still never sees these rules.
+      if (r.selector.split(',').every((s) => s.includes('.nb-tabs--overflow')))
+        continue
       expect(r.body, `${file}: ${r.selector}`).not.toMatch(
         /max\(16px|max\(44px|min-block-size: 44px|scroll-snap|position: fixed|100cqi/,
       )

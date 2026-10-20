@@ -132,15 +132,37 @@ keys never land on a tab that cannot be opened.
   <NbTabs :items="clientTabs" disabled />
 </preview>
 
+## More tabs than fit
+
+There is nothing to opt into. When the tabs are wider than their container (a
+side panel, a split view, or simply many tabs), the bar scrolls sideways
+instead of running past the edge, at any screen width. It snaps loosely to tab
+edges, shows no scrollbar, and fades the edge that has more tabs behind it. The
+active tab is always brought fully into view, on load and whenever it changes,
+by scrolling the bar itself and never the page around it.
+
+The bar measures its own container, not the screen, so the same tabs scroll in
+a narrow panel and sit still in a wide one. A bar whose tabs fit renders
+exactly as it always has.
+
+<preview>
+  <div style="max-width: 320px">
+    <NbTabs :items="detailTabs" v-model="detailTab" />
+  </div>
+</preview>
+
+```vue
+<template>
+  <aside class="side-panel">
+    <NbTabs :items="items" v-model="activeTab" />
+  </aside>
+</template>
+```
+
 ## On a phone
 
-There is nothing to opt into. On a phone layout (below 672px, or a phone held
-sideways) a bar with more tabs than fit scrolls sideways instead of running off
-the screen. It snaps loosely to tab edges, shows no scrollbar, and fades the
-edge that has more tabs behind it. The active tab is always brought fully into
-view, on load and whenever it changes, by scrolling the bar itself and never
-the page around it. On a phone touch screen every tab is at least 44px tall.
-Wider screens render the bar exactly as before.
+On a phone layout (below 672px, or a phone held sideways) the bar always
+scrolls this way, and on a phone touch screen every tab is at least 44px tall.
 
 </doc-tab>
 
@@ -226,6 +248,16 @@ const decoratedTabs = [
   { id: 'files', label: 'Files', icon: 'folder' },
   { id: 'issues', label: 'Issues', icon: 'warning-circle', badge: 12 },
   { id: 'history', label: 'History', icon: 'clock-counter-clockwise' },
+]
+
+const detailTab = ref('activity')
+const detailTabs = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'details', label: 'Details' },
+  { id: 'documents', label: 'Documents' },
+  { id: 'activity', label: 'Activity' },
+  { id: 'permissions', label: 'Permissions' },
+  { id: 'history', label: 'History' },
 ]
 
 const partiallyDisabledTabs = [
