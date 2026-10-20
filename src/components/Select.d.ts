@@ -38,6 +38,14 @@ interface ISelectProps extends IFieldComponent {
   creatable?: boolean
   /** Placeholder text for the create input when `creatable` is true. */
   createPlaceholder?: string
+  /**
+   * Shows a button in the trigger that clears the selection, while a value is
+   * selected and the select is not disabled. Clearing emits `null`, or `[]`
+   * when `multiple`. Off by default.
+   */
+  clearable?: boolean
+  /** Accessible name of the clear button when `clearable` is true. */
+  clearLabel?: string
 }
 
 export { ISelectOption, ISelectProps }

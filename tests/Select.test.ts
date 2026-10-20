@@ -485,4 +485,103 @@ describe('Select', () => {
     const opts = wrapper.findAll('.nb-select__option')
     expect(opts[1].classes()).toContain('nb-select__option--disabled')
   })
+
+  describe('clearable', () => {
+    const clear = (wrapper: ReturnType<typeof createWrapper>) =>
+      wrapper.find('.nb-select__clear')
+
+    it('renders nothing extra without clearable, even with a value', () => {
+      const plain = createWrapper({ modelValue: 'apple' })
+      const off = createWrapper({ modelValue: 'apple', clearable: false })
+      for (const wrapper of [plain, off]) {
+        expect(clear(wrapper).exists()).toBe(false)
+        expect(wrapper.find('.nb-select__control').exists()).toBe(false)
+        expect(wrapper.find('.nb-select__clear-space').exists()).toBe(false)
+        // The trigger is still a direct child of the root, as it always was
+        expect(wrapper.find('.nb-select > .nb-select__trigger').exists()).toBe(
+          true,
+        )
+      }
+      const strip = (html: string) => html.replace(/nb-select-v-\w+/g, 'ID')
+      expect(strip(off.html())).toBe(strip(plain.html()))
+    })
+
+    it.each([
+      ['nothing is selected', { modelValue: null }],
+      ['nothing is selected (multiple)', { modelValue: [], multiple: true }],
+      ['disabled', { modelValue: 'apple', disabled: true }],
+    ])('is hidden when %s', (_, props) => {
+      const wrapper = createWrapper({ clearable: true, ...props })
+      expect(clear(wrapper).exists()).toBe(false)
+    })
+
+    it('is a named, keyboard-reachable button beside the trigger', () => {
+      const wrapper = createWrapper({ clearable: true, modelValue: 'apple' })
+      const button = clear(wrapper)
+      expect(button.element.tagName).toBe('BUTTON')
+      expect(button.attributes('type')).toBe('button')
+      expect(button.attributes('aria-label')).toBe('Clear selection')
+      expect(button.attributes('tabindex')).toBeUndefined()
+      // Not nested in the trigger: a button inside a button is invalid
+      expect(
+        wrapper.find('.nb-select__trigger .nb-select__clear').exists(),
+      ).toBe(false)
+    })
+
+    it('takes its accessible name from clearLabel', () => {
+      const wrapper = createWrapper({
+        clearable: true,
+        modelValue: 'apple',
+        clearLabel: 'Remove fruit',
+      })
+      expect(clear(wrapper).attributes('aria-label')).toBe('Remove fruit')
+    })
+
+    it('clears a single select to null and returns focus', async () => {
+      const wrapper = createWrapper({ clearable: true, modelValue: 'apple' })
+      await clear(wrapper).trigger('click')
+      expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([null])
+      expect(wrapper.emitted('change')?.[0]).toEqual([null])
+      expect(wrapper.find('.nb-select__dropdown').exists()).toBe(false)
+      expect(document.activeElement).toBe(
+        wrapper.find('.nb-select__trigger').element,
+      )
+    })
+
+    it('clears a multiple select to an empty array', async () => {
+      const wrapper = createWrapper({
+        clearable: true,
+        multiple: true,
+        modelValue: ['apple', 'cherry'],
+      })
+      await clear(wrapper).trigger('click')
+      expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([[]])
+      expect(wrapper.emitted('change')?.[0]).toEqual([[]])
+    })
+
+    it('does not open the list from the keyboard', async () => {
+      const wrapper = createWrapper({ clearable: true, modelValue: 'apple' })
+      await clear(wrapper).trigger('keydown', { key: 'Enter' })
+      await clear(wrapper).trigger('keydown', { key: ' ' })
+      expect(wrapper.find('.nb-select__dropdown').exists()).toBe(false)
+    })
+
+    it('closes an open list when it clears', async () => {
+      const wrapper = createWrapper({ clearable: true, modelValue: 'apple' })
+      await wrapper.find('.nb-select__trigger').trigger('click')
+      expect(wrapper.find('.nb-select__dropdown').exists()).toBe(true)
+      await clear(wrapper).trigger('click')
+      expect(wrapper.find('.nb-select__dropdown').exists()).toBe(false)
+    })
+
+    it('appears in the fluid variant too', () => {
+      const wrapper = createWrapper({
+        clearable: true,
+        modelValue: 'apple',
+        variant: 'fluid',
+        label: 'Fruit',
+      })
+      expect(clear(wrapper).exists()).toBe(true)
+    })
+  })
 })
