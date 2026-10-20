@@ -1,4 +1,8 @@
-import type { IChartCommonProps, IChartSeries } from './shared/types.d'
+import type {
+  IChartCommonProps,
+  IChartSeries,
+  TChartValueFormatter,
+} from './shared/types.d'
 
 type TLineCurve = 'linear' | 'smooth' | 'step'
 
@@ -10,6 +14,9 @@ interface ILineChartProps extends IChartCommonProps {
   points?: boolean
   // Curve style.
   curve?: TLineCurve
+  // Formats every value the chart prints: axis ticks, tooltip rows and the
+  // accessible labels. Without it, values of 1000 and over read as `1.2k`.
+  valueFormatter?: TChartValueFormatter
 }
 
 export type { ILineChartProps, TLineCurve }

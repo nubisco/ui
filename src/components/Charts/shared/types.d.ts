@@ -26,6 +26,12 @@ interface ICategoricalDatum {
   color?: string
 }
 
+/**
+ * Turns a plotted number into the text a chart shows for it: axis ticks,
+ * tooltip rows and accessible labels. Selection payloads keep the raw value.
+ */
+type TChartValueFormatter = (value: number) => string
+
 interface IChartMargins {
   top: number
   right: number
@@ -85,6 +91,7 @@ export {
   IChartSeries,
   ICategoricalDatum,
   IChartMargins,
+  TChartValueFormatter,
   IChartCommonProps,
   IChartSeriesSelection,
   IChartCategoricalSelection,

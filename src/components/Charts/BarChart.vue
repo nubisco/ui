@@ -38,7 +38,7 @@
             :text-anchor="horizontal ? 'middle' : 'end'"
             :dominant-baseline="horizontal ? 'auto' : 'middle'"
           >
-            {{ formatValue(t) }}
+            {{ printValue(t) }}
           </text>
         </g>
 
@@ -284,6 +284,11 @@ const formatValue = (n: number) => {
   return String(n)
 }
 
+// The consumer's formatter when there is one, the built-in `k` shorthand
+// otherwise, so a chart without one prints exactly what it always has.
+const printValue = (n: number) =>
+  props.valueFormatter ? props.valueFormatter(n) : formatValue(n)
+
 /* ------------------------------------------------------------- selection */
 
 // Read off the vnode rather than cached in a computed: a computed with no
@@ -296,7 +301,7 @@ const isSelectable = () => Boolean(instance?.vnode.props?.onSelect)
 
 const barLabel = (ci: number, si: number) => {
   const series = resolvedSeries.value[si]
-  const value = formatValue(valueAt(ci, si))
+  const value = printValue(valueAt(ci, si))
   return resolvedSeries.value.length > 1
     ? `${categories.value[ci]}, ${series?.name}: ${value}`
     : `${categories.value[ci]}: ${value}`
@@ -379,11 +384,14 @@ const updateTooltip = (e: MouseEvent, ci: number) => {
 
 const tooltipRows = computed(() => {
   if (hoverIndex.value === null) return []
-  return resolvedSeries.value.map((s) => ({
-    label: s.name,
-    value: formatValue(s.data[hoverIndex.value as number]?.y ?? 0),
-    color: s.color,
-  }))
+  return resolvedSeries.value.map((s) => {
+    const point = s.data[hoverIndex.value as number]
+    return {
+      label: s.name,
+      value: point?.label ?? printValue(point?.y ?? 0),
+      color: s.color,
+    }
+  })
 })
 </script>
 

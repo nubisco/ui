@@ -16,6 +16,13 @@ as `en-US`, a complete date gives the same value as before.
 typed `05/12/2024` used to store 12 May and now stores 5 December. A typed
 two-digit year (`5/12/24`) no longer parses. Use four digits, or the calendar.
 
+**`NbBarChart` and `NbLineChart` take a `valueFormatter`, and show point
+labels.** A point's `label` was documented as the tooltip override but never
+shown. It now replaces the value in the tooltip. `valueFormatter` formats the
+axis ticks, the tooltip and the bars' accessible labels. Without either, every
+string the charts print is the same as before, `k` shorthand included. If your
+data carries a `label` you did not mean as tooltip text, it now shows.
+
 ## To 5.18.0 from 5.17.x
 
 `NbBoard` can select several cards, off by default: `selectable` with

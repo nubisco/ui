@@ -136,6 +136,7 @@ export type {
   IChartSeries,
   ICategoricalDatum,
   IChartCommonProps,
+  TChartValueFormatter,
   IChartSeriesSelection,
   IChartCategoricalSelection,
   TChartSelection,
