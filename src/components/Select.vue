@@ -11,117 +11,22 @@
         >{{ label }}</NbLabel
       >
 
-      <button
-        :id="inputId"
-        ref="triggerRef"
-        type="button"
-        class="nb-select__trigger"
-        role="combobox"
-        :aria-expanded="isOpen"
-        :aria-haspopup="'listbox'"
-        :aria-disabled="disabled || undefined"
-        :aria-required="required || undefined"
-        :disabled="disabled || undefined"
-        @click="toggleDropdown"
-        @focus="focused = true"
-        @blur="focused = false"
-      >
-        <span
-          :class="[
-            'nb-select__value',
-            {
-              'nb-select__value--placeholder': !displayValue,
-              'nb-select__value--with-icon': !!selectedIcon,
-            },
-          ]"
+      <SelectControl :wrap="clearable">
+        <button
+          :id="inputId"
+          ref="triggerRef"
+          type="button"
+          class="nb-select__trigger"
+          role="combobox"
+          :aria-expanded="isOpen"
+          :aria-haspopup="'listbox'"
+          :aria-disabled="disabled || undefined"
+          :aria-required="required || undefined"
+          :disabled="disabled || undefined"
+          @click="toggleDropdown"
+          @focus="focused = true"
+          @blur="focused = false"
         >
-          <NbIcon
-            v-if="selectedIcon"
-            class="nb-select__value-icon"
-            :name="selectedIcon"
-            :size="16"
-          />
-          <slot v-if="displayValue" name="value" :values="selectedValues">{{
-            displayValue
-          }}</slot>
-          <template v-else>{{ placeholder }}</template>
-        </span>
-        <NbMessage
-          v-if="error"
-          variant="error"
-          :icon-only="true"
-          class="nb-select__status-icon"
-          >{{ error }}</NbMessage
-        >
-        <NbMessage
-          v-else-if="warning"
-          variant="warning"
-          :icon-only="true"
-          class="nb-select__status-icon"
-          >{{ warning }}</NbMessage
-        >
-        <NbGrid align="center" justify="center" class="nb-select__caret">
-          <NbIcon :name="isOpen ? 'caret-up' : 'caret-down'" :size="16" />
-        </NbGrid>
-      </button>
-
-      <NbMessage v-if="error" variant="error" class="nb-select__message">{{
-        error
-      }}</NbMessage>
-      <NbMessage
-        v-else-if="warning"
-        variant="warning"
-        class="nb-select__message"
-        >{{ warning }}</NbMessage
-      >
-      <NbMessage
-        v-else-if="helper"
-        variant="helper"
-        class="nb-select__message"
-        >{{ helper }}</NbMessage
-      >
-    </template>
-
-    <!-- FLUID variant -->
-    <template v-else-if="variant === 'fluid'">
-      <button
-        :id="inputId"
-        ref="triggerRef"
-        type="button"
-        class="nb-select__trigger"
-        role="combobox"
-        :aria-expanded="isOpen"
-        :aria-haspopup="'listbox'"
-        :aria-disabled="disabled || undefined"
-        :aria-required="required || undefined"
-        :disabled="disabled || undefined"
-        @click="toggleDropdown"
-        @focus="focused = true"
-        @blur="focused = false"
-      >
-        <NbGrid
-          v-if="label || $slots.label"
-          dir="row"
-          align="center"
-          gap="xs"
-          class="nb-select__inner-header"
-        >
-          <slot v-if="$slots.label" name="label" />
-          <label v-else class="nb-select__inner-label">
-            {{ label }}
-            <span v-if="required" class="nb-select__asterisk" aria-hidden="true"
-              >*</span
-            >
-          </label>
-          <NbMessage
-            v-if="helper && !error && !warning"
-            variant="helper"
-            :icon-only="true"
-            class="nb-select__inner-message"
-            >{{ helper }}</NbMessage
-          >
-        </NbGrid>
-        <NbGrid dir="row" align="end" flex class="nb-select__value-row">
           <span
             :class="[
               'nb-select__value',
@@ -142,11 +47,145 @@
             }}</slot>
             <template v-else>{{ placeholder }}</template>
           </span>
+          <NbMessage
+            v-if="error"
+            variant="error"
+            :icon-only="true"
+            class="nb-select__status-icon"
+            >{{ error }}</NbMessage
+          >
+          <NbMessage
+            v-else-if="warning"
+            variant="warning"
+            :icon-only="true"
+            class="nb-select__status-icon"
+            >{{ warning }}</NbMessage
+          >
+          <span
+            v-if="showClear"
+            class="nb-select__clear-space"
+            aria-hidden="true"
+          />
           <NbGrid align="center" justify="center" class="nb-select__caret">
             <NbIcon :name="isOpen ? 'caret-up' : 'caret-down'" :size="16" />
           </NbGrid>
-        </NbGrid>
-      </button>
+        </button>
+        <button
+          v-if="showClear"
+          type="button"
+          class="nb-select__clear"
+          :aria-label="clearLabel"
+          @click="clearSelection"
+          @keydown.enter.stop
+          @keydown.space.stop
+        >
+          <NbIcon name="x" :size="16" />
+        </button>
+      </SelectControl>
+
+      <NbMessage v-if="error" variant="error" class="nb-select__message">{{
+        error
+      }}</NbMessage>
+      <NbMessage
+        v-else-if="warning"
+        variant="warning"
+        class="nb-select__message"
+        >{{ warning }}</NbMessage
+      >
+      <NbMessage
+        v-else-if="helper"
+        variant="helper"
+        class="nb-select__message"
+        >{{ helper }}</NbMessage
+      >
+    </template>
+
+    <!-- FLUID variant -->
+    <template v-else-if="variant === 'fluid'">
+      <SelectControl :wrap="clearable">
+        <button
+          :id="inputId"
+          ref="triggerRef"
+          type="button"
+          class="nb-select__trigger"
+          role="combobox"
+          :aria-expanded="isOpen"
+          :aria-haspopup="'listbox'"
+          :aria-disabled="disabled || undefined"
+          :aria-required="required || undefined"
+          :disabled="disabled || undefined"
+          @click="toggleDropdown"
+          @focus="focused = true"
+          @blur="focused = false"
+        >
+          <NbGrid
+            v-if="label || $slots.label"
+            dir="row"
+            align="center"
+            gap="xs"
+            class="nb-select__inner-header"
+          >
+            <slot v-if="$slots.label" name="label" />
+            <label v-else class="nb-select__inner-label">
+              {{ label }}
+              <span
+                v-if="required"
+                class="nb-select__asterisk"
+                aria-hidden="true"
+                >*</span
+              >
+            </label>
+            <NbMessage
+              v-if="helper && !error && !warning"
+              variant="helper"
+              :icon-only="true"
+              class="nb-select__inner-message"
+              >{{ helper }}</NbMessage
+            >
+          </NbGrid>
+          <NbGrid dir="row" align="end" flex class="nb-select__value-row">
+            <span
+              :class="[
+                'nb-select__value',
+                {
+                  'nb-select__value--placeholder': !displayValue,
+                  'nb-select__value--with-icon': !!selectedIcon,
+                },
+              ]"
+            >
+              <NbIcon
+                v-if="selectedIcon"
+                class="nb-select__value-icon"
+                :name="selectedIcon"
+                :size="16"
+              />
+              <slot v-if="displayValue" name="value" :values="selectedValues">{{
+                displayValue
+              }}</slot>
+              <template v-else>{{ placeholder }}</template>
+            </span>
+            <span
+              v-if="showClear"
+              class="nb-select__clear-space"
+              aria-hidden="true"
+            />
+            <NbGrid align="center" justify="center" class="nb-select__caret">
+              <NbIcon :name="isOpen ? 'caret-up' : 'caret-down'" :size="16" />
+            </NbGrid>
+          </NbGrid>
+        </button>
+        <button
+          v-if="showClear"
+          type="button"
+          class="nb-select__clear"
+          :aria-label="clearLabel"
+          @click="clearSelection"
+          @keydown.enter.stop
+          @keydown.space.stop
+        >
+          <NbIcon name="x" :size="16" />
+        </button>
+      </SelectControl>
 
       <NbMessage
         v-if="error"
@@ -258,7 +297,16 @@ import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
 import NbGrid from './Grid.vue'
 import NbIcon from './Icon.vue'
-import { ref, computed, watch, nextTick, onBeforeUnmount, useId } from 'vue'
+import {
+  ref,
+  computed,
+  watch,
+  nextTick,
+  onBeforeUnmount,
+  useId,
+  h,
+  type FunctionalComponent,
+} from 'vue'
 import { ISelectOption, ISelectProps } from './Select'
 import { useMenuSurface } from '../composables/useMenuSurface.composable'
 
@@ -268,6 +316,8 @@ const props = withDefaults(defineProps<ISelectProps>(), {
   multiple: false,
   creatable: false,
   createPlaceholder: '',
+  clearable: false,
+  clearLabel: 'Clear selection',
   variant: 'default',
   size: 'md',
   label: '',
@@ -286,6 +336,20 @@ const emit = defineEmits<{
   change: [value: string | number | Array<string | number> | null]
   create: [value: string]
 }>()
+
+/**
+ * Gives the trigger and the clear button a shared positioning box, and only
+ * when `clearable` is set. A button cannot sit inside the trigger (itself a
+ * button), so the clear control is its sibling, laid over the trigger. Without
+ * `clearable` this renders its children as they are, so the markup of a plain
+ * select does not change. Keyed to the prop and not to whether a value is
+ * selected, so choosing a value never remounts the focused trigger.
+ */
+const SelectControl: FunctionalComponent<{ wrap: boolean }> = (p, { slots }) =>
+  p.wrap
+    ? h('div', { class: 'nb-select__control' }, slots.default?.())
+    : slots.default?.()
+SelectControl.props = ['wrap']
 
 const createValue = ref('')
 
@@ -549,6 +613,20 @@ function scrollToHighlighted() {
       ]
     item?.scrollIntoView({ block: 'nearest' })
   })
+}
+
+const showClear = computed(
+  () => props.clearable && !props.disabled && selectedValues.value.length > 0,
+)
+
+function clearSelection() {
+  const next = props.multiple ? [] : null
+  closeDropdown()
+  emit('update:modelValue', next)
+  emit('change', next)
+  // The button is about to unmount under the pointer or the keyboard, so
+  // focus goes back to the control it belongs to rather than to the page.
+  triggerRef.value?.focus()
 }
 
 const rootClasses = computed(() => [
@@ -923,6 +1001,52 @@ defineExpose({
     }
   }
 
+  // Only rendered when `clearable` is set. The trigger keeps its own layout,
+  // this box just lets the clear button sit over it.
+  &__control {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  // Holds the clear button's place in the trigger's row, so the value and the
+  // status icon end before it rather than running under it.
+  &__clear-space {
+    flex-shrink: 0;
+    width: 24px;
+  }
+
+  &__clear {
+    position: absolute;
+    top: 50%;
+    // Over the spacer: the trigger's end padding, the caret and one gap
+    right: calc(var(--nb-field-padding-h) + 16px + 8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    margin: 0;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: var(--nb-c-text-subtle);
+    cursor: pointer;
+    @include radius.standalone(control-sm);
+    @include touch.hit-area(44px, false);
+    transition: color 0.15s;
+
+    &:hover {
+      color: var(--nb-c-text);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--nb-c-primary);
+      outline-offset: 0;
+    }
+  }
+
   &__message,
   &__fluid-message {
     font-size: var(--nb-font-size-12);
@@ -982,6 +1106,19 @@ defineExpose({
       width: auto;
       height: auto;
       padding: 0 var(--nb-field-padding-h);
+    }
+
+    .nb-select__control {
+      flex: 1;
+    }
+
+    // The fluid caret has padding on both sides and no gap before it, and
+    // the value row sits at the bottom of the trigger.
+    .nb-select__clear {
+      top: auto;
+      bottom: 8px;
+      right: calc(var(--nb-field-padding-h) * 2 + 16px);
+      transform: none;
     }
   }
 }

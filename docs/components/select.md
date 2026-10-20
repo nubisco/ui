@@ -136,6 +136,36 @@ Three things worth knowing:
 Mixing is fine: options without a `group` render as plain rows, and a list
 where none of them has one is unchanged.
 
+## Clearable
+
+Set `clearable` on an optional select to show a clear button in the trigger
+while a value is selected. It clears the selection to `null` (or `[]` with
+`multiple`), emits `change`, and returns focus to the select. It is hidden
+while nothing is selected and when the select is disabled. Use it instead of a
+"None" option.
+
+<preview>
+  <NbGrid dir="column" gap="md">
+    <NbSelect v-model="assignee" label="Assignee" placeholder="Unassigned" :options="localeOptions" clearable />
+    <NbSelect v-model="clearableLocales" label="Locales" :options="localeOptions" multiple clearable />
+  </NbGrid>
+</preview>
+
+```vue
+<template>
+  <NbSelect
+    v-model="assignee"
+    label="Assignee"
+    placeholder="Unassigned"
+    :options="options"
+    clearable
+  />
+</template>
+```
+
+The button is named "Clear selection". Pass `clear-label` to name it in your
+product's language.
+
 ## Creatable
 
 Set `:creatable="true"` to show a text input at the bottom of the dropdown. When the user types a value and presses Enter, the `create` event fires with the entered string. You can then add it to your options array.
@@ -177,23 +207,25 @@ function onCreate(value: string) {
 
 ## Props
 
-| Prop                | Type                                                | Default        | Description                                 |
-| ------------------- | --------------------------------------------------- | -------------- | ------------------------------------------- |
-| `modelValue`        | `string \| number \| Array<string\|number> \| null` | `null`         | Current selection (`v-model`)               |
-| `options`           | `ISelectOption[]`                                   | `[]`           | Array of options                            |
-| `multiple`          | `boolean`                                           | `false`        | Allow multiple selections                   |
-| `creatable`         | `boolean`                                           | `false`        | Show a text input for creating new options  |
-| `createPlaceholder` | `string`                                            | `'Add new...'` | Placeholder for the create input            |
-| `variant`           | `'default' \| 'fluid'`                              | `'default'`    | Layout variant                              |
-| `label`             | `string`                                            | -              | Label text                                  |
-| `placeholder`       | `string`                                            | `'Select…'`    | Placeholder when nothing is selected        |
-| `helper`            | `string`                                            | -              | Persistent helper text below the field      |
-| `error`             | `string`                                            | -              | Error message — triggers error state        |
-| `warning`           | `string`                                            | -              | Warning message — triggers warning state    |
-| `disabled`          | `boolean`                                           | `false`        | Disables the select                         |
-| `required`          | `boolean`                                           | `false`        | Marks the field as required (adds `*`)      |
-| `id`                | `string`                                            | auto           | Native input id (auto-generated if omitted) |
-| `name`              | `string`                                            | -              | Native form name                            |
+| Prop                | Type                                                | Default             | Description                                 |
+| ------------------- | --------------------------------------------------- | ------------------- | ------------------------------------------- |
+| `modelValue`        | `string \| number \| Array<string\|number> \| null` | `null`              | Current selection (`v-model`)               |
+| `options`           | `ISelectOption[]`                                   | `[]`                | Array of options                            |
+| `multiple`          | `boolean`                                           | `false`             | Allow multiple selections                   |
+| `creatable`         | `boolean`                                           | `false`             | Show a text input for creating new options  |
+| `createPlaceholder` | `string`                                            | `'Add new...'`      | Placeholder for the create input            |
+| `clearable`         | `boolean`                                           | `false`             | Show a button that clears the selection     |
+| `clearLabel`        | `string`                                            | `'Clear selection'` | Accessible name of the clear button         |
+| `variant`           | `'default' \| 'fluid'`                              | `'default'`         | Layout variant                              |
+| `label`             | `string`                                            | -                   | Label text                                  |
+| `placeholder`       | `string`                                            | `'Select…'`         | Placeholder when nothing is selected        |
+| `helper`            | `string`                                            | -                   | Persistent helper text below the field      |
+| `error`             | `string`                                            | -                   | Error message — triggers error state        |
+| `warning`           | `string`                                            | -                   | Warning message — triggers warning state    |
+| `disabled`          | `boolean`                                           | `false`             | Disables the select                         |
+| `required`          | `boolean`                                           | `false`             | Marks the field as required (adds `*`)      |
+| `id`                | `string`                                            | auto                | Native input id (auto-generated if omitted) |
+| `name`              | `string`                                            | -                   | Native form name                            |
 
 ## An icon per option
 
@@ -276,6 +308,7 @@ selectRef.value?.close() // programmatically close the dropdown
 - The trigger button announces `aria-expanded`, `aria-haspopup="listbox"`, and `aria-controls` pointing at the dropdown.
 - Each option has `role="option"` with `aria-selected` and `aria-disabled`.
 - The `for`/`id` association is handled automatically.
+- With `clearable`, the clear button is a separate `<button>` next to the trigger, reached with <kbd>Tab</kbd> after it. Pressing it never opens the list.
 
 </doc-tab>
 
@@ -284,6 +317,8 @@ import { ref } from 'vue'
 
 const locale = ref('en')
 const selectedLocales = ref<string[]>([])
+const assignee = ref<string | null>('pt')
+const clearableLocales = ref<string[]>(['en', 'fr'])
 const platform = ref('linkedin')
 const version = ref('fix-1120')
 

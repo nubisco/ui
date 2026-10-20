@@ -23,6 +23,11 @@ axis ticks, the tooltip and the bars' accessible labels. Without either, every
 string the charts print is the same as before, `k` shorthand included. If your
 data carries a `label` you did not mean as tooltip text, it now shows.
 
+**`NbSelect` can be cleared, opt-in.** `clearable` shows a clear button while
+a value is selected. It emits `null`, or `[]` with `multiple`. A select without
+`clearable` renders as before. If you added a "None" option to make a select
+optional, `clearable` replaces it.
+
 ## To 5.18.0 from 5.17.x
 
 `NbBoard` can select several cards, off by default: `selectable` with
