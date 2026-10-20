@@ -1,3 +1,18 @@
+# [5.20.0](https://github.com/nubisco/ui/compare/v5.19.1...v5.20.0) (2026-10-20)
+
+
+### Bug Fixes
+
+* **data-table:** the toolbar wraps when the heading and tools do not fit ([1fc1fb6](https://github.com/nubisco/ui/commit/1fc1fb6d1495d3b36e0289c4d03675c5a2dd907c))
+* **date-picker:** typed dates follow the locale's field order and wait until complete ([2f8de48](https://github.com/nubisco/ui/commit/2f8de48b5f1b248b42cbcd11c462742f8cb0443e))
+* **tabs:** the bar scrolls whenever the tabs do not fit, not only on a phone ([70b5b73](https://github.com/nubisco/ui/commit/70b5b73e4bb156e844ecd303ed2411be08ac98f3))
+
+
+### Features
+
+* **charts:** Bar and Line take a valueFormatter, and the tooltip shows a point's label ([59d9ebe](https://github.com/nubisco/ui/commit/59d9ebea98d6da266a8625fb337d0559bce8d661))
+* **select:** an opt-in clearable control ([3e9d185](https://github.com/nubisco/ui/commit/3e9d185ed3f6c2a74896ab790ae5c74fab8a29b0))
+
 ## [5.19.1](https://github.com/nubisco/ui/compare/v5.19.0...v5.19.1) (2026-10-10)
 
 
