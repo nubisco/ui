@@ -356,4 +356,80 @@ describe('DatePicker', () => {
     const innerLabels = wrapper.findAll('.nb-date-picker__inner-label')
     expect(innerLabels[1].text()).toContain('End')
   })
+
+  describe('typed dates follow the locale field order', () => {
+    const typed = async (props: Record<string, unknown>, text: string) => {
+      const wrapper = createWrapper(props)
+      await wrapper.find('input').setValue(text)
+      return wrapper
+    }
+
+    it('reads day first in a day-first locale', async () => {
+      const wrapper = await typed({ locale: 'pt-PT' }, '05/12/2024')
+      expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['2024-12-05'])
+      expect(wrapper.emitted('change')?.[0]).toEqual(['2024-12-05'])
+    })
+
+    it('reads month first in a month-first locale, as before', async () => {
+      const wrapper = await typed({ locale: 'en-US' }, '05/12/2024')
+      expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['2024-05-12'])
+      const us = await typed({ locale: 'en-US' }, '12/05/2024')
+      expect(us.emitted('update:modelValue')?.[0]).toEqual(['2024-12-05'])
+    })
+
+    it('accepts dots, dashes and single digits', async () => {
+      const dots = await typed({ locale: 'de-DE' }, '5.12.2024')
+      expect(dots.emitted('update:modelValue')?.[0]).toEqual(['2024-12-05'])
+      const dashes = await typed({ locale: 'pt-PT' }, '5-1-2024')
+      expect(dashes.emitted('update:modelValue')?.[0]).toEqual(['2024-01-05'])
+    })
+
+    it('keeps the ISO path whatever the locale', async () => {
+      const wrapper = await typed({ locale: 'pt-PT' }, '2024-05-12')
+      expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['2024-05-12'])
+    })
+
+    it.each(['1', '10', '10/0', '10/02', '10/02/24'])(
+      'emits nothing for the partial input %s',
+      async (text) => {
+        const wrapper = await typed({ locale: 'pt-PT' }, text)
+        expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+        expect(wrapper.emitted('change')).toBeUndefined()
+      },
+    )
+
+    it('emits nothing for a date the calendar does not have', async () => {
+      const wrapper = await typed({ locale: 'pt-PT' }, '31/02/2024')
+      expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+    })
+
+    it('still emits null when cleared', async () => {
+      const wrapper = await typed(
+        { locale: 'pt-PT', modelValue: '2024-12-05' },
+        '',
+      )
+      expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([null])
+    })
+
+    it('still refuses a disabled date', async () => {
+      const wrapper = await typed(
+        { locale: 'pt-PT', disabledDates: ['2024-12-05'] },
+        '05/12/2024',
+      )
+      expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+    })
+
+    it('treats the end-date field the same way', async () => {
+      const wrapper = createWrapper({ type: 'range', locale: 'pt-PT' })
+      const end = wrapper.findAll('input')[1]
+      await end.setValue('10')
+      expect(wrapper.emitted('update:endValue')).toBeUndefined()
+      await end.setValue('31/02/2024')
+      expect(wrapper.emitted('update:endValue')).toBeUndefined()
+      await end.setValue('05/12/2024')
+      expect(wrapper.emitted('update:endValue')?.[0]).toEqual(['2024-12-05'])
+      await end.setValue('')
+      expect(wrapper.emitted('update:endValue')?.[1]).toEqual([null])
+    })
+  })
 })

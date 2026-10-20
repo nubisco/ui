@@ -590,6 +590,48 @@ function isDateDisabled(iso: string): boolean {
     : props.disabledDates.includes(iso)
 }
 
+// The order the locale writes day, month and year in, the same order the
+// display and the placeholder hint use.
+const localeFieldOrder = computed(() =>
+  new Intl.DateTimeFormat(resolvedLocale.value)
+    .formatToParts(new Date(2000, 0, 15))
+    .map((p) => p.type)
+    .filter(
+      (t): t is 'day' | 'month' | 'year' =>
+        t === 'day' || t === 'month' || t === 'year',
+    ),
+)
+
+function isoFromParts(year: number, month: number, day: number) {
+  const d = new Date(year, month - 1, day)
+  // Rejects dates the calendar does not have (31/02 rolls into March)
+  if (d.getMonth() !== month - 1 || d.getDate() !== day) return null
+  d.setFullYear(year)
+  return toIso(d)
+}
+
+/**
+ * Digits and the usual separators are read in the locale's field order, and
+ * only a complete date with a four-digit year counts. Anything shorter, or a
+ * date the calendar does not have, is still being typed, so it gives null.
+ */
+function parseNumericInput(text: string): string | null {
+  const groups = text.split(/[\s./-]+/).filter(Boolean)
+  if (groups.length !== 3) return null
+  // A leading four-digit year is unambiguous in every locale
+  const order: ReadonlyArray<'day' | 'month' | 'year'> =
+    groups[0].length === 4 ? ['year', 'month', 'day'] : localeFieldOrder.value
+  if (order.length !== 3) return null
+  const fields = { day: 0, month: 0, year: 0 }
+  for (let i = 0; i < 3; i++) {
+    const field = order[i]
+    const group = groups[i]
+    if (field === 'year' ? group.length !== 4 : group.length > 2) return null
+    fields[field] = Number(group)
+  }
+  return isoFromParts(fields.year, fields.month, fields.day)
+}
+
 function parseInput(text: string): string | null {
   const trimmed = text.trim()
   if (!trimmed) return null
@@ -597,6 +639,7 @@ function parseInput(text: string): string | null {
     const d = new Date(trimmed + 'T00:00:00')
     return isNaN(d.getTime()) ? null : trimmed
   }
+  if (/^[\d\s./-]+$/.test(trimmed)) return parseNumericInput(trimmed)
   const d = new Date(trimmed)
   if (!isNaN(d.getTime())) {
     return toIso(d)
