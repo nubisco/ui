@@ -5,8 +5,8 @@ title: App theming
 
 # App theming
 
-Nubisco groups its products by audience: **creatives**, **engineers**, **home**
-and **fun**. Colour follows that grouping. An app declares which category it
+Nubisco groups its products by audience: **creatives**, **engineers**, **home**,
+**fun** and **education**. Colour follows that grouping. An app declares which category it
 belongs to, and the library resolves that to an accent, in light and dark, with
 every derived token wired up behind it.
 
@@ -37,6 +37,7 @@ configureNamedTheme({ defaultTheme: 'your-app' })
 | `engineers` | `#5b48c9` | `#a99dff` | Tools people build and operate with |
 | `home`      | `#086f9e` | `#5ec1e8` | Things that run in someone's house  |
 | `fun`       | `#b83266` | `#f686ae` | Games and toys                      |
+| `education` | `#017835` | `#5bbd74` | Things people learn with            |
 
 Every value clears WCAG AA (4.5:1) against **all four** surface layers of its
 mode. That is a stricter bar than it sounds, and it is the reason two of these
@@ -80,7 +81,7 @@ value it never sees, so assert it in your own repo:
 ## Why the library holds no product list
 
 There is no `app-theme('acta')` that looks up Acta in a table. The library holds
-the four category values and nothing else, and the app names its own category.
+the category values and nothing else, and the app names its own category.
 
 That is deliberate. A registry of product ids inside the design system would
 mean cutting a library release every time a product is added or renamed, and it
