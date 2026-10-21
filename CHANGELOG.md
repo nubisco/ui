@@ -1,3 +1,10 @@
+# [5.23.0](https://github.com/nubisco/ui/compare/v5.22.0...v5.23.0) (2026-10-21)
+
+
+### Features
+
+* **back-to-top:** NbBackToTop, a floating button back to the top of a long page ([579209e](https://github.com/nubisco/ui/commit/579209e3b60e53de2dce9b3503ec0737a726c6d7))
+
 # [5.22.0](https://github.com/nubisco/ui/compare/v5.21.0...v5.22.0) (2026-10-21)
 
 
