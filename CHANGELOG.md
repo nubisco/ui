@@ -1,3 +1,10 @@
+# [5.22.0](https://github.com/nubisco/ui/compare/v5.21.0...v5.22.0) (2026-10-21)
+
+
+### Features
+
+* **categories:** an education category ([10aa9f5](https://github.com/nubisco/ui/commit/10aa9f53ba9f7903a554c9cba4910205f8f48c77)), closes [#017835](https://github.com/nubisco/ui/issues/017835) [#5bbd74](https://github.com/nubisco/ui/issues/5bbd74)
+
 # [5.21.0](https://github.com/nubisco/ui/compare/v5.20.0...v5.21.0) (2026-10-21)
 
 
