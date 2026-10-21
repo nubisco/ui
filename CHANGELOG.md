@@ -1,3 +1,10 @@
+# [5.21.0](https://github.com/nubisco/ui/compare/v5.20.0...v5.21.0) (2026-10-21)
+
+
+### Features
+
+* **copy-button:** NbCopyButton copies text and confirms with a checkmark ([0f7e203](https://github.com/nubisco/ui/commit/0f7e203a6922ce96d8b532299a0baadaf4d4ae4e))
+
 # [5.20.0](https://github.com/nubisco/ui/compare/v5.19.1...v5.20.0) (2026-10-20)
 
 
