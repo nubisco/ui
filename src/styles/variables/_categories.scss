@@ -6,13 +6,13 @@
 
 /// The audience categories, and the accent pair each one resolves to.
 ///
-/// Nubisco groups its products by audience: creatives, engineers, home, fun.
-/// These are the four accents that grouping resolves to, each a
+/// Nubisco groups its products by audience: creatives, engineers, home, fun,
+/// education. These are the five accents that grouping resolves to, each a
 /// `(light, dark)` pair.
 ///
 /// ## What is deliberately not here
 ///
-/// There is no product list. The library holds the four values and nothing
+/// There is no product list. The library holds the five values and nothing
 /// else: it does not know which product belongs to which category, and it must
 /// not. A registry of product ids here would mean cutting a library release
 /// every time a product is added or renamed, and it would invert the
@@ -57,6 +57,13 @@ $categories: (
     #b83266,
     #f686ae,
   ),
+  // Signed off by Jose on 2026-10-21. Green carries high luminance, so a
+  // light-mode green that passes on every layer has to sit this dark: a
+  // friendlier-looking one measures around 3.0:1 on the page background.
+  education: (
+      #017835,
+      #5bbd74,
+    ),
 );
 
 /// The `(light, dark)` accent pair for a category.
