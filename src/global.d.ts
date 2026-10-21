@@ -28,6 +28,7 @@ import ColorStrip from './components/ColorStrip.vue'
 import CommandPalette from './components/CommandPalette.vue'
 import Confirm from './components/Confirm.vue'
 import CopyButton from './components/CopyButton.vue'
+import BackToTop from './components/BackToTop.vue'
 import DataTable from './components/DataTable.vue'
 import DatePicker from './components/DatePicker.vue'
 import DefinitionList from './components/DefinitionList.vue'
@@ -130,6 +131,7 @@ declare module 'vue' {
     NbCommandPalette: typeof CommandPalette
     NbConfirm: typeof Confirm
     NbCopyButton: typeof CopyButton
+    NbBackToTop: typeof BackToTop
     NbDataTable: typeof DataTable
     NbDatePicker: typeof DatePicker
     NbDefinitionList: typeof DefinitionList

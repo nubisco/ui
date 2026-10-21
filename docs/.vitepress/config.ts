@@ -311,6 +311,7 @@ export default withMermaid(
                   },
                   { text: 'Confirm', link: '/components/confirm' },
                   { text: 'Copy Button', link: '/components/copy-button' },
+                  { text: 'Back To Top', link: '/components/back-to-top' },
                   { text: 'Data Table', link: '/components/data-table' },
                   { text: 'Date Picker', link: '/components/date-picker' },
                   {
