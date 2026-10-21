@@ -14,6 +14,7 @@ import NbCalendar from './Calendar.vue'
 import NbCard from './Card.vue'
 import NbCardGrid from './CardGrid.vue'
 import NbCopyButton from './CopyButton.vue'
+import NbBackToTop from './BackToTop.vue'
 import NbDatePicker from './DatePicker.vue'
 import NbCheckbox from './Checkbox.vue'
 import NbCheckboxGroup from './CheckboxGroup.vue'
@@ -110,6 +111,7 @@ const components = {
   NbCard,
   NbCardGrid,
   NbCopyButton,
+  NbBackToTop,
   NbDatePicker,
   NbCheckbox,
   NbCheckboxGroup,
