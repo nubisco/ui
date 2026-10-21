@@ -21,6 +21,7 @@ export const COMPONENT_MANIFEST = {
   NbCalendar: 'Calendar',
   NbCard: 'Card',
   NbCardGrid: 'CardGrid',
+  NbCopyButton: 'CopyButton',
   NbDatePicker: 'DatePicker',
   NbCheckbox: 'Checkbox',
   NbCheckboxGroup: 'CheckboxGroup',

@@ -310,6 +310,7 @@ export default withMermaid(
                     link: '/components/command-palette',
                   },
                   { text: 'Confirm', link: '/components/confirm' },
+                  { text: 'Copy Button', link: '/components/copy-button' },
                   { text: 'Data Table', link: '/components/data-table' },
                   { text: 'Date Picker', link: '/components/date-picker' },
                   {
