@@ -83,6 +83,8 @@ export type {
 export { default as NbCard } from './components/Card.vue'
 export { default as NbCardGrid } from './components/CardGrid.vue'
 export type { ICardProps, ICardGridProps } from './components/CardGrid.d'
+export { default as NbCopyButton } from './components/CopyButton.vue'
+export type { ICopyButtonProps } from './components/CopyButton.d'
 export { default as NbDefinitionList } from './components/DefinitionList.vue'
 export { default as NbDefinitionListItem } from './components/DefinitionListItem.vue'
 export type {
