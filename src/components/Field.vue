@@ -56,6 +56,11 @@ const controlId = computed(() => props.labelFor ?? autoId)
   column-gap: var(--nb-field-col-gap, 12px);
   row-gap: 2px;
   min-width: 0;
+  // Rows keep their own height when a parent stretches the field, e.g. a grid
+  // row where the neighbour has a hint and this field has none. Without it the
+  // spare height was shared out between the rows, and the label and control
+  // sat lower than the field beside them.
+  align-content: start;
 }
 
 // Top-align the label against a tall control (e.g. a multiline text area).
