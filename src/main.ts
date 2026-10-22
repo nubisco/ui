@@ -87,6 +87,17 @@ export { default as NbCopyButton } from './components/CopyButton.vue'
 export type { ICopyButtonProps } from './components/CopyButton.d'
 export { default as NbBackToTop } from './components/BackToTop.vue'
 export type { IBackToTopProps } from './components/BackToTop.d'
+export { default as NbAiProvider } from './components/AiProvider.vue'
+export type {
+  IAiProviderProps,
+  IAiProviderOption,
+} from './components/AiProvider.d'
+export { default as NbAiUsage } from './components/AiUsage.vue'
+export type { IAiUsageProps } from './components/AiUsage.d'
+export { default as NbBriefing } from './components/Briefing.vue'
+export type { IBriefingProps } from './components/Briefing.d'
+export { default as NbBriefingDestination } from './components/BriefingDestination.vue'
+export type { IBriefingDestinationProps } from './components/BriefingDestination.d'
 export { default as NbDefinitionList } from './components/DefinitionList.vue'
 export { default as NbDefinitionListItem } from './components/DefinitionListItem.vue'
 export type {
