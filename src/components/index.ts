@@ -85,6 +85,7 @@ import NbToaster from './Toaster.vue'
 import NbTree from './Tree.vue'
 import NbTreeNode from './TreeNode.vue'
 import NbUserMenu from './UserMenu.vue'
+import NbVideo from './Video.vue'
 import NbBottomPanel from './BottomPanel.vue'
 import NbShellPanel from './ShellPanel.vue'
 import NbBlueprint from './Blueprint.vue'
@@ -182,6 +183,7 @@ const components = {
   NbNubiscoMark,
   NbNubiscoPlatformMark,
   NbUserMenu,
+  NbVideo,
   NbBottomPanel,
   NbShellPanel,
   NbBlueprint,

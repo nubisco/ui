@@ -386,6 +386,7 @@ export default withMermaid(
                   { text: 'Toaster', link: '/components/toaster' },
                   { text: 'Tree', link: '/components/tree' },
                   { text: 'User Menu', link: '/components/user-menu' },
+                  { text: 'Video', link: '/components/video' },
                   { text: 'Walkthrough', link: '/components/walkthrough' },
                   { text: 'Wireframe', link: '/components/wireframe' },
                 ],

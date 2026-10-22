@@ -161,6 +161,8 @@ export type {
   TUserMenuBrand,
   TUserMenuTrigger,
 } from './components/UserMenu.d'
+export { default as NbVideo } from './components/Video.vue'
+export type { IVideoProps } from './components/Video.d'
 export { default as NbCheckbox } from './components/Checkbox.vue'
 export { default as NbCheckboxGroup } from './components/CheckboxGroup.vue'
 export type { ICheckboxGroupProps } from './components/CheckboxGroup.d'
