@@ -109,12 +109,17 @@ Toggle `points` to mark each data point with a circle.
 
 The x axis shows about six evenly spaced labels, always including the first
 and the last point. The chart measures those labels in the axis font against
-the width it actually has, so a chart that has room draws them exactly as
-before. When two of them would overlap, on a phone or with long labels such as
-`2026-10-20 14:00`, the chart shows fewer, with room between them, and keeps
-the first and last inside the chart. Every point is still in the line and in
-the tooltip. Nothing about this depends on the viewport, only on the chart's
-own width and its labels.
+the width it actually has. When they fit, they stay where they are. When two of
+them would overlap, on a phone or with long labels such as `2026-10-20 14:00`,
+the chart shows fewer, with room between them. Every point is still in the line
+and in the tooltip. Nothing about this depends on the viewport, only on the
+chart's own width and its labels.
+
+No axis label is cut off at the chart's edge. A first or last label too long to
+centre under its point moves in just far enough to show in full, and if that
+brings it against its neighbour, the neighbour gives way. The top y-axis label,
+whose rounded value can sit above the plot, moves down the same way, while its
+gridline and the scale stay where they are.
 
 ## Formatting values
 
