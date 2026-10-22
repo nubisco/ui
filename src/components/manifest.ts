@@ -93,6 +93,7 @@ export const COMPONENT_MANIFEST = {
   NbNubiscoMark: 'NubiscoMark',
   NbNubiscoPlatformMark: 'NubiscoPlatformMark',
   NbUserMenu: 'UserMenu',
+  NbVideo: 'Video',
   NbBottomPanel: 'BottomPanel',
   NbShellPanel: 'ShellPanel',
   NbBlueprint: 'Blueprint',

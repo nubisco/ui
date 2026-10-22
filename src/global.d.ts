@@ -5,6 +5,7 @@ import AccordionItem from './components/AccordionItem.vue'
 import ActionGroup from './components/ActionGroup.vue'
 import AiLabel from './components/AiLabel.vue'
 import Avatar from './components/Avatar.vue'
+import BackToTop from './components/BackToTop.vue'
 import Badge from './components/Badge.vue'
 import Banner from './components/Banner.vue'
 import BarChart from './components/Charts/BarChart.vue'
@@ -28,7 +29,6 @@ import ColorStrip from './components/ColorStrip.vue'
 import CommandPalette from './components/CommandPalette.vue'
 import Confirm from './components/Confirm.vue'
 import CopyButton from './components/CopyButton.vue'
-import BackToTop from './components/BackToTop.vue'
 import DataTable from './components/DataTable.vue'
 import DatePicker from './components/DatePicker.vue'
 import DefinitionList from './components/DefinitionList.vue'
@@ -98,6 +98,7 @@ import Toaster from './components/Toaster.vue'
 import Tree from './components/Tree.vue'
 import TreeNode from './components/TreeNode.vue'
 import UserMenu from './components/UserMenu.vue'
+import Video from './components/Video.vue'
 import Walkthrough from './components/Walkthrough.vue'
 import Wireframe from './components/Wireframe.vue'
 
@@ -108,6 +109,7 @@ declare module 'vue' {
     NbActionGroup: typeof ActionGroup
     NbAiLabel: typeof AiLabel
     NbAvatar: typeof Avatar
+    NbBackToTop: typeof BackToTop
     NbBadge: typeof Badge
     NbBanner: typeof Banner
     NbBarChart: typeof BarChart
@@ -131,7 +133,6 @@ declare module 'vue' {
     NbCommandPalette: typeof CommandPalette
     NbConfirm: typeof Confirm
     NbCopyButton: typeof CopyButton
-    NbBackToTop: typeof BackToTop
     NbDataTable: typeof DataTable
     NbDatePicker: typeof DatePicker
     NbDefinitionList: typeof DefinitionList
@@ -201,6 +202,7 @@ declare module 'vue' {
     NbTree: typeof Tree
     NbTreeNode: typeof TreeNode
     NbUserMenu: typeof UserMenu
+    NbVideo: typeof Video
     NbWalkthrough: typeof Walkthrough
     NbWireframe: typeof Wireframe
   }
