@@ -1,3 +1,10 @@
+# [5.25.0](https://github.com/nubisco/ui/compare/v5.24.0...v5.25.0) (2026-10-22)
+
+
+### Features
+
+* **ai-briefings:** NbAiProvider, NbAiUsage, NbBriefing and NbBriefingDestination ([4368824](https://github.com/nubisco/ui/commit/436882451bdd8c9d710f51240283ee19ee5b379b))
+
 # [5.24.0](https://github.com/nubisco/ui/compare/v5.23.0...v5.24.0) (2026-10-22)
 
 
