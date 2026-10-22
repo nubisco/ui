@@ -1,3 +1,11 @@
+## [5.25.2](https://github.com/nubisco/ui/compare/v5.25.1...v5.25.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* **fields:** a text input, a date picker and a select side by side share one geometry ([0734911](https://github.com/nubisco/ui/commit/07349113c0b0cc4627c27ec1e48191a872beb10a))
+* **line-chart:** keep edge x labels and the top y tick inside the chart ([f78d877](https://github.com/nubisco/ui/commit/f78d877808ed23e041861a71cc94a14e4632a0d2))
+
 ## [5.25.1](https://github.com/nubisco/ui/compare/v5.25.0...v5.25.1) (2026-10-22)
 
 
