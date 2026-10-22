@@ -348,6 +348,13 @@ is the product's decision; after that it is theirs.
 (notifications, settings), the collapse toggle, then the user menu last, so the
 account sits in the corner in every product.
 
+**Or at the top, beside the brand.** A product can move the toggle out of
+`#sidebar-bottom` and into the opt-in `#sidebar-header-action` slot with
+[NbSidebarHeaderToggle](/components/sidebar-header-toggle), choosing where it
+sits next to the brand and how the two share the collapsed rail. Use one toggle
+or the other, never both. The state and the translation keys are the same, so
+switching costs nothing else.
+
 ### Collapsed sub-items and the flyout
 
 In a collapsed rail, a nested `NbSidebarMenuItem` shows its children in a flyout,

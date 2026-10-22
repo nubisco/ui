@@ -372,6 +372,10 @@ export default withMermaid(
                     text: 'Sidebar Collapse Toggle',
                     link: '/components/sidebar-collapse-toggle',
                   },
+                  {
+                    text: 'Sidebar Header Toggle',
+                    link: '/components/sidebar-header-toggle',
+                  },
                   { text: 'Skeleton', link: '/components/skeleton' },
                   { text: 'Slider', link: '/components/slider' },
                   { text: 'Spinner', link: '/components/spinner' },

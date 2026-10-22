@@ -285,10 +285,14 @@ export type {
   TSidebarVariant,
   TShellTopbar,
   TShellCollapseAt,
+  TSidebarHeaderActionPosition,
+  TSidebarHeaderActionCompact,
 } from './components/Shell.d'
 export { default as NbSidebarBrand } from './components/SidebarBrand.vue'
 export { default as NbSidebarCollapseToggle } from './components/SidebarCollapseToggle.vue'
 export type { ISidebarCollapseToggleProps } from './components/SidebarCollapseToggle.d'
+export { default as NbSidebarHeaderToggle } from './components/SidebarHeaderToggle.vue'
+export type { ISidebarHeaderToggleProps } from './components/SidebarHeaderToggle.d'
 export type { ISidebarBrandProps } from './components/SidebarBrand.d'
 export { default as NbSidebarLink } from './components/SidebarLink.vue'
 export { default as NbSidebarMenu } from './components/SidebarMenu.vue'

@@ -68,6 +68,7 @@ import NbSelect from './Select.vue'
 import NbShell from './Shell.vue'
 import NbSidebarBrand from './SidebarBrand.vue'
 import NbSidebarCollapseToggle from './SidebarCollapseToggle.vue'
+import NbSidebarHeaderToggle from './SidebarHeaderToggle.vue'
 import NbSidebarLink from './SidebarLink.vue'
 import NbSidebarMenu from './SidebarMenu.vue'
 import NbSidebarMenuGroup from './SidebarMenuGroup.vue'
@@ -168,6 +169,7 @@ const components = {
   NbShell,
   NbSidebarBrand,
   NbSidebarCollapseToggle,
+  NbSidebarHeaderToggle,
   NbSidebarLink,
   NbSidebarMenu,
   NbSidebarMenuGroup,
