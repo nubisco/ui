@@ -56,7 +56,27 @@
         :aria-hidden="sidebarHidden || undefined"
         @click.capture="onSidebarActivate"
       >
-        <div class="nb-shell__sidebar-logo">
+        <!-- The header row exists only when a product fills
+             `sidebar-header-action`. Without it the logo renders in the same
+             element it always has, so existing shells do not move a pixel.
+             The drawer drops the action too: below `collapseAt` the topbar's
+             nav toggle is the control, and a compact drawer is not a thing. -->
+        <div
+          v-if="showSidebarHeaderAction"
+          class="nb-shell__sidebar-header"
+          :class="[
+            `nb-shell__sidebar-header--${sidebarHeaderActionPosition}`,
+            `nb-shell__sidebar-header--compact-${sidebarHeaderActionCompact}`,
+          ]"
+        >
+          <div class="nb-shell__sidebar-logo">
+            <slot name="sidebar-logo" />
+          </div>
+          <div class="nb-shell__sidebar-header-action">
+            <slot name="sidebar-header-action" />
+          </div>
+        </div>
+        <div v-else class="nb-shell__sidebar-logo">
           <slot name="sidebar-logo" />
         </div>
         <div class="nb-shell__sidebar-nav">
@@ -395,6 +415,8 @@ const props = withDefaults(defineProps<IShellProps>(), {
   resizable: false,
   mainPadding: true,
   sidebarVariant: 'compact',
+  sidebarHeaderActionPosition: 'end',
+  sidebarHeaderActionCompact: 'stack',
   topbar: 'auto',
   collapseAt: 'md',
   navToggleLabel: 'Navigation',
@@ -940,6 +962,21 @@ const { layerProps: mainLayerProps } = useSurfaceLayer({
 // at runtime "just works".
 provide('nb-shell-sidebar-variant', toRef(props, 'sidebarVariant'))
 
+/**
+ * The opt-in header row beside the brand. Off in the drawer, where the topbar's
+ * nav toggle already owns opening and closing the navigation.
+ */
+const showSidebarHeaderAction = computed(
+  () => hasSlotContent('sidebar-header-action') && !collapsed.value,
+)
+
+// Lets NbSidebarHeaderToggle dress itself as an edge tab without the product
+// passing the position twice.
+provide(
+  'nb-shell-sidebar-header-action-position',
+  toRef(props, 'sidebarHeaderActionPosition'),
+)
+
 // ── Resizable inspector ───────────────────────────────────────────────────────
 // When `resizable`, a handle on the inspector's left edge drags its width,
 // clamped between the size floor (xs = 288px) and half the viewport. The chosen
@@ -1313,6 +1350,48 @@ defineExpose({
   height: 36px;
   margin-bottom: 0.75rem;
   flex-shrink: 0;
+}
+
+// ── Sidebar header action (opt-in) ────────────────────────────────────────────
+//
+// Only rendered when `sidebar-header-action` has content. The logo inside it
+// keeps its own class, so every existing logo rule still applies, and the row
+// takes over the spacing the logo used to own.
+
+.nb-shell__sidebar-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  width: 100%;
+  flex-shrink: 0;
+  margin-bottom: 0.75rem;
+
+  > .nb-shell__sidebar-logo {
+    margin-bottom: 0;
+  }
+}
+
+.nb-shell__sidebar-header-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nb-shell__sidebar-header--start .nb-shell__sidebar-header-action {
+  order: -1;
+}
+
+// The edge tab hangs half outside the rail, centred on its border. The rail is
+// `overflow: visible` already (for tooltips), so nothing clips it.
+.nb-shell__sidebar-header--edge .nb-shell__sidebar-header-action {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translate(50%, -50%);
+  z-index: 1;
 }
 
 .nb-shell__sidebar-nav {
@@ -2058,7 +2137,8 @@ defineExpose({
   .nb-shell__inspector-resize::before,
   .nb-shell__skip-link,
   .nb-shell__sidebar,
-  .nb-shell__scrim {
+  .nb-shell__scrim,
+  .nb-shell__sidebar-header > * {
     transition: none;
   }
 }
@@ -2090,6 +2170,88 @@ defineExpose({
   // bottom edge when the nav is scrolled fully down.
   .nb-shell__sidebar-nav {
     padding-bottom: 0.5rem;
+  }
+}
+
+.nb-shell--sidebar-verbose .nb-shell__sidebar-header {
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+  padding-right: 0.75rem;
+
+  > .nb-shell__sidebar-logo {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+  }
+
+  &.nb-shell__sidebar-header--start {
+    padding: 0 0 0 0.75rem;
+
+    > .nb-shell__sidebar-logo {
+      padding-left: 0.375rem;
+    }
+  }
+
+  &.nb-shell__sidebar-header--edge {
+    padding: 0;
+  }
+}
+
+// The 56px rail has no room for the brand and the action side by side.
+.nb-shell--sidebar-compact {
+  .nb-shell__sidebar-header--compact-stack:not(
+    .nb-shell__sidebar-header--edge
+  ) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .nb-shell__sidebar-header--compact-replace:not(
+      .nb-shell__sidebar-header--edge
+    )
+    > .nb-shell__sidebar-logo {
+    display: none;
+  }
+
+  // Both occupy the same square: the brand at rest, the action under the
+  // pointer or keyboard focus. `:focus-visible` is what makes it reachable by
+  // Tab, since a hidden-until-hover control is otherwise a trap. Not
+  // `:focus-within`: a mouse click leaves the button focused, and the toggle
+  // would then stay on screen instead of the brand.
+  .nb-shell__sidebar-header--compact-swap:not(.nb-shell__sidebar-header--edge) {
+    > .nb-shell__sidebar-header-action {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.12s ease;
+    }
+
+    > .nb-shell__sidebar-logo {
+      transition: opacity 0.12s ease;
+    }
+
+    &:hover,
+    &:has(:focus-visible) {
+      > .nb-shell__sidebar-header-action {
+        opacity: 1;
+      }
+
+      > .nb-shell__sidebar-logo {
+        opacity: 0;
+      }
+    }
+
+    // A touch screen cannot hover, so the swap would hide the action for good.
+    @media (hover: none) {
+      > .nb-shell__sidebar-header-action {
+        position: static;
+        opacity: 1;
+      }
+
+      > .nb-shell__sidebar-logo {
+        display: none;
+      }
+    }
   }
 }
 </style>

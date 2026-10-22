@@ -39,6 +39,8 @@ The toggle reads the variant `NbShell` provides and emits `toggle`. It does not 
 
 Inside an `NbSidebarMenu` in `#sidebar-bottom`, after the product's own bottom items (notifications, settings) and before the user menu. The [app frame](/patterns/app-frame#expanding-and-collapsing-the-rail) sets that order.
 
+To put the control at the top of the rail instead, beside the brand, use [NbSidebarHeaderToggle](/components/sidebar-header-toggle) in `#sidebar-header-action`. It shares this component's state and translation keys.
+
 ## Translations
 
 The labels resolve through the host app's global catalogue first, then a built-in string for the active language, then English:

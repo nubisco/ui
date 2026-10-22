@@ -74,6 +74,7 @@ export const COMPONENT_MANIFEST = {
   NbShell: 'Shell',
   NbSidebarBrand: 'SidebarBrand',
   NbSidebarCollapseToggle: 'SidebarCollapseToggle',
+  NbSidebarHeaderToggle: 'SidebarHeaderToggle',
   NbSidebarLink: 'SidebarLink',
   NbSidebarMenu: 'SidebarMenu',
   NbSidebarMenuGroup: 'SidebarMenuGroup',

@@ -2,6 +2,8 @@ type TInspectorSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 type TSidebarVariant = 'compact' | 'verbose'
 type TShellTopbar = 'auto' | 'always' | 'never'
 type TShellCollapseAt = 'md' | 'lg' | 'none'
+type TSidebarHeaderActionPosition = 'end' | 'start' | 'edge'
+type TSidebarHeaderActionCompact = 'stack' | 'swap' | 'replace'
 
 interface IShellProps {
   /**
@@ -84,6 +86,28 @@ interface IShellProps {
    * @default 'compact'
    */
   sidebarVariant?: TSidebarVariant
+  /**
+   * Where the `sidebar-header-action` slot sits next to `sidebar-logo`. Only
+   * read when that slot has content: a shell without it renders exactly as
+   * before.
+   * - 'end': after the brand, at the far edge of the rail.
+   * - 'start': before the brand, where a top bar would put it.
+   * - 'edge': a small tab straddling the rail's right border, level with the
+   *   brand.
+   * @default 'end'
+   */
+  sidebarHeaderActionPosition?: TSidebarHeaderActionPosition
+  /**
+   * How the header action and the brand share the 56px compact rail, where
+   * they cannot sit side by side. Ignored for the 'edge' position, which is
+   * outside the rail either way.
+   * - 'stack': both shown, one above the other.
+   * - 'swap': the brand shows, and turns into the action on hover or focus.
+   *   Falls back to 'replace' on a screen without hover.
+   * - 'replace': the action takes the brand's place.
+   * @default 'stack'
+   */
+  sidebarHeaderActionCompact?: TSidebarHeaderActionCompact
   /**
    * When the topbar strip is rendered.
    *
@@ -194,4 +218,6 @@ export {
   TSidebarVariant,
   TShellTopbar,
   TShellCollapseAt,
+  TSidebarHeaderActionPosition,
+  TSidebarHeaderActionCompact,
 }
