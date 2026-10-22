@@ -1250,7 +1250,9 @@ defineExpose({
 .nb-date-picker__field {
   flex: 1;
   min-width: 0;
-  height: var(--field-h);
+  // The field height less the wrapper's borders, so the whole box is exactly
+  // --field-h, like NbSelect and NbTextInput beside it.
+  height: calc(var(--field-h) - 1px - var(--nb-field-border-width, 0px));
   padding: 0 var(--nb-field-padding-h);
   background: transparent;
   border: none;

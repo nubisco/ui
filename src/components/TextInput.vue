@@ -444,11 +444,22 @@ const wrapperClasses = computed(() => ({
     max-width: 100%;
   }
 
+  /*
+   * The single-line field's own height: the field height less the wrapper's
+   * top border and its 1px bottom rule, so the whole box is exactly
+   * --field-h, as NbSelect, NbNumberInput and NbButton are. It used to be the
+   * field height plus the borders, which left a text input 1px taller than a
+   * select beside it (2px under rounded) and their bottom rules out of line.
+   */
+  --nb-text-input-inner-h: calc(
+    var(--field-h) - 1px - var(--nb-field-border-width, 0px)
+  );
+
   // ─── Native input / textarea (normal mode) ────────────────
   &__field {
     flex: 1;
     min-width: 0;
-    height: var(--field-h);
+    height: var(--nb-text-input-inner-h);
     padding: 0 var(--nb-field-padding-h);
     background: transparent;
     border: none;
@@ -519,10 +530,10 @@ const wrapperClasses = computed(() => ({
   &:not(.nb-text-input--multiline) {
     .nb-text-input__mirror,
     .nb-text-input__field--transparent {
-      height: var(--field-h);
+      height: var(--nb-text-input-inner-h);
       padding: 0 var(--nb-field-padding-h);
       // line-height = height centres single-line text identically in mirror and input
-      line-height: var(--field-h);
+      line-height: var(--nb-text-input-inner-h);
       white-space: pre;
       overflow: hidden;
     }

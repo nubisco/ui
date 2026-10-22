@@ -134,7 +134,9 @@ $rounded: (
     --nb-radius-popover: 0;
     --nb-radius-panel: 0;
     --nb-radius-modal: 0;
-    --nb-field-border-width: 0;
+    // With a unit, so a field can subtract it in calc() (a unitless 0 is not a
+    // length there). Drawn exactly as before.
+    --nb-field-border-width: 0px;
     --nb-field-radius: 0;
     --nb-field-radius-multiline: 0;
     // Square states the validation on the one edge it draws.
