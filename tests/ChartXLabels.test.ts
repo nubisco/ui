@@ -55,22 +55,52 @@ describe('layoutXLabels', () => {
     for (const [width, count] of [
       [1200, 90],
       [900, 30],
-      [600, 30],
       [700, 7],
       [340, 7],
     ]) {
       const placed = layout(width, count, 63)
-      expect(placed.map((p) => p.index)).toEqual(defaultXLabelIndices(count))
-      expect(placed.map((p) => p.x)).toEqual(
-        defaultXLabelIndices(count).map(positions(width, count)),
+      const defaults = defaultXLabelIndices(count)
+      expect(placed.map((p) => p.index)).toEqual(defaults)
+      // Every label but the edges stays exactly where it always was.
+      expect(placed.slice(1, -1).map((p) => p.x)).toEqual(
+        defaults.slice(1, -1).map(positions(width, count)),
       )
     }
   })
 
-  it('keeps labels that only just clear each other', () => {
-    // 30 points at 600px leave the default labels 9.6px apart.
+  it('moves the first and last labels inside the chart at every width', () => {
+    for (const width of [1200, 900, 700, 600, 390, 340]) {
+      for (const count of [2, 7, 14, 24, 30, 72, 90]) {
+        for (const labelWidth of [30, 63, 98]) {
+          const placed = layout(width, count, labelWidth)
+          for (const p of placed) {
+            expect(p.x - labelWidth / 2).toBeGreaterThanOrEqual(0)
+            expect(p.x + labelWidth / 2).toBeLessThanOrEqual(width)
+          }
+          expect(minGap(placed, labelWidth)).toBeGreaterThanOrEqual(0)
+        }
+      }
+    }
+  })
+
+  it('moves an edge label only as far as it needs to', () => {
+    // 7 points at 900px: the last label is centred 16px from the edge.
+    const placed = layout(900, 7, 63)
+    expect(placed[placed.length - 1].x).toBe(900 - 63 / 2)
+    // The first is 44px in, more than half its width: it stays.
+    expect(placed[0].x).toBe(44)
+  })
+
+  it('lets the neighbour of a moved edge label give way', () => {
+    // 30 points at 600px: the default labels clear each other by 9.6px,
+    // but the last one moving in would land on 2026-07-26.
     const placed = layout(600, 30, 63)
-    expect(placed).toHaveLength(7)
+    expect(placed.map((p) => p.index)).toEqual([0, 5, 10, 15, 20, 29])
+    expect(minGap(placed, 63)).toBeGreaterThanOrEqual(8)
+    // A long first label moves right, and its neighbour gives way too.
+    const hourly = layout(900, 24, 98)
+    expect(hourly[0].x).toBe(49)
+    expect(minGap(hourly.slice(0, 2), 98)).toBeGreaterThanOrEqual(8)
   })
 
   it('thins labels that would overlap, leaving room between them', () => {
@@ -203,10 +233,61 @@ describe('NbLineChart x-axis labels', () => {
         '2026-07-05',
         '2026-07-07',
       ])
-      // Same positions the default layout gives: 44px in, 420px across.
+      // Same positions the default layout gives, 44px in and 420px across,
+      // with the last label moved in so its 62px stay inside the 480px chart.
       expect(texts.map((t) => Number(t.attributes('x')))).toEqual([
-        44, 184, 324, 464,
+        44, 184, 324, 449,
       ])
     })
+  })
+})
+
+describe('NbLineChart y-axis tick labels', () => {
+  // Rounded ticks run past the data, so 1000 sits above the plot here.
+  const series = [
+    {
+      name: 'Visitors',
+      data: [
+        { x: 'Mon', y: 120 },
+        { x: 'Tue', y: 860 },
+        { x: 'Wed', y: 540 },
+      ],
+    },
+  ]
+  const ys = (
+    els: ReturnType<ReturnType<typeof mount>['findAll']>,
+    attr: string,
+  ) => els.map((e) => Number(e.attributes(attr)))
+
+  it('keeps the top tick label inside the chart and leaves the rest alone', () => {
+    const w = mount(LineChart, { props: { series } })
+    const labels = w.findAll('.nb-chart__axis')[0].findAll('text')
+    const grid = w.findAll('.nb-chart__gridline')
+    expect(labels.map((t) => t.text()).at(-1)).toBe('1.0k')
+    const labelY = ys(labels, 'y')
+    const gridY = ys(grid, 'y1')
+    // The top tick's own line stays where the scale puts it, above 7px.
+    expect(gridY.at(-1)).toBeLessThan(7)
+    expect(labelY.at(-1)).toBe(7)
+    // Every other tick label sits on its gridline, as it always has.
+    expect(labelY.slice(0, -1)).toEqual(gridY.slice(0, -1))
+  })
+
+  it('uses the measured height of the tick text where it can', async () => {
+    const proto = SVGElement.prototype as SVGElement & {
+      getComputedTextLength?: () => number
+      getBBox?: () => { x: number; y: number; width: number; height: number }
+    }
+    proto.getComputedTextLength = () => 20
+    proto.getBBox = () => ({ x: 0, y: -6.5, width: 7, height: 13 })
+    try {
+      const w = mount(LineChart, { props: { series } })
+      await nextTick()
+      const labels = w.findAll('.nb-chart__axis')[0].findAll('text')
+      expect(Number(labels.at(-1)?.attributes('y'))).toBe(6.5)
+    } finally {
+      delete proto.getComputedTextLength
+      delete proto.getBBox
+    }
   })
 })

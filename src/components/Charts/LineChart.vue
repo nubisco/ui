@@ -32,7 +32,7 @@
             v-for="t in yTicks"
             :key="`yt-${t}`"
             :x="margin.left - 6"
-            :y="yScale(t)"
+            :y="tickLabelY(t)"
             text-anchor="end"
             dominant-baseline="middle"
           >
@@ -182,6 +182,15 @@ const yScale = computed(() =>
 
 const yTicks = computed(() => yScale.value.ticks(5))
 
+// How far a y tick's text reaches above its own y. The measured value where
+// text can be measured, half of the 11px axis font's line box otherwise.
+const tickTextTop = ref(7)
+
+// The top tick can sit above the plot, past the svg's top edge. Its label
+// moves down just enough to show in full. The tick, its gridline and every
+// other label stay where they are.
+const tickLabelY = (t: number) => Math.max(yScale.value(t), tickTextTop.value)
+
 const innerWidth = computed(() =>
   Math.max(0, size.value.width - margin.left - margin.right),
 )
@@ -192,8 +201,9 @@ const xPositionFor = (i: number) => {
   return margin.left + (i / (n - 1)) * innerWidth.value
 }
 
-// Rendered width of every x label, measured in the axis's own font by a
-// hidden text element that is removed again before anything paints. Stays
+// Rendered width of every x label, and how far a y tick's text reaches above
+// its y, measured in the axis's own font by a hidden text element that is
+// removed again before anything paints. The widths stay
 // null where text cannot be measured (server rendering, jsdom), and the
 // default labels are drawn unchanged.
 const xAxis = ref<SVGGElement | null>(null)
@@ -213,6 +223,13 @@ const measureLabels = () => {
     if (widths.has(text)) continue
     probe.textContent = text
     widths.set(text, probe.getComputedTextLength())
+  }
+  if (typeof probe.getBBox === 'function') {
+    probe.setAttribute('dominant-baseline', 'middle')
+    probe.setAttribute('y', '0')
+    probe.textContent = '0'
+    const top = -probe.getBBox().y
+    if (top > 0) tickTextTop.value = top
   }
   g.removeChild(probe)
   labelWidths.value = widths

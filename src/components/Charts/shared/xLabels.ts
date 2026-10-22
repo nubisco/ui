@@ -1,10 +1,12 @@
 // Which x-axis labels a chart shows, and where.
 //
-// The default is about six evenly spaced labels plus the last one. That is
-// what every chart has always drawn, and it is kept whenever those labels fit
-// side by side. Only when two of them would intersect, measured against the
-// width the chart actually has, are they thinned to a wider step that leaves
-// room between them. A chart that fits today renders exactly as it did.
+// The default is about six evenly spaced labels plus the last one. Every
+// measured label is kept inside the svg, so a long first or last label is
+// moved in from the edge instead of being cut off, and when that move brings
+// it against its neighbour, the neighbour gives way. The rest of the default
+// labels are kept whenever they fit side by side. Only when two of them would
+// intersect, measured against the width the chart actually has, are they
+// thinned to a wider step that leaves room between them.
 
 interface IXLabelPlacement {
   index: number
@@ -19,7 +21,7 @@ interface IXLabelLayout {
   // Rendered width of the label for point `i`, in pixels. Without it nothing
   // can be measured, so the default labels are returned as they are.
   widthOf?: (i: number) => number
-  // Width of the svg. Thinned labels are kept inside it.
+  // Width of the svg. Measured labels are kept inside it.
   width?: number
   // Space left between two thinned labels.
   gap?: number
@@ -61,6 +63,30 @@ const clampInside = (x: number, labelWidth: number, width?: number) => {
   return Math.min(Math.max(x, half), width - half)
 }
 
+// The first and last labels always stay. When one of them sits against its
+// neighbour, the neighbour gives way. `movedGap` applies instead of `gap` to
+// an edge label that was moved in from the edge, so a label that moved never
+// ends up cramped against the one beside it.
+const edgesGiveWay = (
+  placed: IXLabelPlacement[],
+  widthOf: (i: number) => number,
+  positionOf: (i: number) => number,
+  gap: number,
+  movedGap: number,
+) => {
+  const gapFor = (p: IXLabelPlacement) =>
+    p.x === positionOf(p.index) ? gap : movedGap
+  let out = placed
+  const last = out[out.length - 1]
+  if (out.length > 2 && !labelsFit(out.slice(-2), widthOf, gapFor(last))) {
+    out = [...out.slice(0, -2), last]
+  }
+  if (out.length > 2 && !labelsFit(out.slice(0, 2), widthOf, gapFor(out[0]))) {
+    out = [out[0], ...out.slice(2)]
+  }
+  return out
+}
+
 const layoutXLabels = ({
   count,
   positionOf,
@@ -68,28 +94,39 @@ const layoutXLabels = ({
   width,
   gap = THINNED_GAP,
 }: IXLabelLayout): IXLabelPlacement[] => {
-  const base = defaultXLabelIndices(count).map((index) => ({
-    index,
-    x: positionOf(index),
-  }))
-  // Unmeasured, or the default labels do not touch: draw them untouched.
-  if (!widthOf || labelsFit(base, widthOf, 0)) return base
+  const defaults = defaultXLabelIndices(count)
+  // Unmeasured: draw the default labels where they have always been.
+  if (!widthOf) {
+    return defaults.map((index) => ({ index, x: positionOf(index) }))
+  }
 
-  const last = count - 1
   const place = (index: number) => ({
     index,
     x: clampInside(positionOf(index), widthOf(index), width),
   })
+  // Only a neighbour of an edge label that was moved gives way here. Any
+  // other overlap among the default labels is left to the thinning below.
+  const base = edgesGiveWay(
+    defaults.map(place),
+    widthOf,
+    positionOf,
+    -Infinity,
+    gap,
+  )
+  if (labelsFit(base, widthOf, 0)) return base
+
+  const last = count - 1
   const firstStep = Math.max(1, Math.ceil(count / DEFAULT_TARGET)) + 1
   for (let step = firstStep; step <= last; step++) {
     const indices: number[] = []
     for (let i = 0; i < last; i += step) indices.push(i)
-    let placed = [...indices, last].map(place)
-    // The last point always keeps its label. When the step lands just
-    // before it, the label in between gives way instead.
-    if (placed.length > 2 && !labelsFit(placed.slice(-2), widthOf, gap)) {
-      placed = [...placed.slice(0, -2), placed[placed.length - 1]]
-    }
+    const placed = edgesGiveWay(
+      [...indices, last].map(place),
+      widthOf,
+      positionOf,
+      gap,
+      gap,
+    )
     if (labelsFit(placed, widthOf, gap)) return placed
   }
   // Not even the first and last fit side by side: the first one alone.
