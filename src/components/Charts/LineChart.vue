@@ -40,11 +40,11 @@
           </text>
         </g>
 
-        <g class="nb-chart__axis">
+        <g ref="xAxis" class="nb-chart__axis">
           <text
             v-for="(label, i) in xLabelsToShow"
             :key="`xt-${i}`"
-            :x="xPositionFor(label.index)"
+            :x="label.x"
             :y="size.height - margin.bottom + 14"
             text-anchor="middle"
           >
@@ -118,13 +118,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  toDisplayString,
+  watch,
+} from 'vue'
 import ChartFrame from './shared/ChartFrame.vue'
 import ChartLegend from './shared/ChartLegend.vue'
 import ChartTooltip from './shared/ChartTooltip.vue'
 import { linear, padDomain } from './shared/scales'
 import { colorAt, DEFAULT_PALETTE } from './shared/palette'
 import { useChartSize } from './shared/useChartSize'
+import { layoutXLabels } from './shared/xLabels'
 import type { ILineChartProps } from './LineChart.d'
 import type { IChartPoint } from './shared/types.d'
 
@@ -184,19 +192,57 @@ const xPositionFor = (i: number) => {
   return margin.left + (i / (n - 1)) * innerWidth.value
 }
 
-// Choose ~6 evenly distributed x-axis labels so dense data doesn't overlap.
+// Rendered width of every x label, measured in the axis's own font by a
+// hidden text element that is removed again before anything paints. Stays
+// null where text cannot be measured (server rendering, jsdom), and the
+// default labels are drawn unchanged.
+const xAxis = ref<SVGGElement | null>(null)
+const labelWidths = ref<Map<string, number> | null>(null)
+
+const measureLabels = () => {
+  const g = xAxis.value
+  if (!g || typeof document === 'undefined') return
+  const probe = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+  if (typeof probe.getComputedTextLength !== 'function') return
+  probe.setAttribute('visibility', 'hidden')
+  probe.setAttribute('aria-hidden', 'true')
+  g.appendChild(probe)
+  const widths = new Map<string, number>()
+  for (const value of xValues.value) {
+    const text = toDisplayString(value)
+    if (widths.has(text)) continue
+    probe.textContent = text
+    widths.set(text, probe.getComputedTextLength())
+  }
+  g.removeChild(probe)
+  labelWidths.value = widths
+}
+
+watch(xValues, measureLabels, { flush: 'post' })
+
+// A web font that arrives after the first measure changes every width.
+const fonts = typeof document === 'undefined' ? undefined : document.fonts
+onMounted(() => {
+  measureLabels()
+  fonts?.addEventListener?.('loadingdone', measureLabels)
+})
+onBeforeUnmount(() => {
+  fonts?.removeEventListener?.('loadingdone', measureLabels)
+})
+
+// About six evenly spaced x-axis labels, thinned further only when those
+// would overlap at the width the chart actually has (see shared/xLabels).
 const xLabelsToShow = computed(() => {
   const all = xValues.value
-  const target = 6
-  const step = Math.max(1, Math.ceil(all.length / target))
-  const out: { index: number; value: string | number | Date }[] = []
-  for (let i = 0; i < all.length; i += step) {
-    out.push({ index: i, value: all[i] })
-  }
-  if (all.length && out[out.length - 1].index !== all.length - 1) {
-    out.push({ index: all.length - 1, value: all[all.length - 1] })
-  }
-  return out
+  const widths = labelWidths.value
+  return layoutXLabels({
+    count: all.length,
+    positionOf: xPositionFor,
+    widthOf: widths
+      ? (i) => widths.get(toDisplayString(all[i])) ?? 0
+      : undefined,
+    width: size.value.width,
+  }).map((p) => ({ ...p, value: all[p.index] }))
 })
 
 const linePath = (data: IChartPoint[]): string => {

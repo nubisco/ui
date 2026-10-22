@@ -105,6 +105,17 @@ Toggle `points` to mark each data point with a circle.
   />
 </preview>
 
+## Axis labels on narrow charts
+
+The x axis shows about six evenly spaced labels, always including the first
+and the last point. The chart measures those labels in the axis font against
+the width it actually has, so a chart that has room draws them exactly as
+before. When two of them would overlap, on a phone or with long labels such as
+`2026-10-20 14:00`, the chart shows fewer, with room between them, and keeps
+the first and last inside the chart. Every point is still in the line and in
+the tooltip. Nothing about this depends on the viewport, only on the chart's
+own width and its labels.
+
 ## Formatting values
 
 Values of 1000 or more print as `1.2k` by default. `valueFormatter` replaces
