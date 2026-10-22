@@ -55,4 +55,28 @@ describe('AiLabel', () => {
     const wrapper = createWrapper()
     expect(wrapper.element.tagName.toLowerCase()).toBe('button')
   })
+
+  it('renders a static mark as an image, not a button', () => {
+    const wrapper = createWrapper({ static: true })
+    expect(wrapper.element.tagName.toLowerCase()).toBe('span')
+    expect(wrapper.attributes('role')).toBe('img')
+    expect(wrapper.attributes('aria-label')).toBe('Written by AI')
+    expect(wrapper.classes()).toContain('nb-ai-label__static')
+  })
+
+  it('names a static mark with its label', () => {
+    const wrapper = createWrapper({ static: true, label: 'AI summary' })
+    expect(wrapper.attributes('aria-label')).toBe('AI summary')
+  })
+
+  it('keeps the button free of image semantics', () => {
+    const wrapper = createWrapper()
+    expect(wrapper.attributes('role')).toBeUndefined()
+    expect(wrapper.attributes('aria-label')).toBeUndefined()
+  })
+
+  it('hides the glyph from assistive technology', () => {
+    const wrapper = createWrapper({ static: true })
+    expect(wrapper.find('svg').attributes('aria-hidden')).toBe('true')
+  })
 })

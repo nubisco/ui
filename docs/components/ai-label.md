@@ -6,7 +6,7 @@ tabs: ['Usage']
 
 <doc-tab name="Usage">
 
-The AI Label should be present whenever there's Artificial Inteligence content in the UI. Being it a modified string, or any other element which resulted from direct AI influence.
+The AI Label should be present whenever there's AI content in the UI: a string a model wrote or changed, or any other element that came directly from AI.
 
 ## Live Demo
 
@@ -14,45 +14,16 @@ The AI Label should be present whenever there's Artificial Inteligence content i
   <NbAiLabel v-bind="resultingProps" />
 </preview>
 
-::: code-group
+## A mark or a control
 
-```js [config.js]
-/**
- * @type {import('vitepress').UserConfig}
- */
-const config = {
-  // ...
-}
+By default the label is a button, for a place where clicking it explains what the AI did. Beside a heading or a block of text that AI wrote, there is nothing to click, so render it as a mark with `static`. It becomes a `span` announced as an image, with no hover or focus state, named by `label` (default "Written by AI").
 
-export default config
+```vue
+<h2>
+  AI briefings
+  <NbAiLabel static size="sm" />
+</h2>
 ```
-
-```ts [config.ts]
-import type { UserConfig } from 'vitepress'
-
-const config: UserConfig = {
-  // ...
-}
-
-export default config
-```
-
-:::
-
-> [!NOTE]
-> Highlights information that users should take into account, even when skimming.
-
-> [!TIP]
-> Optional information to help a user be more successful.
-
-> [!IMPORTANT]
-> Crucial information necessary for users to succeed.
-
-> [!WARNING]
-> Critical content demanding immediate user attention due to potential risks.
-
-> [!CAUTION]
-> Negative potential consequences of an action.
 
 </doc-tab>
 
@@ -70,6 +41,13 @@ const availableProps: PreviewPropDef[] = [
       { value: 'default', label: 'Default' },
       { value: 'inline', label: 'Inline' },
     ],
+  },
+  {
+    label: 'Static',
+    name: 'static',
+    type: 'boolean',
+    placeholder: 'Render a mark instead of a button',
+    default: false,
   },
 ]
 </script>

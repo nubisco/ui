@@ -1,13 +1,20 @@
 <template>
   <NbGrid
-    is="button"
+    :is="props.static ? 'span' : 'button'"
     align="center"
-    v-bind="{ ...(variant === EAiLabelVariant.Inline && { gap: 'sm' }) }"
+    v-bind="{
+      ...(variant === EAiLabelVariant.Inline && { gap: 'sm' }),
+      ...(props.static && { role: 'img', 'aria-label': label }),
+    }"
     justify="center"
     :class="classes"
   >
     <div v-if="variant === EAiLabelVariant.Inline" class="nb-ai-label--dot" />
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 256 256"
+      aria-hidden="true"
+    >
       <path
         d="M 104.301 197.8 L 94.501 162.4 L 53.101 162.4 L 43.501 197.8 L 17.101 197.8 L 56.301 58.2 L 92.701 58.2 L 132.101 197.8 L 104.301 197.8 Z M 74.701 84 L 73.101 84 L 57.701 141 L 90.101 141 L 74.701 84 Z M 150.099 197.8 L 150.099 178.2 L 181.499 178.2 L 181.499 77.8 L 150.099 77.8 L 150.099 58.2 L 238.899 58.2 L 238.899 77.8 L 207.499 77.8 L 207.499 178.2 L 238.899 178.2 L 238.899 197.8 L 150.099 197.8 Z"
         fill="currentColor"
@@ -24,6 +31,8 @@ import { EAiLabelVariant, EAiLabelSize, IAiLabelProps } from './AiLabel.d'
 const props = withDefaults(defineProps<IAiLabelProps>(), {
   variant: EAiLabelVariant.Default,
   size: EAiLabelSize.Medium,
+  static: false,
+  label: 'Written by AI',
 })
 
 const classes = computed(() => {
@@ -31,6 +40,7 @@ const classes = computed(() => {
     'nb-ai-label': true,
     [`nb-ai-label__${props.variant}`]: true,
     [`nb-ai-label__${props.size}`]: true,
+    'nb-ai-label__static': props.static,
   }
 })
 </script>
@@ -53,7 +63,7 @@ const classes = computed(() => {
     width: calc(var(--nb-base-unit) * 2);
     height: calc(var(--nb-base-unit) * 2);
   }
-  &__default {
+  &__default:not(.nb-ai-label__static) {
     &:hover {
       background: var(--nb-c-contrast);
       color: var(--nb-c-surface);
@@ -62,6 +72,15 @@ const classes = computed(() => {
     &:focus {
       outline: solid 2px var(--nb-c-primary);
       outline-offset: -2px;
+    }
+  }
+  &__inline:not(.nb-ai-label__static) {
+    &:hover {
+      outline: solid 1px var(--nb-c-border);
+      cursor: pointer;
+    }
+    &:focus {
+      outline: solid 2px var(--nb-c-primary);
     }
   }
   &__inline {
@@ -74,13 +93,6 @@ const classes = computed(() => {
     svg {
       width: calc(var(--nb-base-unit) * 2);
       height: calc(var(--nb-base-unit) * 2);
-    }
-    &:hover {
-      outline: solid 1px var(--nb-c-border);
-      cursor: pointer;
-    }
-    &:focus {
-      outline: solid 2px var(--nb-c-primary);
     }
   }
   &__default {
