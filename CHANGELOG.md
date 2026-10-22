@@ -1,3 +1,11 @@
+# [5.24.0](https://github.com/nubisco/ui/compare/v5.23.0...v5.24.0) (2026-10-22)
+
+
+### Features
+
+* **ai-label:** a static mark for headings and text that AI wrote ([6bd1b8b](https://github.com/nubisco/ui/commit/6bd1b8bdce00d5297b4635c95019bb2bd4624357))
+* **video:** NbVideo, a short silent loop in place of a still picture ([ab848f8](https://github.com/nubisco/ui/commit/ab848f8a117d3cf97e43eac5206926f9f5f0ac34))
+
 # [5.23.0](https://github.com/nubisco/ui/compare/v5.22.0...v5.23.0) (2026-10-21)
 
 
