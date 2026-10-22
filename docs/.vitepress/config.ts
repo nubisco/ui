@@ -248,6 +248,7 @@ export default withMermaid(
                     link: '/components/action-group',
                   },
                   { text: 'AI Label', link: '/components/ai-label' },
+                  { text: 'AI Briefings', link: '/components/ai-briefings' },
                   { text: 'Avatar', link: '/components/avatar' },
                   { text: 'Badge', link: '/components/badge' },
                   { text: 'Banner', link: '/components/banner' },

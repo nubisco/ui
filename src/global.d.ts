@@ -4,6 +4,8 @@ import Accordion from './components/Accordion.vue'
 import AccordionItem from './components/AccordionItem.vue'
 import ActionGroup from './components/ActionGroup.vue'
 import AiLabel from './components/AiLabel.vue'
+import AiProvider from './components/AiProvider.vue'
+import AiUsage from './components/AiUsage.vue'
 import Avatar from './components/Avatar.vue'
 import BackToTop from './components/BackToTop.vue'
 import Badge from './components/Badge.vue'
@@ -19,6 +21,8 @@ import BlueprintPixiRenderer from './components/BlueprintPixiRenderer.vue'
 import Board from './components/Board.vue'
 import BottomPanel from './components/BottomPanel.vue'
 import Breadcrumbs from './components/Breadcrumbs.vue'
+import Briefing from './components/Briefing.vue'
+import BriefingDestination from './components/BriefingDestination.vue'
 import Button from './components/Button.vue'
 import Calendar from './components/Calendar.vue'
 import Card from './components/Card.vue'
@@ -108,6 +112,8 @@ declare module 'vue' {
     NbAccordionItem: typeof AccordionItem
     NbActionGroup: typeof ActionGroup
     NbAiLabel: typeof AiLabel
+    NbAiProvider: typeof AiProvider
+    NbAiUsage: typeof AiUsage
     NbAvatar: typeof Avatar
     NbBackToTop: typeof BackToTop
     NbBadge: typeof Badge
@@ -123,6 +129,8 @@ declare module 'vue' {
     NbBoard: typeof Board
     NbBottomPanel: typeof BottomPanel
     NbBreadcrumbs: typeof Breadcrumbs
+    NbBriefing: typeof Briefing
+    NbBriefingDestination: typeof BriefingDestination
     NbButton: typeof Button
     NbCalendar: typeof Calendar
     NbCard: typeof Card

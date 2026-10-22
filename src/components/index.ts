@@ -3,6 +3,8 @@ import NbAccordion from './Accordion.vue'
 import NbAccordionItem from './AccordionItem.vue'
 import NbActionGroup from './ActionGroup.vue'
 import NbAiLabel from './AiLabel.vue'
+import NbAiProvider from './AiProvider.vue'
+import NbAiUsage from './AiUsage.vue'
 import NbAvatar from './Avatar.vue'
 import NbBadge from './Badge.vue'
 import NbBanner from './Banner.vue'
@@ -15,6 +17,8 @@ import NbCard from './Card.vue'
 import NbCardGrid from './CardGrid.vue'
 import NbCopyButton from './CopyButton.vue'
 import NbBackToTop from './BackToTop.vue'
+import NbBriefing from './Briefing.vue'
+import NbBriefingDestination from './BriefingDestination.vue'
 import NbDatePicker from './DatePicker.vue'
 import NbCheckbox from './Checkbox.vue'
 import NbCheckboxGroup from './CheckboxGroup.vue'
@@ -101,6 +105,8 @@ const components = {
   NbAccordionItem,
   NbActionGroup,
   NbAiLabel,
+  NbAiProvider,
+  NbAiUsage,
   NbAvatar,
   NbBadge,
   NbBanner,
@@ -113,6 +119,8 @@ const components = {
   NbCardGrid,
   NbCopyButton,
   NbBackToTop,
+  NbBriefing,
+  NbBriefingDestination,
   NbDatePicker,
   NbCheckbox,
   NbCheckboxGroup,
