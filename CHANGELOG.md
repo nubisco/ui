@@ -1,3 +1,10 @@
+## [5.25.1](https://github.com/nubisco/ui/compare/v5.25.0...v5.25.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* **line-chart:** thin x-axis labels that would overlap on narrow charts ([2bb3031](https://github.com/nubisco/ui/commit/2bb3031ce9017deeb91f9dbe1bafbd51e0bd2cc2))
+
 # [5.25.0](https://github.com/nubisco/ui/compare/v5.24.0...v5.25.0) (2026-10-22)
 
 
