@@ -198,3 +198,56 @@ describe('NbShell #sidebar-header-action', () => {
     }
   })
 })
+
+describe('NbShell drawer variant', () => {
+  const setWidth = (px: number) =>
+    Object.defineProperty(window, 'innerWidth', {
+      value: px,
+      configurable: true,
+      writable: true,
+    })
+
+  it('shows a labelled drawer on a phone even when the rail was collapsed', async () => {
+    const original = window.innerWidth
+    setWidth(400)
+    try {
+      const w = mount(Shell, {
+        props: { sidebarVariant: 'compact' },
+        slots: {
+          'sidebar-logo': '<span />',
+          'sidebar-header-action': '<button />',
+        },
+      })
+      await nextTick()
+      expect(w.classes()).toContain('nb-shell--sidebar-verbose')
+    } finally {
+      setWidth(original)
+    }
+  })
+
+  it('keeps the saved collapsed rail on a desktop', () => {
+    const w = mount(Shell, {
+      props: { sidebarVariant: 'compact' },
+      slots: {
+        'sidebar-logo': '<span />',
+        'sidebar-header-action': '<button />',
+      },
+    })
+    expect(w.classes()).toContain('nb-shell--sidebar-compact')
+  })
+
+  it('leaves an icon-only shell without the slot exactly as it was', async () => {
+    const original = window.innerWidth
+    setWidth(400)
+    try {
+      const w = mount(Shell, {
+        props: { sidebarVariant: 'compact' },
+        slots: { 'sidebar-logo': '<span />' },
+      })
+      await nextTick()
+      expect(w.classes()).toContain('nb-shell--sidebar-compact')
+    } finally {
+      setWidth(original)
+    }
+  })
+})
