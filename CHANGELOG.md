@@ -1,3 +1,10 @@
+## [5.27.2](https://github.com/nubisco/ui/compare/v5.27.1...v5.27.2) (2026-10-23)
+
+
+### Bug Fixes
+
+* **deps:** bundle the Vite plugin's tooling instead of depending on it ([de6aeb2](https://github.com/nubisco/ui/commit/de6aeb2e6e3af22a3d388f2c200d2bd765151c03))
+
 ## [5.27.1](https://github.com/nubisco/ui/compare/v5.27.0...v5.27.1) (2026-10-23)
 
 
