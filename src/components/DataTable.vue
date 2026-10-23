@@ -8,6 +8,7 @@
       { 'nb-data-table--fill': fill },
       { 'nb-data-table--stacked': stacked },
       { 'nb-data-table--stacked-headless': stacked && !stackedHead },
+      { 'nb-data-table--expandable': hasExpandColumn },
     ]"
     v-bind="layerProps"
   >
@@ -90,6 +91,7 @@
         :aria-busy="loading || undefined"
       >
         <colgroup>
+          <col v-if="hasExpandColumn" class="nb-data-table__col-expand" />
           <col v-if="hasSelectColumn" class="nb-data-table__col-select" />
           <col
             v-for="col in visibleColumns"
@@ -104,6 +106,13 @@
           :role="stacked ? 'rowgroup' : undefined"
         >
           <tr :role="stacked ? 'row' : undefined">
+            <th
+              v-if="hasExpandColumn"
+              scope="col"
+              class="nb-data-table__th nb-data-table__expand-cell"
+            >
+              <span class="nb-sr-only">Row details</span>
+            </th>
             <th
               v-if="hasSelectColumn"
               scope="col"
@@ -176,6 +185,7 @@
               :key="`skeleton-${n}`"
               class="nb-data-table__row nb-data-table__row--skeleton"
             >
+              <td v-if="hasExpandColumn" class="nb-data-table__td" />
               <td v-if="hasSelectColumn" class="nb-data-table__td">
                 <span
                   class="nb-data-table__skeleton nb-data-table__skeleton--box"
@@ -235,86 +245,136 @@
 
           <!-- Data rows -->
           <template v-else>
-            <tr
-              v-for="(row, rowIndex) in rows"
-              :key="keyFor(row)"
-              :class="[
-                'nb-data-table__row',
-                { 'nb-data-table__row--selected': isSelected(row) },
-                { 'nb-data-table__row--clickable': clickableRows },
-              ]"
-              :role="stacked ? 'row' : undefined"
-              :aria-selected="
-                selectable !== 'none' ? isSelected(row) : undefined
-              "
-              :tabindex="clickableRows ? 0 : undefined"
-              @click="onRowClick(row, rowIndex)"
-              @keydown="onRowKeydown($event, row, rowIndex)"
-              @keyup="onRowKeyup($event, row, rowIndex)"
-            >
-              <td
-                v-if="hasSelectColumn"
-                class="nb-data-table__td nb-data-table__select-cell"
-                @click.stop
-                @mousedown="noteRangeModifier"
-                @keydown="noteRangeModifier"
-              >
-                <NbCheckbox
-                  v-if="selectable === 'multiple'"
-                  :model-value="isSelected(row)"
-                  :aria-label="`Select row ${rowIndex + 1}`"
-                  @update:model-value="toggleRow(row, rowIndex)"
-                />
-                <input
-                  v-else
-                  type="radio"
-                  class="nb-data-table__radio"
-                  :name="radioName"
-                  :checked="isSelected(row)"
-                  :aria-label="`Select row ${rowIndex + 1}`"
-                  @change="selectSingle(row)"
-                />
-              </td>
-
-              <td
-                v-for="col in visibleColumns"
-                :key="`td-${keyFor(row)}-${col.key}`"
+            <template v-for="(row, rowIndex) in rows" :key="keyFor(row)">
+              <tr
                 :class="[
-                  'nb-data-table__td',
-                  `nb-data-table__td--${col.align || 'left'}`,
-                  col.cellClass,
-                  stacked && phoneCellClass(col),
+                  'nb-data-table__row',
+                  { 'nb-data-table__row--selected': isSelected(row) },
+                  { 'nb-data-table__row--clickable': clickableRows },
+                  hasExpandColumn && {
+                    'nb-data-table__row--expanded': isExpanded(row),
+                    'nb-data-table__row--even': rowIndex % 2 === 1,
+                  },
                 ]"
-                :role="stacked ? 'cell' : undefined"
-                :data-label="stackOnPhone ? col.header : undefined"
+                :role="stacked ? 'row' : undefined"
+                :aria-selected="
+                  selectable !== 'none' ? isSelected(row) : undefined
+                "
+                :tabindex="clickableRows ? 0 : undefined"
+                @click="onRowClick(row, rowIndex)"
+                @keydown="onRowKeydown($event, row, rowIndex)"
+                @keyup="onRowKeyup($event, row, rowIndex)"
               >
-                <slot
-                  :name="`cell-${col.key}`"
-                  :row="row"
-                  :value="valueOf(col, row)"
-                  :column="col"
-                  :row-index="rowIndex"
+                <td
+                  v-if="hasExpandColumn"
+                  class="nb-data-table__td nb-data-table__expand-cell"
+                  :role="stacked ? 'cell' : undefined"
+                  @click.stop
                 >
-                  <RenderCell
-                    v-if="col.render"
-                    :column="col"
-                    :row="row"
-                    :row-index="rowIndex"
+                  <button
+                    type="button"
+                    class="nb-data-table__expand"
+                    :aria-expanded="isExpanded(row)"
+                    :aria-controls="
+                      isExpanded(row) ? detailId(rowIndex) : undefined
+                    "
+                    :aria-label="detailLabel(row, rowIndex)"
+                    @click="toggleExpanded(row)"
+                  >
+                    <NbIcon
+                      :name="iconCaretRight"
+                      class="nb-data-table__expand-icon"
+                      aria-hidden="true"
+                    />
+                  </button>
+                </td>
+                <td
+                  v-if="hasSelectColumn"
+                  class="nb-data-table__td nb-data-table__select-cell"
+                  @click.stop
+                  @mousedown="noteRangeModifier"
+                  @keydown="noteRangeModifier"
+                >
+                  <NbCheckbox
+                    v-if="selectable === 'multiple'"
+                    :model-value="isSelected(row)"
+                    :aria-label="`Select row ${rowIndex + 1}`"
+                    @update:model-value="toggleRow(row, rowIndex)"
                   />
-                  <template v-else>{{
-                    formatValue(valueOf(col, row))
-                  }}</template>
-                </slot>
-              </td>
+                  <input
+                    v-else
+                    type="radio"
+                    class="nb-data-table__radio"
+                    :name="radioName"
+                    :checked="isSelected(row)"
+                    :aria-label="`Select row ${rowIndex + 1}`"
+                    @change="selectSingle(row)"
+                  />
+                </td>
 
-              <td
-                v-if="hasRowActions"
-                class="nb-data-table__td nb-data-table__actions-cell"
-                @click.stop
+                <td
+                  v-for="col in visibleColumns"
+                  :key="`td-${keyFor(row)}-${col.key}`"
+                  :class="[
+                    'nb-data-table__td',
+                    `nb-data-table__td--${col.align || 'left'}`,
+                    col.cellClass,
+                    stacked && phoneCellClass(col),
+                  ]"
+                  :role="stacked ? 'cell' : undefined"
+                  :data-label="stackOnPhone ? col.header : undefined"
+                >
+                  <slot
+                    :name="`cell-${col.key}`"
+                    :row="row"
+                    :value="valueOf(col, row)"
+                    :column="col"
+                    :row-index="rowIndex"
+                  >
+                    <RenderCell
+                      v-if="col.render"
+                      :column="col"
+                      :row="row"
+                      :row-index="rowIndex"
+                    />
+                    <template v-else>{{
+                      formatValue(valueOf(col, row))
+                    }}</template>
+                  </slot>
+                </td>
+
+                <td
+                  v-if="hasRowActions"
+                  class="nb-data-table__td nb-data-table__actions-cell"
+                  @click.stop
+                >
+                  <slot name="row-actions" :row="row" :row-index="rowIndex" />
+                </td>
+              </tr>
+              <!-- The row's detail: a full-width row directly under it, only
+                 while expanded. The region inside the cell, not the cell, is
+                 what the toggle controls, so the cell stays a table cell. -->
+              <tr
+                v-if="isExpanded(row)"
+                class="nb-data-table__detail-row"
+                :role="stacked ? 'row' : undefined"
               >
-                <slot name="row-actions" :row="row" :row-index="rowIndex" />
-              </td>
-            </tr>
+                <td
+                  :colspan="totalColumns"
+                  class="nb-data-table__detail-cell"
+                  :role="stacked ? 'cell' : undefined"
+                >
+                  <div
+                    :id="detailId(rowIndex)"
+                    class="nb-data-table__detail"
+                    role="region"
+                    :aria-label="detailLabel(row, rowIndex)"
+                  >
+                    <slot name="row-detail" :row="row" :row-index="rowIndex" />
+                  </div>
+                </td>
+              </tr>
+            </template>
           </template>
         </tbody>
       </table>
@@ -336,6 +396,7 @@ import type { TIconSource } from '@/types/Glyph.d'
 import * as iconArrowsDownUp from '@nubisco/ui/icons/arrows-down-up'
 import * as iconArrowUp from '@nubisco/ui/icons/arrow-up'
 import * as iconArrowDown from '@nubisco/ui/icons/arrow-down'
+import * as iconCaretRight from '@nubisco/ui/icons/caret-right'
 import {
   computed,
   getCurrentInstance,
@@ -376,6 +437,7 @@ const props = withDefaults(defineProps<IDataTableProps<T>>(), {
   description: undefined,
   ariaLabel: undefined,
   stackOnPhone: false,
+  expanded: () => [],
 })
 
 // The table paints the bordered surface its toolbar, header and rows sit on, so
@@ -386,6 +448,7 @@ const emit = defineEmits<{
   sort: [state: IDataTableSortState]
   'update:selected': [keys: (string | number)[]]
   'row-click': [row: T, rowIndex: number]
+  'update:expanded': [keys: (string | number)[]]
 }>()
 
 const slots = useSlots()
@@ -403,10 +466,12 @@ const visibleColumns = computed(() =>
 
 const hasSelectColumn = computed(() => props.selectable !== 'none')
 const hasRowActions = computed(() => !!slots['row-actions'])
+const hasExpandColumn = computed(() => !!slots['row-detail'])
 
 const totalColumns = computed(
   () =>
     visibleColumns.value.length +
+    (hasExpandColumn.value ? 1 : 0) +
     (hasSelectColumn.value ? 1 : 0) +
     (hasRowActions.value ? 1 : 0),
 )
@@ -582,6 +647,37 @@ const canShowBatchBar = computed(
 const showBatchBar = computed(
   () => canShowBatchBar.value && selectedCount.value > 0,
 )
+// #endregion
+
+// #region expansion
+// Opt-in through the `#row-detail` slot, and controlled like selection: the
+// toggle emits the next set of keys and the table shows what `expanded` holds.
+const detailIdBase = `nb-data-table-detail-${useId()}`
+const expandedSet = computed(() => new Set(props.expanded))
+
+function isExpanded(row: T): boolean {
+  return hasExpandColumn.value && expandedSet.value.has(keyFor(row))
+}
+
+function toggleExpanded(row: T) {
+  const key = keyFor(row)
+  const next = props.expanded.filter((k) => k !== key)
+  if (next.length === props.expanded.length) next.push(key)
+  emit('update:expanded', next)
+}
+
+function detailId(rowIndex: number): string {
+  return `${detailIdBase}-${rowIndex}`
+}
+
+// Names both the toggle and the region it opens after the row's title (the
+// same column a phone card uses as its title), so a screen reader hears which
+// row's details these are, not "row 3".
+function detailLabel(row: T, rowIndex: number): string {
+  const col = visibleColumns.value.find((c) => c.key === primaryKey.value)
+  const title = col ? formatValue(valueOf(col, row)).trim() : ''
+  return `Details for ${title || `row ${rowIndex + 1}`}`
+}
 // #endregion
 
 // #region toolbar
@@ -1002,7 +1098,13 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
     }
   }
 
-  &--zebra &__row:nth-child(even) &__td {
+  &--zebra:not(&--expandable) &__row:nth-child(even) &__td {
+    background: var(--nb-c-bg-soft);
+  }
+  // An open detail row is a sibling of the data rows, so it would flip the
+  // parity of every row after it. An expandable table counts data rows only.
+  &--zebra#{&}--expandable &__row--even &__td,
+  &--zebra#{&}--expandable &__row--even + &__detail-row &__detail-cell {
     background: var(--nb-c-bg-soft);
   }
   &--zebra &__row:hover &__td {
@@ -1021,6 +1123,9 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
   &__col-actions {
     width: calc(var(--nb-base-unit) * 6);
   }
+  &__col-expand {
+    width: calc(var(--nb-base-unit) * 6);
+  }
 
   /*
    * The control columns must not be squeezable.
@@ -1035,7 +1140,8 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
    * is what keeps it off the divider.
    */
   &__select-cell,
-  &__actions-cell {
+  &__actions-cell,
+  &__expand-cell {
     text-align: center;
     white-space: nowrap;
     min-width: calc(var(--nb-base-unit) * 6);
@@ -1056,6 +1162,63 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
 
   &__actions-cell {
     padding-inline: var(--nb-base-unit);
+  }
+
+  // ── Expandable rows ──────────────────────────────────────
+  &__expand-cell {
+    padding-inline: 0;
+    width: calc(var(--nb-base-unit) * 6);
+  }
+
+  &__expand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--nb-base-unit) * 4);
+    height: calc(var(--nb-base-unit) * 4);
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--nb-c-text-muted);
+    @include radius.standalone(control);
+    cursor: pointer;
+    transition:
+      background 0.15s,
+      color 0.15s;
+
+    &:hover {
+      background: var(--nb-c-surface-hover);
+      color: var(--nb-c-text);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--nb-c-focus-ring);
+      outline-offset: -2px;
+    }
+  }
+
+  &__expand-icon {
+    font-size: var(--nb-font-size-14);
+    transition: transform 0.15s;
+  }
+
+  &__expand[aria-expanded='true'] &__expand-icon {
+    transform: rotate(90deg);
+  }
+
+  // The open row and its detail read as one unit: no rule between them, and
+  // the detail carries the rule the row gave up.
+  &__row--expanded &__td {
+    border-bottom-color: transparent;
+  }
+
+  &__detail-cell {
+    padding: calc(var(--nb-base-unit) * 1.5) var(--nb-dt-cell-pad-x);
+    border-bottom: 1px solid var(--nb-c-border);
+    color: var(--nb-c-text);
+  }
+
+  &__body &__detail-row:last-child &__detail-cell {
+    border-bottom: none;
   }
 
   // ── Sticky header ────────────────────────────────────────
@@ -1191,6 +1354,28 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
 
     .nb-data-table__body .nb-data-table__row:last-child {
       border-bottom: none;
+    }
+
+    // An expandable card: the toggle leads the title line, and the open
+    // detail is a block straight under its card, inside the same rule.
+    .nb-data-table__expand-cell {
+      order: 1;
+      flex: none;
+      width: auto;
+      min-width: 0;
+    }
+
+    .nb-data-table__row--expanded {
+      border-bottom-color: transparent;
+    }
+
+    .nb-data-table__detail-row,
+    .nb-data-table__detail-cell {
+      display: block;
+    }
+
+    .nb-data-table__detail-cell {
+      padding: 0 var(--nb-dt-cell-pad-x) var(--nb-spacing-12);
     }
 
     .nb-data-table__row .nb-data-table__td,
@@ -1339,6 +1524,11 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
 
     .nb-data-table__head .nb-data-table__select-cell {
       min-block-size: 44px;
+    }
+
+    .nb-data-table__expand {
+      width: 44px;
+      height: 44px;
     }
   }
 }
