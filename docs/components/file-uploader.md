@@ -116,6 +116,45 @@ Rejected files are still added to the list with an error state so the user can s
 </template>
 ```
 
+## Disabled
+
+Set `disabled` while the files cannot be taken, for instance while a form is
+saving. The trigger and the hidden file input are disabled, so neither a click
+nor the keyboard opens the picker, and Tab skips the trigger. Dragging a file
+over the component shows no drop zone and a not-allowed cursor, and a drop is
+ignored. Files already in the list stay, and their remove buttons are disabled
+too, so the list cannot change until the uploader is enabled again.
+
+The trigger takes the disabled look of every `NbButton`, and the heading,
+description and file list dim to the opacity disabled fields use.
+
+<preview>
+  <div class="demo-container">
+    <NbFileUploader
+      heading="Upload files"
+      description="Uploads are paused while the form saves."
+      button-label="Add file"
+      disabled
+    />
+  </div>
+</preview>
+
+```vue
+<template>
+  <NbFileUploader heading="Upload files" :disabled="saving" />
+</template>
+```
+
+## Accessibility
+
+- The trigger is a real `NbButton`, so it is reached with Tab and activated
+  with Enter or Space. It opens the native file picker, which the browser and
+  assistive technology already know how to drive.
+- Each file row has a remove button labelled `Remove <file name>`.
+- While `disabled`, the trigger, the file input and the remove buttons are
+  natively disabled. They leave the tab order and are announced as
+  unavailable, and a drop does nothing.
+
 </doc-tab>
 
 <doc-tab name="Api">
@@ -144,6 +183,7 @@ Rejected files are still added to the list with an error state so the user can s
 | `accept`      | `string`                                                                    | -            | Native `accept` attribute (e.g. `.jpg,.pdf`) |
 | `multiple`    | `boolean`                                                                   | `false`      | Allow selecting multiple files               |
 | `maxSize`     | `number`                                                                    | -            | Max file size in bytes for client validation |
+| `disabled`    | `boolean`                                                                   | `false`      | Ignore clicks, the keyboard and drops        |
 
 ## Exposed
 
