@@ -1,3 +1,10 @@
+## [5.26.1](https://github.com/nubisco/ui/compare/v5.26.0...v5.26.1) (2026-10-23)
+
+
+### Bug Fixes
+
+* **button:** a medium button is a 44px target on a touch phone ([a8986af](https://github.com/nubisco/ui/commit/a8986afba0669fee628b5580a39e66e0c1da1d1e))
+
 # [5.26.0](https://github.com/nubisco/ui/compare/v5.25.2...v5.26.0) (2026-10-23)
 
 
