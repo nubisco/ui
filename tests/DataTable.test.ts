@@ -761,3 +761,161 @@ describe('NbDataTable keyboard-reachable clickable rows', () => {
     w.unmount()
   })
 })
+
+describe('NbDataTable expandable rows', () => {
+  afterEach(() => unstubPhone())
+
+  const detail = {
+    'row-detail': ({ row }: { row: Row }) =>
+      h('p', { class: 'detail' }, `About ${row.name}`),
+  }
+  const mountExpandable = (
+    props: Record<string, unknown> = {},
+    attrs: Record<string, unknown> = {},
+  ) =>
+    mount(DataTable, {
+      props: { columns, rows, rowKey: 'id', ...props },
+      attrs,
+      slots: detail,
+    })
+  const bodyRows = (w: ReturnType<typeof mountExpandable>) =>
+    w.findAll('tbody > tr')
+
+  it('changes nothing without the row-detail slot, even with expanded set', () => {
+    const plain = mountTable().html()
+    expect(mountTable({ expanded: [1, 2] }).html()).toBe(plain)
+    expect(mountTable().find('.nb-data-table__expand').exists()).toBe(false)
+  })
+
+  it('adds a leading toggle column with a hidden header label', () => {
+    const w = mountExpandable()
+    expect(w.classes()).toContain('nb-data-table--expandable')
+    expect(w.findAll('colgroup col')).toHaveLength(3)
+    const th = w.findAll('thead th')[0]
+    expect(th.classes()).toContain('nb-data-table__expand-cell')
+    expect(th.text()).toBe('Row details')
+    expect(w.findAll('tbody .nb-data-table__expand')).toHaveLength(3)
+  })
+
+  it('names each toggle after the row title and starts collapsed', () => {
+    const w = mountExpandable()
+    const toggle = w.findAll('.nb-data-table__expand')[1]
+    expect(toggle.attributes('type')).toBe('button')
+    expect(toggle.attributes('aria-label')).toBe('Details for Grace')
+    expect(toggle.attributes('aria-expanded')).toBe('false')
+    expect(toggle.attributes('aria-controls')).toBeUndefined()
+    expect(w.find('.nb-data-table__detail-row').exists()).toBe(false)
+  })
+
+  it('falls back to the row number when the title is empty', () => {
+    const w = mountExpandable({
+      rows: [{ id: 9, name: '', role: 'x' }],
+    })
+    expect(w.find('.nb-data-table__expand').attributes('aria-label')).toBe(
+      'Details for row 1',
+    )
+  })
+
+  it('renders the detail as a full-width row directly under its row', () => {
+    const w = mountExpandable({ expanded: [2] })
+    const trs = bodyRows(w)
+    expect(trs).toHaveLength(4)
+    expect(trs[1].text()).toContain('Grace')
+    expect(trs[2].classes()).toContain('nb-data-table__detail-row')
+    const cell = trs[2].find('td')
+    // toggle + two data columns
+    expect(cell.attributes('colspan')).toBe('3')
+    expect(cell.find('.detail').text()).toBe('About Grace')
+    expect(trs[1].classes()).toContain('nb-data-table__row--expanded')
+  })
+
+  it('wires aria-expanded and aria-controls to the region', () => {
+    const w = mountExpandable({ expanded: [2] })
+    const toggle = w.findAll('.nb-data-table__expand')[1]
+    expect(toggle.attributes('aria-expanded')).toBe('true')
+    const id = toggle.attributes('aria-controls')!
+    const region = w.find(`[id="${id}"]`)
+    expect(region.exists()).toBe(true)
+    expect(region.attributes('role')).toBe('region')
+    expect(region.attributes('aria-label')).toBe('Details for Grace')
+    expect(region.text()).toBe('About Grace')
+  })
+
+  it('gives every table in an app its own region ids', () => {
+    const table = () =>
+      h(DataTable, { columns, rows, rowKey: 'id', expanded: [1] }, detail)
+    const w = mount({ render: () => h('div', [table(), table()]) })
+    const ids = w
+      .findAll('.nb-data-table__detail')
+      .map((r) => r.attributes('id'))
+    expect(ids).toHaveLength(2)
+    expect(ids[0]).not.toBe(ids[1])
+  })
+
+  it('emits the next keys on toggle and does not mutate expanded', async () => {
+    const expanded = [1]
+    const w = mountExpandable({ expanded })
+    await w.findAll('.nb-data-table__expand')[2].trigger('click')
+    expect(w.emitted('update:expanded')![0]).toEqual([[1, 3]])
+    await w.findAll('.nb-data-table__expand')[0].trigger('click')
+    expect(w.emitted('update:expanded')![1]).toEqual([[]])
+    expect(expanded).toEqual([1])
+  })
+
+  it('works with v-model:expanded', async () => {
+    const w = mountExpandable({
+      expanded: [],
+      'onUpdate:expanded': (keys: (string | number)[]) =>
+        w.setProps({ expanded: keys }),
+    })
+    await w.findAll('.nb-data-table__expand')[0].trigger('click')
+    expect(bodyRows(w)[1].classes()).toContain('nb-data-table__detail-row')
+    await w.findAll('.nb-data-table__expand')[0].trigger('click')
+    expect(w.find('.nb-data-table__detail-row').exists()).toBe(false)
+  })
+
+  it('does not fire row-click from the toggle, and the row click does not toggle', async () => {
+    const onRowClick = vi.fn()
+    const w = mountExpandable({}, { onRowClick })
+    await w.find('.nb-data-table__expand').trigger('click')
+    expect(onRowClick).not.toHaveBeenCalled()
+    expect(w.emitted('update:expanded')).toHaveLength(1)
+    await w.findAll('tbody tr')[1].trigger('click')
+    expect(onRowClick).toHaveBeenCalledTimes(1)
+    expect(w.emitted('update:expanded')).toHaveLength(1)
+  })
+
+  it('keeps zebra parity on data rows when a detail row opens', () => {
+    const w = mountExpandable({ zebra: true, expanded: [1] })
+    const data = w.findAll('tbody tr.nb-data-table__row')
+    expect(data.map((r) => r.classes('nb-data-table__row--even'))).toEqual([
+      false,
+      true,
+      false,
+    ])
+  })
+
+  it('pads skeleton rows with the toggle column', () => {
+    const w = mountExpandable({ loading: true, skeletonRows: 2 })
+    expect(w.findAll('tbody tr')[0].findAll('td')).toHaveLength(3)
+  })
+
+  it('spans the toggle column in the empty state', () => {
+    const w = mountExpandable({ rows: [] })
+    expect(w.find('.nb-data-table__state').attributes('colspan')).toBe('3')
+  })
+
+  it('stacks the detail under its card on a phone', () => {
+    stubPhone({ touch: true })
+    const w = mountExpandable({ stackOnPhone: true, expanded: [3] })
+    expect(w.classes()).toContain('nb-data-table--stacked')
+    const trs = bodyRows(w)
+    expect(trs[3].classes()).toContain('nb-data-table__detail-row')
+    expect(trs[3].attributes('role')).toBe('row')
+    expect(trs[3].find('td').attributes('role')).toBe('cell')
+    expect(trs[2].find('.nb-data-table__expand-cell').attributes('role')).toBe(
+      'cell',
+    )
+    expect(trs[3].find('[role="region"]').text()).toBe('About Alan')
+  })
+})

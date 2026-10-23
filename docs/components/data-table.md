@@ -510,6 +510,74 @@ stop with the arrow keys moving between rows. That keeps the table a plain
 table, and it is how a list of links behaves. For a long list, pair it with
 `NbPagination` so the number of stops stays small.
 
+## Expandable rows
+
+Give the table a `#row-detail` slot and each row gets a toggle in a leading
+column. An open row shows the slot as a full-width region directly under it,
+spanning every column. Which rows are open is **controlled**, like selection:
+bind the open row keys with `v-model:expanded`. The toggle emits the next keys
+and the table shows what you pass back, so you decide whether several rows can
+be open at once, or only one.
+
+The toggle is the only thing that opens a row. A row click still emits
+`row-click`, and a click on the toggle does not, so a row can be both
+clickable and expandable. With `stackOnPhone`, the toggle leads the card's
+title line and the detail opens inside the card, under its fields. A table
+without the slot has no toggle column and renders exactly as before.
+
+<preview>
+  <NbDataTable
+    :columns="columns"
+    :rows="rows"
+    row-key="id"
+    v-model:expanded="expanded"
+    stack-on-phone
+    style="width: 100%"
+  >
+    <template #row-detail="{ row }">
+      <NbDefinitionList :items="detailItems(row)" />
+    </template>
+  </NbDataTable>
+</preview>
+
+```vue
+<template>
+  <NbDataTable
+    :columns="columns"
+    :rows="rows"
+    row-key="id"
+    v-model:expanded="expanded"
+  >
+    <template #row-detail="{ row, rowIndex }">
+      <MemberDetail :member="row" />
+    </template>
+  </NbDataTable>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+// Row keys, as `rowKey` gives them. Start with a row open by listing its key.
+const expanded = ref<(string | number)[]>([2])
+</script>
+```
+
+Only one row open at a time is a matter of what you pass back:
+
+```vue
+<NbDataTable
+  :columns="columns"
+  :rows="rows"
+  row-key="id"
+  :expanded="expanded"
+  @update:expanded="(keys) => (expanded = keys.slice(-1))"
+>
+  <template #row-detail="{ row }">
+    <MemberDetail :member="row" />
+  </template>
+</NbDataTable>
+```
+
 ## Accessibility
 
 - Renders a real `<table>` with `<th scope="col">` header cells and a `<colgroup>` for widths.
@@ -517,6 +585,7 @@ table, and it is how a list of links behaves. For a long list, pair it with
 - Selection controls are labelled checkboxes / radios; selected rows carry `aria-selected`.
 - The table exposes `aria-busy` while loading, and uses `aria-label` (from `ariaLabel` or `title`).
 - Clickable rows (with a `row-click` listener) are focusable with `tabindex="0"` and keep their native row role, so the table is still a table and a screen reader names the focused row from its cells. Enter and Space activate the row, and a key pressed on a control inside the row (a checkbox, a row action, a link in a cell) belongs to that control. The row draws a 2px `--nb-c-focus-ring` outline on keyboard focus.
+- Expandable rows: the toggle is a `<button>` with `aria-expanded`, and while the row is open, `aria-controls` points at the detail. The detail is a `region` inside a full-width cell, so the cell stays a table cell. The toggle and the region are both named after the row's title column (`Details for Ada Lovelace`), the same column a phone card uses as its title, so a screen reader hears whose details they are. The header cell of the toggle column has a visually hidden "Row details" label. Focus stays on the toggle when the row opens or closes.
 - Stacked on a phone, the table, rows and cells carry explicit `table`, `row` and `cell` roles, because the change of `display` that makes the cards would otherwise strip the table semantics in some browsers.
 
 </doc-tab>
@@ -525,26 +594,27 @@ table, and it is how a list of links behaves. For a long list, pair it with
 
 ## Props
 
-| Prop           | Type                                      | Default     | Description                                         |
-| -------------- | ----------------------------------------- | ----------- | --------------------------------------------------- |
-| `columns`      | `IDataTableColumn<T>[]`                   | required    | Column definitions, left to right                   |
-| `rows`         | `T[]`                                     | required    | Row data (order is respected as-is)                 |
-| `rowKey`       | `keyof T \| (row: T) => string \| number` | required    | Row identity for selection, keys and reconciliation |
-| `size`         | `'sm' \| 'md' \| 'lg'`                    | `'md'`      | Density                                             |
-| `sortState`    | `IDataTableSortState \| null`             | `null`      | Controlled sort state, reflected in `aria-sort`     |
-| `selectable`   | `'none' \| 'single' \| 'multiple'`        | `'none'`    | Row selection mode                                  |
-| `selected`     | `(string \| number)[]`                    | `[]`        | Controlled selected keys (`v-model:selected`)       |
-| `loading`      | `boolean`                                 | `false`     | Renders skeleton placeholder rows                   |
-| `skeletonRows` | `number`                                  | `5`         | Number of skeleton rows while loading               |
-| `error`        | `string`                                  | `undefined` | Error message shown in place of the body            |
-| `emptyMessage` | `string`                                  | `undefined` | Message shown when there are no rows                |
-| `stickyHeader` | `boolean`                                 | `true`      | Pins the header while the body scrolls              |
-| `zebra`        | `boolean`                                 | `false`     | Alternating row backgrounds                         |
-| `fill`         | `boolean`                                 | `false`     | Fill the parent's height and scroll internally      |
-| `title`        | `string`                                  | `undefined` | Toolbar title                                       |
-| `description`  | `string`                                  | `undefined` | Toolbar sub-text                                    |
-| `ariaLabel`    | `string`                                  | `undefined` | Accessible name for the `<table>`                   |
-| `stackOnPhone` | `boolean`                                 | `false`     | On a phone, render each row as a stacked card       |
+| Prop           | Type                                      | Default     | Description                                                               |
+| -------------- | ----------------------------------------- | ----------- | ------------------------------------------------------------------------- |
+| `columns`      | `IDataTableColumn<T>[]`                   | required    | Column definitions, left to right                                         |
+| `rows`         | `T[]`                                     | required    | Row data (order is respected as-is)                                       |
+| `rowKey`       | `keyof T \| (row: T) => string \| number` | required    | Row identity for selection, keys and reconciliation                       |
+| `size`         | `'sm' \| 'md' \| 'lg'`                    | `'md'`      | Density                                                                   |
+| `sortState`    | `IDataTableSortState \| null`             | `null`      | Controlled sort state, reflected in `aria-sort`                           |
+| `selectable`   | `'none' \| 'single' \| 'multiple'`        | `'none'`    | Row selection mode                                                        |
+| `selected`     | `(string \| number)[]`                    | `[]`        | Controlled selected keys (`v-model:selected`)                             |
+| `loading`      | `boolean`                                 | `false`     | Renders skeleton placeholder rows                                         |
+| `skeletonRows` | `number`                                  | `5`         | Number of skeleton rows while loading                                     |
+| `error`        | `string`                                  | `undefined` | Error message shown in place of the body                                  |
+| `emptyMessage` | `string`                                  | `undefined` | Message shown when there are no rows                                      |
+| `stickyHeader` | `boolean`                                 | `true`      | Pins the header while the body scrolls                                    |
+| `zebra`        | `boolean`                                 | `false`     | Alternating row backgrounds                                               |
+| `fill`         | `boolean`                                 | `false`     | Fill the parent's height and scroll internally                            |
+| `title`        | `string`                                  | `undefined` | Toolbar title                                                             |
+| `description`  | `string`                                  | `undefined` | Toolbar sub-text                                                          |
+| `ariaLabel`    | `string`                                  | `undefined` | Accessible name for the `<table>`                                         |
+| `stackOnPhone` | `boolean`                                 | `false`     | On a phone, render each row as a stacked card                             |
+| `expanded`     | `(string \| number)[]`                    | `[]`        | Open detail row keys (`v-model:expanded`), read with a `#row-detail` slot |
 
 ## Interfaces
 
@@ -578,22 +648,24 @@ interface IDataTableSortState {
 | `sort`            | `IDataTableSortState`        | Next sort state after a sortable header is activated                                   |
 | `update:selected` | `(string \| number)[]`       | Selected keys changed (`v-model:selected`)                                             |
 | `row-click`       | `(row: T, rowIndex: number)` | A body row was clicked, or activated with Enter or Space (not checkbox / action cells) |
+| `update:expanded` | `(string \| number)[]`       | Open detail row keys after a toggle (`v-model:expanded`)                               |
 
 ## Slots
 
-| Slot              | Scope                              | Description                                     |
-| ----------------- | ---------------------------------- | ----------------------------------------------- |
-| `cell-<key>`      | `{ row, value, column, rowIndex }` | Custom cell for column `<key>`                  |
-| `header-<key>`    | `{ column }`                       | Custom header for column `<key>`                |
-| `toolbar`         | `{ selectedCount }`                | Replaces the default title / description block  |
-| `search`          | (none)                             | Toolbar search area                             |
-| `toolbar-actions` | (none)                             | Toolbar trailing actions                        |
-| `batch-actions`   | `{ selectedKeys, clear }`          | Actions shown in the batch bar during selection |
-| `row-actions`     | `{ row, rowIndex }`                | Trailing overflow / actions column              |
-| `loading`         | (none)                             | (Skeleton rows render automatically)            |
-| `empty`           | (none)                             | Empty-state content                             |
-| `error`           | `{ error }`                        | Error-state content                             |
-| `footer`          | (none)                             | Footer region (e.g. `NbPagination`)             |
+| Slot              | Scope                              | Description                                            |
+| ----------------- | ---------------------------------- | ------------------------------------------------------ |
+| `cell-<key>`      | `{ row, value, column, rowIndex }` | Custom cell for column `<key>`                         |
+| `header-<key>`    | `{ column }`                       | Custom header for column `<key>`                       |
+| `toolbar`         | `{ selectedCount }`                | Replaces the default title / description block         |
+| `search`          | (none)                             | Toolbar search area                                    |
+| `toolbar-actions` | (none)                             | Toolbar trailing actions                               |
+| `batch-actions`   | `{ selectedKeys, clear }`          | Actions shown in the batch bar during selection        |
+| `row-actions`     | `{ row, rowIndex }`                | Trailing overflow / actions column                     |
+| `row-detail`      | `{ row, rowIndex }`                | Detail shown under an open row; adds the toggle column |
+| `loading`         | (none)                             | (Skeleton rows render automatically)                   |
+| `empty`           | (none)                             | Empty-state content                                    |
+| `error`           | `{ error }`                        | Error-state content                                    |
+| `footer`          | (none)                             | Footer region (e.g. `NbPagination`)                    |
 
 </doc-tab>
 
@@ -614,6 +686,14 @@ const rows = [
 
 const selected = ref([])
 const lastOpened = ref('')
+const expanded = ref([2])
+function detailItems(row) {
+  return [
+    { term: 'Name', value: row.name },
+    { term: 'Role', value: row.role },
+    { term: 'Status', value: row.status },
+  ]
+}
 function onRowClick(row) {
   lastOpened.value = row.name
 }

@@ -145,6 +145,16 @@ export interface IDataTableProps<T = Record<string, unknown>> {
    * @default false
    */
   stackOnPhone?: boolean
+  /**
+   * Keys of the rows whose detail is open (`v-model:expanded`). Only read
+   * when a `#row-detail` slot is given, which adds a leading toggle column
+   * and renders the slot as a full-width row under each open row. Controlled
+   * like `selected`: the toggle emits `update:expanded` with the next keys
+   * and the table shows what you pass back.
+   *
+   * @default []
+   */
+  expanded?: (string | number)[]
 }
 
 /** Payload emitted by `NbDataTable` events. */
@@ -159,6 +169,8 @@ export interface IDataTableEmits<T = Record<string, unknown>> {
    * and puts it in the tab order.
    */
   'row-click': [row: T, rowIndex: number]
+  /** Next open detail row keys after a toggle (`v-model:expanded`). */
+  'update:expanded': [keys: (string | number)[]]
 }
 
 export type {
