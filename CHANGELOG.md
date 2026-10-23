@@ -1,3 +1,11 @@
+## [5.27.1](https://github.com/nubisco/ui/compare/v5.27.0...v5.27.1) (2026-10-23)
+
+
+### Bug Fixes
+
+* **shell:** a focused brand link stays visible in the swap rail ([7128c9c](https://github.com/nubisco/ui/commit/7128c9cb0baffd8d05508d461c5508fa8c3afa21))
+* **shell:** the phone drawer shows labels when the rail was collapsed on desktop ([3a54e2f](https://github.com/nubisco/ui/commit/3a54e2f3ae99c49c5952cc769680a3b9eced9775))
+
 # [5.27.0](https://github.com/nubisco/ui/compare/v5.26.1...v5.27.0) (2026-10-23)
 
 
