@@ -637,3 +637,127 @@ describe('NbDataTable toolbar wrapping', () => {
     )
   })
 })
+
+describe('NbDataTable keyboard-reachable clickable rows', () => {
+  afterEach(() => unstubPhone())
+
+  const mountClickable = (props: Record<string, unknown> = {}, options = {}) =>
+    mount(DataTable, {
+      props: { columns, rows, rowKey: 'id', ...props },
+      attrs: { onRowClick: () => {} },
+      attachTo: document.body,
+      ...options,
+    })
+
+  const key = (
+    el: Element,
+    type: 'keydown' | 'keyup',
+    init: KeyboardEventInit,
+  ) => {
+    const event = new KeyboardEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      ...init,
+    })
+    el.dispatchEvent(event)
+    return event
+  }
+
+  it('puts every clickable row in the tab order', () => {
+    const w = mountClickable()
+    w.findAll('tbody tr').forEach((tr) => {
+      expect(tr.attributes('tabindex')).toBe('0')
+    })
+    w.unmount()
+  })
+
+  it('leaves rows out of the tab order when nobody listens for clicks', () => {
+    const w = mountTable()
+    w.findAll('tbody tr').forEach((tr) => {
+      expect(tr.attributes('tabindex')).toBeUndefined()
+    })
+    // And the keys do nothing.
+    key(w.findAll('tbody tr')[0].element, 'keydown', { key: 'Enter' })
+    expect(w.emitted('row-click')).toBeUndefined()
+  })
+
+  it('keeps the native row role, so the table stays a table', () => {
+    const w = mountClickable()
+    // No role override: a <tr> is a row to assistive tech, named from its cells.
+    expect(w.find('tbody tr').attributes('role')).toBeUndefined()
+    w.unmount()
+  })
+
+  it('activates a row with Enter on keydown, like a click', () => {
+    const w = mountClickable()
+    const event = key(w.findAll('tbody tr')[1].element, 'keydown', {
+      key: 'Enter',
+    })
+    expect(event.defaultPrevented).toBe(true)
+    expect(w.emitted('row-click')).toEqual([[rows[1], 1]])
+    w.unmount()
+  })
+
+  it('ignores a held-down Enter after the first activation', () => {
+    const w = mountClickable()
+    const tr = w.findAll('tbody tr')[0].element
+    key(tr, 'keydown', { key: 'Enter' })
+    key(tr, 'keydown', { key: 'Enter', repeat: true })
+    expect(w.emitted('row-click')).toHaveLength(1)
+    w.unmount()
+  })
+
+  it('activates a row with Space on keyup, and stops Space scrolling', () => {
+    const w = mountClickable()
+    const tr = w.findAll('tbody tr')[2].element
+    const down = key(tr, 'keydown', { key: ' ' })
+    expect(down.defaultPrevented).toBe(true)
+    expect(w.emitted('row-click')).toBeUndefined()
+    key(tr, 'keyup', { key: ' ' })
+    expect(w.emitted('row-click')).toEqual([[rows[2], 2]])
+    w.unmount()
+  })
+
+  it('leaves keys pressed on a control inside the row to that control', () => {
+    const w = mountClickable(
+      { selectable: 'multiple' },
+      { slots: { 'row-actions': () => h('button', { class: 'act' }, 'x') } },
+    )
+    const checkbox = w.find('tbody input[type="checkbox"]').element
+    const action = w.find('tbody .act').element
+    for (const el of [checkbox, action]) {
+      const down = key(el, 'keydown', { key: 'Enter' })
+      key(el, 'keydown', { key: ' ' })
+      key(el, 'keyup', { key: ' ' })
+      expect(down.defaultPrevented).toBe(false)
+    }
+    expect(w.emitted('row-click')).toBeUndefined()
+    w.unmount()
+  })
+
+  it('ignores Enter with a modifier held', () => {
+    const w = mountClickable()
+    const tr = w.findAll('tbody tr')[0].element
+    key(tr, 'keydown', { key: 'Enter', metaKey: true })
+    key(tr, 'keydown', { key: 'Enter', ctrlKey: true })
+    key(tr, 'keydown', { key: 'Enter', altKey: true })
+    expect(w.emitted('row-click')).toBeUndefined()
+    w.unmount()
+  })
+
+  it('works the same on a phone with stackOnPhone', () => {
+    stubPhone({ touch: true })
+    const w = mountClickable({ stackOnPhone: true })
+    const tr = w.findAll('tbody tr')[0]
+    expect(w.classes()).toContain('nb-data-table--stacked')
+    expect(tr.attributes('tabindex')).toBe('0')
+    expect(tr.attributes('role')).toBe('row')
+    key(tr.element, 'keydown', { key: 'Enter' })
+    key(tr.element, 'keyup', { key: ' ' })
+    expect(w.emitted('row-click')).toEqual([
+      [rows[0], 0],
+      [rows[0], 0],
+    ])
+    w.unmount()
+  })
+})

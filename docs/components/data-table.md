@@ -470,12 +470,53 @@ the table renders exactly as without the prop.
 />
 ```
 
+## Clickable rows
+
+Listen for `row-click` and every row becomes clickable: the pointer cursor, and
+a place in the tab order. A row is reached with Tab and activated with Enter or
+Space, which emit the same `row-click` a click does, with the same row and
+index. A keyboard focus ring is drawn around the row in the library's focus
+colour, and a mouse click draws none. Clicks and keys on the selection control
+and the `#row-actions` cell stay theirs and do not activate the row.
+
+This works the same with `stackOnPhone`, where each card is the focusable row.
+A table that does not listen for `row-click` has no tab stops on its rows and
+renders exactly as before.
+
+<preview>
+  <NbDataTable
+    :columns="columns"
+    :rows="rows"
+    row-key="id"
+    style="width: 100%"
+    @row-click="onRowClick"
+  />
+  <p>Last opened: {{ lastOpened || 'none yet' }}</p>
+</preview>
+
+```vue
+<template>
+  <NbDataTable
+    :columns="columns"
+    :rows="rows"
+    row-key="id"
+    @row-click="(row) => open(row.id)"
+  />
+</template>
+```
+
+Each clickable row is its own tab stop, in reading order, rather than one tab
+stop with the arrow keys moving between rows. That keeps the table a plain
+table, and it is how a list of links behaves. For a long list, pair it with
+`NbPagination` so the number of stops stays small.
+
 ## Accessibility
 
 - Renders a real `<table>` with `<th scope="col">` header cells and a `<colgroup>` for widths.
 - Sortable headers are `<button>`s inside the `<th>` and expose `aria-sort` (`ascending` / `descending` / `none`), so sorting works with keyboard and screen readers.
 - Selection controls are labelled checkboxes / radios; selected rows carry `aria-selected`.
 - The table exposes `aria-busy` while loading, and uses `aria-label` (from `ariaLabel` or `title`).
+- Clickable rows (with a `row-click` listener) are focusable with `tabindex="0"` and keep their native row role, so the table is still a table and a screen reader names the focused row from its cells. Enter and Space activate the row, and a key pressed on a control inside the row (a checkbox, a row action, a link in a cell) belongs to that control. The row draws a 2px `--nb-c-focus-ring` outline on keyboard focus.
 - Stacked on a phone, the table, rows and cells carry explicit `table`, `row` and `cell` roles, because the change of `display` that makes the cards would otherwise strip the table semantics in some browsers.
 
 </doc-tab>
@@ -532,11 +573,11 @@ interface IDataTableSortState {
 
 ## Events
 
-| Event             | Payload                      | Description                                          |
-| ----------------- | ---------------------------- | ---------------------------------------------------- |
-| `sort`            | `IDataTableSortState`        | Next sort state after a sortable header is activated |
-| `update:selected` | `(string \| number)[]`       | Selected keys changed (`v-model:selected`)           |
-| `row-click`       | `(row: T, rowIndex: number)` | A body row was clicked (not checkbox / action cells) |
+| Event             | Payload                      | Description                                                                            |
+| ----------------- | ---------------------------- | -------------------------------------------------------------------------------------- |
+| `sort`            | `IDataTableSortState`        | Next sort state after a sortable header is activated                                   |
+| `update:selected` | `(string \| number)[]`       | Selected keys changed (`v-model:selected`)                                             |
+| `row-click`       | `(row: T, rowIndex: number)` | A body row was clicked, or activated with Enter or Space (not checkbox / action cells) |
 
 ## Slots
 
@@ -572,6 +613,10 @@ const rows = [
 ]
 
 const selected = ref([])
+const lastOpened = ref('')
+function onRowClick(row) {
+  lastOpened.value = row.name
+}
 const selectedToolbar = ref([1])
 const selectedNarrow = ref([])
 
