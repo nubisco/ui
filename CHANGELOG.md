@@ -1,3 +1,10 @@
+## [5.27.3](https://github.com/nubisco/ui/compare/v5.27.2...v5.27.3) (2026-10-23)
+
+
+### Bug Fixes
+
+* **deps:** bundle unplugin-fonts into the plugin vendor file ([56044f0](https://github.com/nubisco/ui/commit/56044f04afd89f598f48f5fa82935d79617eb78f))
+
 ## [5.27.2](https://github.com/nubisco/ui/compare/v5.27.1...v5.27.2) (2026-10-23)
 
 
