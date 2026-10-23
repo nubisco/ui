@@ -1,3 +1,10 @@
+# [5.27.0](https://github.com/nubisco/ui/compare/v5.26.1...v5.27.0) (2026-10-23)
+
+
+### Features
+
+* **shell:** opt-in sidebar header action and NbSidebarHeaderToggle ([4abc822](https://github.com/nubisco/ui/commit/4abc822914f0082a4a98e9560b46d0c855b808e9)), closes [#sidebar-header-action](https://github.com/nubisco/ui/issues/sidebar-header-action) [#sidebar-logo](https://github.com/nubisco/ui/issues/sidebar-logo)
+
 ## [5.26.1](https://github.com/nubisco/ui/compare/v5.26.0...v5.26.1) (2026-10-23)
 
 
