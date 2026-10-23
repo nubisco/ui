@@ -2218,6 +2218,8 @@ defineExpose({
   // Tab, since a hidden-until-hover control is otherwise a trap. Not
   // `:focus-within`: a mouse click leaves the button focused, and the toggle
   // would then stay on screen instead of the brand.
+  // Only focus on the action counts: a brand that is a link must stay on
+  // screen while it holds focus itself, or Tab lands on something invisible.
   .nb-shell__sidebar-header--compact-swap:not(.nb-shell__sidebar-header--edge) {
     > .nb-shell__sidebar-header-action {
       position: absolute;
@@ -2231,7 +2233,7 @@ defineExpose({
     }
 
     &:hover,
-    &:has(:focus-visible) {
+    &:has(> .nb-shell__sidebar-header-action :focus-visible) {
       > .nb-shell__sidebar-header-action {
         opacity: 1;
       }
