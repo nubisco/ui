@@ -1,4 +1,4 @@
-import Unfonts from 'unplugin-fonts/vite'
+import { Unfonts } from './vite/vendor.js'
 
 /**
  * Options accepted by {@link fonts}. This is the exact option object that
