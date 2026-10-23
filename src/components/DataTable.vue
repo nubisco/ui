@@ -247,7 +247,10 @@
               :aria-selected="
                 selectable !== 'none' ? isSelected(row) : undefined
               "
+              :tabindex="clickableRows ? 0 : undefined"
               @click="onRowClick(row, rowIndex)"
+              @keydown="onRowKeydown($event, row, rowIndex)"
+              @keyup="onRowKeyup($event, row, rowIndex)"
             >
               <td
                 v-if="hasSelectColumn"
@@ -682,6 +685,37 @@ const clickableRows = computed(() => !!instance?.vnode.props?.onRowClick)
 function onRowClick(row: T, rowIndex: number) {
   emit('row-click', row, rowIndex)
 }
+
+// A clickable row is in the tab order and answers the keys a button does:
+// Enter on keydown, Space on keyup, with the keydown cancelled so Space does
+// not scroll the page. Only a key pressed on the row itself counts. A key
+// typed into a checkbox, a button or a field inside the row is that
+// control's, and bubbles up here without activating the row.
+function isOwnKey(event: KeyboardEvent): boolean {
+  return (
+    clickableRows.value &&
+    event.target === event.currentTarget &&
+    !event.altKey &&
+    !event.ctrlKey &&
+    !event.metaKey
+  )
+}
+
+function onRowKeydown(event: KeyboardEvent, row: T, rowIndex: number) {
+  if (!isOwnKey(event)) return
+  if (event.key === 'Enter') {
+    event.preventDefault()
+    if (!event.repeat) onRowClick(row, rowIndex)
+  } else if (event.key === ' ') {
+    event.preventDefault()
+  }
+}
+
+function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
+  if (!isOwnKey(event) || event.key !== ' ') return
+  event.preventDefault()
+  onRowClick(row, rowIndex)
+}
 // #endregion
 </script>
 
@@ -941,6 +975,13 @@ function onRowClick(row: T, rowIndex: number) {
 
     &--clickable {
       cursor: pointer;
+    }
+
+    // Inset, so the scroll region's overflow cannot clip it on the first and
+    // last rows. Only on keyboard focus: a click on a row draws nothing.
+    &--clickable:focus-visible {
+      outline: 2px solid var(--nb-c-focus-ring);
+      outline-offset: -2px;
     }
 
     // Neutral, not a brand tint. A 10% --nb-c-primary wash read as an

@@ -153,7 +153,11 @@ export interface IDataTableEmits<T = Record<string, unknown>> {
   sort: [state: IDataTableSortState]
   /** Updated selected keys (`v-model:selected`). */
   'update:selected': [keys: (string | number)[]]
-  /** A body row was clicked (not fired for checkbox / action clicks). */
+  /**
+   * A body row was clicked, or activated with Enter or Space (not fired for
+   * checkbox / action clicks). Listening for it makes every row clickable
+   * and puts it in the tab order.
+   */
   'row-click': [row: T, rowIndex: number]
 }
 
