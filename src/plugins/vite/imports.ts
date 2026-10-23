@@ -1,4 +1,5 @@
-import MagicString from 'magic-string'
+import type { Rollup } from 'vite'
+import { MagicString } from './vendor.js'
 import { parse, babelParse } from 'vue/compiler-sfc'
 
 /**
@@ -185,7 +186,12 @@ export function nubiscoImports(options: INubiscoImportOptions) {
 
       return {
         code: magic.toString(),
-        map: magic.generateMap({ hires: true, source: file }),
+        // Typed as Vite's own source map input, so the published declarations
+        // do not name magic-string, which is bundled and not installed.
+        map: magic.generateMap({
+          hires: true,
+          source: file,
+        }) as Rollup.SourceMapInput,
       }
     },
   }

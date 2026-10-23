@@ -2,7 +2,8 @@ import { readFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import MagicString from 'magic-string'
+import type { Rollup } from 'vite'
+import { MagicString } from './vendor.js'
 import { parse, babelParse } from 'vue/compiler-sfc'
 
 /**
@@ -462,7 +463,12 @@ export function nubiscoGlyphs(options: IGlyphOptions = {}) {
 
       return {
         code: magic.toString(),
-        map: magic.generateMap({ hires: true, source: file }),
+        // Typed as Vite's own source map input, so the published declarations
+        // do not name magic-string, which is bundled and not installed.
+        map: magic.generateMap({
+          hires: true,
+          source: file,
+        }) as Rollup.SourceMapInput,
       }
     },
   }

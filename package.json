@@ -139,7 +139,7 @@
     "build": "pnpm run build:lib && pnpm run build:types && pnpm run build:plugins && node scripts/finalize-dist.mjs && pnpm run verify:types",
     "build:lib": "vite build",
     "build:types": "vue-tsc --noEmit false --declaration --emitDeclarationOnly --outDir dist && node scripts/copy-type-modules.mjs && node scripts/rewrite-dist-aliases.mjs dist",
-    "build:plugins": "tsc --project tsconfig.plugins.json",
+    "build:plugins": "tsc --project tsconfig.plugins.json && node scripts/bundle-plugin-vendor.mjs",
     "verify:types": "pnpm run verify:dist-types && pnpm run verify:consumer-types && pnpm run verify:consumer-globals && pnpm run verify:resolution && pnpm run verify:styles && pnpm run verify:glyph-defaults && pnpm run verify:theme-export",
     "verify:dist-types": "node scripts/verify-dist-types.mjs dist",
     "verify:consumer-types": "node scripts/verify-consumer-types.mjs",
@@ -207,6 +207,7 @@
     "eslint-plugin-vue": "^10.8.0",
     "jsdom": "^29.0.1",
     "lint-staged": "^16.4.0",
+    "magic-string": "^1.2.3",
     "markdown-it-container": "^4.0.0",
     "mermaid": "^11.13.0",
     "pixi.js": "^8.19.0",
@@ -217,6 +218,7 @@
     "tinycolor2": "^1.6.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.57.2",
+    "unplugin-vue-components": "^32.1.0",
     "vite": "^8.0.2",
     "vite-svg-loader": "^5.1.1",
     "vitepress": "^1.6.4",
@@ -248,9 +250,5 @@
         }
       ]
     ]
-  },
-  "dependencies": {
-    "magic-string": "^1.2.3",
-    "unplugin-vue-components": "^32.1.0"
   }
 }
