@@ -58,6 +58,8 @@ NubiscoUI exports a Vite plugin that self-hosts the default Plus Jakarta Sans + 
 pnpm add -D @fontsource/plus-jakarta-sans @fontsource/fira-code
 ```
 
+The plugin runs on a copy of `unplugin-fonts` (2.0.0) bundled into the library, so there is nothing else to install. An app that also uses `unplugin-fonts` directly keeps its own copy, whatever its version.
+
 ```ts
 // vite.config.ts
 import { defineConfig } from 'vite'
