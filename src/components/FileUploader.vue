@@ -1,9 +1,9 @@
 <template>
   <div
-    class="nb-file-uploader"
+    :class="['nb-file-uploader', { 'nb-file-uploader--disabled': disabled }]"
     v-bind="layerProps"
     @dragenter.prevent="onDragEnter"
-    @dragover.prevent
+    @dragover.prevent="onDragOver"
     @dragleave.prevent="onDragLeave"
     @drop.prevent="onDrop"
   >
@@ -27,6 +27,7 @@
       v-else
       class="nb-file-uploader__btn"
       :variant="variant"
+      :disabled="disabled"
       @click.stop="openFilePicker"
     >
       {{ buttonLabel }}
@@ -38,6 +39,7 @@
       class="nb-file-uploader__input"
       :accept="accept"
       :multiple="multiple"
+      :disabled="disabled"
       @change="onFileInputChange"
     />
 
@@ -74,6 +76,7 @@
             class="nb-file-uploader__remove"
             type="button"
             :aria-label="`Remove ${item.file.name}`"
+            :disabled="disabled"
             @click="removeFile(i)"
           >
             <NbIcon name="x" />
@@ -89,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { EVariant } from '@/types/Variants.d'
 import {
   EFileUploaderStatus,
@@ -104,6 +107,7 @@ const props = withDefaults(defineProps<IFileUploaderProps>(), {
   buttonLabel: 'Add file',
   variant: EVariant.Primary,
   multiple: false,
+  disabled: false,
 })
 
 // The uploader itself paints nothing, but the file rows it owns paint a surface
@@ -123,7 +127,22 @@ const files = ref<IFileItem[]>([])
 const isDragging = ref(false)
 let dragCounter = 0
 
+// Turning disabled on mid-drag drops the highlight, or the drop zone would
+// stay up with nothing left to receive the file.
+watch(
+  () => props.disabled,
+  (disabled) => {
+    if (!disabled) return
+    dragCounter = 0
+    isDragging.value = false
+  },
+)
+
+// Disabled is enforced here as well as on the elements. The button and the
+// input are natively disabled, which already stops a click and the keyboard,
+// but a drop lands on the root, which has no native disabled state.
 function openFilePicker() {
+  if (props.disabled) return
   inputRef.value?.click()
 }
 
@@ -163,6 +182,10 @@ function addFiles(rawFiles: FileList | File[]) {
 
 function onFileInputChange(event: Event) {
   const input = event.target as HTMLInputElement
+  if (props.disabled) {
+    input.value = ''
+    return
+  }
   if (input.files?.length) {
     addFiles(input.files)
     input.value = ''
@@ -170,6 +193,7 @@ function onFileInputChange(event: Event) {
 }
 
 function onDragEnter() {
+  if (props.disabled) return
   dragCounter++
   isDragging.value = true
 }
@@ -182,14 +206,25 @@ function onDragLeave() {
   }
 }
 
+// The drag events are still cancelled while disabled, because an uncancelled
+// drop makes the browser open the file in place of the page. A `none` drop
+// effect shows the not-allowed cursor and the drop never fires.
+function onDragOver(event: DragEvent) {
+  if (props.disabled && event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'none'
+  }
+}
+
 function onDrop(event: DragEvent) {
   dragCounter = 0
   isDragging.value = false
+  if (props.disabled) return
   const dropped = event.dataTransfer?.files
   if (dropped?.length) addFiles(dropped)
 }
 
 function removeFile(index: number) {
+  if (props.disabled) return
   const removed = files.value[index]
   files.value.splice(index, 1)
   emit('remove', removed.file)
@@ -367,9 +402,22 @@ defineExpose({ files, setFileStatus })
     align-items: center;
     line-height: 1;
 
-    &:hover {
+    &:hover:not(:disabled) {
       color: var(--nb-c-text);
     }
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+
+  // Disabled dims what the button does not dim itself, at the opacity every
+  // other disabled field uses. The button carries its own disabled look, so it
+  // is left out here rather than dimmed twice.
+  &--disabled &__heading,
+  &--disabled &__description,
+  &--disabled &__list {
+    opacity: var(--nb-field-disabled-opacity, 0.45);
   }
 
   &__spinner {
