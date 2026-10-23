@@ -241,12 +241,14 @@ onMounted(() => {
     font-size: var(--nb-font-size-12);
     --nb-button-icon-size: var(--nb-font-size-12);
   }
-  // The small sizes are 16 to 32px tall, under a fingertip's 44. On a phone
-  // touch screen an invisible box takes the taps around them, and the button
-  // looks exactly as it does everywhere else.
+  // The small and medium sizes are 16 to 40px tall, under a fingertip's 44.
+  // On a phone touch screen an invisible box takes the taps around them, and
+  // the button looks exactly as it does everywhere else. Medium was missing,
+  // so a default button (NbFileUploader's, a form's Save) was a 40px target.
   &--xxs,
   &--xs,
-  &--sm {
+  &--sm,
+  &--md {
     @include touch.hit-area($position: false);
 
     // The hit box needs a positioning context. At zero specificity, so a host
