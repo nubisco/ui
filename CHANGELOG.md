@@ -1,3 +1,16 @@
+# [5.26.0](https://github.com/nubisco/ui/compare/v5.25.2...v5.26.0) (2026-10-23)
+
+
+### Bug Fixes
+
+* **file-uploader:** disabled stops the trigger, the input and drops ([a9758f3](https://github.com/nubisco/ui/commit/a9758f3c62fde8e62608914ff630039354a932c5))
+
+
+### Features
+
+* **data-table:** clickable rows are reachable and activated from the keyboard ([ce8a434](https://github.com/nubisco/ui/commit/ce8a4346b0921345e22e1c5a7b08958e68150e01))
+* **data-table:** expandable rows with a row-detail slot and v-model:expanded ([a024cc6](https://github.com/nubisco/ui/commit/a024cc67e805b36c7eab2a867a574d3ac8c76278))
+
 ## [5.25.2](https://github.com/nubisco/ui/compare/v5.25.1...v5.25.2) (2026-10-22)
 
 
