@@ -4,7 +4,7 @@
     v-bind="layerProps"
     :class="[
       { 'nb-shell--no-sidebar': !showSidebar },
-      showSidebar ? `nb-shell--sidebar-${sidebarVariant}` : null,
+      showSidebar ? `nb-shell--sidebar-${effectiveSidebarVariant}` : null,
       {
         'nb-shell--collapsed': collapsed,
         'nb-shell--drawer-open': collapsed && drawerOpen,
@@ -956,11 +956,24 @@ const { layerProps: mainLayerProps } = useSurfaceLayer({
   provideContext: false,
 })
 
+/**
+ * The variant the rail actually renders. A rail collapsed by preference on a
+ * desktop must not follow the person into the phone drawer as a 56px strip of
+ * unnamed icons: below `collapseAt` the drawer always shows labels. Scoped to
+ * shells using `sidebar-header-action`, the path built for a collapsible rail,
+ * so a product that chose the icon-only rail outright keeps it in the drawer.
+ */
+const effectiveSidebarVariant = computed(() =>
+  collapsed.value && hasSlotContent('sidebar-header-action')
+    ? 'verbose'
+    : props.sidebarVariant,
+)
+
 // Provided so descendants of the `sidebar-*` slots (NbSidebarMenu,
 // NbSidebarMenuItem, NbSidebarMenuGroup, NbSidebarBrand) can adapt their
 // presentation to the active variant. Exposed as a reactive ref so switching
 // at runtime "just works".
-provide('nb-shell-sidebar-variant', toRef(props, 'sidebarVariant'))
+provide('nb-shell-sidebar-variant', effectiveSidebarVariant)
 
 /**
  * The opt-in header row beside the brand. Off in the drawer, where the topbar's

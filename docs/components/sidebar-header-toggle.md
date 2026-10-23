@@ -96,7 +96,7 @@ The 56px rail has no room for the brand and the toggle side by side, so `sidebar
 
 ## On phones
 
-Below `collapseAt` the rail becomes a drawer opened from the topbar's nav button, and the header action is not rendered at all. The nav button is already the control there, and a drawer has no compact form to collapse into.
+Below `collapseAt` the rail becomes a drawer opened from the topbar's nav button, and the header action is not rendered at all. The nav button is already the control there, and a drawer has no compact form to collapse into. The drawer also always shows labels: someone who collapsed the rail on a desktop gets the full menu on their phone, while their saved choice is left alone for the next desktop visit.
 
 </doc-tab>
 
