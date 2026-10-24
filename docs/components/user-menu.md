@@ -71,6 +71,18 @@ configureTheme({ storageKey: 'product.theme' })
 
 The labels translate under `userMenu.APPEARANCE`, `userMenu.THEME_LIGHT`, `userMenu.THEME_DARK` and `userMenu.THEME_SYSTEM`. English and Portuguese ship built in.
 
+## Elevated powers
+
+Pass `role-badge` when the person is signed in with powers most people do not have, such as an instance operator or an admin. The avatar gets a ring in the warning colour, the menu header shows the label, and the trigger's accessible name carries it. It is a reminder to the person themselves that they can do more here than usual, so leave it unset for everyone else.
+
+```vue
+<NbUserMenu
+  :user="user"
+  trigger="identity"
+  :role-badge="isOperator ? 'Operator' : undefined"
+/>
+```
+
 ## Product entries
 
 The default slot sits above the Profile / Sign out group, behind its own divider. It receives `close`, so a product entry can dismiss the menu as it navigates.
@@ -179,18 +191,19 @@ On a phone (below 672px, or a touch phone held sideways) the rail is a drawer as
 
 ## Props
 
-| Prop                 | Type                         | Default       | Description                                                                                            |
-| -------------------- | ---------------------------- | ------------- | ------------------------------------------------------------------------------------------------------ |
-| `user`               | `IUserMenuUser`              | (required)    | The identity the product is signed in as. `{ email, name?, picture? }`. See [Picture](#picture).       |
-| `accounts`           | `IUserMenuAccount[]`         | —             | Identities signed in on this browser, rendered as an inline switch list.                               |
-| `accountsUnknown`    | `boolean`                    | `false`       | The identities could not be determined. Renders a generic "Switch account" action instead of the list. |
-| `showAccountActions` | `boolean`                    | `true`        | Hides the whole switch / add section for single-account products.                                      |
-| `showProfile`        | `boolean`                    | `true`        | Hides the Profile entry when the product has no profile page.                                          |
-| `brand`              | `'footer' \| 'none'`         | `'footer'`    | `'footer'` renders the non-interactive Nubisco Platform lockup; `'none'` renders nothing.              |
-| `placement`          | `'right-end' \| 'top-start'` | `'right-end'` | Where the panel opens relative to the trigger.                                                         |
-| `trigger`            | `'avatar' \| 'identity'`     | `'avatar'`    | `'identity'` follows the rail: a labelled row when expanded, the avatar alone when collapsed.          |
-| `showTheme`          | `boolean`                    | `false`       | Adds the built-in Appearance section bound to `useTheme()`. See [Appearance](#appearance).             |
-| `disabled`           | `boolean`                    | `false`       | Renders the trigger inert.                                                                             |
+| Prop                 | Type                         | Default       | Description                                                                                                              |
+| -------------------- | ---------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `user`               | `IUserMenuUser`              | (required)    | The identity the product is signed in as. `{ email, name?, picture? }`. See [Picture](#picture).                         |
+| `accounts`           | `IUserMenuAccount[]`         | —             | Identities signed in on this browser, rendered as an inline switch list.                                                 |
+| `accountsUnknown`    | `boolean`                    | `false`       | The identities could not be determined. Renders a generic "Switch account" action instead of the list.                   |
+| `showAccountActions` | `boolean`                    | `true`        | Hides the whole switch / add section for single-account products.                                                        |
+| `showProfile`        | `boolean`                    | `true`        | Hides the Profile entry when the product has no profile page.                                                            |
+| `brand`              | `'footer' \| 'none'`         | `'footer'`    | `'footer'` renders the non-interactive Nubisco Platform lockup; `'none'` renders nothing.                                |
+| `placement`          | `'right-end' \| 'top-start'` | `'right-end'` | Where the panel opens relative to the trigger.                                                                           |
+| `trigger`            | `'avatar' \| 'identity'`     | `'avatar'`    | `'identity'` follows the rail: a labelled row when expanded, the avatar alone when collapsed.                            |
+| `roleBadge`          | `string`                     | —             | A label for elevated powers ("Operator"). Rings the avatar and shows the label. See [Elevated powers](#elevated-powers). |
+| `showTheme`          | `boolean`                    | `false`       | Adds the built-in Appearance section bound to `useTheme()`. See [Appearance](#appearance).                               |
+| `disabled`           | `boolean`                    | `false`       | Renders the trigger inert.                                                                                               |
 
 ## Events
 
