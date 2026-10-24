@@ -1,3 +1,10 @@
+# [5.28.0](https://github.com/nubisco/ui/compare/v5.27.3...v5.28.0) (2026-10-24)
+
+
+### Features
+
+* **shell:** counts on the collapsed rail icon, and NbSidebarStatus ([772bb2a](https://github.com/nubisco/ui/commit/772bb2a7f84e799405c8b1199e4befb093e75856))
+
 ## [5.27.3](https://github.com/nubisco/ui/compare/v5.27.2...v5.27.3) (2026-10-23)
 
 
