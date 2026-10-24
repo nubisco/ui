@@ -326,7 +326,7 @@ In compact mode:
 - `NbSidebarBrand` renders only its icon (title and subtitle are hidden).
 - `NbSidebarMenuItem` collapses to a 40×40 icon button. Hovering reveals a flyout with the label, badge, and any child items. For an item with children, a click, a tap, or the keyboard opens and pins the flyout and moves focus into it; see [the app frame](/patterns/app-frame#collapsed-sub-items-and-the-flyout).
 - `NbSidebarMenuGroup` becomes a thin separator (the group label is dropped visually but kept for screen readers).
-- Badges with a `badgeVariant` become a small coloured dot in the icon's corner.
+- A badge that is a number (`badge="3"`, `:badge="unread"`) becomes a small count on the icon's top-right corner, capped at `99+`, the way a phone shows one. The icon stays where every other icon is, and the row's accessible name carries the count. A text badge (`"AI"`, `"BETA"`) has no room there and becomes a small coloured dot.
 
 ```vue
 <template>

@@ -32,7 +32,7 @@
           : undefined
       "
       :aria-haspopup="hasChildren && variant === 'compact' ? 'menu' : undefined"
-      :aria-label="variant === 'compact' ? label : undefined"
+      :aria-label="variant === 'compact' ? compactAriaLabel : undefined"
       role="menuitem"
       @click="onClick"
       @keydown="onRowKeydown"
@@ -60,6 +60,16 @@
           :size="12"
         />
       </template>
+      <!-- Collapsed, a count sits on the icon's top-right corner, the way a
+           phone home screen shows one, so the icon itself never moves. Text
+           badges ("AI", "BETA") have no room there and shrink to a dot. -->
+      <span
+        v-else-if="compactCount !== undefined"
+        class="nb-sidebar-menu-item__badge-count"
+        :class="[`nb-sidebar-menu-item__badge-count--${badgeVariant}`]"
+        aria-hidden="true"
+        >{{ compactCount }}</span
+      >
       <span
         v-else-if="badge !== undefined"
         class="nb-sidebar-menu-item__badge-dot"
@@ -152,6 +162,20 @@ const variantRef = inject<Ref<'compact' | 'verbose'>>(
 const variant = computed(() => variantRef.value)
 
 const slots = useSlots()
+
+/** The badge as a count, or undefined when it is text or not a number. */
+const compactCount = computed<string | undefined>(() => {
+  const raw = props.badge
+  if (raw === undefined) return undefined
+  const n = typeof raw === 'number' ? raw : Number(String(raw).trim())
+  if (!Number.isFinite(n) || String(raw).trim() === '') return undefined
+  return n > 99 ? '99+' : String(n)
+})
+
+// The overlaid count is hidden from assistive tech, so the row names it.
+const compactAriaLabel = computed(() =>
+  props.badge === undefined ? props.label : `${props.label} (${props.badge})`,
+)
 
 const hasChildren = computed(() => {
   const content = slots.default?.()
@@ -526,6 +550,47 @@ onBeforeUnmount(() => {
       transparent
     );
     color: var(--nb-c-danger, #ef4444);
+  }
+}
+
+// Count for compact: a small pill on the icon's top-right corner. Anchored to
+// the centre of the square row (half the 18px icon is 9px), so it hugs the
+// icon whatever the row size, and it never takes space from the icon.
+.nb-sidebar-menu-item__badge-count {
+  position: absolute;
+  top: 4px;
+  left: calc(50% + 3px);
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  background: var(--nb-shell-sidebar-link-hover-bg, rgba(255, 255, 255, 0.16));
+  color: var(--nb-shell-sidebar-link-hover-color);
+  // A ring in the rail's own colour separates the pill from the icon below.
+  box-shadow: 0 0 0 2px var(--nb-shell-sidebar-bg, transparent);
+
+  &--accent {
+    background: var(--nb-shell-sidebar-link-active-color);
+    color: var(--nb-shell-sidebar-bg, #fff);
+  }
+  &--success {
+    background: var(--nb-c-success, #22c55e);
+    color: #fff;
+  }
+  &--warning {
+    background: var(--nb-c-warning, #f59e0b);
+    color: #fff;
+  }
+  &--danger {
+    background: var(--nb-c-danger, #ef4444);
+    color: #fff;
   }
 }
 

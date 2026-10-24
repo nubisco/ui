@@ -376,6 +376,10 @@ export default withMermaid(
                     text: 'Sidebar Header Toggle',
                     link: '/components/sidebar-header-toggle',
                   },
+                  {
+                    text: 'Sidebar Status',
+                    link: '/components/sidebar-status',
+                  },
                   { text: 'Skeleton', link: '/components/skeleton' },
                   { text: 'Slider', link: '/components/slider' },
                   { text: 'Spinner', link: '/components/spinner' },
