@@ -1,3 +1,10 @@
+# [5.29.0](https://github.com/nubisco/ui/compare/v5.28.0...v5.29.0) (2026-10-24)
+
+
+### Features
+
+* **user-menu:** built-in Appearance section behind showTheme ([575d02e](https://github.com/nubisco/ui/commit/575d02e9e72c56447b1549d7f8110835117608c2))
+
 # [5.28.0](https://github.com/nubisco/ui/compare/v5.27.3...v5.28.0) (2026-10-24)
 
 
