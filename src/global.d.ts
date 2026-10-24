@@ -80,6 +80,7 @@ import ShellPanel from './components/ShellPanel.vue'
 import SidebarBrand from './components/SidebarBrand.vue'
 import SidebarCollapseToggle from './components/SidebarCollapseToggle.vue'
 import SidebarHeaderToggle from './components/SidebarHeaderToggle.vue'
+import SidebarStatus from './components/SidebarStatus.vue'
 import SidebarLink from './components/SidebarLink.vue'
 import SidebarMenu from './components/SidebarMenu.vue'
 import SidebarMenuGroup from './components/SidebarMenuGroup.vue'
@@ -189,6 +190,7 @@ declare module 'vue' {
     NbSidebarBrand: typeof SidebarBrand
     NbSidebarCollapseToggle: typeof SidebarCollapseToggle
     NbSidebarHeaderToggle: typeof SidebarHeaderToggle
+    NbSidebarStatus: typeof SidebarStatus
     NbSidebarLink: typeof SidebarLink
     NbSidebarMenu: typeof SidebarMenu
     NbSidebarMenuGroup: typeof SidebarMenuGroup

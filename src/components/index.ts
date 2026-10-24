@@ -73,6 +73,7 @@ import NbSidebarLink from './SidebarLink.vue'
 import NbSidebarMenu from './SidebarMenu.vue'
 import NbSidebarMenuGroup from './SidebarMenuGroup.vue'
 import NbSidebarMenuItem from './SidebarMenuItem.vue'
+import NbSidebarStatus from './SidebarStatus.vue'
 import NbSlider from './Slider.vue'
 import NbStepper from './Stepper.vue'
 import NbStepperStep from './StepperStep.vue'
@@ -174,6 +175,7 @@ const components = {
   NbSidebarMenu,
   NbSidebarMenuGroup,
   NbSidebarMenuItem,
+  NbSidebarStatus,
   NbSlider,
   NbStepper,
   NbStepperStep,

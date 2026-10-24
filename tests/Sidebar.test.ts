@@ -238,13 +238,13 @@ describe('NbSidebarMenuItem', () => {
 
   it('uses an icon-only compact row with an aria-label and a badge dot', () => {
     const w = mount(SidebarMenuItem, {
-      props: { label: 'Dashboard', icon: 'gauge', badge: 3 },
+      props: { label: 'Dashboard', icon: 'gauge', badge: 'NEW' },
       ...withVariant('compact'),
     })
     const row = w.find('.nb-sidebar-menu-item__row')
     expect(row.classes()).toContain('nb-sidebar-menu-item__row--compact')
-    expect(row.attributes('aria-label')).toBe('Dashboard')
-    // No text label in compact, but a badge dot pip instead of a pill.
+    expect(row.attributes('aria-label')).toBe('Dashboard (NEW)')
+    // No text label in compact, and a text badge becomes a dot pip.
     expect(w.find('.nb-sidebar-menu-item__label').exists()).toBe(false)
     expect(w.find('.nb-sidebar-menu-item__badge-dot').exists()).toBe(true)
   })
