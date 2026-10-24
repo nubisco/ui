@@ -80,6 +80,13 @@ interface IUserMenuProps {
    * @default false
    */
   showTheme?: boolean
+  /**
+   * A short label for someone signed in with elevated powers, such as
+   * "Operator" or "Admin". Rings the avatar in the warning colour, shows the
+   * label in the menu header, and adds it to the trigger's accessible name.
+   * Leave it unset for everyone else.
+   */
+  roleBadge?: string
   disabled?: boolean
 }
 

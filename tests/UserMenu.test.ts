@@ -28,6 +28,27 @@ function panel(): HTMLElement | null {
 }
 
 describe('UserMenu', () => {
+  it('marks elevated powers on the avatar, in the panel and in the name', async () => {
+    const wrapper = mountMenu({ roleBadge: 'Operator' })
+    expect(wrapper.classes()).toContain('nb-user-menu--elevated')
+    expect(wrapper.find('.nb-user-menu__avatar').attributes('aria-label')).toBe(
+      'Account menu (Operator)',
+    )
+    await openMenu(wrapper)
+    expect(
+      panel()?.querySelector('.nb-user-menu__role')?.textContent,
+    ).toContain('Operator')
+    wrapper.unmount()
+  })
+
+  it('shows no role marker by default', async () => {
+    const wrapper = mountMenu()
+    expect(wrapper.classes()).not.toContain('nb-user-menu--elevated')
+    await openMenu(wrapper)
+    expect(panel()?.querySelector('.nb-user-menu__role')).toBeNull()
+    wrapper.unmount()
+  })
+
   it('offers no appearance section unless asked', async () => {
     const wrapper = mountMenu()
     await openMenu(wrapper)

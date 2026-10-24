@@ -2,7 +2,10 @@
   <div
     ref="rootRef"
     class="nb-user-menu"
-    :class="{ 'nb-user-menu--identity': showIdentity }"
+    :class="{
+      'nb-user-menu--identity': showIdentity,
+      'nb-user-menu--elevated': !!props.roleBadge,
+    }"
   >
     <slot name="trigger" :open="open" :toggle="toggle">
       <!-- Expanded rail: a labelled row, so the account lines up with the
@@ -33,6 +36,9 @@
           <span v-if="secondaryLine" class="nb-user-menu__identity-email">{{
             secondaryLine
           }}</span>
+          <span v-if="props.roleBadge" class="nb-user-menu__sr-only">
+            ({{ props.roleBadge }})</span
+          >
         </span>
       </button>
       <button
@@ -40,7 +46,11 @@
         type="button"
         class="nb-user-menu__avatar"
         :title="props.user.email"
-        :aria-label="t('userMenu.ACCOUNT_MENU')"
+        :aria-label="
+          props.roleBadge
+            ? `${t('userMenu.ACCOUNT_MENU')} (${props.roleBadge})`
+            : t('userMenu.ACCOUNT_MENU')
+        "
         aria-haspopup="menu"
         :aria-expanded="open"
         :disabled="disabled"
@@ -68,6 +78,10 @@
         >
           <p class="nb-user-menu__label">{{ t('userMenu.SIGNED_IN_AS') }}</p>
           <p class="nb-user-menu__email">{{ props.user.email }}</p>
+          <p v-if="props.roleBadge" class="nb-user-menu__role">
+            <NbIcon name="shield-star" :size="13" />
+            {{ props.roleBadge }}
+          </p>
 
           <template v-if="showAccountActions">
             <div class="nb-user-menu__divider" role="separator" />
@@ -292,6 +306,7 @@ const props = withDefaults(defineProps<IUserMenuProps>(), {
   placement: 'right-end',
   trigger: 'avatar',
   showTheme: false,
+  roleBadge: undefined,
   disabled: false,
 })
 
@@ -645,6 +660,41 @@ defineExpose({ open, toggle, close })
   color: var(--nb-c-text);
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+// Elevated powers: a ring in the warning colour around the avatar, with a gap
+// in the rail's own colour so it reads as a ring, not a thicker border.
+.nb-user-menu--elevated .nb-user-menu__avatar {
+  box-shadow:
+    0 0 0 2px var(--nb-shell-sidebar-bg, var(--nb-c-layer-1, #fff)),
+    0 0 0 4px var(--nb-c-warning, #f59e0b);
+}
+
+.nb-user-menu__role {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0 1rem 0.35rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--nb-c-text);
+  background: color-mix(in srgb, var(--nb-c-warning, #f59e0b) 16%, transparent);
+
+  :deep(svg) {
+    color: var(--nb-c-warning, #f59e0b);
+  }
+}
+
+.nb-user-menu__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .nb-user-menu__appearance {
