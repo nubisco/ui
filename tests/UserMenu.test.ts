@@ -3,6 +3,10 @@ import { mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import { createI18n } from 'vue-i18n'
 import UserMenu from '../src/components/UserMenu.vue'
+import {
+  configureTheme,
+  useTheme,
+} from '../src/composables/useTheme.composable'
 
 const i18n = createI18n({ legacy: false, locale: 'en', messages: { en: {} } })
 
@@ -24,6 +28,32 @@ function panel(): HTMLElement | null {
 }
 
 describe('UserMenu', () => {
+  it('offers no appearance section unless asked', async () => {
+    const wrapper = mountMenu()
+    await openMenu(wrapper)
+    expect(panel()?.querySelector('.nb-user-menu__appearance')).toBeNull()
+    wrapper.unmount()
+  })
+
+  it('sets the theme from the built-in appearance section', async () => {
+    configureTheme({
+      storageKey: 'test.user-menu.theme',
+      defaultTheme: 'system',
+    })
+    const wrapper = mountMenu({ showTheme: true })
+    await openMenu(wrapper)
+    const group = panel()?.querySelector('.nb-user-menu__appearance')
+    expect(group?.getAttribute('role')).toBe('group')
+    expect(group?.textContent).toContain('Appearance')
+    expect(group?.textContent).toContain('Match my system')
+    const dark = group?.querySelector<HTMLInputElement>('input[value="dark"]')
+    dark?.click()
+    await wrapper.vm.$nextTick()
+    expect(useTheme().theme.value).toBe('dark')
+    useTheme().setTheme('system')
+    wrapper.unmount()
+  })
+
   it('renders the avatar trigger with initials from the name', () => {
     const wrapper = mountMenu()
     expect(wrapper.find('.nb-user-menu__avatar').text()).toBe('J')
