@@ -1,3 +1,10 @@
+# [5.30.0](https://github.com/nubisco/ui/compare/v5.29.0...v5.30.0) (2026-10-24)
+
+
+### Features
+
+* **user-menu:** roleBadge marks a person signed in with elevated powers ([ad41c44](https://github.com/nubisco/ui/commit/ad41c44f139a6f6ed19738420a486f89b037fe05))
+
 # [5.29.0](https://github.com/nubisco/ui/compare/v5.28.0...v5.29.0) (2026-10-24)
 
 
