@@ -56,6 +56,21 @@ The default is `trigger="avatar"`, which is unchanged: a product that does not o
 
 Pass `accounts` when the product can enumerate the identities signed in on this browser: each one becomes a row, the current one is checked and inert, and the rest emit `switch`. Set `accountsUnknown` when that lookup failed, and the menu offers a generic **Switch account** action instead, so the identity provider can show its own chooser. Single-account products turn the whole section off with `:show-account-actions="false"`.
 
+## Appearance
+
+Theme is a personal setting, so it belongs in this menu in every product. Set `show-theme` and the menu adds an **Appearance** section (Light, Dark, Match my system) bound to [`useTheme()`](/composables/use-theme), between the account switcher and the product entries. Do not build a theme block in the default slot. A hand-rolled one drifts from the menu's layout, which is how one product ended up with its "Theme" label squeezed to a single letter.
+
+```ts
+// main.ts: namespace the stored preference once, at start-up.
+configureTheme({ storageKey: 'product.theme' })
+```
+
+```vue
+<NbUserMenu :user="user" trigger="identity" show-theme />
+```
+
+The labels translate under `userMenu.APPEARANCE`, `userMenu.THEME_LIGHT`, `userMenu.THEME_DARK` and `userMenu.THEME_SYSTEM`. English and Portuguese ship built in.
+
 ## Product entries
 
 The default slot sits above the Profile / Sign out group, behind its own divider. It receives `close`, so a product entry can dismiss the menu as it navigates.
@@ -174,6 +189,7 @@ On a phone (below 672px, or a touch phone held sideways) the rail is a drawer as
 | `brand`              | `'footer' \| 'none'`         | `'footer'`    | `'footer'` renders the non-interactive Nubisco Platform lockup; `'none'` renders nothing.              |
 | `placement`          | `'right-end' \| 'top-start'` | `'right-end'` | Where the panel opens relative to the trigger.                                                         |
 | `trigger`            | `'avatar' \| 'identity'`     | `'avatar'`    | `'identity'` follows the rail: a labelled row when expanded, the avatar alone when collapsed.          |
+| `showTheme`          | `boolean`                    | `false`       | Adds the built-in Appearance section bound to `useTheme()`. See [Appearance](#appearance).             |
 | `disabled`           | `boolean`                    | `false`       | Renders the trigger inert.                                                                             |
 
 ## Events

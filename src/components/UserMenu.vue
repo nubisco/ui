@@ -131,6 +131,29 @@
             </button>
           </template>
 
+          <!-- Appearance is a personal setting, so it lives here in every
+               product. Built in, so no product hand-rolls its own block. -->
+          <template v-if="props.showTheme">
+            <div class="nb-user-menu__divider" role="separator" />
+            <div
+              class="nb-user-menu__appearance"
+              role="group"
+              :aria-labelledby="appearanceId"
+            >
+              <p :id="appearanceId" class="nb-user-menu__appearance-title">
+                {{ t('userMenu.APPEARANCE') }}
+              </p>
+              <NbRadio
+                :name="appearanceId"
+                :options="themeOptions"
+                :model-value="themeController.theme.value"
+                @update:model-value="
+                  (value: unknown) => themeController.setTheme(value as TTheme)
+                "
+              />
+            </div>
+          </template>
+
           <template v-if="$slots.default">
             <div class="nb-user-menu__divider" role="separator" />
             <slot :close="close" />
@@ -187,12 +210,15 @@ import {
   onMounted,
   ref,
   watch,
+  useId,
   type Ref,
 } from 'vue'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 import { useI18n } from 'vue-i18n'
 import NbIcon from './Icon.vue'
 import NbNubiscoPlatformMark from './NubiscoPlatformMark.vue'
+import NbRadio from './Radio.vue'
+import { useTheme, type TTheme } from '@/composables/useTheme.composable'
 import type { IUserMenuAccount, IUserMenuProps } from './UserMenu.d'
 import { initialsOf } from '@/utils/initials.helper'
 
@@ -210,6 +236,10 @@ const BUILT_IN: Record<string, Record<string, string>> = {
     REMOVE_ACCOUNT: 'Sign this account out of this browser',
     PROFILE: 'Profile',
     SIGN_OUT: 'Sign out',
+    APPEARANCE: 'Appearance',
+    THEME_LIGHT: 'Light',
+    THEME_DARK: 'Dark',
+    THEME_SYSTEM: 'Match my system',
     poweredBy: 'Powered by Nubisco Platform',
   },
   pt: {
@@ -220,6 +250,10 @@ const BUILT_IN: Record<string, Record<string, string>> = {
     REMOVE_ACCOUNT: 'Terminar a sessão desta conta neste browser',
     PROFILE: 'Perfil',
     SIGN_OUT: 'Terminar sessão',
+    APPEARANCE: 'Aspeto',
+    THEME_LIGHT: 'Claro',
+    THEME_DARK: 'Escuro',
+    THEME_SYSTEM: 'Seguir o sistema',
     poweredBy: 'Fornecido pela Nubisco Platform',
   },
 }
@@ -232,6 +266,14 @@ function t(fullKey: string): string {
   const lang = String(locale.value).toLowerCase().split('-')[0]
   return BUILT_IN[lang]?.[key] ?? BUILT_IN.en[key] ?? fullKey
 }
+
+const themeController = useTheme()
+const themeOptions = computed(() => [
+  { label: t('userMenu.THEME_LIGHT'), value: 'light' },
+  { label: t('userMenu.THEME_DARK'), value: 'dark' },
+  { label: t('userMenu.THEME_SYSTEM'), value: 'system' },
+])
+const appearanceId = `nb-user-menu-appearance-${useId()}`
 
 const props = withDefaults(defineProps<IUserMenuProps>(), {
   accounts: undefined,
@@ -249,6 +291,7 @@ const props = withDefaults(defineProps<IUserMenuProps>(), {
   brand: 'footer',
   placement: 'right-end',
   trigger: 'avatar',
+  showTheme: false,
   disabled: false,
 })
 
@@ -602,6 +645,19 @@ defineExpose({ open, toggle, close })
   color: var(--nb-c-text);
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.nb-user-menu__appearance {
+  padding: 0.25rem 1rem 0.35rem;
+}
+
+.nb-user-menu__appearance-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--nb-c-text-subtle);
 }
 
 .nb-user-menu__divider {

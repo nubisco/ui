@@ -72,6 +72,14 @@ interface IUserMenuProps {
    * the person's name when expanded and only the avatar when collapsed.
    */
   trigger?: TUserMenuTrigger
+  /**
+   * Show the built-in Appearance section (Light, Dark, Match my system), bound
+   * to `useTheme()`. Theme is a personal setting, so every product offers it
+   * here rather than building its own block in the default slot. Call
+   * `configureTheme({ storageKey })` at start-up to namespace the stored value.
+   * @default false
+   */
+  showTheme?: boolean
   disabled?: boolean
 }
 
