@@ -926,9 +926,16 @@ right:
 | `current: true`, or the last one by default     | text with `aria-current="page"`, never a link, whatever it carries |
 
 The links and buttons are [`NbButton variant="link"`](/components/button/button#link)
-in the trail's own colour and weight: they underline on hover and on keyboard
-focus, show the focus ring, and Enter and Space activate them. Activating any of
-them emits `select` with the item, its index and the click.
+in the trail's own weight: they underline on hover and on keyboard focus, show
+the focus ring, and Enter and Space activate them. Activating any of them emits
+`select` with the item, its index and the click.
+
+The current crumb is the one drawn at full strength. Every crumb above it, linked
+or not, steps back to the subtle text colour, so the eye lands on the page you are
+on and the rest reads as the way there. Hovering or focusing a parent lifts it to
+full strength along with its underline. The subtle tier clears WCAG AA on every
+layer and its hover state in both themes, so a muted crumb stays readable on any
+surface the trail sits on. A slotted trail keeps the colours you give it.
 
 <preview dir="col">
   <NbBreadcrumbs

@@ -175,6 +175,8 @@ describe('Breadcrumbs from items', () => {
     })
     expect(wrapper.find('a, button').exists()).toBe(false)
     expect(wrapper.text()).toContain('Section')
+    // Still a parent, so it is drawn muted like the linked ones.
+    expect(wrapper.find('.nb-breadcrumbs__parent').text()).toBe('Section')
   })
 
   it('never makes the current crumb interactive, even with a link', () => {
@@ -209,7 +211,7 @@ describe('Breadcrumbs from items', () => {
 })
 
 describe('Breadcrumbs item styles', () => {
-  it('never wraps a crumb, linked or not', async () => {
+  const compiledCss = async (): Promise<string> => {
     const { readFileSync } = await import('node:fs')
     const { join } = await import('node:path')
     const { pathToFileURL } = await import('node:url')
@@ -217,12 +219,64 @@ describe('Breadcrumbs item styles', () => {
     const { compileString } = await import('sass-embedded')
     const path = join(__dirname, '../src/components/Breadcrumbs.vue')
     const { descriptor } = parse(readFileSync(path, 'utf8'))
-    const css = descriptor.styles
+    return descriptor.styles
       .map((s) => compileString(s.content, { url: pathToFileURL(path) }).css)
       .join('\n')
+  }
+
+  it('never wraps a crumb, linked or not', async () => {
+    const css = await compiledCss()
     expect(css).toMatch(
       /\.nb-breadcrumbs__item > \.nb-breadcrumbs__link\s*\{[^}]*white-space:\s*nowrap/,
     )
     expect(css).toMatch(/\.nb-breadcrumbs__item\s*\{[^}]*white-space:\s*nowrap/)
+  })
+
+  it('mutes the parents and keeps the current crumb at full strength', async () => {
+    const css = await compiledCss()
+    expect(css).toMatch(
+      /\.nb-breadcrumbs__current\s*\{[^}]*color:\s*var\(--nb-c-text\)/,
+    )
+    expect(css).toMatch(
+      /\.nb-breadcrumbs__parent\s*\{[^}]*color:\s*var\(--nb-c-text-subtle\)/,
+    )
+    expect(css).toMatch(
+      /\.nb-breadcrumbs__link\s*\{[^}]*--nb-button-link-color:\s*var\(--nb-c-text-subtle\)/,
+    )
+  })
+
+  it('lifts a parent link to full strength on hover and keyboard focus', async () => {
+    const css = await compiledCss()
+    const lifted = css.match(
+      /\.nb-breadcrumbs__link:hover:not\(:disabled\),\s*\.nb-breadcrumbs__link:focus-visible\s*\{([^}]*)\}/,
+    )
+    expect(lifted?.[1]).toMatch(/--nb-button-link-color:\s*var\(--nb-c-text\)/)
+  })
+})
+
+describe('Breadcrumbs parent contrast', () => {
+  it('draws a muted parent at AA on every layer and its hover, in both themes', async () => {
+    const { loadThemeResolvers, ratio } =
+      await import('../scripts/lib/layerTokens.mjs')
+    const resolvers = loadThemeResolvers()
+    for (const theme of ['light', 'dark'] as const) {
+      const get = resolvers[theme]
+      const muted = get('--nb-c-text-subtle') as string
+      const text = get('--nb-c-text') as string
+      // Muted has to look muted: the same colour as the current crumb would
+      // make the change invisible.
+      expect(muted, theme).not.toBe(text)
+      for (const level of [0, 1, 2, 3]) {
+        for (const ground of [
+          `--nb-c-layer-${level}`,
+          `--nb-c-layer-hover-${level}`,
+        ]) {
+          expect(
+            ratio(muted, get(ground) as string),
+            `${theme} ${ground}`,
+          ).toBeGreaterThanOrEqual(4.5)
+        }
+      }
+    }
   })
 })
