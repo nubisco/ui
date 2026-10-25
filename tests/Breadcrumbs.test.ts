@@ -207,3 +207,22 @@ describe('Breadcrumbs from items', () => {
     expect(wrapper.find('a').classes()).toContain('nb-button--link')
   })
 })
+
+describe('Breadcrumbs item styles', () => {
+  it('never wraps a crumb, linked or not', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { join } = await import('node:path')
+    const { pathToFileURL } = await import('node:url')
+    const { parse } = await import('vue/compiler-sfc')
+    const { compileString } = await import('sass-embedded')
+    const path = join(__dirname, '../src/components/Breadcrumbs.vue')
+    const { descriptor } = parse(readFileSync(path, 'utf8'))
+    const css = descriptor.styles
+      .map((s) => compileString(s.content, { url: pathToFileURL(path) }).css)
+      .join('\n')
+    expect(css).toMatch(
+      /\.nb-breadcrumbs__item > \.nb-breadcrumbs__link\s*\{[^}]*white-space:\s*nowrap/,
+    )
+    expect(css).toMatch(/\.nb-breadcrumbs__item\s*\{[^}]*white-space:\s*nowrap/)
+  })
+})
