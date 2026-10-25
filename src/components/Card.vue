@@ -103,7 +103,10 @@ const props = withDefaults(defineProps<ICardProps>(), {
   disabled: false,
 })
 
-const emit = defineEmits<{ select: [] }>()
+const emit = defineEmits<{
+  /** Activated by a click, Enter or Space. The event carries the modifier keys. */
+  select: [event: MouseEvent | KeyboardEvent]
+}>()
 const slots = useSlots()
 
 // `image` present at all, even empty, asks for the media box: a list of pages
@@ -145,7 +148,7 @@ const mediaLayerClass = computed(() =>
 // Link, button or div, picked from what the card does. See Card.link.ts.
 const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
   props,
-  () => emit('select'),
+  (event) => emit('select', event),
 )
 </script>
 

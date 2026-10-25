@@ -30,7 +30,10 @@ export interface ISurfaceLinkProps {
  *
  * Must be called during `setup()`.
  */
-export function useSurfaceLink(props: ISurfaceLinkProps, onSelect: () => void) {
+export function useSurfaceLink(
+  props: ISurfaceLinkProps,
+  onSelect: (event: MouseEvent | KeyboardEvent) => void,
+) {
   const routerLink = useRouterLink()
 
   const isRouterLink = computed(
@@ -69,15 +72,18 @@ export function useSurfaceLink(props: ISurfaceLinkProps, onSelect: () => void) {
 
   const acts = () => !!props.clickable && !props.disabled && !isLink.value
 
-  function onClick() {
-    if (acts()) onSelect()
+  // The event goes out with the selection, so a grid can read the modifier
+  // keys (shift for a range, cmd or ctrl to add one) from a click and from
+  // Enter or Space alike.
+  function onClick(event: MouseEvent) {
+    if (acts()) onSelect(event)
   }
 
   function onKeydown(event: KeyboardEvent) {
     if (!acts()) return
     if (event.key !== 'Enter' && event.key !== ' ') return
     event.preventDefault()
-    onSelect()
+    onSelect(event)
   }
 
   return { tag, attrs, isLink, isInteractive, onClick, onKeydown }

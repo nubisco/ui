@@ -91,14 +91,17 @@ const props = withDefaults(defineProps<IStatProps>(), {
   disabled: false,
 })
 
-const emit = defineEmits<{ select: [] }>()
+const emit = defineEmits<{
+  /** Activated by a click, Enter or Space. The event carries the modifier keys. */
+  select: [event: MouseEvent | KeyboardEvent]
+}>()
 
 // A tile is a surface, so it takes part in the layer system as NbCard does.
 const { layerProps } = useSurfaceLayer()
 
 const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
   props,
-  () => emit('select'),
+  (event) => emit('select', event),
 )
 
 // The placeholder stands where the figure will be, at the figure's own height,

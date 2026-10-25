@@ -236,9 +236,9 @@ The body takes the leftover height, so a row of cards with different amounts of 
 
 ## NbCard events
 
-| Event    | Payload | Description                                          |
-| -------- | ------- | ---------------------------------------------------- |
-| `select` | —       | The card was activated. Only fires when `clickable`. |
+| Event    | Payload                       | Description                                                                                                                                                      |
+| -------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `select` | `MouseEvent \| KeyboardEvent` | The card was activated by a click, Enter or Space. Only fires when `clickable`. The event carries the modifier keys, for a grid that selects a range with shift. |
 
 ## NbCard slots
 

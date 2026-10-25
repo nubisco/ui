@@ -1,5 +1,21 @@
 # Upgrading
 
+## To 5.35.0 from 5.34.0
+
+New, and nothing changes unless you use it:
+
+- **`select` on a clickable `NbCard` or `NbStat` carries the event** that
+  activated it, a `MouseEvent` for a click and a `KeyboardEvent` for Enter or
+  Space. A grid of cards can read `shiftKey`, `metaKey` and `ctrlKey` from it to
+  select a range or add one, from the mouse and the keyboard alike. A listener
+  that takes no argument is unaffected.
+
+One fix:
+
+**A linked crumb in `NbBreadcrumbs` `items` stays on one line.** The link
+variant lets its text wrap, which in a tight topbar broke a crumb over two
+lines. No crumb wraps now.
+
 ## To 5.34.0 from 5.33.0
 
 New, and nothing changes unless you use it:
