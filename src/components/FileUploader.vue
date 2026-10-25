@@ -251,6 +251,8 @@ defineExpose({ files, setFileStatus })
 
 <style scoped lang="scss">
 @use '../styles/logic/radius' as radius;
+// The drop label is text on the page, not on a fill: see logic/_ink.scss.
+@use '../styles/logic/ink' as ink;
 
 .nb-file-uploader {
   display: flex;
@@ -299,35 +301,35 @@ defineExpose({ files, setFileStatus })
       background: color-mix(in srgb, var(--nb-c-primary) 6%, transparent);
       border-color: color-mix(in srgb, var(--nb-c-primary) 60%, transparent);
       .nb-file-uploader__drop-label {
-        color: var(--nb-c-primary);
+        color: ink.ink(primary);
       }
     }
     &--secondary {
       background: color-mix(in srgb, var(--nb-c-secondary) 6%, transparent);
       border-color: color-mix(in srgb, var(--nb-c-secondary) 60%, transparent);
       .nb-file-uploader__drop-label {
-        color: var(--nb-c-secondary);
+        color: ink.ink(secondary);
       }
     }
     &--danger {
       background: color-mix(in srgb, var(--nb-c-danger) 6%, transparent);
       border-color: color-mix(in srgb, var(--nb-c-danger) 60%, transparent);
       .nb-file-uploader__drop-label {
-        color: var(--nb-c-danger);
+        color: ink.ink(danger);
       }
     }
     &--success {
       background: color-mix(in srgb, var(--nb-c-success) 6%, transparent);
       border-color: color-mix(in srgb, var(--nb-c-success) 60%, transparent);
       .nb-file-uploader__drop-label {
-        color: var(--nb-c-success);
+        color: ink.ink(success);
       }
     }
     &--warning {
       background: color-mix(in srgb, var(--nb-c-warning) 6%, transparent);
       border-color: color-mix(in srgb, var(--nb-c-warning) 60%, transparent);
       .nb-file-uploader__drop-label {
-        color: var(--nb-c-warning);
+        color: ink.ink(warning);
       }
     }
   }

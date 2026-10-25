@@ -181,6 +181,7 @@ onMounted(() => {
 @use '../styles/logic/radius' as radius;
 @use '../styles/variables/breakpoints' as bp;
 @use '../styles/logic/touch' as touch;
+@use '../styles/logic/ink' as ink;
 
 .nb-button {
   display: inline-flex;
@@ -477,83 +478,37 @@ onMounted(() => {
     border: 1px solid currentColor;
   }
 
+  /*
+   * Outlined text and border are drawn as INK, straight onto whatever surface
+   * the button sits on, so they read `ink.ink()` rather than the fill colour.
+   * In light mode that is the same colour exactly. In dark mode the fills are
+   * picked to carry their own foreground, not to be read against a dark layer,
+   * and the outlined secondary measured as low as 1.21:1 there. See
+   * `styles/logic/_ink.scss`. The hover and pressed washes keep the fill
+   * colour: they are a tint of the variant, not text.
+   */
   &--outlined {
-    &.nb-button--primary {
-      color: var(--nb-c-primary);
-      &:hover:not(:disabled) {
-        color: var(--nb-c-primary);
-        background: color-mix(in srgb, var(--nb-c-primary) 8%, transparent);
-      }
-      &:active:not(:disabled) {
-        background: color-mix(in srgb, var(--nb-c-primary) 14%, transparent);
-      }
-      &:focus-visible {
-        outline-color: var(--nb-c-primary);
-      }
-    }
-    &.nb-button--secondary {
-      color: var(--nb-c-secondary);
-      &:hover:not(:disabled) {
-        color: var(--nb-c-secondary);
-        background: color-mix(in srgb, var(--nb-c-secondary) 8%, transparent);
-      }
-      &:active:not(:disabled) {
-        background: color-mix(in srgb, var(--nb-c-secondary) 14%, transparent);
-      }
-      &:focus-visible {
-        outline-color: var(--nb-c-secondary);
-      }
-    }
-    &.nb-button--danger {
-      color: var(--nb-c-danger);
-      &:hover:not(:disabled) {
-        color: var(--nb-c-danger);
-        background: color-mix(in srgb, var(--nb-c-danger) 8%, transparent);
-      }
-      &:active:not(:disabled) {
-        background: color-mix(in srgb, var(--nb-c-danger) 14%, transparent);
-      }
-      &:focus-visible {
-        outline-color: var(--nb-c-danger);
-      }
-    }
-    &.nb-button--warning {
-      color: var(--nb-c-warning);
-      &:hover:not(:disabled) {
-        color: var(--nb-c-warning);
-        background: color-mix(in srgb, var(--nb-c-warning) 8%, transparent);
-      }
-      &:active:not(:disabled) {
-        background: color-mix(in srgb, var(--nb-c-warning) 14%, transparent);
-      }
-      &:focus-visible {
-        outline-color: var(--nb-c-warning);
-      }
-    }
-    &.nb-button--success {
-      color: var(--nb-c-success);
-      &:hover:not(:disabled) {
-        color: var(--nb-c-success);
-        background: color-mix(in srgb, var(--nb-c-success) 8%, transparent);
-      }
-      &:active:not(:disabled) {
-        background: color-mix(in srgb, var(--nb-c-success) 14%, transparent);
-      }
-      &:focus-visible {
-        outline-color: var(--nb-c-success);
-      }
-    }
-    &.nb-button--info {
-      color: var(--nb-c-info);
-      &:hover:not(:disabled) {
-        color: var(--nb-c-info);
-        background: color-mix(in srgb, var(--nb-c-info) 8%, transparent);
-      }
-      &:active:not(:disabled) {
-        background: color-mix(in srgb, var(--nb-c-info) 14%, transparent);
-      }
-      &:focus-visible {
-        outline-color: var(--nb-c-info);
+    @each $variant in primary, secondary, danger, warning, success, info {
+      &.nb-button--#{$variant} {
+        color: ink.ink($variant);
+        &:hover:not(:disabled) {
+          color: ink.ink($variant);
+          background: color-mix(
+            in srgb,
+            var(--nb-c-#{$variant}) 8%,
+            transparent
+          );
+        }
+        &:active:not(:disabled) {
+          background: color-mix(
+            in srgb,
+            var(--nb-c-#{$variant}) 14%,
+            transparent
+          );
+        }
+        &:focus-visible {
+          outline-color: ink.ink($variant);
+        }
       }
     }
   }

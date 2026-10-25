@@ -1006,6 +1006,43 @@ These are the tokens you override to rebrand the library. Each semantic token ha
 
 Each token above also has `-a11y` (auto-computed contrast text color), `-hover`, `-hover-a11y`, `-active`, `-active-a11y` variants.
 
+#### Ink: a semantic colour drawn on a surface
+
+These colours are picked as fills, with their `-a11y` text on top. Drawn
+straight onto a layer instead (an outlined button's label and border, a
+drop-zone label) they are a different pair, and in dark mode several of them
+are too dark to read there. So the dark theme declares
+`--nb-c-<variant>-ink-lift`, how far each one moves toward white when used as
+ink:
+
+| Token                       | Dark | Light      |
+| --------------------------- | ---- | ---------- |
+| `--nb-c-primary-ink-lift`   | 48%  | not set, 0 |
+| `--nb-c-secondary-ink-lift` | 56%  | not set, 0 |
+| `--nb-c-success-ink-lift`   | 21%  | not set, 0 |
+| `--nb-c-info-ink-lift`      | 43%  | not set, 0 |
+| `--nb-c-warning-ink-lift`   | 6%   | not set, 0 |
+| `--nb-c-danger-ink-lift`    | 46%  | not set, 0 |
+
+Each dark value is the smallest that clears WCAG AA on all four dark layers,
+plus a small margin, and `tests/inkContrast.test.ts` holds it there. The mix is
+resolved on the element that paints, so a product that re-points
+`--nb-c-primary` gets its own primary lifted. A named theme that sets its own
+dark colour for a variant resets that variant's lift to `0%`, because it picked
+the colour for contrast already. Pass `primary-ink-lift` (or any variant's) in
+the theme's `$dark` map to choose a lift yourself.
+
+A component that draws a semantic colour as text reads it through the Sass
+helper rather than the bare token:
+
+```scss
+@use '@nubisco/ui/styles/logic/ink' as ink;
+
+.my-label {
+  color: ink.ink(danger);
+}
+```
+
 ### Layers
 
 | Token                       | Description                       |

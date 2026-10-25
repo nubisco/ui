@@ -885,6 +885,44 @@
     --nb-c-secondary-hover: #{colors.get-color('nouveau-gray', 650)};
     --nb-c-secondary-active: #{colors.get-color('nouveau-gray', 600)};
 
+    // Readable foregrounds for the fills this block moves. A colour and its
+    // `-a11y` travel together (the rule `_theme-api.scss` enforces for named
+    // themes), and here they had come apart: the dark primary hover and
+    // active, info and danger kept the white chosen for their LIGHT step and
+    // measured 3.01 to 3.82:1. color-contrast() picks whichever of white and
+    // near-black reads better, exactly as the light ramp does.
+    --nb-c-primary-hover-a11y: #{colors.color-contrast(
+        colors.get-color('grape-hyacinth', 350)
+      )};
+    --nb-c-primary-active-a11y: #{colors.color-contrast(
+        colors.get-color('grape-hyacinth', 300)
+      )};
+    --nb-c-success-a11y: #{colors.color-contrast(
+        colors.get-color('emerald-reflection', 500)
+      )};
+    --nb-c-info-a11y: #{colors.color-contrast(
+        colors.get-color('the-blues-brothers', 400)
+      )};
+    --nb-c-warning-a11y: #{colors.color-contrast(
+        colors.get-color('phoenix-flames', 400)
+      )};
+    --nb-c-danger-a11y: #{colors.color-contrast(
+        colors.get-color('chicken-comb', 400)
+      )};
+
+    // Ink lift: how far each semantic colour moves toward white when it is
+    // drawn as text or an outline straight onto a dark layer (an outlined
+    // button, a drop-zone label). See `logic/_ink.scss`. Each value is the
+    // smallest whole lift that clears WCAG AA on all four dark layers and on
+    // the 14% pressed wash, plus two points of margin. The light theme
+    // declares none, so ink there is the colour itself.
+    --nb-c-primary-ink-lift: 48%;
+    --nb-c-secondary-ink-lift: 56%;
+    --nb-c-success-ink-lift: 21%;
+    --nb-c-info-ink-lift: 43%;
+    --nb-c-warning-ink-lift: 6%;
+    --nb-c-danger-ink-lift: 46%;
+
     // Component states
     --nb-c-component-inactive: #{colors.get-color('nouveau-gray', 500)};
     --nb-c-component-active: #{colors.get-color('nouveau-gray', 400)};
