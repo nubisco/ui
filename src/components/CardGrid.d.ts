@@ -36,6 +36,35 @@ export interface ICardProps {
   /** Icon name, rendered in the card's header. */
   icon?: TIconSource
   /**
+   * `'vertical'` (default) stacks the media or icon above the title.
+   * `'horizontal'` puts it in a column on the left, with the title, text and
+   * footer stacked beside it: a launcher of apps (logo left, name and one line
+   * right), or a list of pages with a thumbnail each. It stays horizontal on a
+   * phone, with a narrower thumbnail.
+   */
+  orientation?: 'vertical' | 'horizontal'
+  /**
+   * Image URL for the card's media: a cover across the top of a vertical card,
+   * a thumbnail beside a horizontal one. Passing the prop at all reserves the
+   * box, so an empty string or `null` draws a placeholder in the same shape,
+   * and so does an image that fails to load. Leave it undefined for a card
+   * without media. Use the `media` slot for anything other than one image.
+   */
+  image?: string | null
+  /**
+   * Alternative text for `image`. Empty by default, which marks the image as
+   * decorative: on a card the title usually says everything the picture does.
+   */
+  imageAlt?: string
+  /**
+   * Shape of the media box, as a CSS `aspect-ratio` (`'16 / 9'`, `'1'`,
+   * `'4 / 3'`). Defaults to 16 / 9. Fixed rather than taken from the image, so
+   * a grid of cards lines up before any image has loaded.
+   */
+  imageRatio?: string
+  /** `'cover'` (default) crops the image to fill the box, `'contain'` shows it whole. */
+  imageFit?: 'cover' | 'contain'
+  /**
    * Renders the whole card as a link. The card becomes an `<a>`, so it gets a
    * browser's link affordances for free: middle click, open in new tab, and a
    * URL in the status bar.
