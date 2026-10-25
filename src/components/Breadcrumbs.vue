@@ -14,23 +14,58 @@
 
     <!-- Separator between brand and crumbs (only when both exist) -->
     <NbIcon
-      v-if="(title || subtitle) && hasDefaultSlot"
+      v-if="(title || subtitle) && hasCrumbs"
       name="caret-right"
       size="sm"
       class="nb-breadcrumbs__sep"
     />
 
-    <!-- Crumb items injected via default slot -->
-    <span v-if="hasDefaultSlot" class="nb-breadcrumbs__crumbs">
-      <slot />
+    <!-- Crumbs: from `items`, or whatever the default slot renders -->
+    <span v-if="hasCrumbs" class="nb-breadcrumbs__crumbs">
+      <template v-if="items?.length">
+        <span
+          v-for="(item, index) in items"
+          :key="index"
+          class="nb-breadcrumbs__item"
+        >
+          <span
+            v-if="isCurrent(index)"
+            class="nb-breadcrumbs__current"
+            aria-current="page"
+            >{{ item.label }}</span
+          >
+          <NbButton
+            v-else-if="isInteractive(item)"
+            class="nb-breadcrumbs__link"
+            variant="link"
+            :to="item.to"
+            :href="item.href"
+            :target="item.target"
+            @click="onActivate(item, index, $event)"
+            >{{ item.label }}</NbButton
+          >
+          <span v-else>{{ item.label }}</span>
+        </span>
+      </template>
+      <slot v-else />
     </span>
   </nav>
 </template>
 
 <script setup lang="ts">
 import NbIcon from './Icon.vue'
-import { useSlots, computed, Comment, Fragment, Text, type VNode } from 'vue'
+import NbButton from './Button.vue'
+import {
+  useSlots,
+  computed,
+  getCurrentInstance,
+  Comment,
+  Fragment,
+  Text,
+  type VNode,
+} from 'vue'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
+import type { IBreadcrumbItem } from './Breadcrumbs.d'
 
 const props = withDefaults(
   defineProps<{
@@ -45,9 +80,51 @@ const props = withDefaults(
      * renders the full trail at every width.
      */
     collapse?: 'none' | 'phone'
+    /**
+     * The crumbs as data. Each one renders as a real link or button (see
+     * `IBreadcrumbItem`), the current one as text with `aria-current="page"`.
+     * When set, it replaces the default slot.
+     */
+    items?: IBreadcrumbItem[]
   }>(),
-  { title: undefined, subtitle: undefined, collapse: 'none' },
+  {
+    title: undefined,
+    subtitle: undefined,
+    collapse: 'none',
+    items: undefined,
+  },
 )
+
+const emit = defineEmits<{
+  /** A crumb was activated: the item, its index, and the click. */
+  select: [item: IBreadcrumbItem, index: number, event: MouseEvent]
+}>()
+
+// A `select` listener makes every crumb without a link a button, so a view
+// can route all of them through one handler instead of a callback per item.
+const instance = getCurrentInstance()
+const listensForSelect = computed(() => !!instance?.vnode.props?.onSelect)
+
+const currentIndex = computed(() => {
+  const list = props.items ?? []
+  const marked = list.findIndex((item) => item.current)
+  return marked === -1 ? list.length - 1 : marked
+})
+
+function isCurrent(index: number): boolean {
+  return index === currentIndex.value
+}
+
+function isInteractive(item: IBreadcrumbItem): boolean {
+  return (
+    item.to != null || !!item.href || !!item.onClick || listensForSelect.value
+  )
+}
+
+function onActivate(item: IBreadcrumbItem, index: number, event: MouseEvent) {
+  item.onClick?.(event)
+  emit('select', item, index, event)
+}
 
 const slots = useSlots()
 
@@ -71,12 +148,13 @@ function rendersContent(nodes: VNode[]): boolean {
 }
 
 const hasDefaultSlot = computed(() => rendersContent(slots.default?.() ?? []))
+const hasCrumbs = computed(() => !!props.items?.length || hasDefaultSlot.value)
 
 const { phone } = usePhoneLayout()
 
 // Only with a crumb to show: a trail that is all brand keeps its brand.
 const collapsed = computed(
-  () => props.collapse === 'phone' && phone.value && hasDefaultSlot.value,
+  () => props.collapse === 'phone' && phone.value && hasCrumbs.value,
 )
 </script>
 
@@ -131,6 +209,13 @@ const collapsed = computed(
   margin-inline-end: 0.35rem;
   color: var(--nb-c-text-subtle);
   font-weight: 400;
+}
+
+/* A linked crumb reads as the trail around it, not as a coloured link: same
+ * colour, same weight, and the link variant's underline on hover and focus is
+ * what says it can be followed. The current crumb stays plain text. */
+.nb-breadcrumbs__link {
+  --nb-button-link-color: currentColor;
 }
 
 // Phone, opted in: the last crumb alone, shrinking into an ellipsis rather

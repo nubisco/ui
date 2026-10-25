@@ -1,5 +1,34 @@
 # Upgrading
 
+## To 5.34.0 from 5.33.0
+
+New, and nothing changes unless you use it:
+
+- **`NbButton variant="link"`**: a button that reads as a text link. No fill,
+  no box, the font of the line it sits in, an underline on hover and focus, and
+  the primary drawn as ink, which clears AA on every layer in both themes. It
+  is a `<button>`, `<a>` or `<RouterLink>` like any other variant. See
+  [Link](/components/button/button#link).
+- **`NbBreadcrumbs` `items`**: the trail as data. A crumb with `to` renders a
+  `<RouterLink>`, with `href` an `<a>`, with `onClick` (or with a `@select`
+  listener on the trail) a `<button>`. The current crumb, the last one unless
+  another says `current: true`, is text with `aria-current="page"`. The trail
+  emits `select` with the item, its index and the click. The default slot is
+  unchanged. See [Crumbs as data](/patterns/app-frame#crumbs-as-data-items).
+
+One fix, and it changes what you see:
+
+**A long `NbShellPanel` title is cut with an ellipsis.** It ran under the size
+buttons, because nothing in the header would shrink except the buttons. The
+title now gives way, its full text is in a `title` attribute, and the size
+buttons (or your `controls` slot) keep their width.
+
+**Check this if you patched the header yourself** (`:deep(.nb-shell-panel__title)`
+with `overflow` and `text-overflow`, or `flex-shrink` on
+`.nb-shell-panel__header-left` or `__header-right`). It is no longer needed:
+remove it. The library's left side is `flex: 0 1 auto` where such a patch often
+set `flex: 1 1 auto`, so a toolbar in the header stays centred.
+
 ## To 5.33.0 from 5.32.1
 
 New, and nothing changes unless you use it:
