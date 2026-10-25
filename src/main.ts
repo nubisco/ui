@@ -315,6 +315,10 @@ export type { IProgressBarProps } from './components/ProgressBar.d'
 // between them in docs/components/spinner.md.
 export { default as NbSpinner } from './components/Spinner.vue'
 export type { ISpinnerProps } from './components/Spinner.d'
+export { default as NbStat } from './components/Stat.vue'
+export type { IStatProps, TStatStatus, TStatTrend } from './components/Stat.d'
+export { default as NbSuggestionList } from './components/SuggestionList.vue'
+export type { ISuggestionListProps } from './components/SuggestionList.d'
 export {
   ESpinnerSize,
   ESpinnerOverlay,

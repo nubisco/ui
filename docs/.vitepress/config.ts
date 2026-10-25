@@ -383,7 +383,12 @@ export default withMermaid(
                   { text: 'Skeleton', link: '/components/skeleton' },
                   { text: 'Slider', link: '/components/slider' },
                   { text: 'Spinner', link: '/components/spinner' },
+                  { text: 'Stat', link: '/components/stat' },
                   { text: 'Stepper', link: '/components/stepper' },
+                  {
+                    text: 'Suggestion List',
+                    link: '/components/suggestion-list',
+                  },
                   { text: 'Switch', link: '/components/switch' },
                   {
                     text: 'Table of Contents',

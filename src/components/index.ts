@@ -78,6 +78,8 @@ import NbSlider from './Slider.vue'
 import NbStepper from './Stepper.vue'
 import NbStepperStep from './StepperStep.vue'
 import NbSpinner from './Spinner.vue'
+import NbStat from './Stat.vue'
+import NbSuggestionList from './SuggestionList.vue'
 import NbInlineEdit from './InlineEdit.vue'
 import NbInlineLoading from './InlineLoading.vue'
 import NbSkeleton from './Skeleton.vue'
@@ -180,6 +182,8 @@ const components = {
   NbStepper,
   NbStepperStep,
   NbSpinner,
+  NbStat,
+  NbSuggestionList,
   NbInlineEdit,
   NbInlineLoading,
   NbSkeleton,
