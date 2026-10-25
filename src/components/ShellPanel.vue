@@ -10,7 +10,9 @@
     <!-- ═══ HEADER ═══ -->
     <div class="nb-shell-panel__header">
       <div class="nb-shell-panel__header-left">
-        <span v-if="title" class="nb-shell-panel__title">{{ title }}</span>
+        <span v-if="title" class="nb-shell-panel__title" :title="title">{{
+          title
+        }}</span>
         <slot name="title" />
       </div>
 
@@ -258,9 +260,16 @@ defineExpose({ setSize })
   gap: 8px;
 }
 
+// The title gives way, the size buttons do not. A long title (a field
+// group named after a long label, say) ran under the buttons, because nothing
+// in the row was allowed to shrink except the buttons themselves. The left
+// side now shrinks from its natural width and cuts the title with an
+// ellipsis, the full text stays in the title attribute, and the controls keep
+// their size.
 .nb-shell-panel__header-left {
   display: flex;
   align-items: center;
+  flex: 0 1 auto;
   gap: 6px;
   min-width: 0;
 }
@@ -275,10 +284,14 @@ defineExpose({ setSize })
 .nb-shell-panel__header-right {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   gap: 2px;
 }
 
 .nb-shell-panel__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 11px;
   font-weight: 500;
   color: var(--nb-c-text-muted);
@@ -292,6 +305,7 @@ defineExpose({ setSize })
 }
 
 .nb-shell-panel__size-btn {
+  flex-shrink: 0;
   width: 22px;
   height: 22px;
   border: none;
