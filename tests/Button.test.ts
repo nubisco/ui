@@ -8,6 +8,11 @@ import {
   withDirectives,
   type Directive,
 } from 'vue'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { parse } from 'vue/compiler-sfc'
+import { compileString } from 'sass-embedded'
 import Button from '../src/components/Button.vue'
 import tooltipDirective from '@/directives/ToolTip.directive'
 
@@ -213,6 +218,108 @@ describe('variant class', () => {
     expect(
       mount(Button, { props: { variant: 'primary' } }).classes(),
     ).toContain('nb-button--primary')
+  })
+})
+
+/**
+ * `variant="link"` reads as a text link: no fill, no box, the font of the
+ * line it sits in, an underline on hover and focus. It is still the same
+ * element choice as every other button (button, anchor, RouterLink), so it
+ * keeps the keyboard and the disabled state.
+ */
+describe('link variant', () => {
+  const linkRule = (() => {
+    const path = join(__dirname, '../src/components/Button.vue')
+    const { descriptor } = parse(readFileSync(path, 'utf8'))
+    return descriptor.styles
+      .map((s) => compileString(s.content, { url: pathToFileURL(path) }).css)
+      .join('\n')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+  })()
+
+  /** Every declaration block whose selector list is exactly `selector`. */
+  function bodiesOf(selector: string): string {
+    const escaped = selector.replace(/[.\-:()[\]]/g, '\\$&')
+    const re = new RegExp(`(?:^|[}\\n])\\s*${escaped}\\s*\\{([^}]*)\\}`, 'g')
+    return [...linkRule.matchAll(re)].map((m) => m[1]).join('\n')
+  }
+
+  it('renders a button that emits click', async () => {
+    const wrapper = mount(Button, {
+      props: { variant: 'link' },
+      slots: { default: 'Select' },
+    })
+    expect(wrapper.element.tagName).toBe('BUTTON')
+    expect(wrapper.attributes('type')).toBe('button')
+    expect(wrapper.classes()).toContain('nb-button--link')
+    await wrapper.trigger('click')
+    expect(wrapper.emitted('click')).toHaveLength(1)
+  })
+
+  it('renders an anchor for href and a RouterLink for to', () => {
+    const anchor = mount(Button, {
+      props: { variant: 'link', href: '/docs' },
+      slots: { default: 'Docs' },
+    })
+    expect(anchor.element.tagName).toBe('A')
+    expect(anchor.attributes('href')).toBe('/docs')
+
+    const RouterLink = {
+      name: 'RouterLink',
+      props: { to: { type: [String, Object], required: true } },
+      template: '<a class="rl"><slot /></a>',
+    }
+    const routed = mount(Button, {
+      props: { variant: 'link', to: { name: 'home' } },
+      slots: { default: 'Home' },
+      global: { components: { RouterLink } },
+    })
+    expect(routed.find('.rl').exists()).toBe(true)
+    expect(routed.find('.rl').classes()).toContain('nb-button--link')
+  })
+
+  it('does not emit click while disabled', async () => {
+    const wrapper = mount(Button, {
+      props: { variant: 'link', disabled: true },
+      slots: { default: 'Select' },
+    })
+    expect(wrapper.attributes('disabled')).toBeDefined()
+    await wrapper.trigger('click')
+    expect(wrapper.emitted('click')).toBeUndefined()
+  })
+
+  it('has no box: no fill, no padding, no fixed height, the font of its line', () => {
+    const body = bodiesOf('.nb-button--link')
+    expect(body).toMatch(/background:\s*transparent/)
+    expect(body).toMatch(/padding:\s*0/)
+    expect(body).toMatch(/height:\s*auto/)
+    expect(body).toMatch(/font-size:\s*inherit/)
+    expect(body).toMatch(/font-weight:\s*inherit/)
+  })
+
+  it('is drawn in primary ink, the colour held at AA on every layer', () => {
+    // inkContrast.test.ts measures ink(primary) on all four layers of both
+    // themes, so reusing the expression is what carries the guarantee here.
+    expect(bodiesOf('.nb-button--link')).toMatch(
+      /color:\s*var\(--nb-button-link-color,\s*color-mix\(in srgb, var\(--nb-c-primary\), var\(--nb-c-ink-toward, var\(--nb-c-white\)\) var\(--nb-c-primary-ink-lift, 0%\)\)\)/,
+    )
+  })
+
+  it('underlines on hover and on keyboard focus, with a focus ring', () => {
+    expect(
+      bodiesOf(
+        '.nb-button--link:hover:not(:disabled), .nb-button--link:focus-visible',
+      ),
+    ).toMatch(/text-decoration:\s*underline/)
+    expect(bodiesOf('.nb-button--link:focus-visible')).toMatch(
+      /outline:\s*2px solid var\(--nb-c-focus-ring\)/,
+    )
+  })
+
+  it('is never given the outlined border', () => {
+    expect(linkRule).toMatch(
+      /\.nb-button--outlined:not\(\.nb-button--ghost\):not\(\.nb-button--link\)/,
+    )
   })
 })
 

@@ -393,6 +393,59 @@ onMounted(() => {
     }
   }
 
+  /*
+   * Link: a button that reads as a text link.
+   *
+   * For an action that sits inside text or a table cell (a key that opens its
+   * record, "Select" beside a field, a crumb), where a boxed button is louder
+   * than the line around it. No fill, no padding, no fixed height: it takes
+   * the font, weight and line height of where it sits, so it lines up with
+   * the text beside it and `size` does not change it. It stays a real
+   * <button>, <a> or <RouterLink>, so it keeps the keyboard, the disabled
+   * state and the focus ring every other variant has.
+   *
+   * The colour is primary drawn as ink, the same `ink.ink(primary)` an
+   * outlined primary button uses, which `tests/inkContrast.test.ts` holds at
+   * WCAG AA on every layer of both themes. Hover and focus add an underline
+   * rather than a wash, so the colour it is measured on never changes.
+   * `--nb-button-link-color` re-points it. Set it to `currentColor` to take
+   * the colour of the surrounding text (not `inherit`, which on a custom
+   * property inherits the property, not the colour).
+   */
+  &--link {
+    height: auto;
+    padding: 0;
+    gap: 0.35em;
+    background: transparent;
+    color: var(--nb-button-link-color, #{ink.ink(primary)});
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    white-space: normal;
+    text-align: start;
+    vertical-align: baseline;
+    text-decoration: none;
+    text-underline-offset: 0.2em;
+    border-radius: 2px;
+    --nb-button-icon-size: 1em;
+
+    &:hover:not(:disabled),
+    &:focus-visible {
+      text-decoration: underline;
+    }
+    &:active:not(:disabled) {
+      text-decoration-thickness: 2px;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--nb-c-focus-ring);
+      outline-offset: 2px;
+    }
+    // Icon-only sets a square width per size. A link has no box to square.
+    &.nb-button--icon-only {
+      width: auto;
+    }
+  }
+
   /* Warning: red */
   &--warning {
     background: var(--nb-c-warning);
@@ -472,7 +525,7 @@ onMounted(() => {
 
   // Outlined modifier: transparent background, colored border and text
   // Applied to all variants except ghost (which has no bg by design)
-  &--outlined:not(&--ghost) {
+  &--outlined:not(&--ghost):not(&--link) {
     background: transparent;
     color: var(--nb-c-contrast);
     border: 1px solid currentColor;
