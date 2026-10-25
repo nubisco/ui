@@ -84,6 +84,8 @@ export const COMPONENT_MANIFEST = {
   NbStepper: 'Stepper',
   NbStepperStep: 'StepperStep',
   NbSpinner: 'Spinner',
+  NbStat: 'Stat',
+  NbSuggestionList: 'SuggestionList',
   NbInlineEdit: 'InlineEdit',
   NbInlineLoading: 'InlineLoading',
   NbSkeleton: 'Skeleton',

@@ -120,6 +120,10 @@ Use the `#actions` slot to place buttons inside the field at the trailing edge (
 
 <doc-tab name="Api">
 
+## Suggestions
+
+The `#dropdown` slot holds a popup anchored to the field. For autocomplete (an @mention, a reference, a tag) put an [`NbSuggestionList`](/components/suggestion-list) in it: it takes the keyboard from the field and makes it a combobox, so you only decide when it opens and what it offers.
+
 ## Props
 
 | Prop          | Type                   | Default     | Description                                         |
@@ -150,17 +154,19 @@ Use the `#actions` slot to place buttons inside the field at the trailing edge (
 
 ## Slots
 
-| Slot      | Description                                                   |
-| --------- | ------------------------------------------------------------- |
-| `label`   | Custom label content (replaces the `label` prop text)         |
-| `actions` | Buttons or icons rendered at the trailing edge (default only) |
+| Slot       | Description                                                                                 |
+| ---------- | ------------------------------------------------------------------------------------------- |
+| `label`    | Custom label content (replaces the `label` prop text)                                       |
+| `actions`  | Buttons or icons rendered at the trailing edge (default only)                               |
+| `dropdown` | A popup anchored to the field, such as an [`NbSuggestionList`](/components/suggestion-list) |
 
 ## Exposed
 
-| Name    | Type         | Description       |
-| ------- | ------------ | ----------------- |
-| `focus` | `() => void` | Focuses the input |
-| `blur`  | `() => void` | Blurs the input   |
+| Name       | Type                                           | Description                              |
+| ---------- | ---------------------------------------------- | ---------------------------------------- |
+| `focus`    | `() => void`                                   | Focuses the input                        |
+| `blur`     | `() => void`                                   | Blurs the input                          |
+| `nativeEl` | `Ref<HTMLInputElement \| HTMLTextAreaElement>` | The native field, for the caret position |
 
 </doc-tab>
 

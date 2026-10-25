@@ -80,19 +80,21 @@ import ShellPanel from './components/ShellPanel.vue'
 import SidebarBrand from './components/SidebarBrand.vue'
 import SidebarCollapseToggle from './components/SidebarCollapseToggle.vue'
 import SidebarHeaderToggle from './components/SidebarHeaderToggle.vue'
-import SidebarStatus from './components/SidebarStatus.vue'
 import SidebarLink from './components/SidebarLink.vue'
 import SidebarMenu from './components/SidebarMenu.vue'
 import SidebarMenuGroup from './components/SidebarMenuGroup.vue'
 import SidebarMenuItem from './components/SidebarMenuItem.vue'
+import SidebarStatus from './components/SidebarStatus.vue'
 import SidebarVariantScope from './components/SidebarVariantScope.vue'
 import Skeleton from './components/Skeleton.vue'
 import Slider from './components/Slider.vue'
 import Sparkline from './components/Charts/Sparkline.vue'
 import Spinner from './components/Spinner.vue'
+import Stat from './components/Stat.vue'
 import Stepper from './components/Stepper.vue'
 import StepperStep from './components/StepperStep.vue'
 import Submenu from './components/Submenu.vue'
+import SuggestionList from './components/SuggestionList.vue'
 import SurfaceLayerScope from './components/SurfaceLayerScope.vue'
 import Switch from './components/Switch.vue'
 import TableOfContents from './components/TableOfContents.vue'
@@ -190,19 +192,21 @@ declare module 'vue' {
     NbSidebarBrand: typeof SidebarBrand
     NbSidebarCollapseToggle: typeof SidebarCollapseToggle
     NbSidebarHeaderToggle: typeof SidebarHeaderToggle
-    NbSidebarStatus: typeof SidebarStatus
     NbSidebarLink: typeof SidebarLink
     NbSidebarMenu: typeof SidebarMenu
     NbSidebarMenuGroup: typeof SidebarMenuGroup
     NbSidebarMenuItem: typeof SidebarMenuItem
+    NbSidebarStatus: typeof SidebarStatus
     NbSidebarVariantScope: typeof SidebarVariantScope
     NbSkeleton: typeof Skeleton
     NbSlider: typeof Slider
     NbSparkline: typeof Sparkline
     NbSpinner: typeof Spinner
+    NbStat: typeof Stat
     NbStepper: typeof Stepper
     NbStepperStep: typeof StepperStep
     NbSubmenu: typeof Submenu
+    NbSuggestionList: typeof SuggestionList
     NbSurfaceLayerScope: typeof SurfaceLayerScope
     NbSwitch: typeof Switch
     NbTableOfContents: typeof TableOfContents

@@ -186,16 +186,19 @@
           @blur="focused = false"
         />
       </div>
+
+      <slot name="dropdown" />
     </template>
   </NbGrid>
 </template>
 
 <script setup lang="ts">
 import NbGrid from './Grid.vue'
-import { computed, nextTick, ref, useId, watch } from 'vue'
+import { computed, nextTick, provide, ref, useId, watch } from 'vue'
 import type { IReadableFieldComponent } from '@/types/Props.d'
 import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
+import { NB_TEXT_INPUT_CONTEXT } from './TextInput.context'
 
 // Ensure $attrs (class, style, event listeners, native attrs) flow to the native element
 defineOptions({ inheritAttrs: false })
@@ -257,6 +260,9 @@ defineExpose({
   blur: () => nativeRef.value?.blur(),
   nativeEl: nativeRef,
 })
+
+// What the #dropdown slot can reach: NbSuggestionList listens to this field.
+provide(NB_TEXT_INPUT_CONTEXT, { field: nativeRef })
 
 const focused = ref(false)
 
@@ -580,7 +586,8 @@ const wrapperClasses = computed(() => ({
   }
 
   // ─── DEFAULT variant ──────────────────────────────────────
-  &--default {
+  &--default,
+  &--fluid {
     position: relative; // anchor for #dropdown slot
   }
 
