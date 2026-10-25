@@ -81,7 +81,12 @@
   * Remove the gray background on active links in IE 10.
   */
 
-  a {
+  /* `:where()` keeps the reset at zero specificity, so anything a component
+   * says about its own anchor wins. As a bare `a` it outranked NbButton's
+   * zero-specificity `position: relative` on a touch phone, so a link button
+   * (`href`) lost its positioning context and its invisible 44px tap box
+   * stretched over the whole page and swallowed every tap. */
+  :where(a) {
     background-color: transparent;
     all: unset;
     /* `all: unset` resets box-sizing to content-box, and the element

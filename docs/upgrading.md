@@ -1,5 +1,17 @@
 # Upgrading
 
+## To 5.31.2 from 5.31.1
+
+**A link button no longer swallows every tap on a phone.** The reset's
+`a { all: unset }` outranked `NbButton`'s zero-specificity `position: relative`,
+so on a touch phone a button rendered as a link (`href`) lost its positioning
+context, and its invisible 44px tap box covered the whole page: every tap went
+to that link. The anchor reset is now `:where(a)`, at zero specificity.
+
+**Check this if you relied on the reset outranking your own rules.** A
+zero-specificity rule of yours on an anchor (`:where(...)`) that comes after
+the reset now applies where the reset used to win.
+
 ## To 5.31.1 from 5.31.0
 
 Two dark-mode fixes, and the layer fix they needed. Light mode is unchanged

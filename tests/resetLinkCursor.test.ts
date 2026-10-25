@@ -18,4 +18,12 @@ describe('reset: link cursor', () => {
       css.indexOf('all: unset'),
     )
   })
+
+  it('resets anchors at zero specificity, so a component can position its own', () => {
+    // NbButton gives its tap box a context with `:where(.nb-button--sm) {
+    // position: relative }`. A bare `a { all: unset }` outranked it on every
+    // link button and the box covered the page.
+    expect(css).toMatch(/:where\(a\)\s*\{[^}]*all:\s*unset/)
+    expect(css).not.toMatch(/(^|[\s,}])a\s*\{[^}]*all:\s*unset/)
+  })
 })
