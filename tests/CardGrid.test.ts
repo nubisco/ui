@@ -133,3 +133,104 @@ describe('NbCard and the layer system', () => {
     w.unmount()
   })
 })
+
+describe('NbCard orientation', () => {
+  it('is vertical by default, with no horizontal class', () => {
+    const w = mount(Card, { props: { title: 'A' } })
+    expect(w.classes()).not.toContain('nb-card--horizontal')
+  })
+
+  it('puts the media beside the text when horizontal', () => {
+    const w = mount(Card, {
+      props: { title: 'Notes', orientation: 'horizontal', icon: 'tray' },
+      slots: { default: 'Write things down' },
+    })
+    expect(w.classes()).toContain('nb-card--horizontal')
+    // The markup is the vertical card's, laid out by the grid, so the reading
+    // order stays icon, title, description.
+    const order = Array.from(w.element.children).map((el) => el.className)
+    expect(order[0]).toContain('nb-card__icon')
+    expect(order[1]).toContain('nb-card__head')
+    expect(order[2]).toContain('nb-card__body')
+  })
+
+  it('stays a link when horizontal, for a launcher tile', () => {
+    const w = mount(Card, {
+      props: { title: 'Notes', orientation: 'horizontal', href: '/notes' },
+    })
+    expect(w.element.tagName).toBe('A')
+    expect(w.attributes('href')).toBe('/notes')
+  })
+})
+
+describe('NbCard media', () => {
+  it('has no media box unless asked for one', () => {
+    const w = mount(Card, { props: { title: 'A' } })
+    expect(w.find('.nb-card__media').exists()).toBe(false)
+  })
+
+  it('renders the image, lazily, decorative unless given alt text', () => {
+    const w = mount(Card, { props: { title: 'A', image: '/a.png' } })
+    const img = w.find('.nb-card__media img')
+    expect(img.attributes('src')).toBe('/a.png')
+    expect(img.attributes('alt')).toBe('')
+    expect(img.attributes('loading')).toBe('lazy')
+
+    const named = mount(Card, {
+      props: { title: 'A', image: '/a.png', imageAlt: 'A chart' },
+    })
+    expect(named.find('img').attributes('alt')).toBe('A chart')
+  })
+
+  it('draws a placeholder in the same box when the image is missing', () => {
+    for (const image of ['', null]) {
+      const w = mount(Card, { props: { title: 'A', image } })
+      const media = w.find('.nb-card__media')
+      expect(media.exists()).toBe(true)
+      expect(media.classes()).toContain('nb-card__media--empty')
+      expect(media.find('img').exists()).toBe(false)
+      expect(media.find('.nb-card__placeholder').exists()).toBe(true)
+    }
+  })
+
+  it('falls back to the placeholder when the image fails to load, and retries a new one', async () => {
+    const w = mount(Card, { props: { title: 'A', image: '/broken.png' } })
+    await w.find('img').trigger('error')
+    expect(w.find('img').exists()).toBe(false)
+    expect(w.find('.nb-card__placeholder').exists()).toBe(true)
+
+    await w.setProps({ image: '/fixed.png' })
+    expect(w.find('img').attributes('src')).toBe('/fixed.png')
+  })
+
+  it('takes a ratio and a fit', () => {
+    const w = mount(Card, {
+      props: { image: '/a.png', imageRatio: '1', imageFit: 'contain' },
+    })
+    const style = w.find('.nb-card__media').attributes('style')
+    expect(style).toContain('--nb-card-image-ratio: 1')
+    expect(style).toContain('--nb-card-image-fit: contain')
+  })
+
+  it('takes anything in the media slot instead of the image', () => {
+    const w = mount(Card, {
+      props: { title: 'A' },
+      slots: { media: '<video class="clip" />' },
+    })
+    expect(w.find('.nb-card__media .clip').exists()).toBe(true)
+    expect(w.find('.nb-card__media--empty').exists()).toBe(false)
+  })
+
+  it('paints the media box one layer below the card', () => {
+    const w = mount(
+      defineComponent({
+        components: { Card, Panel },
+        template: '<Panel><Card image="" /></Panel>',
+      }),
+      { attachTo: document.body },
+    )
+    expect(w.find('.nb-card').classes()).toContain('nb-layer-2')
+    expect(w.find('.nb-card__media').classes()).toContain('nb-layer-3')
+    w.unmount()
+  })
+})
