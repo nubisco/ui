@@ -88,12 +88,24 @@ Prefer the default. A catalogue reads as a catalogue when its card size is const
 
 The card picks its element from its behaviour, so each case gets the right keyboard and the right browser affordances without being asked:
 
+- `to` renders a `<RouterLink>` when the app has vue-router, exactly as on [`NbButton`](/components/button/). It takes a path or a location object, navigates inside the app, and still renders a real `href`. Without a router a string `to` is a plain link.
 - `href` renders an `<a>`. Middle click, open-in-new-tab and the status-bar URL all work, which they do not for a click handler on a div.
 - `clickable` renders a `role="button"` with a tabindex, and emits `select` on click, <kbd>Enter</kbd> and <kbd>Space</kbd>. For a card that opens something in place.
 - Neither renders a plain `div`, so a card that does nothing does not advertise that it does.
 
+```vue
+<NbCard
+  v-for="project in projects"
+  :key="project.id"
+  :title="project.name"
+  :subtitle="project.slug"
+  :to="{ name: 'project', params: { id: project.id } }"
+/>
+```
+
 <preview>
   <NbCardGrid min="220px" style="width: 100%">
+    <NbCard title="A route" subtitle="renders a RouterLink" to="/components/card-grid" />
     <NbCard title="A link" subtitle="renders an <a>" href="#card-grid" />
     <NbCard title="A button" subtitle="emits select" clickable />
     <NbCard title="Selected" subtitle="part of a selection" clickable selected />
@@ -132,16 +144,17 @@ The body takes the leftover height, so a row of cards with different amounts of 
 
 ## NbCard props
 
-| Prop        | Type      | Default | Description                                                         |
-| ----------- | --------- | ------- | ------------------------------------------------------------------- |
-| `title`     | `string`  | `''`    | Card title.                                                         |
-| `subtitle`  | `string`  | `''`    | One line under the title: a type, an owner, a version.              |
-| `icon`      | `string`  | —       | Icon name for the card's header.                                    |
-| `href`      | `string`  | —       | Renders the card as a link.                                         |
-| `target`    | `string`  | —       | Link target. `_blank` also sets `rel="noopener"`.                   |
-| `clickable` | `boolean` | `false` | Renders as a button and emits `select`. Ignored when `href` is set. |
-| `selected`  | `boolean` | `false` | Draws the card as chosen.                                           |
-| `disabled`  | `boolean` | `false` | Inert and muted.                                                    |
+| Prop        | Type               | Default | Description                                                                                                         |
+| ----------- | ------------------ | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| `title`     | `string`           | `''`    | Card title.                                                                                                         |
+| `subtitle`  | `string`           | `''`    | One line under the title: a type, an owner, a version.                                                              |
+| `icon`      | `string`           | —       | Icon name for the card's header.                                                                                    |
+| `to`        | `string \| object` | —       | Target route. A `<RouterLink>` with vue-router, a plain link for a string without it. Takes precedence over `href`. |
+| `href`      | `string`           | —       | Renders the card as a link.                                                                                         |
+| `target`    | `string`           | —       | Link target. `_blank` also sets `rel="noopener"`.                                                                   |
+| `clickable` | `boolean`          | `false` | Renders as a button and emits `select`. Ignored when `href` or `to` is set.                                         |
+| `selected`  | `boolean`          | `false` | Draws the card as chosen.                                                                                           |
+| `disabled`  | `boolean`          | `false` | Inert and muted.                                                                                                    |
 
 ## NbCard events
 

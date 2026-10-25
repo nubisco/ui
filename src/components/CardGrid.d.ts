@@ -41,11 +41,19 @@ export interface ICardProps {
    * URL in the status bar.
    */
   href?: string
-  /** Link target, only meaningful alongside `href`. */
+  /**
+   * Target route, as on `NbButton`. When vue-router is installed the card
+   * renders as a `<RouterLink>` and accepts anything its `to` does (a path or
+   * a location object), so navigation stays in the app and the card still has
+   * a real href. Without vue-router a string `to` is a plain link and an
+   * object `to` is ignored. Takes precedence over `href`.
+   */
+  to?: string | Record<string, unknown>
+  /** Link target, only meaningful alongside `href` or `to`. */
   target?: string
   /**
    * Makes the card activate on click and emit `select`, for a card that opens
-   * something in place rather than navigating. Ignored when `href` is set,
+   * something in place rather than navigating. Ignored when `href` or `to` is set,
    * because a link already does this and does it better.
    */
   clickable?: boolean
