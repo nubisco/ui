@@ -102,6 +102,19 @@ Use the `#toolbar` slot to add actions to the center of the panel header.
 </NbShellPanel>
 ```
 
+## Long titles
+
+A title longer than the header has room for is cut with an ellipsis, and the
+full text is in the title's `title` attribute, so hovering it shows the whole
+name. The size buttons never shrink to make room, so a long title never runs
+under them.
+
+<preview dir="col">
+  <div style="width: 100%; max-width: 280px; display: flex; flex-direction: column;">
+    <NbShellPanel title="Answers to the second question, in the order they were agreed" size="collapsed" />
+  </div>
+</preview>
+
 ## Custom controls
 
 Override the default size buttons by using the `#controls` slot. This lets you provide your own resize logic or entirely different header actions.
