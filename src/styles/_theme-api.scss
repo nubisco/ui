@@ -190,7 +190,28 @@ $a11y-roles:
   @if map.keys($dark) != () or $dark != () {
     .dark[data-nb-theme='#{$id}'],
     .dark [data-nb-theme='#{$id}'] {
+      @include _ink-reset($dark);
       @include _emit($dark, $palette);
+    }
+  }
+}
+
+/// The variants whose ink the dark theme lifts toward white.
+$_ink-variants: primary, secondary, success, info, warning, danger;
+
+/// Turns the dark ink lift off for every variant a theme gives its own dark
+/// colour.
+///
+/// The library's dark lift (`--nb-c-<variant>-ink-lift`, see
+/// `logic/_ink.scss`) is sized for the library's own dark colours. A theme that
+/// picks a dark colour has picked it for contrast already (every category accent
+/// clears AA on all four dark layers), and lifting it further would only wash it
+/// out. Emitted before the theme's own keys, so a theme that does want a lift
+/// can still pass `primary-ink-lift` and win.
+@mixin _ink-reset($tokens) {
+  @each $variant in $_ink-variants {
+    @if map.has-key($tokens, $variant) {
+      --nb-c-#{$variant}-ink-lift: 0%;
     }
   }
 }

@@ -1,0 +1,34 @@
+/// A semantic colour drawn as ink: text, an outline or an icon set directly on a
+/// surface, with no fill of its own behind it.
+///
+/// The semantic colours (`--nb-c-primary`, `--nb-c-secondary`, ...) are picked
+/// first as FILLS, with their `-a11y` foreground on top. Drawn straight onto a
+/// surface they are a different pair, and in the dark theme several of them do
+/// not survive it: the dark secondary is a mid grey chosen to carry white text,
+/// and as the label of an outlined button it measured 1.21:1 to 2.15:1 against
+/// the four dark layers.
+///
+/// So ink lifts the colour toward white by `--nb-c-<variant>-ink-lift`. The
+/// light theme does not declare the lift, so the fallback of 0% returns the
+/// colour unchanged and light mode is pixel-identical. The dark theme declares
+/// one per variant, each the smallest lift that clears WCAG AA (4.5:1) on all
+/// four dark layers and on the 14% wash an outlined button paints when pressed.
+/// `tests/inkContrast.test.ts` measures it.
+///
+/// The mix is resolved on the element that paints, not at `:root`, so a product
+/// that re-points `--nb-c-primary` (on `:root` or on a themed subtree) gets ITS
+/// primary lifted, never the library's. A named theme that sets its own dark
+/// colour for a variant resets that variant's lift to 0%, because it chose that
+/// colour for contrast already (see `theme()` in `_theme-api.scss`).
+///
+/// @param {String} $variant - primary, secondary, success, info, warning or danger
+/// @return {String} a `color-mix()` expression
+/// @access public
+/// @group @nubisco/colors
+@function ink($variant) {
+  @return color-mix(
+    in srgb,
+    var(--nb-c-#{$variant}),
+    var(--nb-c-white) var(--nb-c-#{$variant}-ink-lift, 0%)
+  );
+}
