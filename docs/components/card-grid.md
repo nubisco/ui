@@ -88,7 +88,7 @@ Prefer the default. A catalogue reads as a catalogue when its card size is const
 
 The card picks its element from its behaviour, so each case gets the right keyboard and the right browser affordances without being asked:
 
-- `to` renders a `<RouterLink>` when the app has vue-router, exactly as on [`NbButton`](/components/button/). It takes a path or a location object, navigates inside the app, and still renders a real `href`. Without a router a string `to` is a plain link.
+- `to` renders a `<RouterLink>` when the app has vue-router, exactly as on [`NbButton`](/components/button/button). It takes a path or a location object, navigates inside the app, and still renders a real `href`. Without a router a string `to` is a plain link.
 - `href` renders an `<a>`. Middle click, open-in-new-tab and the status-bar URL all work, which they do not for a click handler on a div.
 - `clickable` renders a `role="button"` with a tabindex, and emits `select` on click, <kbd>Enter</kbd> and <kbd>Space</kbd>. For a card that opens something in place.
 - Neither renders a plain `div`, so a card that does nothing does not advertise that it does.
