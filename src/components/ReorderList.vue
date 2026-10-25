@@ -18,6 +18,7 @@
         'nb-reorder-list__row--drop-after':
           dropLine === index + 1 && index === rows.length - 1,
       }"
+      v-bind="layerProps"
       :data-index="index"
       @pointerdown="onPointerDown($event, index)"
     >
@@ -65,6 +66,7 @@ import { computed, onBeforeUnmount, ref } from 'vue'
 import type { IReorderListProps } from './ReorderList.d'
 import NbIcon from './Icon.vue'
 import { useStableId } from '../composables/useStableId.composable'
+import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 
 const props = withDefaults(defineProps<IReorderListProps<T>>(), {
   modelValue: () => [],
@@ -81,6 +83,17 @@ const emit = defineEmits<{
 
 const uid = useStableId({})
 const listRef = ref<HTMLElement | null>(null)
+
+// Each row is a small surface, so it takes part in the layer system as NbPanel
+// and NbCard do: rows paint the next layer down from wherever the list sits
+// (layer 1 in a shell's main region, layer 2 inside a panel) and whatever a row
+// contains counts one deeper. They used to paint the `--nb-c-surface` they
+// inherited, the surface of their container, so a list straight on a panel had
+// rows the panel's own colour and a product had to name the layer by hand.
+//
+// The list itself paints nothing, so it is resolved once from the list element
+// and stamped on every row rather than on the list.
+const { layerProps } = useSurfaceLayer({ el: listRef })
 const rows = computed(() => props.modelValue)
 
 function keyOf(item: T, index: number): string | number {

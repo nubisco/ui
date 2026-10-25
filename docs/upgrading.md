@@ -1,5 +1,44 @@
 # Upgrading
 
+## To 5.33.0 from 5.32.1
+
+New, and nothing changes unless you use it:
+
+- **`NbCard` media**: `image`, `image-alt`, `image-ratio`, `image-fit` and a
+  `media` slot. A cover on a vertical card, a thumbnail on a horizontal one,
+  with a placeholder in the same box when the image is missing or broken.
+- **`NbCard orientation="horizontal"`**: media, icon or logo on the left, title
+  and text beside it. For a launcher of apps or a list of pages.
+- **`NbStat size="sm"`**: a dense tile for a KPI row, 59px tall where `md` is
+  86px. `md` and `lg` are unchanged.
+
+Two layer fixes, and both change what you see:
+
+**A `<NbLayer>` with no `level` is one level shallower.** It added one on top
+of a context that already names the next level, so it counted the step twice:
+directly in `NbShell`'s main region it was layer 2, where the theming docs say
+
+1. It now takes one step above its surroundings, the level a surface placed
+   where it sits would paint: layer 1 in the main region, layer 2 inside a panel.
+   An `NbLayer` with a `level` is unchanged.
+
+**Check this if you wrapped content in a level-less `<NbLayer>`.** A
+hand-painted surface inside it (`background: var(--nb-c-surface)`) now paints
+one level higher than before. If you were relying on the old depth, name it:
+`<NbLayer :level="2">`. A library surface directly inside it (`NbPanel`,
+`NbCard`) now paints the level it would paint without the wrapper.
+
+**`NbReorderList` rows take their layer from where the list sits**, as
+`NbPanel` and `NbCard` do. They painted the `--nb-c-surface` they inherited, the
+surface of their container, so rows on a panel were the panel's own colour and
+rows in a shell's main region were the page ground. They now paint one step
+above: layer 1 in the main region, layer 2 inside a layer-1 panel.
+
+**Check this if you pinned a layer on a reorder list by hand** (a
+`nb-layer-N` wrapper or class written to make the rows stand off their
+container). It still wins, but it is probably no longer needed: remove it and
+let the rows count from where they sit.
+
 ## To 5.32.1 from 5.32.0
 
 **Outlined buttons read on light surfaces too.** 5.31.1 fixed them in dark

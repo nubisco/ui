@@ -117,7 +117,9 @@ async function onReorder({ from, to }) {
 
 ## Styling
 
-Rows are squared, like the rest of the library. The gap is `--nb-reorder-list-gap`; set it on the list to change the rhythm, and the drop indicator follows automatically because it is positioned against that same value.
+Each row is a surface and takes part in the [layer system](/theming#layers) the way `NbPanel` and `NbCard` do: rows paint one step above wherever the list sits, so layer 1 in a shell's main region and layer 2 inside a panel, and anything inside a row counts one deeper. Do not name a layer for them. Pin one with `class="nb-layer-N"` on the list only when you are resetting depth, not counting it.
+
+Rows follow the panel corner. The gap is `--nb-reorder-list-gap`; set it on the list to change the rhythm, and the drop indicator follows automatically because it is positioned against that same value.
 
 </doc-tab>
 

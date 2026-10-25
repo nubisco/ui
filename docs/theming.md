@@ -427,6 +427,8 @@ These take a layer from context and deepen what they contain.
 | `NbPanel`        | its own background                                                                                                                                                                                                                                          |
 | `NbCard`         | its own background, so a card on a page lands on layer 1 and a card in a panel on layer 2                                                                                                                                                                   |
 | `NbShellPanel`   | its own background                                                                                                                                                                                                                                          |
+| `NbStat`         | its own background, as `NbCard`                                                                                                                                                                                                                             |
+| `NbReorderList`  | each row, so a list on a page has layer-1 rows and a list in a panel layer-2 rows                                                                                                                                                                           |
 | `NbDataTable`    | the table body behind toolbar, header and rows                                                                                                                                                                                                              |
 | `NbCalendar`     | the calendar frame                                                                                                                                                                                                                                          |
 | `NbBoard`        | its column headers and cards                                                                                                                                                                                                                                |
@@ -555,9 +557,11 @@ contextual count from there. The nearest container wins.
   <!-- layer 2 -->
 </NbLayer>
 
-<!-- one step deeper without naming a number -->
+<!-- one step above the surroundings without naming a number:
+     layer 1 in the main region, layer 2 inside a panel -->
 <NbLayer>
-  <NbPanel />
+  <div class="my-card" />
+  <!-- var(--nb-c-surface) is layer 1 in the main region -->
 </NbLayer>
 ```
 
@@ -764,8 +768,16 @@ const { level } = useLayer()
 ### `<NbLayer>`
 
 A context node, not a painted surface. With `level` it is exactly
-`.nb-layer-N`. Without one it pushes its subtree one step deeper. `as` picks the
-element it renders.
+`.nb-layer-N`. Without one it steps one above its surroundings: it takes the
+level a surface placed where it sits would paint, so it is layer 1 directly in
+`NbShell`'s main region (the layer-0 ground) and layer 2 inside a layer-1 panel.
+That is what a hand-painted surface inside it needs. A library surface inside it
+paints the same level it would have painted without the wrapper, because it
+already counts from where it sits. `as` picks the element it renders.
+
+Before 5.33.0 a level-less `NbLayer` counted the step twice and came out one
+level too deep (layer 2 in the main region). See
+[Upgrading](/upgrading#to-5-33-0-from-5-32-1).
 
 ```vue
 <NbLayer as="section" :level="0">

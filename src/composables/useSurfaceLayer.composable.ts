@@ -35,6 +35,15 @@ export const NB_MAX_LAYER = 3
 export const NB_LAYER_ATTRIBUTE = 'data-nb-layer'
 
 /**
+ * Attribute stamped on `<NbLayer>`'s element. NbLayer publishes its level
+ * through the component tree, so the DOM probe looks straight through it: its
+ * class is a snapshot that may still be settling (a level-less NbLayer resolves
+ * its own level on mount, after the surfaces inside it have probed), and
+ * reading it would let that stale value outrank the live context.
+ */
+export const NB_LAYER_CONTEXT_ATTRIBUTE = 'data-nb-layer-context'
+
+/**
  * Provided value is the level the NEXT surface below this point should paint,
  * mirroring the way Carbon's `LayerContext` carries the level of the next
  * `<Layer>` rather than the level of the current one. Absent means "nothing has
@@ -112,7 +121,8 @@ export interface ILayerProbeResult {
 /**
  * Walks up the real DOM looking for the nearest layer authority.
  *
- * Stops at whichever comes first:
+ * Looks straight through `<NbLayer>` elements, which carry their level in the
+ * component tree instead. Stops at whichever comes first:
  * - an element stamped with `data-nb-layer` (a painted surface): one level
  *   deeper, clamped;
  * - an element carrying `.nb-layer-N` (a context class): exactly N, which is
@@ -128,6 +138,11 @@ export function probeLayerFromDom(
   let node: Element | null = start?.parentElement ?? null
 
   while (node) {
+    if (node.hasAttribute(NB_LAYER_CONTEXT_ATTRIBUTE)) {
+      node = node.parentElement
+      continue
+    }
+
     const painted = node.getAttribute(NB_LAYER_ATTRIBUTE)
     if (painted !== null) {
       const parsed = Number(painted)
