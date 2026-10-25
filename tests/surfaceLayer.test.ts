@@ -11,6 +11,7 @@ import DatePicker from '../src/components/DatePicker.vue'
 import FileUploader from '../src/components/FileUploader.vue'
 import Shell from '../src/components/Shell.vue'
 import ShellPanel from '../src/components/ShellPanel.vue'
+import ReorderList from '../src/components/ReorderList.vue'
 import {
   clampLayer,
   layerClassFor,
@@ -203,9 +204,29 @@ describe('NbLayer', () => {
     withClass.unmount()
   })
 
-  it('without a level pushes its subtree one step deeper', async () => {
+  it('without a level steps one above its surroundings', async () => {
+    // Inside a layer-1 panel the surroundings are 1, so the layer is 2, and a
+    // panel in it paints 2. It used to add one on top of a context that already
+    // names the next level, and came out at 3.
     const wrapper = await mountInBody('<Panel><Layer><Panel /></Layer></Panel>')
-    expect(panelLayers(document.body)).toEqual([1, 3])
+    expect(layerOf(document.body.querySelector('.nb-panel > div'))).toBe(2)
+    expect(panelLayers(document.body)).toEqual([1, 2])
+    wrapper.unmount()
+  })
+
+  it('without a level, at the top of a tree, is layer 1 like the :root default', async () => {
+    const wrapper = await mountInBody('<Layer><span /></Layer>')
+    expect(layerOf(wrapper.element)).toBe(1)
+    wrapper.unmount()
+  })
+
+  it('without a level honours a hand-written .nb-layer-N container above it', async () => {
+    const wrapper = await mountInBody(
+      '<div class="nb-layer-2"><Layer><Panel /></Layer></div>',
+    )
+    const layer = document.body.querySelector('.nb-layer-2 > div')
+    expect(layerOf(layer)).toBe(2)
+    expect(panelLayers(document.body)).toEqual([2])
     wrapper.unmount()
   })
 
@@ -369,6 +390,15 @@ const wiredSurfaces: {
     tag: 'ShellPanel',
     selector: '.nb-shell-panel',
   },
+  {
+    // The list paints nothing. Its rows are the surfaces, so they are what
+    // is measured.
+    name: 'ReorderList',
+    component: ReorderList,
+    tag: 'ReorderList',
+    props: `:model-value="['a', 'b']"`,
+    selector: '.nb-reorder-list__row',
+  },
 ]
 
 describe.each(wiredSurfaces)(
@@ -481,6 +511,49 @@ describe('Shell as the origin of depth', () => {
     const inMain = document.body.querySelector('.nb-shell__main .nb-panel')
     expect(layerOf(inTopbar)).toBe(2)
     expect(layerOf(inMain)).toBe(1)
+    wrapper.unmount()
+  })
+
+  it('puts a level-less NbLayer in main on layer 1, one above the ground', async () => {
+    // What the theming docs promise: wrap a hand-painted card in <NbLayer> in
+    // the main region and it lands on layer 1. Before the fix it was layer 2.
+    const wrapper = await mountWith(
+      { Shell },
+      '<Shell><Layer class="probe-layer"><div class="my-card" /><Panel /></Layer></Shell>',
+    )
+    const layer = document.body.querySelector('.nb-shell__main .probe-layer')
+    expect(layerOf(layer)).toBe(1)
+    expect(layer?.getAttribute('data-nb-layer')).toBeNull()
+    expect(
+      layerOf(document.body.querySelector('.nb-shell__main .nb-panel')),
+    ).toBe(1)
+    wrapper.unmount()
+  })
+
+  it('counts a level-less NbLayer inside a panel in main from that panel', async () => {
+    const wrapper = await mountWith(
+      { Shell },
+      '<Shell><Panel><Layer class="probe-layer"><Panel /></Layer></Panel></Shell>',
+    )
+    expect(layerOf(document.body.querySelector('.probe-layer'))).toBe(2)
+    expect(panelLayers(document.body)).toEqual([1, 2])
+    wrapper.unmount()
+  })
+
+  it('puts reorder rows in main on layer 1, and on 2 inside a panel there', async () => {
+    const wrapper = await mountWith(
+      { Shell, ReorderList },
+      `<Shell>
+        <ReorderList class="top" :model-value="['a', 'b']" />
+        <Panel><ReorderList class="nested" :model-value="['a', 'b']" /></Panel>
+      </Shell>`,
+    )
+    const top = document.body.querySelectorAll('.top .nb-reorder-list__row')
+    const nested = document.body.querySelectorAll(
+      '.nested .nb-reorder-list__row',
+    )
+    expect(Array.from(top).map(layerOf)).toEqual([1, 1])
+    expect(Array.from(nested).map(layerOf)).toEqual([2, 2])
     wrapper.unmount()
   })
 
