@@ -1,3 +1,16 @@
+# [5.34.0](https://github.com/nubisco/ui/compare/v5.33.0...v5.34.0) (2026-10-25)
+
+
+### Bug Fixes
+
+* **shell-panel:** a long title is cut with an ellipsis, and the buttons keep their size ([835855a](https://github.com/nubisco/ui/commit/835855aae90d0af5c7dd4a97d623f2c1db61c4b5))
+
+
+### Features
+
+* **breadcrumbs:** crumbs as data, rendered as real links and buttons ([0af54e0](https://github.com/nubisco/ui/commit/0af54e0a0c4711a67550cb8fe371ebf629a2ff36))
+* **button:** add a link variant that reads as a text link ([cd406fe](https://github.com/nubisco/ui/commit/cd406fe4fb484b02eff4cc80c439bc96f3218b06))
+
 # [5.33.0](https://github.com/nubisco/ui/compare/v5.32.1...v5.33.0) (2026-10-25)
 
 
