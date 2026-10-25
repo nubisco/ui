@@ -48,7 +48,7 @@
         </div>
 
         <!-- Row gutter + data cells -->
-        <template v-for="(row, vi) in renderRows" :key="`r-${row.id}`">
+        <template v-for="row in renderRows" :key="`r-${row.id}`">
           <div
             v-if="showGutter"
             class="nb-spreadsheet__gutter"
@@ -56,20 +56,21 @@
               'nb-spreadsheet__gutter--pinned-top': row.pinned === 'top',
               'nb-spreadsheet__gutter--pinned-bottom': row.pinned === 'bottom',
             }"
-            :style="gutterStyle(vi, row)"
+            :style="gutterStyle(row)"
           >
-            {{ row.gutterLabel ?? vi + 1 }}
+            {{ gutterText(row) }}
           </div>
           <div
             v-for="(col, ci) in orderedColumns"
             :key="`c-${row.id}-${col.id}`"
             class="nb-spreadsheet__cell"
             :class="cellClass(row, col)"
-            :style="cellStyle(row, col, vi, ci)"
+            :style="cellStyle(row, col, ci)"
             :title="cellTitle(row, col)"
             :data-cell="`${row.id}::${col.id}`"
             :data-row="row.id"
             :data-col="col.id"
+            @pointerdown="onCellPointerDown($event)"
             @mousedown="onCellMouseDown($event, row, col)"
             @mouseenter="onCellMouseEnter(row, col)"
             @dblclick="onCellDblClick(row, col)"
@@ -87,7 +88,8 @@
         class="nb-spreadsheet__editor"
         :style="editorStyle"
         :inputmode="editorInputMode"
-        @blur="commitEdit(true)"
+        enterkeyhint="next"
+        @blur="commitEdit(false)"
         @keydown.stop="onEditorKeydown"
       />
     </div>
@@ -113,6 +115,7 @@ const props = withDefaults(defineProps<ISpreadsheetProps>(), {
   resizable: true,
   rowReorderable: false,
   showGutter: true,
+  gutterWidth: 44,
   windowRows: 80,
   locale: 'pt-PT',
 })
@@ -140,10 +143,20 @@ interface IFocusCell {
 const focused = ref<IFocusCell | null>(null)
 const selection = ref<ISpreadsheetSelection | null>(null)
 const isSelecting = ref(false)
-const editing = ref<{ rowId: string; columnId: string; draft: string } | null>(
-  null,
-)
+// `mode` follows the two editing states of a desktop spreadsheet. A cell
+// opened by typing into it is in 'enter' mode, where the arrow keys commit
+// and move on, so a column of numbers can be keyed in without reaching for
+// the mouse. A cell opened with F2 or a double click is in 'edit' mode, where
+// Left and Right move the caret inside the text instead.
+const editing = ref<{
+  rowId: string
+  columnId: string
+  draft: string
+  mode: 'enter' | 'edit'
+} | null>(null)
 const scrollTop = ref(0)
+const scrollLeft = ref(0)
+let lastPointerType = ''
 const undoStack = ref<ISpreadsheetChange[][]>([])
 const redoStack = ref<ISpreadsheetChange[][]>([])
 
@@ -159,13 +172,14 @@ function widthOf(col: ISpreadsheetColumn): number {
   return columnWidths.value[col.id] ?? col.width ?? 120
 }
 
-const gutterWidth = 44
-const headerHeight = 32
-const rowHeight = 28
+// Defaults of --nbss-header-height and --nbss-row-height. Only the row
+// virtualization estimates with them: scrolling measures the rendered cells.
+const headerHeight = 36
+const rowHeight = 32
 
 const gridStyle = computed(() => {
   const cols =
-    (props.showGutter ? `${gutterWidth}px ` : '') +
+    (props.showGutter ? `${props.gutterWidth}px ` : '') +
     orderedColumns.value.map((c) => `${widthOf(c)}px`).join(' ')
   return { gridTemplateColumns: cols }
 })
@@ -336,7 +350,7 @@ function headerClass(col: ISpreadsheetColumn) {
 
 function pinnedLeftOffset(col: ISpreadsheetColumn): number {
   if (col.pinned !== 'left') return 0
-  let off = props.showGutter ? gutterWidth : 0
+  let off = props.showGutter ? props.gutterWidth : 0
   for (const c of orderedColumns.value) {
     if (c.id === col.id) break
     if (c.pinned === 'left') off += widthOf(c)
@@ -370,14 +384,12 @@ function headerStyle(col: ISpreadsheetColumn, ci: number) {
   return { gridRow: 1, gridColumn: baseCol, ...sticky }
 }
 
-function cellStyle(
-  row: ISpreadsheetRow,
-  col: ISpreadsheetColumn,
-  vi: number,
-  ci: number,
-) {
+// The grid row comes from the row's place in the whole sheet, not its place
+// in the rendered window, so rows above the window keep their height and a
+// virtualized row lands where it belongs.
+function cellStyle(row: IRenderRow, col: ISpreadsheetColumn, ci: number) {
   const baseCol = (props.showGutter ? 2 : 1) + ci
-  const gridRow = vi + 2
+  const gridRow = row.__virtualIndex + 2
   const sticky: Record<string, string> = {}
   if (col.pinned === 'left') {
     sticky.position = 'sticky'
@@ -391,27 +403,47 @@ function cellStyle(
   if (row.pinned === 'top' || row.pinned === 'bottom') {
     sticky.position = 'sticky'
     sticky.zIndex = String(Math.max(Number(sticky.zIndex ?? 0), 2))
-    if (row.pinned === 'top') sticky.top = `${headerHeight}px`
-    if (row.pinned === 'bottom') sticky.bottom = '0'
+    Object.assign(sticky, pinnedRowOffset(row))
   }
   return { gridRow, gridColumn: baseCol, ...sticky }
 }
 
-function gutterStyle(vi: number, row: ISpreadsheetRow) {
+// Rows pinned to the same edge stack instead of sharing one slot: each sits
+// one row height further in than the one nearer the edge.
+function pinnedRowOffset(row: ISpreadsheetRow): Record<string, string> {
+  if (row.pinned === 'top') {
+    const i = pinnedTopRows.value.findIndex((r) => r.id === row.id)
+    return {
+      top: `calc(var(--nbss-header-height) + var(--nbss-row-height) * ${Math.max(0, i)})`,
+    }
+  }
+  if (row.pinned === 'bottom') {
+    const rows = pinnedBottomRows.value
+    const i = rows.findIndex((r) => r.id === row.id)
+    return {
+      bottom: `calc(var(--nbss-row-height) * ${Math.max(0, rows.length - 1 - i)})`,
+    }
+  }
+  return {}
+}
+
+function gutterText(row: IRenderRow): string {
+  if (row.label !== undefined) return row.label
+  if (row.gutterLabel !== undefined) return row.gutterLabel
+  return String(row.__virtualIndex - pinnedTopRows.value.length + 1)
+}
+
+function gutterStyle(row: IRenderRow) {
   const sticky: Record<string, string> = {
     position: 'sticky',
     left: '0',
     zIndex: '2',
   }
-  if (row.pinned === 'top') {
-    sticky.top = `${headerHeight}px`
+  if (row.pinned) {
+    Object.assign(sticky, pinnedRowOffset(row))
     sticky.zIndex = '4'
   }
-  if (row.pinned === 'bottom') {
-    sticky.bottom = '0'
-    sticky.zIndex = '4'
-  }
-  return { gridRow: vi + 2, gridColumn: 1, ...sticky }
+  return { gridRow: row.__virtualIndex + 2, gridColumn: 1, ...sticky }
 }
 
 // ─── Selection helpers ─────────────────────────────────────────────────────
@@ -458,17 +490,34 @@ function setFocus(rowId: string, columnId: string, extendSelection = false) {
 }
 
 // ─── Mouse selection ───────────────────────────────────────────────────────
+function onCellPointerDown(e: PointerEvent) {
+  lastPointerType = e.pointerType
+}
+
 function onCellMouseDown(
   e: MouseEvent,
   row: ISpreadsheetRow,
   col: ISpreadsheetColumn,
 ) {
-  if (editing.value) commitEdit(true)
+  // A tap on the cell that is already active opens it for editing. On a
+  // touch screen there is no key to type into the cell, and the keyboard only
+  // appears for a focused field.
+  const tapOnActive =
+    lastPointerType === 'touch' &&
+    !e.shiftKey &&
+    focused.value?.rowId === row.id &&
+    focused.value?.columnId === col.id
+  lastPointerType = ''
+  if (editing.value) commitEdit()
   isSelecting.value = true
   setFocus(row.id, col.id, e.shiftKey)
-  scrollerRef.value?.focus()
+  focusScroller()
   e.preventDefault()
   document.addEventListener('mouseup', stopSelecting, { once: true })
+  if (tapOnActive && !isReadOnly(row, col)) {
+    const raw = rawValue(row.id, col.id)
+    startEdit(row, col, raw == null ? '' : String(raw), 'edit')
+  }
 }
 
 function onCellMouseEnter(row: ISpreadsheetRow, col: ISpreadsheetColumn) {
@@ -486,7 +535,15 @@ function stopSelecting() {
 }
 
 function onCellDblClick(row: ISpreadsheetRow, col: ISpreadsheetColumn) {
-  if (!isReadOnly(row, col)) startEdit(row, col, '')
+  if (isReadOnly(row, col)) return
+  const raw = rawValue(row.id, col.id)
+  startEdit(row, col, raw == null ? '' : String(raw), 'edit')
+}
+
+// Focus never scrolls: the sheet decides what is in view, so moving focus
+// between the scroller and the editor cannot throw the view back to the top.
+function focusScroller() {
+  scrollerRef.value?.focus({ preventScroll: true })
 }
 
 // ─── Keyboard ──────────────────────────────────────────────────────────────
@@ -508,27 +565,102 @@ function moveBy(dRow: number, dCol: number, extendSelection = false) {
   )
   const nri = Math.max(0, Math.min(allRows.length - 1, ri + dRow))
   const nci = Math.max(0, Math.min(orderedColumns.value.length - 1, ci + dCol))
-  setFocus(allRows[nri].id, orderedColumns.value[nci].id, extendSelection)
-  scrollIntoView(allRows[nri].id)
+  const rowId = allRows[nri].id
+  const columnId = orderedColumns.value[nci].id
+  setFocus(rowId, columnId, extendSelection)
+  scrollIntoView(rowId, columnId)
 }
 
-function scrollIntoView(rowId: string) {
-  // Only data rows trigger scroll; pinned rows are always visible.
-  const idx = sortedDataRows.value.findIndex((r) => r.id === rowId)
-  if (idx < 0 || !scrollerRef.value) return
-  const top = idx * rowHeight
+// Row and column ids are the host's, so they are quoted before going into an
+// attribute selector. CSS.escape would do it too, but not every DOM has it.
+function quoteAttr(value: string): string {
+  return value.replace(/["\\]/g, '\\$&')
+}
+
+function measuredHeight(selector: string): number {
+  const el = scrollerRef.value?.querySelector<HTMLElement>(selector)
+  return el ? el.offsetHeight : 0
+}
+
+function stickyRowsHeight(rows: ISpreadsheetRow[]): number {
+  let h = 0
+  for (const r of rows) h += measuredHeight(`[data-row="${quoteAttr(r.id)}"]`)
+  return h
+}
+
+function stickyColumnsWidth(side: 'left' | 'right'): number {
+  let w = side === 'left' && props.showGutter ? props.gutterWidth : 0
+  for (const c of orderedColumns.value) if (c.pinned === side) w += widthOf(c)
+  return w
+}
+
+// Brings a cell into the part of the scroller that the sticky header, pinned
+// rows and pinned columns leave uncovered, moving the view only as far as it
+// has to. Pinned cells are always in view, so they never scroll.
+function scrollIntoView(rowId: string, columnId?: string) {
   const view = scrollerRef.value
-  if (top < view.scrollTop) view.scrollTop = top
-  else if (top + rowHeight > view.scrollTop + view.clientHeight - headerHeight)
-    view.scrollTop = top - view.clientHeight + headerHeight + rowHeight
+  if (!view) return
+  const idx = sortedDataRows.value.findIndex((r) => r.id === rowId)
+  if (idx >= 0) {
+    // Every row has the same height (grid-auto-rows), so the row's top is
+    // arithmetic once the rendered sizes are measured. That also holds for a
+    // row the virtualization has not rendered yet.
+    const headerH = measuredHeight('.nb-spreadsheet__header') || headerHeight
+    const rowH = measuredHeight('.nb-spreadsheet__cell') || rowHeight
+    const top = headerH + (pinnedTopRows.value.length + idx) * rowH
+    const coverTop = headerH + stickyRowsHeight(pinnedTopRows.value)
+    const coverBottom = stickyRowsHeight(pinnedBottomRows.value)
+    if (top - coverTop < view.scrollTop) view.scrollTop = top - coverTop
+    else if (top + rowH > view.scrollTop + view.clientHeight - coverBottom)
+      view.scrollTop = top + rowH - view.clientHeight + coverBottom
+  }
+  const col = columnId
+    ? orderedColumns.value.find((c) => c.id === columnId)
+    : undefined
+  if (col && !col.pinned) {
+    let left = props.showGutter ? props.gutterWidth : 0
+    for (const c of orderedColumns.value) {
+      if (c.id === col.id) break
+      left += widthOf(c)
+    }
+    const width = widthOf(col)
+    const coverLeft = stickyColumnsWidth('left')
+    const coverRight = stickyColumnsWidth('right')
+    if (left - coverLeft < view.scrollLeft) view.scrollLeft = left - coverLeft
+    else if (left + width > view.scrollLeft + view.clientWidth - coverRight)
+      view.scrollLeft = left + width - view.clientWidth + coverRight
+  }
+  onScroll()
 }
 
 function onScroll() {
   scrollTop.value = scrollerRef.value?.scrollTop ?? 0
+  scrollLeft.value = scrollerRef.value?.scrollLeft ?? 0
+}
+
+function focusedCell() {
+  if (!focused.value) return null
+  const r = props.rows.find((rr) => rr.id === focused.value!.rowId)
+  const c = props.columns.find((cc) => cc.id === focused.value!.columnId)
+  return r && c ? { r, c } : null
+}
+
+function isPrintable(e: KeyboardEvent): boolean {
+  return !e.metaKey && !e.ctrlKey && !e.altKey && e.key.length === 1
 }
 
 function onKeydown(e: KeyboardEvent) {
-  if (editing.value) return
+  if (editing.value) {
+    // Keys that arrive before the editor has taken focus belong to it, so a
+    // fast typist loses nothing between the first key and the second.
+    if (e.target !== editorRef.value) {
+      if (isPrintable(e)) {
+        e.preventDefault()
+        editing.value.draft += e.key
+      } else onEditorKeydown(e)
+    }
+    return
+  }
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
     e.preventDefault()
     if (e.shiftKey) redo()
@@ -558,11 +690,7 @@ function onKeydown(e: KeyboardEvent) {
       break
     case 'Enter':
       e.preventDefault()
-      if (focused.value) {
-        const r = props.rows.find((rr) => rr.id === focused.value!.rowId)
-        const c = props.columns.find((cc) => cc.id === focused.value!.columnId)
-        if (r && c && !isReadOnly(r, c)) startEdit(r, c, '')
-      }
+      moveBy(e.shiftKey ? -1 : 1, 0)
       break
     case 'Escape':
       selection.value = null
@@ -573,32 +701,23 @@ function onKeydown(e: KeyboardEvent) {
       e.preventDefault()
       clearSelection()
       break
-    case 'F2':
+    case 'F2': {
       e.preventDefault()
-      if (focused.value) {
-        const r = props.rows.find((rr) => rr.id === focused.value!.rowId)
-        const c = props.columns.find((cc) => cc.id === focused.value!.columnId)
-        if (r && c && !isReadOnly(r, c)) {
-          const raw = rawValue(r.id, c.id)
-          startEdit(r, c, raw == null ? '' : String(raw))
-        }
+      const fc = focusedCell()
+      if (fc && !isReadOnly(fc.r, fc.c)) {
+        const raw = rawValue(fc.r.id, fc.c.id)
+        startEdit(fc.r, fc.c, raw == null ? '' : String(raw), 'edit')
       }
       break
-    default:
-      if (
-        focused.value &&
-        !e.metaKey &&
-        !e.ctrlKey &&
-        !e.altKey &&
-        e.key.length === 1
-      ) {
-        const r = props.rows.find((rr) => rr.id === focused.value!.rowId)
-        const c = props.columns.find((cc) => cc.id === focused.value!.columnId)
-        if (r && c && !isReadOnly(r, c)) {
-          e.preventDefault()
-          startEdit(r, c, e.key)
-        }
+    }
+    default: {
+      if (!isPrintable(e)) break
+      const fc = focusedCell()
+      if (fc && !isReadOnly(fc.r, fc.c)) {
+        e.preventDefault()
+        startEdit(fc.r, fc.c, e.key, 'enter')
       }
+    }
   }
 }
 
@@ -607,11 +726,20 @@ function startEdit(
   row: ISpreadsheetRow,
   col: ISpreadsheetColumn,
   draft: string,
+  mode: 'enter' | 'edit',
 ) {
-  editing.value = { rowId: row.id, columnId: col.id, draft }
+  scrollIntoView(row.id, col.id)
+  editing.value = { rowId: row.id, columnId: col.id, draft, mode }
   void nextTick(() => {
-    editorRef.value?.focus()
-    editorRef.value?.select()
+    const input = editorRef.value
+    if (!input) return
+    input.focus({ preventScroll: true })
+    // Typed into: the caret goes after what was typed, so the next key adds
+    // to it. Opened with F2 or a double click: the whole value is selected.
+    if (mode === 'enter') {
+      const end = input.value.length
+      input.setSelectionRange(end, end)
+    } else input.select()
   })
 }
 
@@ -622,64 +750,86 @@ const editorInputMode = computed(() => {
   return 'text'
 })
 
+// The editor is positioned inside the scroller's content, so a cell's place
+// on screen is turned into content coordinates by adding the scroll offset.
+// Without it, a cell below the fold puts the editor near the top of the
+// content, and focusing it scrolls the sheet back up.
 const editorStyle = computed(() => {
   if (!editing.value) return { display: 'none' }
-  const cell = scrollerRef.value?.querySelector<HTMLElement>(
-    `[data-cell="${editing.value.rowId}::${editing.value.columnId}"]`,
+  const view = scrollerRef.value
+  const cell = view?.querySelector<HTMLElement>(
+    `[data-cell="${quoteAttr(`${editing.value.rowId}::${editing.value.columnId}`)}"]`,
   )
-  if (!cell) return { display: 'none' }
+  if (!view || !cell) return { display: 'none' }
   const rect = cell.getBoundingClientRect()
-  const scrollRect = scrollerRef.value!.getBoundingClientRect()
+  const scrollRect = view.getBoundingClientRect()
   return {
-    top: `${rect.top - scrollRect.top}px`,
-    left: `${rect.left - scrollRect.left}px`,
+    top: `${rect.top - scrollRect.top - view.clientTop + scrollTop.value}px`,
+    left: `${rect.left - scrollRect.left - view.clientLeft + scrollLeft.value}px`,
     width: `${rect.width}px`,
     height: `${rect.height}px`,
   }
 })
 
 function onEditorKeydown(e: KeyboardEvent) {
-  if (e.key === 'Enter') {
-    e.preventDefault()
-    commitEdit(false)
-    moveBy(1, 0)
-  } else if (e.key === 'Tab') {
-    e.preventDefault()
-    commitEdit(false)
-    moveBy(0, e.shiftKey ? -1 : 1)
-  } else if (e.key === 'Escape') {
-    e.preventDefault()
-    editing.value = null
-    scrollerRef.value?.focus()
+  const mode = editing.value?.mode
+  let move: [number, number] | null = null
+  switch (e.key) {
+    case 'Enter':
+      move = [e.shiftKey ? -1 : 1, 0]
+      break
+    case 'Tab':
+      move = [0, e.shiftKey ? -1 : 1]
+      break
+    case 'ArrowDown':
+      move = [1, 0]
+      break
+    case 'ArrowUp':
+      move = [-1, 0]
+      break
+    case 'ArrowLeft':
+      if (mode === 'enter') move = [0, -1]
+      break
+    case 'ArrowRight':
+      if (mode === 'enter') move = [0, 1]
+      break
+    case 'Escape':
+      e.preventDefault()
+      editing.value = null
+      focusScroller()
+      return
   }
+  if (!move) return
+  e.preventDefault()
+  commitEdit()
+  moveBy(move[0], move[1])
 }
 
-function commitEdit(_blurOnly: boolean) {
+// `refocus` is off for a blur: the person has moved somewhere else on the
+// page, and the sheet must not pull focus back from there.
+function commitEdit(refocus = true) {
   if (!editing.value) return
   const { rowId, columnId, draft } = editing.value
+  // Cleared first: focusing the scroller blurs the editor, and its blur
+  // handler must find nothing left to commit.
+  editing.value = null
   const col = props.columns.find((c) => c.id === columnId)
-  if (!col) {
-    editing.value = null
-    return
-  }
+  if (!col) return
   let value: unknown
   try {
     value = col.parse ? col.parse(draft) : defaultParse(col, draft)
   } catch {
-    editing.value = null
+    if (refocus) focusScroller()
     return
   }
   const before = rawValue(rowId, columnId)
-  if (before === value) {
-    editing.value = null
-    return
+  if (before !== value) {
+    const change: ISpreadsheetChange = { rowId, columnId, before, after: value }
+    pushUndo([change])
+    emit('commit', change)
+    emit('change', [change])
   }
-  const change: ISpreadsheetChange = { rowId, columnId, before, after: value }
-  pushUndo([change])
-  emit('commit', change)
-  emit('change', [change])
-  editing.value = null
-  scrollerRef.value?.focus()
+  if (refocus) focusScroller()
 }
 
 // ─── Bulk clear / clipboard ────────────────────────────────────────────────
@@ -865,7 +1015,7 @@ function redo() {
 }
 
 onMounted(() => {
-  scrollerRef.value?.focus()
+  focusScroller()
 })
 
 // Expose for parents
@@ -878,6 +1028,8 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
+@use '../../styles/variables/breakpoints' as bp;
+
 // ─── NbSpreadsheet — Carbon-aligned data spreadsheet ──────────────────────
 //
 // Visual language follows IBM Carbon's Data Spreadsheet:
@@ -936,10 +1088,16 @@ defineExpose({
   box-shadow: inset 0 0 0 2px var(--nbss-focus-ring);
 }
 
+// The grid is as wide as its columns. A grid box only as wide as the
+// scroller lets its columns overflow it, and a sticky cell cannot leave its
+// parent's box, so the gutter and pinned-left columns would scroll away once
+// the sheet scrolled further right than the scroller is wide.
 .nb-spreadsheet__grid {
   display: grid;
   grid-auto-rows: var(--nbss-row-height);
   position: relative;
+  width: max-content;
+  min-width: 100%;
 }
 
 // ─── Header row ──────────────────────────────────────────────────────────
@@ -994,10 +1152,8 @@ defineExpose({
 
 // Resize handle: absolutely anchored to the right edge of the header so it
 // doesn't shift when neighbouring headers reflow. Hairline by default,
-// 2px primary on hover, full height for an easy hit target.
-.nb-spreadsheet__header {
-  position: relative;
-}
+// 2px primary on hover, full height for an easy hit target. The header is
+// sticky, which already anchors it: making it relative here would unstick it.
 .nb-spreadsheet__resize-handle {
   position: absolute;
   top: 0;
@@ -1030,9 +1186,20 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0 0.375rem;
   font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
   user-select: none;
+}
+
+// A pinned row's header names it (a total, a reference row), and reads with
+// the same weight as the row's cells.
+.nb-spreadsheet__gutter--pinned-top,
+.nb-spreadsheet__gutter--pinned-bottom {
+  color: var(--nb-c-text);
+  font-weight: 600;
 }
 
 // ─── Data cells ──────────────────────────────────────────────────────────
@@ -1113,5 +1280,12 @@ defineExpose({
   font: inherit;
   font-variant-numeric: tabular-nums;
   outline: none;
+}
+
+// iOS zooms into any field whose text is under 16px.
+@include bp.phone-touch {
+  .nb-spreadsheet__editor {
+    font-size: 16px;
+  }
 }
 </style>

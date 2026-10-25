@@ -173,9 +173,35 @@ Pair this with a small block of scoped CSS:
 }
 ```
 
+## Row labels in the gutter
+
+The gutter numbers the rows by default. When rows have names of their own, such as the days of a month or the totals under them, give each row a `label` and the gutter shows it instead. The sheet then needs no read-only column to carry the name, and the arrow keys never stop on one. Widen the gutter with `gutter-width` to fit the longest label.
+
+<preview>
+  <NbSpreadsheet
+    :columns="labelColumns"
+    :rows="labelRows"
+    :gutter-width="96"
+    :computed="computeLabelTotal"
+    @commit="onLabelCommit"
+  />
+</preview>
+
+```ts
+const rows: ISpreadsheetRow[] = [
+  { id: 'd-1', label: '1', values: { jan: 8 } },
+  { id: 'd-2', label: '2', values: { jan: 8 } },
+  { id: 'total', label: 'Total', pinned: 'bottom', computed: true, values: {} },
+]
+```
+
+```vue
+<NbSpreadsheet :columns="columns" :rows="rows" :gutter-width="96" />
+```
+
 ## Pinned columns and pinned rows
 
-Set `column.pinned` to `'left'` or `'right'` to keep a column visible while the user scrolls horizontally. Set `row.pinned` to `'top'` or `'bottom'` to do the same vertically. Multiple columns or rows can be pinned at the same edge — the order they appear in the array is preserved.
+Set `column.pinned` to `'left'` or `'right'` to keep a column visible while the user scrolls horizontally. Set `row.pinned` to `'top'` or `'bottom'` to do the same vertically. Multiple columns or rows can be pinned at the same edge. The order they appear in the array is preserved, and rows pinned to the same edge stack, so two totals rows under a sheet are both always in view.
 
 <preview>
   <NbSpreadsheet
@@ -197,17 +223,20 @@ Set `column.sortable = true` to allow header-click sorting. The first click sort
 
 ## Keyboard, mouse, and clipboard
 
-| Action                   | Keys                                            |
-| ------------------------ | ----------------------------------------------- |
-| Move the active cell     | `↑` `↓` `←` `→` / `Tab` / `Shift+Tab` / `Enter` |
-| Start editing            | Any printable key / `F2` / double-click         |
-| Commit and move down     | `Enter`                                         |
-| Commit and move right    | `Tab`                                           |
-| Cancel editing           | `Esc`                                           |
-| Clear the selected range | `Delete` / `Backspace`                          |
-| Extend the selection     | Hold `Shift` while moving / Shift-click         |
-| Copy / cut / paste (TSV) | `Cmd/Ctrl+C` / `Cmd/Ctrl+X` / `Cmd/Ctrl+V`      |
-| Undo / redo              | `Cmd/Ctrl+Z` / `Cmd/Ctrl+Shift+Z`               |
+| Action                   | Keys                                                            |
+| ------------------------ | --------------------------------------------------------------- |
+| Move the active cell     | `↑` `↓` `←` `→` / `Tab` / `Shift+Tab` / `Enter` / `Shift+Enter` |
+| Start editing            | Any printable key / `F2` / double-click / tap the active cell   |
+| Commit and move          | `Enter` / `Tab` / `↑` `↓`, and `←` `→` in a cell typed into     |
+| Cancel editing           | `Esc`                                                           |
+| Clear the selected range | `Delete` / `Backspace`                                          |
+| Extend the selection     | Hold `Shift` while moving / Shift-click                         |
+| Copy / cut / paste (TSV) | `Cmd/Ctrl+C` / `Cmd/Ctrl+X` / `Cmd/Ctrl+V`                      |
+| Undo / redo              | `Cmd/Ctrl+Z` / `Cmd/Ctrl+Shift+Z`                               |
+
+Editing has the two states of a desktop spreadsheet. A cell opened by typing into it takes every arrow key as "commit and move", so a column of numbers is keyed in as `8`, `↓`, `8`, `↓` without touching the mouse. A cell opened with `F2`, a double click or a tap keeps `←` and `→` for moving the caret inside the text.
+
+Moving the active cell scrolls the sheet only as far as needed to bring it clear of the sticky header, the pinned rows and the pinned columns. Starting or finishing an edit never scrolls it.
 
 Clipboard payloads are tab-separated values, so copy-paste round-trips cleanly with Excel, Numbers, and Google Sheets.
 
@@ -248,6 +277,7 @@ The component publishes per-instance CSS custom properties for the few decisions
 | `resizable`      | `boolean`                                                         | `true`    | Allow column resize from the right edge of the header                       |
 | `rowReorderable` | `boolean`                                                         | `false`   | Allow row drag-reorder via the gutter (Labs follow-up; emits `row-reorder`) |
 | `showGutter`     | `boolean`                                                         | `true`    | Show the row-index gutter on the left                                       |
+| `gutterWidth`    | `number`                                                          | `44`      | Gutter width in pixels. Widen it when rows carry a `label`                  |
 | `windowRows`     | `number`                                                          | `80`      | Approximate visible rows used for the simple row virtualization             |
 | `locale`         | `string`                                                          | `'pt-PT'` | Default locale for Intl-based number/date formatting                        |
 
@@ -278,6 +308,7 @@ interface ISpreadsheetRow {
   pinned?: 'top' | 'bottom' // freeze the row
   className?: string // row-wide CSS class
   computed?: boolean // marks as derived (read-only + styled)
+  label?: string // row header shown in the gutter in place of the row number
 }
 ```
 
@@ -471,6 +502,30 @@ function attrsCallback(_rowId: string, columnId: string) {
   if (columnId === 'sat' || columnId === 'sun') {
     return { readOnly: true, className: 'weekend' }
   }
+}
+
+// ── Row labels example ─────────────────────────────────────────────────────
+const labelColumns: ISpreadsheetColumn[] = [
+  { id: 'jan', label: 'Jan', type: 'number', align: 'right', width: 80 },
+  { id: 'feb', label: 'Feb', type: 'number', align: 'right', width: 80 },
+]
+const labelRows = ref<ISpreadsheetRow[]>([
+  ...Array.from({ length: 5 }, (_, i) => ({
+    id: `d-${i + 1}`,
+    label: String(i + 1),
+    values: { jan: 8, feb: i < 4 ? 8 : null } as Record<string, unknown>,
+  })),
+  { id: 'total', label: 'Total', pinned: 'bottom', computed: true, values: {} },
+])
+function computeLabelTotal(rowId: string, columnId: string): unknown {
+  if (rowId !== 'total') return undefined
+  return labelRows.value
+    .filter((r) => !r.pinned)
+    .reduce((s, r) => s + Number(r.values[columnId] ?? 0), 0)
+}
+function onLabelCommit(c: ISpreadsheetChange) {
+  const r = labelRows.value.find((x) => x.id === c.rowId)
+  if (r) r.values[c.columnId] = c.after
 }
 
 // ── Pinned columns and rows example ─────────────────────────────────────────

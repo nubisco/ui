@@ -45,6 +45,12 @@ export interface ISpreadsheetRow {
   className?: string
   /** Marks the row as a totals/computed row — disables editing. */
   computed?: boolean
+  /**
+   * Text for the row header in the gutter, in place of the row number. Use
+   * it when rows have a name of their own (a day, a total) so the sheet does
+   * not need a separate read-only column to show it.
+   */
+  label?: string
 }
 
 export interface ISpreadsheetCellAttrs {
@@ -97,6 +103,8 @@ export interface ISpreadsheetProps {
   rowReorderable?: boolean
   /** Show a row index gutter on the left. Default true. */
   showGutter?: boolean
+  /** Width of the gutter in pixels. Default 44. Widen it for `row.label`. */
+  gutterWidth?: number
   /** Approximate visible rows used for the simple virtualization. Default 80. */
   windowRows?: number
   /** Locale used for default Intl-based number/date formatting. */
