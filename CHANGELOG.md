@@ -1,3 +1,12 @@
+## [5.32.1](https://github.com/nubisco/ui/compare/v5.32.0...v5.32.1) (2026-10-25)
+
+
+### Bug Fixes
+
+* **button:** outlined variants clear AA on light surfaces too ([8b9b171](https://github.com/nubisco/ui/commit/8b9b171e33f98543b56ec7135cb734811812afc5))
+* **grid:** spans share their row's gap, and a responsive dir can go back to a row ([ba1ef2d](https://github.com/nubisco/ui/commit/ba1ef2d175ee706863cb8ae0291c352929431bf2))
+* **shell-panel:** take the layer from where it sits, as NbPanel does ([1acffd7](https://github.com/nubisco/ui/commit/1acffd706c798150a7bfe74caaa8bb2e5cc25918))
+
 # [5.32.0](https://github.com/nubisco/ui/compare/v5.31.1...v5.32.0) (2026-10-25)
 
 
