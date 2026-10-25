@@ -264,7 +264,7 @@ The button component supports distinct color `variant`, each designed for specif
 
 Add `:outlined="true"` (or just `outlined`) to any variant to remove the background and show a colored border and text instead. Ghost is excluded since it already has no background.
 
-The text, border and focus ring of an outlined button are drawn straight onto the surface behind it, so they use the variant's [ink](/theming#ink-a-semantic-colour-drawn-on-a-surface) rather than its fill colour. In light mode that is the same colour. In dark mode it is lifted toward white until it clears WCAG AA on every layer, which is what keeps an outlined secondary (a selected item in a side menu, say) readable on a dark page.
+The text, border and focus ring of an outlined button are drawn straight onto the surface behind it, so they use the variant's [ink](/theming#ink-a-semantic-colour-drawn-on-a-surface) rather than its fill colour. It is moved away from the surface (darker in light mode, lighter in dark) until it clears WCAG AA on every layer, including under the hover and pressed tint. That is what keeps an outlined secondary (a selected item in a side menu, say) readable on a dark page, and an outlined warning readable on a light one. Variants that already clear it, such as the light primary and secondary, are unchanged.
 
 <preview>
   <div class="demo-container">

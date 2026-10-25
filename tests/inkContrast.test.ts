@@ -31,7 +31,8 @@ const VARIANTS = [
   'warning',
   'danger',
 ] as const
-/** The strongest wash an outlined button paints under its own ink. */
+/** The washes an outlined button paints under its own ink. */
+const HOVER_WASH = 0.08
 const PRESSED_WASH = 0.14
 
 const resolvers = loadThemeResolvers()
@@ -60,27 +61,28 @@ function liftOf(get: (n: string) => string | null, variant: string): number {
   return Number((match as RegExpExecArray)[1]) / 100
 }
 
-describe('ink in the light theme', () => {
-  const get = resolvers.light
-
-  it.each(VARIANTS)('%s declares no lift, so light mode is unchanged', (v) => {
-    expect(get(`--nb-c-${v}-ink-lift`)).toBeNull()
-  })
-})
-
-describe('ink in the dark theme', () => {
-  const get = resolvers.dark
-  const white = rgb(get('--nb-c-white'), '--nb-c-white')
+describe.each(['light', 'dark'] as const)('ink in the %s theme', (theme) => {
+  const get = resolvers[theme]
+  const toward = rgb(get('--nb-c-ink-toward'), '--nb-c-ink-toward')
   const layers = LEVELS.map((i) =>
     rgb(get(`--nb-c-layer-${i}`), `--nb-c-layer-${i}`),
   )
 
+  it('moves away from the surface: toward black in light, white in dark', () => {
+    expect(toward).toEqual(theme === 'light' ? [0, 0, 0] : [255, 255, 255])
+  })
+
   describe.each(VARIANTS)('%s', (variant) => {
     const base = rgb(get(`--nb-c-${variant}`), `--nb-c-${variant}`)
-    const ink = mix(base, white, liftOf(get, variant))
+    const ink = mix(base, toward, liftOf(get, variant))
 
     it.each(LEVELS)('clears AA on layer %i', (level) => {
       expect(ratio(css(ink), css(layers[level]))).toBeGreaterThanOrEqual(AA)
+    })
+
+    it.each(LEVELS)('clears AA on its hover wash over layer %i', (level) => {
+      const wash = mix(layers[level], base, HOVER_WASH)
+      expect(ratio(css(ink), css(wash))).toBeGreaterThanOrEqual(AA)
     })
 
     it.each(LEVELS)('clears AA on its pressed wash over layer %i', (level) => {
@@ -88,9 +90,23 @@ describe('ink in the dark theme', () => {
       expect(ratio(css(ink), css(wash))).toBeGreaterThanOrEqual(AA)
     })
   })
+})
 
-  it('lifts the secondary, which is the one that failed in a product', () => {
-    expect(liftOf(get, 'secondary')).toBeGreaterThan(0)
+describe('the lifts that were needed', () => {
+  // The two reports this exists for: the dark secondary, and the light
+  // warning and success, all of which failed as outlined labels.
+  it('lifts the dark secondary', () => {
+    expect(liftOf(resolvers.dark, 'secondary')).toBeGreaterThan(0)
+  })
+
+  it('darkens the light warning and success', () => {
+    expect(liftOf(resolvers.light, 'warning')).toBeGreaterThan(0)
+    expect(liftOf(resolvers.light, 'success')).toBeGreaterThan(0)
+  })
+
+  it('leaves light primary and secondary alone, they already clear AA', () => {
+    expect(liftOf(resolvers.light, 'primary')).toBe(0)
+    expect(liftOf(resolvers.light, 'secondary')).toBe(0)
   })
 })
 
@@ -114,9 +130,18 @@ describe('a named theme with its own dark colour', () => {
     `@use 'theme-api' as nb;
      @include nb.theme('t', $dark: (primary: #a99dff, danger: #ff8a8a));
      @include nb.theme('u', $dark: (primary: #a99dff, primary-ink-lift: 20%));
-     @include nb.app-theme('a', $category: 'engineers');`,
+     @include nb.app-theme('a', $category: 'engineers');
+     @include nb.theme('l', $light: (warning: #8a5a00));`,
     { loadPaths: [resolve('src/styles')], style: 'expanded' },
   ).css
+
+  const lightBlock = (id: string) => {
+    const match = new RegExp(
+      `(?:^|\\n)\\[data-nb-theme=["']?${id}["']?\\][^{]*\\{([^}]*)\\}`,
+    ).exec(compiled)
+    expect(match, `no light block for ${id}`).toBeTruthy()
+    return (match as RegExpExecArray)[1]
+  }
 
   const darkBlock = (id: string) => {
     const match = new RegExp(
@@ -141,5 +166,17 @@ describe('a named theme with its own dark colour', () => {
 
   it('covers app-theme, whose accents already clear AA on every layer', () => {
     expect(darkBlock('a')).toMatch(/--nb-c-primary-ink-lift:\s*0%/)
+    expect(lightBlock('a')).toMatch(/--nb-c-primary-ink-lift:\s*0%/)
+  })
+
+  it('turns the light lift off for a variant it colours in light', () => {
+    expect(lightBlock('l')).toMatch(/--nb-c-warning-ink-lift:\s*0%/)
+    expect(lightBlock('l')).not.toMatch(/--nb-c-success-ink-lift/)
+  })
+
+  it('gives a light-only colour the dark lift back in a dark document', () => {
+    // The light scope applies in both modes, so without this its 0% would
+    // leave the theme's light warning unlifted on a dark layer.
+    expect(darkBlock('l')).toMatch(/--nb-c-warning-ink-lift:\s*6%/)
   })
 })

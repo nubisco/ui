@@ -54,6 +54,7 @@
 @use 'sass:string';
 @use 'accent' as accent;
 @use 'logic' as logic;
+@use 'logic/ink' as ink;
 @use 'variables/categories' as categories;
 
 /// The tints every palette colour is expanded into, matching the library's own
@@ -177,6 +178,7 @@ $a11y-roles:
   @if $palette != () or map.keys($light) != () or $light != () {
     [data-nb-theme='#{$id}'] {
       @include _palette($palette);
+      @include _ink-reset($light);
       @include _emit($light, $palette);
     }
   }
@@ -187,31 +189,47 @@ $a11y-roles:
    * single-attribute block above, so the dark half wins inside a dark document
    * regardless of the order the stylesheets happen to be concatenated in.
    */
-  @if map.keys($dark) != () or $dark != () {
+  @if map.keys($dark) != () or $dark != () or _has-ink($light) {
     .dark[data-nb-theme='#{$id}'],
     .dark [data-nb-theme='#{$id}'] {
-      @include _ink-reset($dark);
+      @include _ink-reset($dark, $light);
       @include _emit($dark, $palette);
     }
   }
 }
 
-/// The variants whose ink the dark theme lifts toward white.
-$_ink-variants: primary, secondary, success, info, warning, danger;
+/// Whether a token map colours any variant that ink applies to.
+@function _has-ink($tokens) {
+  @each $variant in ink.$variants {
+    @if map.has-key($tokens, $variant) {
+      @return true;
+    }
+  }
+  @return false;
+}
 
-/// Turns the dark ink lift off for every variant a theme gives its own dark
-/// colour.
+/// Turns the ink lift off for every variant a theme gives its own colour.
 ///
-/// The library's dark lift (`--nb-c-<variant>-ink-lift`, see
-/// `logic/_ink.scss`) is sized for the library's own dark colours. A theme that
-/// picks a dark colour has picked it for contrast already (every category accent
-/// clears AA on all four dark layers), and lifting it further would only wash it
-/// out. Emitted before the theme's own keys, so a theme that does want a lift
+/// The library's lifts (`--nb-c-<variant>-ink-lift`, see `logic/_ink.scss`)
+/// are sized for the library's own colours. A theme that picks a colour has
+/// picked it for contrast already (every category accent clears AA on all four
+/// layers of its mode), and moving it further would only wash it out or muddy
+/// it. Emitted before the theme's own keys, so a theme that does want a lift
 /// can still pass `primary-ink-lift` and win.
-@mixin _ink-reset($tokens) {
-  @each $variant in $_ink-variants {
+///
+/// The light scope applies in both modes, so its reset would also reach a dark
+/// document. A variant the theme colours only in light therefore gets the
+/// library's dark lift back in the dark scope: its light colour is what shows
+/// there, and it was not picked for a dark layer.
+///
+/// @param {Map} $tokens - the mode being emitted
+/// @param {Map} $light - the light map, when emitting the dark scope
+@mixin _ink-reset($tokens, $light: ()) {
+  @each $variant in ink.$variants {
     @if map.has-key($tokens, $variant) {
       --nb-c-#{$variant}-ink-lift: 0%;
+    } @else if map.has-key($light, $variant) {
+      --nb-c-#{$variant}-ink-lift: #{map.get(ink.$dark-lifts, $variant) or 0%};
     }
   }
 }

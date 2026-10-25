@@ -1,34 +1,73 @@
+@use 'sass:map';
+
 /// A semantic colour drawn as ink: text, an outline or an icon set directly on a
 /// surface, with no fill of its own behind it.
 ///
 /// The semantic colours (`--nb-c-primary`, `--nb-c-secondary`, ...) are picked
 /// first as FILLS, with their `-a11y` foreground on top. Drawn straight onto a
-/// surface they are a different pair, and in the dark theme several of them do
-/// not survive it: the dark secondary is a mid grey chosen to carry white text,
-/// and as the label of an outlined button it measured 1.21:1 to 2.15:1 against
-/// the four dark layers.
+/// surface they are a different pair, and several of them do not survive it.
+/// In dark mode the secondary is a mid grey chosen to carry white text, and as
+/// the label of an outlined button it measured 1.21:1 to 2.15:1 on the dark
+/// layers. In light mode the warning amber measured 1.75:1 to 2.06:1, and the
+/// success green 2.69:1 to 3.16:1.
 ///
-/// So ink lifts the colour toward white by `--nb-c-<variant>-ink-lift`. The
-/// light theme does not declare the lift, so the fallback of 0% returns the
-/// colour unchanged and light mode is pixel-identical. The dark theme declares
-/// one per variant, each the smallest lift that clears WCAG AA (4.5:1) on all
-/// four dark layers and on the 14% wash an outlined button paints when pressed.
-/// `tests/inkContrast.test.ts` measures it.
+/// So ink moves the colour away from the surface: toward
+/// `--nb-c-ink-toward` (black in light mode, white in dark) by
+/// `--nb-c-<variant>-ink-lift`. Each lift is the smallest whole value that
+/// clears WCAG AA (4.5:1) on all four layers of its theme, and on the 8% hover
+/// and 14% pressed washes an outlined button paints under its own label, plus
+/// two points of margin. A variant that already clears it has no lift.
+/// `tests/inkContrast.test.ts` measures every one.
 ///
 /// The mix is resolved on the element that paints, not at `:root`, so a product
 /// that re-points `--nb-c-primary` (on `:root` or on a themed subtree) gets ITS
-/// primary lifted, never the library's. A named theme that sets its own dark
-/// colour for a variant resets that variant's lift to 0%, because it chose that
-/// colour for contrast already (see `theme()` in `_theme-api.scss`).
+/// primary moved, never the library's. A named theme that sets its own colour
+/// for a variant resets that variant's lift to 0% in that mode, because it chose
+/// that colour for contrast already (see `theme()` in `_theme-api.scss`).
 ///
+/// @group @nubisco/colors
+
+/// Light-theme lifts, toward black.
+/// @type Map
+$light-lifts: (
+  success: 34%,
+  info: 14%,
+  warning: 46%,
+  danger: 22%,
+);
+
+/// Dark-theme lifts, toward white.
+/// @type Map
+$dark-lifts: (
+  primary: 48%,
+  secondary: 56%,
+  success: 21%,
+  info: 43%,
+  warning: 6%,
+  danger: 46%,
+);
+
+/// The variants ink applies to.
+$variants: primary, secondary, success, info, warning, danger;
+
+/// Declares one theme's lifts. Variants absent from the map get 0%, written
+/// out, so a theme scope never inherits the other mode's value.
+///
+/// @param {Map} $lifts - `$light-lifts` or `$dark-lifts`
+@mixin lifts($lifts) {
+  @each $variant in $variants {
+    --nb-c-#{$variant}-ink-lift: #{map.get($lifts, $variant) or 0%};
+  }
+}
+
 /// @param {String} $variant - primary, secondary, success, info, warning or danger
 /// @return {String} a `color-mix()` expression
 /// @access public
-/// @group @nubisco/colors
 @function ink($variant) {
   @return color-mix(
     in srgb,
     var(--nb-c-#{$variant}),
-    var(--nb-c-white) var(--nb-c-#{$variant}-ink-lift, 0%)
+    var(--nb-c-ink-toward, var(--nb-c-white))
+      var(--nb-c-#{$variant}-ink-lift, 0%)
   );
 }

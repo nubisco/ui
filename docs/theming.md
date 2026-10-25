@@ -455,7 +455,7 @@ count exactly like the standalone example above: first panel 1, panel in a panel
 2, and so on.
 
 <preview :props="layerProps" v-slot="{ resultingProps }">
-  <div :class="resultingProps.theme === 'dark' ? 'dark' : ''" class="shell-ground-demo" style="height: 300px; border: 1px solid var(--nb-c-border); overflow: hidden;">
+  <div :class="resultingProps.theme === 'dark' ? 'dark' : ''" class="shell-ground-demo" style="height: 380px; border: 1px solid var(--nb-c-border); overflow: hidden;">
     <NbShell>
       <template #topbar-left><strong>Chrome, layer 1</strong></template>
       <NbLabel size="sm" muted>Main region, the page ground: layer 0</NbLabel>
@@ -1051,27 +1051,32 @@ Each token above also has `-a11y` (auto-computed contrast text color), `-hover`,
 
 These colours are picked as fills, with their `-a11y` text on top. Drawn
 straight onto a layer instead (an outlined button's label and border, a
-drop-zone label) they are a different pair, and in dark mode several of them
-are too dark to read there. So the dark theme declares
-`--nb-c-<variant>-ink-lift`, how far each one moves toward white when used as
-ink:
+drop-zone label) they are a different pair, and several of them do not read
+there: in dark mode the secondary, in light mode the warning amber and the
+success green. So ink moves each colour away from the surface, toward
+`--nb-c-ink-toward` (black in light mode, white in dark) by
+`--nb-c-<variant>-ink-lift`:
 
-| Token                       | Dark | Light      |
-| --------------------------- | ---- | ---------- |
-| `--nb-c-primary-ink-lift`   | 48%  | not set, 0 |
-| `--nb-c-secondary-ink-lift` | 56%  | not set, 0 |
-| `--nb-c-success-ink-lift`   | 21%  | not set, 0 |
-| `--nb-c-info-ink-lift`      | 43%  | not set, 0 |
-| `--nb-c-warning-ink-lift`   | 6%   | not set, 0 |
-| `--nb-c-danger-ink-lift`    | 46%  | not set, 0 |
+| Token                       | Light, toward black | Dark, toward white |
+| --------------------------- | ------------------- | ------------------ |
+| `--nb-c-primary-ink-lift`   | 0%                  | 48%                |
+| `--nb-c-secondary-ink-lift` | 0%                  | 56%                |
+| `--nb-c-success-ink-lift`   | 34%                 | 21%                |
+| `--nb-c-info-ink-lift`      | 14%                 | 43%                |
+| `--nb-c-warning-ink-lift`   | 46%                 | 6%                 |
+| `--nb-c-danger-ink-lift`    | 22%                 | 46%                |
 
-Each dark value is the smallest that clears WCAG AA on all four dark layers,
-plus a small margin, and `tests/inkContrast.test.ts` holds it there. The mix is
-resolved on the element that paints, so a product that re-points
-`--nb-c-primary` gets its own primary lifted. A named theme that sets its own
-dark colour for a variant resets that variant's lift to `0%`, because it picked
-the colour for contrast already. Pass `primary-ink-lift` (or any variant's) in
-the theme's `$dark` map to choose a lift yourself.
+Each value is the smallest that clears WCAG AA on all four layers of its theme,
+and on the hover and pressed washes an outlined button paints under its label,
+plus a small margin. `tests/inkContrast.test.ts` holds them there. The values
+live in one place, `styles/logic/_ink.scss`.
+
+The mix is resolved on the element that paints, so a product that re-points
+`--nb-c-primary` gets its own primary moved. A named theme that sets its own
+colour for a variant resets that variant's lift to `0%` in that mode, because it
+picked the colour for contrast already (every category accent clears AA on all
+four layers). Pass `primary-ink-lift` (or any variant's) in the theme's `$light`
+or `$dark` map to choose a lift yourself.
 
 A component that draws a semantic colour as text reads it through the Sass
 helper rather than the bare token:

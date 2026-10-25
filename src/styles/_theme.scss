@@ -1,6 +1,7 @@
 @use 'sass:color';
 @use 'sass:map';
 @use 'accent';
+@use 'logic/ink';
 @use 'config';
 @use 'variables/layout';
 @use 'variables/colors';
@@ -167,6 +168,13 @@
     --nb-c-secondary-hover-a11y: var(--nb-c-plain-black-800-a11y);
     --nb-c-secondary-active: var(--nb-c-plain-black-850);
     --nb-c-secondary-active-a11y: var(--nb-c-plain-black-850-a11y);
+
+    // Ink: a semantic colour drawn as text or an outline straight onto a
+    // layer (an outlined button, a drop-zone label) moves away from the
+    // surface, toward black here and toward white in .dark, by a per-variant
+    // lift sized for WCAG AA on every layer. See `logic/_ink.scss`.
+    --nb-c-ink-toward: var(--nb-c-black);
+    @include ink.lifts(ink.$light-lifts);
 
     --nb-c-success: var(--nb-c-emerald-reflection-600);
     --nb-c-success-a11y: var(--nb-c-emerald-reflection-600-a11y);
@@ -912,18 +920,9 @@
         colors.get-color('chicken-comb', 400)
       )};
 
-    // Ink lift: how far each semantic colour moves toward white when it is
-    // drawn as text or an outline straight onto a dark layer (an outlined
-    // button, a drop-zone label). See `logic/_ink.scss`. Each value is the
-    // smallest whole lift that clears WCAG AA on all four dark layers and on
-    // the 14% pressed wash, plus two points of margin. The light theme
-    // declares none, so ink there is the colour itself.
-    --nb-c-primary-ink-lift: 48%;
-    --nb-c-secondary-ink-lift: 56%;
-    --nb-c-success-ink-lift: 21%;
-    --nb-c-info-ink-lift: 43%;
-    --nb-c-warning-ink-lift: 6%;
-    --nb-c-danger-ink-lift: 46%;
+    // Ink moves toward white on a dark layer. Lifts in `logic/_ink.scss`.
+    --nb-c-ink-toward: var(--nb-c-white);
+    @include ink.lifts(ink.$dark-lifts);
 
     // Component states
     --nb-c-component-inactive: #{colors.get-color('nouveau-gray', 500)};
