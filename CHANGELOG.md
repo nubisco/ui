@@ -1,3 +1,12 @@
+## [5.31.1](https://github.com/nubisco/ui/compare/v5.31.0...v5.31.1) (2026-10-25)
+
+
+### Bug Fixes
+
+* **button:** outlined variants read on dark surfaces ([2c1d3a9](https://github.com/nubisco/ui/commit/2c1d3a9527d5c9037e15fbaf8f7d51f7884d481e))
+* **reset:** a link button no longer covers the page on a touch phone ([bdb74f9](https://github.com/nubisco/ui/commit/bdb74f9a83eb673238f7b2e681db1bbf9c728fb1))
+* **shell:** main region paints layer 0, the page ground the docs promise ([2259b3e](https://github.com/nubisco/ui/commit/2259b3ed8e092ac4ce6fd6e3e549eaad2e4427f9))
+
 # [5.31.0](https://github.com/nubisco/ui/compare/v5.30.0...v5.31.0) (2026-10-25)
 
 
