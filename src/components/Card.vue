@@ -40,16 +40,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { ICardProps } from './CardGrid.d'
 import NbIcon from './Icon.vue'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
+import { useSurfaceLink } from './Card.link'
 
 const props = withDefaults(defineProps<ICardProps>(), {
   title: '',
   subtitle: '',
   icon: undefined,
   href: undefined,
+  to: undefined,
   target: undefined,
   clickable: false,
   selected: false,
@@ -66,45 +67,11 @@ const emit = defineEmits<{ select: [] }>()
 // it) instead of a card on it.
 const { layerProps } = useSurfaceLayer()
 
-// A card that navigates is a link, a card that acts is a button, and a card
-// that does neither is a div. Picking the element from the behaviour is what
-// gives each case the right keyboard and the right browser affordances without
-// the consumer having to ask for them.
-const isLink = computed(() => !!props.href && !props.disabled)
-const isInteractive = computed(
-  () => (isLink.value || props.clickable) && !props.disabled,
+// Link, button or div, picked from what the card does. See Card.link.ts.
+const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
+  props,
+  () => emit('select'),
 )
-const tag = computed(() =>
-  isLink.value ? 'a' : props.clickable ? 'div' : 'div',
-)
-
-const attrs = computed(() => {
-  if (isLink.value)
-    return {
-      href: props.href,
-      target: props.target,
-      rel: props.target === '_blank' ? 'noopener' : undefined,
-    }
-  if (props.clickable && !props.disabled)
-    return {
-      role: 'button',
-      tabindex: 0,
-      'aria-pressed': props.selected ? true : undefined,
-    }
-  return {}
-})
-
-function onClick() {
-  if (!props.clickable || props.disabled || isLink.value) return
-  emit('select')
-}
-
-function onKeydown(event: KeyboardEvent) {
-  if (!props.clickable || props.disabled || isLink.value) return
-  if (event.key !== 'Enter' && event.key !== ' ') return
-  event.preventDefault()
-  emit('select')
-}
 </script>
 
 <style scoped lang="scss">

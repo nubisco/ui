@@ -4,6 +4,7 @@ import { createSSRApp, h, ref } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { createRouter, createMemoryHistory, type Router } from 'vue-router'
 import Button from '../src/components/Button.vue'
+import Card from '../src/components/Card.vue'
 import SidebarLink from '../src/components/SidebarLink.vue'
 import SidebarMenuItem from '../src/components/SidebarMenuItem.vue'
 
@@ -90,6 +91,37 @@ describe('`to` links carry an href when a router is installed', () => {
     w.unmount()
   })
 
+  it('NbCard: string `to`', () => {
+    const w = mount(Card, {
+      props: { title: 'Contact', to: '/contact' },
+      ...withRouter(),
+    })
+    expect(w.element.tagName.toLowerCase()).toBe('a')
+    expect(w.attributes('href')).toBe('/contact')
+    expect(w.classes()).toContain('nb-card--interactive')
+  })
+
+  it('NbCard: named-route `to`, navigating in the app on click', async () => {
+    const w = mount(Card, {
+      props: { title: 'Contact', to: { name: 'contact' } },
+      ...withRouter(),
+    })
+    expect(w.attributes('href')).toBe('/contact')
+    await w.trigger('click')
+    await router.isReady()
+    await new Promise((r) => setTimeout(r))
+    expect(router.currentRoute.value.path).toBe('/contact')
+  })
+
+  it('NbCard: a disabled `to` card is not a link', () => {
+    const w = mount(Card, {
+      props: { title: 'Contact', to: '/contact', disabled: true },
+      ...withRouter(),
+    })
+    expect(w.element.tagName.toLowerCase()).toBe('div')
+    expect(w.attributes('href')).toBeUndefined()
+  })
+
   it('NbSidebarMenuItem: named-route `to`', () => {
     const w = mount(SidebarMenuItem, {
       props: { label: 'Contact', to: { name: 'contact' } },
@@ -132,6 +164,18 @@ describe('the no-router path keeps working', () => {
     expect(w.attributes('href')).toBe('/contact')
     expect(w.attributes('target')).toBe('_blank')
     expect(w.attributes('rel')).toBe('noopener')
+  })
+
+  it('NbCard renders a plain anchor for a string `to`', () => {
+    const w = mount(Card, { props: { title: 'Contact', to: '/contact' } })
+    expect(w.element.tagName.toLowerCase()).toBe('a')
+    expect(w.attributes('href')).toBe('/contact')
+  })
+
+  it('NbCard is not a dead link for an object `to` without a router', () => {
+    const w = mount(Card, { props: { title: 'Contact', to: { name: 'x' } } })
+    expect(w.element.tagName.toLowerCase()).toBe('div')
+    expect(w.attributes('href')).toBeUndefined()
   })
 
   it('NbSidebarLink renders a plain anchor for a string `to`', () => {
