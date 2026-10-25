@@ -1,5 +1,54 @@
 # Upgrading
 
+## To 5.31.1 from 5.31.0
+
+Two dark-mode fixes, and the layer fix they needed. Light mode is unchanged
+except for the page ground behind `NbShell` and the fill of `NbCard`.
+
+**`NbShell`'s main region paints layer 0, as documented.** It carried the
+layer-0 context but painted layer 1, because `--nb-shell-main-bg` was declared
+at `:root` as `var(--nb-c-surface)` and froze to the root's value. So a
+top-level `NbPanel` matched the page instead of sitting on it, and a card
+painted with `var(--nb-c-surface)` came out darker than the page around it.
+The page behind the main region now goes from `#f9fafb` to `#edeeef` (light)
+and from `#1e1f20` to `#0f1011` (dark). The topbar, menus, fixedbar and
+contextbar keep layer 1.
+
+**`NbCard` takes part in the layer system**, as `NbPanel` does. It used to
+paint whatever `--nb-c-surface` it inherited, which is its container's own
+surface, so a card straight on a page was the page's colour. It now paints one
+layer deeper than where it sits: layer 1 on a page, layer 2 inside a panel.
+
+**Check this if you relied on the old ground.**
+
+- **A card painted with `var(--nb-c-surface)` directly in a page** was layer 0
+  on a layer-1 page and is now layer 0 on a layer-0 page, with no separation.
+  Make it an `NbPanel`, or add `.nb-layer-1` to it, as
+  [The shell body is the page ground](/theming#the-shell-body-is-the-page-ground)
+  describes.
+- **Anything painted to blend with the page**, such as a sticky header, a
+  toolbar or a fade drawn in `var(--nb-c-layer-1)` or `var(--nb-c-bg-soft)`,
+  now stands out against it. Paint it `var(--nb-c-surface)` from the page's own
+  context, or `var(--nb-c-layer-0)`.
+- **To keep the old ground**, set `--nb-shell-main-bg: var(--nb-c-layer-1)` on
+  `:root`. That is a migration aid: top-level panels will again match the page.
+
+**Outlined buttons read on dark surfaces.** An outlined button draws its
+variant colour straight onto the layer behind it, and in dark mode the
+secondary measured 1.21 to 2.15:1 there. Outlined text, border and focus ring
+now use the variant's **ink**: the colour lifted toward white by
+`--nb-c-<variant>-ink-lift`, sized per variant to clear WCAG AA on all four
+dark layers. The same ink colours the `NbFileUploader` drop-zone label. The
+light theme declares no lift, so it renders exactly as before. A named theme
+that sets its own dark colour for a variant (every `app-theme` sets `primary`)
+keeps that colour unlifted.
+
+**Filled buttons in dark mode carry a readable foreground.** The dark primary
+hover and active, `info` and `danger` had kept the white text picked for their
+light steps (3.01 to 3.82:1). They now take whichever of white and near-black
+reads better, as every other fill already did, so in the default theme dark
+`info` and `danger` buttons, and the hovered primary, have dark text.
+
 ## To 5.31.0 from 5.30.x
 
 **`NbSpreadsheet` (labs) keys in like a desktop spreadsheet.** A cell typed

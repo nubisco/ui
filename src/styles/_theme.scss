@@ -636,9 +636,11 @@
     --nb-shell-menu-color: var(--nb-shell-chrome-color);
     --nb-shell-menu-border: var(--nb-shell-chrome-border);
     --nb-shell-body-bg: var(--nb-shell-chrome-bg);
-    // The page ground behind the main region. Kept separate from the chrome:
-    // a branded topbar usually sits above an unbranded page.
-    --nb-shell-main-bg: var(--nb-c-surface);
+    // --nb-shell-main-bg, the page ground behind the main region, is
+    // deliberately NOT declared here. Its default is the main region's own
+    // layer-0 surface, and that can only be resolved on the element (see
+    // `.nb-shell__main` in Shell.vue): declared at :root it froze to layer 1.
+    // A product still overrides it on :root as before, to any value.
     --nb-shell-inspector-width: calc(var(--nb-base-unit) * 70); // 560px
     --nb-shell-inspector-expanded-width: 50vw;
     // Ceiling for a visible inspector, whatever set its width (a size preset,

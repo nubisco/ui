@@ -425,6 +425,7 @@ These take a layer from context and deepen what they contain.
 | Component        | Surface it owns                                                                                                                                                                                                                                             |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `NbPanel`        | its own background                                                                                                                                                                                                                                          |
+| `NbCard`         | its own background, so a card on a page lands on layer 1 and a card in a panel on layer 2                                                                                                                                                                   |
 | `NbShellPanel`   | its own background                                                                                                                                                                                                                                          |
 | `NbDataTable`    | the table body behind toolbar, header and rows                                                                                                                                                                                                              |
 | `NbCalendar`     | the calendar frame                                                                                                                                                                                                                                          |
@@ -453,6 +454,21 @@ strips, fixedbar, the body behind them) is layer 1. The main region is the page
 count exactly like the standalone example above: first panel 1, panel in a panel
 2, and so on.
 
+<preview :props="layerProps" v-slot="{ resultingProps }">
+  <div :class="resultingProps.theme === 'dark' ? 'dark' : ''" class="shell-ground-demo" style="height: 300px; border: 1px solid var(--nb-c-border); overflow: hidden;">
+    <NbShell>
+      <template #topbar-left><strong>Chrome, layer 1</strong></template>
+      <NbLabel size="sm" muted>Main region, the page ground: layer 0</NbLabel>
+      <NbPanel style="margin-top: 8px;">
+        <NbLabel size="sm" muted>Panel, layer 1</NbLabel>
+        <NbPanel style="margin-top: 8px;">
+          <NbLabel size="sm" muted>Panel in a panel, layer 2</NbLabel>
+        </NbPanel>
+      </NbPanel>
+    </NbShell>
+  </div>
+</preview>
+
 ```vue
 <NbShell>
   <!-- main: layer 0 -->
@@ -463,6 +479,31 @@ count exactly like the standalone example above: first panel 1, panel in a panel
   </NbPanel>
 </NbShell>
 ```
+
+A card your page paints by hand follows the same rule as any other hand-painted
+surface: `var(--nb-c-surface)` is the surface of the nearest container, so
+directly inside the main region it is the ground itself. Make the card an
+`NbPanel`, or put `.nb-layer-1` on it (or wrap it in `<NbLayer>`), and it lands
+on layer 1 like every other first surface on the page.
+
+```vue
+<!-- the ground: no separation from the page -->
+<div class="my-card" />
+
+<!-- a card on the page -->
+<div class="my-card nb-layer-1" />
+```
+
+```scss
+.my-card {
+  background: var(--nb-c-surface);
+  border: 1px solid var(--nb-c-border);
+}
+```
+
+Before 5.31.1 the main region painted layer 1 rather than layer 0, the value
+`--nb-shell-main-bg` froze to at `:root`. Pages that looked right on that
+ground shift one step: see [Upgrading](/upgrading#to-5-31-1-from-5-31-0).
 
 The chrome slots keep counting from the chrome, because they are not the page: a
 surface dropped into `#topbar-right` sits on layer-1 chrome and paints layer 2.

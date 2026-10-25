@@ -1643,7 +1643,9 @@ defineExpose({
   display: flex;
   min-height: 0;
   overflow: hidden;
-  background: var(--nb-shell-main-bg);
+  // Resolves on the row, which sits in the chrome's layer 1, so the contextbar
+  // beside the page keeps the chrome fill. Only `main` itself is the ground.
+  background: var(--nb-shell-main-bg, var(--nb-c-surface));
 }
 
 .nb-shell__contextbar {
@@ -1665,7 +1667,7 @@ defineExpose({
   padding: 0.55rem 1.25rem;
   border: 0;
   border-bottom: 1px solid var(--nb-c-border);
-  background: var(--nb-shell-main-bg);
+  background: var(--nb-shell-main-bg, var(--nb-c-surface));
   color: var(--nb-c-text);
   font: inherit;
   font-size: 0.8rem;
@@ -1701,9 +1703,14 @@ defineExpose({
 
 .nb-shell__main {
   flex: 1;
-  // Reads layer 0 through the class the component binds here, so the page
-  // ground is a shade below the chrome it sits under rather than the same fill.
-  background: var(--nb-shell-main-bg);
+  // The page ground: layer 0, through the `nb-layer-0` class bound on this
+  // element. The fallback has to be written HERE, not as a `:root` default of
+  // the token. A custom property substitutes on the element that declares it,
+  // so `--nb-shell-main-bg: var(--nb-c-surface)` at `:root` froze to the
+  // root's surface (layer 1) and every main region painted layer 1 while its
+  // own `--nb-c-surface` said 0. A card painted with that surface then came
+  // out darker than the page around it, and an NbPanel matched the page.
+  background: var(--nb-shell-main-bg, var(--nb-c-surface));
   // Inline padding shares the chrome token so page content sits on the same
   // rail as the topbar and fixedbar; a private value here drifts the two.
   padding: 1.5rem var(--nb-shell-chrome-padding-x);
