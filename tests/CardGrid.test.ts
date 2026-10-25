@@ -70,6 +70,20 @@ describe('NbCard', () => {
     expect(w.emitted('select')).toHaveLength(2)
   })
 
+  it('hands the activating event to select, modifier keys and all', async () => {
+    const w = mount(Card, { props: { clickable: true } })
+    await w.trigger('click', { shiftKey: true })
+    await w.trigger('keydown', { key: 'Enter', metaKey: true })
+    const [[click], [key]] = w.emitted('select') as [
+      [MouseEvent],
+      [KeyboardEvent],
+    ]
+    expect(click).toBeInstanceOf(MouseEvent)
+    expect(click.shiftKey).toBe(true)
+    expect(key).toBeInstanceOf(KeyboardEvent)
+    expect(key.metaKey).toBe(true)
+  })
+
   it('is inert when disabled', async () => {
     const w = mount(Card, { props: { clickable: true, disabled: true } })
     await w.trigger('click')

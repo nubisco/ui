@@ -161,9 +161,9 @@ A tile behaves exactly like an `NbCard`, and picks its element the same way:
 
 ## Events
 
-| Event    | Payload | Description                                          |
-| -------- | ------- | ---------------------------------------------------- |
-| `select` | —       | The tile was activated. Only fires when `clickable`. |
+| Event    | Payload                       | Description                                                                                                                                                      |
+| -------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `select` | `MouseEvent \| KeyboardEvent` | The tile was activated by a click, Enter or Space. Only fires when `clickable`. The event carries the modifier keys, for a grid that selects a range with shift. |
 
 ## Slots
 
