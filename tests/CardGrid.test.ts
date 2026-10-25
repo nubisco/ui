@@ -84,6 +84,13 @@ describe('NbCard', () => {
     expect(key.metaKey).toBe(true)
   })
 
+  it('is md by default and takes the dense class at sm', () => {
+    expect(mount(Card).classes()).not.toContain('nb-card--sm')
+    expect(mount(Card, { props: { size: 'sm' } }).classes()).toContain(
+      'nb-card--sm',
+    )
+  })
+
   it('is inert when disabled', async () => {
     const w = mount(Card, { props: { clickable: true, disabled: true } })
     await w.trigger('click')
