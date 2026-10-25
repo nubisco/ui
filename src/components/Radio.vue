@@ -83,6 +83,7 @@ function optionClasses(option: IRadioOption) {
 
 <style scoped lang="scss">
 @use '../styles/variables/breakpoints' as bp;
+@use '../styles/logic/radius' as radius;
 
 .nb-radio {
   display: inline-flex;
@@ -166,12 +167,11 @@ function optionClasses(option: IRadioOption) {
     height: 18px;
     border: 1px solid var(--nb-c-field-border);
     /*
-     * A radio is round by convention, but the square appearance squares the
-     * library's controls, and a round radio beside a square checkbox is the
-     * one place the two languages visibly disagree. It follows the control
-     * corner and keeps its own shape only where that resolves to one.
+     * Round at every appearance. A radio squared to follow the control corner
+     * is indistinguishable from a checkbox, and the shape is the only thing
+     * that tells a person "pick one" from "pick any" before they click.
      */
-    border-radius: var(--nb-radius-control);
+    @include radius.circular;
     transition:
       border-color 0.15s,
       box-shadow 0.15s;
@@ -181,13 +181,7 @@ function optionClasses(option: IRadioOption) {
   &__dot {
     width: 9px;
     height: 9px;
-    /*
-     * A radio is round by convention, but the square appearance squares the
-     * library's controls, and a round radio beside a square checkbox is the
-     * one place the two languages visibly disagree. It follows the control
-     * corner and keeps its own shape only where that resolves to one.
-     */
-    border-radius: var(--nb-radius-control);
+    @include radius.circular;
     background: var(--nb-c-contrast);
     animation: nb-radio-pop 0.12s ease;
   }
