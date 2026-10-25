@@ -1,3 +1,16 @@
+# [5.35.0](https://github.com/nubisco/ui/compare/v5.34.0...v5.35.0) (2026-10-25)
+
+
+### Bug Fixes
+
+* **breadcrumbs:** a linked crumb stays on one line ([1adbc8e](https://github.com/nubisco/ui/commit/1adbc8e613b9b955cd0eedb875e277e548ed74ce))
+
+
+### Features
+
+* **card:** add a dense size for small tiles that act ([1d9a54b](https://github.com/nubisco/ui/commit/1d9a54b17b79b4c445123be22fc168e420fe9185))
+* **card:** select carries the event that activated the card ([d1ea42b](https://github.com/nubisco/ui/commit/d1ea42bdb9ae126a3573ac17a8bbb92872877081))
+
 # [5.34.0](https://github.com/nubisco/ui/compare/v5.33.0...v5.34.0) (2026-10-25)
 
 
