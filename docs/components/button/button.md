@@ -260,6 +260,46 @@ The button component supports distinct color `variant`, each designed for specif
   </div>
 </preview>
 
+## Link
+
+`variant="link"` is a button that reads as a text link: no fill, no box, an
+underline on hover and on keyboard focus. Use it for an action that sits inside
+text or a table cell, where a boxed button would be louder than the line around
+it: the key in a row that opens its record, "Select" beside a field, the way
+back out of a detail view.
+
+It takes the font size, weight and line height of where it sits, so it lines up
+with the text beside it, and `size` does not change it. It is still a real
+`<button>`, `<a>` or `<RouterLink>` (from `click`, `href` or `to`, as every other
+variant), so Enter and Space work, `disabled` works, and it shows the focus
+ring.
+
+<preview dir="col">
+  <p style="margin: 0">
+    The key <NbButton variant="link">home.hero.title</NbButton> is missing in
+    two locales. <NbButton variant="link" href="#link">Read about locales</NbButton>
+    or <NbButton variant="link" disabled>retry the import</NbButton>.
+  </p>
+</preview>
+
+```vue
+<NbButton variant="link" @click="open(key)">{{ key }}</NbButton>
+<NbButton variant="link" to="/settings/locales">Read about locales</NbButton>
+<NbButton variant="link" disabled>Retry the import</NbButton>
+```
+
+The colour is the primary drawn as
+[ink](/theming#ink-a-semantic-colour-drawn-on-a-surface), the same colour an
+outlined primary button uses, which clears WCAG AA on every layer in light and
+dark. Hover and focus add an underline and never a wash, so the colour it is
+read on does not change.
+
+To take the colour of the surrounding text instead (a list where every row is a
+link, where a column of primary text would be noise), set
+`--nb-button-link-color: currentColor` on the button or an ancestor. Use
+`currentColor`, not `inherit`: on a custom property, `inherit` inherits the
+property, not the colour.
+
 ## Outlined Variants
 
 Add `:outlined="true"` (or just `outlined`) to any variant to remove the background and show a colored border and text instead. Ghost is excluded since it already has no background.
@@ -332,18 +372,18 @@ The button uses CSS custom properties from the design system:
 
 ## Props
 
-| Prop       | Type                                                                                  | Default    | Description                                                                |
-| ---------- | ------------------------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------- |
-| `variant`  | `'primary' \| 'secondary' \| 'ghost' \| 'danger' \| 'success' \| 'warning' \| 'info'` | —          | Visual role. Omitted, the button renders the high-contrast base treatment. |
-| `outlined` | `boolean`                                                                             | `false`    | Transparent bg with colored border/text                                    |
-| `size`     | `'xxs' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| 'xxl'`                              | `'md'`     | Button size. The full scale, all seven backed by CSS (since 1.55.0)        |
-| `disabled` | `boolean`                                                                             | `false`    | Disables the button                                                        |
-| `loading`  | `boolean`                                                                             | `false`    | Shows a spinner and prevents interaction                                   |
-| `type`     | `'button' \| 'submit' \| 'reset'`                                                     | `'button'` | Native `<button>` type. Ignored when `href` is set                         |
-| `href`     | `string`                                                                              | -          | When provided, renders as `<a>` instead of `<button>`                      |
-| `target`   | `string`                                                                              | -          | Forwarded to `<a>`. Only used when `href` is set (e.g. `_blank`)           |
-| `rel`      | `string`                                                                              | -          | Forwarded to `<a>`. Only used when `href` is set (e.g. `noopener`)         |
-| `to`       | `string \| object`                                                                    | -          | When provided, renders as a `<RouterLink>` for Vue Router navigation       |
+| Prop       | Type                                                                                            | Default    | Description                                                                                                                |
+| ---------- | ----------------------------------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `variant`  | `'primary' \| 'secondary' \| 'ghost' \| 'link' \| 'danger' \| 'success' \| 'warning' \| 'info'` | —          | Visual role. Omitted, the button renders the high-contrast base treatment. `link` reads as a text link and ignores `size`. |
+| `outlined` | `boolean`                                                                                       | `false`    | Transparent bg with colored border/text                                                                                    |
+| `size`     | `'xxs' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| 'xxl'`                                        | `'md'`     | Button size. The full scale, all seven backed by CSS (since 1.55.0)                                                        |
+| `disabled` | `boolean`                                                                                       | `false`    | Disables the button                                                                                                        |
+| `loading`  | `boolean`                                                                                       | `false`    | Shows a spinner and prevents interaction                                                                                   |
+| `type`     | `'button' \| 'submit' \| 'reset'`                                                               | `'button'` | Native `<button>` type. Ignored when `href` is set                                                                         |
+| `href`     | `string`                                                                                        | -          | When provided, renders as `<a>` instead of `<button>`                                                                      |
+| `target`   | `string`                                                                                        | -          | Forwarded to `<a>`. Only used when `href` is set (e.g. `_blank`)                                                           |
+| `rel`      | `string`                                                                                        | -          | Forwarded to `<a>`. Only used when `href` is set (e.g. `noopener`)                                                         |
+| `to`       | `string \| object`                                                                              | -          | When provided, renders as a `<RouterLink>` for Vue Router navigation                                                       |
 
 ### Link buttons
 
@@ -383,15 +423,16 @@ Disabled state is communicated via `aria-disabled` instead of the `disabled` att
 Every variant reads a **semantic** token, never a ramp name. That is what lets
 a white-label product retheme the library without the accent leaking through:
 
-| Variant     | Token              | Means               |
-| ----------- | ------------------ | ------------------- |
-| `primary`   | `--nb-c-primary`   | The screen's action |
-| `secondary` | `--nb-c-secondary` | An alternative      |
-| `ghost`     | `--nb-c-contrast`  | Text only, no fill  |
-| `success`   | `--nb-c-success`   | A positive outcome  |
-| `info`      | `--nb-c-info`      | Informational       |
-| `warning`   | `--nb-c-warning`   | Proceed with care   |
-| `danger`    | `--nb-c-danger`    | Destroys something  |
+| Variant     | Token                     | Means               |
+| ----------- | ------------------------- | ------------------- |
+| `primary`   | `--nb-c-primary`          | The screen's action |
+| `secondary` | `--nb-c-secondary`        | An alternative      |
+| `ghost`     | `--nb-c-contrast`         | Text only, no fill  |
+| `link`      | `--nb-c-primary` (as ink) | A text link         |
+| `success`   | `--nb-c-success`          | A positive outcome  |
+| `info`      | `--nb-c-info`             | Informational       |
+| `warning`   | `--nb-c-warning`          | Proceed with care   |
+| `danger`    | `--nb-c-danger`           | Destroys something  |
 
 Each also uses the matching `-hover`, `-active` and `-a11y` tokens, so a
 retheme moves the whole state set together. Override the semantic token, not
@@ -416,6 +457,7 @@ const availableProps: PreviewPropDef[] = [
       { value: 'primary', label: 'primary' },
       { value: 'secondary', label: 'secondary' },
       { value: 'ghost', label: 'ghost' },
+      { value: 'link', label: 'link' },
       { value: 'danger', label: 'danger' },
       { value: 'success', label: 'success' },
       { value: 'warning', label: 'warning' },

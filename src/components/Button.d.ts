@@ -24,6 +24,7 @@ type TButtonVariant =
   | 'primary'
   | 'secondary'
   | 'ghost'
+  | 'link'
   | 'success'
   | 'info'
   | 'warning'
@@ -35,7 +36,10 @@ interface IButtonProps {
    * silently: `varaint="primary"` and `variant="primry"` both compiled and
    * both rendered the base button.
    *
-   * `primary` / `secondary` / `ghost` are the action hierarchy. The four
+   * `primary` / `secondary` / `ghost` are the action hierarchy. `link` is
+   * the quietest of them: no box at all, it reads as a text link in the line
+   * it sits in (its font size, weight and line height come from there, so
+   * `size` does not change it), underlined on hover and focus. The four
    * status roles say what a press MEANS, not how loud it is, so they belong on
    * a control whose semantics match: `danger` on something destructive, not on
    * whatever the page wants to emphasise.
