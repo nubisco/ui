@@ -74,6 +74,20 @@ describe('ProgressBar', () => {
     expect(track.attributes('aria-valuenow')).toBe('30')
   })
 
+  it('hideLabel keeps the accessible name and drops the visible label', () => {
+    const wrapper = createWrapper({
+      label: 'French',
+      value: 40,
+      hideLabel: true,
+      status: 'finished',
+    })
+    expect(wrapper.find('[data-testid="nb-label"]').exists()).toBe(false)
+    expect(wrapper.find('.nb-progress-bar__header').exists()).toBe(false)
+    expect(wrapper.find('[role="progressbar"]').attributes('aria-label')).toBe(
+      'French',
+    )
+  })
+
   it('is indeterminate without a value', () => {
     const wrapper = createWrapper({ label: 'Loading' })
     expect(wrapper.classes()).toContain('nb-progress-bar--indeterminate')

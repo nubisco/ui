@@ -1,6 +1,6 @@
 <template>
   <div :class="rootClasses">
-    <div v-if="label" class="nb-progress-bar__header">
+    <div v-if="label && !hideLabel" class="nb-progress-bar__header">
       <NbLabel>{{ label }}</NbLabel>
       <NbIcon
         v-if="statusIcon"
@@ -52,6 +52,7 @@ const props = withDefaults(defineProps<IProgressBarProps>(), {
   helper: undefined,
   size: EProgressBarSize.Medium,
   status: EProgressBarStatus.Active,
+  hideLabel: false,
 })
 
 // No value while active means the bar is still waiting for a measurable total
