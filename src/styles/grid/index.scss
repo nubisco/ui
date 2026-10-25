@@ -9,6 +9,11 @@
 @mixin defaults-root-styles {
   box-sizing: border-box;
   display: flex;
+  // A grid without a gap class has no gap for its spans to share, whatever
+  // the grid around it uses. Its gap class, being more specific, sets it.
+  > * {
+    --nb-grid-parent-gap: 0px;
+  }
   &.flex {
     flex: 1;
   }

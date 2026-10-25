@@ -4,11 +4,25 @@
 
 @mixin generate-styles($prefix) {
   // grid
+  //
+  // A span is its share of the row minus its share of the gaps, so spans that
+  // add up to the full row fit beside each other with the parent's gap
+  // between them: 8 + 8 is (100% - gap) / 2 each. The parent tells its
+  // children its gap and whether it is laid out as a row (only a row's gap is
+  // horizontal) through two custom properties it sets on them directly, below.
   @each $column in common.$var-columns-top {
     &.#{$prefix}grid-#{$column} {
-      flex-basis: calc((100% * #{$column}) / #{grid.$grid-columns});
-      max-width: calc((100% * #{$column}) / #{grid.$grid-columns});
-      min-width: calc((100% * #{$column}) / #{grid.$grid-columns});
+      $span: calc(
+        (100% * #{$column}) /
+          #{grid.$grid-columns} - var(--nb-grid-parent-gap, 0px) *
+          var(--nb-grid-parent-row, 1) *
+          #{grid.$grid-columns -
+          $column} /
+          #{grid.$grid-columns}
+      );
+      flex-basis: $span;
+      max-width: $span;
+      min-width: $span;
     }
   }
   @each $column in common.$var-columns-bottom {
@@ -22,10 +36,16 @@
     flex-direction: row;
     // width: 100%;
     // overflow-x: hidden;
+    > * {
+      --nb-grid-parent-row: 1;
+    }
   }
   &.#{$prefix}col {
     flex-direction: column;
     // width: 100%;
+    > * {
+      --nb-grid-parent-row: 0;
+    }
   }
 
   // wrap
@@ -112,6 +132,9 @@
   @each $gap in map.keys(grid.$gap-ratios) {
     &.#{$prefix}gap-#{$gap} {
       gap: map.get(grid.$gap-ratios, $gap);
+      > * {
+        --nb-grid-parent-gap: #{map.get(grid.$gap-ratios, $gap)};
+      }
     }
   }
 }

@@ -72,11 +72,9 @@ function handleDirection(value: TGridType, ctx: IHandlerContext): void {
   const { collection, breakpoint } = ctx
   const prefix = breakpoint ? `${breakpoint}-` : ''
 
-  // Skip base 'row' for responsive breakpoints (row is default)
-  if (breakpoint && value === 'row') {
-    return
-  }
-
+  // A breakpoint's 'row' is emitted like any other value. Row is only the
+  // default below the first breakpoint, so { sm: 'col', md: 'row' } needs
+  // md-row to switch back, and skipping it left the grid a column everywhere.
   collection[`${prefix}${value}`] = true
 }
 

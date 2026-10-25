@@ -24,7 +24,25 @@ it now paints one level deeper.
 `--nb-shell-panel-header-border` by reading them back.** They no longer have a
 `:root` default. Setting them on `:root` still overrides the panel, as before.
 
-## To 5.31.2 from 5.31.1
+**`NbGrid` spans share their row's gap.** A span was its fraction of the row
+with the same fraction as its minimum width, so spans that add up to the full
+row overflowed it by the gaps between them: `grid="8"` twice in a `gap="md"`
+row was 16px wider than the row, and in a wrapping row the second span went to
+the next line. A span now takes its share of the gaps off: 8 + 8 is
+`(100% - gap) / 2` each. Rows without a gap, and columns, are unchanged.
+
+**A responsive `dir` can go back to a row.** In a breakpoint map, a `'row'`
+value was dropped as "the default", so `:dir="{ sm: 'col', md: 'row' }"` (the
+example in the Grid docs) stayed a column at every width. It now emits `md-row`
+and turns back into a row from `md`.
+
+**Check this if you relied on the old widths.** A row with a gap and spans is
+narrower than before by exactly the overflow it used to have, so content that
+ran past the row's edge now fits inside it. A row you wrapped in
+`overflow: hidden`, or gave negative margins, to hide that overflow can drop
+the workaround.
+
+## To 5.31.1 from 5.31.0
 
 **A link button no longer swallows every tap on a phone.** The reset's
 `a { all: unset }` outranked `NbButton`'s zero-specificity `position: relative`,
@@ -35,8 +53,6 @@ to that link. The anchor reset is now `:where(a)`, at zero specificity.
 **Check this if you relied on the reset outranking your own rules.** A
 zero-specificity rule of yours on an anchor (`:where(...)`) that comes after
 the reset now applies where the reset used to win.
-
-## To 5.31.1 from 5.31.0
 
 Two dark-mode fixes, and the layer fix they needed. Light mode is unchanged
 except for the page ground behind `NbShell` and the fill of `NbCard`.
