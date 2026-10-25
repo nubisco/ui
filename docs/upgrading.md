@@ -1,5 +1,20 @@
 # Upgrading
 
+## To 5.36.0 from 5.35.0
+
+One change, and it changes what you see:
+
+**Parent crumbs in `NbBreadcrumbs` `items` are muted.** Every crumb above the
+current one, linked or not, is drawn in the subtle text colour, and the current
+crumb stays at full strength. Hover or keyboard focus on a linked parent lifts
+it to full strength with its underline. The subtle tier clears AA on every
+layer, resting and hovered, in light and dark. A trail built from the default
+slot is unchanged.
+
+**Check this if you re-pointed `--nb-button-link-color` on a crumb** to give
+parents a colour of your own. The trail now sets it, so remove the override
+unless you mean to keep a different colour.
+
 ## To 5.35.0 from 5.34.0
 
 New, and nothing changes unless you use it:

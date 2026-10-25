@@ -44,7 +44,7 @@
             @click="onActivate(item, index, $event)"
             >{{ item.label }}</NbButton
           >
-          <span v-else>{{ item.label }}</span>
+          <span v-else class="nb-breadcrumbs__parent">{{ item.label }}</span>
         </span>
       </template>
       <slot v-else />
@@ -211,11 +211,34 @@ const collapsed = computed(
   font-weight: 400;
 }
 
-/* A linked crumb reads as the trail around it, not as a coloured link: same
- * colour, same weight, and the link variant's underline on hover and focus is
- * what says it can be followed. The current crumb stays plain text. */
+/* The page you are on is the one crumb at full strength. The levels above it
+ * step back to the subtle text tier, so the eye lands on the current page and
+ * the trail reads as the way there. Subtle rather than muted because muted sits
+ * so close to the body text that a parent and the current crumb would look the
+ * same. Subtle is held at WCAG AA on every layer and its hover, in both themes,
+ * by `tests/layerContrast.test.ts`, so a muted crumb is still readable on any
+ * surface the trail lands on.
+ *
+ * A linked crumb is not a coloured link: same weight as the trail, and the link
+ * variant's underline on hover and keyboard focus is what says it can be
+ * followed. Hover and focus also lift it to full strength, so the crumb you are
+ * about to follow reads like the page it leads to. The current crumb stays
+ * plain text. */
+.nb-breadcrumbs__current {
+  color: var(--nb-c-text);
+}
+
+.nb-breadcrumbs__parent {
+  color: var(--nb-c-text-subtle);
+}
+
 .nb-breadcrumbs__link {
-  --nb-button-link-color: currentColor;
+  --nb-button-link-color: var(--nb-c-text-subtle);
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    --nb-button-link-color: var(--nb-c-text);
+  }
 }
 
 /* A crumb is a name, and a name does not wrap. The link variant lets text wrap,
