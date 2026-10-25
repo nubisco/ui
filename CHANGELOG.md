@@ -1,3 +1,16 @@
+# [5.33.0](https://github.com/nubisco/ui/compare/v5.32.1...v5.33.0) (2026-10-25)
+
+
+### Bug Fixes
+
+* **layer:** a level-less NbLayer steps one above its surroundings ([a4b391f](https://github.com/nubisco/ui/commit/a4b391f5d1b0719c000ba50a4c670891839f4e65))
+
+
+### Features
+
+* **card:** add a media box and a horizontal layout ([adeda40](https://github.com/nubisco/ui/commit/adeda40a410e16327e4aef341c6f3733cf4bb517))
+* **stat:** add a dense size for KPI rows ([0ac4a7e](https://github.com/nubisco/ui/commit/0ac4a7eb6ef42f72298da896fd6b92825ddaaec0))
+
 ## [5.32.1](https://github.com/nubisco/ui/compare/v5.32.0...v5.32.1) (2026-10-25)
 
 
