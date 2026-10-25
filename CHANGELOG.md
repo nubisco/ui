@@ -1,3 +1,10 @@
+# [5.36.0](https://github.com/nubisco/ui/compare/v5.35.0...v5.36.0) (2026-10-25)
+
+
+### Features
+
+* **breadcrumbs:** parent crumbs are muted, the current one is full strength ([e0b65f1](https://github.com/nubisco/ui/commit/e0b65f1dc4a377315a564edf520e5a3716feb1e7))
+
 # [5.35.0](https://github.com/nubisco/ui/compare/v5.34.0...v5.35.0) (2026-10-25)
 
 
