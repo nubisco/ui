@@ -7,7 +7,7 @@
       'nb-card--selected': selected,
       'nb-card--disabled': disabled,
     }"
-    v-bind="attrs"
+    v-bind="{ ...attrs, ...layerProps }"
     @click="onClick"
     @keydown="onKeydown"
   >
@@ -43,6 +43,7 @@
 import { computed } from 'vue'
 import type { ICardProps } from './CardGrid.d'
 import NbIcon from './Icon.vue'
+import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 
 const props = withDefaults(defineProps<ICardProps>(), {
   title: '',
@@ -56,6 +57,14 @@ const props = withDefaults(defineProps<ICardProps>(), {
 })
 
 const emit = defineEmits<{ select: [] }>()
+
+// A card paints a surface, so it takes part in the layer system exactly as
+// NbPanel does: it paints the next layer down from wherever it sits and pushes
+// its contents one deeper. It used to paint whatever `--nb-c-surface` it
+// inherited, which is the surface of its CONTAINER, so a card straight on a
+// page was the page's own colour (or, under the old shell ground, darker than
+// it) instead of a card on it.
+const { layerProps } = useSurfaceLayer()
 
 // A card that navigates is a link, a card that acts is a button, and a card
 // that does neither is a div. Picking the element from the behaviour is what

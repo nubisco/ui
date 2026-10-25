@@ -1640,7 +1640,7 @@ competing with our scoped styles.
   --nb-shell-topbar-bg: var(--nb-c-surface-raised);
   --nb-shell-topbar-border: none;
   --nb-shell-sidebar-bg: #14141f;
-  --nb-shell-main-bg: var(--nb-c-surface);
+  --nb-shell-main-bg: var(--nb-c-layer-0);
 }
 ```
 

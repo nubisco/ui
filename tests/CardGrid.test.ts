@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import CardGrid from '../src/components/CardGrid.vue'
 import Card from '../src/components/Card.vue'
+import Panel from '../src/components/Panel.vue'
+import { defineComponent } from 'vue'
 
 describe('NbCardGrid', () => {
   it('lays out columns from a minimum card width, not a page span', () => {
@@ -99,5 +101,35 @@ describe('NbCard', () => {
     expect(w.find('.nb-card__body').exists()).toBe(false)
     expect(w.find('.nb-card__footer').exists()).toBe(false)
     expect(w.find('.nb-card__icon').exists()).toBe(false)
+  })
+})
+
+describe('NbCard and the layer system', () => {
+  // A card is a surface, so it derives its depth exactly as NbPanel does. It
+  // used to paint whatever `--nb-c-surface` it inherited, the surface of its
+  // container, so a card straight on a shell page was the page's own colour.
+  const mountTree = (template: string) =>
+    mount(defineComponent({ components: { Card, Panel }, template }), {
+      attachTo: document.body,
+    })
+
+  it('paints layer 1 at the top of a tree, the first surface on a page', () => {
+    const w = mountTree('<Card title="A" />')
+    expect(w.find('.nb-card').classes()).toContain('nb-layer-1')
+    expect(w.find('.nb-card').attributes('data-nb-layer')).toBe('1')
+    w.unmount()
+  })
+
+  it('goes one deeper inside a panel', () => {
+    const w = mountTree('<Panel><Card title="A" /></Panel>')
+    expect(w.find('.nb-card').classes()).toContain('nb-layer-2')
+    w.unmount()
+  })
+
+  it('keeps a layer class the consumer writes', () => {
+    const w = mountTree('<Card title="A" class="nb-layer-3" />')
+    expect(w.find('.nb-card').classes()).toContain('nb-layer-3')
+    expect(w.find('.nb-card').classes()).not.toContain('nb-layer-1')
+    w.unmount()
   })
 })

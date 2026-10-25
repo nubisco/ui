@@ -1350,19 +1350,19 @@ Eight of these regions can also be filled from a view with [`useShellSlot`](/com
 
 ## CSS Custom Properties
 
-All of these are declared at `:root`, so an application overrides them there without competing with the component's scoped styles.
+All of these are declared at `:root`, so an application overrides them there without competing with the component's scoped styles. The one exception is `--nb-shell-main-bg`: its default is the main region's own layer-0 surface, which only resolves on the main element itself (declared at `:root`, it froze to layer 1). Setting it on `:root` still overrides it as before.
 
 ### Frame and chrome
 
-| Variable                      | Default                         | Description                                                             |
-| ----------------------------- | ------------------------------- | ----------------------------------------------------------------------- |
-| `--nb-shell-bg`               | `var(--nb-c-surface-raised)`    | The frame ground, visible behind and between regions                    |
-| `--nb-shell-chrome-bg`        | `var(--nb-c-surface)`           | Fallback background for every chrome strip                              |
-| `--nb-shell-chrome-color`     | `var(--nb-c-text)`              | Fallback text colour for every chrome strip                             |
-| `--nb-shell-chrome-border`    | `1px solid var(--nb-c-border)`  | Fallback separator, as a full `border` shorthand (set `none` to remove) |
-| `--nb-shell-chrome-padding-x` | `calc(var(--nb-base-unit) * 3)` | Horizontal padding of the topbar and the fixedbar                       |
-| `--nb-shell-body-bg`          | `var(--nb-shell-chrome-bg)`     | Background of the body column that holds the topbar and main            |
-| `--nb-shell-main-bg`          | `var(--nb-c-surface)`           | Background of the scrolling main region (the page ground)               |
+| Variable                      | Default                              | Description                                                             |
+| ----------------------------- | ------------------------------------ | ----------------------------------------------------------------------- |
+| `--nb-shell-bg`               | `var(--nb-c-surface-raised)`         | The frame ground, visible behind and between regions                    |
+| `--nb-shell-chrome-bg`        | `var(--nb-c-surface)`                | Fallback background for every chrome strip                              |
+| `--nb-shell-chrome-color`     | `var(--nb-c-text)`                   | Fallback text colour for every chrome strip                             |
+| `--nb-shell-chrome-border`    | `1px solid var(--nb-c-border)`       | Fallback separator, as a full `border` shorthand (set `none` to remove) |
+| `--nb-shell-chrome-padding-x` | `calc(var(--nb-base-unit) * 3)`      | Horizontal padding of the topbar and the fixedbar                       |
+| `--nb-shell-body-bg`          | `var(--nb-shell-chrome-bg)`          | Background of the body column that holds the topbar and main            |
+| `--nb-shell-main-bg`          | unset: the main region's own layer 0 | Background of the scrolling main region (the page ground)               |
 
 ### Per region
 
