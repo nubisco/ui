@@ -1,5 +1,22 @@
 # Upgrading
 
+## To 5.31.0 from 5.30.x
+
+**`NbSpreadsheet` (labs) keys in like a desktop spreadsheet.** A cell typed
+into now commits and moves on with any arrow key, so `8`, `↓`, `8`, `↓` fills a
+column. Starting or finishing an edit no longer scrolls the sheet: the editor
+used to be placed as if the sheet were never scrolled, and focusing it threw a
+scrolled sheet back up. The sticky header now stays put, the gutter and
+pinned-left columns stay put when the sheet scrolls sideways, and rows pinned
+to the same edge stack instead of covering each other. New: `row.label` shows
+in the gutter in place of the row number, and `gutterWidth` sets its width.
+On a touch screen, a tap on the active cell opens it for editing.
+
+**Check this if you relied on Enter to start editing.** `Enter` on a cell that
+is not being edited now moves down (and `Shift+Enter` up), as the keyboard
+table in the docs always said. Typing, `F2`, a double click or a tap start an
+edit.
+
 ## To 5.20.0 from 5.19.x
 
 **`NbDatePicker` reads typed dates in the locale's order.** A typed date used
