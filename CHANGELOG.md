@@ -1,3 +1,10 @@
+# [5.31.0](https://github.com/nubisco/ui/compare/v5.30.0...v5.31.0) (2026-10-25)
+
+
+### Features
+
+* **spreadsheet:** key in a column with the arrows, without the sheet jumping ([85fede6](https://github.com/nubisco/ui/commit/85fede6b4444a853aed6d3a6fc189e26c2a843bf))
+
 # [5.30.0](https://github.com/nubisco/ui/compare/v5.29.0...v5.30.0) (2026-10-24)
 
 
