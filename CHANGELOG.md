@@ -1,3 +1,17 @@
+# [5.32.0](https://github.com/nubisco/ui/compare/v5.31.1...v5.32.0) (2026-10-25)
+
+
+### Bug Fixes
+
+* **radio:** radios are round at every appearance ([2b46fef](https://github.com/nubisco/ui/commit/2b46fefb3755651f9cba8e10ff97795f6a4ed919))
+
+
+### Features
+
+* **card:** a to prop for router navigation, as on NbButton ([990c064](https://github.com/nubisco/ui/commit/990c064a812f0b424d800ec5352560860e5e0064))
+* NbStat tiles and NbSuggestionList for autocomplete ([5124642](https://github.com/nubisco/ui/commit/5124642341897b5e7d7790e0bcdb477dda460b68)), closes [#dropdown](https://github.com/nubisco/ui/issues/dropdown) [#dropdown](https://github.com/nubisco/ui/issues/dropdown)
+* **progress-bar:** hideLabel keeps the accessible name without showing it ([eac3c6d](https://github.com/nubisco/ui/commit/eac3c6d596e87868e598f67e6e3237b2b950e30a))
+
 ## [5.31.1](https://github.com/nubisco/ui/compare/v5.31.0...v5.31.1) (2026-10-25)
 
 
