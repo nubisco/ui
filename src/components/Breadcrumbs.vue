@@ -218,6 +218,18 @@ const collapsed = computed(
   --nb-button-link-color: currentColor;
 }
 
+/* A crumb is a name, and a name does not wrap. The link variant lets text wrap,
+ * which is right in a paragraph, but in a tight topbar it broke a crumb over
+ * two lines. Written with the item in the selector so it outranks the
+ * button's own rule whatever order the two stylesheets load in. */
+.nb-breadcrumbs__item {
+  white-space: nowrap;
+}
+
+.nb-breadcrumbs__item > .nb-breadcrumbs__link {
+  white-space: nowrap;
+}
+
 // Phone, opted in: the last crumb alone, shrinking into an ellipsis rather
 // than pushing the topbar's actions off screen. The class is only ever set by
 // the component on a phone, so nothing here reaches a desktop.
