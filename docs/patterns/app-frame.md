@@ -903,21 +903,64 @@ entirely, because nothing in it is focusable, while the right-hand one stops on
         <a href="#crumbs-are-links-not-text">Casa del Mar</a>
         <span aria-current="page">Tasks</span>
       </NbBreadcrumbs>
-      <p class="afx-note">Two real links and one current page. In an application the links are <code>RouterLink</code>s, and in a routerless one they are <code>NbButton variant="ghost"</code> calling <code>ascend()</code>.</p>
+      <p class="afx-note">Two real links and one current page. In an application the links are <code>RouterLink</code>s, and in a routerless one they are buttons calling <code>ascend()</code>. The <code>items</code> prop builds either for you.</p>
     </div>
   </div>
 </preview>
 
-::: warning What the running demo exposes: the component draws no separator between crumbs
-`NbBreadcrumbs` renders one chevron, between the brand prefix and the crumbs,
-and **nothing between the crumbs themselves**: they are laid out by a `0.35rem`
-gap, so the two trails above read as spaced words rather than as a path. That is
-a library gap, not a licence to inject your own `›` into the slot: a separator
-typed into the crumb list is read aloud, is not consistent between products, and
-is exactly the hand-rolled fix this page rules against. Raise it, the way
-[Theming the frame](#theming-the-frame-without-selectors) says to, and pass real
-links in the meantime.
-:::
+`NbBreadcrumbs` draws a `/` between crumbs itself, in CSS, so do not type a
+separator into the slot: it would be read aloud.
+
+### Crumbs as data: `items`
+
+The slot leaves every crumb's element to you. `items` takes the trail as data
+and makes the right element for each crumb, which is the simpler way to get it
+right:
+
+| A crumb with                                    | Renders as                                                         |
+| ----------------------------------------------- | ------------------------------------------------------------------ |
+| `to`                                            | a `<RouterLink>` (a plain `<a>` for a string path with no router)  |
+| `href`                                          | an `<a>`                                                           |
+| `onClick`, or a `@select` listener on the trail | a `<button>`, for a subject a view opened inside itself            |
+| nothing to do                                   | text                                                               |
+| `current: true`, or the last one by default     | text with `aria-current="page"`, never a link, whatever it carries |
+
+The links and buttons are [`NbButton variant="link"`](/components/button/button#link)
+in the trail's own colour and weight: they underline on hover and on keyboard
+focus, show the focus ring, and Enter and Space activate them. Activating any of
+them emits `select` with the item, its index and the click.
+
+<preview dir="col">
+  <NbBreadcrumbs
+    title="Meridian"
+    subtitle="Properties"
+    :items="[
+      { label: 'Properties', href: '#crumbs-as-data-items' },
+      { label: 'Casa del Mar', onClick: () => {} },
+      { label: 'Tasks' },
+    ]"
+  />
+</preview>
+
+```vue
+<NbBreadcrumbs
+  title="Meridian"
+  subtitle="Properties"
+  :items="[
+    { label: 'Properties', to: '/properties' },
+    { label: property.name, to: `/properties/${property.id}` },
+    { label: 'Tasks' },
+  ]"
+/>
+
+<!-- A detail the view opened inside itself has no route: its way out is a button. -->
+<NbBreadcrumbs
+  :items="[{ label: 'Entries', onClick: closeEntry }, { label: entry.title }]"
+/>
+```
+
+When `items` is set it replaces the default slot. The slot still works as it
+always has.
 
 ### No back buttons
 
@@ -1578,20 +1621,14 @@ const { stack } = usePlace()
 // The brand prefix is the product, fixed. It is NOT the first place: the first
 // place is a crumb like any other, and putting it in `subtitle` as well renders
 // a one-level stack twice, once as its own parent and once as itself.
-const parents = computed(() => stack.value.slice(0, -1))
-const current = computed(() => stack.value.at(-1) ?? null)
+const crumbs = computed(() =>
+  stack.value.map((place) => ({ label: place.label, onClick: place.enter })),
+)
 </script>
 
 <template>
   <component :is="slot.Outlet">
-    <NbBreadcrumbs title="Stagewright" subtitle="Session">
-      <template v-for="place in parents" :key="place.id">
-        <NbButton variant="ghost" size="sm" @click="place.enter()">
-          {{ place.label }}
-        </NbButton>
-      </template>
-      <span v-if="current" aria-current="page">{{ current.label }}</span>
-    </NbBreadcrumbs>
+    <NbBreadcrumbs title="Stagewright" subtitle="Session" :items="crumbs" />
   </component>
 </template>
 ```
@@ -1599,13 +1636,15 @@ const current = computed(() => stack.value.at(-1) ?? null)
 Two details that are load-bearing rather than incidental:
 
 - **A crumb that is not a link is still a control.** With no router there is no
-  `href`, so each parent is a real `<button>` (`NbButton variant="ghost"`, which
-  is the frame's own quiet button and needs no styles from you). What it must not
-  be is a `<span>` with a click handler: unfocusable, unannounced, unreachable.
+  `href`, so each parent is a real `<button>`: an item with `onClick` renders as
+  one (`NbButton variant="link"`, which needs no styles from you), and the last
+  item is the current page, which is never interactive. What a crumb must not be
+  is a `<span>` with a click handler: unfocusable, unannounced, unreachable.
   There is no `.crumb` class to write, and no product CSS reaching into the trail.
-- **Depth 1 renders one crumb, not two.** With a single place, `parents` is empty
-  and the trail is the brand prefix plus the current crumb, which is exactly what
-  a top-level location should look like. If your product is flat at every depth,
+- **Depth 1 renders one crumb, not two.** With a single place, the only item is
+  the current one, and the trail is the brand prefix plus that crumb, which is
+  exactly what a top-level location should look like. If your product is flat at
+  every depth,
   [render no trail at all](#flat-products-render-no-trail).
 
 Bind `ascend` to Escape as [the Escape rule](#escape-one-owner) describes, and

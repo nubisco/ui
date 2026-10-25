@@ -129,6 +129,7 @@ export type {
   IBoardProps,
 } from './components/Board.d'
 export { default as NbBreadcrumbs } from './components/Breadcrumbs.vue'
+export type { IBreadcrumbItem } from './components/Breadcrumbs.d'
 export { default as NbCalendar } from './components/Calendar.vue'
 export type { ICalendarEvent, ICalendarProps } from './components/Calendar.d'
 export { default as NbAvatar } from './components/Avatar.vue'
