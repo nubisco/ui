@@ -464,6 +464,9 @@ count exactly like the standalone example above: first panel 1, panel in a panel
         <NbPanel style="margin-top: 8px;">
           <NbLabel size="sm" muted>Panel in a panel, layer 2</NbLabel>
         </NbPanel>
+        <NbShellPanel title="Shell panel in a panel, layer 2" style="margin-top: 8px;">
+          <NbLabel size="sm" muted>NbShellPanel derives its layer too</NbLabel>
+        </NbShellPanel>
       </NbPanel>
     </NbShell>
   </div>

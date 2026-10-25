@@ -33,8 +33,10 @@ async function colours(page: Page) {
       main: paint(demo.querySelector('.nb-shell__main')),
       panel: paint(demo.querySelector('.nb-shell__main .nb-panel')),
       topbar: paint(demo.querySelector('.nb-shell__topbar')),
+      shellPanel: paint(demo.querySelector('.nb-shell__main .nb-shell-panel')),
       layer0: layer(0),
       layer1: layer(1),
+      layer2: layer(2),
     }
   })
 }
@@ -60,5 +62,8 @@ for (const mode of ['light', 'dark'] as const) {
     // The chrome keeps its depth: only the page moved.
     expect(c.topbar).toBe(c.layer1)
     expect(c.main).not.toBe(c.panel)
+    // NbShellPanel derives its depth like NbPanel: inside a panel it is 2.
+    // Its colour token used to freeze to layer 1 at :root.
+    expect(c.shellPanel).toBe(c.layer2)
   })
 }

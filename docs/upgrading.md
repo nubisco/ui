@@ -1,5 +1,29 @@
 # Upgrading
 
+## To 5.32.1 from 5.32.0
+
+**Outlined buttons read on light surfaces too.** 5.31.1 fixed them in dark
+mode. In light mode the outlined warning measured 1.75 to 2.06:1 on the light
+layers, success 2.69 to 3.16, danger 3.94 to 4.62 and info 4.47 on layer 2.
+Their text, border and focus ring are now darkened toward black, each just
+enough to clear WCAG AA on all four light layers and under the hover and
+pressed tint: warning reads as a dark amber, success as a deeper green, danger
+and info a step darker. The fill colours and the filled buttons do not change,
+and the light primary and secondary already cleared AA, so they are untouched.
+A named theme (every `app-theme`) that sets its own colour for a variant keeps
+it unchanged, in each mode it sets it for. The `NbFileUploader` drop-zone label
+follows the same ink.
+
+**`NbShellPanel` takes its layer from where it sits**, as `NbPanel` and
+`NbCard` do. Its colours were declared at `:root` and froze to layer 1, so it
+painted layer 1 even inside another panel. In a shell's main region, its
+bottom region or its inspector it still paints layer 1. Inside another surface
+it now paints one level deeper.
+
+**Check this if you set `--nb-shell-panel-bg`, `--nb-shell-panel-border` or
+`--nb-shell-panel-header-border` by reading them back.** They no longer have a
+`:root` default. Setting them on `:root` still overrides the panel, as before.
+
 ## To 5.31.2 from 5.31.1
 
 **A link button no longer swallows every tap on a phone.** The reset's
