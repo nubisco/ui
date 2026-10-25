@@ -4,6 +4,7 @@
     class="nb-card"
     :class="{
       'nb-card--horizontal': orientation === 'horizontal',
+      'nb-card--sm': size === 'sm',
       'nb-card--interactive': isInteractive,
       'nb-card--selected': selected,
       'nb-card--disabled': disabled,
@@ -91,6 +92,7 @@ const props = withDefaults(defineProps<ICardProps>(), {
   subtitle: '',
   icon: undefined,
   orientation: 'vertical',
+  size: 'md',
   image: undefined,
   imageAlt: '',
   imageRatio: undefined,
@@ -160,7 +162,10 @@ const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
   display: flex;
   flex-direction: column;
   gap: var(--nb-spacing-4);
-  padding: var(--nb-spacing-16);
+  // One padding, read by the media box and the horizontal thumbnail too, so
+  // `size="sm"` moves all three together.
+  --nb-card-pad: var(--nb-spacing-16);
+  padding: var(--nb-card-pad);
   background: var(--nb-c-surface);
   border: 1px solid var(--nb-c-border);
   // A card is a panel-role surface, and it publishes its corner so that
@@ -172,6 +177,11 @@ const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
   // Cards in a grid are stretched to the row's height by default; this is what
   // lets the footer sit on the bottom edge rather than under the description.
   height: 100%;
+}
+
+.nb-card--sm {
+  --nb-card-pad: var(--nb-spacing-8);
+  gap: var(--nb-spacing-2);
 }
 
 .nb-card--interactive {
@@ -217,7 +227,7 @@ const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
   justify-content: center;
   overflow: hidden;
   aspect-ratio: var(--nb-card-image-ratio, 16 / 9);
-  margin: calc(-1 * var(--nb-spacing-16)) calc(-1 * var(--nb-spacing-16))
+  margin: calc(-1 * var(--nb-card-pad)) calc(-1 * var(--nb-card-pad))
     var(--nb-spacing-8);
   border-radius: max(0px, calc(var(--nb-radius-context, 0px) - 1px))
     max(0px, calc(var(--nb-radius-context, 0px) - 1px)) 0 0;
@@ -335,7 +345,7 @@ const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
   > .nb-card__media {
     width: var(--nb-card-media-width);
     border: 1px solid var(--nb-c-border);
-    @include radius.inset(calc(var(--nb-spacing-16) + 1px));
+    @include radius.inset(calc(var(--nb-card-pad) + 1px));
   }
 
   // Only one thing sits in the left column. With both, the media wins and the

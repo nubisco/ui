@@ -44,6 +44,15 @@ export interface ICardProps {
    */
   orientation?: 'vertical' | 'horizontal'
   /**
+   * `'md'` (default) is the card as it has always been. `'sm'` halves the
+   * padding, for a dense grid of small tiles that act (a row of progress
+   * bars to filter by, a picker), where the full padding made each tile
+   * twice the height of what it holds.
+   *
+   * @default 'md'
+   */
+  size?: 'sm' | 'md'
+  /**
    * Image URL for the card's media: a cover across the top of a vertical card,
    * a thumbnail beside a horizontal one. Passing the prop at all reserves the
    * box, so an empty string or `null` draws a placeholder in the same shape,

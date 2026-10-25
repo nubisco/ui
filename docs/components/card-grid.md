@@ -186,6 +186,36 @@ The card picks its element from its behaviour, so each case gets the right keybo
   </NbCardGrid>
 </preview>
 
+`select` carries the event that activated the card, a `MouseEvent` or a `KeyboardEvent`, so a grid that selects can read `shiftKey`, `metaKey` and `ctrlKey` from the mouse and the keyboard alike:
+
+```vue
+<NbCard
+  v-for="file in files"
+  :key="file.id"
+  :title="file.name"
+  clickable
+  :selected="isSelected(file.id)"
+  @select="
+    (event) => (event.shiftKey ? selectRange(file.id) : selectOnly(file.id))
+  "
+/>
+```
+
+## Dense cards
+
+`size="sm"` halves the padding, for a grid of small tiles that act, such as a row of progress bars to filter by. The full padding made each tile twice the height of what it holds. Media and the horizontal thumbnail follow the same padding.
+
+<preview>
+  <NbCardGrid min="200px" gap="sm" style="width: 100%">
+    <NbCard size="sm" clickable selected>
+      <NbProgressBar label="French" :value="42" :max="60" size="sm" helper="18 missing" />
+    </NbCard>
+    <NbCard size="sm" clickable>
+      <NbProgressBar label="German" :value="60" :max="60" size="sm" status="finished" helper="complete" />
+    </NbCard>
+  </NbCardGrid>
+</preview>
+
 ## Footers line up
 
 The body takes the leftover height, so a row of cards with different amounts of description still lines its footers up along the bottom. That is the detail hand-rolled card grids most often miss.
@@ -223,6 +253,7 @@ The body takes the leftover height, so a row of cards with different amounts of 
 | `subtitle`    | `string`                     | `''`         | One line under the title: a type, an owner, a version.                                                              |
 | `icon`        | `string`                     | —            | Icon name for the card's header.                                                                                    |
 | `orientation` | `'vertical' \| 'horizontal'` | `'vertical'` | Media or icon above the title, or in a column beside it.                                                            |
+| `size`        | `'sm' \| 'md'`               | `'md'`       | `sm` halves the padding, for a dense grid of small tiles.                                                           |
 | `image`       | `string \| null`             | `undefined`  | Image for the media box. Empty or `null` (or an image that fails to load) draws a placeholder in the same box.      |
 | `imageAlt`    | `string`                     | `''`         | Alternative text for the image. Empty marks it decorative.                                                          |
 | `imageRatio`  | `string`                     | `'16 / 9'`   | Shape of the media box, as a CSS `aspect-ratio`.                                                                    |

@@ -9,6 +9,8 @@ New, and nothing changes unless you use it:
   Space. A grid of cards can read `shiftKey`, `metaKey` and `ctrlKey` from it to
   select a range or add one, from the mouse and the keyboard alike. A listener
   that takes no argument is unaffected.
+- **`NbCard size="sm"`**: half the padding, for a dense grid of small tiles
+  that act. The default `md` is unchanged.
 
 One fix:
 
