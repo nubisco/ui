@@ -160,12 +160,16 @@ defineExpose({ setSize })
 @use '../styles/logic/radius' as radius;
 
 .nb-shell-panel {
-  // --nb-shell-panel-* defaults live at :root in styles/_theme.scss so consumer
-  // apps can override them on :root without fighting scoped-style specificity.
+  // Most --nb-shell-panel-* defaults live at :root in styles/_theme.scss so
+  // consumer apps can override them there without fighting scoped-style
+  // specificity. The colours are the exception: their defaults are written
+  // here, because they read this panel's own layer (the `nb-layer-N` class
+  // bound on this element) and a :root default froze them to layer 1. A
+  // product that sets them on :root still wins.
   display: flex;
   flex-direction: column;
-  background: var(--nb-shell-panel-bg);
-  border: var(--nb-shell-panel-border);
+  background: var(--nb-shell-panel-bg, var(--nb-c-surface));
+  border: var(--nb-shell-panel-border, 1px solid var(--nb-c-border));
   @include radius.surface(panel);
   margin: var(--nb-shell-panel-gap);
   min-height: 0;
@@ -247,7 +251,10 @@ defineExpose({ setSize })
   padding: 0 8px;
   flex-shrink: 0;
   background: var(--nb-shell-panel-header-bg);
-  border-bottom: var(--nb-shell-panel-header-border);
+  border-bottom: var(
+    --nb-shell-panel-header-border,
+    1px solid var(--nb-c-border)
+  );
   gap: 8px;
 }
 

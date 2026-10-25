@@ -676,12 +676,14 @@
     // fighting the components' scoped-style specificity.
     --nb-shell-panel-header-height: calc(var(--nb-base-unit) * 3.5); // 28px
     --nb-shell-panel-gap: 1px; // hairline separator, not a spacing step
-    --nb-shell-panel-bg: var(--nb-c-surface);
-    --nb-shell-panel-border: 1px solid var(--nb-c-border);
+    // --nb-shell-panel-bg, -border and -header-border are deliberately NOT
+    // declared here. Their defaults read the panel's own layer (`--nb-c-surface`
+    // and `--nb-c-border` on the panel), which only resolves on the panel
+    // element: declared at :root they froze to layer 1 and every NbShellPanel
+    // painted layer 1 wherever it sat. ShellPanel.vue writes the fallbacks.
     // Transparent by default so the header reads as part of the panel; set it
     // when a product wants the header bar tinted against its own content.
     --nb-shell-panel-header-bg: transparent;
-    --nb-shell-panel-header-border: 1px solid var(--nb-c-border);
     // How much of the body a bottom panel claims at its intermediate (`default`)
     // size. A share rather than a length: the point of that size is to show part
     // of the panel and part of the page at once, which has to hold at any window

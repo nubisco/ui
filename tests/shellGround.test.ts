@@ -30,4 +30,22 @@ describe('the shell page ground', () => {
       /background:\s*var\(--nb-shell-main-bg,\s*var\(--nb-c-surface\)\)/,
     )
   })
+
+  it('leaves NbShellPanel colours to the panel, for the same reason', () => {
+    const root = propsFrom(compile(['base', 'light', 'dark']), /^:root$/)
+    for (const token of [
+      '--nb-shell-panel-bg',
+      '--nb-shell-panel-border',
+      '--nb-shell-panel-header-border',
+    ]) {
+      expect(root).not.toHaveProperty(token)
+    }
+    const source = readFileSync(
+      resolve('src/components/ShellPanel.vue'),
+      'utf8',
+    )
+    expect(source).toMatch(
+      /background:\s*var\(--nb-shell-panel-bg,\s*var\(--nb-c-surface\)\)/,
+    )
+  })
 })

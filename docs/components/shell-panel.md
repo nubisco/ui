@@ -373,16 +373,16 @@ This means panels adapt automatically to the layer context they sit in. No extra
 
 ## CSS Custom Properties
 
-| Variable                         | Default                        | Description                                           |
-| -------------------------------- | ------------------------------ | ----------------------------------------------------- |
-| `--nb-shell-panel-header-height` | `28px`                         | Header bar height                                     |
-| `--nb-shell-panel-gap`           | `1px`                          | Gap (margin) around each panel for visual separation  |
-| `--nb-shell-panel-bg`            | `var(--nb-c-surface)`          | Panel background                                      |
-| `--nb-shell-panel-border`        | `1px solid var(--nb-c-border)` | Panel border, as a full `border` shorthand            |
-| `--nb-shell-panel-header-bg`     | `transparent`                  | Header background. Set it to tint the header bar      |
-| `--nb-shell-panel-header-border` | `1px solid var(--nb-c-border)` | Border under the header, as a full `border` shorthand |
+| Variable                         | Default                                         | Description                                           |
+| -------------------------------- | ----------------------------------------------- | ----------------------------------------------------- |
+| `--nb-shell-panel-header-height` | `28px`                                          | Header bar height                                     |
+| `--nb-shell-panel-gap`           | `1px`                                           | Gap (margin) around each panel for visual separation  |
+| `--nb-shell-panel-bg`            | unset: the panel's own layer surface            | Panel background                                      |
+| `--nb-shell-panel-border`        | unset: `1px solid` the panel's own layer border | Panel border, as a full `border` shorthand            |
+| `--nb-shell-panel-header-bg`     | `transparent`                                   | Header background. Set it to tint the header bar      |
+| `--nb-shell-panel-header-border` | unset: `1px solid` the panel's own layer border | Border under the header, as a full `border` shorthand |
 
-Declared at `:root`, so an application overrides them there rather than competing with the component's scoped styles. The defaults resolve to semantic tokens, which means they follow the `.dark` theme on their own; a literal colour opts out of that and owes both themes a value.
+Override them on `:root` rather than competing with the component's scoped styles. The three colour tokens have no `:root` default: their default is the panel's own layer, which only resolves on the panel element (declared at `:root`, they froze to layer 1 and every shell panel painted layer 1 wherever it sat). Setting one on `:root` still overrides it. The defaults resolve to semantic tokens, which means they follow the `.dark` theme on their own; a literal colour opts out of that and owes both themes a value.
 
 </doc-tab>
 
