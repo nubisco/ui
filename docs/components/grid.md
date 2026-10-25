@@ -159,6 +159,16 @@ console.log(myGrid.value.getRef()) // → HTMLElement
 
 The `grid` prop sets how many of the 16 available columns a child item spans. The `shift` prop offsets it from the left edge.
 
+A span shares the gap of the row it sits in. Spans that add up to 16 fill the row exactly, gaps included: two `grid="8"` children of a `gap="md"` row are each `(100% - 16px) / 2`, and a wrapping row of them puts two on each line. Only a row's gap counts, since a column's gap is vertical.
+
+```vue
+<!-- Two fields side by side from md up, stacked below it. -->
+<nb-grid :dir="{ sm: 'col', md: 'row' }" gap="md">
+  <nb-grid dir="col" :grid="{ sm: 16, md: 8 }">...</nb-grid>
+  <nb-grid dir="col" :grid="{ sm: 16, md: 8 }">...</nb-grid>
+</nb-grid>
+```
+
 ## Column spanning
 
 <preview style-grid>
