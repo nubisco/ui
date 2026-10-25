@@ -24,7 +24,7 @@
       <NbSkeleton
         v-if="loading"
         variant="block"
-        :height="size === 'lg' ? 36 : 28"
+        :height="skeletonHeight"
         width="4.5ch"
         radius="sm"
       />
@@ -100,6 +100,14 @@ const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
   props,
   () => emit('select'),
 )
+
+// The placeholder stands where the figure will be, at the figure's own height,
+// so the tile does not jump when the value arrives.
+const skeletonHeight = computed(() => {
+  if (props.size === 'lg') return 36
+  if (props.size === 'sm') return 20
+  return 28
+})
 
 const trendIcon = computed(() => {
   if (props.trend === 'up') return iconArrowUpRight
@@ -177,6 +185,19 @@ const tone = computed<'positive' | 'negative' | 'neutral'>(() => {
   .nb-stat--lg & {
     font-size: var(--nb-font-size-36);
   }
+
+  .nb-stat--sm & {
+    font-size: var(--nb-font-size-20);
+  }
+}
+
+// The dense tile, for a KPI row that sits above a table or a chart and should
+// not outweigh it. Tighter padding and a smaller figure: 59px tall without a
+// delta, where `md` is 86px. Everything else (status grounds, link behaviour,
+// the delta) is the same tile.
+.nb-stat--sm {
+  gap: var(--nb-spacing-2);
+  padding: var(--nb-spacing-8) var(--nb-spacing-12);
 }
 
 .nb-stat__delta {

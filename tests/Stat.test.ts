@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import Stat from '../src/components/Stat.vue'
+import Skeleton from '../src/components/Skeleton.vue'
 
 describe('NbStat', () => {
   it('shows the label and the value, label first in reading order', () => {
@@ -149,5 +150,21 @@ describe('NbStat', () => {
     })
     expect(w.find('.nb-stat__label i').exists()).toBe(true)
     expect(w.find('.nb-stat__value b').text()).toBe('12')
+  })
+
+  it('has a dense size for KPI rows, and leaves the default size alone', () => {
+    const sm = mount(Stat, { props: { label: 'Open', value: 7, size: 'sm' } })
+    expect(sm.classes()).toContain('nb-stat--sm')
+    expect(sm.classes()).not.toContain('nb-stat--md')
+    expect(mount(Stat, { props: { label: 'Open' } }).classes()).toContain(
+      'nb-stat--md',
+    )
+  })
+
+  it('sizes the loading placeholder to the dense figure', () => {
+    const w = mount(Stat, {
+      props: { label: 'Open', size: 'sm', loading: true },
+    })
+    expect(w.findComponent(Skeleton).props('height')).toBe(20)
   })
 })

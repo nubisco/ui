@@ -31,8 +31,12 @@ interface IStatProps {
   invertTrend?: boolean
   /** What the delta is measured against, shown after it: `'vs last week'`. */
   comparison?: string
-  /** `md` (default) for a row of tiles, `lg` for the one headline figure. */
-  size?: 'md' | 'lg'
+  /**
+   * `md` (default) for a row of tiles, `lg` for the one headline figure, and
+   * `sm` for a dense KPI row above a table or a chart: tighter padding and a
+   * smaller figure, 59px tall without a delta against 86px for `md`.
+   */
+  size?: 'sm' | 'md' | 'lg'
   /** Shows a placeholder where the value goes and marks the tile busy. */
   loading?: boolean
   /** Target route, as on `NbCard` and `NbButton`. Makes the tile a link. */

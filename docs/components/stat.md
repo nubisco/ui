@@ -105,6 +105,26 @@ A tile behaves exactly like an `NbCard`, and picks its element the same way:
   </NbCardGrid>
 </preview>
 
+## Dense row
+
+`size="sm"` is for a row of figures that sits above a table or a chart and should not outweigh it: tighter padding and a smaller figure, 59px tall without a delta, against 86px for the default. Everything else is the same tile, so a dense tile still takes a status, a delta and a link.
+
+<preview>
+  <NbCardGrid min="140px" gap="sm" style="width: 100%">
+    <NbStat size="sm" label="Open" value="24" />
+    <NbStat size="sm" label="In review" value="7" status="info" />
+    <NbStat size="sm" label="Overdue" value="3" status="warning" />
+    <NbStat size="sm" label="Closed this week" value="41" delta="+9" trend="up" />
+  </NbCardGrid>
+</preview>
+
+```vue
+<NbCardGrid min="140px" gap="sm">
+  <NbStat size="sm" label="Open" :value="counts.open" />
+  <NbStat size="sm" label="Overdue" :value="counts.overdue" status="warning" />
+</NbCardGrid>
+```
+
 ## Headline figure
 
 `size="lg"` is for the one figure a page leads with.
@@ -130,7 +150,7 @@ A tile behaves exactly like an `NbCard`, and picks its element the same way:
 | `trend`       | `'up' \| 'down' \| 'flat'`                                  | —           | Which way the figure moved. Draws the arrow and colours the delta.                 |
 | `invertTrend` | `boolean`                                                   | `false`     | Down is good news. Changes the colour, never the arrow.                            |
 | `comparison`  | `string`                                                    | —           | What the delta is measured against.                                                |
-| `size`        | `'md' \| 'lg'`                                              | `'md'`      | `lg` for the headline figure.                                                      |
+| `size`        | `'sm' \| 'md' \| 'lg'`                                      | `'md'`      | `sm` for a dense KPI row, `lg` for the headline figure.                            |
 | `loading`     | `boolean`                                                   | `false`     | Placeholder value, no delta, `aria-busy`.                                          |
 | `to`          | `string \| object`                                          | —           | Target route. A `<RouterLink>` with vue-router, a plain link for a string without. |
 | `href`        | `string`                                                    | —           | Renders the tile as a link.                                                        |
@@ -181,6 +201,7 @@ const statProps: PreviewPropDef[] = [
     type: 'single',
     default: 'md',
     options: [
+      { value: 'sm', label: 'sm' },
       { value: 'md', label: 'md' },
       { value: 'lg', label: 'lg' },
     ],
