@@ -1,3 +1,10 @@
+## [5.36.1](https://github.com/nubisco/ui/compare/v5.36.0...v5.36.1) (2026-10-26)
+
+
+### Bug Fixes
+
+* **card:** the selected edge clears 3:1 in dark ([372b2cc](https://github.com/nubisco/ui/commit/372b2cce684ec5de69dbd33ab294b6ead89706e6))
+
 # [5.36.0](https://github.com/nubisco/ui/compare/v5.35.0...v5.36.0) (2026-10-25)
 
 
