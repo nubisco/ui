@@ -10,6 +10,72 @@ tabs: ['Usage', 'Api']
 
 It is deliberately **not** an editable spreadsheet. When cells need in-place editing, reach for [`NbSpreadsheet`](/labs/spreadsheet) instead.
 
+## The canonical layout
+
+This is the table to start from. It follows the anatomy of Carbon's data table:
+the title and an optional description sit at the top left, the toolbar runs
+along the right underneath them, and the one primary action (here, "New") is
+the last button in the toolbar, flush in its corner and as tall as the toolbar.
+Actions on a single row go at the end of that row.
+
+Put the title, the description and the primary button **on the table**, not
+around it. A heading and a button laid out above a table, or a panel wrapped
+around it, duplicate what the table already draws, and the table paints its
+own surface, so it needs no box.
+
+<preview>
+  <NbDataTable
+    :columns="columns"
+    :rows="rows"
+    row-key="id"
+    title="Team members"
+    description="People with access to this workspace."
+    style="width: 100%"
+  >
+    <template #toolbar-actions>
+      <NbButton variant="primary" icon="plus">New</NbButton>
+    </template>
+    <template #row-actions>
+      <NbButton variant="ghost" size="sm">Open</NbButton>
+      <NbButton variant="ghost" size="sm">Delete</NbButton>
+    </template>
+  </NbDataTable>
+</preview>
+
+```vue
+<template>
+  <NbDataTable
+    :columns="columns"
+    :rows="rows"
+    row-key="id"
+    title="Team members"
+    description="People with access to this workspace."
+  >
+    <template #toolbar-actions>
+      <NbButton variant="primary" icon="plus" @click="create">New</NbButton>
+    </template>
+    <template #row-actions="{ row }">
+      <NbButton variant="ghost" size="sm" @click="open(row)">Open</NbButton>
+      <NbButton variant="ghost" size="sm" @click="remove(row)">Delete</NbButton>
+    </template>
+  </NbDataTable>
+</template>
+```
+
+The table takes care of the measurements, so there is nothing to size by hand:
+
+- **Title** in the `heading-02` type set (Carbon's 20px `heading-03`), with
+  16px above it, 24px below and 16px at the sides. The **description** is
+  `body-md` in `--nb-c-text-muted`.
+- **Toolbar** as tall as a row, at most 48px. Buttons in it fill that height
+  and lose their corners, whatever `size` they were given.
+- **Header** in the `label-lg` type set (14px semibold) on a fill one step
+  deeper than the table, with no rule under it.
+- **Rows** in `body-md` (14px regular) and `--nb-c-text-muted`, a rule under
+  each one and none between columns. A hovered or selected row lifts its text
+  to `--nb-c-text`.
+- **No box.** The table paints its layer and stops there: no border around it.
+
 ## Basic Usage
 
 Provide `columns`, `rows`, and a `rowKey` for identity. Cell values are read from `row[column.key]` by default.
@@ -129,7 +195,7 @@ const selected = ref<(string | number)[]>([])
 
 ## Toolbar, batch actions & row actions
 
-The `toolbar` region hosts a `title` / `description`, a `#search` slot, and a `#toolbar-actions` slot. While rows are selected, a batch-action bar takes over the toolbar and renders the `#batch-actions` slot (with a `clear` helper). A trailing overflow column appears whenever a `#row-actions` slot is provided.
+The toolbar has two rows. The first holds the `title` and `description` (or your own `#toolbar` content). The second is the strip of tools: a `#search` slot that takes the spare width, then the `#toolbar-actions` slot along the right. Each row renders only when it has something in it. While rows are selected, a batch-action bar covers the strip of tools, not the title, and renders the `#batch-actions` slot (with a `clear` helper). The strip keeps its height either way, so nothing below it moves. A trailing actions column appears whenever a `#row-actions` slot is provided.
 
 <preview>
   <NbDataTable
@@ -143,10 +209,10 @@ The `toolbar` region hosts a `title` / `description`, a `#search` slot, and a `#
     style="width: 100%"
   >
     <template #toolbar-actions>
-      <NbButton variant="primary" size="sm" icon="plus">Add member</NbButton>
+      <NbButton variant="primary" icon="plus">Add member</NbButton>
     </template>
     <template #batch-actions="{ selectedKeys, clear }">
-      <NbButton variant="ghost" icon="trash" @click="clear">
+      <NbButton variant="primary" icon="trash" @click="clear">
         Delete {{ selectedKeys.length }}
       </NbButton>
     </template>
@@ -170,10 +236,10 @@ The `toolbar` region hosts a `title` / `description`, a `#search` slot, and a `#
   v-model:selected="selected"
 >
   <template #toolbar-actions>
-    <NbButton variant="primary" size="sm" icon="plus">Add member</NbButton>
+    <NbButton variant="primary" icon="plus">Add member</NbButton>
   </template>
   <template #batch-actions="{ selectedKeys, clear }">
-    <NbButton variant="ghost" icon="trash" @click="clear">
+    <NbButton variant="primary" icon="trash" @click="clear">
       Delete {{ selectedKeys.length }}
     </NbButton>
   </template>
@@ -185,12 +251,12 @@ The `toolbar` region hosts a `title` / `description`, a `#search` slot, and a `#
 
 ### A toolbar that does not fit
 
-When the heading and the tools do not fit on one line, the tools move to a line
-of their own below the heading, at the end, and a `#search` field grows to take
-the room the actions leave. This follows the table's own width, not the
+The title always has a line of its own, so only the strip of tools can run out
+of room. When it does, the `#search` field moves to a line of its own above the
+buttons, which stay at the end. This follows the table's own width, not the
 screen's, so a table in a card or a side panel wraps the same way a phone does.
-A toolbar that fits on one line is unchanged. Tick a row: the batch bar still
-covers the whole toolbar, at whatever height it has.
+Tick a row: the batch bar still covers the whole strip, at whatever height it
+has.
 
 <preview>
   <div style="max-width: 520px">
@@ -207,11 +273,11 @@ covers the whole toolbar, at whatever height it has.
         <NbTextInput placeholder="Search members" size="sm" />
       </template>
       <template #toolbar-actions>
-        <NbButton variant="secondary" size="sm" icon="export">Export</NbButton>
-        <NbButton variant="primary" size="sm" icon="plus">Invite</NbButton>
+        <NbButton variant="ghost" icon="export" aria-label="Export" />
+        <NbButton variant="primary" icon="plus">Invite</NbButton>
       </template>
       <template #batch-actions="{ selectedKeys, clear }">
-        <NbButton variant="ghost" icon="trash" @click="clear">
+        <NbButton variant="primary" icon="trash" @click="clear">
           Remove {{ selectedKeys.length }}
         </NbButton>
       </template>
@@ -284,11 +350,23 @@ Loading renders shimmering skeleton rows (`skeletonRows` controls the count). `e
 
 ## Density
 
-`size` follows the shared `sm` / `md` / `lg` scale used across the library. Combine with `zebra` for alternating row backgrounds.
+`size` sets the row height on Carbon's scale. The header row matches it, and so do the toolbar and the batch bar, up to 48px. Cell padding (16px) and type (14px) stay the same at every size. Combine with `zebra` for alternating row backgrounds.
+
+| Size           | Row height | Use it for                                  |
+| -------------- | ---------- | ------------------------------------------- |
+| `xs`           | 24px       | Very dense lists inside another component   |
+| `sm`           | 32px       | Dense lists, settings tables                |
+| `md`           | 40px       | Compact pages                               |
+| `lg` (default) | 48px       | Most tables                                 |
+| `xl`           | 64px       | Rows with two lines of content, top-aligned |
+
+Before 5.37 the scale was `sm` 32px, `md` 48px (the default) and `lg` 64px. A
+table that never set `size` keeps its 48px rows. One that asked for `md` or
+`lg` by name is now 40px or 48px: ask for `lg` or `xl` to keep the old height.
 
 <preview dir="col">
   <NbDataTable :columns="columns" :rows="rows" row-key="id" size="sm" zebra style="width: 100%" />
-  <NbDataTable :columns="columns" :rows="rows" row-key="id" size="lg" style="width: 100%" />
+  <NbDataTable :columns="columns" :rows="rows" row-key="id" size="xl" style="width: 100%" />
 </preview>
 
 ```vue
@@ -599,7 +677,7 @@ Only one row open at a time is a matter of what you pass back:
 | `columns`      | `IDataTableColumn<T>[]`                   | required    | Column definitions, left to right                                         |
 | `rows`         | `T[]`                                     | required    | Row data (order is respected as-is)                                       |
 | `rowKey`       | `keyof T \| (row: T) => string \| number` | required    | Row identity for selection, keys and reconciliation                       |
-| `size`         | `'sm' \| 'md' \| 'lg'`                    | `'md'`      | Density                                                                   |
+| `size`         | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'`    | `'lg'`      | Row height: 24, 32, 40, 48 or 64px                                        |
 | `sortState`    | `IDataTableSortState \| null`             | `null`      | Controlled sort state, reflected in `aria-sort`                           |
 | `selectable`   | `'none' \| 'single' \| 'multiple'`        | `'none'`    | Row selection mode                                                        |
 | `selected`     | `(string \| number)[]`                    | `[]`        | Controlled selected keys (`v-model:selected`)                             |
@@ -657,8 +735,8 @@ interface IDataTableSortState {
 | `cell-<key>`      | `{ row, value, column, rowIndex }` | Custom cell for column `<key>`                         |
 | `header-<key>`    | `{ column }`                       | Custom header for column `<key>`                       |
 | `toolbar`         | `{ selectedCount }`                | Replaces the default title / description block         |
-| `search`          | (none)                             | Toolbar search area                                    |
-| `toolbar-actions` | (none)                             | Toolbar trailing actions                               |
+| `search`          | (none)                             | Search field, takes the toolbar's spare width          |
+| `toolbar-actions` | (none)                             | Toolbar buttons, the primary one last                  |
 | `batch-actions`   | `{ selectedKeys, clear }`          | Actions shown in the batch bar during selection        |
 | `row-actions`     | `{ row, rowIndex }`                | Trailing overflow / actions column                     |
 | `row-detail`      | `{ row, rowIndex }`                | Detail shown under an open row; adds the toggle column |

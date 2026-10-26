@@ -1,5 +1,4 @@
 import type { VNodeChild } from 'vue'
-import type { ESizeShort } from '@/types/Size.d'
 
 /**
  * NbDataTable: presentational, data-driven table for read-mostly application
@@ -86,6 +85,9 @@ export type TDataTableSelectable = 'none' | 'single' | 'multiple'
  * back, it does not mutate `rows` itself. This keeps it honest for server-side
  * paging and sorting.
  */
+/** Row heights the table offers. See {@link IDataTableProps.size}. */
+export type TDataTableSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+
 export interface IDataTableProps<T = Record<string, unknown>> {
   /** Column definitions, left to right. */
   columns: IDataTableColumn<T>[]
@@ -93,8 +95,14 @@ export interface IDataTableProps<T = Record<string, unknown>> {
   rows: T[]
   /** Row identity. See {@link TRowKey}. */
   rowKey: TRowKey<T>
-  /** Density. Matches the shared `ESizeShort` scale. Default `md`. */
-  size?: `${ESizeShort}`
+  /**
+   * Row height, on Carbon's data table scale: `xs` 24px, `sm` 32px, `md` 40px,
+   * `lg` 48px (the default) and `xl` 64px. The header row matches it, and the
+   * toolbar and batch bar match it too, up to 48px.
+   *
+   * @default 'lg'
+   */
+  size?: TDataTableSize
   /** Controlled sort state, reflected in header UI and `aria-sort`. */
   sortState?: IDataTableSortState | null
   /** Row selection mode. Default `none`. */
