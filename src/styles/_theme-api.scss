@@ -339,6 +339,7 @@ $_max-step: 900;
   // rings and the whole shell.
   [data-nb-theme='#{$id}'] {
     @include accent.subtle(39%);
+    @include accent.selected-edge(100%);
     @include accent.focus-ring;
     @include accent.shell;
   }
@@ -346,5 +347,6 @@ $_max-step: 900;
   .dark[data-nb-theme='#{$id}'],
   .dark [data-nb-theme='#{$id}'] {
     @include accent.subtle(50%);
+    @include accent.selected-edge(70%);
   }
 }

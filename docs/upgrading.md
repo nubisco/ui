@@ -1,5 +1,20 @@
 # Upgrading
 
+## To 5.36.1 from 5.36.0
+
+One change, and it changes what you see in dark:
+
+**A selected `NbCard` or `NbStat` has a brighter edge in dark.** The edge is
+the new `--nb-c-selected-edge` token instead of `--nb-c-primary`. In dark the
+primary alone measured under 3:1 on the lighter layers, so a selected tile was
+hard to find. The token mixes the primary with white (70% primary) in dark and
+clears 3:1 against every layer, resting and hovered. In light it is the primary
+itself, so light cards look as they did. Unselected cards do not change.
+
+**Check this if you re-pointed `--nb-c-primary` on an element other than
+`:root`** without a named theme. Like `--nb-c-focus-ring`, the edge is derived
+where it is declared, so set `--nb-c-selected-edge` alongside it.
+
 ## To 5.36.0 from 5.35.0
 
 One change, and it changes what you see:

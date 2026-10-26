@@ -261,8 +261,10 @@ const tone = computed<'positive' | 'negative' | 'neutral'>(() => {
 }
 
 .nb-stat--selected {
-  border-color: var(--nb-c-primary);
-  box-shadow: inset 0 0 0 1px var(--nb-c-primary);
+  // The selected edge, not the raw primary: in dark the primary alone falls
+  // under 3:1 on the lighter layers (see accent.selected-edge).
+  border-color: var(--nb-c-selected-edge);
+  box-shadow: inset 0 0 0 1px var(--nb-c-selected-edge);
 }
 
 .nb-stat--disabled {
