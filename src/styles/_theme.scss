@@ -161,6 +161,7 @@
     // because its --nb-c-primary is already a lighter step of the same ramp
     // and needs less white to land on the same wash (dE2000 0.00 there).
     @include accent.subtle(39%);
+    @include accent.selected-edge(100%);
 
     --nb-c-secondary: var(--nb-c-plain-black-700);
     --nb-c-secondary-a11y: var(--nb-c-plain-black-700-a11y);
@@ -706,6 +707,7 @@
     // Same wash, re-mixed: the dark --nb-c-primary is a 400, so it takes less
     // white than the light 500 does to reach the tint this token used to alias.
     @include accent.subtle(50%);
+    @include accent.selected-edge(70%);
     --nb-c-primary-a11y: #{colors.color-contrast(
         colors.get-color('grape-hyacinth', 400)
       )};

@@ -38,6 +38,26 @@
   );
 }
 
+/// The edge that marks a chosen surface: a selected card or stat tile.
+///
+/// It has to clear 3:1 (WCAG non-text contrast) against the card it outlines
+/// and the page around it, on every layer. The light primary already does
+/// (6.2 or better), so the light half takes it whole. The dark primary is a
+/// 400 that measures 2.89 on layer-2 and 2.27 on layer-3, which is why a
+/// selected card was hard to find in dark. The dark half lifts it with white
+/// to 3.87 on the lightest dark layer. It is a mix, not a ramp step, so a
+/// named theme's accent gets the same lift.
+///
+/// @param {Number} $weight - how much accent the mix carries: 100% in light,
+///   70% in dark.
+@mixin selected-edge($weight) {
+  --nb-c-selected-edge: color-mix(
+    in srgb,
+    var(--nb-c-primary) #{$weight},
+    var(--nb-c-white)
+  );
+}
+
 /// The focus ring, used by every interactive control via `:focus-visible`.
 @mixin focus-ring {
   --nb-c-focus-ring: var(--nb-c-primary);

@@ -119,6 +119,7 @@ that groups products by audience wants the category.
 These follow the accent too:
 
 - `--nb-c-primary-subtle`
+- `--nb-c-selected-edge`
 - `--nb-c-focus-ring`
 - `--nb-shell-sidebar-bg`
 - `--nb-shell-sidebar-link-active-bg`
