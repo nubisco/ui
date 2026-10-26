@@ -190,6 +190,7 @@ export type {
   TColumnAlign,
   TSortDirection,
   TDataTableSelectable,
+  TDataTableSize,
   TRowKey,
 } from './components/DataTable.d'
 export { default as NbPagination } from './components/Pagination.vue'

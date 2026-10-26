@@ -12,73 +12,61 @@
     ]"
     v-bind="layerProps"
   >
-    <!-- Toolbar. The heading and tools stay mounted while rows are selected
-         and the batch bar covers them as an overlay. Swapping the toolbar's
-         contents instead would resize it (a title + description toolbar is
-         taller than the bar), shifting every row down the moment the first
-         checkbox is ticked and moving the next checkbox out from under the
-         user's cursor. -->
-    <div
-      v-if="showToolbar"
-      ref="toolbarRef"
-      class="nb-data-table__toolbar"
-      :class="{ 'nb-data-table__toolbar--wrapped': toolbarWrapped }"
-    >
-      <div
-        ref="toolbarHeadingRef"
-        class="nb-data-table__toolbar-heading"
-        :inert="showBatchBar || undefined"
-        :aria-hidden="showBatchBar || undefined"
-      >
+    <!-- Toolbar, laid out as Carbon's: the title and description on their
+         own at the top, then a strip of tools along the right with the last
+         button flush in its corner. While rows are selected the batch bar
+         covers that strip and nothing else, so the title stays readable and
+         the rows below do not move: the strip keeps its height whichever of
+         the two is showing. -->
+    <div v-if="showToolbar" class="nb-data-table__toolbar">
+      <div v-if="hasHeading" class="nb-data-table__toolbar-heading">
         <slot name="toolbar" :selected-count="selectedCount">
-          <div v-if="title || description">
-            <h2 v-if="title" class="nb-data-table__title">{{ title }}</h2>
-            <p v-if="description" class="nb-data-table__description">
-              {{ description }}
-            </p>
-          </div>
+          <h2 v-if="title" class="nb-data-table__title">{{ title }}</h2>
+          <p v-if="description" class="nb-data-table__description">
+            {{ description }}
+          </p>
         </slot>
       </div>
-      <div
-        v-if="$slots.search || $slots['toolbar-actions']"
-        ref="toolbarToolsRef"
-        class="nb-data-table__toolbar-tools"
-        :class="{
-          'nb-data-table__toolbar-tools--grow-search':
-            toolbarWrapped && !!$slots.search,
-        }"
-        :inert="showBatchBar || undefined"
-        :aria-hidden="showBatchBar || undefined"
-      >
-        <slot name="search" />
-        <slot name="toolbar-actions" />
-      </div>
-
-      <!-- Batch action bar, shown over the toolbar while rows are selected -->
-      <div
-        v-if="showBatchBar"
-        class="nb-data-table__batch"
-        role="region"
-        aria-label="Table batch actions"
-      >
-        <span class="nb-data-table__batch-count">
-          {{ selectedCount }} selected
-        </span>
-        <div class="nb-data-table__batch-actions">
-          <slot
-            name="batch-actions"
-            :selected-keys="selectedKeys"
-            :clear="clearSelection"
-          />
-        </div>
-        <NbButton
-          class="nb-data-table__batch-cancel"
-          variant="ghost"
-          :size="controlSize"
-          @click="clearSelection"
+      <div v-if="hasToolsRow" class="nb-data-table__toolbar-row">
+        <div
+          v-if="$slots.search || $slots['toolbar-actions']"
+          class="nb-data-table__toolbar-tools"
+          :class="{ 'nb-data-table__toolbar-tools--search': !!$slots.search }"
+          :inert="showBatchBar || undefined"
+          :aria-hidden="showBatchBar || undefined"
         >
-          Cancel
-        </NbButton>
+          <div v-if="$slots.search" class="nb-data-table__toolbar-search">
+            <slot name="search" />
+          </div>
+          <slot name="toolbar-actions" />
+        </div>
+
+        <!-- Batch action bar, shown over the tools while rows are selected -->
+        <div
+          v-if="showBatchBar"
+          class="nb-data-table__batch"
+          role="region"
+          aria-label="Table batch actions"
+        >
+          <span class="nb-data-table__batch-count">
+            {{ selectedCount }} selected
+          </span>
+          <div class="nb-data-table__batch-actions">
+            <slot
+              name="batch-actions"
+              :selected-keys="selectedKeys"
+              :clear="clearSelection"
+            />
+          </div>
+          <NbButton
+            class="nb-data-table__batch-cancel"
+            variant="ghost"
+            :size="toolbarControlSize"
+            @click="clearSelection"
+          >
+            Cancel
+          </NbButton>
+        </div>
       </div>
     </div>
 
@@ -400,14 +388,12 @@ import * as iconCaretRight from '@nubisco/ui/icons/caret-right'
 import {
   computed,
   getCurrentInstance,
-  onBeforeUnmount,
   ref,
   useId,
   useSlots,
   watch,
   type FunctionalComponent,
 } from 'vue'
-import { ESizeShort } from '@/types/Size.d'
 import type {
   IDataTableColumn,
   IDataTableProps,
@@ -422,7 +408,7 @@ import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 
 const props = withDefaults(defineProps<IDataTableProps<T>>(), {
-  size: ESizeShort.Medium,
+  size: 'lg',
   sortState: null,
   selectable: 'none',
   selected: () => [],
@@ -440,8 +426,8 @@ const props = withDefaults(defineProps<IDataTableProps<T>>(), {
   expanded: () => [],
 })
 
-// The table paints the bordered surface its toolbar, header and rows sit on, so
-// it takes the current layer and deepens anything rendered into its cells.
+// The table paints the surface its toolbar, header and rows sit on, so it takes
+// the current layer and deepens anything rendered into its cells.
 const { layerProps } = useSurfaceLayer()
 
 const emit = defineEmits<{
@@ -454,10 +440,12 @@ const emit = defineEmits<{
 const slots = useSlots()
 const radioName = `nb-data-table-select-${useId()}`
 
-// `size` is published as the enum OR its raw literals for ergonomics. Both
-// carry the same runtime values, so narrow once for children that type their
-// own prop as the enum.
-const controlSize = computed(() => props.size as ESizeShort)
+// The toolbar strip and the batch bar match the row height, up to 48px: an
+// `xl` table keeps a 48px toolbar, as Carbon's does. The batch bar's Cancel
+// takes the same size so it fills the bar.
+const toolbarControlSize = computed(() =>
+  props.size === 'xl' ? 'lg' : props.size,
+)
 
 // #region columns
 const visibleColumns = computed(() =>
@@ -681,59 +669,19 @@ function detailLabel(row: T, rowIndex: number): string {
 // #endregion
 
 // #region toolbar
-const hasToolbarContent = computed(
-  () =>
-    !!props.title ||
-    !!props.description ||
-    !!slots.toolbar ||
-    !!slots.search ||
-    !!slots['toolbar-actions'],
+// The heading (title, description or a custom `#toolbar`) and the strip of
+// tools are separate rows, and each renders only when it has something in it.
+const hasHeading = computed(
+  () => !!props.title || !!props.description || !!slots.toolbar,
 )
 // `canShowBatchBar`, not `showBatchBar`: a table with batch actions but no
-// toolbar content would otherwise grow a toolbar strip the moment the first
-// row is selected, reintroducing exactly the reflow the overlay avoids.
-// Reserving the strip up front keeps the geometry identical in both states.
-const showToolbar = computed(
-  () => hasToolbarContent.value || canShowBatchBar.value,
+// tools would otherwise grow a strip the moment the first row is selected,
+// reintroducing exactly the reflow the overlay avoids. Reserving the strip up
+// front keeps the geometry identical in both states.
+const hasToolsRow = computed(
+  () => !!slots.search || !!slots['toolbar-actions'] || canShowBatchBar.value,
 )
-
-// The toolbar wraps when the heading and the tools do not fit on one line.
-// Whether it has wrapped is read off the layout, not guessed from a width,
-// because it depends on how long the title is and how many tools there are.
-// It only adds the vertical padding a two-line toolbar needs: a toolbar that
-// fits on one line never gets the class, so it is exactly as it was.
-const toolbarRef = ref<HTMLElement | null>(null)
-const toolbarHeadingRef = ref<HTMLElement | null>(null)
-const toolbarToolsRef = ref<HTMLElement | null>(null)
-const toolbarWrapped = ref(false)
-
-function measureToolbar(): void {
-  const heading = toolbarHeadingRef.value
-  const tools = toolbarToolsRef.value
-  // Below the heading's bottom edge, not merely lower than its top: on one
-  // line the tools are centred against a heading that may be taller.
-  toolbarWrapped.value =
-    !!heading &&
-    !!tools &&
-    tools.offsetTop >= heading.offsetTop + heading.offsetHeight - 1
-}
-
-let toolbarObserver: ResizeObserver | null = null
-watch(
-  [toolbarRef, toolbarHeadingRef, toolbarToolsRef],
-  (els) => {
-    toolbarObserver?.disconnect()
-    measureToolbar()
-    if (typeof ResizeObserver === 'undefined') return
-    toolbarObserver ??= new ResizeObserver(measureToolbar)
-    for (const el of els) if (el) toolbarObserver.observe(el)
-  },
-  { flush: 'post' },
-)
-onBeforeUnmount(() => {
-  toolbarObserver?.disconnect()
-  toolbarObserver = null
-})
+const showToolbar = computed(() => hasHeading.value || hasToolsRow.value)
 // #endregion
 
 // #region sorting
@@ -820,131 +768,199 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
 @use '../styles/variables/breakpoints' as bp;
 
 .nb-data-table {
+  /*
+   * Carbon's data table, mapped onto our tokens. Carbon names the colours by
+   * role, and each role lands on the token that plays it here:
+   *
+   *   $layer                 --nb-c-surface (the layer this table paints)
+   *   $layer-hover           --nb-c-surface-hover
+   *   $layer-accent          --nb-dt-accent: the surface one step toward
+   *                          --nb-c-contrast, darker in light, lighter in dark
+   *   $layer-accent-hover    --nb-dt-accent-hover, one step further
+   *   $layer-selected        --nb-dt-accent, as Carbon's own themes have it
+   *   $border-subtle         --nb-c-border (the layer ramp's border is the
+   *                          one scripts/audit-contrast.mjs measures against
+   *                          Carbon's border-subtle)
+   *   $text-primary          --nb-c-text
+   *   $text-secondary        --nb-c-text-muted
+   *
+   * and the type: heading-03 (the title, 20px) is our heading-02 type set,
+   * heading-compact-01 (the header, 14px semibold) is label-lg, and
+   * body-compact-01 (description and cells, 14px regular) is body-md.
+   */
+  --nb-dt-accent: color-mix(
+    in srgb,
+    var(--nb-c-contrast) 10%,
+    var(--nb-c-surface)
+  );
+  --nb-dt-accent-hover: color-mix(
+    in srgb,
+    var(--nb-c-contrast) 16%,
+    var(--nb-c-surface)
+  );
+  // Carbon's sizes. Every one keeps the same 16px cell padding and 14px type:
+  // only the row height changes.
   --nb-dt-row-height: calc(var(--nb-base-unit) * 6);
-  --nb-dt-cell-pad-x: calc(var(--nb-base-unit) * 2);
-  --nb-dt-font-size: var(--nb-font-size-14);
+  --nb-dt-toolbar-height: calc(var(--nb-base-unit) * 6);
+  --nb-dt-cell-pad-x: var(--nb-spacing-16);
+  --nb-dt-font-size: var(--nb-type-body-md-size);
 
   display: flex;
   flex-direction: column;
   width: 100%;
+  // Carbon draws no box around a table: the layer it paints is the edge.
   background: var(--nb-c-surface);
-  color: var(--nb-c-text);
-  border: 1px solid var(--nb-c-border);
+  color: var(--nb-c-text-muted);
   /*
-   * The shell is a panel-role surface. `overflow: hidden` was already here and
-   * is what makes the corner work: the toolbar, the sticky header and the
-   * footer are attached surfaces that run to the shell's edges, so they are
-   * clipped by its corner rather than each needing a corner of their own.
-   * That is also why they must not round themselves: two rounded boxes meeting
-   * at a shared edge leave a visible notch.
+   * The shell is a panel-role surface. `overflow: hidden` is what makes the
+   * corner work: the toolbar, the sticky header and the footer are attached
+   * surfaces that run to the shell's edges, so they are clipped by its corner
+   * rather than each needing a corner of their own. That is also why they
+   * must not round themselves: two rounded boxes meeting at a shared edge
+   * leave a visible notch.
    */
   @include radius.surface(panel);
   overflow: hidden;
   font-size: var(--nb-dt-font-size);
+  line-height: var(--nb-type-body-md-line-height);
 
   // Density
+  &--xs {
+    --nb-dt-row-height: calc(var(--nb-base-unit) * 3);
+    --nb-dt-toolbar-height: calc(var(--nb-base-unit) * 3);
+  }
   &--sm {
     --nb-dt-row-height: calc(var(--nb-base-unit) * 4);
-    --nb-dt-cell-pad-x: calc(var(--nb-base-unit) * 1.5);
-    --nb-dt-font-size: var(--nb-font-size-13);
+    --nb-dt-toolbar-height: calc(var(--nb-base-unit) * 4);
   }
-  &--lg {
+  &--md {
+    --nb-dt-row-height: calc(var(--nb-base-unit) * 5);
+    --nb-dt-toolbar-height: calc(var(--nb-base-unit) * 5);
+  }
+  // Extra large is for two lines of content, so the cells sit at the top
+  // with Carbon's 16px above them instead of centring one line in 64px.
+  &--xl {
     --nb-dt-row-height: calc(var(--nb-base-unit) * 8);
-    --nb-dt-cell-pad-x: calc(var(--nb-base-unit) * 2.5);
   }
 
   // ── Toolbar ──────────────────────────────────────────────
   &__toolbar {
-    position: relative; // containing block for the batch overlay
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: calc(var(--nb-base-unit) * 2);
-    // Only ever seen once the tools have wrapped below the heading
-    row-gap: var(--nb-base-unit);
-    min-height: calc(var(--nb-base-unit) * 6);
-    padding-inline: var(--nb-dt-cell-pad-x);
-    border-bottom: 1px solid var(--nb-c-border);
+    flex-direction: column;
   }
 
-  // Two lines: room above the heading and below the tools, which one line
-  // gets from the toolbar's min-height instead.
-  &__toolbar--wrapped {
-    padding-block: calc(var(--nb-base-unit) * 1.5);
-  }
-
-  // Its natural one-line width (the default flex basis) decides the wrap:
-  // when the heading and the tools do not fit side by side, the tools take
-  // the next line, and the heading, alone on its own, shrinks to fit it.
+  // Carbon's title block: 16px above, 24px below, 16px at the sides.
   &__toolbar-heading {
     min-width: 0;
+    padding: var(--nb-spacing-16) var(--nb-dt-cell-pad-x) var(--nb-spacing-24);
   }
 
-  &__title {
+  // Under the heading, not bare: a prose stylesheet around the table (a docs
+  // page, a CMS body) styles every h2 and p it contains, and would otherwise
+  // outrank a single class with its margins.
+  &__toolbar-heading &__title {
     margin: 0;
-    font-size: var(--nb-font-size-16);
-    font-weight: 600;
-    line-height: 1.3;
+    font-family: var(--nb-type-heading-02-family);
+    font-size: var(--nb-type-heading-02-size);
+    font-weight: var(--nb-type-heading-02-weight);
+    line-height: var(--nb-type-heading-02-line-height);
+    letter-spacing: var(--nb-type-heading-02-letter-spacing);
+    color: var(--nb-c-text);
   }
 
-  &__description {
-    margin: 2px 0 0;
-    font-size: var(--nb-font-size-13);
+  &__toolbar-heading &__description {
+    margin: var(--nb-spacing-2) 0 0;
+    font-size: var(--nb-type-body-md-size);
+    line-height: var(--nb-type-body-md-line-height);
     color: var(--nb-c-text-muted);
+  }
+
+  // The strip of tools. It is as tall as a row (48px at most) and its
+  // buttons fill that height, so the last one sits flush in the corner over
+  // the header, the way Carbon's primary button does.
+  &__toolbar-row {
+    position: relative; // containing block for the batch overlay
+    display: flex;
+    min-height: var(--nb-dt-toolbar-height);
   }
 
   &__toolbar-tools {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: stretch;
     justify-content: flex-end;
-    gap: var(--nb-base-unit);
-    // Pinned to the end of whichever line it is on. On one line this is where
-    // space-between already put it.
-    margin-inline-start: auto;
-    // Alone on its line and still too wide (a phone): the tools wrap among
-    // themselves rather than run past the edge.
+    flex: 1 1 auto;
     min-width: 0;
-    max-width: 100%;
-  }
 
-  // Wrapped, the tools have a line of their own, and the search field can
-  // take whatever of it the actions leave.
-  &__toolbar-tools--grow-search {
-    flex: 1 1 100%;
+    // The buttons in the strip: full height, square corners where they meet
+    // the header and each other, icon-only ones square. An action group
+    // passed in is laid out the same way.
+    > :deep(.nb-button),
+    > :deep(.nb-action-group > .nb-button) {
+      height: auto;
+      min-height: var(--nb-dt-toolbar-height);
+      border-radius: 0;
+    }
 
-    > :deep(:first-child) {
-      flex: 1 1 auto;
+    > :deep(.nb-button--icon-only),
+    > :deep(.nb-action-group > .nb-button--icon-only) {
+      width: var(--nb-dt-toolbar-height);
+    }
+
+    > :deep(.nb-action-group) {
+      align-items: stretch;
+      gap: 0;
     }
   }
 
-  // Batch action bar (selection mode). Carbon overlays the toolbar with a
-  // solid brand-filled bar and inverse content, so selection mode is
-  // unmistakable. The bar owns the toolbar's inline padding because it
-  // bleeds to both edges.
-  // Overlay, not a sibling in flow: covering the toolbar leaves its height
-  // (and therefore every row below it) exactly where it was.
+  // A search field takes whatever width the buttons leave, and moves to a
+  // line of its own when that is too little (a phone, a narrow card).
+  &__toolbar-search {
+    display: flex;
+    align-items: center;
+    flex: 1 1 16rem;
+    min-width: 0;
+    padding-inline: var(--nb-dt-cell-pad-x) var(--nb-spacing-8);
+
+    > :deep(*) {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+  }
+
+  // Batch action bar (selection mode). Carbon overlays the tools with a solid
+  // brand-filled bar and inverse content, so selection mode is unmistakable.
+  // Overlay, not a sibling in flow: covering the strip leaves its height (and
+  // therefore every row below it) exactly where it was. Its buttons fill its
+  // height like the tools do, and Cancel sits flush in the corner.
   &__batch {
     position: absolute;
     inset: 0;
     display: flex;
-    align-items: center;
-    gap: calc(var(--nb-base-unit) * 2);
-    padding-inline: var(--nb-dt-cell-pad-x);
+    align-items: stretch;
+    gap: var(--nb-spacing-16);
+    padding-inline-start: var(--nb-dt-cell-pad-x);
     background: var(--nb-c-primary);
     color: var(--nb-c-primary-a11y);
+
+    :deep(.nb-button) {
+      height: auto;
+      min-height: var(--nb-dt-toolbar-height);
+      border-radius: 0;
+    }
   }
 
   &__batch-count {
-    font-weight: 600;
+    display: flex;
+    align-items: center;
+    font-weight: var(--nb-font-weight-semibold);
     color: inherit;
   }
 
   &__batch-actions {
     display: flex;
-    align-items: center;
-    gap: var(--nb-base-unit);
+    align-items: stretch;
+    justify-content: flex-end;
     flex: 1;
   }
 
@@ -972,15 +988,17 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
   }
 
   // ── Header ───────────────────────────────────────────────
+  // Carbon's column header: $layer-accent, heading-compact-01, no rule under
+  // it (the change of fill is the edge).
   &__th {
     height: var(--nb-dt-row-height);
     padding-inline: var(--nb-dt-cell-pad-x);
     text-align: left;
-    font-weight: 600;
-    font-size: inherit;
+    font-size: var(--nb-type-label-lg-size);
+    font-weight: var(--nb-type-label-lg-weight);
+    line-height: var(--nb-type-label-lg-line-height);
     color: var(--nb-c-text);
-    background: var(--nb-c-surface-raised);
-    border-bottom: 1px solid var(--nb-c-border);
+    background: var(--nb-dt-accent);
     white-space: nowrap;
     vertical-align: middle;
 
@@ -1008,13 +1026,12 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
     background: transparent;
     color: inherit;
     font: inherit;
-    font-weight: 600;
     text-align: inherit;
     cursor: pointer;
     transition: background 0.15s;
 
     &:hover {
-      background: var(--nb-c-surface-hover);
+      background: var(--nb-dt-accent-hover);
     }
     &:focus-visible {
       outline: 1px solid var(--nb-c-focus-ring);
@@ -1046,13 +1063,15 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
   }
 
   // ── Body ─────────────────────────────────────────────────
+  // Carbon's row: $layer, body-compact-01 in $text-secondary, a
+  // $border-subtle rule under every row and no vertical rules.
   &__td {
     height: var(--nb-dt-row-height);
     padding-inline: var(--nb-dt-cell-pad-x);
     padding-block: calc(var(--nb-base-unit) / 2);
     border-bottom: 1px solid var(--nb-c-border);
     vertical-align: middle;
-    color: var(--nb-c-text);
+    color: var(--nb-c-text-muted);
 
     &--center {
       text-align: center;
@@ -1065,8 +1084,10 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
   &__row {
     transition: background 0.15s;
 
+    // Hovered and selected rows lift their text to $text-primary.
     &:hover .nb-data-table__td {
       background: var(--nb-c-surface-hover);
+      color: var(--nb-c-text);
     }
 
     &--clickable {
@@ -1081,39 +1102,40 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
     }
 
     // Neutral, not a brand tint. A 10% --nb-c-primary wash read as an
-    // unexplained violet; selection is already signalled by the checkbox and
-    // the batch bar, so the row only needs to sit one layer proud of the
-    // surface. Selected+hover goes one neutral step further using
-    // --nb-c-contrast (black/white per theme) so it stays hue-free.
+    // unexplained violet. Selection is already signalled by the checkbox and
+    // the batch bar. Carbon's $layer-selected is its $layer-accent, and
+    // selected+hover goes one step further, so both stay hue-free.
     &--selected .nb-data-table__td {
-      background: var(--nb-c-bg-soft);
+      background: var(--nb-dt-accent);
+      color: var(--nb-c-text);
     }
 
     &--selected:hover .nb-data-table__td {
-      background: color-mix(
-        in srgb,
-        var(--nb-c-contrast) 6%,
-        var(--nb-c-bg-soft)
-      );
+      background: var(--nb-dt-accent-hover);
     }
   }
 
+  // Zebra stripes take $layer-accent, as Carbon's do.
   &--zebra:not(&--expandable) &__row:nth-child(even) &__td {
-    background: var(--nb-c-bg-soft);
+    background: var(--nb-dt-accent);
   }
   // An open detail row is a sibling of the data rows, so it would flip the
   // parity of every row after it. An expandable table counts data rows only.
   &--zebra#{&}--expandable &__row--even &__td,
   &--zebra#{&}--expandable &__row--even + &__detail-row &__detail-cell {
-    background: var(--nb-c-bg-soft);
+    background: var(--nb-dt-accent);
   }
   &--zebra &__row:hover &__td {
     background: var(--nb-c-surface-hover);
   }
+  &--zebra &__row--selected &__td {
+    background: var(--nb-dt-accent-hover);
+  }
 
-  // Last row: drop the trailing border for a clean edge
-  &__body &__row:last-child &__td {
-    border-bottom: none;
+  // Extra large rows hold two lines: the content starts 16px down.
+  &--xl &__td {
+    vertical-align: top;
+    padding-top: var(--nb-spacing-16);
   }
 
   // ── Selection + actions columns ──────────────────────────
@@ -1217,10 +1239,6 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
     color: var(--nb-c-text);
   }
 
-  &__body &__detail-row:last-child &__detail-cell {
-    border-bottom: none;
-  }
-
   // ── Sticky header ────────────────────────────────────────
   &--sticky &__head &__th {
     position: sticky;
@@ -1300,8 +1318,11 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
     }
   }
 
+  // NbPagination brings its own top border. Pulled up by its width, it lands
+  // on the last row's rule instead of doubling it.
   &__footer {
-    // NbPagination brings its own top border; nothing needed here.
+    position: relative;
+    margin-top: -1px;
   }
 }
 
@@ -1348,7 +1369,7 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
       }
 
       &--selected {
-        background: var(--nb-c-bg-soft);
+        background: var(--nb-dt-accent);
       }
     }
 
@@ -1460,8 +1481,7 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
       position: sticky;
       top: 0;
       z-index: 1;
-      background: var(--nb-c-surface-raised);
-      border-bottom: 1px solid var(--nb-c-border);
+      background: var(--nb-dt-accent);
 
       tr {
         display: flex;

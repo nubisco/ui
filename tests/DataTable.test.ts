@@ -308,9 +308,16 @@ describe('NbDataTable', () => {
       expect(mountTable({ size: 'sm' }).classes()).toContain(
         'nb-data-table--sm',
       )
-      expect(mountTable({ size: 'lg' }).classes()).toContain(
-        'nb-data-table--lg',
+      expect(mountTable({ size: 'xs' }).classes()).toContain(
+        'nb-data-table--xs',
       )
+      expect(mountTable({ size: 'xl' }).classes()).toContain(
+        'nb-data-table--xl',
+      )
+    })
+
+    it("defaults to Carbon's default, lg", () => {
+      expect(mountTable().classes()).toContain('nb-data-table--lg')
     })
   })
 
@@ -347,7 +354,8 @@ describe('NbDataTable', () => {
     // title + description toolbar is taller than the bar, so ticking the
     // first checkbox resized the toolbar and shifted every row (measured at
     // 50px), moving the next checkbox out from under the pointer. The bar is
-    // now an overlay and the heading stays mounted, just inert.
+    // now an overlay on the tools strip: the heading above it stays readable,
+    // and the tools under it stay mounted, just inert.
     const wrapper = mountTable(
       {
         selectable: 'multiple',
@@ -355,18 +363,25 @@ describe('NbDataTable', () => {
         title: 'Team members',
         description: 'People with access',
       },
-      { slots: { 'batch-actions': () => h('button', 'Delete') } },
+      {
+        slots: {
+          'toolbar-actions': () => h('button', 'Add'),
+          'batch-actions': () => h('button', 'Delete'),
+        },
+      },
     )
     expect(wrapper.find('.nb-data-table__title').exists()).toBe(true)
 
     await wrapper.setProps({ selected: [1] })
 
+    const row = wrapper.find('.nb-data-table__toolbar-row')
+    const tools = row.find('.nb-data-table__toolbar-tools')
+    expect(row.find('.nb-data-table__batch').exists()).toBe(true)
+    expect(tools.attributes('inert')).toBeDefined()
+    expect(tools.attributes('aria-hidden')).toBe('true')
     const heading = wrapper.find('.nb-data-table__toolbar-heading')
-    expect(wrapper.find('.nb-data-table__batch').exists()).toBe(true)
-    // Still rendered (so the toolbar keeps its height) but out of reach.
+    expect(heading.attributes('inert')).toBeUndefined()
     expect(wrapper.find('.nb-data-table__title').text()).toBe('Team members')
-    expect(heading.attributes('inert')).toBeDefined()
-    expect(heading.attributes('aria-hidden')).toBe('true')
   })
 
   it('reserves the toolbar strip when batch actions exist but no toolbar content does', () => {
@@ -541,99 +556,63 @@ describe('NbDataTable stackOnPhone', () => {
   })
 })
 
-describe('NbDataTable toolbar wrapping', () => {
-  // jsdom has no layout, so the boxes the wrap check reads are set by hand,
-  // and a stand-in ResizeObserver lets a test say "the layout changed".
-  let notify: () => void = () => {}
-  class FakeResizeObserver {
-    constructor(cb: () => void) {
-      notify = cb
-    }
-    observe() {}
-    disconnect() {}
-  }
-
-  afterEach(() => {
-    vi.unstubAllGlobals()
-    unstubPhone()
+describe('NbDataTable toolbar layout', () => {
+  // Carbon's anatomy: the title block on its own, then a strip of tools.
+  it('puts the title and description above the tools, in separate rows', () => {
+    const wrapper = mountTable(
+      { title: 'Members', description: 'Who can sign in' },
+      { slots: { 'toolbar-actions': '<button class="add">New</button>' } },
+    )
+    const toolbar = wrapper.find('.nb-data-table__toolbar')
+    const heading = toolbar.find('.nb-data-table__toolbar-heading')
+    const row = toolbar.find('.nb-data-table__toolbar-row')
+    expect(heading.find('.nb-data-table__title').text()).toBe('Members')
+    expect(heading.find('.nb-data-table__description').text()).toBe(
+      'Who can sign in',
+    )
+    expect(heading.find('.add').exists()).toBe(false)
+    expect(row.find('.add').exists()).toBe(true)
   })
 
-  const box = (el: Element, top: number, height: number) => {
-    Object.defineProperty(el, 'offsetTop', { value: top, configurable: true })
-    Object.defineProperty(el, 'offsetHeight', {
-      value: height,
-      configurable: true,
-    })
-  }
+  it('renders no tools strip for a title alone', () => {
+    const wrapper = mountTable({ title: 'Members' })
+    expect(wrapper.find('.nb-data-table__toolbar-heading').exists()).toBe(true)
+    expect(wrapper.find('.nb-data-table__toolbar-row').exists()).toBe(false)
+  })
 
-  function mountToolbar(props: Record<string, unknown> = {}) {
-    vi.stubGlobal('ResizeObserver', FakeResizeObserver)
-    return mountTable(
-      { title: 'Members', selectable: 'multiple', ...props },
+  it('renders no heading for tools alone', () => {
+    const wrapper = mountTable(
+      {},
+      { slots: { 'toolbar-actions': '<button>New</button>' } },
+    )
+    expect(wrapper.find('.nb-data-table__toolbar-heading').exists()).toBe(false)
+    expect(wrapper.find('.nb-data-table__toolbar-row').exists()).toBe(true)
+  })
+
+  it('gives the search field its own box so it can take the spare width', () => {
+    const wrapper = mountTable(
+      { title: 'Members' },
       {
         slots: {
           search: '<input class="search" />',
-          'toolbar-actions': '<button>Add</button>',
-          'batch-actions': '<button>Delete</button>',
+          'toolbar-actions': '<button>New</button>',
         },
       },
     )
-  }
-
-  async function layout(
-    wrapper: ReturnType<typeof mountTable>,
-    heading: [number, number],
-    tools: [number, number],
-  ) {
-    box(wrapper.find('.nb-data-table__toolbar-heading').element, ...heading)
-    box(wrapper.find('.nb-data-table__toolbar-tools').element, ...tools)
-    notify()
-    await wrapper.vm.$nextTick()
-  }
-
-  const toolbar = (wrapper: ReturnType<typeof mountTable>) =>
-    wrapper.find('.nb-data-table__toolbar')
-
-  it('leaves a toolbar on one line exactly as it was', async () => {
-    const wrapper = mountToolbar()
-    // A tall heading with the tools centred beside it: lower than the
-    // heading's top, but not below it
-    await layout(wrapper, [0, 56], [12, 32])
-    expect(toolbar(wrapper).attributes('class')).toBe('nb-data-table__toolbar')
-    expect(
-      wrapper.find('.nb-data-table__toolbar-tools').attributes('class'),
-    ).toBe('nb-data-table__toolbar-tools')
-  })
-
-  it('marks the toolbar wrapped once the tools sit below the heading', async () => {
-    const wrapper = mountToolbar()
-    await layout(wrapper, [12, 42], [62, 32])
-    expect(toolbar(wrapper).classes()).toContain(
-      'nb-data-table__toolbar--wrapped',
-    )
-    // The search field gets the line the actions leave
+    const search = wrapper.find('.nb-data-table__toolbar-search')
+    expect(search.find('.search').exists()).toBe(true)
     expect(wrapper.find('.nb-data-table__toolbar-tools').classes()).toContain(
-      'nb-data-table__toolbar-tools--grow-search',
+      'nb-data-table__toolbar-tools--search',
     )
   })
 
-  it('goes back to one line when there is room again', async () => {
-    const wrapper = mountToolbar()
-    await layout(wrapper, [12, 42], [62, 32])
-    await layout(wrapper, [0, 42], [5, 32])
-    expect(toolbar(wrapper).classes()).not.toContain(
-      'nb-data-table__toolbar--wrapped',
+  it('sizes the batch Cancel to the strip, capped at lg for xl tables', () => {
+    const wrapper = mountTable(
+      { size: 'xl', selectable: 'multiple', selected: [1] },
+      { slots: { 'batch-actions': '<button>Delete</button>' } },
     )
-  })
-
-  it('keeps the batch bar over a wrapped toolbar', async () => {
-    const wrapper = mountToolbar({ selected: [1] })
-    await layout(wrapper, [12, 42], [62, 32])
-    // The bar is an overlay inside the toolbar, so it covers it at any height
-    const batch = toolbar(wrapper).find('.nb-data-table__batch')
-    expect(batch.exists()).toBe(true)
-    expect(toolbar(wrapper).classes()).toContain(
-      'nb-data-table__toolbar--wrapped',
+    expect(wrapper.find('.nb-data-table__batch-cancel').classes()).toContain(
+      'nb-button--lg',
     )
   })
 })
