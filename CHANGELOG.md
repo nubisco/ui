@@ -1,3 +1,10 @@
+# [5.37.0](https://github.com/nubisco/ui/compare/v5.36.1...v5.37.0) (2026-10-26)
+
+
+### Features
+
+* **data-table:** follow Carbon's data table anatomy and sizes ([3d38dc5](https://github.com/nubisco/ui/commit/3d38dc5f73cf529d34af9c08bb40742f0d63370e))
+
 ## [5.36.1](https://github.com/nubisco/ui/compare/v5.36.0...v5.36.1) (2026-10-26)
 
 
