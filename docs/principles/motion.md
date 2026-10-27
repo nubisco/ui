@@ -450,5 +450,5 @@ Every file the second command prints is one you must open and check: either the 
 - [Status indicators](/patterns/status-indicators) for choosing between `NbSpinner`, `NbInlineLoading`, `NbSkeleton` and `NbProgressBar`. That page owns which indicator; this page owns how it moves.
 - [Dialogs](/patterns/dialogs) and [Inspectors](/patterns/inspectors) for the surfaces whose enters and exits are described here.
 - [Accessibility overview](/accessibility/overview) for where reduced motion sits among the other obligations.
-- [Toaster](/components/toaster) and [useToast](/composables/use-toast) for toast lifetimes, placement and the shift property.
+- [Toaster](/components/toaster/usage) and [useToast](/composables/use-toast) for toast lifetimes, placement and the shift property.
 - [Tooltip](/directives/tooltip) for `animationTime` and the exit duration that has to match the keyframe.

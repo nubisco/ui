@@ -12,7 +12,7 @@ const focusedText = (page: Page) =>
 
 test.describe('NbSubmenu', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/components/menu')
+    await page.goto('/components/menu/code')
     const file = page.getByRole('button', { name: 'File', exact: true })
     await file.scrollIntoViewIfNeeded()
     await file.click()
@@ -62,7 +62,7 @@ test.describe('NbSubmenu', () => {
 
 test.describe('NbInfoHint', () => {
   test('centres its popover on the trigger', async ({ page }) => {
-    await page.goto('/components/info-hint')
+    await page.goto('/components/info-hint/usage')
     const triggers = page.locator('.nb-info-hint--trigger')
     await triggers.first().waitFor()
     const count = await triggers.count()
@@ -100,7 +100,7 @@ test.describe('NbInfoHint', () => {
 
 test.describe('NbTableOfContents', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/components/table-of-contents')
+    await page.goto('/components/table-of-contents/usage')
     await page.locator('.nb-toc nav').first().waitFor()
   })
 
@@ -151,6 +151,8 @@ test.describe('NbTableOfContents', () => {
   test('the floating form opens, closes on a choice, and on Escape', async ({
     page,
   }) => {
+    // The floating form is demonstrated on the Code tab.
+    await page.goto('/components/table-of-contents/code')
     const floating = page.locator('.nb-toc--floating')
     const show = floating.getByRole('button', { name: 'Show contents' })
     await show.scrollIntoViewIfNeeded()

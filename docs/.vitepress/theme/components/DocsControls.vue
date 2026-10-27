@@ -91,7 +91,7 @@ const shapes = [
   align-items: center;
   gap: 1px;
   padding: 2px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--nb-c-layer-2);
   border-radius: 6px;
 }
 
@@ -104,9 +104,7 @@ const shapes = [
   border: 0;
   border-radius: 4px;
   background: transparent;
-  /* The header is chrome, not page content: its own light-on-dark palette
-     holds in both colour modes, so these do not follow the theme. */
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--nb-c-text-subtle);
   font: inherit;
   font-size: 12px;
   line-height: 1;
@@ -117,17 +115,20 @@ const shapes = [
 }
 
 .docs-controls__btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--nb-c-text);
+  background: var(--nb-c-layer-hover-1);
 }
 
+/* The header is a layer-1 surface like the page header under it, so the
+   pressed switch lifts to the layer above the track it sits in. */
 .docs-controls__btn--on {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.18);
+  color: var(--nb-c-text);
+  background: var(--nb-c-layer-1);
+  box-shadow: 0 0 0 1px var(--nb-c-layer-border-1);
 }
 
 .docs-controls__btn:focus-visible {
-  outline: 2px solid var(--nb-c-grape-hyacinth-350);
+  outline: 2px solid var(--nb-c-primary);
   outline-offset: 1px;
 }
 

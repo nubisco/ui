@@ -6,7 +6,7 @@ tabs: ['Usage', 'Api']
 
 <doc-tab name="Usage">
 
-`useShellSlot` lets a view render controls into a region of the surrounding [`NbShell`](/components/shell): a page title in the topbar, a Save button next to it, a filter row in the fixedbar, a panel in the inspector.
+`useShellSlot` lets a view render controls into a region of the surrounding [`NbShell`](/components/shell/usage): a page title in the topbar, a Save button next to it, a filter row in the fixedbar, a panel in the inspector.
 
 It exists because everybody needed it and everybody built it privately. Eight of our twelve applications put a hand-picked DOM id on a shell region and teleported into it by selector: `#cms-topbar`, `#nks-topbar-right`, `#verba-topbar`, `#ob-topbar-left`, `#nba-topbar-left`, `#tally-topbar`, `#page-actions`. Eight incompatible contracts, one of which shipped a bug because a view looked for its target before the shell had rendered it. This is the supported version, with those two failure modes handled rather than rediscovered.
 

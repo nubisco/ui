@@ -8,7 +8,7 @@ tabs: ['Usage', 'Api']
 
 `useToast()` is how any code in the application raises a toast: a component, a store, a route guard, an HTTP interceptor. It returns the shared queue, created on first call, so nothing has to be passed down and no plugin has to be installed.
 
-The queue is only half of it. [`NbToaster`](/components/toaster) renders it, once, at the root of the application. Without a host mounted, `useToast()` still queues records and nothing is ever shown.
+The queue is only half of it. [`NbToaster`](/components/toaster/usage) renders it, once, at the root of the application. Without a host mounted, `useToast()` still queues records and nothing is ever shown.
 
 ```ts
 import { useToast } from '@nubisco/ui'
@@ -88,7 +88,7 @@ router.afterEach(() => toast.dismissTransient())
 
 Mark the exceptions with `retain: true`: news that is true wherever the user ends up ("Export ready", "Connection restored"). `dismissAll()` clears those too, and is what sign-out wants.
 
-That includes anything raised _during_ the navigation. `afterEach` fires after the guard that redirected, so a `toast.error('Your session expired')` pushed in `beforeEach` is cleared with reason `'navigated'` before it is ever painted. Guard toasts need `retain: true`. This is the single most common way the recipe above goes wrong, and it is written up at length on the [NbToaster page](/components/toaster#a-toast-and-the-route-it-came-from).
+That includes anything raised _during_ the navigation. `afterEach` fires after the guard that redirected, so a `toast.error('Your session expired')` pushed in `beforeEach` is cleared with reason `'navigated'` before it is ever painted. Guard toasts need `retain: true`. This is the single most common way the recipe above goes wrong, and it is written up at length on the [NbToaster page](/components/toaster/code#a-toast-and-the-route-it-came-from).
 
 ## Your own queue
 
@@ -169,7 +169,7 @@ export function render() {
 
 `<NbToaster />` renders it with no `:queue` prop. Two reasons to reach for it: server rendering, where one Node process serves several requests at once and a module-level singleton is shared by all of them, and a page that mounts several Vue apps and does not want one app's toasts announced by another's toaster.
 
-A queue per request is not the whole SSR story, and the missing half bites at hydration rather than at render: the host teleports to `body`, and `<Teleport>` buffers into `ctx.teleports` on the server instead of rendering into its target. Either write `ctx.teleports.body` into your HTML template, or pass `:to="false"` and put the host at the app root. The [NbToaster page](/components/toaster) has both, with the positioning caveat that comes with the second.
+A queue per request is not the whole SSR story, and the missing half bites at hydration rather than at render: the host teleports to `body`, and `<Teleport>` buffers into `ctx.teleports` on the server instead of rendering into its target. Either write `ctx.teleports.body` into your HTML template, or pass `:to="false"` and put the host at the app root. The [NbToaster page](/components/toaster/usage) has both, with the positioning caveat that comes with the second.
 
 ## `createToastQueue(options?): IToastQueue`
 
@@ -250,6 +250,6 @@ It is not request isolation, and this page will not sell it as such: a global re
 
 `{ success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' }`. The visually hidden word a screen reader hears before the message. Override them per queue rather than per toast.
 
-Placement, the cap, the hotkey, the announcer and the override knobs belong to the host: see [`NbToaster`](/components/toaster).
+Placement, the cap, the hotkey, the announcer and the override knobs belong to the host: see [`NbToaster`](/components/toaster/usage).
 
 </doc-tab>

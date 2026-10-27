@@ -375,7 +375,7 @@ table that never set `size` keeps its 48px rows. One that asked for `md` or
 
 ## Pagination
 
-Drop an [`NbPagination`](/components/pagination) into the `#footer` slot. Both components are fully controlled, so the same wiring drives client-side slicing or server-side paging. On page-size change the page resets to 1.
+Drop an [`NbPagination`](/components/pagination/usage) into the `#footer` slot. Both components are fully controlled, so the same wiring drives client-side slicing or server-side paging. On page-size change the page resets to 1.
 
 <preview>
   <NbDataTable

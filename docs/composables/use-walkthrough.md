@@ -6,7 +6,7 @@ tabs: ['Usage', 'Api']
 
 <doc-tab name="Usage">
 
-`useWalkthrough` is the state machine behind [`NbWalkthrough`](/components/walkthrough), with no rendering attached. It owns the step index, the version-gated auto-start rule, and persistence.
+`useWalkthrough` is the state machine behind [`NbWalkthrough`](/components/walkthrough/usage), with no rendering attached. It owns the step index, the version-gated auto-start rule, and persistence.
 
 Reach for it directly when the tour has to be started from somewhere that has no template of its own (a help menu handler, a router guard, an onboarding checklist), or when you want to unit-test the flow without mounting an overlay.
 
@@ -72,7 +72,7 @@ const tour = useWalkthrough(() => ({
 
 ## Custom persistence
 
-See [pluggable persistence](/components/walkthrough) on the component page. Any object satisfying `IWalkthroughStorage` works, and reads may return a promise.
+See [pluggable persistence](/components/walkthrough/usage) on the component page. Any object satisfying `IWalkthroughStorage` works, and reads may return a promise.
 
 ```ts
 import { createMemoryWalkthroughStorage, useWalkthrough } from '@nubisco/ui'
@@ -156,7 +156,7 @@ function useWalkthrough(
 
 ## Related
 
-- [`NbWalkthrough`](/components/walkthrough) — the renderer.
+- [`NbWalkthrough`](/components/walkthrough/usage) — the renderer.
 - [`v-nb-tour-step`](/directives/tour-step) — tagging targets with stable ids.
 
 </doc-tab>

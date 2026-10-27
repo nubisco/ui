@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { h, nextTick } from 'vue'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import NotificationCenter, {
   placeNotificationPanel,
@@ -1931,16 +1931,20 @@ describe('NbNotificationCenter ships', () => {
   // sidebar is now something a test owns rather than something a checklist
   // hopes for.
   it('is reachable from the docs sidebar', () => {
-    const config = readFileSync(
-      resolve(root, 'docs/.vitepress/config.ts'),
+    const sidebar = readFileSync(
+      resolve(root, 'docs/.vitepress/sidebar.ts'),
       'utf8',
     )
-    expect(config).toContain("link: '/components/notification-center'")
+    expect(sidebar).toContain("link: '/components/notification-center/usage'")
   })
 
   it('has the docs page the sidebar points at', () => {
-    const page = resolve(root, 'docs/components/notification-center.md')
-    const md = readFileSync(page, 'utf8')
+    // The page is split into one file per tab; every tab renders tags.
+    const dir = resolve(root, 'docs/components/notification-center')
+    const md = readdirSync(dir)
+      .filter((f) => f.endsWith('.md'))
+      .map((f) => readFileSync(resolve(dir, f), 'utf8'))
+      .join('\n')
     // Every Nb tag the page renders has to be registered, or that preview is
     // a blank rectangle on the published site.
     const tags = new Set([...md.matchAll(/<(Nb[A-Za-z]+)/g)].map((m) => m[1]))

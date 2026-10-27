@@ -1,7 +1,7 @@
 /*
- * NubiscoUI VitePress Theme — always-light, Carbon-inspired.
- * Maps --vp-* tokens to --nb-* tokens. No hardcoded values.
- * Dark mode is handled at the component level (Preview.vue), not the doc site.
+ * NubiscoUI VitePress theme, Carbon-inspired.
+ * Maps --vp-* tokens to --nb-* tokens. No hardcoded values in the chrome.
+ * Light and dark follow the library's own `.dark` class (useTheme()).
  */
 
 /* ─── Brand ──────────────────────────────────────────────────────────────── */
@@ -18,130 +18,137 @@
   --vp-font-family-mono: var(--nb-font-family-mono, 'Courier New', monospace);
 }
 
-/* ─── Page backgrounds ───────────────────────────────────────────────────── */
-:root {
-  --vp-c-bg: var(--nb-c-document); /* page body bg: light grey */
-  --vp-c-bg-alt: var(--nb-c-white); /* sidebar + alternate: pure white */
-  --vp-c-bg-elv: var(--nb-c-surface);
-  --vp-c-bg-soft: var(--nb-c-bg);
+/* ─── Chrome: Carbon's structure, Nubisco's layers ────────────────────── */
+/*
+ * The documentation is laid out the way Carbon's is: the page itself is the
+ * ground (layer 0), and everything that sits on it lifts off it one step
+ * (layer 1): the site header, the left navigation, each page's own header,
+ * every demo stage and every code block. Hairlines between them are layer 2.
+ * The only colour in the chrome is the accent, on whatever is current.
+ *
+ * The layer tokens flip with `.dark` by themselves, so one mapping serves both
+ * modes. It is written twice only because VitePress declares its own dark
+ * values on `.dark`, which outranks `:root`.
+ *
+ * This replaces the purple-black header band. Against a grey page it read as
+ * a second, heavier product above the one being documented, and it is not how
+ * Carbon, the system this one is modelled on, frames its documentation.
+ */
+:root,
+.dark {
+  --vp-c-bg: var(--nb-c-layer-0);
+  --vp-c-bg-alt: var(--nb-c-layer-1);
+  --vp-c-bg-elv: var(--nb-c-layer-1);
+  --vp-c-bg-soft: var(--nb-c-layer-2);
+  --vp-c-divider: var(--nb-c-layer-2);
+  --vp-c-gutter: var(--nb-c-layer-2);
+  --vp-nav-bg-color: var(--nb-c-layer-1);
+  --vp-sidebar-bg-color: var(--nb-c-layer-1);
+  --vp-local-nav-bg-color: var(--nb-c-layer-1);
 }
 
 /* ─── Text ───────────────────────────────────────────────────────────────── */
-:root {
+:root,
+.dark {
   --vp-c-text-1: var(--nb-c-text);
   --vp-c-text-2: var(--nb-c-text-muted);
   --vp-c-text-3: var(--nb-c-text-subtle);
 }
 
-/*
- * The dark half of the same mapping.
- *
- * The `--vp-*` tokens above are declared on `:root`, which ties VitePress's own
- * `.dark` rules on specificity and wins on source order, so without this block
- * the page chrome stayed light while every component on it went dark. The
- * library's own tokens already flip on `.dark`; these point the site's tokens
- * at them so the documentation and the components it documents are in the same
- * mode.
- *
- * `--nb-c-document` is deliberately not used here: it is the light page ground
- * and does not flip. Layer 0 is the dark equivalent.
- */
-.dark {
-  --vp-c-bg: var(--nb-c-layer-0);
-  --vp-c-bg-alt: var(--nb-c-layer-1);
-  --vp-c-bg-elv: var(--nb-c-surface);
-  --vp-c-bg-soft: var(--nb-c-layer-1);
-  --vp-c-divider: var(--nb-c-border);
-  --vp-c-gutter: var(--nb-c-layer-0);
-}
-
-/* ─── Nav bar — Carbon style: dark background, light text ───────────────── */
-/*
- * Dark nav is scoped to .has-sidebar pages (doc pages using the nubisco layout).
- * The home page (layout: home) has no sidebar and inherits VitePress defaults,
- * avoiding the broken split at mobile breakpoints where only .title was painted.
- */
-
-/*
- * The header takes the library's own application-chrome colour rather than
- * `--nb-c-contrast`, which is pure #000. A documentation site headed by a band
- * of absolute black reads as heavier than anything the library itself ships,
- * and it is the one surface here that is not made of Nubisco parts.
- *
- * `--nb-shell-sidebar-bg` is what NbShell paints its own chrome with: a deep
- * purple-black (#120b27) that carries the accent instead of dropping it. White
- * on it measures 19.04:1.
- */
+/* ─── Site header ────────────────────────────────────────────────────────── */
 .VPNavBar.has-sidebar,
 .VPNavBar.has-sidebar .wrapper,
 .VPNavBar.has-sidebar .container,
 .VPNavBar.has-sidebar .content,
 .VPNavBar.has-sidebar .content-body,
 .VPNavBar.has-sidebar .title {
-  background-color: var(--nb-shell-sidebar-bg);
-}
-
-/* Dark background token overrides — keeps text, icons, and dividers readable */
-.VPNavBar.has-sidebar {
-  --vp-nav-bg-color: var(--nb-shell-sidebar-bg);
-  --vp-c-text-1: var(--nb-c-white);
-  --vp-c-text-2: rgba(255, 255, 255, 0.7);
-  --vp-c-neutral: var(--nb-c-white);
-  --vp-c-neutral-inverse: var(--nb-shell-sidebar-bg);
-  --vp-c-gutter: var(--nb-shell-sidebar-bg);
-  /* bg-alt drives .DocSearch-Button:hover background — use a dark tint, not light */
-  --vp-c-bg-alt: rgba(255, 255, 255, 0.08);
-  --vp-c-bg-soft: rgba(255, 255, 255, 0.08);
-  --vp-c-bg-mute: rgba(255, 255, 255, 0.06);
+  background-color: var(--nb-c-layer-1);
 }
 
 /*
- * Hide the divider VitePress renders below the nav bar.
- *
- * Hiding `.divider-line` alone was not enough: its `.divider` parent stays in
- * the layout at 1px with a transparent background, so the page behind showed
- * through as a hairline gap between the header and the sidebar. The container
- * is what has to go.
+ * One hairline under the whole header. VitePress draws its own rule in two
+ * pieces (a `.divider` over the content and a border on the title over the
+ * sidebar column) that did not meet; both are replaced by this.
  */
 .VPNavBar .divider,
 .VPNavBar .divider-line {
   display: none;
 }
 
-/*
- * The other half of that same divider.
- *
- * With a sidebar, VitePress draws the rule in two pieces: `.divider` over the
- * content, and a `border-bottom` on the nav TITLE over the sidebar column.
- * Hiding the first left the second behind as a grey line under the logo,
- * sitting on the seam between the header and the sidebar.
- *
- * Kept as a transparent border rather than removed, so the title box is the
- * same height it was and the logo does not shift by a pixel.
- */
+.VPNavBar.has-sidebar {
+  box-shadow: inset 0 -1px 0 var(--nb-c-layer-2);
+}
+
 .VPNav .VPNavBar .VPNavBarTitle.has-sidebar .title {
   /*
    * Four class selectors, because VitePress sets this from a SCOPED style
-   * (`.VPNavBarTitle.has-sidebar .title[data-v-...]`) inside a
-   * `min-width: 960px` query, which outranks the same selector written
-   * unscoped. Measured, not assumed: at three classes the computed colour
-   * stayed rgb(226, 226, 227).
-   *
-   * Below 960px VitePress already draws this edge transparent, so making it
-   * transparent at every width matches what the component does anyway.
+   * inside a `min-width: 960px` query, which outranks the same selector
+   * written unscoped. Transparent, so the header's one hairline shows.
    */
   border-bottom-color: transparent;
 }
 
-/* Active / hover nav link gets brand accent instead of white */
 .VPNavBar.has-sidebar .VPNavBarMenuLink:hover,
 .VPNavBar.has-sidebar .VPNavBarMenuGroup:hover .button {
-  /*
-   * A lighter step of the accent ramp, not `--nb-c-primary`. The 500 measures
-   * 1.13:1 on this chrome and was unreadable; the 350 measures 5.07:1.
-   */
-  color: var(--nb-c-grape-hyacinth-350) !important;
-  opacity: 1;
+  color: var(--vp-c-brand-1);
+}
+
+/* ─── Left navigation ────────────────────────────────────────────────────── */
+/*
+ * The group list comes from DocsSidebarNav.vue, rendered into the sidebar's
+ * `sidebar-nav-before` slot from the same config. VitePress's own copy of the
+ * list is hidden rather than removed, so the config still drives the drawer,
+ * the footer's previous and next links, and search.
+ */
+#VPSidebarNav > .group {
+  display: none;
+}
+
+@media (min-width: 960px) {
+  .VPSidebar {
+    border-right: 1px solid var(--nb-c-layer-2);
+  }
+}
+
+.VPLocalNav {
+  border-bottom-color: var(--nb-c-layer-2);
+}
+
+/* ─── VitePress's own outline, on the few default-layout pages ──────────── */
+/*
+ * The same reading as DocOutline.vue on every other page: a grey track, and
+ * an accent bar on it that follows the section in view. VitePress already
+ * moves a marker; this only gives it Carbon's weight. Four classes, to outrank
+ * the theme's scoped rules.
+ */
+.VPDoc .VPDocAsideOutline .content {
+  border-left: 2px solid var(--nb-c-layer-2);
+  padding-left: 0;
+}
+
+.VPDoc .VPDocAsideOutline .outline-marker {
+  left: -2px;
+  width: 3px;
+  border-radius: 0;
+  background-color: var(--nb-c-primary);
+}
+
+.VPDoc .VPDocAsideOutline .outline-title {
+  padding-left: 16px;
+}
+
+.VPDoc .VPDocAsideOutline .outline-link {
+  padding: 2px 0 2px 16px;
+  color: var(--nb-c-text-subtle);
+}
+
+.VPDoc .VPDocAsideOutline .outline-link:hover,
+.VPDoc .VPDocAsideOutline .outline-link.active {
+  color: var(--nb-c-text);
+}
+
+.VPDoc .VPDocAsideOutline .outline-link.active {
+  font-weight: 600;
 }
 
 /* ─── Layout max-width ───────────────────────────────────────────────────── */

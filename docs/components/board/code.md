@@ -1,0 +1,357 @@
+---
+layout: nubisco
+title: Board
+intro: '`NbBoard` is a kanban-style board with columns, optional swim lanes, and drag-and-drop support. Card rendering is fully customizable via the `card` slot.'
+source: src/components/Board.vue
+tab: code
+pageTabs: ['usage', 'code', 'accessibility']
+---
+
+## Basic Usage
+
+<preview>
+  <NbBoard :columns="columns" :items="items" @move="onMove">
+    <template #card="{ item }">
+      <strong>{{ item.title }}</strong>
+    </template>
+  </NbBoard>
+</preview>
+
+```vue
+<template>
+  <NbBoard :columns="columns" :items="items" @move="onMove">
+    <template #card="{ item }">
+      <strong>{{ item.title }}</strong>
+    </template>
+  </NbBoard>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import type { IBoardColumn, IBoardItem, IBoardMoveEvent } from '@nubisco/ui'
+
+const columns: IBoardColumn[] = [
+  { id: 'todo', label: 'To Do' },
+  { id: 'doing', label: 'In Progress' },
+  { id: 'done', label: 'Done' },
+]
+
+const items = ref<IBoardItem[]>([
+  { id: '1', columnId: 'todo', title: 'Design mockups' },
+  { id: '2', columnId: 'doing', title: 'Build API' },
+  { id: '3', columnId: 'done', title: 'Write specs' },
+])
+
+function onMove(e: IBoardMoveEvent) {
+  const moved = items.value.find((i) => i.id === e.itemId)
+  if (!moved) return
+  moved.columnId = e.toColumnId
+  if (e.toLaneId !== undefined) moved.laneId = e.toLaneId
+  // Reinsert at the reported position so same-column reorders stick.
+  const rest = items.value.filter((i) => i.id !== moved.id)
+  const cell = rest.filter(
+    (i) =>
+      i.columnId === e.toColumnId &&
+      (i.laneId ?? null) === (e.toLaneId ?? null),
+  )
+  const anchor = cell[e.toIndex]
+  const at = anchor ? rest.indexOf(anchor) : rest.length
+  rest.splice(at, 0, moved)
+  items.value = rest
+}
+</script>
+```
+
+## Column Colors
+
+Each column can have an accent `color` that renders as a top border on the column header.
+
+<preview>
+  <NbBoard :columns="coloredColumns" :items="items" @move="onMove">
+    <template #card="{ item }">
+      <strong>{{ item.title }}</strong>
+    </template>
+  </NbBoard>
+</preview>
+
+```vue
+<script setup>
+const columns = [
+  { id: 'todo', label: 'To Do', color: '#6366f1' },
+  { id: 'doing', label: 'In Progress', color: '#f59e0b' },
+  { id: 'done', label: 'Done', color: '#22c55e' },
+]
+</script>
+```
+
+## Column Sizing
+
+Columns default to `minmax(200px, 1fr)`: they share the available width equally
+and never shrink below 200px. On wide screens with few columns that reads as
+overly wide tracks, so the track is themeable via `--nb-board-column-track`.
+Set it on the board (or any ancestor) to pin columns to a fixed or bounded
+width; the board scrolls horizontally when they no longer fit.
+
+````css
+/* Trello-style fixed-width columns */
+.my-board {
+  --nb-board-column-track: 272px;
+}
+
+/* Bounded: never narrower than 240px, never wider than 320px */
+.my-board {
+  --nb-board-column-track: minmax(240px, 320px);
+}
+## Custom Column Header
+
+The default header shows the column label and a subtle item count. The `column-header` slot replaces both while keeping the color accent, for headers that carry badges or a column menu.
+
+```vue
+<NbBoard :columns="columns" :items="items" @move="onMove">
+  <template #column-header="{ column, count }">
+    <span>{{ column.label }}</span>
+    <NbBadge>{{ count }}</NbBadge>
+  </template>
+  <template #card="{ item }">
+    <strong>{{ item.title }}</strong>
+  </template>
+</NbBoard>
+````
+
+## Adding Items Per Column
+
+The `column-footer` slot renders at the bottom of every column cell, scoped to its column (and lane, in lane mode). Boards do not know what creating an item means in the host application, so the slot carries the affordance and the host carries the behavior — typically opening a creation dialog preset to that column. When the slot is absent it leaves no footprint.
+
+<preview>
+  <NbBoard :columns="columns" :items="items" @move="onMove">
+    <template #card="{ item }">
+      <strong>{{ item.title }}</strong>
+    </template>
+    <template #column-footer="{ column }">
+      <NbButton size="sm" variant="ghost" icon="plus" @click="addTo(column.id)">
+        Add item
+      </NbButton>
+    </template>
+  </NbBoard>
+</preview>
+
+```vue
+<template>
+  <NbBoard :columns="columns" :items="items" @move="onMove">
+    <template #card="{ item }">
+      <strong>{{ item.title }}</strong>
+    </template>
+    <template #column-footer="{ column }">
+      <NbButton
+        size="sm"
+        variant="ghost"
+        icon="plus"
+        @click="openCreateDialog(column.id)"
+      >
+        Add item
+      </NbButton>
+    </template>
+  </NbBoard>
+</template>
+```
+
+## Dropping a Card Onto a Card
+
+Set `nestable` and a card can be dropped **onto** another card, not only
+between cards. The board emits `nest` with the two ids and changes nothing
+itself, the same contract as `move`.
+
+```vue
+<NbBoard :columns="columns" :items="items" nestable @nest="onNest" />
+```
+
+```ts
+function onNest({ itemId, ontoItemId }: NbBoardNestEvent) {
+  // Whatever nesting means in your product: a subtask, a child, a part.
+  // The board has no opinion and does not move the card.
+}
+```
+
+**A card's middle half nests, and its top and bottom quarters still insert.**
+Reordering has to keep working, so every card keeps an insertion target at each
+end. A card shorter than 44px goes back to two zones and only inserts, because
+below that a middle band is a target nobody can hit on purpose and everybody
+hits by accident.
+
+The two answers look deliberately unalike. An insertion point is a line in the
+gap the card would land in. A nest target is the whole card, filled and ringed,
+because it is not landing between anything. They are never shown at the same
+time.
+
+`nest` and `move` are mutually exclusive for one drop. A card dropped onto
+another has not been given a position, so emitting both would have you reparent
+it and reorder it.
+
+A card cannot be nested into itself.
+
+## Selecting Several Cards
+
+Set `selectable` and bind `v-model:selected` to let the reader act on several
+cards at once. Off by default.
+
+| Does                            | How                                                                          |
+| ------------------------------- | ---------------------------------------------------------------------------- |
+| Add or remove one card          | <kbd>Cmd</kbd> or <kbd>Ctrl</kbd>-click, or <kbd>X</kbd> on the focused card |
+| Take a run of cards in one cell | <kbd>Shift</kbd>-click                                                       |
+| Clear the selection             | <kbd>Esc</kbd>, or the bar's Clear                                           |
+
+A modified click selects and does not reach the card underneath, so a card
+that opens on click does not also open. Dragging a selected card, or picking
+one up with the keyboard, moves every selected card and emits `move-many`
+(`itemIds` in board order, the destination, and the neighbours left around
+them) instead of `move`. A selection drops between cards only, never onto one.
+
+Give a `batch-actions` slot and a bar of actions floats at the foot of the
+board while cards are selected, the same pattern as `NbDataTable`'s batch bar.
+The slot receives `selected` and `clear`.
+
+On a touch screen there are no modifier keys and no <kbd>X</kbd>, so bind
+`v-model:selectMode` as well and offer the reader a way to turn it on (a
+"Select cards" action, say). While it is on, a tap on a card selects it, or
+takes it out of the selection, instead of opening it. Clearing the selection
+turns select mode off again.
+
+```vue
+<NbBoard
+  v-model:selected="selected"
+  v-model:select-mode="selecting"
+  :columns="columns"
+  :items="items"
+  selectable
+  @move-many="onMoveMany"
+>
+  <template #batch-actions="{ selected, clear }">
+    <NbButton variant="ghost" size="sm" @click="archive(selected, clear)">
+      Archive
+    </NbButton>
+  </template>
+</NbBoard>
+```
+
+## Reordering Columns
+
+Set `reorderableColumns` and column headers become draggable. Dropping a header on another column emits `column-move` with the column's destination index; as with cards, the board does not mutate `columns` itself.
+
+```vue
+<template>
+  <NbBoard
+    :columns="columns"
+    :items="items"
+    reorderable-columns
+    @move="onMove"
+    @column-move="onColumnMove"
+  >
+    <template #card="{ item }">
+      <strong>{{ item.title }}</strong>
+    </template>
+  </NbBoard>
+</template>
+
+<script setup lang="ts">
+import type { IBoardColumnMoveEvent } from '@nubisco/ui'
+
+function onColumnMove(e: IBoardColumnMoveEvent) {
+  const from = columns.value.findIndex((c) => c.id === e.columnId)
+  const [col] = columns.value.splice(from, 1)
+  columns.value.splice(e.toIndex, 0, col)
+}
+</script>
+```
+
+## Props
+
+| Prop                 | Type             | Default     | Description                                                                                  |
+| -------------------- | ---------------- | ----------- | -------------------------------------------------------------------------------------------- |
+| `columns`            | `IBoardColumn[]` | required    | Column definitions (one per status/stage)                                                    |
+| `items`              | `IBoardItem[]`   | required    | Items to display on the board                                                                |
+| `lanes`              | `IBoardLane[]`   | `undefined` | Optional swim lanes for horizontal grouping                                                  |
+| `reorderableColumns` | `boolean`        | `false`     | Make column headers draggable; emits `column-move`                                           |
+| `nestable`           | `boolean`        | `false`     | Allow a card to be dropped onto another; emits `nest`                                        |
+| `selectable`         | `boolean`        | `false`     | Let the reader select several cards; emits `move-many` and `update:selected`                 |
+| `selected`           | `string[]`       | `undefined` | The selected item ids, for `v-model:selected`                                                |
+| `selectMode`         | `boolean`        | `false`     | A tap selects a card instead of activating it (needs `selectable`), for `v-model:selectMode` |
+
+## Interfaces
+
+```typescript
+interface IBoardColumn {
+  id: string
+  label: string
+  color?: string
+}
+
+interface IBoardLane {
+  id: string | null
+  label: string
+}
+
+interface IBoardItem {
+  id: string
+  columnId: string
+  laneId?: string | null
+  [key: string]: unknown // arbitrary payload for the card slot
+}
+
+interface IBoardMoveEvent {
+  itemId: string
+  fromColumnId: string
+  toColumnId: string
+  fromLaneId?: string | null
+  toLaneId?: string | null
+  toIndex: number // index in the destination cell, moved item excluded
+  beforeItemId: string | null // item ending up directly above, null at the top
+  afterItemId: string | null // item ending up directly below, null at the bottom
+}
+
+interface IBoardMoveManyEvent {
+  itemIds: string[] // in board order
+  toColumnId: string
+  toLaneId?: string | null
+  beforeItemId: string | null // never one of the moving cards
+  afterItemId: string | null
+}
+
+interface IBoardColumnMoveEvent {
+  columnId: string
+  toIndex: number // index in `columns` after the move
+}
+```
+
+## Events
+
+| Event               | Payload                 | Description                                                                                           |
+| ------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| `move`              | `IBoardMoveEvent`       | Emitted when a card is dropped into a different cell or at a different position within its own column |
+| `nest`              | `IBoardNestEvent`       | Emitted when a card is dropped onto another card (requires `nestable`). Never alongside `move`        |
+| `column-move`       | `IBoardColumnMoveEvent` | Emitted when a column header is dropped on a new position (requires `reorderableColumns`)             |
+| `move-many`         | `IBoardMoveManyEvent`   | Emitted when a selection is dropped together (requires `selectable`)                                  |
+| `update:selected`   | `string[]`              | The selection changed (`v-model:selected`)                                                            |
+| `update:selectMode` | `boolean`               | Select mode turned off because the selection was cleared (`v-model:selectMode`)                       |
+
+## Slots
+
+| Slot            | Scope                                                           | Description                                                                  |
+| --------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `card`          | `{ item: IBoardItem, column: IBoardColumn, lane?: IBoardLane }` | Content of each card                                                         |
+| `column-header` | `{ column: IBoardColumn, count: number }`                       | Replaces the default column header (label and count); the color accent stays |
+| `column-footer` | `{ column: IBoardColumn, lane?: IBoardLane }`                   | Rendered at the bottom of each cell, e.g. an add-item composer               |
+| `lane-header`   | `{ lane: IBoardLane }`                                          | Custom lane header content                                                   |
+| `batch-actions` | `{ selected: string[], clear: () => void, phone: boolean }`     | Actions for the selection, shown in the batch bar (requires `selectable`)    |
+
+## Keyboard
+
+| Key                                                    | Does                                                                                                                  |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| <kbd>Tab</kbd>                                         | Moves to the next card                                                                                                |
+| <kbd>Space</kbd> / <kbd>Enter</kbd>                    | Picks the card up, or drops it (emits `move`)                                                                         |
+| <kbd>&uarr;</kbd> / <kbd>&darr;</kbd>                  | Moves the held card within its cell (continuing into the next lane at the edges), or moves focus when nothing is held |
+| <kbd>&larr;</kbd> / <kbd>&rarr;</kbd>                  | Moves the held card across columns, or moves focus when nothing is held                                               |
+| <kbd>Shift</kbd> + <kbd>Space</kbd> / <kbd>Enter</kbd> | Drops the held card onto the card below the ghost, emitting `nest` (requires `nestable`)                              |
+| <kbd>Esc</kbd>                                         | Cancels the pick-up                                                                                                   |
+
+<!--@include: ./_shared.md-->

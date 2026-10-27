@@ -8,7 +8,7 @@ tabs: ['Usage', 'Api']
 
 `useCommandPalette` is a composable that provides access to the command palette state. It requires `NbCommandPalettePlugin` to be installed on the Vue app.
 
-See the [Command Palette component docs](/components/command-palette) for full setup instructions and usage examples.
+See the [Command Palette component docs](/components/command-palette/usage) for full setup instructions and usage examples.
 
 ## Quick start
 
@@ -64,7 +64,7 @@ onBeforeUnmount(() => {
 
 ## Return value
 
-See the [Command Palette API tab](/components/command-palette) for the full API reference including `ICommand` shape and all methods.
+See the [Command Palette API tab](/components/command-palette/usage) for the full API reference including `ICommand` shape and all methods.
 
 | Method         | Signature                                | Description                |
 | -------------- | ---------------------------------------- | -------------------------- |

@@ -73,10 +73,10 @@ in the fleet should not exist.
 
 ### The two dialogs we ship, and nothing else
 
-| Component                                             | Answers                                   | Owns                                                                    |
-| ----------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------- |
-| [`NbModal`](/components/modal)                        | "Do this small task"                      | A title, a body you fill, a footer it right-aligns for you              |
-| [`NbConfirm`](/components/confirm) via `useConfirm()` | "Is this the thing you meant to destroy?" | The whole dialog: buttons, order, focus, dismissal, pending state, role |
+| Component                                                   | Answers                                   | Owns                                                                    |
+| ----------------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------- |
+| [`NbModal`](/components/modal/usage)                        | "Do this small task"                      | A title, a body you fill, a footer it right-aligns for you              |
+| [`NbConfirm`](/components/confirm/usage) via `useConfirm()` | "Is this the thing you meant to destroy?" | The whole dialog: buttons, order, focus, dismissal, pending state, role |
 
 There is no third one, and in particular **a confirmation is never assembled out
 of `NbModal`.** Every hand-assembled confirmation in the fleet lost the same
@@ -85,7 +85,7 @@ the danger variant on the confirm button, and the record's own name in the body.
 Those are not decorations, they are the entire content of the guard.
 
 ::: warning The docs themselves taught this wrong
-Until this release, [`docs/components/modal.md`](/components/modal)
+Until this release, [`docs/components/modal.md`](/components/modal/usage)
 demonstrated a destructive confirmation with `variant="primary"` on the Confirm
 button, a title-case "Confirm Action" heading, the body text "Are you sure you
 want to continue?", and an `NbPanel` with inline padding inside `#footer`
@@ -314,11 +314,11 @@ the bar for opening one is high.
 - The task is repeated. Ten renames means ten scrims. Use inline editing or a
   panel.
 - The content is reference material. That is an [inspector](/patterns/inspectors)
-  or a [banner](/components/banner).
+  or a [banner](/components/banner/usage).
 
 **The non-modal alternatives we actually ship**, in order of how often they are
 the better answer: inline editing in the row or the field; an
-[`NbShellPanel`](/components/shell-panel) docked beside the content;
+[`NbShellPanel`](/components/shell-panel/usage) docked beside the content;
 `NbBanner` with its `#action` slot for something the user may act on when ready;
 `NbMenu` for a short list of choices attached to the control that opened it.
 
@@ -619,7 +619,7 @@ error still in front of them.
 ::: warning The one state that lock creates
 A promise that never settles leaves a dialog nothing can close. Set `timeout`
 (and a `timeoutMessage`) wherever the call has a service-level expectation, and
-read the caveat on the [Confirm page](/components/confirm): the timeout hands
+read the caveat on the [Confirm page](/components/confirm/usage): the timeout hands
 the buttons back while the first request may still be running, so it re-opens
 the double-fire deliberately. Set it only where the call is idempotent or the
 API rejects duplicates.
@@ -728,7 +728,7 @@ A dialog is a focus contract. Get these five right and the rest is detail.
 `NbConfirm` does all five. `NbModal` gives you 3, 4 and the `tabindex="-1"`
 holder, and leaves 1 and 2 to you, which is the strongest single argument for
 not hand-rolling a confirmation out of it. The detail of how each is implemented
-is on the [Confirm page](/components/confirm#accessibility); the general keys
+is on the [Confirm page](/components/confirm/accessibility#accessibility); the general keys
 and focus-return rules are in
 [Keyboard interaction](/accessibility/keyboard#after-a-dialog-closes).
 
@@ -983,13 +983,13 @@ Only relevant where the view drives an `NbModal` itself.
 
 ## Related
 
-- [Confirm](/components/confirm) for the full `NbConfirm` API, including the
+- [Confirm](/components/confirm/usage) for the full `NbConfirm` API, including the
   queue, the pending and failure states and the floating-popup exemptions.
 - [useConfirm](/composables/use-confirm) for the signature, the options and
   `dismissConfirms()`.
 - [useToast](/composables/use-toast) for the queue behind the undo pattern.
-- [Modal](/components/modal) for dialogs that carry a task.
-- [Toast](/components/toast) and [Toaster](/components/toaster) for undo
+- [Modal](/components/modal/usage) for dialogs that carry a task.
+- [Toast](/components/toast/usage) and [Toaster](/components/toaster/usage) for undo
   and for reporting results.
   list.
 - [Building a form](/patterns/forms) for forms inside modals and for unsaved
