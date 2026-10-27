@@ -1,6 +1,7 @@
 ---
 layout: nubisco
 title: Spreadsheet
+status: labs
 tabs: ['Usage', 'Api']
 ---
 

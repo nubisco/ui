@@ -7,10 +7,11 @@
     <div class="doc-header__hero">
       <div class="doc-header__lead">
         <h1 class="doc-header__title">{{ title }}</h1>
-        <div v-if="status" class="doc-header__meta">
-          <NbBadge :variant="statusVariant" size="sm">{{
+        <div v-if="status || updatedLabel" class="doc-header__meta">
+          <NbBadge v-if="status" :variant="statusVariant" size="sm">{{
             statusLabel
           }}</NbBadge>
+          <span v-if="updatedLabel">Last updated {{ updatedLabel }}</span>
         </div>
         <!-- eslint-disable-next-line vue/no-v-html -->
         <p v-if="intro" class="doc-header__intro" v-html="introHtml" />
@@ -40,8 +41,9 @@
 
   <!--
       The tab bar, and the compact title that joins it once the hero has
-      scrolled away. The title row is always there and only fades in, so the
-      bar keeps one height and nothing under it moves when it sticks.
+      scrolled away. The title is in the same row as the tabs and only grows
+      in, so the bar keeps one height and nothing under it moves when it
+      sticks.
 
       It is a sibling of the hero, not a child: a sticky element only sticks
       inside its parent, and the hero scrolls away.
@@ -52,10 +54,10 @@
     class="doc-header doc-header__bar"
     :class="{ 'is-stuck': stuck }"
   >
-    <div class="doc-header__compact" :aria-hidden="!stuck">
-      <span class="doc-header__compact-title">{{ title }}</span>
-    </div>
     <nav class="doc-header__tabs" aria-label="Page sections">
+      <span class="doc-header__compact-title" :aria-hidden="!stuck">{{
+        title
+      }}</span>
       <component
         :is="tab.href ? 'a' : 'button'"
         v-for="tab in tabs"
@@ -119,7 +121,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ select: [key: string] }>()
 
-const { site } = useData()
+const { site, page } = useData()
 const router = useRouter()
 
 const STATUS: Record<string, string> = {
@@ -128,6 +130,7 @@ const STATUS: Record<string, string> = {
   experimental: 'purple',
   deprecated: 'red',
   draft: 'grey',
+  labs: 'purple',
 }
 const statusLabel = computed(() => {
   const s = props.status ?? ''
@@ -135,6 +138,16 @@ const statusLabel = computed(() => {
 })
 const statusVariant = computed(
   () => (STATUS[(props.status ?? '').toLowerCase()] ?? 'grey') as 'grey',
+)
+
+const updatedLabel = computed(() =>
+  page.value.lastUpdated
+    ? new Date(page.value.lastUpdated).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+    : '',
 )
 
 const links = computed(() => {
@@ -202,16 +215,34 @@ function stickTop() {
   return bar.value ? parseFloat(getComputedStyle(bar.value).top) || 0 : 0
 }
 
+const clamp = (value: number) => Math.min(1, Math.max(0, value))
+
+/**
+ * `--dock` runs from 0 (top of the page) to 1 (the bar is pinned under the
+ * site header). It closes the inset around the hero and the bar together, so
+ * the card turns into a band edge to edge and the two edges stay flush the
+ * whole way. `--dock-late` brings the compact title in only near the end,
+ * once the big title has left. Both are written straight to the element as
+ * custom properties: going through reactive state would re-render the header
+ * on every scroll frame.
+ */
 let frame = 0
 function measure() {
   frame = 0
   if (!bar.value || !hero.value) return
-  // Stuck once the hero's title has gone under the bar.
-  const lead = hero.value.querySelector<HTMLElement>('.doc-header__title')
-  stuck.value =
-    !!lead &&
-    lead.getBoundingClientRect().bottom <=
-      stickTop() + bar.value.offsetHeight / 2
+  // The distance the bar has to travel to reach the site header, measured
+  // from the hero's own bottom edge so it holds at any height.
+  const travel = Math.max(
+    1,
+    hero.value.getBoundingClientRect().bottom + window.scrollY - stickTop(),
+  )
+  const dock = clamp(window.scrollY / travel)
+  const late = clamp((dock - 0.6) / 0.4)
+
+  const host = hero.value.parentElement
+  host?.style.setProperty('--dock', dock.toFixed(3))
+  host?.style.setProperty('--dock-late', late.toFixed(3))
+  stuck.value = late > 0.5
 }
 function onScroll() {
   if (!frame) frame = requestAnimationFrame(measure)
@@ -263,28 +294,45 @@ function keepPlace() {
 @use '../../../../src/styles/variables' as v;
 
 /*
- * Carbon's structure, in Nubisco's tokens: the header is a layer-1 band on
+ * Carbon's structure, in Nubisco's tokens: the header is a layer-1 card on
  * the layer-0 page, divided from it by a hairline, and the only colour in it
  * is the accent on the active tab.
+ *
+ * At the top of the page the card is inset by `--doc-inset`, so the ground
+ * shows around it. The hero and the bar close that inset together, on the one
+ * `--dock` curve the script writes, and end as a band edge to edge. The text
+ * does not move while they do: each side's padding takes up what its margin
+ * gives.
  */
 .doc-header {
-  background: var(--nb-c-layer-1);
+  --doc-inset: calc(var(--nb-base-unit) * 2);
+
   color: var(--nb-c-text);
 
   // The hairline closes whichever comes last: the tab bar, or the hero on a
   // page without tabs.
-  &--plain,
+  &--plain &__hero,
   &__bar {
     border-bottom: 1px solid var(--nb-c-layer-2);
   }
 
   &__hero {
+    // The card is the hero and the bar, not the whole header: the root stays
+    // clear so the ground shows in the inset.
+    background: var(--nb-c-layer-1);
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: calc(var(--nb-base-unit) * 4);
     align-items: end;
-    padding: calc(var(--nb-base-unit) * 6) calc(var(--nb-base-unit) * 4)
-      calc(var(--nb-base-unit) * 2);
+    // The top inset stays fixed: it changes the card's height, and that
+    // height is what `--dock` is measured against.
+    margin: var(--doc-inset) calc((1 - var(--dock, 0)) * var(--doc-inset)) 0;
+    // The left edge lines up with the tab labels below, which sit one tab
+    // padding in from the bar.
+    padding: calc(var(--nb-base-unit) * 6)
+      calc(var(--nb-base-unit) * 3 + var(--dock, 0) * var(--doc-inset))
+      calc(var(--nb-base-unit) * 3)
+      calc(var(--nb-base-unit) * 5 + var(--dock, 0) * var(--doc-inset));
   }
 
   &__title {
@@ -299,8 +347,10 @@ function keepPlace() {
   &__meta {
     display: flex;
     align-items: center;
-    gap: var(--nb-base-unit);
+    gap: calc(var(--nb-base-unit) * 1.5);
     margin-top: calc(var(--nb-base-unit) * 2);
+    font-size: 0.875rem;
+    color: var(--nb-c-text-muted);
   }
 
   &__intro {
@@ -367,34 +417,22 @@ function keepPlace() {
     top: var(--vp-nav-height, 64px);
     z-index: 20;
     background: var(--nb-c-layer-1);
-    margin-top: calc(var(--nb-base-unit) * -1);
+    margin: 0 calc((1 - var(--dock, 0)) * var(--doc-inset));
+    padding: 0 calc(var(--dock, 0) * var(--doc-inset));
   }
 
-  &__compact {
-    display: flex;
-    align-items: center;
-    height: calc(var(--nb-base-unit) * 6);
-    padding: 0 calc(var(--nb-base-unit) * 4);
-    opacity: 0;
-    transform: translateY(4px);
-    transition:
-      opacity 0.18s ease,
-      transform 0.18s ease;
-    pointer-events: none;
-    border-bottom: 1px solid transparent;
-
-    .is-stuck & {
-      opacity: 1;
-      transform: none;
-      border-bottom-color: var(--nb-c-layer-2);
-    }
-  }
-
+  // The compact title sits in the tab row and grows in near the end of the
+  // dock, so the bar is one row at every point and nothing under it moves.
   &__compact-title {
-    font-size: 1.25rem;
-    font-weight: 400;
-    white-space: nowrap;
+    flex: none;
+    align-self: center;
     overflow: hidden;
+    max-width: calc(var(--dock-late, 0) * 16rem);
+    margin-right: calc(var(--dock-late, 0) * var(--nb-base-unit) * 3);
+    opacity: var(--dock-late, 0);
+    font-size: 1rem;
+    font-weight: 600;
+    white-space: nowrap;
     text-overflow: ellipsis;
   }
 
@@ -494,6 +532,9 @@ function keepPlace() {
 
 @include v.phone {
   .doc-header {
+    // No ground to show around the card on a phone.
+    --doc-inset: 0px;
+
     &__hero {
       grid-template-columns: minmax(0, 1fr);
       gap: calc(var(--nb-base-unit) * 3);
@@ -520,10 +561,9 @@ function keepPlace() {
       white-space: nowrap;
     }
 
-    // On a phone the tab row is the whole bar: the compact title would take
-    // a third of the screen height away from the page for a name already in
-    // the local nav's breadcrumb.
-    &__compact {
+    // On a phone the tab row is the whole bar, with no compact title: the
+    // name is already in the local nav's breadcrumb.
+    &__compact-title {
       display: none;
     }
 
