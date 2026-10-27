@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
 import NbStepper from '../src/components/Stepper.vue'
 import NbStepperStep from '../src/components/StepperStep.vue'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { compileStyle, parse } from 'vue/compiler-sfc'
 import { compileString } from 'sass-embedded'
@@ -992,15 +992,19 @@ describe('Stepper', () => {
     })
 
     it('is reachable from the docs sidebar', () => {
-      expect(read('docs/.vitepress/config.ts')).toContain(
-        "link: '/components/stepper'",
+      expect(read('docs/.vitepress/sidebar.ts')).toContain(
+        "link: '/components/stepper/usage'",
       )
     })
 
     it('has the docs page the sidebar points at, using only shipped tags', () => {
-      const page = resolve(root, 'docs/components/stepper.md')
-      expect(existsSync(page)).toBe(true)
-      const md = readFileSync(page, 'utf8')
+      // The page is split into one file per tab; every tab renders tags.
+      const dir = resolve(root, 'docs/components/stepper')
+      expect(existsSync(resolve(dir, 'usage.md'))).toBe(true)
+      const md = readdirSync(dir)
+        .filter((f) => f.endsWith('.md'))
+        .map((f) => readFileSync(resolve(dir, f), 'utf8'))
+        .join('\n')
       const tags = new Set([...md.matchAll(/<(Nb[A-Za-z]+)/g)].map((m) => m[1]))
       for (const tag of tags) {
         if (!tag.startsWith('NbStepper')) continue

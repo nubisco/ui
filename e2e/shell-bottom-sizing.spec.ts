@@ -29,7 +29,7 @@ import { test, expect, type Page, type Locator } from '@playwright/test'
  * Reported from an application whose log console sits in `#bottom`.
  */
 
-const SHELL_DEMO = '/components/shell'
+const SHELL_DEMO = '/components/shell/code'
 
 /** The one shell on the page that actually has a bottom region. */
 function shellWithBottom(page: Page): Locator {

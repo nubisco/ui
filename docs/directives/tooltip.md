@@ -47,16 +47,16 @@ All three text parts are optional and a chip with none of them never opens, whic
 
 ## When it is the right affordance
 
-| The situation                                                               | Reach for                                                                                 |
-| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| An icon-only control needs a name                                           | This directive, in **label** mode. The single most common case in the fleet.              |
-| A named control needs one extra clause of context                           | This directive, in **description** mode                                                   |
-| A truncated cell must expose its full value                                 | This directive, with `overflowOnly: true` and `focusable: true`                           |
-| A disabled control must explain why it is disabled                          | This directive. It works on natively-disabled controls, which is not free (see below)     |
-| The content must be clicked, scrolled, copied by button, or contains a link | Not a tooltip. [`NbInfoHint`](/components/info-hint), which pins on click                 |
-| The user must read it to proceed                                            | Not a tooltip. Put the sentence in the interface, or use a [modal](/components/modal)     |
-| A form field's error, or a validation rule                                  | The field's own error slot. `NbTextInput` has `error` and `warning` props                 |
-| A whole paragraph of help                                                   | Not a tooltip. A tooltip that needs three lines is usually a sentence the page is missing |
+| The situation                                                               | Reach for                                                                                   |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| An icon-only control needs a name                                           | This directive, in **label** mode. The single most common case in the fleet.                |
+| A named control needs one extra clause of context                           | This directive, in **description** mode                                                     |
+| A truncated cell must expose its full value                                 | This directive, with `overflowOnly: true` and `focusable: true`                             |
+| A disabled control must explain why it is disabled                          | This directive. It works on natively-disabled controls, which is not free (see below)       |
+| The content must be clicked, scrolled, copied by button, or contains a link | Not a tooltip. [`NbInfoHint`](/components/info-hint/usage), which pins on click             |
+| The user must read it to proceed                                            | Not a tooltip. Put the sentence in the interface, or use a [modal](/components/modal/usage) |
+| A form field's error, or a validation rule                                  | The field's own error slot. `NbTextInput` has `error` and `warning` props                   |
+| A whole paragraph of help                                                   | Not a tooltip. A tooltip that needs three lines is usually a sentence the page is missing   |
 
 The last three matter more than they read. A tooltip is invisible until you go looking for it, it cannot be reached at all by a user who does not know it is there, and it disappears the moment attention moves. Anything that everyone needs to read is not a tooltip, no matter how convenient the anchor is.
 
@@ -355,7 +355,7 @@ The pointer can move onto the chip, and doing so cancels the pending hide; leavi
 
 This is not a nicety. WCAG 2.1 AA **1.4.13 Content on Hover or Focus** requires that content revealed by hover can itself be hovered without disappearing, and a chip that is `pointer-events: none` fails it by construction: nothing the user does with the mouse can ever land on it. The concrete victim is anyone at 200% zoom, who has to pan onto a clamped or wrapped chip to read the end of the sentence and watches it vanish on the way. Until 3.2 this library failed that clause, and the docs presented it as a feature.
 
-**A tooltip is still not a container.** The chip takes no focus, is never in the tab order, closes on <kbd>Escape</kbd> and on the next pointerdown outside it, and holds nothing operable: no links, no buttons, no scroll. Hoverable is about _reading_, not about _operating_. If the content has to be clicked or scrolled, it is not a tooltip: use [`NbInfoHint`](/components/info-hint) for a pinnable popover, or a [modal](/components/modal) for anything larger.
+**A tooltip is still not a container.** The chip takes no focus, is never in the tab order, closes on <kbd>Escape</kbd> and on the next pointerdown outside it, and holds nothing operable: no links, no buttons, no scroll. Hoverable is about _reading_, not about _operating_. If the content has to be clicked or scrolled, it is not a tooltip: use [`NbInfoHint`](/components/info-hint/usage) for a pinnable popover, or a [modal](/components/modal/usage) for anything larger.
 
 ## Tone
 
@@ -456,11 +456,11 @@ watch(currentView, () => dismissAllTooltips())
 
 ## The other tooltips in this library
 
-| Use                                                      | Reach for                                                         |
-| -------------------------------------------------------- | ----------------------------------------------------------------- |
-| Label or describe any element, anywhere                  | `v-nb-tooltip`                                                    |
-| Explain a term or a number next to it, with rich content | [`NbInfoHint`](/components/info-hint) (click-pinnable, hoverable) |
-| Show a validation message as an icon in a dense form row | [`NbMessage`](/components/message) with `icon-only`               |
+| Use                                                      | Reach for                                                               |
+| -------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Label or describe any element, anywhere                  | `v-nb-tooltip`                                                          |
+| Explain a term or a number next to it, with rich content | [`NbInfoHint`](/components/info-hint/usage) (click-pinnable, hoverable) |
+| Show a validation message as an icon in a dense form row | [`NbMessage`](/components/message/usage) with `icon-only`               |
 
 ::: warning Deprecated paths
 Two older tooltips remain for compatibility and should not be used in new code.

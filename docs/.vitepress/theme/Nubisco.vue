@@ -1,29 +1,32 @@
 <template>
   <div class="nb-layout">
-    <page-header :title="frontmatter.title" />
+    <DocHeader
+      :title="frontmatter.title"
+      :intro="frontmatter.intro"
+      :status="frontmatter.status"
+      :source="frontmatter.source"
+      :edit-link="editLink"
+      :tabs="headerTabs"
+      @select="activeTab = $event"
+    />
 
-    <nav v-if="tabs.length" class="nb-layout__tabs" aria-label="Page sections">
-      <button
-        v-for="tab in tabs"
-        :key="tab"
-        class="nb-layout__tab"
-        :class="{ 'is-active': tab === activeTab }"
-        @click="activeTab = tab"
-      >
-        {{ tab }}
-      </button>
-    </nav>
-
-    <main class="nb-layout__body">
-      <Content />
-    </main>
+    <div class="nb-layout__main">
+      <main ref="body" class="nb-layout__body">
+        <Content />
+      </main>
+      <aside class="nb-layout__aside">
+        <div class="nb-layout__aside-inner">
+          <DocOutline :root="body" :watch-key="activeTab" />
+        </div>
+      </aside>
+    </div>
 
     <!-- Footer: prev/next navigation + meta -->
     <footer class="nb-layout__footer">
       <nav v-if="prev || next" class="nb-footer__nav">
         <a
           v-if="prev"
-          :href="prev.link"
+          :href="withBase(prev.link)"
           class="nb-footer__nav-item nb-footer__nav-item--prev"
         >
           <span class="nb-footer__nav-label">Previous</span>
@@ -33,7 +36,7 @@
 
         <a
           v-if="next"
-          :href="next.link"
+          :href="withBase(next.link)"
           class="nb-footer__nav-item nb-footer__nav-item--next"
         >
           <span class="nb-footer__nav-label">Next</span>
@@ -43,7 +46,7 @@
       </nav>
 
       <div class="nb-footer__bar">
-        <a href="/" class="nb-footer__brand">
+        <a :href="withBase('/')" class="nb-footer__brand">
           <NbNubiscoMark :size="24" class="nb-footer__logo" />
           <span class="nb-footer__brand-name">Nubisco</span>
         </a>
@@ -71,17 +74,65 @@
 <script lang="ts" setup>
 import { ref, computed, provide, watch } from 'vue'
 import { useData, withBase } from 'vitepress'
+import DocHeader from './components/DocHeader.vue'
+import type { IDocHeaderTab } from './components/DocHeader.vue'
+import DocOutline from './components/DocOutline.vue'
 
-const { frontmatter, page, theme } = useData()
+const { frontmatter, page, theme, site } = useData()
+const body = ref<HTMLElement | null>(null)
 
-const tabs = computed<string[]>(() => frontmatter.value.tabs ?? [])
-const activeTab = ref<string>(tabs.value[0] ?? '')
+/*
+ * Two kinds of tab.
+ *
+ * A component page is split into one route per tab (`/components/x/usage`,
+ * `/code`, ...), and lists its siblings in `pageTabs`. Those tabs are links.
+ *
+ * A few other pages still switch sections in place, with `<doc-tab>` blocks
+ * named in `tabs`. Those tabs are buttons, and the active one is provided to
+ * the blocks below.
+ */
+const TAB_LABEL: Record<string, string> = {
+  usage: 'Usage',
+  style: 'Style',
+  code: 'Code',
+  accessibility: 'Accessibility',
+}
 
-watch(tabs, (next) => {
+const inPageTabs = computed<string[]>(() =>
+  frontmatter.value.pageTabs ? [] : (frontmatter.value.tabs ?? []),
+)
+const activeTab = ref<string>(inPageTabs.value[0] ?? '')
+
+watch(inPageTabs, (next) => {
   activeTab.value = next[0] ?? ''
 })
 
 provide('nb-active-tab', activeTab)
+
+/** The page's folder, for a page split into tab routes. */
+const tabDir = computed(() =>
+  frontmatter.value.pageTabs
+    ? '/' + page.value.relativePath.replace(/\/[^/]+\.md$/, '')
+    : null,
+)
+
+const headerTabs = computed<IDocHeaderTab[]>(() => {
+  const routeTabs: string[] = frontmatter.value.pageTabs ?? []
+  if (routeTabs.length) {
+    const ext = site.value.cleanUrls ? '' : '.html'
+    return routeTabs.map((key) => ({
+      key,
+      label: TAB_LABEL[key] ?? key,
+      href: withBase(`${tabDir.value}/${key}${ext}`),
+      active: key === frontmatter.value.tab,
+    }))
+  }
+  return inPageTabs.value.map((key) => ({
+    key,
+    label: key === 'Api' ? 'API' : key,
+    active: key === activeTab.value,
+  }))
+})
 
 // ── Footer: sidebar navigation ───────────────────────────────────────────
 interface SidebarLink {
@@ -113,9 +164,13 @@ const currentPath = computed(() => {
   )
 })
 
+// Every tab of a split page is the same entry in the sidebar, the one that
+// links its first tab, so the footer offers the same neighbours on each.
 const currentIndex = computed(() =>
-  allLinks.value.findIndex(
-    (l) => withBase(l.link) === withBase(currentPath.value),
+  allLinks.value.findIndex((l) =>
+    tabDir.value
+      ? l.link.replace(/\/[^/]+$/, '') === tabDir.value
+      : l.link === currentPath.value,
   ),
 )
 
@@ -136,54 +191,40 @@ const editLink = computed(() => {
 </script>
 
 <style lang="scss" scoped>
+@use '../../../src/styles/variables' as v;
+
 .nb-layout {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 
-  &__tabs {
-    position: sticky;
-    top: var(--vp-nav-height, 0px);
-    z-index: var(--nb-zindex-titlebar);
-    display: flex;
-    /*
-     * The same chrome colour as the header and the page banner above it.
-     *
-     * It was `--nb-c-black`, pure #000, which put a hard seam between the
-     * banner and the tabs directly under it: two dark bands that were not the
-     * same dark. The header, the banner and this bar are one continuous piece
-     * of chrome, so they take one colour.
-     */
-    background: var(--nb-shell-sidebar-bg);
-    padding: 0 calc(var(--nb-base-unit) * 4);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  &__main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  &__tab {
-    appearance: none;
-    position: relative;
-    background: transparent;
-    border: none;
-    border-top: 3px solid transparent;
-    color: rgba(255, 255, 255, 0.55);
-    cursor: pointer;
-    font-size: 14px;
-    letter-spacing: 0.01em;
-    padding: calc(var(--nb-base-unit) * 2) calc(var(--nb-base-unit) * 2.5);
-    transition:
-      color 0.15s ease,
-      background 0.15s ease,
-      border-color 0.15s ease;
+  &__aside {
+    display: none;
+  }
 
-    &:hover {
-      color: rgba(255, 255, 255, 0.85);
-      background: rgba(255, 255, 255, 0.06);
+  @media (min-width: 1280px) {
+    &__main {
+      grid-template-columns: minmax(0, 1fr) 15rem;
+      column-gap: calc(var(--nb-base-unit) * 4);
     }
 
-    &.is-active {
-      border-top-color: var(--nb-c-primary, #5856a9);
-      background: rgba(255, 255, 255, 0.14);
-      color: var(--nb-c-white);
+    &__aside {
+      display: block;
+      padding: calc(var(--nb-base-unit) * 6) calc(var(--nb-base-unit) * 3) 0 0;
+    }
+
+    &__aside-inner {
+      position: sticky;
+      // Under the site header and the page's own sticky bar.
+      top: calc(var(--vp-nav-height, 64px) + 96px + 24px);
+      max-height: calc(100vh - var(--vp-nav-height, 64px) - 140px);
+      overflow-y: auto;
     }
   }
 
@@ -198,14 +239,28 @@ const editLink = computed(() => {
       line-height: 1.6;
     }
 
+    /*
+     * Section headings at Carbon's weight: large and regular rather than
+     * large and bold, so a long page of them reads as a sequence of sections
+     * and not as a sequence of shouts. The page title above is the one heavy
+     * thing.
+     */
     :deep(h2) {
       margin-top: 1.5em;
       margin-bottom: 0.75em;
+      font-size: 2rem;
+      font-weight: 400;
+      line-height: 1.25;
+      letter-spacing: 0;
     }
 
     :deep(h3) {
       margin-top: 1.25em;
       margin-bottom: 0.5em;
+      font-size: 1.375rem;
+      font-weight: 600;
+      line-height: 1.3;
+      letter-spacing: 0;
     }
 
     :deep(ul),
@@ -290,6 +345,22 @@ const editLink = computed(() => {
     border-top: none;
     padding: 40px;
     margin-top: auto;
+  }
+}
+
+/* On a phone the body takes the same 16px gutter as the page header above it,
+   so the text lines up with the title instead of stepping in under it. */
+@include v.phone {
+  .nb-layout__body {
+    padding: calc(var(--nb-base-unit) * 3) calc(var(--nb-base-unit) * 2);
+
+    /* A prose table wider than the screen scrolls inside itself rather than
+       widening the whole page sideways. */
+    :deep(table:not([class*='nb-'])) {
+      display: block;
+      max-width: 100%;
+      overflow-x: auto;
+    }
   }
 }
 

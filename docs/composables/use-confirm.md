@@ -18,7 +18,7 @@ if (await confirm({ title: 'Delete environment', subject: env.name })) {
 }
 ```
 
-It renders [NbConfirm](/components/confirm), which is where the dialog itself, its decisions and its accessibility contract are documented. This page is about the function.
+It renders [NbConfirm](/components/confirm/usage), which is where the dialog itself, its decisions and its accessibility contract are documented. This page is about the function.
 
 ## Nothing to install
 
@@ -93,7 +93,7 @@ The promise resolves `true` only if the user confirmed and, when `onConfirm` is 
 
 ## Options
 
-`IConfirmOptions` is every [NbConfirm prop](/components/confirm) except `open`, `busy`, `error` and `succeeded`, which the composable owns, plus:
+`IConfirmOptions` is every [NbConfirm prop](/components/confirm/usage) except `open`, `busy`, `error` and `succeeded`, which the composable owns, plus:
 
 | Option           | Type                                | Description                                                                                                                                                                           |
 | ---------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -104,7 +104,7 @@ The promise resolves `true` only if the user confirmed and, when `onConfirm` is 
 | `timeoutMessage` | `string`                            | The failure text used when `timeout` elapses. Defaults to a sentence saying the work may still be running.                                                                            |
 | `successLabel`   | `string`                            | Holds a finished beat on screen for a moment before the dialog closes itself. Unset means the dialog closes as soon as the work returns.                                              |
 
-The words (`title`, `message`, `confirmLabel`), the record (`subject`, `subjectLabel`) and the gate (`typeToConfirm`) are documented on the [component page](/components/confirm), which is also where the button order, focus and dismissal rules are explained.
+The words (`title`, `message`, `confirmLabel`), the record (`subject`, `subjectLabel`) and the gate (`typeToConfirm`) are documented on the [component page](/components/confirm/usage), which is also where the button order, focus and dismissal rules are explained.
 
 ## Types
 
@@ -114,8 +114,8 @@ import type { TConfirmFn, IConfirmOptions, TConfirmTone } from '@nubisco/ui'
 
 ## Related
 
-- [Confirm](/components/confirm) for the dialog itself, its decisions and its accessibility contract.
-- [Modal](/components/modal) for a dialog that carries a form or a task.
-- [Toast](/components/toast) for reporting a result, and for offering undo instead of asking.
+- [Confirm](/components/confirm/usage) for the dialog itself, its decisions and its accessibility contract.
+- [Modal](/components/modal/usage) for a dialog that carries a form or a task.
+- [Toast](/components/toast/usage) for reporting a result, and for offering undo instead of asking.
 
 </doc-tab>

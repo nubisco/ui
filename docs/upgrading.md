@@ -56,7 +56,7 @@ New, and nothing changes unless you use it:
   no box, the font of the line it sits in, an underline on hover and focus, and
   the primary drawn as ink, which clears AA on every layer in both themes. It
   is a `<button>`, `<a>` or `<RouterLink>` like any other variant. See
-  [Link](/components/button/button#link).
+  [Link](/components/button/style#link).
 - **`NbBreadcrumbs` `items`**: the trail as data. A crumb with `to` renders a
   `<RouterLink>`, with `href` an `<a>`, with `onClick` (or with a `@select`
   listener on the trail) a `<button>`. The current crumb, the last one unless
@@ -423,7 +423,7 @@ not is no longer exposed to it.
 `moveTargets`, `isInvalidTarget`, `ancestorsOf`, `subtreeOf` and `nestByDepth`.
 They work on any tree of `{ id, children }` and answer what a drop or a
 "Move to" picker needs, so the move maths does not have to be written per
-product. See [Working out the move](/components/tree#working-out-the-move).
+product. See [Working out the move](/components/tree/code#working-out-the-move).
 Nothing is required: existing drop handlers keep working.
 
 **`NbAvatar` takes a size in pixels and a background.** `size` still accepts
@@ -433,7 +433,7 @@ the initials, for giving each person their own colour. Defaults are unchanged.
 
 `droppable` and the caret are independent. `expandable` still decides whether a
 node shows a caret, so a node can accept children while showing no caret until
-it has some. See [Tree](/components/tree#dropping-onto-a-leaf).
+it has some. See [Tree](/components/tree/code#dropping-onto-a-leaf).
 
 ## To 5.5.0 from 5.4.x
 
@@ -689,7 +689,7 @@ import type {
 Interactivity is opt-in. With no listener bound, nothing about the chart
 changes: no pointer cursor, no focus ring, no button semantics. Bind one and
 each bar or slice becomes a focusable button. See
-[Bar Chart](/components/charts/bar) for the payload and the accessibility
+[Bar Chart](/components/charts/bar/usage) for the payload and the accessibility
 behaviour.
 
 ### The glyph plugin sees through more expressions
@@ -954,13 +954,13 @@ upgrade itself is a version bump. The work is in what you can now delete.
 
 ### What is new
 
-| Component                                                                  | Replaces the hand-rolled                                                                                                              |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| [`NbAccordion`](/components/accordion) + `NbAccordionItem`                 | Click-to-reveal sections in page body. `NbShellPanel` is still the right thing for an inspector section; this is for everything else. |
-| [`NbCardGrid`](/components/card-grid) + `NbCard`                           | A responsive catalogue of cards, and the card surface itself.                                                                         |
-| [`NbDefinitionList`](/components/definition-list) + `NbDefinitionListItem` | Label-and-value fact blocks.                                                                                                          |
-| [`NbReorderList`](/components/reorder-list)                                | A vertical list whose rows drag to reorder, with a keyboard path.                                                                     |
-| [`NbEmptyState`](/components/empty-state)                                  | The centred block a view shows when it has nothing to show.                                                                           |
+| Component                                                                        | Replaces the hand-rolled                                                                                                              |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| [`NbAccordion`](/components/accordion/usage) + `NbAccordionItem`                 | Click-to-reveal sections in page body. `NbShellPanel` is still the right thing for an inspector section; this is for everything else. |
+| [`NbCardGrid`](/components/card-grid/usage) + `NbCard`                           | A responsive catalogue of cards, and the card surface itself.                                                                         |
+| [`NbDefinitionList`](/components/definition-list/usage) + `NbDefinitionListItem` | Label-and-value fact blocks.                                                                                                          |
+| [`NbReorderList`](/components/reorder-list/usage)                                | A vertical list whose rows drag to reorder, with a keyboard path.                                                                     |
+| [`NbEmptyState`](/components/empty-state/usage)                                  | The centred block a view shows when it has nothing to show.                                                                           |
 
 ### What to delete, and what to watch for
 

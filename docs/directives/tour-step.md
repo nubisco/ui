@@ -5,7 +5,7 @@ title: Tour Step
 
 # Tour step
 
-`v-nb-tour-step` tags an element as a [walkthrough](/components/walkthrough) target. All it does is stamp a `data-nb-tour-step` attribute, which the tour resolves by id.
+`v-nb-tour-step` tags an element as a [walkthrough](/components/walkthrough/usage) target. All it does is stamp a `data-nb-tour-step` attribute, which the tour resolves by id.
 
 ```vue
 <template>

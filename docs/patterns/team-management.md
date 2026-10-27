@@ -28,16 +28,16 @@ on the button that deletes.
 
 ## What it demonstrates, and where each piece is documented
 
-| On screen                    | Component                                                                 |
-| ---------------------------- | ------------------------------------------------------------------------- |
-| Location and page title      | `NbBreadcrumbs` (no page yet)                                             |
-| Search and filters           | [`NbTextInput`](/components/text-input), [`NbSelect`](/components/select) |
-| The list                     | [`NbDataTable`](/components/data-table)                                   |
-| Paging                       | [`NbPagination`](/components/pagination)                                  |
-| Status                       | [`NbBadge`](/components/badge)                                            |
-| Editing                      | [`NbModal`](/components/modal)                                            |
-| Destructive confirmation     | [`NbConfirm`](/components/confirm)                                        |
-| Success and failure feedback | [`NbToaster`](/components/toaster)                                        |
+| On screen                    | Component                                                                             |
+| ---------------------------- | ------------------------------------------------------------------------------------- |
+| Location and page title      | `NbBreadcrumbs` (no page yet)                                                         |
+| Search and filters           | [`NbTextInput`](/components/text-input/usage), [`NbSelect`](/components/select/usage) |
+| The list                     | [`NbDataTable`](/components/data-table)                                               |
+| Paging                       | [`NbPagination`](/components/pagination/usage)                                        |
+| Status                       | [`NbBadge`](/components/badge/usage)                                                  |
+| Editing                      | [`NbModal`](/components/modal/usage)                                                  |
+| Destructive confirmation     | [`NbConfirm`](/components/confirm/usage)                                              |
+| Success and failure feedback | [`NbToaster`](/components/toaster/usage)                                              |
 
 ## Decisions worth copying
 

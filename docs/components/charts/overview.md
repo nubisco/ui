@@ -80,7 +80,7 @@ Charts paint through eight semantic role tokens, `--nb-c-chart-1` to `--nb-c-cha
 
 To colour one chart specifically, pass `colors` with any CSS color string, including raw hex, rgb, or your own custom properties.
 
-Choosing between categorical, sequential and diverging scales, how many series colour can carry, the measured contrast and colour-vision numbers, and the full white-label recipe are on [Chart Color](/components/charts/color).
+Choosing between categorical, sequential and diverging scales, how many series colour can carry, the measured contrast and colour-vision numbers, and the full white-label recipe are on [Chart Color](/components/charts/color/usage).
 
 ```vue
 <template>

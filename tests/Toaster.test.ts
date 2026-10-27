@@ -1,7 +1,7 @@
 import { glyphStubComputed } from './__mocks__/glyphStub'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { DOMWrapper, enableAutoUnmount, mount } from '@vue/test-utils'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { defineComponent, h, nextTick, shallowRef } from 'vue'
 import Toaster from '../src/components/Toaster.vue'
@@ -1924,7 +1924,11 @@ describe('delivery', () => {
  */
 describe('documentation', () => {
   const root = join(__dirname, '..')
-  const page = readFileSync(join(root, 'docs/components/toaster.md'), 'utf8')
+  // The page is split into one file per tab (usage, code, accessibility).
+  const page = readdirSync(join(root, 'docs/components/toaster'))
+    .filter((f) => f.endsWith('.md'))
+    .map((f) => readFileSync(join(root, 'docs/components/toaster', f), 'utf8'))
+    .join('\n')
   const composablePage = readFileSync(
     join(root, 'docs/composables/use-toast.md'),
     'utf8',
@@ -2011,7 +2015,10 @@ describe('documentation', () => {
   })
 
   it('does not present role="none" as something an AT acts on', () => {
-    const a11y = page.slice(page.indexOf('name="Accessibility"'))
+    const a11y = readFileSync(
+      join(root, 'docs/components/toaster/accessibility.md'),
+      'utf8',
+    )
     expect(a11y).toContain('presentational-role conflict resolution')
     expect(a11y).not.toContain('rendered with `role="none"` and')
   })
@@ -2130,10 +2137,15 @@ describe('delivery: every documented identifier is importable', () => {
 
   const uses: IUse[] = []
   for (const page of [
-    'docs/components/toaster.md',
+    'docs/components/toaster',
     'docs/composables/use-toast.md',
   ]) {
-    const text = readFileSync(join(root, page), 'utf8')
+    const text = page.endsWith('.md')
+      ? readFileSync(join(root, page), 'utf8')
+      : readdirSync(join(root, page))
+          .filter((f) => f.endsWith('.md'))
+          .map((f) => readFileSync(join(root, page, f), 'utf8'))
+          .join('\n')
     const fences = [...text.matchAll(/```(ts|js|vue)\n([\s\S]*?)```/g)]
     fences.forEach((fence, index) => {
       const code = fence[2]
