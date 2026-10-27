@@ -1,3 +1,10 @@
+# [5.38.0](https://github.com/nubisco/ui/compare/v5.37.0...v5.38.0) (2026-10-27)
+
+
+### Features
+
+* **select:** add a searchable option with a search box in the open list ([dbc95d6](https://github.com/nubisco/ui/commit/dbc95d6565cc90a77ba137d234109f335975e2b6))
+
 # [5.37.0](https://github.com/nubisco/ui/compare/v5.36.1...v5.37.0) (2026-10-26)
 
 
