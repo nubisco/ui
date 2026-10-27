@@ -206,12 +206,30 @@
   <Teleport to="body">
     <div
       v-if="isOpen"
+      :id="listboxId"
       ref="dropdownRef"
       class="nb-select__dropdown"
       :style="dropdownStyle"
       role="listbox"
       :aria-multiselectable="multiple || undefined"
     >
+      <div v-if="searchable" class="nb-select__search">
+        <input
+          ref="searchRef"
+          v-model="query"
+          type="search"
+          class="nb-select__search-input"
+          autocomplete="off"
+          spellcheck="false"
+          :placeholder="searchPlaceholder"
+          :aria-label="searchPlaceholder"
+          :aria-controls="listboxId"
+          :aria-activedescendant="
+            highlighted >= 0 ? optionId(highlighted) : undefined
+          "
+          @keydown="onSearchKeydown"
+        />
+      </div>
       <div
         v-for="run in optionRuns"
         :key="run.key"
@@ -224,7 +242,9 @@
         </div>
         <div
           v-for="entry in run.entries"
+          :id="optionId(entry.index)"
           :key="entry.option.value"
+          :data-index="entry.index"
           :class="[
             'nb-select__option',
             {
@@ -278,6 +298,12 @@
       <div v-if="!options || options.length === 0" class="nb-select__empty">
         No options
       </div>
+      <div
+        v-else-if="searchable && visible.size === 0"
+        class="nb-select__empty"
+      >
+        {{ noResultsLabel }}
+      </div>
       <div v-if="creatable" class="nb-select__create" @mousedown.prevent>
         <input
           v-model="createValue"
@@ -318,6 +344,9 @@ const props = withDefaults(defineProps<ISelectProps>(), {
   createPlaceholder: '',
   clearable: false,
   clearLabel: 'Clear selection',
+  searchable: false,
+  searchPlaceholder: 'Search…',
+  noResultsLabel: 'No results',
   variant: 'default',
   size: 'md',
   label: '',
@@ -352,6 +381,8 @@ const SelectControl: FunctionalComponent<{ wrap: boolean }> = (p, { slots }) =>
 SelectControl.props = ['wrap']
 
 const createValue = ref('')
+const query = ref('')
+const searchRef = ref<HTMLInputElement | null>(null)
 
 function handleCreate() {
   const val = createValue.value.trim()
@@ -379,6 +410,8 @@ const dropdownStyle = ref({
 
 const autoId = `nb-select-${useId()}`
 const inputId = computed(() => props.id ?? autoId)
+const listboxId = computed(() => `${inputId.value}-listbox`)
+const optionId = (index: number) => `${inputId.value}-option-${index}`
 
 const selectedValues = computed<Array<string | number>>(() => {
   if (props.modelValue == null) return []
@@ -425,6 +458,30 @@ function isSelected(value: string | number) {
 }
 
 /**
+ * Lower-cased and stripped of accents, so "sao" finds "São Tomé" and "cote"
+ * finds "Côte d'Ivoire". What a person types on a keyboard that has no way to
+ * produce the accent is still a search for that word.
+ */
+const fold = (text: string) =>
+  text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
+
+/**
+ * The positions in `options` that pass the search. Every position when the
+ * select is not searchable or nothing has been typed, so the list is exactly
+ * the one it was before search existed. Positions, not options, for the same
+ * reason `index` below is a position: `highlighted` keeps its meaning.
+ */
+const visible = computed<Set<number>>(() => {
+  const opts = props.options ?? []
+  const needle = props.searchable ? fold(query.value.trim()) : ''
+  const out = new Set<number>()
+  opts.forEach((o, i) => {
+    if (!needle || fold(o.label).includes(needle)) out.add(i)
+  })
+  return out
+})
+
+/**
  * The options as consecutive runs, so a group heading is drawn once above the
  * options that carry its name.
  *
@@ -446,6 +503,7 @@ const optionRuns = computed(() => {
     entries: Array<{ option: ISelectOption; index: number }>
   }> = []
   ;(props.options ?? []).forEach((option, index) => {
+    if (!visible.value.has(index)) return
     const last = runs[runs.length - 1]
     if (!last || last.name !== option.group) {
       runs.push({
@@ -469,7 +527,7 @@ const optionRuns = computed(() => {
 function nextSelectable(from: number, step: number): number {
   const opts = props.options ?? []
   for (let i = from + step; i >= 0 && i < opts.length; i += step) {
-    if (!opts[i].disabled) return i
+    if (!opts[i].disabled && visible.value.has(i)) return i
   }
   return from
 }
@@ -531,12 +589,18 @@ function openDropdown() {
   nextTick(() => {
     updateDropdownPosition()
     scrollToHighlighted()
+    // A searchable list is opened to be typed into: focus goes to the box,
+    // and back to the trigger when the list closes.
+    searchRef.value?.focus({ preventScroll: true })
   })
 }
 
 function closeDropdown() {
+  const hadFocus = !!dropdownRef.value?.contains(document.activeElement)
   isOpen.value = false
   highlighted.value = -1
+  query.value = ''
+  if (hadFocus) triggerRef.value?.focus()
 }
 
 function toggleDropdown() {
@@ -607,12 +671,38 @@ function onKeydown(e: KeyboardEvent) {
 function scrollToHighlighted() {
   nextTick(() => {
     if (!dropdownRef.value || highlighted.value < 0) return
-    const item =
-      dropdownRef.value.querySelectorAll<HTMLElement>('.nb-select__option')[
-        highlighted.value
-      ]
+    const item = dropdownRef.value.querySelector<HTMLElement>(
+      `[data-index="${highlighted.value}"]`,
+    )
     item?.scrollIntoView({ block: 'nearest' })
   })
+}
+
+/**
+ * Typing narrows the list, and the highlight follows to the first row that is
+ * left, so Enter takes the best match without an arrow key first.
+ */
+watch(query, () => {
+  if (!isOpen.value) return
+  const first = nextSelectable(-1, 1)
+  highlighted.value = first === -1 ? -1 : first
+  scrollToHighlighted()
+})
+
+/**
+ * The keys the list owns while the box has focus. Space is left alone: it is
+ * part of what is being typed ("United St"), not a choice.
+ */
+function onSearchKeydown(e: KeyboardEvent) {
+  if (e.key === ' ') {
+    e.stopPropagation()
+    return
+  }
+  if (e.key === 'Home' || e.key === 'End') {
+    e.stopPropagation()
+    return
+  }
+  onKeydown(e)
 }
 
 const showClear = computed(
@@ -800,6 +890,42 @@ defineExpose({
   font-size: 14px;
   color: var(--nb-c-text-subtle);
   text-align: center;
+}
+
+// Stays at the top while a long list scrolls under it. The list's own 4px
+// padding is pulled back so the box sits flush with the edge it scrolls past.
+.nb-select__search {
+  position: sticky;
+  top: -4px;
+  z-index: 1;
+  margin: -4px -4px 4px;
+  padding: 8px 8px 8px;
+  background: var(--nb-c-field-bg);
+  border-bottom: 1px solid var(--nb-c-component-plain-border);
+}
+
+.nb-select__search-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--nb-c-component-plain-border);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--nb-c-text);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+  // A real input: below 16px iOS zooms the page in when it takes focus.
+  @include touch.touch-field-text;
+
+  &::placeholder {
+    color: var(--nb-c-text-subtle);
+  }
+
+  &:focus {
+    border-color: var(--nb-c-primary);
+  }
 }
 
 .nb-select__create {

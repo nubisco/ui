@@ -7,6 +7,7 @@ const assignee = ref<string | null>('pt')
 const clearableLocales = ref<string[]>(['en', 'fr'])
 const platform = ref('linkedin')
 const version = ref('fix-1120')
+const country = ref('PT')
 
 const versionOptions = [
   { label: '1.9.0', value: 'aff-190', group: 'Affects version' },
@@ -29,6 +30,31 @@ const localeOptions = [
   { label: 'Spanish', value: 'es' },
   { label: 'French', value: 'fr' },
 ]
+
+const countryOptions = [
+  ['AU', 'Australia'],
+  ['AT', 'Austria'],
+  ['BE', 'Belgium'],
+  ['BR', 'Brazil'],
+  ['CA', 'Canada'],
+  ['CI', "Côte d'Ivoire"],
+  ['DK', 'Denmark'],
+  ['FI', 'Finland'],
+  ['FR', 'France'],
+  ['DE', 'Germany'],
+  ['IE', 'Ireland'],
+  ['IT', 'Italy'],
+  ['JP', 'Japan'],
+  ['NL', 'Netherlands'],
+  ['NO', 'Norway'],
+  ['PT', 'Portugal'],
+  ['ST', 'São Tomé and Príncipe'],
+  ['ES', 'Spain'],
+  ['SE', 'Sweden'],
+  ['CH', 'Switzerland'],
+  ['GB', 'United Kingdom'],
+  ['US', 'United States'],
+].map(([value, label]) => ({ value, label }))
 
 function onCreateOption(value: string) {
   localeOptions.push({ label: value, value: value.toLowerCase() })
