@@ -357,7 +357,7 @@ labels announce themselves forty times.
 
 ### Tables never hand-build skeleton rows
 
-[`NbDataTable`](/components/data-table) takes `loading` and renders
+[`NbDataTable`](/components/data-table/usage) takes `loading` and renders
 `skeletonRows` placeholder rows (default 5) inside its own column structure,
 with `aria-busy` on the table. The columns already know their widths, so the
 placeholder is correct by construction and the header stays readable while the
@@ -1102,7 +1102,7 @@ rg -n "setInterval" src | rg -i "progress|percent"
 - [Spinner](/components/spinner/usage), [Skeleton](/components/skeleton/usage),
   [Inline Loading](/components/inline-loading/usage),
   [Progress Bar](/components/progress-bar/usage),
-  [Data Table](/components/data-table)
+  [Data Table](/components/data-table/usage)
 - [Empty states](/patterns/empty-states) ·
   [Status indicators](/patterns/status-indicators) ·
   [Dialogs](/patterns/dialogs) · [Building a form](/patterns/forms) ·
