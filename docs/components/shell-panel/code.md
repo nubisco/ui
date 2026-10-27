@@ -304,7 +304,7 @@ The gap between those two is the one two of our applications kept closing by han
 </template>
 ```
 
-The prop is called `fill` because [`NbDataTable`](/components/data-table#fill-height-internal-scroll) already calls it that and means the same thing by it: become a flex item that fills its parent, keep the fixed furniture pinned, and give the scrollbar to the content region. The two compose exactly as you would hope. The panel takes the shell's height, the table takes the panel's, and one scrollbar appears, on the table body, under a header that stays put.
+The prop is called `fill` because [`NbDataTable`](/components/data-table/code#fill-height-internal-scroll) already calls it that and means the same thing by it: become a flex item that fills its parent, keep the fixed furniture pinned, and give the scrollbar to the content region. The two compose exactly as you would hope. The panel takes the shell's height, the table takes the panel's, and one scrollbar appears, on the table body, under a header that stays put.
 
 ### It claims a height, it cannot create one
 

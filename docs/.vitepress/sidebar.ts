@@ -96,7 +96,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Command Palette', link: '/components/command-palette/usage' },
       { text: 'Confirm', link: '/components/confirm/usage' },
       { text: 'Copy Button', link: '/components/copy-button/usage' },
-      { text: 'Data Table', link: '/components/data-table' },
+      { text: 'Data Table', link: '/components/data-table/usage' },
       { text: 'Date Picker', link: '/components/date-picker/usage' },
       { text: 'Definition List', link: '/components/definition-list/usage' },
       { text: 'Drag Handle', link: '/components/drag-handle/usage' },

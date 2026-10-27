@@ -32,7 +32,7 @@ on the button that deletes.
 | ---------------------------- | ------------------------------------------------------------------------------------- |
 | Location and page title      | `NbBreadcrumbs` (no page yet)                                                         |
 | Search and filters           | [`NbTextInput`](/components/text-input/usage), [`NbSelect`](/components/select/usage) |
-| The list                     | [`NbDataTable`](/components/data-table)                                               |
+| The list                     | [`NbDataTable`](/components/data-table/usage)                                         |
 | Paging                       | [`NbPagination`](/components/pagination/usage)                                        |
 | Status                       | [`NbBadge`](/components/badge/usage)                                                  |
 | Editing                      | [`NbModal`](/components/modal/usage)                                                  |

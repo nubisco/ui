@@ -251,7 +251,7 @@ For a chart, accessible means two things beyond the usual: **there is a text alt
 **The text alternative.** Every cartesian chart sets `role="img"` and an `aria-label` from `title`. That is a name, not content: it tells a screen reader user what the chart is called and nothing about what it shows. The data itself has to exist somewhere else on the page. In order of preference:
 
 - The numbers are already on the page (a table the chart summarises, a metric row above it). This is the best case and it is common. Nothing more is needed.
-- An [`NbDataTable`](/components/data-table) of the same data in a second tab or behind a disclosure, named with `title` or `aria-label`. This is what every dashboard chart should have.
+- An [`NbDataTable`](/components/data-table/usage) of the same data in a second tab or behind a disclosure, named with `title` or `aria-label`. This is what every dashboard chart should have.
 - An `NbDefinitionList` for small categorical sets, which is often less markup than the chart.
 
 **Colour is never the only encoding.** Every non-colour channel our charts have is mouse-only. `ChartTooltip` appears on `mousemove`; the bar chart's dimming is a `mouseenter` on an invisible hover rectangle; the legend has no interaction at all. There is no keyboard path to a data point in any chart in this library. So a fact that lives only in a tooltip does not exist for a keyboard user, and a series identified only by hue does not exist for a reader with a colour-vision deficiency. Cover it by: passing `points` so line series have marks as well as a stroke, giving `NbPieChart` `labels` so the slices carry values, keeping to five colours, and providing the table.
