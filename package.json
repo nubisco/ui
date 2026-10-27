@@ -155,6 +155,7 @@
     "format:check": "prettier --check .",
     "quality:check": "pnpm run test && pnpm run lint && pnpm run format:check && pnpm run types:check && pnpm run verify:marks",
     "docs:dev": "pnpm run generate && vitepress dev docs",
+    "penpot:tokens": "node scripts/penpot-tokens.mjs",
     "docs:build": "pnpm run generate && node scripts/build-tokens.mjs && vitepress build docs",
     "docs:serve": "vitepress serve docs",
     "prepare": "simple-git-hooks",
