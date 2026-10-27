@@ -134,6 +134,39 @@ while nothing is selected and when the select is disabled. Use it instead of a
 The button is named "Clear selection". Pass `clear-label` to name it in your
 product's language.
 
+## Searchable
+
+Set `searchable` on a long list (countries, time zones, currencies) to show a
+search box at the top of the open list. It takes focus when the list opens, so
+the person types straight away, and each keystroke narrows the options. The
+match is anywhere in the label, ignoring case and accents: "sao" finds "São
+Tomé and Príncipe", and "cote" finds "Côte d'Ivoire".
+
+<preview>
+  <NbSelect v-model="country" label="Country" :options="countryOptions" searchable search-placeholder="Search countries" />
+</preview>
+
+```vue
+<template>
+  <NbSelect
+    v-model="country"
+    label="Country"
+    :options="countries"
+    searchable
+    search-placeholder="Search countries"
+  />
+</template>
+```
+
+The first match is highlighted as you type, so <kbd>Enter</kbd> picks it.
+<kbd>↑</kbd> and <kbd>↓</kbd> move through the matches without leaving the box,
+and <kbd>Space</kbd> types a space instead of choosing. Closing the list clears
+the search and returns focus to the select. When nothing matches, the list says
+"No results"; pass `no-results-label` to say it in your product's language.
+
+Search is for lists long enough to need it. Under about ten options, a plain
+select is faster.
+
 ## Creatable
 
 Set `:creatable="true"` to show a text input at the bottom of the dropdown. When the user types a value and presses Enter, the `create` event fires with the entered string. You can then add it to your options array.
@@ -180,6 +213,9 @@ function onCreate(value: string) {
 | `createPlaceholder` | `string`                                            | `'Add new...'`      | Placeholder for the create input            |
 | `clearable`         | `boolean`                                           | `false`             | Show a button that clears the selection     |
 | `clearLabel`        | `string`                                            | `'Clear selection'` | Accessible name of the clear button         |
+| `searchable`        | `boolean`                                           | `false`             | Show a search box at the top of the list    |
+| `searchPlaceholder` | `string`                                            | `'Search…'`         | Placeholder and accessible name of the box  |
+| `noResultsLabel`    | `string`                                            | `'No results'`      | Shown when nothing matches the search       |
 | `variant`           | `'default' \| 'fluid'`                              | `'default'`         | Layout variant                              |
 | `label`             | `string`                                            | -                   | Label text                                  |
 | `placeholder`       | `string`                                            | `'Select…'`         | Placeholder when nothing is selected        |
@@ -267,11 +303,14 @@ selectRef.value?.close() // programmatically close the dropdown
 | `↑` / `↓`         | Move highlight through options |
 | `Escape` / `Tab`  | Close dropdown                 |
 
+With `searchable`, typing narrows the list, <kbd>Enter</kbd> picks the highlighted match, and <kbd>Space</kbd> is part of the search, not a choice.
+
 ## Accessibility
 
 - The trigger button announces `aria-expanded`, `aria-haspopup="listbox"`, and `aria-controls` pointing at the dropdown.
 - Each option has `role="option"` with `aria-selected` and `aria-disabled`.
 - The `for`/`id` association is handled automatically.
+- With `searchable`, the search box is named by `search-placeholder` and points at the highlighted option with `aria-activedescendant`, so a screen reader follows the highlight while focus stays in the box.
 - With `clearable`, the clear button is a separate `<button>` next to the trigger, reached with <kbd>Tab</kbd> after it. Pressing it never opens the list.
 
 <!--@include: ./_shared.md-->

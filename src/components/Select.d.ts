@@ -46,6 +46,17 @@ interface ISelectProps extends IFieldComponent {
   clearable?: boolean
   /** Accessible name of the clear button when `clearable` is true. */
   clearLabel?: string
+  /**
+   * Shows a search box at the top of the open list and focuses it, so typing
+   * narrows the options. Matches the label anywhere in it, ignoring case and
+   * accents. For long lists (countries, time zones, currencies), where
+   * scrolling to find a row is the slow way. Off by default.
+   */
+  searchable?: boolean
+  /** Placeholder, and accessible name, of the search box when `searchable`. */
+  searchPlaceholder?: string
+  /** Shown when `searchable` and nothing matches what was typed. */
+  noResultsLabel?: string
 }
 
 export { ISelectOption, ISelectProps }

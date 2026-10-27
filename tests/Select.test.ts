@@ -1,5 +1,5 @@
 import { glyphStubComputed } from './__mocks__/glyphStub'
-import { describe, it, expect, beforeAll, afterEach } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import Select from '../src/components/Select.vue'
 
@@ -484,6 +484,144 @@ describe('Select', () => {
     await wrapper.find('.nb-select__trigger').trigger('click')
     const opts = wrapper.findAll('.nb-select__option')
     expect(opts[1].classes()).toContain('nb-select__option--disabled')
+  })
+
+  describe('searchable', () => {
+    const countries = [
+      { label: 'Portugal', value: 'PT' },
+      { label: 'São Tomé and Príncipe', value: 'ST' },
+      { label: "Côte d'Ivoire", value: 'CI' },
+      { label: 'United Kingdom', value: 'GB' },
+      { label: 'United States', value: 'US', disabled: true },
+    ]
+    // jsdom with the teleport stub drops focus again when the stub
+    // re-renders, so focus is read from the event, which is what a person
+    // would have seen move.
+    const focusTargets: string[] = []
+    const onFocusIn = (e: Event) =>
+      focusTargets.push((e.target as HTMLElement).className)
+    beforeEach(() => {
+      focusTargets.length = 0
+      document.addEventListener('focusin', onFocusIn)
+    })
+    afterEach(() => document.removeEventListener('focusin', onFocusIn))
+
+    const open = async (props = {}) => {
+      const wrapper = createWrapper({
+        options: countries,
+        searchable: true,
+        ...props,
+      })
+      await wrapper.find('.nb-select__trigger').trigger('click')
+      await wrapper.vm.$nextTick()
+      return wrapper
+    }
+    const labels = (wrapper: ReturnType<typeof createWrapper>) =>
+      wrapper.findAll('.nb-select__option').map((o) => o.text())
+    const type = async (
+      wrapper: ReturnType<typeof createWrapper>,
+      text: string,
+    ) => {
+      await wrapper.find('.nb-select__search-input').setValue(text)
+      await wrapper.vm.$nextTick()
+    }
+
+    it('renders no search box unless asked, and every option', async () => {
+      const wrapper = createWrapper({ options: countries })
+      await wrapper.find('.nb-select__trigger').trigger('click')
+      expect(wrapper.find('.nb-select__search').exists()).toBe(false)
+      expect(labels(wrapper)).toHaveLength(5)
+      wrapper.unmount()
+    })
+
+    it('shows a focused search box when it opens', async () => {
+      const wrapper = await open()
+      expect(focusTargets).toContain('nb-select__search-input')
+      const input = wrapper.find('.nb-select__search-input')
+      expect(input.exists()).toBe(true)
+      expect(input.attributes('aria-label')).toBe('Search…')
+      wrapper.unmount()
+    })
+
+    it('narrows the list as you type, ignoring case', async () => {
+      const wrapper = await open()
+      await type(wrapper, 'UNITED')
+      expect(labels(wrapper)).toEqual(['United Kingdom', 'United States'])
+      wrapper.unmount()
+    })
+
+    it('ignores accents in both directions', async () => {
+      const wrapper = await open()
+      await type(wrapper, 'sao tome')
+      expect(labels(wrapper)).toEqual(['São Tomé and Príncipe'])
+      await type(wrapper, 'cote')
+      expect(labels(wrapper)).toEqual(["Côte d'Ivoire"])
+      wrapper.unmount()
+    })
+
+    it('says so when nothing matches', async () => {
+      const wrapper = await open({ noResultsLabel: 'Nothing here' })
+      await type(wrapper, 'zzz')
+      expect(labels(wrapper)).toEqual([])
+      expect(wrapper.find('.nb-select__empty').text()).toBe('Nothing here')
+      wrapper.unmount()
+    })
+
+    it('highlights the first match and picks it on Enter', async () => {
+      const wrapper = await open()
+      await type(wrapper, 'united')
+      const input = wrapper.find('.nb-select__search-input')
+      // The disabled United States is not a candidate
+      expect(wrapper.find('.nb-select__option--highlighted').text()).toBe(
+        'United Kingdom',
+      )
+      await input.trigger('keydown', { key: 'Enter' })
+      expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['GB'])
+      wrapper.unmount()
+    })
+
+    it('arrows within the matches and over disabled rows', async () => {
+      const wrapper = await open()
+      await type(wrapper, 'u')
+      const input = wrapper.find('.nb-select__search-input')
+      await input.trigger('keydown', { key: 'ArrowDown' })
+      await input.trigger('keydown', { key: 'ArrowDown' })
+      // Portugal, Côte d'Ivoire and the two United rows match "u"; the last
+      // row is disabled, so Down stops on the one before it
+      expect(wrapper.find('.nb-select__option--highlighted').text()).toBe(
+        'United Kingdom',
+      )
+      wrapper.unmount()
+    })
+
+    it('does not treat Space as a choice while typing', async () => {
+      const wrapper = await open()
+      await type(wrapper, 'united')
+      await wrapper
+        .find('.nb-select__search-input')
+        .trigger('keydown', { key: ' ' })
+      expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+      wrapper.unmount()
+    })
+
+    it('clears the search and returns focus to the trigger on close', async () => {
+      const wrapper = await open()
+      await type(wrapper, 'port')
+      const input = wrapper.find('.nb-select__search-input')
+      ;(input.element as HTMLInputElement).focus()
+      await input.trigger('keydown', { key: 'Escape' })
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('.nb-select--open').exists()).toBe(false)
+      expect(focusTargets[focusTargets.length - 1]).toBe('nb-select__trigger')
+      await wrapper.find('.nb-select__trigger').trigger('click')
+      await wrapper.vm.$nextTick()
+      expect(
+        (wrapper.find('.nb-select__search-input').element as HTMLInputElement)
+          .value,
+      ).toBe('')
+      expect(labels(wrapper)).toHaveLength(5)
+      wrapper.unmount()
+    })
   })
 
   describe('clearable', () => {
