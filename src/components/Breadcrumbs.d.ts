@@ -15,6 +15,26 @@
  * The current crumb is never interactive. It renders as text with
  * `aria-current="page"`, whatever it carries.
  */
+/**
+ * One place a crumb can be switched to: another company, client, repository or
+ * year at the same level.
+ */
+export interface IBreadcrumbOption {
+  /** The text of the option. */
+  label: string
+  /** Route to go to when it is picked. A location object needs vue-router. */
+  to?: string | Record<string, unknown>
+  /** A plain link target, for an option that leaves the app's router. */
+  href?: string
+  /**
+   * Identifies the option. Compared with the item's `value` to mark the
+   * current one. Defaults to the option's position.
+   */
+  value?: string | number
+  /** Artwork shown before the label. */
+  icon?: string
+}
+
 export interface IBreadcrumbItem {
   /** The text of the crumb. */
   label: string
@@ -31,4 +51,25 @@ export interface IBreadcrumbItem {
    * current one, which is what a trail almost always means.
    */
   current?: boolean
+  /**
+   * The siblings of this crumb, when it stands for one of several (a company, a
+   * client, a repository, a year). A small up and down chevron after the label
+   * opens them in a searchable list, under the crumb. Picking one goes to its
+   * `to` or `href` and emits `switch` on the trail.
+   *
+   * Works on any crumb, the current one included: the label and the chevron are
+   * separate controls, so a crumb that links still links.
+   */
+  options?: IBreadcrumbOption[]
+  /**
+   * The `value` of the current option, marked with a check. When omitted, the
+   * option whose label equals the crumb's.
+   */
+  value?: string | number
+  /** Accessible name of the chevron button. Defaults to "Switch <label>". */
+  switchLabel?: string
+  /** Placeholder, and accessible name, of the search box. Defaults to "Find". */
+  searchPlaceholder?: string
+  /** Shown when nothing matches the search. Defaults to "No results". */
+  noResultsLabel?: string
 }

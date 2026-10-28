@@ -26,6 +26,7 @@
         <span
           v-for="(item, index) in items"
           :key="index"
+          :ref="(el) => (itemEls[index] = el as HTMLElement | null)"
           class="nb-breadcrumbs__item"
         >
           <span
@@ -45,6 +46,33 @@
             >{{ item.label }}</NbButton
           >
           <span v-else class="nb-breadcrumbs__parent">{{ item.label }}</span>
+
+          <!-- The switcher is its own control beside the label, so a crumb that
+               links still links, and the current crumb can still be switched.
+               The list is NbSelect's, searchable, hung under the whole crumb. -->
+          <NbSelect
+            v-if="item.options?.length"
+            class="nb-breadcrumbs__switcher"
+            searchable
+            selected-mark="check"
+            :anchor="() => itemEls[index]"
+            :model-value="currentOption(item)"
+            :options="selectOptions(item)"
+            :search-placeholder="item.searchPlaceholder ?? 'Find'"
+            :no-results-label="item.noResultsLabel ?? 'No results'"
+            @change="onSwitch(item, index, $event)"
+          >
+            <template #trigger="{ attrs }">
+              <button
+                type="button"
+                class="nb-breadcrumbs__switch"
+                v-bind="attrs"
+                :aria-label="item.switchLabel ?? `Switch ${item.label}`"
+              >
+                <NbIcon :name="iconUpDown" :size="14" aria-hidden="true" />
+              </button>
+            </template>
+          </NbSelect>
         </span>
       </template>
       <slot v-else />
@@ -55,6 +83,8 @@
 <script setup lang="ts">
 import NbIcon from './Icon.vue'
 import NbButton from './Button.vue'
+import NbSelect from './Select.vue'
+import * as iconUpDown from '@nubisco/ui/icons/caret-up-down'
 import {
   useSlots,
   computed,
@@ -65,7 +95,7 @@ import {
   type VNode,
 } from 'vue'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
-import type { IBreadcrumbItem } from './Breadcrumbs.d'
+import type { IBreadcrumbItem, IBreadcrumbOption } from './Breadcrumbs.d'
 
 const props = withDefaults(
   defineProps<{
@@ -98,6 +128,8 @@ const props = withDefaults(
 const emit = defineEmits<{
   /** A crumb was activated: the item, its index, and the click. */
   select: [item: IBreadcrumbItem, index: number, event: MouseEvent]
+  /** An option was picked in a crumb's switcher: the crumb, the option, the crumb's index. */
+  switch: [item: IBreadcrumbItem, option: IBreadcrumbOption, index: number]
 }>()
 
 // A `select` listener makes every crumb without a link a button, so a view
@@ -124,6 +156,57 @@ function isInteractive(item: IBreadcrumbItem): boolean {
 function onActivate(item: IBreadcrumbItem, index: number, event: MouseEvent) {
   item.onClick?.(event)
   emit('select', item, index, event)
+}
+
+// Each crumb's element, read when its switcher opens, so the list hangs under
+// the whole crumb and not under the small chevron. Not reactive: it is only
+// read at that moment.
+const itemEls: Array<HTMLElement | null> = []
+
+const optionValue = (option: IBreadcrumbOption, position: number) =>
+  option.value ?? position
+
+function selectOptions(item: IBreadcrumbItem) {
+  return (item.options ?? []).map((option, position) => ({
+    label: option.label,
+    value: optionValue(option, position),
+    icon: option.icon,
+  }))
+}
+
+/** The current option: the item's `value`, else the one named like the crumb. */
+function currentOption(item: IBreadcrumbItem): string | number | null {
+  if (item.value != null) return item.value
+  const options = item.options ?? []
+  const position = options.findIndex((option) => option.label === item.label)
+  return position === -1 ? null : optionValue(options[position], position)
+}
+
+function onSwitch(
+  item: IBreadcrumbItem,
+  index: number,
+  value: string | number | Array<string | number> | null,
+) {
+  const options = item.options ?? []
+  const position = options.findIndex((o, i) => optionValue(o, i) === value)
+  if (position === -1 || value === currentOption(item)) return
+  const option = options[position]
+  emit('switch', item, option, index)
+  go(option)
+}
+
+/**
+ * Goes where the option points: the router when there is one, else the page.
+ * An option with neither only emits `switch`, for a trail that handles it.
+ */
+function go(option: IBreadcrumbOption) {
+  const router = instance?.appContext.config.globalProperties.$router
+  if (option.to != null) {
+    if (router) router.push(option.to)
+    else if (typeof option.to === 'string') window.location.assign(option.to)
+  } else if (option.href) {
+    window.location.assign(option.href)
+  }
 }
 
 const slots = useSlots()
@@ -159,6 +242,8 @@ const collapsed = computed(
 </script>
 
 <style lang="scss" scoped>
+@use '../styles/variables/breakpoints' as bp;
+
 .nb-breadcrumbs {
   display: inline-flex;
   align-items: center;
@@ -253,6 +338,44 @@ const collapsed = computed(
   white-space: nowrap;
 }
 
+// The crumb and its switcher sit on one line.
+.nb-breadcrumbs__item {
+  display: inline-flex;
+  align-items: center;
+}
+
+// The chevron: quiet until the crumb is pointed at, then at full strength like
+// a linked crumb. A real button, with its own focus ring.
+.nb-breadcrumbs__switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-inline-start: 0.15rem;
+  padding: 2px;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  color: var(--nb-c-text-subtle);
+  cursor: pointer;
+
+  &:hover,
+  &[aria-expanded='true'] {
+    color: var(--nb-c-text);
+    background: color-mix(in srgb, var(--nb-c-text) 8%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--nb-c-primary);
+    outline-offset: 1px;
+  }
+
+  // A fingertip, on a phone.
+  @include bp.phone-touch {
+    min-inline-size: 32px;
+    min-block-size: 32px;
+  }
+}
+
 // Phone, opted in: the last crumb alone, shrinking into an ellipsis rather
 // than pushing the topbar's actions off screen. The class is only ever set by
 // the component on a phone, so nothing here reaches a desktop.
@@ -284,6 +407,25 @@ const collapsed = computed(
 
     &::before {
       content: none;
+    }
+  }
+
+  // With a switcher the last crumb is the label and a chevron: the label gives
+  // way to the ellipsis, the chevron keeps its place.
+  .nb-breadcrumbs__crumbs > .nb-breadcrumbs__item:last-child {
+    display: flex;
+    align-items: center;
+    overflow: visible;
+
+    > :first-child {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .nb-breadcrumbs__switcher {
+      flex: none;
     }
   }
 }
