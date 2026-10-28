@@ -168,22 +168,25 @@ describe('UserMenu', () => {
     wrapper.unmount()
   })
 
-  it('renders the brand lockup by default, with the product name emphasised', async () => {
+  it('renders the brand lockup by default, with both names emphasised', async () => {
     const wrapper = mountMenu()
     await openMenu(wrapper)
     const brand = panel()?.querySelector('.nb-user-menu__brand')
-    expect(brand?.textContent).toBe('Powered by Nubisco Platform')
-    expect(brand?.querySelector('.nb-user-menu__brand-name')?.textContent).toBe(
-      'Nubisco Platform',
-    )
-    const mark = brand?.querySelector('svg')
-    expect(mark?.getAttribute('width')).toBe('13px')
-    expect(mark?.getAttribute('aria-hidden')).toBe('true')
-    // The product mark, not the corporate one: they are different artwork.
+    expect(brand?.textContent).toBe('Accord by Nubisco')
+    const names = [
+      ...(brand?.querySelectorAll('.nb-user-menu__brand-name') ?? []),
+    ].map((el) => el.textContent)
+    expect(names).toEqual(['Accord', 'Nubisco'])
+    const marks = brand?.querySelectorAll('svg') ?? []
+    expect(marks.length).toBe(1)
+    const mark = marks[0]
+    expect(mark.getAttribute('width')).toBe('13px')
+    expect(mark.getAttribute('aria-hidden')).toBe('true')
+    // The company mark, beside the company's name: placed first it would
+    // read as Accord's logo.
+    expect(mark.nextElementSibling?.textContent).toBe('Nubisco')
     expect(
-      mark
-        ?.querySelector('linearGradient')
-        ?.id.startsWith('nb-nubisco-platform-mark-'),
+      mark.querySelector('linearGradient')?.id.startsWith('nb-nubisco-mark-'),
     ).toBe(true)
     wrapper.unmount()
   })
@@ -203,11 +206,11 @@ describe('UserMenu', () => {
     const wrapper = mountMenu({ brand: 'none' })
     await openMenu(wrapper)
     expect(panel()?.querySelector('.nb-user-menu__brand')).toBe(null)
-    expect(panel()?.textContent).not.toContain('Nubisco Platform')
+    expect(panel()?.textContent).not.toContain('Accord by Nubisco')
     wrapper.unmount()
   })
 
-  it('localises the lockup and keeps the product name emphasised', async () => {
+  it('localises the lockup and keeps both names emphasised', async () => {
     const ptI18n = createI18n({
       legacy: false,
       locale: 'pt',
@@ -221,14 +224,15 @@ describe('UserMenu', () => {
     })
     await wrapper.find('.nb-user-menu__avatar').trigger('click')
     const brand = panel()?.querySelector('.nb-user-menu__brand')
-    expect(brand?.textContent).toBe('Fornecido pela Nubisco Platform')
-    expect(brand?.querySelector('.nb-user-menu__brand-name')?.textContent).toBe(
-      'Nubisco Platform',
-    )
+    expect(brand?.textContent).toBe('Accord da Nubisco')
+    const names = [
+      ...(brand?.querySelectorAll('.nb-user-menu__brand-name') ?? []),
+    ].map((el) => el.textContent)
+    expect(names).toEqual(['Accord', 'Nubisco'])
     wrapper.unmount()
   })
 
-  it('emphasises the whole line when a host translation drops the product name', async () => {
+  it('emphasises the whole line when a host translation drops both names', async () => {
     const hostI18n = createI18n({
       legacy: false,
       locale: 'en',
@@ -283,7 +287,7 @@ describe('UserMenu', () => {
     ].map((node) => node.getAttribute('id'))
     expect(ids.length).toBeGreaterThan(0)
     expect(new Set(ids).size).toBe(ids.length)
-    for (const id of ids) expect(id).toMatch(/^nb-nubisco-platform-mark-/)
+    for (const id of ids) expect(id).toMatch(/^nb-nubisco-mark-/)
     // Every fill points at a gradient defined inside its own mark.
     for (const mark of marks) {
       const own = new Set(

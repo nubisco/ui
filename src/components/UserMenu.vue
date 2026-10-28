@@ -199,13 +199,17 @@
             <div class="nb-user-menu__divider" role="separator" />
             <slot name="brand">
               <p class="nb-user-menu__brand">
-                <NbNubiscoPlatformMark :size="13" class="nb-user-menu__mark" />
-                <span class="nb-user-menu__brand-line"
-                  >{{ brandLine.prefix
-                  }}<span class="nb-user-menu__brand-name">{{
-                    brandLine.name
-                  }}</span></span
-                >
+                <template v-for="(part, i) in brandParts" :key="i">
+                  <NbNubiscoMark
+                    v-if="part.mark"
+                    :size="13"
+                    class="nb-user-menu__mark"
+                  />
+                  <span v-if="part.name" class="nb-user-menu__brand-name">{{
+                    part.text
+                  }}</span>
+                  <span v-else>{{ part.text }}</span>
+                </template>
               </p>
             </slot>
           </template>
@@ -230,7 +234,7 @@ import {
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 import { useI18n } from 'vue-i18n'
 import NbIcon from './Icon.vue'
-import NbNubiscoPlatformMark from './NubiscoPlatformMark.vue'
+import NbNubiscoMark from './NubiscoMark.vue'
 import NbRadio from './Radio.vue'
 import { useTheme, type TTheme } from '@/composables/useTheme.composable'
 import type { IUserMenuAccount, IUserMenuProps } from './UserMenu.d'
@@ -254,7 +258,7 @@ const BUILT_IN: Record<string, Record<string, string>> = {
     THEME_LIGHT: 'Light',
     THEME_DARK: 'Dark',
     THEME_SYSTEM: 'Match my system',
-    poweredBy: 'Powered by Nubisco Platform',
+    poweredBy: 'Accord by Nubisco',
   },
   pt: {
     ACCOUNT_MENU: 'Menu de conta',
@@ -268,7 +272,7 @@ const BUILT_IN: Record<string, Record<string, string>> = {
     THEME_LIGHT: 'Claro',
     THEME_DARK: 'Escuro',
     THEME_SYSTEM: 'Seguir o sistema',
-    poweredBy: 'Fornecido pela Nubisco Platform',
+    poweredBy: 'Accord da Nubisco',
   },
 }
 
@@ -345,17 +349,36 @@ watch(
 )
 const showPicture = computed(() => !!props.user.picture && !pictureFailed.value)
 
-// "Nubisco Platform" is a product name and stays untranslated inside the
-// localised sentence, so the emphasis is found rather than hardcoded per
-// locale. A translation that drops the name renders wholly emphasised, which
-// is the higher-contrast half of the pair.
-const BRAND_NAME = 'Nubisco Platform'
+// The session is held by Accord, the product, and Accord is made by Nubisco,
+// the company. Both are names and stay untranslated inside the localised
+// sentence, so the emphasis is found rather than hardcoded per locale. The
+// Nubisco mark sits beside the word Nubisco and nowhere else: it is the
+// company's mark, so placed first it would read as Accord's logo. A
+// translation that drops both names renders wholly emphasised (the
+// higher-contrast half of the pair), led by the mark.
+const BRAND_NAMES = /(Accord|Nubisco)/
 
-const brandLine = computed(() => {
+interface IBrandPart {
+  text: string
+  name: boolean
+  mark: boolean
+}
+
+const brandParts = computed<IBrandPart[]>(() => {
   const line = t('userMenu.poweredBy')
-  const at = line.indexOf(BRAND_NAME)
-  if (at < 0) return { prefix: '', name: line }
-  return { prefix: line.slice(0, at), name: line.slice(at) }
+  if (!BRAND_NAMES.test(line)) return [{ text: line, name: true, mark: true }]
+  let marked = false
+  return line
+    .split(BRAND_NAMES)
+    .filter((text) => text !== '')
+    .map((text) => {
+      const name = text === 'Accord' || text === 'Nubisco'
+      const mark = text === 'Nubisco' && !marked
+      if (mark) marked = true
+      // Spaces kept: the flex gap draws them, and textContent (what a screen
+      // reader reads) still says "Accord by Nubisco", not "AccordbyNubisco".
+      return { text, name, mark }
+    })
 })
 
 const emit = defineEmits<{
