@@ -31,4 +31,4 @@ SVG gradient ids are document-global. If two copies of the mark declared the sam
 
 ## Where it is already used
 
-`NbUserMenu` renders `NbNubiscoPlatformMark` at 13px in the lockup at the foot of its panel: the lockup names Nubisco Platform, so it carries the platform's mark rather than the corporate one. That lockup stays optional: `brand="none"` removes it, and the `#brand` slot replaces it, so a white-label product supplies its own logo. This component standardises the mark for products that do want to show it, it does not oblige anyone to.
+`NbUserMenu` renders `NbNubiscoMark` at 13px in the lockup at the foot of its panel, beside the word Nubisco in "Accord by Nubisco". `NbNubiscoPlatformMark` was the mark of Nubisco Platform, which Accord replaced. It stays exported for anything still rendering it, and nothing in the library uses it any more. That lockup stays optional: `brand="none"` removes it, and the `#brand` slot replaces it, so a white-label product supplies its own logo. This component standardises the mark for products that do want to show it, it does not oblige anyone to.

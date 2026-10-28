@@ -78,9 +78,9 @@ The default slot sits above the Profile / Sign out group, behind its own divider
 </template>
 ```
 
-## The Nubisco Platform lockup
+## The Accord lockup
 
-The foot of the panel signs the product as part of Nubisco Platform: the Nubisco mark at 13px and the line **Powered by Nubisco Platform**. It is a signature, not a control. It is not a link, takes no tab stop, carries no ARIA role, and has no hover state, because right now there is nothing to link to.
+The foot of the panel names who holds the session: **Accord by Nubisco**, with the Nubisco mark at 13px beside the word Nubisco. Accord is the product that signs people in, and Nubisco is the company behind it. It is a signature, not a control. It is not a link, takes no tab stop, carries no ARIA role, and has no hover state, because right now there is nothing to link to.
 
 `brand` is on by default, so upgrading gets you the lockup without changing anything.
 
@@ -112,11 +112,11 @@ We know the default is the wrong way round: nobody should have to opt out of ano
 </template>
 ```
 
-The mark is [`NbNubiscoPlatformMark`](/components/nubisco-mark/usage), the Nubisco Platform product mark rather than the Nubisco corporate one, since the lockup names the platform. It is the same component every other Nubisco surface renders, inlined rather than fetched, so the logo cannot drift from the one on the platform console and cannot break when the network does.
+The mark is [`NbNubiscoMark`](/components/nubisco-mark/usage), the company's mark, and it sits beside the company's name and nowhere else. Placed at the start of the line it would read as Accord's logo, which it is not. Accord's own mark is not in this library: it belongs to the Accord app. The mark is inlined rather than fetched, so it cannot drift and cannot break when the network does. Until 5.41 the line read "Powered by Nubisco Platform" with `NbNubiscoPlatformMark`, before Accord replaced Platform.
 
-The panel is teleported to `<body>`, so it follows the **site** theme rather than any local preview wrapper: use the theme switch in the header to check the lockup on both grounds. The mark is one asset in both themes, and the text is token-only. Against `--nb-c-layer-3`, "Nubisco Platform" measures 13.94:1 light and 8.98:1 dark, and the "Powered by" prefix 10.51:1 and 7.01:1: comfortably past the 4.5:1 and 3:1 the lockup is held to.
+The panel is teleported to `<body>`, so it follows the **site** theme rather than any local preview wrapper: use the theme switch in the header to check the lockup on both grounds. The mark is one asset in both themes, and the text is token-only. Against `--nb-c-layer-3`, the names ("Accord", "Nubisco") measure 13.94:1 light and 8.98:1 dark, and the "by" between them 10.51:1 and 7.01:1: comfortably past the 4.5:1 and 3:1 the lockup is held to.
 
-`brand` is a string union rather than a boolean because a third mode, `'hub'`, is coming: the same lockup, but a real link to the Nubisco Platform product page, once that page exists.
+`brand` is a string union rather than a boolean because a third mode, `'hub'`, is coming: the same lockup, but a real link to the Accord product page, once that page exists.
 
 ### Replacing the lockup
 
@@ -145,14 +145,14 @@ createI18n({
       userMenu: {
         SIGNED_IN_AS: 'Angemeldet als',
         SIGN_OUT: 'Abmelden',
-        poweredBy: 'Bereitgestellt von Nubisco Platform',
+        poweredBy: 'Accord von Nubisco',
       },
     },
   },
 })
 ```
 
-"Nubisco Platform" is a product name and stays untranslated inside the localised sentence, which is how the component knows which half of the line to emphasise. A translation that drops the name renders wholly emphasised, the higher-contrast half of the pair.
+"Accord" and "Nubisco" are names and stay untranslated inside the localised sentence, which is how the component knows what to emphasise and where the mark goes. A translation that drops both names renders wholly emphasised, the higher-contrast half of the pair, led by the mark.
 
 ## Props
 
@@ -163,7 +163,7 @@ createI18n({
 | `accountsUnknown`    | `boolean`                    | `false`       | The identities could not be determined. Renders a generic "Switch account" action instead of the list.                   |
 | `showAccountActions` | `boolean`                    | `true`        | Hides the whole switch / add section for single-account products.                                                        |
 | `showProfile`        | `boolean`                    | `true`        | Hides the Profile entry when the product has no profile page.                                                            |
-| `brand`              | `'footer' \| 'none'`         | `'footer'`    | `'footer'` renders the non-interactive Nubisco Platform lockup; `'none'` renders nothing.                                |
+| `brand`              | `'footer' \| 'none'`         | `'footer'`    | `'footer'` renders the non-interactive Accord lockup; `'none'` renders nothing.                                          |
 | `placement`          | `'right-end' \| 'top-start'` | `'right-end'` | Where the panel opens relative to the trigger.                                                                           |
 | `trigger`            | `'avatar' \| 'identity'`     | `'avatar'`    | `'identity'` follows the rail: a labelled row when expanded, the avatar alone when collapsed.                            |
 | `roleBadge`          | `string`                     | —             | A label for elevated powers ("Operator"). Rings the avatar and shows the label. See [Elevated powers](#elevated-powers). |
@@ -184,11 +184,11 @@ createI18n({
 
 ## Slots
 
-| Slot      | Props            | Description                                                                    |
-| --------- | ---------------- | ------------------------------------------------------------------------------ |
-| `default` | `close`          | Product entries, in their own section above Profile / Sign out.                |
-| `trigger` | `open`, `toggle` | Replaces the avatar button.                                                    |
-| `brand`   | —                | Replaces the Nubisco Platform lockup. Not rendered at all when `brand="none"`. |
+| Slot      | Props            | Description                                                          |
+| --------- | ---------------- | -------------------------------------------------------------------- |
+| `default` | `close`          | Product entries, in their own section above Profile / Sign out.      |
+| `trigger` | `open`, `toggle` | Replaces the avatar button.                                          |
+| `brand`   | —                | Replaces the Accord lockup. Not rendered at all when `brand="none"`. |
 
 ## Exposed methods
 
@@ -204,7 +204,7 @@ createI18n({
 | ----------------------------------------- | ---------------------------------------------- |
 | `--nb-c-layer-3`, `--nb-c-layer-border-3` | Panel surface, border and dividers             |
 | `--nb-c-layer-hover-3`                    | Row hover                                      |
-| `--nb-c-text`                             | Email, account rows, "Nubisco Platform"        |
+| `--nb-c-text`                             | Email, account rows, "Accord", "Nubisco"       |
 | `--nb-c-text-muted`                       | The "Powered by" prefix                        |
 | `--nb-c-text-subtle`                      | Section label, account name, remove affordance |
 | `--nb-c-primary`                          | Avatar fill                                    |

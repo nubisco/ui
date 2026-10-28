@@ -31,10 +31,10 @@ interface IUserMenuAccount {
 type TUserMenuPlacement = 'right-end' | 'top-start'
 
 /**
- * How the menu signs itself as a Nubisco Platform product.
+ * How the menu names who holds the session (Accord by Nubisco).
  *
  * A union rather than a boolean because a third mode, `'hub'` (the same
- * lockup, but a real link to the Nubisco Platform product page), lands once
+ * lockup, but a real link to the Accord product page), lands once
  * that page exists.
  */
 type TUserMenuBrand = 'footer' | 'none'
@@ -59,7 +59,7 @@ interface IUserMenuProps {
   /** Hide the Profile entry when the product has no profile page. */
   showProfile?: boolean
   /**
-   * The Nubisco Platform lockup at the foot of the panel. `'footer'` renders a
+   * The Accord lockup at the foot of the panel. `'footer'` renders a
    * non-interactive signature; `'none'` renders nothing, for white-label
    * deployments and for hosts that are not Nubisco products.
    */
