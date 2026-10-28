@@ -1,3 +1,10 @@
+## [5.41.1](https://github.com/nubisco/ui/compare/v5.41.0...v5.41.1) (2026-10-28)
+
+
+### Bug Fixes
+
+* **release:** publish the 5.41.0 changes, whose npm publish failed with a transparency-log conflict ([1719109](https://github.com/nubisco/ui/commit/1719109989639df0e7b0fbb710597acf4abb26e7))
+
 # [5.41.0](https://github.com/nubisco/ui/compare/v5.40.0...v5.41.0) (2026-10-28)
 
 
