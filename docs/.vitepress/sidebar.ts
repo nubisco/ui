@@ -108,6 +108,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Grid', link: '/components/grid/usage' },
       { text: 'Icon', link: '/components/icon/usage' },
       { text: 'Image Cropper', link: '/components/image-cropper/usage' },
+      { text: 'Image Picker', link: '/components/image-picker/usage' },
       { text: 'Info Hint', link: '/components/info-hint/usage' },
       { text: 'Inline Edit', link: '/components/inline-edit/usage' },
       { text: 'Inline Loading', link: '/components/inline-loading/usage' },

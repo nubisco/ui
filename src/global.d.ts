@@ -48,6 +48,7 @@ import GanttChart from './components/Charts/GanttChart.vue'
 import Grid from './components/Grid.vue'
 import Icon from './components/Icon.vue'
 import ImageCropper from './components/ImageCropper.vue'
+import ImagePicker from './components/ImagePicker.vue'
 import InfoHint from './components/InfoHint.vue'
 import InlineEdit from './components/InlineEdit.vue'
 import InlineLoading from './components/InlineLoading.vue'
@@ -160,6 +161,7 @@ declare module 'vue' {
     NbGrid: typeof Grid
     NbIcon: typeof Icon
     NbImageCropper: typeof ImageCropper
+    NbImagePicker: typeof ImagePicker
     NbInfoHint: typeof InfoHint
     NbInlineEdit: typeof InlineEdit
     NbInlineLoading: typeof InlineLoading

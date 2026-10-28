@@ -69,6 +69,10 @@ export { ETabsSize, ETabsVariant } from './components/Tabs.d'
 export type { IColorStripProps } from './components/ColorStrip.d'
 export type { IFileUploaderProps, IFileItem } from './components/FileUploader.d'
 export { EFileUploaderStatus } from './components/FileUploader.d'
+export type {
+  IImagePickerProps,
+  TImagePickerRejection,
+} from './components/ImagePicker.d'
 export type { IAiLabelProps } from './components/AiLabel.d'
 export { EAiLabelVariant, EAiLabelSize } from './components/AiLabel.d'
 

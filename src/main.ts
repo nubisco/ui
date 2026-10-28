@@ -482,6 +482,7 @@ export { default as NbAiLabel } from './components/AiLabel.vue'
 export { default as NbFileUploader } from './components/FileUploader.vue'
 export { default as NbForm } from './components/Form.vue'
 export { default as NbImageCropper } from './components/ImageCropper.vue'
+export { default as NbImagePicker } from './components/ImagePicker.vue'
 
 // Onboarding: walkthrough / product tour
 export { default as NbWalkthrough } from './components/Walkthrough.vue'
