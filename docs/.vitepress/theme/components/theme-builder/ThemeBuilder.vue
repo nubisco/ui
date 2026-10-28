@@ -355,8 +355,8 @@
  * file disagree with the preview.
  */
 import { computed, ref } from 'vue'
-import ContentTabs from '../../../plugins/tabs/components/ContentTabs.vue'
-import ContentTab from '../../../plugins/tabs/components/ContentTab.vue'
+import ContentTabs from '@nubisco/docs-sdk/plugins/tabs/components/ContentTabs.vue'
+import ContentTab from '@nubisco/docs-sdk/plugins/tabs/components/ContentTab.vue'
 import {
   GROUPS,
   SAMPLE_THEMES,

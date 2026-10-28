@@ -1,19 +1,12 @@
-import DefaultTheme from 'vitepress/theme'
-import { enhanceAppWithTabs } from '../plugins/tabs/components'
+import sdkTheme from '@nubisco/docs-sdk/theme'
 import docDirectives from './directives'
 import docComponents from './components'
-import './custom.css'
 // The category themes the App theming page switches between.
 import './categories.scss'
 import { createI18n } from 'vue-i18n'
 import enUS from '../../locales/en-US.json'
 import ptPT from '../../locales/pt-PT.json'
-import Nubisco from './Nubisco.vue'
 import { rulersDirective } from './directives/rulers'
-import DocsLayout from './DocsLayout.vue'
-
-import '@nubisco/ui/styles'
-// import '@nubisco/ui/dist/ui.css'
 
 // The docs are the escape hatch's own use case: every markdown demo names
 // components in a template VitePress compiles at build time, so they have to
@@ -28,17 +21,18 @@ import { NubiscoUILabs, NbCommandPalettePlugin } from '../../../src'
 import '@nubisco/ui/icons/all'
 import '@nubisco/ui/flags/all'
 
+/**
+ * The shared Nubisco docs theme (layout, header, sidebar, outline, tabs,
+ * controls) from `@nubisco/docs-sdk`, plus what only the component library's
+ * docs have: live demos, the theme builder, the token viewer and the i18n the
+ * demos use.
+ */
 export default {
-  extends: DefaultTheme,
-  // Wraps the default layout to put the colour-mode and appearance switches
-  // into the header on every page.
-  Layout: DocsLayout,
+  extends: sdkTheme,
   enhanceApp({ app }: { app: import('vue').App }) {
-    enhanceAppWithTabs(app)
     app.directive('rulers', rulersDirective)
     app.use(docDirectives)
     app.use(docComponents)
-    app.component('nubisco', Nubisco)
     app.use(
       createI18n({
         legacy: false,
