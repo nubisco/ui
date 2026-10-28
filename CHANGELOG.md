@@ -1,3 +1,10 @@
+# [5.41.0](https://github.com/nubisco/ui/compare/v5.40.0...v5.41.0) (2026-10-28)
+
+
+### Features
+
+* **user-menu:** sign the menu "Accord by Nubisco" ([b43528a](https://github.com/nubisco/ui/commit/b43528a51c8eac2410287874a4c09c1e5e8c8a12))
+
 # [5.40.0](https://github.com/nubisco/ui/compare/v5.39.0...v5.40.0) (2026-10-28)
 
 
