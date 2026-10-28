@@ -1,3 +1,10 @@
+# [5.40.0](https://github.com/nubisco/ui/compare/v5.39.0...v5.40.0) (2026-10-28)
+
+
+### Features
+
+* **breadcrumbs:** crumbs that switch between siblings, with a searchable list ([7b4bc1d](https://github.com/nubisco/ui/commit/7b4bc1d5151c76803ac7da878440481f4a58b174))
+
 # [5.39.0](https://github.com/nubisco/ui/compare/v5.38.0...v5.39.0) (2026-10-28)
 
 
