@@ -72,6 +72,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       },
       { text: 'Board', link: '/components/board/usage' },
       { text: 'Brand Marks', link: '/components/nubisco-mark/usage' },
+      { text: 'Breadcrumbs', link: '/components/breadcrumbs/usage' },
       { text: 'Button', link: '/components/button/usage' },
       { text: 'Calendar', link: '/components/calendar/usage' },
       { text: 'Card Grid', link: '/components/card-grid/usage' },

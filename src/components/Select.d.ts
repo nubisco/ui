@@ -57,6 +57,20 @@ interface ISelectProps extends IFieldComponent {
   searchPlaceholder?: string
   /** Shown when `searchable` and nothing matches what was typed. */
   noResultsLabel?: string
+  /**
+   * The element the open list hangs under, in place of the select's own
+   * trigger. With a `trigger` slot, the slot is a small control inside a
+   * larger thing (a breadcrumb), and the list belongs under that thing. A
+   * function is read when the list opens, for an element that does not exist
+   * yet when the select renders.
+   */
+  anchor?: HTMLElement | (() => HTMLElement | null | undefined) | null
+  /**
+   * How the chosen option is marked in the open list of a single select.
+   * `fill` colours the row, as a form field does. `check` puts a check mark
+   * before it and leaves the row plain, as a menu of places to go does.
+   */
+  selectedMark?: 'fill' | 'check'
 }
 
 export { ISelectOption, ISelectProps }

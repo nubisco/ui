@@ -167,6 +167,17 @@ the search and returns focus to the select. When nothing matches, the list says
 Search is for lists long enough to need it. Under about ten options, a plain
 select is faster.
 
+## Your own trigger
+
+Fill the `trigger` slot to open the same list from a control of your own: a
+chevron in a breadcrumb, an icon in a toolbar. The list, the search and the
+keyboard stay `NbSelect`'s. Spread the slot's `attrs` on your button: it carries
+`aria-expanded`, `aria-haspopup` and the click handler. Pass `anchor` (an element,
+or a function that returns one) to hang the list under a larger thing than the
+button, and `selected-mark="check"` to mark the chosen row with a check instead of
+filling it, as a menu of places to go does. `NbBreadcrumbs` uses all three for
+its switchers.
+
 ## Creatable
 
 Set `:creatable="true"` to show a text input at the bottom of the dropdown. When the user types a value and presses Enter, the `create` event fires with the entered string. You can then add it to your options array.
@@ -204,28 +215,30 @@ function onCreate(value: string) {
 
 ## Props
 
-| Prop                | Type                                                | Default             | Description                                 |
-| ------------------- | --------------------------------------------------- | ------------------- | ------------------------------------------- |
-| `modelValue`        | `string \| number \| Array<string\|number> \| null` | `null`              | Current selection (`v-model`)               |
-| `options`           | `ISelectOption[]`                                   | `[]`                | Array of options                            |
-| `multiple`          | `boolean`                                           | `false`             | Allow multiple selections                   |
-| `creatable`         | `boolean`                                           | `false`             | Show a text input for creating new options  |
-| `createPlaceholder` | `string`                                            | `'Add new...'`      | Placeholder for the create input            |
-| `clearable`         | `boolean`                                           | `false`             | Show a button that clears the selection     |
-| `clearLabel`        | `string`                                            | `'Clear selection'` | Accessible name of the clear button         |
-| `searchable`        | `boolean`                                           | `false`             | Show a search box at the top of the list    |
-| `searchPlaceholder` | `string`                                            | `'Search…'`         | Placeholder and accessible name of the box  |
-| `noResultsLabel`    | `string`                                            | `'No results'`      | Shown when nothing matches the search       |
-| `variant`           | `'default' \| 'fluid'`                              | `'default'`         | Layout variant                              |
-| `label`             | `string`                                            | -                   | Label text                                  |
-| `placeholder`       | `string`                                            | `'Select…'`         | Placeholder when nothing is selected        |
-| `helper`            | `string`                                            | -                   | Persistent helper text below the field      |
-| `error`             | `string`                                            | -                   | Error message: triggers error state         |
-| `warning`           | `string`                                            | -                   | Warning message: triggers warning state     |
-| `disabled`          | `boolean`                                           | `false`             | Disables the select                         |
-| `required`          | `boolean`                                           | `false`             | Marks the field as required (adds `*`)      |
-| `id`                | `string`                                            | auto                | Native input id (auto-generated if omitted) |
-| `name`              | `string`                                            | -                   | Native form name                            |
+| Prop                | Type                                                | Default             | Description                                     |
+| ------------------- | --------------------------------------------------- | ------------------- | ----------------------------------------------- |
+| `modelValue`        | `string \| number \| Array<string\|number> \| null` | `null`              | Current selection (`v-model`)                   |
+| `options`           | `ISelectOption[]`                                   | `[]`                | Array of options                                |
+| `multiple`          | `boolean`                                           | `false`             | Allow multiple selections                       |
+| `creatable`         | `boolean`                                           | `false`             | Show a text input for creating new options      |
+| `createPlaceholder` | `string`                                            | `'Add new...'`      | Placeholder for the create input                |
+| `clearable`         | `boolean`                                           | `false`             | Show a button that clears the selection         |
+| `clearLabel`        | `string`                                            | `'Clear selection'` | Accessible name of the clear button             |
+| `searchable`        | `boolean`                                           | `false`             | Show a search box at the top of the list        |
+| `searchPlaceholder` | `string`                                            | `'Search…'`         | Placeholder and accessible name of the box      |
+| `noResultsLabel`    | `string`                                            | `'No results'`      | Shown when nothing matches the search           |
+| `selectedMark`      | `'fill' \| 'check'`                                 | `'fill'`            | How the chosen option is marked in the list     |
+| `anchor`            | `HTMLElement \| (() => HTMLElement)`                | -                   | What the open list hangs under (with `trigger`) |
+| `variant`           | `'default' \| 'fluid'`                              | `'default'`         | Layout variant                                  |
+| `label`             | `string`                                            | -                   | Label text                                      |
+| `placeholder`       | `string`                                            | `'Select…'`         | Placeholder when nothing is selected            |
+| `helper`            | `string`                                            | -                   | Persistent helper text below the field          |
+| `error`             | `string`                                            | -                   | Error message: triggers error state             |
+| `warning`           | `string`                                            | -                   | Warning message: triggers warning state         |
+| `disabled`          | `boolean`                                           | `false`             | Disables the select                             |
+| `required`          | `boolean`                                           | `false`             | Marks the field as required (adds `*`)          |
+| `id`                | `string`                                            | auto                | Native input id (auto-generated if omitted)     |
+| `name`              | `string`                                            | -                   | Native form name                                |
 
 ## An icon per option
 

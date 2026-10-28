@@ -1,7 +1,11 @@
 <template>
   <div ref="rootRef" :class="rootClasses" @keydown="onKeydown">
+    <!-- Your own trigger: the list, search and keyboard are this component's,
+         the thing that opens it is yours. See `anchor`. -->
+    <slot v-if="$slots.trigger" name="trigger" v-bind="triggerSlot" />
+
     <!-- DEFAULT variant -->
-    <template v-if="variant === 'default'">
+    <template v-else-if="variant === 'default'">
       <slot v-if="$slots.label" name="label" />
       <NbLabel
         v-else-if="label"
@@ -208,7 +212,13 @@
       v-if="isOpen"
       :id="listboxId"
       ref="dropdownRef"
-      class="nb-select__dropdown"
+      :class="[
+        'nb-select__dropdown',
+        {
+          'nb-select__dropdown--check': selectedMark === 'check',
+          'nb-select__dropdown--anchored': !!$slots.trigger,
+        },
+      ]"
       :style="dropdownStyle"
       role="listbox"
       :aria-multiselectable="multiple || undefined"
@@ -260,7 +270,7 @@
           @click="selectOption(entry.option)"
         >
           <span
-            v-if="multiple"
+            v-if="multiple || selectedMark === 'check'"
             class="nb-select__option-check"
             aria-hidden="true"
           >
@@ -330,6 +340,7 @@ import {
   nextTick,
   onBeforeUnmount,
   useId,
+  useSlots,
   h,
   type FunctionalComponent,
 } from 'vue'
@@ -345,6 +356,8 @@ const props = withDefaults(defineProps<ISelectProps>(), {
   clearable: false,
   clearLabel: 'Clear selection',
   searchable: false,
+  anchor: null,
+  selectedMark: 'fill',
   searchPlaceholder: 'Search…',
   noResultsLabel: 'No results',
   variant: 'default',
@@ -396,6 +409,26 @@ const focused = ref(false)
 const highlighted = ref(-1)
 const rootRef = ref<HTMLElement | null>(null)
 const triggerRef = ref<HTMLElement | null>(null)
+const slots = useSlots()
+
+/**
+ * What the dropdown hangs from: the element given as `anchor`, else the
+ * built-in trigger, else (with a `trigger` slot and no anchor) the whole
+ * select.
+ */
+const anchorEl = () => {
+  const given =
+    typeof props.anchor === 'function' ? props.anchor() : props.anchor
+  return given ?? triggerRef.value ?? rootRef.value
+}
+
+/** Back to what opened the list, built-in or slotted. */
+function focusTrigger() {
+  const target =
+    triggerRef.value ??
+    rootRef.value?.querySelector<HTMLElement>('button, [tabindex]')
+  target?.focus()
+}
 const dropdownRef = ref<HTMLElement | null>(null)
 // Inside an NbMenu (a filter panel), picking an option is not a press
 // outside the menu.
@@ -550,8 +583,9 @@ function selectOption(option: ISelectOption) {
 }
 
 function updateDropdownPosition() {
-  if (!triggerRef.value) return
-  const rect = triggerRef.value.getBoundingClientRect()
+  const anchorNode = anchorEl()
+  if (!anchorNode) return
+  const rect = anchorNode.getBoundingClientRect()
 
   // Flip above the trigger when the list genuinely does not fit below and
   // there is more room above (a select near the bottom of the viewport, e.g.
@@ -564,11 +598,18 @@ function updateDropdownPosition() {
   const dropUp =
     dropdownHeight > 0 && spaceBelow < dropdownHeight && spaceAbove > spaceBelow
 
+  // A slotted trigger is often small (a crumb), so the list is not as narrow as
+  // it and is kept on screen at the right edge.
+  const width = slots.trigger ? Math.max(rect.width, 240) : rect.width
+  const left = slots.trigger
+    ? Math.max(8, Math.min(rect.left, window.innerWidth - width - 8))
+    : rect.left
+
   dropdownStyle.value = {
     position: 'fixed',
     top: dropUp ? `${rect.top - dropdownHeight}px` : `${rect.bottom}px`,
-    left: `${rect.left}px`,
-    width: `${rect.width}px`,
+    left: `${left}px`,
+    width: `${width}px`,
     zIndex: '9999',
   }
 }
@@ -600,7 +641,7 @@ function closeDropdown() {
   isOpen.value = false
   highlighted.value = -1
   query.value = ''
-  if (hadFocus) triggerRef.value?.focus()
+  if (hadFocus) focusTrigger()
 }
 
 function toggleDropdown() {
@@ -705,6 +746,21 @@ function onSearchKeydown(e: KeyboardEvent) {
   onKeydown(e)
 }
 
+/** What a `trigger` slot needs to be the thing that opens the list. */
+const triggerSlot = computed(() => ({
+  isOpen: isOpen.value,
+  toggle: toggleDropdown,
+  open: openDropdown,
+  close: closeDropdown,
+  // Spread on the slotted button: it is the combobox.
+  attrs: {
+    'aria-expanded': isOpen.value,
+    'aria-haspopup': 'listbox' as const,
+    'aria-controls': isOpen.value ? listboxId.value : undefined,
+    onClick: toggleDropdown,
+  },
+}))
+
 const showClear = computed(
   () => props.clearable && !props.disabled && selectedValues.value.length > 0,
 )
@@ -716,7 +772,7 @@ function clearSelection() {
   emit('change', next)
   // The button is about to unmount under the pointer or the keyboard, so
   // focus goes back to the control it belongs to rather than to the page.
-  triggerRef.value?.focus()
+  focusTrigger()
 }
 
 const rootClasses = computed(() => [
@@ -729,6 +785,7 @@ const rootClasses = computed(() => [
     'nb-select--error': !!props.error,
     'nb-select--warning': !props.error && !!props.warning,
     'nb-select--multiple': props.multiple,
+    'nb-select--bare': !!slots.trigger,
   },
 ])
 
@@ -955,6 +1012,37 @@ defineExpose({
   &:focus {
     border-color: var(--nb-c-primary);
     border-style: solid;
+  }
+}
+
+// A select that is only its list, opened from a `trigger` slot: it adds no box
+// of its own to the line it sits in.
+.nb-select--bare {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 0;
+}
+
+// The list of a slotted trigger is not as narrow as the trigger.
+.nb-select__dropdown--anchored {
+  min-inline-size: 240px;
+}
+
+// `selectedMark="check"`: the chosen row is marked with a check, not filled, so
+// a list of places to go reads as a menu and not as a form field.
+.nb-select__dropdown--check {
+  .nb-select__option--selected {
+    background: transparent;
+    color: var(--nb-c-text);
+    font-weight: 600;
+
+    .nb-select__option-check {
+      color: var(--nb-c-primary);
+    }
+  }
+
+  .nb-select__option--selected.nb-select__option--highlighted {
+    background: color-mix(in srgb, var(--nb-c-primary) 8%, transparent);
   }
 }
 
