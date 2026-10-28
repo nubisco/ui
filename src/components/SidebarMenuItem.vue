@@ -543,13 +543,11 @@ onBeforeUnmount(() => {
     );
     color: var(--nb-c-warning, #f59e0b);
   }
+  // Solid, like the compact count. A red tint with red text on the dark
+  // sidebar was red on red and barely readable.
   &--danger {
-    background: color-mix(
-      in srgb,
-      var(--nb-c-danger, #ef4444) 22%,
-      transparent
-    );
-    color: var(--nb-c-danger, #ef4444);
+    background: var(--nb-c-danger, #ef4444);
+    color: #fff;
   }
 }
 
