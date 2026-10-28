@@ -39,6 +39,7 @@ import NbIcon from './Icon.vue'
 import NbInfoHint from './InfoHint.vue'
 import NbInterpolationChart from './Charts/InterpolationChart.vue'
 import NbImageCropper from './ImageCropper.vue'
+import NbImagePicker from './ImagePicker.vue'
 import NbJsonTree from './JsonTree.vue'
 import NbLineChart from './Charts/LineChart.vue'
 import NbLabel from './Label.vue'
@@ -146,6 +147,7 @@ const components = {
   NbInfoHint,
   NbInterpolationChart,
   NbImageCropper,
+  NbImagePicker,
   NbJsonTree,
   NbLabel,
   NbField,
