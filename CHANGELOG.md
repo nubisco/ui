@@ -1,3 +1,10 @@
+## [5.41.2](https://github.com/nubisco/ui/compare/v5.41.1...v5.41.2) (2026-10-28)
+
+
+### Bug Fixes
+
+* **sidebar:** solid danger badge on expanded menu items ([a470238](https://github.com/nubisco/ui/commit/a47023821155fe3274f331b5345b52c6578c982d))
+
 ## [5.41.1](https://github.com/nubisco/ui/compare/v5.41.0...v5.41.1) (2026-10-28)
 
 
