@@ -188,7 +188,7 @@
     "@eslint/js": "^10.0.1",
     "@fontsource/fira-code": "^5.2.7",
     "@fontsource/plus-jakarta-sans": "^5.2.8",
-    "@nubisco/docs-sdk": "^0.1.0",
+    "@nubisco/docs-sdk": "^0.1.1",
     "@phosphor-icons/core": "^2.1.1",
     "@playwright/test": "^1.63.0",
     "@semantic-release/changelog": "^6.0.3",

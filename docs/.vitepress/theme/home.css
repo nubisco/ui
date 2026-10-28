@@ -1,0 +1,32 @@
+/*
+ * The home page of these docs uses VitePress's own `home` layout, which the shared
+ * docs theme does not restyle. Its hero artwork gets the Nubisco gradient here.
+ * Other products use `layout: nubisco` and do not need any of this.
+ */
+:root {
+  --vp-home-hero-image-background-image: linear-gradient(
+    -32deg,
+    #fed867 12%,
+    #fa474e 34%,
+    #ad379f 56%,
+    #10a9a4 78%,
+    #0b82cf 100%
+  );
+  --vp-home-hero-image-filter: blur(44px);
+}
+
+@media (min-width: 640px) {
+  :root {
+    --vp-home-hero-image-filter: blur(56px);
+  }
+}
+
+@media (min-width: 960px) {
+  :root {
+    --vp-home-hero-image-filter: blur(68px);
+  }
+}
+
+.VPHero .VPImage {
+  padding: 18px;
+}
