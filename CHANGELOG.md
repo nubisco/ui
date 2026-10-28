@@ -1,3 +1,10 @@
+# [5.39.0](https://github.com/nubisco/ui/compare/v5.38.0...v5.39.0) (2026-10-28)
+
+
+### Features
+
+* **image-picker:** add NbImagePicker for logos and other single pictures ([07f128d](https://github.com/nubisco/ui/commit/07f128d454555f5fd65a001b642de8e3de5c7227))
+
 # [5.38.0](https://github.com/nubisco/ui/compare/v5.37.0...v5.38.0) (2026-10-27)
 
 
