@@ -8,7 +8,7 @@
  * resolves the previous version, and nobody finds out until someone checks by
  * hand. That happened on 1.60.1 and again on 2.0.0.
  *
- *   node scripts/verify-npm-ingestion.mjs <version> [--timeout-minutes 30]
+ *   node scripts/verify-npm-ingestion.mjs <version> [--timeout-minutes 45]
  *
  * Exits 0 once the version resolves and its tarball is fetchable, non-zero if it
  * has not appeared before the deadline. Queries the registry over HTTP rather
@@ -32,13 +32,13 @@ if (!version) {
 }
 
 const timeoutIndex = process.argv.indexOf('--timeout-minutes')
-// 2.0.0 published at 16:44:13Z and the registry served it at 16:59:30Z: 15m17s.
-// A 15 minute deadline would have failed that release for being 17 seconds slow,
-// and a gate that cries wolf gets ignored. 30 gives real headroom over the
-// slowest ingestion actually observed for this package while still catching a
-// genuine stall long before anyone notices by hand.
+// Slowest ingestion observed for this package: 2.0.0 took 15m17s (a 15 minute
+// deadline would have failed it for being 17 seconds slow), and 5.38.0 took
+// 25m32s. A gate that cries wolf gets ignored, so the deadline sits well over
+// the slowest of those while still catching a genuine stall long before anyone
+// notices by hand.
 const TIMEOUT_MINUTES =
-  timeoutIndex !== -1 ? Number(process.argv[timeoutIndex + 1]) : 30
+  timeoutIndex !== -1 ? Number(process.argv[timeoutIndex + 1]) : 45
 const POLL_SECONDS = 15
 
 const REGISTRY = 'https://registry.npmjs.org'
