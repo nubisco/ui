@@ -2,3 +2,6 @@ allowBuilds:
   '@parcel/watcher': true
   esbuild: true
   simple-git-hooks: true
+minimumReleaseAgeExclude:
+  - '@nubisco/docs-sdk@0.1.0'
+  - '@nubisco/ui@5.40.0'
