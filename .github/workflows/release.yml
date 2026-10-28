@@ -61,6 +61,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          # `pnpm install` put the pre-commit and pre-push hooks on this runner,
+          # and semantic-release commits and pushes. Each one re-ran the whole
+          # quality suite (about 5 minutes apiece) on code CI had already
+          # passed, since this workflow only starts after CI succeeds.
+          SKIP_SIMPLE_GIT_HOOKS: '1'
         run: |
           before=$(node -p "require('./package.json').version")
           npx semantic-release
