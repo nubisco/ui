@@ -3,6 +3,7 @@ import docDirectives from './directives'
 import docComponents from './components'
 // The category themes the App theming page switches between.
 import './categories.scss'
+import './home.css'
 import { createI18n } from 'vue-i18n'
 import enUS from '../../locales/en-US.json'
 import ptPT from '../../locales/pt-PT.json'
