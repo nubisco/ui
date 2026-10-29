@@ -123,8 +123,8 @@ importers:
         specifier: ^5.2.8
         version: 5.2.8
       '@nubisco/docs-sdk':
-        specifier: ^0.1.2
-        version: 0.1.2(@algolia/client-search@5.50.0)(@nubisco/ui@5.40.0(pixi.js@8.19.0)(vue-i18n@11.3.0(vue@3.5.30(typescript@5.9.3)))(vue@3.5.30(typescript@5.9.3)))(@types/node@25.5.0)(lightningcss@1.32.0)(postcss@8.5.8)(sass@1.98.0)(search-insights@2.17.3)(supports-color@8.1.1)(typescript@5.9.3)(vite@8.0.2(@types/node@25.5.0)(sass-embedded@1.98.0)(sass@1.98.0)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))
+        specifier: ^0.1.7
+        version: 0.1.7(@algolia/client-search@5.50.0)(@nubisco/ui@5.40.0(pixi.js@8.19.0)(vue-i18n@11.3.0(vue@3.5.30(typescript@5.9.3)))(vue@3.5.30(typescript@5.9.3)))(@types/node@25.5.0)(lightningcss@1.32.0)(postcss@8.5.8)(sass@1.98.0)(search-insights@2.17.3)(supports-color@8.1.1)(typescript@5.9.3)(vite@8.0.2(@types/node@25.5.0)(sass-embedded@1.98.0)(sass@1.98.0)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))
       '@phosphor-icons/core':
         specifier: ^2.1.1
         version: 2.1.1
@@ -736,8 +736,8 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@nubisco/docs-sdk@0.1.2':
-    resolution: {integrity: sha512-IOkBLpxWQF9sTGZf856UPa5G7U9dqLgnYxpN7OpSkPCjRbLtUXCwiPnwglXEL1GvGGHy72H3UaS4yEMI8FBg0g==}
+  '@nubisco/docs-sdk@0.1.7':
+    resolution: {integrity: sha512-0F+jutTn7IYQnkkweX43XZVeD2M3w9HTbWhmMcuGMMmdQUCG5ohHUN9S6MF5Pn3BQ5AYpVhhxedQ+F1Z/jzo0A==}
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
@@ -4969,7 +4969,7 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.20.1
 
-  '@nubisco/docs-sdk@0.1.2(@algolia/client-search@5.50.0)(@nubisco/ui@5.40.0(pixi.js@8.19.0)(vue-i18n@11.3.0(vue@3.5.30(typescript@5.9.3)))(vue@3.5.30(typescript@5.9.3)))(@types/node@25.5.0)(lightningcss@1.32.0)(postcss@8.5.8)(sass@1.98.0)(search-insights@2.17.3)(supports-color@8.1.1)(typescript@5.9.3)(vite@8.0.2(@types/node@25.5.0)(sass-embedded@1.98.0)(sass@1.98.0)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))':
+  '@nubisco/docs-sdk@0.1.7(@algolia/client-search@5.50.0)(@nubisco/ui@5.40.0(pixi.js@8.19.0)(vue-i18n@11.3.0(vue@3.5.30(typescript@5.9.3)))(vue@3.5.30(typescript@5.9.3)))(@types/node@25.5.0)(lightningcss@1.32.0)(postcss@8.5.8)(sass@1.98.0)(search-insights@2.17.3)(supports-color@8.1.1)(typescript@5.9.3)(vite@8.0.2(@types/node@25.5.0)(sass-embedded@1.98.0)(sass@1.98.0)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))':
     dependencies:
       '@fontsource/fira-code': 5.2.7
       '@fontsource/plus-jakarta-sans': 5.2.8
