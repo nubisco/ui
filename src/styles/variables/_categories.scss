@@ -7,12 +7,12 @@
 /// The audience categories, and the accent pair each one resolves to.
 ///
 /// Nubisco groups its products by audience: creatives, engineers, home, fun,
-/// education. These are the five accents that grouping resolves to, each a
+/// education, agents. These are the six accents that grouping resolves to, each a
 /// `(light, dark)` pair.
 ///
 /// ## What is deliberately not here
 ///
-/// There is no product list. The library holds the five values and nothing
+/// There is no product list. The library holds the six values and nothing
 /// else: it does not know which product belongs to which category, and it must
 /// not. A registry of product ids here would mean cutting a library release
 /// every time a product is added or renamed, and it would invert the
@@ -63,6 +63,12 @@ $categories: (
   education: (
       #017835,
       #5bbd74,
+    ),
+  // Signed off by Jose on 2026-10-29, for people working with AI agents. Teal,
+  // a hue no other category uses, between home's blue and education's green.
+  agents: (
+      #00716f,
+      #3cc8c0,
     ),
 );
 

@@ -6,7 +6,7 @@ title: App theming
 # App theming
 
 Nubisco groups its products by audience: **creatives**, **engineers**, **home**,
-**fun** and **education**. Colour follows that grouping. An app declares which category it
+**fun**, **education** and **agents**. Colour follows that grouping. An app declares which category it
 belongs to, and the library resolves that to an accent, in light and dark, with
 every derived token wired up behind it.
 
@@ -38,6 +38,7 @@ configureNamedTheme({ defaultTheme: 'your-app' })
 | `home`      | `#086f9e` | `#5ec1e8` | Things that run in someone's house  |
 | `fun`       | `#b83266` | `#f686ae` | Games and toys                      |
 | `education` | `#017835` | `#5bbd74` | Things people learn with            |
+| `agents`    | `#00716f` | `#3cc8c0` | Working with AI agents              |
 
 Every value clears WCAG AA (4.5:1) against **all four** surface layers of its
 mode. That is a stricter bar than it sounds, and it is the reason two of these

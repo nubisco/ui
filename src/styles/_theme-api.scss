@@ -303,7 +303,7 @@ $_max-step: 900;
 ///
 /// @param {String} $id - the app's identifier, chosen by the app. The library
 ///   keeps no registry of these: it never needs to know which products exist.
-/// @param {String} $category - one of `creatives`, `engineers`, `home`, `fun`, `education`
+/// @param {String} $category - one of `creatives`, `engineers`, `home`, `fun`, `education`, `agents`
 /// @param {List} $accent - an optional `(light, dark)` override
 @mixin app-theme($id, $category, $accent: null) {
   $category-pair: categories.category($category);
