@@ -1,3 +1,10 @@
+# [5.42.0](https://github.com/nubisco/ui/compare/v5.41.2...v5.42.0) (2026-10-29)
+
+
+### Features
+
+* **categories:** an agents category ([e8f36d7](https://github.com/nubisco/ui/commit/e8f36d7180e444ed108f31fff133c698181f42d7)), closes [#00716f](https://github.com/nubisco/ui/issues/00716f) [#3cc8c0](https://github.com/nubisco/ui/issues/3cc8c0)
+
 ## [5.41.2](https://github.com/nubisco/ui/compare/v5.41.1...v5.41.2) (2026-10-28)
 
 
