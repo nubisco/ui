@@ -334,6 +334,166 @@ describe('NbBarChart: selection', () => {
   })
 })
 
+describe('NbBarChart: opt-in presentation', () => {
+  const withEmpty = [
+    {
+      name: 'Notes',
+      data: [
+        { x: '00', y: 0 },
+        { x: '01', y: 4 },
+        { x: '02', y: 0 },
+        { x: '03', y: 2 },
+      ],
+    },
+    {
+      name: 'Messages',
+      data: [
+        { x: '00', y: 0 },
+        { x: '01', y: 1 },
+        { x: '02', y: 3 },
+        { x: '03', y: 0 },
+      ],
+    },
+  ]
+  const categoryLabels = (w: ReturnType<typeof mountChart>) =>
+    w
+      .findAll('g.nb-chart__axis text')
+      .map((t) => t.text())
+      .filter((t) => /^0\d$/.test(t))
+
+  it('draws square rects unless barRadius is set', () => {
+    const w = mountChart()
+    expect(w.findAll('rect.nb-chart__bar')).toHaveLength(2)
+    expect(w.findAll('path.nb-chart__bar')).toHaveLength(0)
+  })
+
+  it('rounds only the free end of a vertical bar', () => {
+    const w = mountChart({ barRadius: 4 })
+    const [first] = w.findAll('path.nb-chart__bar')
+    const d = first.attributes('d') ?? ''
+    // Top corners arc with the radius, bottom corners have none.
+    expect(d.match(/A4,4/g)).toHaveLength(2)
+    expect(d.match(/A0,0/g)).toHaveLength(2)
+  })
+
+  it('rounds the bottom of a negative bar and the right of a horizontal one', () => {
+    const negative = mountChart({ series: withNegatives, barRadius: 3 })
+    const [, down] = negative.findAll('path.nb-chart__bar')
+    // Clockwise from the top left: tl, tr, br, bl. Negative rounds br and bl.
+    const arcs = (down.attributes('d') ?? '').match(/A\d+(\.\d+)?,/g)
+    expect(arcs).toEqual(['A0,', 'A3,', 'A3,', 'A0,'])
+
+    const sideways = mountChart({ orientation: 'horizontal', barRadius: 3 })
+    const [right] = sideways.findAll('path.nb-chart__bar')
+    expect((right.attributes('d') ?? '').match(/A\d+(\.\d+)?,/g)).toEqual([
+      'A3,',
+      'A3,',
+      'A0,',
+      'A0,',
+    ])
+  })
+
+  it('rounds only the outermost segment of a stack', () => {
+    const w = mountChart({ series: grouped, stacked: true, barRadius: 4 })
+    const [euQ1, naQ1] = w.findAll('path.nb-chart__bar')
+    expect(euQ1.attributes('d')).not.toContain('A4,4')
+    expect(naQ1.attributes('d')).toContain('A4,4')
+  })
+
+  it('treats a zero segment on top as absent when choosing the cap', () => {
+    const w = mountChart({ series: withEmpty, stacked: true, barRadius: 4 })
+    const paths = w.findAll('path.nb-chart__bar')
+    // Category 03: Notes = 2, Messages = 0. Notes is the visible top.
+    const notes03 = paths[3 * 2]
+    expect(notes03.attributes('d')).toContain('A4,4')
+  })
+
+  it('keeps bars selectable when rounded', async () => {
+    const w = mountChart({ barRadius: 4 }, { onSelect: () => {} })
+    const bar = w.findAll('path.nb-chart__bar')[0]
+    expect(bar.attributes('role')).toBe('button')
+    await bar.trigger('keydown', { key: 'Enter' })
+    expect(w.emitted('select')?.[0][0]).toMatchObject({ x: 'Organic' })
+  })
+
+  it('marks empty categories with a dash only when showEmpty is set', () => {
+    expect(
+      mountChart({ series: withEmpty, stacked: true }).findAll(
+        'rect.nb-chart__empty',
+      ),
+    ).toHaveLength(0)
+
+    const w = mountChart({ series: withEmpty, stacked: true, showEmpty: true })
+    const dashes = w.findAll('rect.nb-chart__empty')
+    // Only category 00 is zero in every series.
+    expect(dashes).toHaveLength(1)
+    const dash = dashes[0]
+    const firstBar = w.findAll('rect.nb-chart__bar')[2]
+    expect(num(dash, 'height')).toBe(2)
+    expect(num(dash, 'width')).toBe(num(firstBar, 'width'))
+    // Sits on the baseline.
+    const baseline = w.get('line.nb-chart__axis-line')
+    expect(num(dash, 'y') + num(dash, 'height')).toBeCloseTo(
+      num(baseline, 'y1'),
+      5,
+    )
+    expect(w.get('.nb-chart__empty-layer').attributes('aria-hidden')).toBe(
+      'true',
+    )
+  })
+
+  it('draws a vertical dash in a horizontal chart', () => {
+    const w = mountChart({
+      series: withEmpty,
+      stacked: true,
+      showEmpty: true,
+      orientation: 'horizontal',
+    })
+    const dash = w.get('rect.nb-chart__empty')
+    expect(num(dash, 'width')).toBe(2)
+    expect(num(dash, 'height')).toBeGreaterThan(2)
+  })
+
+  it('hides the baseline', () => {
+    expect(mountChart().findAll('line.nb-chart__axis-line')).toHaveLength(1)
+    expect(
+      mountChart({ showBaseline: false }).findAll('line.nb-chart__axis-line'),
+    ).toHaveLength(0)
+  })
+
+  it('hides the value axis and closes its gutter', () => {
+    const shown = mountChart()
+    const hidden = mountChart({ showValueAxis: false })
+    expect(hidden.findAll('g.nb-chart__axis')).toHaveLength(1)
+    expect(
+      hidden.findAll('g.nb-chart__axis text').map((t) => t.text()),
+    ).toEqual(['Organic', 'Referral'])
+    // The plot starts further left without the tick labels.
+    expect(num(bars(hidden)[0], 'x')).toBeLessThan(num(bars(shown)[0], 'x'))
+    // Gridlines still follow the value scale.
+    expect(hidden.findAll('line.nb-chart__gridline').length).toBeGreaterThan(0)
+  })
+
+  it('labels every Nth category, from the first', () => {
+    const w = mountChart({ series: withEmpty, categoryLabelEvery: 2 })
+    expect(categoryLabels(w)).toEqual(['00', '02'])
+    // The bars are all still there.
+    expect(bars(w)).toHaveLength(8)
+    // The kept labels sit where they would without thinning.
+    const full = mountChart({ series: withEmpty })
+    const at = (x: ReturnType<typeof mountChart>, label: string) =>
+      x.findAll('g.nb-chart__axis text').find((t) => t.text() === label)!
+    expect(num(at(w, '02'), 'x')).toBe(num(at(full, '02'), 'x'))
+  })
+
+  it('treats a categoryLabelEvery below 2 or not a number as every label', () => {
+    for (const n of [0, 1, -3, Number.NaN, 1.9]) {
+      const w = mountChart({ series: withEmpty, categoryLabelEvery: n })
+      expect(categoryLabels(w)).toEqual(['00', '01', '02', '03'])
+    }
+  })
+})
+
 // The selection payload is designed for the whole family, not for bars. Pie's
 // datum is categorical rather than a point in a series, so it carries the other
 // half of the discriminated union: this asserts that both halves are real.

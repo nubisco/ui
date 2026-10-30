@@ -225,21 +225,87 @@ const series = [
 A point's `label` replaces its value in the tooltip, whether or not a
 `valueFormatter` is set. Hover Q3 above to see it.
 
+## A dense, quiet chart
+
+Five options, all off by default, turn the chart into a compact strip for a
+dense axis such as the hours of a day:
+
+- `bar-radius` rounds the free end of each bar by that many pixels (the top
+  of a vertical bar, the bottom of a negative one, the right of a horizontal
+  one). In a stack only the outermost segment is rounded, so the stack still
+  reads as one bar.
+- `show-empty` draws a short dash on the baseline, one bar footprint wide, for
+  a category whose values are all zero, so an empty hour reads as "none" rather
+  than as a gap in the data.
+- `:show-baseline="false"` removes the zero line along the category axis.
+- `:show-value-axis="false"` removes the value tick labels and closes the
+  gutter they sat in. Keep the gridlines, or the tooltip, if the reader still
+  needs magnitudes.
+- `category-label-every` labels only every Nth category, starting with the
+  first. The bars are all drawn, and the labels that remain sit exactly where
+  they would without thinning.
+
+<preview>
+  <NbBarChart
+    height="200"
+    title="Today, by hour"
+    stacked
+    :series="hourSeries"
+    :bar-radius="3"
+    show-empty
+    :show-baseline="false"
+    :show-value-axis="false"
+    :show-grid="false"
+    :category-label-every="6"
+  />
+</preview>
+
+```vue
+<template>
+  <NbBarChart
+    title="Today, by hour"
+    stacked
+    :series="series"
+    :bar-radius="3"
+    show-empty
+    :show-baseline="false"
+    :show-value-axis="false"
+    :show-grid="false"
+    :category-label-every="6"
+  />
+</template>
+
+<script setup lang="ts">
+const hours = Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0'))
+
+// One series per kind of event, every series over the same 24 hours.
+const series = [
+  { name: 'Notes', data: hours.map((x, h) => ({ x, y: notesAt(h) })) },
+  { name: 'Messages', data: hours.map((x, h) => ({ x, y: messagesAt(h) })) },
+]
+</script>
+```
+
 ## Props
 
-| Prop             | Type                        | Default          | Description                                          |
-| ---------------- | --------------------------- | ---------------- | ---------------------------------------------------- |
-| `series`         | `IChartSeries[]`            | `[]`             | One or more named series of `{ x, y }` data points   |
-| `title`          | `string`                    | -                | Chart title                                          |
-| `subtitle`       | `string`                    | -                | Secondary descriptive line                           |
-| `height`         | `number \| string`          | `280`            | Container height                                     |
-| `showLegend`     | `boolean`                   | `true`           | Render a legend below the chart                      |
-| `showTooltip`    | `boolean`                   | `true`           | Show hover tooltip                                   |
-| `showGrid`       | `boolean`                   | `true`           | Render Y-axis gridlines                              |
-| `colors`         | `string[]`                  | default palette  | Per-series colors, recycled if shorter than `series` |
-| `orientation`    | `TBarOrientation`           | `'vertical'`     | `'vertical'` or `'horizontal'`                       |
-| `stacked`        | `boolean`                   | `false`          | Stack series within a category instead of grouping   |
-| `valueFormatter` | `(value: number) => string` | `1.2k` shorthand | Formats axis ticks, tooltip values and bar labels    |
+| Prop                 | Type                        | Default          | Description                                                          |
+| -------------------- | --------------------------- | ---------------- | -------------------------------------------------------------------- |
+| `series`             | `IChartSeries[]`            | `[]`             | One or more named series of `{ x, y }` data points                   |
+| `title`              | `string`                    | -                | Chart title                                                          |
+| `subtitle`           | `string`                    | -                | Secondary descriptive line                                           |
+| `height`             | `number \| string`          | `280`            | Container height                                                     |
+| `showLegend`         | `boolean`                   | `true`           | Render a legend below the chart                                      |
+| `showTooltip`        | `boolean`                   | `true`           | Show hover tooltip                                                   |
+| `showGrid`           | `boolean`                   | `true`           | Render Y-axis gridlines                                              |
+| `colors`             | `string[]`                  | default palette  | Per-series colors, recycled if shorter than `series`                 |
+| `orientation`        | `TBarOrientation`           | `'vertical'`     | `'vertical'` or `'horizontal'`                                       |
+| `stacked`            | `boolean`                   | `false`          | Stack series within a category instead of grouping                   |
+| `valueFormatter`     | `(value: number) => string` | `1.2k` shorthand | Formats axis ticks, tooltip values and bar labels                    |
+| `barRadius`          | `number`                    | `0`              | Rounds the free end of each bar, in pixels. `0` keeps square bars    |
+| `showEmpty`          | `boolean`                   | `false`          | Draw a dash on the baseline for a category whose values are all zero |
+| `showBaseline`       | `boolean`                   | `true`           | Draw the zero line along the category axis                           |
+| `showValueAxis`      | `boolean`                   | `true`           | Draw the value tick labels, and reserve their gutter                 |
+| `categoryLabelEvery` | `number`                    | `1`              | Label only every Nth category, starting with the first               |
 
 ## Events
 
