@@ -29,7 +29,7 @@
           />
         </g>
 
-        <g class="nb-chart__axis">
+        <g v-if="showValueAxis" class="nb-chart__axis">
           <text
             v-for="t in valueTicks"
             :key="`vt-${t}`"
@@ -44,7 +44,7 @@
 
         <g class="nb-chart__axis">
           <text
-            v-for="(cat, i) in categories"
+            v-for="{ cat, i } in labelledCategories"
             :key="`ct-${i}`"
             :x="horizontal ? plot.x0 - 6 : categoryCentre(i)"
             :y="horizontal ? categoryCentre(i) : plot.y1 + 14"
@@ -58,6 +58,7 @@
         <!-- The zero baseline: horizontal in vertical mode, vertical in
              horizontal mode. -->
         <line
+          v-if="showBaseline"
           class="nb-chart__axis-line"
           :x1="horizontal ? valueScale(0) : plot.x0"
           :x2="horizontal ? valueScale(0) : plot.x1"
@@ -65,19 +66,49 @@
           :y2="horizontal ? plot.y1 : valueScale(0)"
         />
 
-        <g v-for="(_, ci) in categories" :key="`g-${ci}`">
+        <!-- A category with nothing in it gets a short dash on the baseline,
+             one bar footprint wide, so an empty slot reads as "none" rather
+             than as missing data. -->
+        <g v-if="showEmpty" class="nb-chart__empty-layer" aria-hidden="true">
           <rect
-            v-for="(s, si) in resolvedSeries"
-            :key="`${ci}-${si}`"
-            class="nb-chart__bar"
-            :class="{ 'is-dim': hoverIndex !== null && hoverIndex !== ci }"
-            v-bind="barRect(ci, si)"
-            :fill="s.color"
-            :tabindex="isSelectable() ? 0 : undefined"
-            :role="isSelectable() ? 'button' : undefined"
-            :aria-label="isSelectable() ? barLabel(ci, si) : undefined"
-            @keydown="onBarKeydown($event, ci, si)"
+            v-for="ci in emptyCategories"
+            :key="`empty-${ci}`"
+            class="nb-chart__empty"
+            v-bind="emptyRect(ci)"
           />
+        </g>
+
+        <g v-for="(_, ci) in categories" :key="`g-${ci}`">
+          <!-- Rounded bars are paths, so only the free end is rounded and the
+               end on the baseline (or on the segment below) stays square. -->
+          <template v-if="rounded">
+            <path
+              v-for="(s, si) in resolvedSeries"
+              :key="`${ci}-${si}`"
+              class="nb-chart__bar"
+              :class="{ 'is-dim': hoverIndex !== null && hoverIndex !== ci }"
+              :d="barPath(ci, si)"
+              :fill="s.color"
+              :tabindex="isSelectable() ? 0 : undefined"
+              :role="isSelectable() ? 'button' : undefined"
+              :aria-label="isSelectable() ? barLabel(ci, si) : undefined"
+              @keydown="onBarKeydown($event, ci, si)"
+            />
+          </template>
+          <template v-else>
+            <rect
+              v-for="(s, si) in resolvedSeries"
+              :key="`${ci}-${si}`"
+              class="nb-chart__bar"
+              :class="{ 'is-dim': hoverIndex !== null && hoverIndex !== ci }"
+              v-bind="barRect(ci, si)"
+              :fill="s.color"
+              :tabindex="isSelectable() ? 0 : undefined"
+              :role="isSelectable() ? 'button' : undefined"
+              :aria-label="isSelectable() ? barLabel(ci, si) : undefined"
+              @keydown="onBarKeydown($event, ci, si)"
+            />
+          </template>
         </g>
 
         <!-- One transparent band per category, on top, so hovering anywhere in
@@ -136,6 +167,11 @@ const props = withDefaults(defineProps<IBarChartProps>(), {
   series: () => [],
   orientation: 'vertical',
   stacked: false,
+  barRadius: 0,
+  showEmpty: false,
+  showBaseline: true,
+  showValueAxis: true,
+  categoryLabelEvery: 1,
 })
 
 const emit = defineEmits<{ select: [selection: IChartSeriesSelection] }>()
@@ -189,8 +225,17 @@ const valueDomain = computed<[number, number]>(() => {
 // they get whatever the left margin is. 6.2px per character approximates the
 // 11px sans face closely enough to size that gutter, and the ceiling keeps one
 // long outlier from eating the plot it is labelling.
+// Without the value axis its gutter has nothing to hold, so it closes to the
+// same width as the opposite side.
 const margin = computed<IChartMargins>(() => {
-  if (!horizontal.value) return { top: 12, right: 16, bottom: 28, left: 44 }
+  if (!horizontal.value) {
+    return {
+      top: 12,
+      right: 16,
+      bottom: 28,
+      left: props.showValueAxis ? 44 : 16,
+    }
+  }
   const longest = categories.value.reduce<number>(
     (n, c) => Math.max(n, String(c).length),
     0,
@@ -199,7 +244,7 @@ const margin = computed<IChartMargins>(() => {
   return {
     top: 12,
     right: 16,
-    bottom: 28,
+    bottom: props.showValueAxis ? 28 : 12,
     left: Math.min(Math.max(44, Math.ceil(longest * 6.2) + 12), ceiling),
   }
 })
@@ -259,6 +304,110 @@ const barRect = (ci: number, si: number) => {
   return horizontal.value
     ? { x: Math.min(a, b), y: offset, width: length, height: thickness }
     : { x: offset, y: Math.min(a, b), width: thickness, height: length }
+}
+
+/* ---------------------------------------------------- opt-in presentation */
+
+// Every Nth category keeps its label; the rest are dropped rather than
+// blanked, so the remaining labels sit exactly where they would anyway.
+const labelStep = computed(() => {
+  const n = Math.floor(props.categoryLabelEvery)
+  return Number.isFinite(n) && n > 1 ? n : 1
+})
+
+const labelledCategories = computed(() =>
+  categories.value
+    .map((cat, i) => ({ cat, i }))
+    .filter(({ i }) => i % labelStep.value === 0),
+)
+
+const rounded = computed(() => props.barRadius > 0)
+
+// The segment that ends the bar in its direction: in a grouped chart every
+// bar, in a stacked one the last non-zero segment on the same side of zero.
+const isOuterSegment = (ci: number, si: number) => {
+  if (!props.stacked) return true
+  const value = valueAt(ci, si)
+  for (let k = si + 1; k < resolvedSeries.value.length; k += 1) {
+    const next = valueAt(ci, k)
+    if (next !== 0 && next >= 0 === value >= 0) return false
+  }
+  return true
+}
+
+// A rectangle with its own radius per corner, clockwise from the top left. A
+// zero radius draws a square corner.
+const roundedRectPath = (
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  [tl, tr, br, bl]: [number, number, number, number],
+) =>
+  [
+    `M${x + tl},${y}`,
+    `H${x + w - tr}`,
+    `A${tr},${tr} 0 0 1 ${x + w},${y + tr}`,
+    `V${y + h - br}`,
+    `A${br},${br} 0 0 1 ${x + w - br},${y + h}`,
+    `H${x + bl}`,
+    `A${bl},${bl} 0 0 1 ${x},${y + h - bl}`,
+    `V${y + tl}`,
+    `A${tl},${tl} 0 0 1 ${x + tl},${y}`,
+    'Z',
+  ].join(' ')
+
+// The same box as `barRect`, with the free end rounded. The radius never
+// exceeds half the thickness or the bar's length, so a short bar flattens
+// into a cap instead of overshooting its own value.
+const barPath = (ci: number, si: number) => {
+  const { x, y, width, height } = barRect(ci, si)
+  const thickness = horizontal.value ? height : width
+  const length = horizontal.value ? width : height
+  const r = isOuterSegment(ci, si)
+    ? Math.max(0, Math.min(props.barRadius, thickness / 2, length))
+    : 0
+  const positive = valueAt(ci, si) >= 0
+  let corners: [number, number, number, number]
+  if (horizontal.value) {
+    corners = positive ? [0, r, r, 0] : [r, 0, 0, r]
+  } else {
+    corners = positive ? [r, r, 0, 0] : [0, 0, r, r]
+  }
+  return roundedRectPath(x, y, width, height, corners)
+}
+
+const EMPTY_DASH = 2
+
+const emptyCategories = computed(() =>
+  categories.value
+    .map((_, ci) => ci)
+    .filter((ci) =>
+      resolvedSeries.value.every((_series, si) => valueAt(ci, si) === 0),
+    ),
+)
+
+// One bar footprint wide (the whole group in a grouped chart), lying on the
+// zero line on the side the bars grow towards.
+const emptyRect = (ci: number) => {
+  const zero = valueScale.value(0)
+  const footprint = Math.max(0, categoryScale.value.bandwidth - 2)
+  const rx = rounded.value ? Math.min(props.barRadius, EMPTY_DASH / 2) : 0
+  return horizontal.value
+    ? {
+        x: zero,
+        y: categoryStart(ci),
+        width: EMPTY_DASH,
+        height: footprint,
+        rx,
+      }
+    : {
+        x: categoryStart(ci),
+        y: zero - EMPTY_DASH,
+        width: footprint,
+        height: EMPTY_DASH,
+        rx,
+      }
 }
 
 const bandRect = (ci: number) => {
@@ -422,6 +571,10 @@ const tooltipRows = computed(() => {
 .nb-chart__axis-line {
   stroke: var(--nb-c-component-plain-border);
   stroke-width: 1;
+}
+
+.nb-chart__empty {
+  fill: var(--nb-c-component-plain-border);
 }
 
 .nb-chart__bar {

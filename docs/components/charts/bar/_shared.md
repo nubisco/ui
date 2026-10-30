@@ -79,6 +79,15 @@ const revenueSeries = [
   },
 ]
 
+// A quiet day: nothing overnight, a morning and an evening peak.
+const hourOf = (h) => String(h).padStart(2, '0')
+const notesByHour = [0, 0, 0, 0, 0, 0, 0, 1, 3, 5, 4, 2, 1, 2, 4, 3, 2, 1, 0, 2, 3, 1, 0, 0]
+const messagesByHour = [0, 0, 0, 0, 0, 0, 1, 2, 2, 1, 3, 4, 2, 1, 1, 2, 3, 2, 1, 0, 1, 2, 1, 0]
+const hourSeries = [
+  { name: 'Notes', data: notesByHour.map((y, h) => ({ x: hourOf(h), y })) },
+  { name: 'Messages', data: messagesByHour.map((y, h) => ({ x: hourOf(h), y })) },
+]
+
 const selectionNote = ref('Click a bar.')
 const onSelect = (selection) => {
   selectionNote.value = `${selection.x}: ${selection.y} open`

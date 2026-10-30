@@ -1,5 +1,21 @@
 # Upgrading
 
+## To 5.43.0 from 5.42.0
+
+New, and nothing changes unless you use it:
+
+- **`NbBarChart` takes five presentation options** for a dense, quiet chart
+  such as a day's 24 hours: `barRadius` (rounds the free end of each bar),
+  `showEmpty` (a dash on the baseline for a category whose values are all
+  zero), `showBaseline`, `showValueAxis` (hiding the tick labels also closes
+  their gutter) and `categoryLabelEvery` (label every Nth category). A chart
+  that sets none of them renders exactly as before. See
+  [A dense, quiet chart](/components/charts/bar/code#a-dense-quiet-chart).
+
+**Check this if you blank category labels** (for example with zero-width
+spaces) to show only some of them. `categoryLabelEvery` does that without
+touching your data, and the tooltip then shows the real category.
+
 ## To 5.36.1 from 5.36.0
 
 One change, and it changes what you see in dark:
