@@ -1,3 +1,10 @@
+# [5.43.0](https://github.com/nubisco/ui/compare/v5.42.0...v5.43.0) (2026-10-30)
+
+
+### Features
+
+* **BarChart:** opt-in rounded bars, empty-category dashes, and quieter axes ([c8a676f](https://github.com/nubisco/ui/commit/c8a676fb8888d5e41784dace1b45e21c427c0e61))
+
 # [5.42.0](https://github.com/nubisco/ui/compare/v5.41.2...v5.42.0) (2026-10-29)
 
 
