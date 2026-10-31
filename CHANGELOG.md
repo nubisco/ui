@@ -1,3 +1,10 @@
+## [5.43.1](https://github.com/nubisco/ui/compare/v5.43.0...v5.43.1) (2026-10-31)
+
+
+### Bug Fixes
+
+* **composables:** share injection keys and page state across duplicate module copies ([0796016](https://github.com/nubisco/ui/commit/079601605ba547cd89251ff75f274333a5435e06))
+
 # [5.43.0](https://github.com/nubisco/ui/compare/v5.42.0...v5.43.0) (2026-10-30)
 
 
