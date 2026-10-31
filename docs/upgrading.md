@@ -1,5 +1,28 @@
 # Upgrading
 
+## To 5.43.1 from 5.43.0
+
+A fix for the Vite dev server, and nothing changes in a production build:
+
+**`NbCommandPalette` opens in development again.** With `@nubisco/ui/vite`,
+the dev server could hold two copies of a library module: one reached through
+the main entry (where an app gets `NbCommandPalettePlugin`, `useToast()` or
+`registerIcons()`) and one through a component's own entry point. The palette
+then looked for its state under a different key than the plugin had used, and
+threw `Cannot read properties of undefined (reading 'isOpen')` on mount. A
+production build merges the copies, so it never happened there.
+
+Every injection key is now `Symbol.for('@nubisco/ui:<name>')`, and the state
+an app and a component share (the default toast queue, the icon and flag
+registries, the page scroll lock and the light/dark theme) lives in one place
+per page, so both copies see the same thing.
+
+**Check this if you provide a library context by hand** with the exported key
+(`app.provide(NB_TOAST_QUEUE_KEY, ...)`, `provide(NB_COMMAND_PALETTE_KEY, ...)`).
+Nothing to change: keep importing the key. Only code that built its own
+`Symbol('nb-...')` to stand in for one would stop matching, and the library
+never documented that.
+
 ## To 5.43.0 from 5.42.0
 
 New, and nothing changes unless you use it:

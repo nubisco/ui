@@ -15,8 +15,9 @@ export interface IShellLayout {
   inspectorOverlay: Readonly<Ref<boolean>>
 }
 
-export const NB_SHELL_LAYOUT_KEY: InjectionKey<IShellLayout> =
-  Symbol('nb-shell-layout')
+export const NB_SHELL_LAYOUT_KEY: InjectionKey<IShellLayout> = Symbol.for(
+  '@nubisco/ui:shell-layout',
+)
 
 /**
  * The layout of the nearest NbShell.

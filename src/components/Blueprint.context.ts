@@ -7,11 +7,10 @@ import type {
 /**
  * Inject key NbBlueprint provides so its child cards can drive wire dragging
  * without the parent app having to forward port events manually. Lives in a
- * `.ts` file (not `.d.ts`) because Symbol() is a runtime value.
+ * `.ts` file (not `.d.ts`) because the key is a runtime value.
  */
-export const NB_BLUEPRINT_CONTEXT: InjectionKey<IBlueprintCardContext> = Symbol(
-  'NB_BLUEPRINT_CONTEXT',
-)
+export const NB_BLUEPRINT_CONTEXT: InjectionKey<IBlueprintCardContext> =
+  Symbol.for('@nubisco/ui:blueprint-context')
 
 /**
  * Inject key for the full Blueprint controller (camera, selection, view
@@ -21,4 +20,4 @@ export const NB_BLUEPRINT_CONTEXT: InjectionKey<IBlueprintCardContext> = Symbol(
  * Consume it with the `useBlueprint()` composable.
  */
 export const NB_BLUEPRINT_CONTROLLER: InjectionKey<IBlueprintController> =
-  Symbol('NB_BLUEPRINT_CONTROLLER')
+  Symbol.for('@nubisco/ui:blueprint-controller')

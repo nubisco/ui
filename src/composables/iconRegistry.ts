@@ -1,4 +1,5 @@
 import type { Component } from 'vue'
+import { sharedSingleton } from '../utils/sharedState.helper'
 
 /**
  * Per-weight component map for a single custom icon. All weights are optional;
@@ -21,7 +22,14 @@ export interface ICustomIconWeights {
  */
 export type TCustomIcon = Component | ICustomIconWeights
 
-const registry = new Map<string, ICustomIconWeights>()
+// On `globalThis`, not module scope: the app registers through the main entry
+// while the component that reads this can be loaded through its own entry
+// point, and a dev server can hold this module once for each. See
+// `sharedState.helper.ts`.
+const registry = sharedSingleton(
+  'icon-registry',
+  () => new Map<string, ICustomIconWeights>(),
+)
 
 function toWeights(icon: TCustomIcon): ICustomIconWeights {
   if (

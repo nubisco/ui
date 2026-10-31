@@ -1,4 +1,5 @@
 import type { Component } from 'vue'
+import { sharedSingleton } from '../utils/sharedState.helper'
 
 /**
  * An app may register either a bare component or a module namespace (the shape
@@ -8,7 +9,14 @@ export type TCustomFlag =
   | Component
   | { regular?: Component; default?: Component }
 
-const registry = new Map<string, Component>()
+// On `globalThis`, not module scope: the app registers through the main entry
+// while the component that reads this can be loaded through its own entry
+// point, and a dev server can hold this module once for each. See
+// `sharedState.helper.ts`.
+const registry = sharedSingleton(
+  'flag-registry',
+  () => new Map<string, Component>(),
+)
 
 function toComponent(flag: TCustomFlag): Component | undefined {
   const asRecord = flag as { regular?: Component; default?: Component }

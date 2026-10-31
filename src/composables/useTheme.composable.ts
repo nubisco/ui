@@ -1,4 +1,5 @@
 import { computed, readonly, ref, watch, type ComputedRef, type Ref } from 'vue'
+import { sharedSingleton } from '../utils/sharedState.helper'
 
 /**
  * The three states a theme preference can be in.
@@ -54,12 +55,24 @@ const DEFAULTS: Required<IThemeOptions> = {
 
 const QUERY = '(prefers-color-scheme: dark)'
 
-let options: Required<IThemeOptions> = { ...DEFAULTS }
-let initialized = false
-let detachMedia: (() => void) | null = null
+/**
+ * One preference per page, held on `globalThis` rather than in module-level
+ * variables. The app configures and reads the theme through the main entry,
+ * while NbUserMenu, which also reads and sets it, can be loaded through its own
+ * entry point, and a dev server can hold this module once for each. Two copies
+ * would each read storage under their own key and repaint the document from
+ * it. See `sharedState.helper.ts`.
+ */
+const state = sharedSingleton('theme', () => ({
+  options: { ...DEFAULTS } as Required<IThemeOptions>,
+  initialized: false,
+  detachMedia: null as (() => void) | null,
+  stopPersisting: null as (() => void) | null,
+  theme: ref<TTheme>(DEFAULTS.defaultTheme),
+  resolved: ref<TResolvedTheme>('light'),
+}))
 
-const theme = ref<TTheme>(DEFAULTS.defaultTheme)
-const resolved = ref<TResolvedTheme>('light')
+const { theme, resolved } = state
 
 function isTheme(value: unknown): value is TTheme {
   return value === 'light' || value === 'dark' || value === 'system'
@@ -73,7 +86,7 @@ function isTheme(value: unknown): value is TTheme {
 function readStored(): TTheme | null {
   try {
     if (typeof localStorage === 'undefined') return null
-    const value = localStorage.getItem(options.storageKey)
+    const value = localStorage.getItem(state.options.storageKey)
     return isTheme(value) ? value : null
   } catch {
     return null
@@ -83,7 +96,7 @@ function readStored(): TTheme | null {
 function writeStored(value: TTheme): void {
   try {
     if (typeof localStorage === 'undefined') return
-    localStorage.setItem(options.storageKey, value)
+    localStorage.setItem(state.options.storageKey, value)
   } catch {
     // A preference that cannot be persisted still applies for this session.
   }
@@ -110,13 +123,13 @@ function apply(): void {
   resolved.value = isDark ? 'dark' : 'light'
 
   if (typeof document === 'undefined') return
-  document.documentElement.classList.toggle(options.darkClass, isDark)
+  document.documentElement.classList.toggle(state.options.darkClass, isDark)
   document.documentElement.style.colorScheme = resolved.value
 }
 
 function attachMedia(): void {
-  detachMedia?.()
-  detachMedia = null
+  state.detachMedia?.()
+  state.detachMedia = null
 
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function')
     return
@@ -129,27 +142,25 @@ function attachMedia(): void {
   // Safari < 14 only has the deprecated addListener/removeListener pair.
   if (typeof media.addEventListener === 'function') {
     media.addEventListener('change', onChange)
-    detachMedia = () => media.removeEventListener('change', onChange)
+    state.detachMedia = () => media.removeEventListener('change', onChange)
   } else if (typeof media.addListener === 'function') {
     media.addListener(onChange)
-    detachMedia = () => media.removeListener(onChange)
+    state.detachMedia = () => media.removeListener(onChange)
   }
 }
 
-let stopPersisting: (() => void) | null = null
-
 function initialize(): void {
-  theme.value = readStored() ?? options.defaultTheme
+  theme.value = readStored() ?? state.options.defaultTheme
   apply()
   attachMedia()
 
-  stopPersisting?.()
-  stopPersisting = watch(theme, (value) => {
+  state.stopPersisting?.()
+  state.stopPersisting = watch(theme, (value) => {
     writeStored(value)
     apply()
   })
 
-  initialized = true
+  state.initialized = true
 }
 
 /**
@@ -167,7 +178,7 @@ function initialize(): void {
  * the document it paints.
  */
 export function configureTheme(next: IThemeOptions = {}): void {
-  options = { ...options, ...next }
+  state.options = { ...state.options, ...next }
   initialize()
 }
 
@@ -188,7 +199,7 @@ export function configureTheme(next: IThemeOptions = {}): void {
  * an icon should follow.
  */
 export function useTheme(): IThemeController {
-  if (!initialized) initialize()
+  if (!state.initialized) initialize()
 
   return {
     theme: readonly(theme),

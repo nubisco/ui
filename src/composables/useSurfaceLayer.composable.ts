@@ -51,7 +51,7 @@ export const NB_LAYER_CONTEXT_ATTRIBUTE = 'data-nb-layer-context'
  * of `--nb-c-surface`.
  */
 export const NB_LAYER_INJECTION_KEY: InjectionKey<Readonly<Ref<TLayerLevel>>> =
-  Symbol('nb-layer')
+  Symbol.for('@nubisco/ui:layer')
 
 /** Clamps any number into the layer range. Non-finite input resolves to the floor. */
 export function clampLayer(value: number): TLayerLevel {

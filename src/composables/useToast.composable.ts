@@ -8,6 +8,7 @@ import {
   type Ref,
 } from 'vue'
 import type { TToastVariant, IToastCta } from '../components/Toast.vue'
+import { sharedSingleton } from '../utils/sharedState.helper'
 
 /**
  * The toast queue: the clock, the cap and the ordering that `NbToaster`
@@ -617,7 +618,17 @@ export function createToastQueue(
   }
 }
 
-let defaultQueue: IToastQueue | null = null
+/**
+ * The page's shared queue, held on `globalThis` rather than in a module-level
+ * `let`. `useToast()` is usually imported from the main entry while
+ * `NbToaster` can be resolved through its own entry point, and a dev server
+ * can hold this module once for each. A module-level variable would then give
+ * the app one queue and the toaster another, and no toast would ever appear.
+ * See `sharedState.helper.ts`.
+ */
+const shared = sharedSingleton('toast-queue.default', () => ({
+  queue: null as IToastQueue | null,
+}))
 
 /**
  * Injection key for a queue scoped to one application instance.
@@ -637,8 +648,9 @@ let defaultQueue: IToastQueue | null = null
  * store action) because there is no component instance there, which is why the
  * shared queue below stays the default rather than being replaced by this.
  */
-export const NB_TOAST_QUEUE_KEY: InjectionKey<IToastQueue> =
-  Symbol('nb-toast-queue')
+export const NB_TOAST_QUEUE_KEY: InjectionKey<IToastQueue> = Symbol.for(
+  '@nubisco/ui:toast-queue',
+)
 
 /**
  * The toast queue for the current context.
@@ -670,8 +682,8 @@ export function useToast(): IToastQueue {
     const provided = inject(NB_TOAST_QUEUE_KEY, null)
     if (provided) return provided
   }
-  if (!defaultQueue) defaultQueue = createToastQueue()
-  return defaultQueue
+  if (!shared.queue) shared.queue = createToastQueue()
+  return shared.queue
 }
 
 /**
@@ -689,6 +701,6 @@ export function useToast(): IToastQueue {
  * the app that `createSSRApp()` returned and dies with it.
  */
 export function resetToastQueue() {
-  defaultQueue?.dismissAll()
-  defaultQueue = null
+  shared.queue?.dismissAll()
+  shared.queue = null
 }

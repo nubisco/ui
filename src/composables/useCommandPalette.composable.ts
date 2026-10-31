@@ -5,7 +5,7 @@ import type {
 } from '../components/CommandPalette.d'
 
 export const NB_COMMAND_PALETTE_KEY: InjectionKey<ICommandPaletteState> =
-  Symbol('nb-command-palette')
+  Symbol.for('@nubisco/ui:command-palette')
 
 export function createCommandPaletteState(): ICommandPaletteState {
   const commands = reactive(new Map<string, ICommand>())
