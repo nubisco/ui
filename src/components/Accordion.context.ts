@@ -4,7 +4,7 @@ import type { TAccordionAlign, TAccordionSize } from './Accordion.d'
 /**
  * What an `NbAccordionItem` needs from the `NbAccordion` around it.
  *
- * Lives in a `.ts` rather than the `.d.ts` beside it because `Symbol()` is a
+ * Lives in a `.ts` rather than the `.d.ts` beside it because the key is a
  * runtime value, matching how the blueprint does it.
  */
 export interface IAccordionContext {
@@ -26,6 +26,6 @@ export interface IAccordionContext {
   focusSibling: (id: string, to: 'prev' | 'next' | 'first' | 'last') => void
 }
 
-export const NB_ACCORDION_CONTEXT: InjectionKey<IAccordionContext> = Symbol(
-  'NB_ACCORDION_CONTEXT',
+export const NB_ACCORDION_CONTEXT: InjectionKey<IAccordionContext> = Symbol.for(
+  '@nubisco/ui:accordion-context',
 )

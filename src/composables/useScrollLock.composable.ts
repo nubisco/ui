@@ -27,31 +27,40 @@
  */
 
 import { onScopeDispose } from 'vue'
+import { sharedSingleton } from '../utils/sharedState.helper'
 
-let lockCount = 0
-let previousOverflow = ''
+/**
+ * The count lives on `globalThis`, not in module-level variables. The owners
+ * are separate components, and a dev server can load two of them through
+ * different entry points with a copy of this module each. Two counters would
+ * bring back exactly the ordering bug above. See `sharedState.helper.ts`.
+ */
+const shared = sharedSingleton('scroll-lock', () => ({
+  count: 0,
+  previousOverflow: '',
+}))
 
 /** Adds one owner to the lock, taking the scrollbar away on the first. */
 export function acquireScrollLock(): void {
   if (typeof document === 'undefined') return
-  if (lockCount === 0) {
-    previousOverflow = document.body.style.overflow
+  if (shared.count === 0) {
+    shared.previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
   }
-  lockCount += 1
+  shared.count += 1
 }
 
 /** Drops one owner. The page scrolls again only when the last one has gone. */
 export function releaseScrollLock(): void {
   if (typeof document === 'undefined') return
-  if (lockCount === 0) return
-  lockCount -= 1
-  if (lockCount === 0) document.body.style.overflow = previousOverflow
+  if (shared.count === 0) return
+  shared.count -= 1
+  if (shared.count === 0) document.body.style.overflow = shared.previousOverflow
 }
 
 /** How many owners hold the lock. Exposed for tests and for debugging. */
 export function scrollLockDepth(): number {
-  return lockCount
+  return shared.count
 }
 
 /**
@@ -83,9 +92,9 @@ export function useScrollLock(): { lock: () => void; unlock: () => void } {
 
 /** Test helper: forgets every owner and puts the body back as it was found. */
 export function resetScrollLock(): void {
-  if (lockCount > 0 && typeof document !== 'undefined') {
-    document.body.style.overflow = previousOverflow
+  if (shared.count > 0 && typeof document !== 'undefined') {
+    document.body.style.overflow = shared.previousOverflow
   }
-  lockCount = 0
-  previousOverflow = ''
+  shared.count = 0
+  shared.previousOverflow = ''
 }

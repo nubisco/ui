@@ -126,8 +126,9 @@ export interface IShellSlotRegistry {
   setActive(id: number, active: boolean): void
 }
 
-export const NB_SHELL_SLOT_KEY: InjectionKey<IShellSlotRegistry> =
-  Symbol('nb-shell-slots')
+export const NB_SHELL_SLOT_KEY: InjectionKey<IShellSlotRegistry> = Symbol.for(
+  '@nubisco/ui:shell-slots',
+)
 
 /** Monotonic ids, so an entry is identifiable without a magic string. */
 let nextId = 0

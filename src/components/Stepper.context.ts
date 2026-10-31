@@ -17,7 +17,7 @@ export interface IStepperEntry {
 /**
  * What an `NbStepperStep` needs from the `NbStepper` around it.
  *
- * Lives in a `.ts` rather than the `.d.ts` beside it because `Symbol()` is a
+ * Lives in a `.ts` rather than the `.d.ts` beside it because the key is a
  * runtime value, matching `Accordion.context.ts`.
  */
 export interface IStepperContext {
@@ -48,5 +48,6 @@ export interface IStepperContext {
 /** Status resolution shared by the step and its tests. */
 export type TStepStatus = `${EStepStatus}`
 
-export const NB_STEPPER_CONTEXT: InjectionKey<IStepperContext> =
-  Symbol('NB_STEPPER_CONTEXT')
+export const NB_STEPPER_CONTEXT: InjectionKey<IStepperContext> = Symbol.for(
+  '@nubisco/ui:stepper-context',
+)
