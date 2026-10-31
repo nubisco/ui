@@ -1,3 +1,10 @@
+## [5.43.2](https://github.com/nubisco/ui/compare/v5.43.1...v5.43.2) (2026-10-31)
+
+
+### Bug Fixes
+
+* **release:** republish after stuck npm ingestion of 5.43.1 ([cc0ed01](https://github.com/nubisco/ui/commit/cc0ed0118936d297af33d3e06d732dadbc39464e))
+
 ## [5.43.1](https://github.com/nubisco/ui/compare/v5.43.0...v5.43.1) (2026-10-31)
 
 
