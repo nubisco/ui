@@ -111,6 +111,32 @@ describe('NbSidebarMenuGroup', () => {
   })
 })
 
+describe('NbSidebarMenuGroup picture', () => {
+  it('heads the group with a picture before its label', () => {
+    const w = mount(SidebarMenuGroup, {
+      props: { label: 'Acme', picture: '/logo/acme.png' },
+      ...withVariant('verbose'),
+    })
+    expect(
+      w.find('.nb-sidebar-menu-group__picture img').attributes('src'),
+    ).toBe('/logo/acme.png')
+    expect(w.find('.nb-sidebar-menu-group__label').text()).toBe('Acme')
+  })
+
+  it('keeps the heading text alone without one, and shows none collapsed', () => {
+    const plain = mount(SidebarMenuGroup, {
+      props: { label: 'Acme' },
+      ...withVariant('verbose'),
+    })
+    expect(plain.find('.nb-avatar').exists()).toBe(false)
+    const compact = mount(SidebarMenuGroup, {
+      props: { label: 'Acme', picture: '/logo/acme.png' },
+      ...withVariant('compact'),
+    })
+    expect(compact.find('.nb-avatar').exists()).toBe(false)
+  })
+})
+
 describe('NbSidebarMenuItem', () => {
   it('renders the label and icon in verbose mode', () => {
     const w = mount(SidebarMenuItem, {
@@ -119,6 +145,36 @@ describe('NbSidebarMenuItem', () => {
     })
     expect(w.find('.nb-sidebar-menu-item__label').text()).toBe('Dashboard')
     expect(w.find('.nb-sidebar-menu-item__icon').exists()).toBe(true)
+  })
+
+  it('draws a picture in the icon place, and initials for a null one', () => {
+    const w = mount(SidebarMenuItem, {
+      props: { label: 'Acme', icon: 'gauge', picture: '/logo/acme.png' },
+      ...withVariant('verbose'),
+    })
+    const picture = w.find('.nb-sidebar-menu-item__picture')
+    expect(picture.find('img').attributes('src')).toBe('/logo/acme.png')
+    // The picture takes the icon's place rather than sitting beside it
+    expect(w.findAll('.nb-sidebar-menu-item__icon')).toHaveLength(1)
+    expect(picture.attributes('role')).toBeUndefined()
+
+    const initials = mount(SidebarMenuItem, {
+      props: { label: 'Globex', picture: null },
+      ...withVariant('compact'),
+    })
+    expect(
+      initials
+        .find('.nb-sidebar-menu-item__picture .nb-avatar__initials')
+        .text(),
+    ).toBe('G')
+  })
+
+  it('draws no picture when none is given', () => {
+    const w = mount(SidebarMenuItem, {
+      props: { label: 'Dashboard', icon: 'gauge' },
+      ...withVariant('verbose'),
+    })
+    expect(w.find('.nb-avatar').exists()).toBe(false)
   })
 
   it('renders a button when no navigation target is given', () => {

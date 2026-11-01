@@ -1,5 +1,20 @@
 # Upgrading
 
+## To 5.44.0 from 5.43.2
+
+New, and nothing changes unless you use it:
+
+- **A picture on a crumb, a crumb's options, a rail row and a rail group.**
+  `IBreadcrumbItem`, `IBreadcrumbOption`, `NbSidebarMenuItem` and
+  `NbSidebarMenuGroup` take `picture`: a URL drawn as a small round `NbAvatar`
+  before the label, or `null` for the label's initials. A trail or a rail that
+  sets none renders exactly as before. See
+  [A crumb with a picture](/components/breadcrumbs/code#a-crumb-with-a-picture).
+
+**Check this if you passed an `option` slot to the switcher's list** through
+your own wrapper. A trail whose options carry a picture now fills `NbSelect`'s
+`option` slot itself, and an option's `icon` is not drawn when it has a picture.
+
 ## To 5.43.1 from 5.43.0
 
 A fix for the Vite dev server, and nothing changes in a production build:

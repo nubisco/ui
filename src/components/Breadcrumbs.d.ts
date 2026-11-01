@@ -33,6 +33,13 @@ export interface IBreadcrumbOption {
   value?: string | number
   /** Artwork shown before the label. */
   icon?: string
+  /**
+   * A picture shown before the label in the list, as a small round `NbAvatar`:
+   * the logo of the company, client or space the option stands for. `null`
+   * draws the label's initials there, so a list where only some options carry
+   * a picture still lines up. Takes the place of `icon` when set.
+   */
+  picture?: string | null
 }
 
 export interface IBreadcrumbItem {
@@ -44,6 +51,12 @@ export interface IBreadcrumbItem {
   href?: string
   /** Forwarded to the `<a>` when `href` is set. */
   target?: string
+  /**
+   * A picture before the label, as a small round `NbAvatar`: the logo of the
+   * company, client or space the crumb names. `null` draws the label's
+   * initials there. Left out, the crumb is its label alone.
+   */
+  picture?: string | null
   /** Called when the crumb is activated. Makes a crumb with no link a button. */
   onClick?: (event: MouseEvent) => void
   /**

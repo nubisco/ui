@@ -196,6 +196,18 @@ The verbose variant is fully backwards compatible: the prop defaults to `'compac
 
 Use `NbSidebarMenu` as the container and `NbSidebarMenuItem` for rows. Wrap related items in `NbSidebarMenuGroup` to add a labelled (optionally collapsible) section. Sub-items are nested by placing `NbSidebarMenuItem` instances inside another item's default slot, recursively, to any depth.
 
+A row or a group that stands for something with a logo (a project, a client, a space) can show it with `picture`, a URL drawn as a small round `NbAvatar` in the icon's place, or before a group's heading. `null` draws the label's initials there, for an entry whose siblings have a picture and which has none, so the labels still line up. Leave it out and the row is exactly as before. A collapsed group is a divider and shows no picture.
+
+```vue
+<NbSidebarMenuGroup label="Acme" picture="/logos/acme.png">
+  <NbSidebarMenuItem icon="kanban" label="Board" to="/acme" />
+</NbSidebarMenuGroup>
+<NbSidebarMenuItem label="Projects" icon="squares-four">
+  <NbSidebarMenuItem label="Acme" picture="/logos/acme.png" to="/acme" />
+  <NbSidebarMenuItem label="Globex" :picture="null" to="/globex" />
+</NbSidebarMenuItem>
+```
+
 <preview>
   <div style="height: 480px; border: 1px solid var(--nb-c-border, #e8e8f0); border-radius: 8px; overflow: hidden;">
     <NbShell sidebar-variant="verbose" style="height: 100%">

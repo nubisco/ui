@@ -8,6 +8,15 @@ interface ISidebarMenuItemProps {
    */
   icon?: TIconSource
   /**
+   * A picture drawn in the icon's place, as a small round `NbAvatar`: the logo
+   * of a project, a client or a space. Takes the place of `icon` when set.
+   *
+   * `null` draws the label's initials there instead, for a row whose siblings
+   * carry pictures and which has none, so the labels of a list still line up.
+   * Left out, nothing is drawn and the row is exactly as it was.
+   */
+  picture?: string | null
+  /**
    * Target route. When vue-router is installed (the app called
    * `app.use(router)`), the row renders as a `<RouterLink>` and accepts any
    * value valid for its `to` prop (a string path or a location object). When

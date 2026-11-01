@@ -13,7 +13,17 @@
         :aria-expanded="collapsible ? !collapsed : undefined"
         @click="collapsible ? (collapsed = !collapsed) : undefined"
       >
-        <span class="nb-sidebar-menu-group__label">{{ label }}</span>
+        <span v-if="picture !== undefined" class="nb-sidebar-menu-group__title">
+          <NbAvatar
+            class="nb-sidebar-menu-group__picture"
+            :name="label"
+            :picture="picture"
+            :size="14"
+            decorative
+          />
+          <span class="nb-sidebar-menu-group__label">{{ label }}</span>
+        </span>
+        <span v-else class="nb-sidebar-menu-group__label">{{ label }}</span>
         <NbIcon
           v-if="collapsible"
           class="nb-sidebar-menu-group__caret"
@@ -42,8 +52,10 @@
 import { computed, inject, ref, type Ref } from 'vue'
 import { ISidebarMenuGroupProps } from './SidebarMenuGroup.d'
 import NbIcon from './Icon.vue'
+import NbAvatar from './Avatar.vue'
 
 const props = withDefaults(defineProps<ISidebarMenuGroupProps>(), {
+  picture: undefined,
   collapsible: false,
   defaultCollapsed: false,
 })
@@ -97,6 +109,17 @@ const collapsed = ref(props.collapsible && props.defaultCollapsed)
   text-transform: uppercase;
   color: var(--nb-shell-sidebar-link-color);
   opacity: 0.75;
+}
+
+.nb-sidebar-menu-group__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.nb-sidebar-menu-group__picture {
+  flex-shrink: 0;
 }
 
 .nb-sidebar-menu-group__caret {
