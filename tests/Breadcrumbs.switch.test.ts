@@ -184,4 +184,49 @@ describe('Breadcrumbs switcher', () => {
     await last.find('.nb-breadcrumbs__switch').trigger('click')
     expect(view.find('.nb-select__search-input').exists()).toBe(true)
   })
+
+  it('draws no picture anywhere unless one is given', async () => {
+    const view = mountTrail(items())
+    expect(view.find('.nb-avatar').exists()).toBe(false)
+    await chevron(view).trigger('click')
+    expect(view.find('.nb-breadcrumbs__option').exists()).toBe(false)
+  })
+
+  it('draws a crumb its picture, beside a label that still links', () => {
+    const view = mountTrail(items({ picture: '/logo/acme.png' }))
+    const crumb = view.findAll('.nb-breadcrumbs__item')[1]
+    expect(crumb.find('img.nb-avatar__picture').attributes('src')).toBe(
+      '/logo/acme.png',
+    )
+    expect(crumb.find('a[href="/c/acme"]').text()).toBe('Acme')
+    // Named by the label beside it, so it is not announced again
+    expect(crumb.find('.nb-avatar').attributes('role')).toBeUndefined()
+  })
+
+  it('draws initials for a null picture', () => {
+    const view = mountTrail(items({ picture: null }))
+    const crumb = view.findAll('.nb-breadcrumbs__item')[1]
+    expect(crumb.find('img').exists()).toBe(false)
+    expect(crumb.find('.nb-avatar__initials').text()).toBe('A')
+  })
+
+  it('draws the options their pictures, and initials for a null one', async () => {
+    const view = mountTrail(
+      items({
+        options: [
+          { ...companies[0], picture: '/logo/acme.png' },
+          { ...companies[1], picture: null },
+          companies[2],
+        ],
+      }),
+    )
+    await chevron(view).trigger('click')
+    const rows = view.findAll('.nb-select__option')
+    expect(
+      rows.map((r) => r.find('.nb-breadcrumbs__option-label').text()),
+    ).toEqual(['Acme', 'Globex', "Côte d'Or"])
+    expect(rows[0].find('img').attributes('src')).toBe('/logo/acme.png')
+    expect(rows[1].find('.nb-avatar__initials').exists()).toBe(true)
+    expect(rows[2].find('.nb-avatar').exists()).toBe(false)
+  })
 })

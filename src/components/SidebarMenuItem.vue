@@ -37,8 +37,18 @@
       @click="onClick"
       @keydown="onRowKeydown"
     >
+      <!-- The label names the row beside it (or in the compact row's own
+           aria-label), so the picture is decorative. -->
+      <NbAvatar
+        v-if="picture !== undefined"
+        class="nb-sidebar-menu-item__icon nb-sidebar-menu-item__picture"
+        :name="label"
+        :picture="picture"
+        :size="variant === 'compact' ? 18 : 16"
+        decorative
+      />
       <NbIcon
-        v-if="icon"
+        v-else-if="icon"
         class="nb-sidebar-menu-item__icon"
         :name="icon"
         :size="variant === 'compact' ? 18 : 16"
@@ -138,12 +148,14 @@ import {
 } from 'vue'
 import { ISidebarMenuItemProps } from './SidebarMenuItem.d'
 import NbIcon from './Icon.vue'
+import NbAvatar from './Avatar.vue'
 import SidebarVariantScope from './SidebarVariantScope.vue'
 import { useRouterLink } from '@/composables/useRouterLink.composable'
 import { hasRenderableContent } from '@/utils/slotContent.helper'
 
 const props = withDefaults(defineProps<ISidebarMenuItemProps>(), {
   icon: undefined,
+  picture: undefined,
   to: undefined,
   href: undefined,
   active: false,

@@ -29,6 +29,16 @@
           :ref="(el) => (itemEls[index] = el as HTMLElement | null)"
           class="nb-breadcrumbs__item"
         >
+          <!-- The label beside it names the crumb, so the picture is
+               decorative. Outside the link, so it never takes an underline. -->
+          <NbAvatar
+            v-if="item.picture !== undefined"
+            class="nb-breadcrumbs__picture"
+            :name="item.label"
+            :picture="item.picture"
+            :size="16"
+            decorative
+          />
           <span
             v-if="isCurrent(index)"
             class="nb-breadcrumbs__current"
@@ -62,6 +72,23 @@
             :no-results-label="item.noResultsLabel ?? 'No results'"
             @change="onSwitch(item, index, $event)"
           >
+            <!-- Only when an option carries a picture, so a list without
+                 any renders exactly NbSelect's own rows. -->
+            <template v-if="hasPictures(item)" #option="{ option }">
+              <span class="nb-breadcrumbs__option">
+                <NbAvatar
+                  v-if="pictureOf(item, option.value) !== undefined"
+                  class="nb-breadcrumbs__option-picture"
+                  :name="option.label"
+                  :picture="pictureOf(item, option.value)"
+                  :size="16"
+                  decorative
+                />
+                <span class="nb-breadcrumbs__option-label">{{
+                  option.label
+                }}</span>
+              </span>
+            </template>
             <template #trigger="{ attrs }">
               <button
                 type="button"
@@ -84,6 +111,7 @@
 import NbIcon from './Icon.vue'
 import NbButton from './Button.vue'
 import NbSelect from './Select.vue'
+import NbAvatar from './Avatar.vue'
 import * as iconUpDown from '@nubisco/ui/icons/caret-up-down'
 import {
   useSlots,
@@ -170,8 +198,23 @@ function selectOptions(item: IBreadcrumbItem) {
   return (item.options ?? []).map((option, position) => ({
     label: option.label,
     value: optionValue(option, position),
-    icon: option.icon,
+    // A picture takes the icon's place, drawn by the option slot.
+    icon: option.picture !== undefined ? undefined : option.icon,
   }))
+}
+
+function hasPictures(item: IBreadcrumbItem): boolean {
+  return (item.options ?? []).some((option) => option.picture !== undefined)
+}
+
+/** The picture of the option with this value: a URL, `null` for initials, or undefined. */
+function pictureOf(
+  item: IBreadcrumbItem,
+  value: string | number,
+): string | null | undefined {
+  const options = item.options ?? []
+  const position = options.findIndex((o, i) => optionValue(o, i) === value)
+  return position === -1 ? undefined : options[position].picture
 }
 
 /** The current option: the item's `value`, else the one named like the crumb. */
@@ -344,6 +387,30 @@ const collapsed = computed(
   align-items: center;
 }
 
+// A crumb's picture, before its label. The gap is the picture's alone, so a
+// trail without pictures keeps exactly its spacing.
+.nb-breadcrumbs__picture {
+  flex: none;
+  margin-inline-end: 0.35rem;
+}
+
+.nb-breadcrumbs__option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.nb-breadcrumbs__option-picture {
+  flex: none;
+}
+
+.nb-breadcrumbs__option-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 // The chevron: quiet until the crumb is pointed at, then at full strength like
 // a linked crumb. A real button, with its own focus ring.
 .nb-breadcrumbs__switch {
@@ -417,13 +484,18 @@ const collapsed = computed(
     align-items: center;
     overflow: visible;
 
-    > :first-child {
+    > :first-child,
+    > .nb-breadcrumbs__current,
+    > .nb-breadcrumbs__link,
+    > .nb-breadcrumbs__parent {
       min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
+    // A picture keeps its size while the label beside it gives way.
+    > .nb-breadcrumbs__picture,
     .nb-breadcrumbs__switcher {
       flex: none;
     }

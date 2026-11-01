@@ -63,6 +63,45 @@ view can handle it. Picking the current option does nothing.
 The search is the one `NbSelect` has: it matches anywhere in the label, ignores
 case and accents, and Enter picks the first match.
 
+## A crumb with a picture
+
+A crumb that names something with a logo (a company, a client, a space) can
+show it before the label with `picture`, drawn as a small round `NbAvatar`.
+Options take `picture` too, and show it in the list. `null` draws the label's
+initials in the same place, for an option whose siblings have a picture and
+which has none, so the list still lines up. Leave it out and nothing is drawn.
+
+```vue
+<script setup lang="ts">
+const trail = [
+  { label: 'Clients', to: '/clients' },
+  {
+    label: 'Acme',
+    picture: '/logos/acme.png',
+    value: 'acme',
+    options: [
+      {
+        label: 'Acme',
+        to: '/clients/acme',
+        value: 'acme',
+        picture: '/logos/acme.png',
+      },
+      {
+        label: 'Globex',
+        to: '/clients/globex',
+        value: 'globex',
+        picture: null,
+      },
+    ],
+  },
+]
+</script>
+```
+
+The picture is decorative: the label beside it already names the crumb. On a
+phone with `collapse="phone"`, the label of the last crumb gives way to the
+ellipsis and the picture keeps its size.
+
 ## Item fields
 
 | Field               | Type                  | Description                                                        |
@@ -71,13 +110,15 @@ case and accents, and Enter picks the first match.
 | `to` / `href`       | `string \| object`    | Where the crumb goes                                               |
 | `onClick`           | `(event) => void`     | Makes a crumb with no link a button                                |
 | `current`           | `boolean`             | Marks the current page. Defaults to the last crumb                 |
+| `picture`           | `string \| null`      | A logo before the label. `null` draws initials                     |
 | `options`           | `IBreadcrumbOption[]` | The siblings. Adds the switcher chevron                            |
 | `value`             | `string \| number`    | The current option. Defaults to the option labelled like the crumb |
 | `switchLabel`       | `string`              | Accessible name of the chevron. Default `Switch <label>`           |
 | `searchPlaceholder` | `string`              | Placeholder and name of the search box. Default `Find`             |
 | `noResultsLabel`    | `string`              | Shown when nothing matches. Default `No results`                   |
 
-An option is `{ label, to?, href?, value?, icon? }`. `value` identifies it and
+An option is `{ label, to?, href?, value?, icon?, picture? }`, `picture` taking
+the place of `icon` when both are set. `value` identifies it and
 defaults to its position.
 
 ## Events
