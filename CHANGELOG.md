@@ -1,3 +1,10 @@
+# [5.44.0](https://github.com/nubisco/ui/compare/v5.43.2...v5.44.0) (2026-11-01)
+
+
+### Features
+
+* **nav:** a picture on a crumb, its options, a rail row and a rail group ([#12](https://github.com/nubisco/ui/issues/12)) ([58e08ad](https://github.com/nubisco/ui/commit/58e08ad96ea53d31b19db216e334d4a494816441))
+
 ## [5.43.2](https://github.com/nubisco/ui/compare/v5.43.1...v5.43.2) (2026-10-31)
 
 
