@@ -144,8 +144,8 @@ const messageVariant = computed(() =>
     transform: scaleX(0);
     transform-origin: 0 center;
     transition:
-      transform 0.15s ease,
-      background 0.15s;
+      transform var(--nb-motion-short) ease,
+      background var(--nb-motion-short);
   }
 
   // ── Status colors ─────────────────────────────────────────────────────────────

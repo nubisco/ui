@@ -409,8 +409,8 @@ defineExpose({ cancel, dragging, grabbed, el: handleRef })
   // image. A `native` handle sets `draggable` and gets the drag it asked for.
   -webkit-user-drag: none;
   transition:
-    color var(--nb-animation-fast) ease,
-    background-color var(--nb-animation-fast) ease;
+    color var(--nb-motion-medium) ease,
+    background-color var(--nb-motion-medium) ease;
 
   &:hover {
     color: var(--nb-c-text);

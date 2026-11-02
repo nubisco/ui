@@ -220,9 +220,9 @@ function onSelect() {
   font-variant-numeric: tabular-nums;
   line-height: 1;
   transition:
-    background 0.15s,
-    border-color 0.15s,
-    color 0.15s;
+    background var(--nb-motion-short),
+    border-color var(--nb-motion-short),
+    color var(--nb-motion-short);
 }
 
 .nb-stepper__text {
@@ -245,7 +245,7 @@ function onSelect() {
   // "Choose regi…" is worse than two lines. The floor width below is what
   // stops the wrapping from degenerating into one word per line.
   overflow-wrap: anywhere;
-  transition: color 0.15s;
+  transition: color var(--nb-motion-short);
 }
 
 .nb-stepper__description {
@@ -270,7 +270,7 @@ function onSelect() {
 .nb-stepper__line {
   position: absolute;
   background: var(--nb-c-border);
-  transition: background 0.15s;
+  transition: background var(--nb-motion-short);
 }
 
 // The sequence ends at the last marker. Nothing follows it, so nothing joins

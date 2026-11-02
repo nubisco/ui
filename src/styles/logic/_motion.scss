@@ -1,0 +1,32 @@
+/// Motion helpers.
+///
+/// The durations and curves themselves are custom properties
+/// (`--nb-motion-*`, `--nb-ease-*`, declared in `variables/_animations.scss`
+/// and emitted by `_theme.scss`), because a product retunes them on `:root`
+/// the way it retunes a colour. What lives here is the one piece of motion
+/// that is structural rather than a value: the reduced-motion rule.
+///
+/// ## The rule
+///
+/// `prefers-reduced-motion: reduce` is a vestibular accommodation. It asks for
+/// the travel to go (slides, scales, sweeps, width changes), not for the
+/// feedback to go. So inside `@include motion.reduced` a component zeroes its
+/// transforms and shortens or drops its layout transitions, and keeps every
+/// opacity crossfade, colour tint and loop that tells the person what is
+/// happening.
+///
+/// @group @nubisco/motion
+
+/// Wraps rules that apply only when the person has asked for reduced motion.
+///
+/// ```scss
+/// .nb-thing-enter-from { opacity: 0; transform: translateY(-4px); }
+/// @include motion.reduced {
+///   .nb-thing-enter-from { transform: none; } // keep the fade, drop the rise
+/// }
+/// ```
+@mixin reduced {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}

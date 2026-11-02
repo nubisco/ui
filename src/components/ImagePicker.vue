@@ -222,8 +222,8 @@ defineExpose({ open: openFilePicker })
     border: 1px solid var(--nb-c-field-border);
     @include radius.standalone(control);
     transition:
-      border-color 0.15s ease,
-      background 0.15s ease;
+      border-color var(--nb-motion-short) ease,
+      background var(--nb-motion-short) ease;
 
     &:hover:not(:disabled) {
       border-color: var(--nb-c-primary);
@@ -316,7 +316,7 @@ defineExpose({ open: openFilePicker })
     opacity: 0;
     background: var(--nb-c-surface);
     box-shadow: 0 1px 4px rgb(0 0 0 / 0.18);
-    transition: opacity 0.15s ease;
+    transition: opacity var(--nb-motion-short) ease;
   }
 
   &:hover &__remove,

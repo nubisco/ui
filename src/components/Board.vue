@@ -1142,7 +1142,7 @@ function onColumnDragEnd() {
   border-right: 1px solid var(--nb-c-border);
   padding: 0.4rem;
   min-height: 60px;
-  transition: background 0.1s;
+  transition: background var(--nb-motion-quick);
 
   &--drag-over {
     background: color-mix(
@@ -1168,7 +1168,7 @@ function onColumnDragEnd() {
   cursor: grab;
   margin-bottom: 0.35rem;
   user-select: none;
-  transition: box-shadow 0.12s;
+  transition: box-shadow var(--nb-motion-quick);
 
   &:hover {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);

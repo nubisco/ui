@@ -58,6 +58,7 @@ function handleChange(e: Event) {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/variables/breakpoints' as bp;
 
@@ -108,9 +109,9 @@ function handleChange(e: Event) {
     // a checkbox at capsule radius is a circle, which is a radio
     @include radius.standalone(control-sm);
     transition:
-      background 0.15s,
-      border-color 0.15s,
-      box-shadow 0.15s;
+      background var(--nb-motion-quick) var(--nb-ease-standard),
+      border-color var(--nb-motion-quick) var(--nb-ease-standard),
+      box-shadow var(--nb-motion-quick) var(--nb-ease-standard);
     color: var(--nb-c-bg);
   }
 

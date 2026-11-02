@@ -82,6 +82,7 @@ function optionClasses(option: IRadioOption) {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/variables/breakpoints' as bp;
 @use '../styles/logic/radius' as radius;
 
@@ -173,8 +174,8 @@ function optionClasses(option: IRadioOption) {
      */
     @include radius.circular;
     transition:
-      border-color 0.15s,
-      box-shadow 0.15s;
+      border-color var(--nb-motion-quick) var(--nb-ease-standard),
+      box-shadow var(--nb-motion-quick) var(--nb-ease-standard);
   }
 
   // ── Dot (selected indicator): half the circle diameter ───────────────────────
@@ -183,7 +184,7 @@ function optionClasses(option: IRadioOption) {
     height: 9px;
     @include radius.circular;
     background: var(--nb-c-contrast);
-    animation: nb-radio-pop 0.12s ease;
+    animation: nb-radio-pop var(--nb-motion-quick) ease;
   }
 
   // ── Option label text ─────────────────────────────────────────────────────────

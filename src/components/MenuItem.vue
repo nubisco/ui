@@ -110,7 +110,7 @@ defineExpose({ el: itemRef })
   cursor: pointer;
   list-style: none;
   user-select: none;
-  transition: background 0.1s;
+  transition: background var(--nb-motion-quick);
   outline: none;
   white-space: nowrap;
 

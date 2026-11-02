@@ -318,6 +318,7 @@ defineExpose({ open, close, isOpen })
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/logic/touch' as touch;
 
@@ -337,7 +338,7 @@ defineExpose({ open, close, isOpen })
   color: var(--nb-c-text-subtle);
   cursor: help;
   border-radius: var(--nb-radius-pill);
-  transition: color var(--nb-animation-fast) ease;
+  transition: color var(--nb-motion-micro) var(--nb-ease-standard);
   // A 14px glyph is the whole control. On a touch phone the target grows to
   // 44px around it, the glyph does not.
   @include touch.hit-area;
@@ -374,7 +375,7 @@ defineExpose({ open, close, isOpen })
     var(--nb-c-scrim);
   text-align: left;
 
-  animation: nb-info-hint-in var(--nb-animation-fast) ease-out;
+  animation: nb-info-hint-in var(--nb-motion-quick) var(--nb-ease-enter);
 }
 
 .nb-info-hint--title {

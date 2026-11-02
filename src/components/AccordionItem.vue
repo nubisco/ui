@@ -78,6 +78,7 @@
       role="region"
       :aria-labelledby="`${uid}-header`"
       :hidden="!isOpen"
+      :inert="!isOpen || undefined"
     >
       <div class="nb-accordion-item__body">
         <slot />
@@ -154,6 +155,7 @@ function onKeydown(event: KeyboardEvent) {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/variables/breakpoints' as bp;
 
 .nb-accordion-item {
@@ -194,7 +196,7 @@ function onKeydown(event: KeyboardEvent) {
   line-height: 1.4;
   text-align: left;
   cursor: pointer;
-  transition: background 70ms linear;
+  transition: background var(--nb-motion-micro) linear;
 
   &:hover {
     background: var(--nb-c-surface-hover);
@@ -244,7 +246,7 @@ function onKeydown(event: KeyboardEvent) {
 .nb-accordion-item__chevron {
   flex: 0 0 auto;
   color: var(--nb-c-text-subtle);
-  transition: transform 110ms cubic-bezier(0, 0, 0.38, 0.9);
+  transition: transform var(--nb-motion-quick) var(--nb-ease-standard);
 
   // Trailing by default, so every title starts on the same line as the type
   // around it. `order` rather than a second template keeps one DOM order for
@@ -263,7 +265,33 @@ function onKeydown(event: KeyboardEvent) {
   order: 1;
 }
 
+// The panel opens and closes as a height, which CSS can only animate between
+// two definite values or two grid tracks. Tracks it is: `1fr` open, `0fr`
+// closed, with the body allowed to shrink to nothing. `hidden` still marks
+// the closed state (and `inert` keeps it out of the tab order and the
+// accessibility tree while it is drawn at zero height), but its display is
+// overridden so the track can move; `visibility` steps to hidden only once
+// the track has closed, and back to visible before it opens.
+.nb-accordion-item__panel {
+  display: grid;
+  grid-template-rows: 1fr;
+  overflow: hidden;
+  transition:
+    grid-template-rows var(--nb-motion-medium) var(--nb-ease-standard),
+    visibility 0s;
+
+  &[hidden] {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition:
+      grid-template-rows var(--nb-motion-medium) var(--nb-ease-standard),
+      visibility 0s var(--nb-motion-medium);
+  }
+}
+
 .nb-accordion-item__body {
+  min-height: 0;
   padding: 0 var(--nb-accordion-pad-x) var(--nb-spacing-16);
   color: var(--nb-c-text);
   font-size: var(--nb-font-size-14);
@@ -286,7 +314,7 @@ function onKeydown(event: KeyboardEvent) {
   gap: var(--nb-spacing-8);
   min-height: var(--nb-accordion-row-h);
   padding: var(--nb-accordion-pad-y) var(--nb-accordion-pad-x);
-  transition: background 70ms linear;
+  transition: background var(--nb-motion-micro) linear;
 
   @include bp.phone-touch {
     min-height: max(44px, var(--nb-accordion-row-h, 40px));
@@ -378,10 +406,12 @@ function onKeydown(event: KeyboardEvent) {
   flex: 0 0 auto;
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-accordion-item__chevron,
   .nb-accordion-item__header,
-  .nb-accordion-item__heading--aside {
+  .nb-accordion-item__heading--aside,
+  .nb-accordion-item__panel,
+  .nb-accordion-item__panel[hidden] {
     transition: none;
   }
 }

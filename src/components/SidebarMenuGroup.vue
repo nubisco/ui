@@ -123,7 +123,7 @@ const collapsed = ref(props.collapsible && props.defaultCollapsed)
 }
 
 .nb-sidebar-menu-group__caret {
-  transition: transform 0.15s ease;
+  transition: transform var(--nb-motion-short) ease;
   color: var(--nb-shell-sidebar-link-color);
 
   &--collapsed {

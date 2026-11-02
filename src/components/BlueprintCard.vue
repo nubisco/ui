@@ -887,9 +887,9 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   // wire attached to it, because the wire layer resolves endpoints from pin
   // geometry and has no reason to re-measure on hover.
   transition:
-    background 70ms linear,
-    border-color 70ms linear,
-    box-shadow 70ms linear;
+    background var(--nb-motion-micro) linear,
+    border-color var(--nb-motion-micro) linear,
+    box-shadow var(--nb-motion-micro) linear;
 
   // Identity rail: the one place the node colour is painted as a block. It
   // takes the left edge rather than the top because a 3px top bar merges into
@@ -995,7 +995,7 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   justify-content: center;
   flex-shrink: 0;
   border-radius: var(--nb-radius-xs);
-  transition: transform 110ms cubic-bezier(0, 0, 0.38, 0.9);
+  transition: transform var(--nb-motion-quick) var(--nb-ease-enter);
 
   .nb-blueprint-card--collapsed & {
     transform: rotate(-90deg);
@@ -1107,8 +1107,8 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   border: 1px solid var(--nb-c-field-border);
   position: relative;
   transition:
-    background 70ms linear,
-    border-color 70ms linear;
+    background var(--nb-motion-micro) linear,
+    border-color var(--nb-motion-micro) linear;
 
   &::after {
     content: '';
@@ -1120,8 +1120,8 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
     top: 2px;
     left: 2px;
     transition:
-      transform 110ms cubic-bezier(0, 0, 0.38, 0.9),
-      background 70ms linear;
+      transform var(--nb-motion-quick) var(--nb-ease-enter),
+      background var(--nb-motion-micro) linear;
   }
 
   input:checked + & {
@@ -1149,7 +1149,7 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   padding: 0 2px;
   border-radius: var(--nb-radius-xs);
   opacity: 0;
-  transition: opacity 70ms linear;
+  transition: opacity var(--nb-motion-micro) linear;
 
   .nb-blueprint-card:hover &,
   .nb-blueprint-card:focus-within & {
@@ -1326,10 +1326,10 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   // The button takes the click; the pin is decoration over it.
   pointer-events: none;
   transition:
-    background 150ms,
-    border-color 150ms,
-    opacity 150ms,
-    box-shadow 150ms;
+    background var(--nb-motion-short),
+    border-color var(--nb-motion-short),
+    opacity var(--nb-motion-short),
+    box-shadow var(--nb-motion-short);
 
   // Flat face against the card, rounded on the outer end: the pin reads as
   // plugged into the card rather than cut out of it.
@@ -1521,7 +1521,7 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
     inset: -3px;
     border: 1.5px solid var(--pin-color, var(--nb-card-color));
     border-radius: var(--nb-radius-xs);
-    animation: nb-port-ping 320ms cubic-bezier(0, 0, 0.38, 0.9) 1;
+    animation: nb-port-ping 320ms var(--nb-ease-enter) 1;
     pointer-events: none;
   }
 
@@ -1595,8 +1595,8 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   pointer-events: none;
   z-index: 5;
   transition:
-    background 150ms,
-    border-color 150ms;
+    background var(--nb-motion-short),
+    border-color var(--nb-motion-short);
 
   &--left {
     right: 0;

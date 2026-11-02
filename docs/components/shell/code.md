@@ -332,6 +332,8 @@ Mark the current route with `active`. Listen for `@click` to drive navigation ma
 
 `sidebarVariant` is a regular prop, so toggling between modes is just a state change. Because the same `NbSidebarMenu` / `NbSidebarMenuItem` / `NbSidebarMenuGroup` tree adapts to either variant, the application data model does not change.
 
+The switch is animated. The rail's width moves over `--nb-motion-medium` on the standard curve, and the labels, badges, carets, group headers and brand text fade over `--nb-motion-quick`. On collapse the rows keep their verbose layout until the width has settled, so the icons do not jump to the centre of a rail that is still wide; on expand they switch at once and the labels are revealed by the widening edge. Under `prefers-reduced-motion` the switch is instant. The timings and the reasoning are on [Motion](/principles/motion#the-application-frame).
+
 In compact mode:
 
 - `NbSidebarBrand` renders only its icon (title and subtitle are hidden).
@@ -975,6 +977,75 @@ This example shows every slot populated at once, giving a complete picture of ho
 </template>
 ```
 
+## Detached frame
+
+By default every region runs to the window edge it borders: the sidebar touches the left, top and bottom, the topbar the top, the inspector the right. `frame="detached"` floats them instead. The frame keeps a gutter on every side, each region becomes a rounded card with a lift of its own, and the frame ground shows between them.
+
+Nothing inside a region changes. The rail keeps its compact or verbose width and still collapses and expands, the topbar keeps its height, the inspector keeps its sizes and its resize handle, the bottom panel keeps its three sizes, and below `collapseAt` the drawer and the inspector sheet take over exactly as they do on an attached frame. It is one prop, and an application can flip it at runtime as a user preference next to the appearance switch.
+
+<preview>
+  <div style="height: 560px; border: 1px solid var(--nb-c-border, #e8e8f0); border-radius: 8px; overflow: hidden;">
+    <NbShell frame="detached" inspector-size="xs" :inspector-visible="detachedInspector" style="height: 100%">
+      <template #sidebar-logo>
+        <div style="width: 28px; height: 28px; background: #a78bfa; border-radius: 6px;" />
+      </template>
+      <template #sidebar-nav>
+        <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.12); border-radius: 8px;" />
+        <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.12); border-radius: 8px;" />
+        <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.12); border-radius: 8px;" />
+      </template>
+      <template #topbar-left>
+        <strong>Editor</strong>
+      </template>
+      <template #topbar-right>
+        <NbButton size="sm" variant="secondary" @click="detachedInspector = !detachedInspector">
+          {{ detachedInspector ? 'Close' : 'Open' }} Inspector
+        </NbButton>
+      </template>
+      <template #fixedbar>
+        <NbTabs variant="line" aria-label="Editor" :items="[{ id: 'scene', label: 'Scene' }, { id: 'assets', label: 'Assets' }]" model-value="scene" />
+      </template>
+      <p style="margin: 0; color: var(--nb-c-text-secondary, #666);">The page, the rail, the topbar, the console and the inspector each float on the frame ground.</p>
+      <template #bottom>
+        <NbShellPanel v-model:size="detachedPanelSize" title="Console">
+          <div style="padding: 0.75rem 1rem; font-family: var(--nb-font-mono, monospace); font-size: 0.8125rem; color: var(--nb-c-text-secondary, #666);">
+            <div>> ready in 127ms</div>
+          </div>
+        </NbShellPanel>
+      </template>
+      <template #inspector>
+        <div style="padding: 1rem;">
+          <h4 style="margin: 0 0 0.5rem;">Properties</h4>
+          <p style="margin: 0; color: var(--nb-c-text-secondary, #666); font-size: 0.875rem;">Inspector panel content.</p>
+        </div>
+      </template>
+    </NbShell>
+  </div>
+</preview>
+
+```vue
+<NbShell frame="detached">
+  ...
+</NbShell>
+```
+
+The gutter, the corner and the lift are three tokens, and they are deliberately **independent of the [appearance](/theming#appearance) setting**. Rounded only decides the corners of controls and surfaces; whether the frame floats is a separate decision about the window, and a square product can float its frame while keeping square controls inside it.
+
+```css
+:root {
+  --nb-shell-detached-gap: calc(var(--nb-base-unit) * 1.5); /* 12px */
+  --nb-shell-detached-radius: calc(var(--nb-base-unit) * 2); /* 16px */
+  --nb-shell-detached-shadow: none; /* flat cards, border only */
+}
+```
+
+The cards take the borders the strips already had (`--nb-shell-topbar-border`, `--nb-shell-menu-border`, `--nb-shell-chrome-border`, `--nb-shell-inspector-border`), on every side instead of one. Set any of them to `none` for a borderless card that relies on its shadow.
+
+Two things to know before you switch a product over:
+
+- **The page is a card, so its scrollbar lives inside the corner.** Content that bled to the frame edge (a canvas with `main-padding="false"`, a full-bleed table) is clipped by the page's corner instead. That is the point, but check any view that drew its own chrome against the window edge.
+- **The bottom panel floats on its own.** Internally the fixedbar, the contextbar and the main region share one `.nb-shell__page` box above the bottom panel. The attached frame lays that box out exactly as before, so nothing moves; it is there only so a detached frame has two cards to float rather than one.
+
 ## Small viewports and zoom
 
 The frame is `height: 100dvh; overflow: hidden`, which is what makes the regions scroll independently. It also means a column that does not fit has nowhere to go: there is no page scroll to escape into.
@@ -1206,27 +1277,28 @@ The full list is in the [API tab](#api).
 
 ## Props
 
-| Prop                          | Type                                   | Default             | Description                                                                                                                                                                                                                                           |
-| ----------------------------- | -------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `inspectorVisible`            | `boolean`                              | `false`             | Whether the inspector column is visible                                                                                                                                                                                                               |
-| `inspectorExpanded`           | `boolean`                              | `false`             | When true the inspector takes ~50% of the viewport width instead of the default fixed width                                                                                                                                                           |
-| `inspectorSize`               | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'`              | Controls the width of the inspector panel (xs: 288px, sm: 360px, md: 560px, lg: 50vw, xl: 75vw)                                                                                                                                                       |
-| `resizable`                   | `boolean`                              | `false`             | Let the user resize the inspector from its left edge, by pointer or by keyboard, clamped between 288px and 50% of the current viewport (re-clamped on window resize). Enter or double-click resets. Pair with `v-model:inspector-width` to persist it |
-| `inspectorWidth`              | `number \| null`                       | `null`              | v-model (`v-model:inspector-width`) for the user-chosen width in px when `resizable` is on. `null` means "use `inspectorSize`". Emits `update:inspectorWidth` on drag, on arrow-key resize and on reset; the consumer owns persistence                |
-| `mainPadding`                 | `boolean`                              | `true`              | Whether the main content area has padding. Set to `false` for full-bleed content like viewports or canvases                                                                                                                                           |
-| `sidebarVariant`              | `'compact' \| 'verbose'`               | `'compact'`         | Sidebar presentation mode. `'compact'` keeps the legacy 56px icon rail (use with `NbSidebarLink`). `'verbose'` widens the sidebar to 240px for grouped, multi-level navigation (use with `NbSidebarMenu`, `NbSidebarMenuGroup`, `NbSidebarMenuItem`)  |
-| `sidebarHeaderActionPosition` | `'end' \| 'start' \| 'edge'`           | `'end'`             | Where `#sidebar-header-action` sits beside the brand. Read only when that slot has content. See [Sidebar Header Toggle](/components/sidebar-header-toggle/usage).                                                                                     |
-| `sidebarHeaderActionCompact`  | `'stack' \| 'swap' \| 'replace'`       | `'stack'`           | How `#sidebar-header-action` and the brand share the collapsed rail. Ignored for `'edge'`.                                                                                                                                                            |
-| `topbar`                      | `'auto' \| 'always' \| 'never'`        | `'auto'`            | When the topbar strip is rendered. `'auto'` renders it only when `topbar-left` or `topbar-right` has content or a view has claimed one with `useShellSlot()`. `'always'` reserves it even while empty. `'never'` suppresses it whatever the slots say |
-| `skipToContent`               | `boolean`                              | `true`              | Render the "skip to content" link as the shell's first focusable element. Set `false` only if your application already ships one                                                                                                                      |
-| `skipToContentLabel`          | `string`                               | `'Skip to content'` | Label for the skip link                                                                                                                                                                                                                               |
-| `mainId`                      | `string`                               | auto                | The `id` on `<main>`, and the skip link's target. Defaults to a per-instance stable id, so two shells on a page do not collide                                                                                                                        |
-| `sidebarLabel`                | `string`                               | `'Primary'`         | Accessible name for the sidebar `<nav>` landmark                                                                                                                                                                                                      |
-| `inspectorLabel`              | `string`                               | `'Inspector'`       | Accessible name for the inspector `<aside>` landmark. The resize handle's own name is built from it (`Resize {inspectorLabel}`), so `inspector-label="Properties"` gives a handle named "Resize Properties"                                           |
-| `collapseAt`                  | `'md' \| 'lg' \| 'none'`               | `'md'`              | The viewport width below which the sidebar becomes an overlay drawer and the inspector a full-screen sheet. `'md'` is 672px, `'lg'` is 1056px, `'none'` never collapses                                                                               |
-| `sidebarOpen`                 | `boolean`                              | uncontrolled        | Optional `v-model:sidebar-open` for the drawer at collapsed widths. Omit it and the shell owns the state; pass it and the shell only emits. Ignored above `collapseAt`                                                                                |
-| `navToggleLabel`              | `string`                               | `'Navigation'`      | Accessible name for the drawer toggle button. It carries `aria-expanded`, so the label names the thing, not the action                                                                                                                                |
-| `inspectorCloseLabel`         | `string`                               | `'Close inspector'` | Accessible name for the dismiss button on the inspector sheet. The button is rendered only below `collapseAt`, where the sheet covers the topbar                                                                                                      |
+| Prop                          | Type                                   | Default             | Description                                                                                                                                                                                                                                                     |
+| ----------------------------- | -------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `inspectorVisible`            | `boolean`                              | `false`             | Whether the inspector column is visible                                                                                                                                                                                                                         |
+| `inspectorExpanded`           | `boolean`                              | `false`             | When true the inspector takes ~50% of the viewport width instead of the default fixed width                                                                                                                                                                     |
+| `inspectorSize`               | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'`              | Controls the width of the inspector panel (xs: 288px, sm: 360px, md: 560px, lg: 50vw, xl: 75vw)                                                                                                                                                                 |
+| `resizable`                   | `boolean`                              | `false`             | Let the user resize the inspector from its left edge, by pointer or by keyboard, clamped between 288px and 50% of the current viewport (re-clamped on window resize). Enter or double-click resets. Pair with `v-model:inspector-width` to persist it           |
+| `inspectorWidth`              | `number \| null`                       | `null`              | v-model (`v-model:inspector-width`) for the user-chosen width in px when `resizable` is on. `null` means "use `inspectorSize`". Emits `update:inspectorWidth` on drag, on arrow-key resize and on reset; the consumer owns persistence                          |
+| `mainPadding`                 | `boolean`                              | `true`              | Whether the main content area has padding. Set to `false` for full-bleed content like viewports or canvases                                                                                                                                                     |
+| `sidebarVariant`              | `'compact' \| 'verbose'`               | `'compact'`         | Sidebar presentation mode. `'compact'` keeps the legacy 56px icon rail (use with `NbSidebarLink`). `'verbose'` widens the sidebar to 240px for grouped, multi-level navigation (use with `NbSidebarMenu`, `NbSidebarMenuGroup`, `NbSidebarMenuItem`)            |
+| `sidebarHeaderActionPosition` | `'end' \| 'start' \| 'edge'`           | `'end'`             | Where `#sidebar-header-action` sits beside the brand. Read only when that slot has content. See [Sidebar Header Toggle](/components/sidebar-header-toggle/usage).                                                                                               |
+| `sidebarHeaderActionCompact`  | `'stack' \| 'swap' \| 'replace'`       | `'stack'`           | How `#sidebar-header-action` and the brand share the collapsed rail. Ignored for `'edge'`.                                                                                                                                                                      |
+| `frame`                       | `'attached' \| 'detached'`             | `'attached'`        | How the regions meet the window. `'attached'` runs every region to the edge it borders, as always. `'detached'` floats them: a gutter around the frame and between regions, each region a rounded card with its own lift. See [Detached frame](#detached-frame) |
+| `topbar`                      | `'auto' \| 'always' \| 'never'`        | `'auto'`            | When the topbar strip is rendered. `'auto'` renders it only when `topbar-left` or `topbar-right` has content or a view has claimed one with `useShellSlot()`. `'always'` reserves it even while empty. `'never'` suppresses it whatever the slots say           |
+| `skipToContent`               | `boolean`                              | `true`              | Render the "skip to content" link as the shell's first focusable element. Set `false` only if your application already ships one                                                                                                                                |
+| `skipToContentLabel`          | `string`                               | `'Skip to content'` | Label for the skip link                                                                                                                                                                                                                                         |
+| `mainId`                      | `string`                               | auto                | The `id` on `<main>`, and the skip link's target. Defaults to a per-instance stable id, so two shells on a page do not collide                                                                                                                                  |
+| `sidebarLabel`                | `string`                               | `'Primary'`         | Accessible name for the sidebar `<nav>` landmark                                                                                                                                                                                                                |
+| `inspectorLabel`              | `string`                               | `'Inspector'`       | Accessible name for the inspector `<aside>` landmark. The resize handle's own name is built from it (`Resize {inspectorLabel}`), so `inspector-label="Properties"` gives a handle named "Resize Properties"                                                     |
+| `collapseAt`                  | `'md' \| 'lg' \| 'none'`               | `'md'`              | The viewport width below which the sidebar becomes an overlay drawer and the inspector a full-screen sheet. `'md'` is 672px, `'lg'` is 1056px, `'none'` never collapses                                                                                         |
+| `sidebarOpen`                 | `boolean`                              | uncontrolled        | Optional `v-model:sidebar-open` for the drawer at collapsed widths. Omit it and the shell owns the state; pass it and the shell only emits. Ignored above `collapseAt`                                                                                          |
+| `navToggleLabel`              | `string`                               | `'Navigation'`      | Accessible name for the drawer toggle button. It carries `aria-expanded`, so the label names the thing, not the action                                                                                                                                          |
+| `inspectorCloseLabel`         | `string`                               | `'Close inspector'` | Accessible name for the dismiss button on the inspector sheet. The button is rendered only below `collapseAt`, where the sheet covers the topbar                                                                                                                |
 
 `inspectorVisible`, `inspectorWidth` and `sidebarOpen` are each **controlled or uncontrolled**: pass the prop and your application owns the state, leave it out and the shell owns it. Either way the matching `update:` event is emitted, so you can listen without binding.
 
@@ -1310,6 +1382,16 @@ All of these are declared at `:root`, so an application overrides them there wit
 | `--nb-shell-menu-color`      | `var(--nb-shell-chrome-color)`     | Text colour of the same three strips                |
 | `--nb-shell-menu-border`     | `var(--nb-shell-chrome-border)`    | Bottom border of the same three strips              |
 | `--nb-shell-bottom-height`   | `33%`                              | Share of the body a bottom panel takes at `default` |
+
+### Detached frame
+
+Read only while `frame="detached"`; an attached frame never looks at them.
+
+| Variable                     | Default                                  | Description                                                                                            |
+| ---------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `--nb-shell-detached-gap`    | `calc(var(--nb-base-unit) * 1.5)` (12px) | The gutter around the frame and between regions. Falls to 8px below `collapseAt`                       |
+| `--nb-shell-detached-radius` | `calc(var(--nb-base-unit) * 2)` (16px)   | The corner every floating region carries. Independent of the appearance setting                        |
+| `--nb-shell-detached-shadow` | two soft black layers at 6% and 18%      | The lift under each card, as a `box-shadow` value. Black at low alpha, so one value serves both themes |
 
 ### Sidebar and inspector
 

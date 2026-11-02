@@ -1,7 +1,49 @@
-/// Animation delay base values
-/// @type Array
+/// Motion: how long things take and how they ease.
+///
+/// Two families, both emitted on `:root` by `_theme.scss`:
+///
+/// - `--nb-motion-<step>`: durations on a non-linear scale, so a longer step
+///   is perceptibly longer rather than arithmetically longer. The step is
+///   chosen by what moves (a tint, a chevron, a menu, a rail, a sheet), and
+///   the rules for choosing are in docs/principles/motion.md.
+/// - `--nb-ease-<role>`: the three curves. `standard` for an element that is
+///   on screen before and after (a width, a knob, a chevron), `enter` for an
+///   arrival, `exit` for a departure. These are the productive curves of the
+///   Carbon design system, which this library grew out of: nothing in them
+///   overshoots, bounces or lingers, which is the brief.
+///
+/// `$timings` is the legacy duration family (`--nb-animation-*`). It is
+/// still emitted so nothing a product wrote against it breaks, and it is
+/// deprecated: new work reads `--nb-motion-*`.
+///
+/// @group @nubisco/motion
+
+/// Durations. Loops are the one step that is not a transition: a second of
+/// waiting to see a menu is a bug, a one-second spinner cycle is a loop.
+/// @type Map
 /// @access public
-/// @group @nubisco/animations
+$motion: (
+  micro: 70ms,
+  quick: 110ms,
+  short: 150ms,
+  medium: 240ms,
+  long: 400ms,
+  loop: 1s,
+) !default;
+
+/// Easing curves.
+/// @type Map
+/// @access public
+$easing: (
+  standard: cubic-bezier(0.2, 0, 0.38, 0.9),
+  enter: cubic-bezier(0, 0, 0.38, 0.9),
+  exit: cubic-bezier(0.2, 0, 1, 0.9),
+) !default;
+
+/// Legacy duration family. Deprecated: read `$motion` and `--nb-motion-*`.
+/// @type Map
+/// @access public
+/// @deprecated
 $timings: (
   fast: 0.2s,
   base: 0.3s,

@@ -290,6 +290,7 @@ export type {
   TSidebarVariant,
   TShellTopbar,
   TShellCollapseAt,
+  TShellFrame,
   TSidebarHeaderActionPosition,
   TSidebarHeaderActionCompact,
 } from './components/Shell.d'

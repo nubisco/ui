@@ -1228,6 +1228,7 @@ defineExpose({ show, close, toggle, isOpen, unreadCount })
 </script>
 
 <style lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 
 .nb-notification-center {
@@ -1489,38 +1490,39 @@ defineExpose({ show, close, toggle, isOpen, unreadCount })
   border: 0;
 }
 
-.nb-notification-center-pop-enter-active,
-.nb-notification-center-pop-leave-active {
+// Arrives from its bell (enter curve, quick) and fades away (exit curve,
+// micro). The direction of the rise follows the placement.
+.nb-notification-center-pop-enter-active {
   transition:
-    opacity 0.12s ease,
-    transform 0.12s ease;
+    opacity var(--nb-motion-quick) var(--nb-ease-enter),
+    transform var(--nb-motion-quick) var(--nb-ease-enter);
 }
 
-.nb-notification-center-pop-enter-from,
-.nb-notification-center-pop-leave-to {
+.nb-notification-center-pop-leave-active {
+  transition: opacity var(--nb-motion-micro) var(--nb-ease-exit);
+}
+
+.nb-notification-center-pop-enter-from {
   opacity: 0;
   transform: translateY(-4px);
 }
 
-.nb-notification-center__panel--above {
-  &.nb-notification-center-pop-enter-from,
-  &.nb-notification-center-pop-leave-to {
-    transform: translateY(4px);
-  }
+.nb-notification-center-pop-leave-to {
+  opacity: 0;
+}
+
+.nb-notification-center__panel--above.nb-notification-center-pop-enter-from {
+  transform: translateY(4px);
 }
 
 // Beside its trigger, it arrives from the trigger's side.
-.nb-notification-center__panel--beside {
-  &.nb-notification-center-pop-enter-from,
-  &.nb-notification-center-pop-leave-to {
-    transform: translateX(-4px);
-  }
+.nb-notification-center__panel--beside.nb-notification-center-pop-enter-from {
+  transform: translateX(-4px);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .nb-notification-center-pop-enter-active,
-  .nb-notification-center-pop-leave-active {
-    transition: none;
+@include motion.reduced {
+  .nb-notification-center-pop-enter-from {
+    transform: none;
   }
 }
 

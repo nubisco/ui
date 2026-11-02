@@ -1189,11 +1189,15 @@ describe('Shell layout rules the DOM tests cannot see', () => {
     // hangs on is `--overlay`, which the component binds to exactly the state
     // the dismiss button, the Escape handler and the body's `inert` react to,
     // so the pixels and the behaviour cannot describe different states.
+    // The geometry sits on the inspector itself at collapsed widths, parked
+    // just past the right edge, and `--overlay` is the slide into view.
+    expect(collapsed).toMatch(/\.nb-shell__inspector \{[^}]*width: 100%/s)
+    expect(collapsed).toMatch(/\.nb-shell__inspector \{[^}]*max-width: none/s)
     expect(collapsed).toMatch(
-      /\.nb-shell__inspector--overlay \{[^}]*width: 100%/s,
+      /\.nb-shell__inspector \{[^}]*transform: translateX\(100%\)/s,
     )
     expect(collapsed).toMatch(
-      /\.nb-shell__inspector--overlay \{[^}]*max-width: none/s,
+      /\.nb-shell__inspector--overlay \{[^}]*transform: none/s,
     )
     // Both need a containing block, declared unconditionally so nothing
     // re-parents at one width and not another.
@@ -1232,10 +1236,16 @@ describe('Shell layout rules the DOM tests cannot see', () => {
   })
 
   it('suppresses the motion it adds under prefers-reduced-motion', () => {
-    const reduced = src.slice(src.indexOf('@media (prefers-reduced-motion'))
+    // The frame reaches the preference through the shared helper, which is
+    // the one media query every component writes the same way.
+    const reduced = src.slice(src.indexOf('@include motion.reduced'))
+    expect(reduced).not.toBe('')
     // A drawer sliding across the screen is the largest movement the frame has.
     expect(reduced).toContain('.nb-shell__sidebar')
-    expect(reduced).toContain('.nb-shell__scrim')
+    expect(reduced).toContain('.nb-shell--drawer-open .nb-shell__sidebar')
+    // The scrim only ever fades, and a fade is feedback, not travel, so it
+    // is the one piece of the drawer's motion the preference keeps.
+    expect(reduced).not.toContain('.nb-shell__scrim')
   })
 })
 

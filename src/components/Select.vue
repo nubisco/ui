@@ -208,123 +208,125 @@
 
   <!-- Dropdown teleported to body to escape overflow:hidden parents -->
   <Teleport to="body">
-    <div
-      v-if="isOpen"
-      :id="listboxId"
-      ref="dropdownRef"
-      :class="[
-        'nb-select__dropdown',
-        {
-          'nb-select__dropdown--check': selectedMark === 'check',
-          'nb-select__dropdown--anchored': !!$slots.trigger,
-        },
-      ]"
-      :style="dropdownStyle"
-      role="listbox"
-      :aria-multiselectable="multiple || undefined"
-    >
-      <div v-if="searchable" class="nb-select__search">
-        <input
-          ref="searchRef"
-          v-model="query"
-          type="search"
-          class="nb-select__search-input"
-          autocomplete="off"
-          spellcheck="false"
-          :placeholder="searchPlaceholder"
-          :aria-label="searchPlaceholder"
-          :aria-controls="listboxId"
-          :aria-activedescendant="
-            highlighted >= 0 ? optionId(highlighted) : undefined
-          "
-          @keydown="onSearchKeydown"
-        />
-      </div>
+    <Transition name="nb-select-pop">
       <div
-        v-for="run in optionRuns"
-        :key="run.key"
-        class="nb-select__group"
-        role="group"
-        :aria-labelledby="run.name ? run.labelId : undefined"
+        v-if="isOpen"
+        :id="listboxId"
+        ref="dropdownRef"
+        :class="[
+          'nb-select__dropdown',
+          {
+            'nb-select__dropdown--check': selectedMark === 'check',
+            'nb-select__dropdown--anchored': !!$slots.trigger,
+          },
+        ]"
+        :style="dropdownStyle"
+        role="listbox"
+        :aria-multiselectable="multiple || undefined"
       >
-        <div v-if="run.name" :id="run.labelId" class="nb-select__group-label">
-          {{ run.name }}
+        <div v-if="searchable" class="nb-select__search">
+          <input
+            ref="searchRef"
+            v-model="query"
+            type="search"
+            class="nb-select__search-input"
+            autocomplete="off"
+            spellcheck="false"
+            :placeholder="searchPlaceholder"
+            :aria-label="searchPlaceholder"
+            :aria-controls="listboxId"
+            :aria-activedescendant="
+              highlighted >= 0 ? optionId(highlighted) : undefined
+            "
+            @keydown="onSearchKeydown"
+          />
         </div>
         <div
-          v-for="entry in run.entries"
-          :id="optionId(entry.index)"
-          :key="entry.option.value"
-          :data-index="entry.index"
-          :class="[
-            'nb-select__option',
-            {
-              'nb-select__option--selected': isSelected(entry.option.value),
-              'nb-select__option--highlighted': highlighted === entry.index,
-              'nb-select__option--disabled': entry.option.disabled,
-            },
-          ]"
-          role="option"
-          :aria-selected="isSelected(entry.option.value)"
-          :aria-disabled="entry.option.disabled || undefined"
-          @mouseenter="highlighted = entry.index"
-          @click="selectOption(entry.option)"
+          v-for="run in optionRuns"
+          :key="run.key"
+          class="nb-select__group"
+          role="group"
+          :aria-labelledby="run.name ? run.labelId : undefined"
         >
-          <span
-            v-if="multiple || selectedMark === 'check'"
-            class="nb-select__option-check"
-            aria-hidden="true"
+          <div v-if="run.name" :id="run.labelId" class="nb-select__group-label">
+            {{ run.name }}
+          </div>
+          <div
+            v-for="entry in run.entries"
+            :id="optionId(entry.index)"
+            :key="entry.option.value"
+            :data-index="entry.index"
+            :class="[
+              'nb-select__option',
+              {
+                'nb-select__option--selected': isSelected(entry.option.value),
+                'nb-select__option--highlighted': highlighted === entry.index,
+                'nb-select__option--disabled': entry.option.disabled,
+              },
+            ]"
+            role="option"
+            :aria-selected="isSelected(entry.option.value)"
+            :aria-disabled="entry.option.disabled || undefined"
+            @mouseenter="highlighted = entry.index"
+            @click="selectOption(entry.option)"
           >
-            <svg
-              v-if="isSelected(entry.option.value)"
-              viewBox="0 0 10 8"
-              fill="none"
-              width="10"
-              height="8"
+            <span
+              v-if="multiple || selectedMark === 'check'"
+              class="nb-select__option-check"
+              aria-hidden="true"
             >
-              <path
-                d="M1 4l3 3 5-6"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </span>
-          <NbIcon
-            v-if="entry.option.icon"
-            class="nb-select__option-icon"
-            :name="entry.option.icon"
-            :size="16"
-          />
-          <span class="nb-select__option-label">
-            <!-- Rich option rows (avatar + name, icon + label) without the
+              <svg
+                v-if="isSelected(entry.option.value)"
+                viewBox="0 0 10 8"
+                fill="none"
+                width="10"
+                height="8"
+              >
+                <path
+                  d="M1 4l3 3 5-6"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            <NbIcon
+              v-if="entry.option.icon"
+              class="nb-select__option-icon"
+              :name="entry.option.icon"
+              :size="16"
+            />
+            <span class="nb-select__option-label">
+              <!-- Rich option rows (avatar + name, icon + label) without the
                  consumer re-implementing the listbox. -->
-            <slot name="option" :option="entry.option">{{
-              entry.option.label
-            }}</slot>
-          </span>
+              <slot name="option" :option="entry.option">{{
+                entry.option.label
+              }}</slot>
+            </span>
+          </div>
+        </div>
+        <div v-if="!options || options.length === 0" class="nb-select__empty">
+          No options
+        </div>
+        <div
+          v-else-if="searchable && visible.size === 0"
+          class="nb-select__empty"
+        >
+          {{ noResultsLabel }}
+        </div>
+        <div v-if="creatable" class="nb-select__create" @mousedown.prevent>
+          <input
+            v-model="createValue"
+            type="text"
+            class="nb-select__create-input"
+            :placeholder="createPlaceholder || 'Add new…'"
+            @keydown.enter.prevent="handleCreate"
+            @keydown.stop
+          />
         </div>
       </div>
-      <div v-if="!options || options.length === 0" class="nb-select__empty">
-        No options
-      </div>
-      <div
-        v-else-if="searchable && visible.size === 0"
-        class="nb-select__empty"
-      >
-        {{ noResultsLabel }}
-      </div>
-      <div v-if="creatable" class="nb-select__create" @mousedown.prevent>
-        <input
-          v-model="createValue"
-          type="text"
-          class="nb-select__create-input"
-          :placeholder="createPlaceholder || 'Add new…'"
-          @keydown.enter.prevent="handleCreate"
-          @keydown.stop
-        />
-      </div>
-    </div>
+    </Transition>
   </Teleport>
 </template>
 
@@ -796,6 +798,7 @@ defineExpose({
 </script>
 
 <style lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/variables/breakpoints' as bp;
 @use '../styles/logic/touch' as touch;
@@ -827,7 +830,7 @@ defineExpose({
   color: var(--nb-c-text);
   cursor: pointer;
   position: relative;
-  transition: background 0.1s;
+  transition: background var(--nb-motion-quick);
   // Concentric with the list: its corner, less the 4px it insets its rows by.
   // 4px of padding plus the container's 1px border.
   @include radius.inset(5px);
@@ -972,7 +975,7 @@ defineExpose({
   color: var(--nb-c-text);
   outline: none;
   box-sizing: border-box;
-  transition: border-color 0.15s;
+  transition: border-color var(--nb-motion-short);
   // A real input: below 16px iOS zooms the page in when it takes focus.
   @include touch.touch-field-text;
 
@@ -1001,7 +1004,7 @@ defineExpose({
   color: var(--nb-c-text);
   outline: none;
   box-sizing: border-box;
-  transition: border-color 0.15s;
+  transition: border-color var(--nb-motion-short);
   // A real input: below 16px iOS zooms the page in when it takes focus.
   @include touch.touch-field-text;
 
@@ -1102,9 +1105,9 @@ defineExpose({
     text-align: left;
     appearance: none;
     transition:
-      border-color 0.15s,
-      box-shadow 0.15s,
-      background 0.15s;
+      border-color var(--nb-motion-short),
+      box-shadow var(--nb-motion-short),
+      background var(--nb-motion-short);
     outline: none;
     box-sizing: border-box;
 
@@ -1202,7 +1205,7 @@ defineExpose({
   &__caret {
     flex-shrink: 0;
     color: var(--nb-c-field-border);
-    transition: color 0.15s;
+    transition: color var(--nb-motion-short);
 
     .nb-select--open & {
       color: var(--nb-c-primary);
@@ -1249,7 +1252,7 @@ defineExpose({
     cursor: pointer;
     @include radius.standalone(control-sm);
     @include touch.hit-area(44px, false);
-    transition: color 0.15s;
+    transition: color var(--nb-motion-short);
 
     &:hover {
       color: var(--nb-c-text);
@@ -1334,6 +1337,30 @@ defineExpose({
       right: calc(var(--nb-field-padding-h) * 2 + 16px);
       transform: none;
     }
+  }
+}
+
+// The list arrives from its trigger (enter curve, quick) and fades away
+// (exit curve, micro), like every popover in the library.
+.nb-select-pop-enter-active {
+  transition:
+    opacity var(--nb-motion-quick) var(--nb-ease-enter),
+    transform var(--nb-motion-quick) var(--nb-ease-enter);
+}
+.nb-select-pop-leave-active {
+  transition: opacity var(--nb-motion-micro) var(--nb-ease-exit);
+}
+.nb-select-pop-enter-from {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+.nb-select-pop-leave-to {
+  opacity: 0;
+}
+
+@include motion.reduced {
+  .nb-select-pop-enter-from {
+    transform: none;
   }
 }
 </style>

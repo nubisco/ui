@@ -240,8 +240,8 @@ const iconMap = {
     cursor: pointer;
     opacity: 0.7;
     transition:
-      background-color 0.15s ease,
-      opacity 0.15s ease;
+      background-color var(--nb-motion-short) ease,
+      opacity var(--nb-motion-short) ease;
     margin-block-start: calc((1.5em - 22px) / 2);
 
     &:hover {

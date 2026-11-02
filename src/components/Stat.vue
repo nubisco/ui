@@ -242,8 +242,8 @@ const tone = computed<'positive' | 'negative' | 'neutral'>(() => {
 .nb-stat--interactive {
   cursor: pointer;
   transition:
-    background 70ms linear,
-    border-color 70ms linear;
+    background var(--nb-motion-micro) linear,
+    border-color var(--nb-motion-micro) linear;
 
   &.nb-stat--neutral:hover {
     background: var(--nb-c-surface-hover);

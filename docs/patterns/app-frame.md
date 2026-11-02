@@ -87,6 +87,12 @@ inspector moved down a row.
 The fixedbar's rule ends with the body rather than running under the inspector,
 since the inspector is now beside it.
 
+A product that wants the whole frame to float, every region a rounded card on
+the frame ground with a gutter between them, sets `frame="detached"` on the
+shell. It is a layout decision separate from the appearance setting, and the
+regions keep every behaviour described here. See
+[Detached frame](/components/shell/code#detached-frame).
+
 ```text
 ┌───────────────────────────────────────────────────────────────────────────┐
 │  outer-menu    spans the rail, the body and the inspector                 │

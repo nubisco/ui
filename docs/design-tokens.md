@@ -59,25 +59,26 @@ Four things that trip people up:
 
 ## The families
 
-| Family                                                    | Count | Answers                                                 | Declared in                   |
-| --------------------------------------------------------- | ----: | ------------------------------------------------------- | ----------------------------- |
-| `--nb-base-unit`                                          |     1 | What is the geometric grain? (`8px`)                    | `_theme.scss`                 |
-| `--nb-c-<ramp>-<100…900>` and `-a11y`                     |  ~400 | The raw palette. 11 named ramps, 17 tints each.         | `variables/_colors.scss`      |
-| `--nb-c-<role>` (`primary`, `danger`, `text`, `surface`…) |   ~90 | What is this element _for_? The semantic layer.         | `_theme.scss`                 |
-| `--nb-c-chart-<1…8>`, `-sequential-from` / `-to`          |    10 | Which series is this? Categorical and sequential ramps. | `_theme.scss`                 |
-| `--nb-spacing-<px>`                                       |    25 | How far apart are these two things?                     | `variables/_type.scss`        |
-| `--nb-radius-<none…pill>`                                 |     6 | Is this a control the user manipulates, or a container? | `_theme.scss`                 |
-| `--nb-font-size-<px>`                                     |    22 | The raw type ramp. Rarely used directly.                | `variables/_type.scss`        |
-| `--nb-font-weight-<light…bold>`                           |     4 | Raw weights.                                            | `variables/_type.scss`        |
-| `--nb-font-family-sans` / `-mono`                         |     2 | Which typeface? Override these to bring your own.       | `variables/_type.scss`        |
-| `--nb-line-height-*`, `--nb-letter-spacing-*`             |    11 | Raw leading and tracking.                               | `variables/_type.scss`        |
-| `--nb-type-<set>-<size, weight, line-height, …>`          |    85 | What role does this text play? 17 sets, 5 props each.   | `variables/_type.scss`        |
-| `--nb-animation-<fast…xslow>`                             |     4 | How long should this take?                              | `variables/_animations.scss`  |
-| `--nb-zindex-<layer>`                                     |    22 | What sits above what? 19 root layers, 3 modal-scoped.   | `variables/_layout.scss`      |
-| `--nb-grid-max-width` / `-columns` / `-gutter`            |     3 | Page frame geometry.                                    | `variables/_grid.scss`        |
-| `--nb-field-height-xs…lg`, `-padding-h`, `-label-gap`, …  |     9 | How dense is this form control?                         | `_theme.scss`                 |
-| `--nb-shell-*`, `--nb-bottom-panel-*`                     |    37 | How is the application frame painted and sized?         | `_theme.scss` (`light` mixin) |
-| `--nb-menu-item-h`, `--nb-size-titlebar-height`           |     2 | Two chrome dimensions that predate the families.        | `_theme.scss`                 |
+| Family                                                          | Count | Answers                                                                          | Declared in                   |
+| --------------------------------------------------------------- | ----: | -------------------------------------------------------------------------------- | ----------------------------- |
+| `--nb-base-unit`                                                |     1 | What is the geometric grain? (`8px`)                                             | `_theme.scss`                 |
+| `--nb-c-<ramp>-<100…900>` and `-a11y`                           |  ~400 | The raw palette. 11 named ramps, 17 tints each.                                  | `variables/_colors.scss`      |
+| `--nb-c-<role>` (`primary`, `danger`, `text`, `surface`…)       |   ~90 | What is this element _for_? The semantic layer.                                  | `_theme.scss`                 |
+| `--nb-c-chart-<1…8>`, `-sequential-from` / `-to`                |    10 | Which series is this? Categorical and sequential ramps.                          | `_theme.scss`                 |
+| `--nb-spacing-<px>`                                             |    25 | How far apart are these two things?                                              | `variables/_type.scss`        |
+| `--nb-radius-<none…pill>`                                       |     6 | Is this a control the user manipulates, or a container?                          | `_theme.scss`                 |
+| `--nb-font-size-<px>`                                           |    22 | The raw type ramp. Rarely used directly.                                         | `variables/_type.scss`        |
+| `--nb-font-weight-<light…bold>`                                 |     4 | Raw weights.                                                                     | `variables/_type.scss`        |
+| `--nb-font-family-sans` / `-mono`                               |     2 | Which typeface? Override these to bring your own.                                | `variables/_type.scss`        |
+| `--nb-line-height-*`, `--nb-letter-spacing-*`                   |    11 | Raw leading and tracking.                                                        | `variables/_type.scss`        |
+| `--nb-type-<set>-<size, weight, line-height, …>`                |    85 | What role does this text play? 17 sets, 5 props each.                            | `variables/_type.scss`        |
+| `--nb-motion-<micro…loop>`, `--nb-ease-<standard, enter, exit>` |     9 | How long should this take, and on which curve? See [Motion](/principles/motion). | `variables/_animations.scss`  |
+| `--nb-animation-<fast…xslow>`                                   |     4 | Deprecated durations, kept for products that read them.                          | `variables/_animations.scss`  |
+| `--nb-zindex-<layer>`                                           |    22 | What sits above what? 19 root layers, 3 modal-scoped.                            | `variables/_layout.scss`      |
+| `--nb-grid-max-width` / `-columns` / `-gutter`                  |     3 | Page frame geometry.                                                             | `variables/_grid.scss`        |
+| `--nb-field-height-xs…lg`, `-padding-h`, `-label-gap`, …        |     9 | How dense is this form control?                                                  | `_theme.scss`                 |
+| `--nb-shell-*`, `--nb-bottom-panel-*`                           |    37 | How is the application frame painted and sized?                                  | `_theme.scss` (`light` mixin) |
+| `--nb-menu-item-h`, `--nb-size-titlebar-height`                 |     2 | Two chrome dimensions that predate the families.                                 | `_theme.scss`                 |
 
 Four areas are documented in depth elsewhere, because each has rules a table cannot carry:
 
@@ -109,7 +110,7 @@ Work down this ladder and stop at the first rung that applies. Every rung below 
 
 **1. Is there a semantic token for the job?** Use it. `--nb-c-danger` for a destructive action. `--nb-c-text-muted` for supporting copy. `--nb-field-height-sm` for a dense control. This is the only rung where the value moves correctly when the theme, the brand or the density changes.
 
-**2. Is there a scale step for the relationship?** Use it. `--nb-spacing-16` for padding inside a panel, `--nb-radius-sm` for a popover, `--nb-animation-fast` for a hover transition. You are not naming a role, but you are naming a step, and steps move together.
+**2. Is there a scale step for the relationship?** Use it. `--nb-spacing-16` for padding inside a panel, `--nb-radius-sm` for a popover, `--nb-motion-short` for a hover transition. You are not naming a role, but you are naming a step, and steps move together.
 
 **3. Is this geometry that must match a known dimension?** Compute it from the grain and say what you are matching.
 
@@ -131,7 +132,7 @@ A worked example. You are styling a compact toolbar button inside an inspector.
 | Height             | 1    | `var(--nb-field-height-xs)` (it lives among xs fields) |
 | Horizontal padding | 2    | `var(--nb-spacing-8)`                                  |
 | Gap to its icon    | 2    | `var(--nb-spacing-4)`                                  |
-| Hover transition   | 2    | `var(--nb-animation-fast)`                             |
+| Hover transition   | 2    | `var(--nb-motion-short)`                               |
 | Focus ring         | 1    | `var(--nb-c-focus-ring)`                               |
 
 Nine decisions, no literals, and the whole thing retints, rethemes and re-densifies without being touched.
@@ -204,14 +205,14 @@ Put them on `:root` in your own stylesheet. That beats the library's scoped comp
 
 Legal, and occasionally correct, but each has a blast radius you should know before you type it.
 
-| Tokens                 | Why care                                                                                                                       |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `--nb-field-height-*`  | Changes the vertical rhythm of every form. Change the whole set or none of it.                                                 |
-| `--nb-field-label-gap` | Shared by every control so mixed rows align. Overriding it in one place breaks that alignment for the row.                     |
-| `--nb-radius-*`        | Retunes rounding globally. Squaring the whole system is a coherent choice; squaring one step is usually not.                   |
-| `--nb-animation-*`     | Applies to every transition. Do not set these to `0` to disable motion; honour `prefers-reduced-motion` instead.               |
-| `--nb-c-layer-*`       | The four-level depth model. Read the Layers section of [Theming](/theming#layers) first, then change all four levels together. |
-| `--nb-grid-*`          | Page frame. Harmless, but the 16-column grid classes are compiled from Sass and will not follow.                               |
+| Tokens                 | Why care                                                                                                                                 |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `--nb-field-height-*`  | Changes the vertical rhythm of every form. Change the whole set or none of it.                                                           |
+| `--nb-field-label-gap` | Shared by every control so mixed rows align. Overriding it in one place breaks that alignment for the row.                               |
+| `--nb-radius-*`        | Retunes rounding globally. Squaring the whole system is a coherent choice; squaring one step is usually not.                             |
+| `--nb-motion-*`        | Applies to every transition. Do not set these to `0` to disable motion; `prefers-reduced-motion` is honoured by every component already. |
+| `--nb-c-layer-*`       | The four-level depth model. Read the Layers section of [Theming](/theming#layers) first, then change all four levels together.           |
+| `--nb-grid-*`          | Page frame. Harmless, but the 16-column grid classes are compiled from Sass and will not follow.                                         |
 
 ::: danger `--nb-base-unit` is a trap
 It looks like the master dial and it is not. Field heights, radii and shell dimensions are `calc(var(--nb-base-unit) * n)` and will scale. The entire `--nb-spacing-*` scale is emitted as literal `rem` values and will **not**. Changing it produces a UI stretched in one dimension and untouched in the other. Leave it at `8px` unless you are also re-declaring all 25 spacing tokens in the same block.
@@ -299,9 +300,9 @@ Twenty-five steps, but only eight of them form the working rhythm. [Spacing and 
   <tokens-viewer section="radius" />
 </ClientOnly>
 
-### Animation
+### Motion
 
-Pair every one of these with a `prefers-reduced-motion` guard. Do not override them to zero.
+Six duration steps and three curves, plus the four deprecated `legacy-*` durations. The rules for choosing a step and a curve are on [Motion](/principles/motion). Do not override the steps to zero to switch motion off: every component honours `prefers-reduced-motion` on its own.
 
 <ClientOnly>
   <tokens-viewer section="animation" />

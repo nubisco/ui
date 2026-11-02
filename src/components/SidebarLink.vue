@@ -82,8 +82,8 @@ const anchorAttrs = computed(() =>
   flex-shrink: 0;
   position: relative;
   transition:
-    background 0.15s,
-    color 0.15s;
+    background var(--nb-motion-short),
+    color var(--nb-motion-short);
 
   // ── Tooltip ────────────────────────────────────────────────────────────────
 
@@ -101,7 +101,7 @@ const anchorAttrs = computed(() =>
     white-space: nowrap;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.12s;
+    transition: opacity var(--nb-motion-quick);
     z-index: 500;
   }
 

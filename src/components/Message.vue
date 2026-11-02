@@ -112,9 +112,9 @@ const iconMap = {
     visibility: hidden;
     transform: translateX(-50%) translateY(4px);
     transition:
-      opacity 0.15s ease,
-      transform 0.15s ease,
-      visibility 0.15s ease;
+      opacity var(--nb-motion-short) ease,
+      transform var(--nb-motion-short) ease,
+      visibility var(--nb-motion-short) ease;
     pointer-events: none;
     z-index: var(--nb-zindex-tooltip, 401);
 

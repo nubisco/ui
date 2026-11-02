@@ -294,8 +294,8 @@ defineExpose({ files, setFileStatus })
     cursor: pointer;
     text-align: center;
     transition:
-      border-color 0.15s,
-      background 0.15s;
+      border-color var(--nb-motion-short),
+      background var(--nb-motion-short);
 
     &--primary {
       background: color-mix(in srgb, var(--nb-c-primary) 6%, transparent);
@@ -360,7 +360,7 @@ defineExpose({ files, setFileStatus })
     padding: 0.6rem 0.875rem;
     font-size: 0.9rem;
     color: var(--nb-c-text);
-    transition: border-color 0.15s;
+    transition: border-color var(--nb-motion-short);
 
     &--error {
       border-color: var(--nb-c-danger);

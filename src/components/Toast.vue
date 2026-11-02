@@ -365,8 +365,8 @@ watch(
   color: var(--nb-c-text-subtle);
   cursor: pointer;
   transition:
-    background var(--nb-animation-fast),
-    color var(--nb-animation-fast);
+    background var(--nb-motion-medium),
+    color var(--nb-motion-medium);
   margin-top: -1px;
 
   &:hover {

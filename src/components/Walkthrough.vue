@@ -585,7 +585,7 @@ defineExpose({
   color: var(--nb-c-text);
   box-shadow: 0 calc(var(--nb-base-unit) * 1.5) calc(var(--nb-base-unit) * 4)
     var(--nb-c-scrim);
-  animation: nb-walkthrough-in var(--nb-animation-fast) ease-out;
+  animation: nb-walkthrough-in var(--nb-motion-medium) ease-out;
 
   &:focus {
     outline: none;

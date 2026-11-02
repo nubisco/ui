@@ -481,6 +481,14 @@
     /*
     * Animation helpers
     */
+    @each $key, $value in animations.$motion {
+      --nb-motion-#{$key}: #{$value};
+    }
+    @each $key, $value in animations.$easing {
+      --nb-ease-#{$key}: #{$value};
+    }
+    // Deprecated: the pre-motion-scale durations, kept so nothing that reads
+    // them breaks. New work reads --nb-motion-*.
     @each $key, $value in animations.$timings {
       --nb-animation-#{$key}: #{$value};
     }
@@ -672,6 +680,17 @@
     // The permanent column never reads these and keeps its desktop density.
     --nb-shell-drawer-row-height: 44px;
     --nb-shell-drawer-row-gap: 4px;
+    // The detached frame (`<NbShell frame="detached">`): the gutter between
+    // the floating regions and the window, the corner each region carries,
+    // and the lift that sets it off the ground. Independent of the square or
+    // rounded appearance on purpose: a square product can float its frame
+    // and keep square controls inside it. The shadow is black at low alpha
+    // so it darkens whatever ground is under it and needs no dark-mode twin.
+    --nb-shell-detached-gap: calc(var(--nb-base-unit) * 1.5); // 12px
+    --nb-shell-detached-radius: calc(var(--nb-base-unit) * 2); // 16px
+    --nb-shell-detached-shadow:
+      0 1px 2px color-mix(in srgb, var(--nb-c-black) 6%, transparent),
+      0 8px 24px -12px color-mix(in srgb, var(--nb-c-black) 18%, transparent);
 
     // Panels — emitted at :root so consumer apps can override on :root without
     // fighting the components' scoped-style specificity.

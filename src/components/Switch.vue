@@ -93,6 +93,7 @@ const wrapperClasses = computed(() => ({
 </script>
 
 <style lang="scss" scoped>
+@use '../styles/logic/motion' as motion;
 @use '../styles/variables/breakpoints' as bp;
 @use '../styles/logic/touch' as touch;
 
@@ -119,7 +120,11 @@ const wrapperClasses = computed(() => ({
       right: 0;
       bottom: 0;
       background-color: var(--nb-c-component-inactive);
-      transition: 0.3s;
+      // The track tints and the knob travels. 300ms here was most of why the
+      // control felt heavy: a toggle is a micro-interaction and answers at
+      // once.
+      transition: background-color var(--nb-motion-micro)
+        var(--nb-ease-standard);
       border-radius: calc(var(--nb-base-unit) * 4);
       &:before {
         position: absolute;
@@ -130,7 +135,7 @@ const wrapperClasses = computed(() => ({
         bottom: calc(var(--nb-base-unit) / 2);
         background-color: var(--nb-c-white);
         border-radius: 50%;
-        transition: transform 0.3s;
+        transition: transform var(--nb-motion-quick) var(--nb-ease-standard);
       }
     }
     &[aria-disabled='true'] {
@@ -293,5 +298,12 @@ const wrapperClasses = computed(() => ({
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+@include motion.reduced {
+  .nb-switch .slider,
+  .nb-switch .slider:before {
+    transition: none;
+  }
 }
 </style>

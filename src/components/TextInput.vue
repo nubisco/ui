@@ -371,8 +371,8 @@ const wrapperClasses = computed(() => ({
     border-bottom: 1px solid var(--nb-c-field-border);
     border-radius: var(--nb-field-radius, 0);
     transition:
-      border-color 0.15s,
-      box-shadow 0.15s;
+      border-color var(--nb-motion-short),
+      box-shadow var(--nb-motion-short);
 
     &--focused {
       outline: 2px solid var(--nb-c-primary);

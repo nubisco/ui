@@ -187,8 +187,8 @@ const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
 .nb-card--interactive {
   cursor: pointer;
   transition:
-    background 70ms linear,
-    border-color 70ms linear;
+    background var(--nb-motion-micro) linear,
+    border-color var(--nb-motion-micro) linear;
 
   &:hover {
     background: var(--nb-c-surface-hover);

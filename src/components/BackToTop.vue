@@ -104,8 +104,8 @@ onBeforeUnmount(() => {
 .nb-back-to-top-enter-active,
 .nb-back-to-top-leave-active {
   transition:
-    opacity var(--nb-animation-fast) ease,
-    transform var(--nb-animation-fast) ease;
+    opacity var(--nb-motion-medium) ease,
+    transform var(--nb-motion-medium) ease;
 }
 
 .nb-back-to-top-enter-from,

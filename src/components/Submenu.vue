@@ -250,6 +250,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss">
+@use '../styles/logic/motion' as motion;
 .nb-submenu-trigger {
   &__caret {
     flex-shrink: 0;
@@ -262,12 +263,28 @@ onBeforeUnmount(() => {
   // Inherits .nb-menu styles
 }
 
-.nb-submenu-enter-active,
-.nb-submenu-leave-active {
-  transition: opacity 0.12s ease;
+// Arrives from its trigger (enter curve, quick) and fades away (exit curve,
+// micro): a popover that slides back out is a popover the eye follows away
+// from the thing the person is about to do next.
+.nb-submenu-enter-active {
+  transition:
+    opacity var(--nb-motion-quick) var(--nb-ease-enter),
+    transform var(--nb-motion-quick) var(--nb-ease-enter);
 }
-.nb-submenu-enter-from,
+.nb-submenu-leave-active {
+  transition: opacity var(--nb-motion-micro) var(--nb-ease-exit);
+}
+.nb-submenu-enter-from {
+  opacity: 0;
+  transform: translateX(-4px);
+}
 .nb-submenu-leave-to {
   opacity: 0;
+}
+
+@include motion.reduced {
+  .nb-submenu-enter-from {
+    transform: none;
+  }
 }
 </style>

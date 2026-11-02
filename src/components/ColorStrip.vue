@@ -325,8 +325,8 @@ $nb-color-diameter: 30px;
     // under rounded, a square under square.
     border-radius: var(--nb-radius-control);
     transition:
-      border 0.2s,
-      box-shadow 0.2s;
+      border var(--nb-motion-medium),
+      box-shadow var(--nb-motion-medium);
 
     &:disabled {
       cursor: not-allowed;
