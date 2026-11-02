@@ -1,3 +1,10 @@
+# [5.45.0](https://github.com/nubisco/ui/compare/v5.44.0...v5.45.0) (2026-11-02)
+
+
+### Features
+
+* **shell:** detached frame and a motion system ([d25c749](https://github.com/nubisco/ui/commit/d25c749c999aada4b5ccb521ae8b26c64d07731a))
+
 # [5.44.0](https://github.com/nubisco/ui/compare/v5.43.2...v5.44.0) (2026-11-01)
 
 
