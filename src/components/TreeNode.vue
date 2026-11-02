@@ -369,7 +369,7 @@ function onKeydown(e: KeyboardEvent) {
     border-radius: var(--nb-radius-control-sm);
     min-block-size: 2rem; // 32px
     padding-inline-end: 1rem; // 16px
-    transition: background 0.1s;
+    transition: background var(--nb-motion-quick);
 
     &:hover {
       background: var(
@@ -478,7 +478,7 @@ function onKeydown(e: KeyboardEvent) {
     color: var(--nb-c-text-muted);
     // caret-right glyph: collapsed points right (0deg), expanded points down (90deg).
     transform: rotate(0deg);
-    transition: transform 0.1s ease;
+    transition: transform var(--nb-motion-quick) var(--nb-ease-standard);
 
     &--expanded {
       transform: rotate(90deg);
@@ -531,7 +531,7 @@ function onKeydown(e: KeyboardEvent) {
     gap: 2px;
     margin-inline-start: auto;
     opacity: 0;
-    transition: opacity 0.1s;
+    transition: opacity var(--nb-motion-quick);
   }
 
   &__meta {

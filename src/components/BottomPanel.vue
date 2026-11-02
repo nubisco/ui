@@ -217,8 +217,8 @@ defineExpose({ setSize })
   align-items: center;
   justify-content: center;
   transition:
-    background 0.1s,
-    color 0.1s;
+    background var(--nb-motion-quick),
+    color var(--nb-motion-quick);
 
   &:hover {
     background: var(--nb-c-surface-hover, rgba(255, 255, 255, 0.08));

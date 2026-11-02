@@ -269,7 +269,7 @@ function getEventsForDate(dateStr: string): ICalendarEvent[] {
   padding: 0.25rem;
   display: flex;
   align-items: center;
-  transition: color 0.15s;
+  transition: color var(--nb-motion-short);
 
   &:hover {
     color: var(--nb-c-text);
@@ -290,7 +290,7 @@ function getEventsForDate(dateStr: string): ICalendarEvent[] {
   padding: 0;
   font-size: 0.875rem;
   font-weight: 600;
-  transition: color 0.15s;
+  transition: color var(--nb-motion-short);
 
   &:hover {
     color: var(--nb-c-primary-hover, var(--nb-c-primary));
@@ -324,7 +324,7 @@ function getEventsForDate(dateStr: string): ICalendarEvent[] {
   border-right: 1px solid var(--nb-c-border);
   border-bottom: 1px solid var(--nb-c-border);
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background var(--nb-motion-quick);
 
   &:nth-child(7n) {
     border-right: none;

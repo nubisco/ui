@@ -519,6 +519,7 @@ defineExpose({ open, toggle, close })
 </script>
 
 <style lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/variables/breakpoints' as bp;
 
@@ -592,7 +593,7 @@ defineExpose({ open, toggle, close })
   // made the account label visibly larger than the items above it.
   font-size: 0.8125rem;
   cursor: pointer;
-  transition: background 0.12s ease;
+  transition: background var(--nb-motion-quick) ease;
 
   &:hover:not(:disabled) {
     background: var(
@@ -654,17 +655,29 @@ defineExpose({ open, toggle, close })
   }
 }
 
-.nb-user-menu-pop-enter-active,
-.nb-user-menu-pop-leave-active {
+// Arrives from its trigger (enter curve, quick) and fades away (exit curve,
+// micro): a popover that slides back out is a popover the eye follows away
+// from the thing the person is about to do next.
+.nb-user-menu-pop-enter-active {
   transition:
-    opacity 0.12s ease,
-    transform 0.12s ease;
+    opacity var(--nb-motion-quick) var(--nb-ease-enter),
+    transform var(--nb-motion-quick) var(--nb-ease-enter);
 }
-
-.nb-user-menu-pop-enter-from,
-.nb-user-menu-pop-leave-to {
+.nb-user-menu-pop-leave-active {
+  transition: opacity var(--nb-motion-micro) var(--nb-ease-exit);
+}
+.nb-user-menu-pop-enter-from {
   opacity: 0;
   transform: translateX(-4px);
+}
+.nb-user-menu-pop-leave-to {
+  opacity: 0;
+}
+
+@include motion.reduced {
+  .nb-user-menu-pop-enter-from {
+    transform: none;
+  }
 }
 
 .nb-user-menu__label {

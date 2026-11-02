@@ -911,8 +911,8 @@ defineExpose({ queue })
 .nb-toaster-leave-active,
 .nb-toaster-move {
   transition:
-    opacity var(--nb-animation-fast) ease,
-    translate var(--nb-animation-fast) ease;
+    opacity var(--nb-motion-medium) ease,
+    translate var(--nb-motion-medium) ease;
 }
 
 .nb-toaster-enter-from,
@@ -967,7 +967,7 @@ defineExpose({ queue })
 
   .nb-toaster-enter-active,
   .nb-toaster-leave-active {
-    transition: opacity var(--nb-animation-fast) ease;
+    transition: opacity var(--nb-motion-medium) ease;
   }
 
   .nb-toaster-move {

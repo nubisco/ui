@@ -191,7 +191,7 @@ defineExpose({ setSize })
     // full contrast so its size controls stay easy to find and click.
     .nb-shell-panel__header {
       opacity: 0.6;
-      transition: opacity 0.12s ease;
+      transition: opacity var(--nb-motion-quick) ease;
     }
     .nb-shell-panel__header:hover {
       opacity: 1;
@@ -317,8 +317,8 @@ defineExpose({ setSize })
   align-items: center;
   justify-content: center;
   transition:
-    background 0.1s,
-    color 0.1s;
+    background var(--nb-motion-quick),
+    color var(--nb-motion-quick);
 
   &:hover {
     background: var(--nb-c-surface-hover, rgba(255, 255, 255, 0.08));
@@ -381,7 +381,7 @@ defineExpose({ setSize })
   // whether the user collapsed it or a sibling was maximized.
   > .nb-shell-panel__header {
     opacity: 0.6;
-    transition: opacity 0.12s ease;
+    transition: opacity var(--nb-motion-quick) ease;
   }
   > .nb-shell-panel__header:hover {
     opacity: 1;

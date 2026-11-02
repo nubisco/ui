@@ -383,8 +383,8 @@ defineExpose({ focus: () => inputRef.value?.focus() })
     height: var(--field-h);
     box-sizing: border-box;
     transition:
-      border-color 0.15s,
-      box-shadow 0.15s;
+      border-color var(--nb-motion-short),
+      box-shadow var(--nb-motion-short);
 
     &--focused {
       outline: 2px solid var(--nb-c-primary);
@@ -474,7 +474,7 @@ defineExpose({ focus: () => inputRef.value?.focus() })
     border: none;
     cursor: pointer;
     color: var(--nb-c-text);
-    transition: background 0.15s;
+    transition: background var(--nb-motion-short);
     padding: 0;
     flex-shrink: 0;
     position: relative;

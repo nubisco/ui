@@ -207,9 +207,9 @@ onMounted(() => {
   font-weight: 500;
   cursor: pointer;
   transition:
-    background 0.15s,
-    opacity 0.15s,
-    box-shadow 0.15s;
+    background var(--nb-motion-short),
+    opacity var(--nb-motion-short),
+    box-shadow var(--nb-motion-short);
   white-space: nowrap;
   outline: none;
 

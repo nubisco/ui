@@ -8,4 +8,6 @@ const inspectorWidth = ref<number | null>(null)
 const panelSize = ref('default')
 const kitchenInspector = ref(true)
 const kitchenPanelSize = ref('default')
+const detachedInspector = ref(true)
+const detachedPanelSize = ref('default')
 </script>

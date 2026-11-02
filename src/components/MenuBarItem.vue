@@ -151,7 +151,7 @@ onBeforeUnmount(() => {
   user-select: none;
   font-family: inherit;
   white-space: nowrap;
-  transition: background 0.1s;
+  transition: background var(--nb-motion-quick);
   outline: none;
 
   &:hover {

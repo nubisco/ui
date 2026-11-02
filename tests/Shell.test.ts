@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { afterEach, describe, it, expect, vi } from 'vitest'
+import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import Shell from '../src/components/Shell.vue'
 
@@ -77,6 +78,87 @@ describe('Shell', () => {
     const wrapper = createWrapper()
     expect(wrapper.find('.nb-shell__contextbar').exists()).toBe(false)
     expect(wrapper.find('.nb-shell__contextbar-toggle').exists()).toBe(false)
+  })
+
+  it('is attached by default and detached on request', () => {
+    expect(createWrapper().classes()).not.toContain('nb-shell--detached')
+    expect(createWrapper({ frame: 'attached' }).classes()).not.toContain(
+      'nb-shell--detached',
+    )
+    expect(createWrapper({ frame: 'detached' }).classes()).toContain(
+      'nb-shell--detached',
+    )
+  })
+
+  it('keeps the page and the bottom panel as siblings inside the body', () => {
+    const wrapper = createWrapper(
+      {},
+      { fixedbar: '<nav>tabs</nav>', bottom: '<div class="console" />' },
+    )
+    const body = wrapper.find('.nb-shell__body')
+    const page = body.find(':scope > .nb-shell__page')
+    expect(page.exists()).toBe(true)
+    expect(page.find('.nb-shell__fixedbar nav').exists()).toBe(true)
+    expect(page.find('.nb-shell__main-row .nb-shell__main').exists()).toBe(true)
+    expect(body.find(':scope > .nb-shell__bottom .console').exists()).toBe(true)
+    expect(page.find('.nb-shell__bottom').exists()).toBe(false)
+  })
+
+  describe('rail collapse order', () => {
+    const stubReducedMotion = (reduce: boolean) =>
+      vi.stubGlobal('matchMedia', (query: string) => ({
+        matches: reduce && query.includes('reduce'),
+        media: query,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      }))
+
+    afterEach(() => {
+      vi.unstubAllGlobals()
+      vi.useRealTimers()
+    })
+
+    const mountRail = (sidebarVariant: 'compact' | 'verbose') =>
+      mount(Shell, {
+        props: { sidebarVariant },
+        slots: { 'sidebar-nav': '<a href="/">Home</a>' },
+      })
+
+    it('narrows at once and keeps the rows verbose until the width settles', async () => {
+      stubReducedMotion(false)
+      vi.useFakeTimers()
+      const w = mountRail('verbose')
+      await w.setProps({ sidebarVariant: 'compact' })
+      // The width class follows the prop, the layout class lags.
+      expect(w.classes()).not.toContain('nb-shell--rail-wide')
+      expect(w.classes()).toContain('nb-shell--sidebar-verbose')
+      expect(w.classes()).toContain('nb-shell--rail-collapsing')
+      vi.advanceTimersByTime(240)
+      await nextTick()
+      expect(w.classes()).toContain('nb-shell--sidebar-compact')
+      expect(w.classes()).not.toContain('nb-shell--rail-collapsing')
+    })
+
+    it('widens and switches the rows at once on expand', async () => {
+      stubReducedMotion(false)
+      vi.useFakeTimers()
+      const w = mountRail('compact')
+      await w.setProps({ sidebarVariant: 'verbose' })
+      expect(w.classes()).toContain('nb-shell--rail-wide')
+      expect(w.classes()).toContain('nb-shell--sidebar-verbose')
+      expect(w.classes()).toContain('nb-shell--rail-expanding')
+      vi.advanceTimersByTime(240)
+      await nextTick()
+      expect(w.classes()).not.toContain('nb-shell--rail-expanding')
+    })
+
+    it('switches immediately under reduced motion', async () => {
+      stubReducedMotion(true)
+      const w = mountRail('verbose')
+      await w.setProps({ sidebarVariant: 'compact' })
+      expect(w.classes()).toContain('nb-shell--sidebar-compact')
+      expect(w.classes()).not.toContain('nb-shell--rail-collapsing')
+    })
   })
 
   it('renders default slot content in main', () => {

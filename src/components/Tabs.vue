@@ -401,9 +401,9 @@ function onKeydown(event: KeyboardEvent): void {
     white-space: nowrap;
     cursor: pointer;
     transition:
-      color 0.15s,
-      background 0.15s,
-      border-color 0.15s;
+      color var(--nb-motion-short),
+      background var(--nb-motion-short),
+      border-color var(--nb-motion-short);
 
     &:hover:not(:disabled) {
       color: var(--nb-c-text);

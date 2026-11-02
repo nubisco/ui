@@ -442,6 +442,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 
 .nb-sidebar-menu-item {
@@ -473,9 +474,13 @@ onBeforeUnmount(() => {
   text-align: left;
   font: inherit;
   cursor: pointer;
+  // The compact and verbose rows differ by a few pixels of padding, and the
+  // rail switches between them at the end of its width change; the padding
+  // transition turns that switch into a settle.
   transition:
-    background 0.12s ease,
-    color 0.12s ease;
+    background var(--nb-motion-quick) ease,
+    color var(--nb-motion-quick) ease,
+    padding var(--nb-motion-quick) var(--nb-ease-standard);
 
   &:hover:not(&--disabled) {
     background: var(
@@ -630,7 +635,7 @@ onBeforeUnmount(() => {
 
 .nb-sidebar-menu-item__caret {
   flex-shrink: 0;
-  transition: transform 0.15s ease;
+  transition: transform var(--nb-motion-quick) var(--nb-ease-standard);
   opacity: 0.65;
 
   &--expanded {
@@ -651,10 +656,22 @@ onBeforeUnmount(() => {
 </style>
 
 <style lang="scss">
+@use '../styles/logic/motion' as motion;
 // Flyout is teleported to body so it lives outside the scoped tree.
+@keyframes nb-sidebar-menu-item-flyout-in {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+}
+
 .nb-sidebar-menu-item__flyout {
   position: fixed;
   z-index: 1000;
+  // Mounted and unmounted outright, so the entrance is a keyframe: from the
+  // rail it belongs to, on the enter curve, quick.
+  animation: nb-sidebar-menu-item-flyout-in var(--nb-motion-quick)
+    var(--nb-ease-enter);
   min-width: 200px;
   max-width: 280px;
   padding: 6px;
@@ -694,6 +711,12 @@ onBeforeUnmount(() => {
     width: 100%;
     height: auto;
     justify-content: flex-start;
+  }
+}
+
+@include motion.reduced {
+  .nb-sidebar-menu-item__flyout {
+    animation: none;
   }
 }
 </style>

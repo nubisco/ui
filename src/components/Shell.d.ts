@@ -2,6 +2,7 @@ type TInspectorSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 type TSidebarVariant = 'compact' | 'verbose'
 type TShellTopbar = 'auto' | 'always' | 'never'
 type TShellCollapseAt = 'md' | 'lg' | 'none'
+type TShellFrame = 'attached' | 'detached'
 type TSidebarHeaderActionPosition = 'end' | 'start' | 'edge'
 type TSidebarHeaderActionCompact = 'stack' | 'swap' | 'replace'
 
@@ -125,6 +126,27 @@ interface IShellProps {
    */
   topbar?: TShellTopbar
   /**
+   * How the frame's regions meet the window.
+   *
+   * - 'attached': every region runs to the edge it borders. The sidebar
+   *   touches the left, top and bottom of the window, the topbar touches the
+   *   top, and so on. This is the frame every application has today.
+   * - 'detached': the regions float. The sidebar, the topbar, the menu
+   *   strips, the page, the bottom panel and the inspector each become a
+   *   rounded card with a gutter around it, and the frame ground shows
+   *   between them. Nothing moves inside a region: the rail keeps its
+   *   compact or verbose width, the inspector keeps its sizes, the drawer
+   *   and the sheet still take over at collapsed widths.
+   *
+   * The gutter, the corner and the lift are tokens
+   * (`--nb-shell-detached-gap`, `--nb-shell-detached-radius`,
+   * `--nb-shell-detached-shadow`), independent of the square or rounded
+   * appearance so a square product can float its frame too.
+   *
+   * @default 'attached'
+   */
+  frame?: TShellFrame
+  /**
    * Render the "skip to content" link as the shell's first focusable element.
    *
    * The shell is the only component that knows where the main region is, so it
@@ -218,6 +240,7 @@ export {
   TSidebarVariant,
   TShellTopbar,
   TShellCollapseAt,
+  TShellFrame,
   TSidebarHeaderActionPosition,
   TSidebarHeaderActionCompact,
 }

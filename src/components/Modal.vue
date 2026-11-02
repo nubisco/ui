@@ -292,6 +292,7 @@ defineExpose({ dialogEl: () => contentRef.value, bodyEl: () => bodyRef.value })
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/logic/touch' as touch;
 @use '../styles/variables/breakpoints' as bp;
@@ -430,8 +431,8 @@ $modal-sizes: (
   align-items: center;
   justify-content: center;
   transition:
-    background 0.15s,
-    color 0.15s;
+    background var(--nb-motion-short),
+    color var(--nb-motion-short);
   flex-shrink: 0;
   // The square is 28px, which a thumb misses. The target grows, the square
   // does not.
@@ -465,16 +466,27 @@ $modal-sizes: (
   }
 }
 
-/* Transitions */
-.nb-modal-enter-active,
-.nb-modal-leave-active {
-  transition:
-    opacity 0.2s,
-    transform 0.2s;
+/* Transitions.
+ *
+ * One event, one timing: the scrim and the dialog share a duration and a
+ * curve in each direction, so the whole thing reads as one surface. The
+ * entrance settles (enter curve, medium); the exit commits (exit curve,
+ * short): a dialog that leaves as slowly as it arrived looks as if it changed
+ * its mind. */
+.nb-modal-enter-active {
+  transition: opacity var(--nb-motion-medium) var(--nb-ease-enter);
   .nb-modal--content {
     transition:
-      opacity 0.2s,
-      transform 0.2s;
+      opacity var(--nb-motion-medium) var(--nb-ease-enter),
+      transform var(--nb-motion-medium) var(--nb-ease-enter);
+  }
+}
+.nb-modal-leave-active {
+  transition: opacity var(--nb-motion-short) var(--nb-ease-exit);
+  .nb-modal--content {
+    transition:
+      opacity var(--nb-motion-short) var(--nb-ease-exit),
+      transform var(--nb-motion-short) var(--nb-ease-exit);
   }
 }
 .nb-modal-enter-from {
@@ -487,7 +499,7 @@ $modal-sizes: (
 .nb-modal-leave-to {
   opacity: 0;
   .nb-modal--content {
-    transform: scale(0.96) translateY(-8px);
+    transform: scale(0.98) translateY(4px);
     opacity: 0;
   }
 }
@@ -549,15 +561,16 @@ $modal-sizes: (
       opacity: 1;
     }
   }
+}
 
-  // Without motion the sheet only fades, like the scrim.
-  @media (prefers-reduced-motion: reduce) {
-    .nb-modal-enter-from,
-    .nb-modal-leave-to {
-      .nb-modal--content {
-        transform: none;
-        opacity: 0;
-      }
+// Without motion the dialog, and the sheet, only fade, like the scrim: the
+// fade is the feedback, the travel was the decoration.
+@include motion.reduced {
+  .nb-modal-enter-from,
+  .nb-modal-leave-to {
+    .nb-modal--content {
+      transform: none;
+      opacity: 0;
     }
   }
 }

@@ -318,7 +318,7 @@ defineExpose({ reposition, focus, el: toolbarRef })
     var(--nb-c-scrim);
   white-space: nowrap;
 
-  animation: nb-floating-toolbar-in var(--nb-animation-fast) ease-out;
+  animation: nb-floating-toolbar-in var(--nb-motion-medium) ease-out;
 }
 
 .nb-floating-toolbar--vertical {

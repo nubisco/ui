@@ -381,8 +381,8 @@ onBeforeUnmount(cleanupPointer)
   // corner. The note that used to sit here predated the appearance setting.
   @include radius.surface(panel);
   transition:
-    background 70ms linear,
-    margin 110ms cubic-bezier(0, 0, 0.38, 0.9);
+    background var(--nb-motion-micro) linear,
+    margin var(--nb-motion-quick) var(--nb-ease-enter);
 
   &:hover {
     background: var(--nb-c-surface-hover);

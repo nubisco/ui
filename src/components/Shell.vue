@@ -6,8 +6,12 @@
       { 'nb-shell--no-sidebar': !showSidebar },
       showSidebar ? `nb-shell--sidebar-${effectiveSidebarVariant}` : null,
       {
+        'nb-shell--rail-wide': showSidebar && railWidthVariant === 'verbose',
+        'nb-shell--detached': frame === 'detached',
         'nb-shell--collapsed': collapsed,
         'nb-shell--drawer-open': collapsed && drawerOpen,
+        'nb-shell--rail-collapsing': railMotion === 'collapsing',
+        'nb-shell--rail-expanding': railMotion === 'expanding',
       },
     ]"
     @keydown.esc="onFrameEscape"
@@ -92,11 +96,13 @@
            decoration with a shortcut attached, and the drawer is already
            dismissible from the keyboard with Escape and from the toggle
            button, both of which are real controls. -->
-      <div
-        v-if="showSidebar && collapsed && drawerOpen"
-        class="nb-shell__scrim"
-        @click="setDrawerOpen(false)"
-      />
+      <Transition name="nb-shell-scrim">
+        <div
+          v-if="showSidebar && collapsed && drawerOpen"
+          class="nb-shell__scrim"
+          @click="setDrawerOpen(false)"
+        />
+      </Transition>
 
       <!-- ═══ RIGHT AREA: inner-menu + body + inspector side by side ═══ -->
       <div class="nb-shell__right">
@@ -174,63 +180,71 @@
             :inert="bodyInert || undefined"
             :aria-hidden="bodyInert || undefined"
           >
-            <div
-              v-if="showRegion('fixedbar')"
-              :ref="regionRef('fixedbar')"
-              class="nb-shell__fixedbar"
-            >
-              <slot name="fixedbar" />
-            </div>
+            <!-- ═══ PAGE (fixedbar + contextbar + main) ═══
+                 One box for everything above the bottom panel. It exists so
+                 that a detached frame can float the page and the bottom
+                 panel as two cards: without it the two share the body and
+                 there is no element to round. Attached, it is a column that
+                 lays out exactly as the body did on its own. -->
+            <div class="nb-shell__page">
+              <div
+                v-if="showRegion('fixedbar')"
+                :ref="regionRef('fixedbar')"
+                class="nb-shell__fixedbar"
+              >
+                <slot name="fixedbar" />
+              </div>
 
-            <!-- ═══ CONTEXTBAR TOGGLE (collapsed frames only) ═══
+              <!-- ═══ CONTEXTBAR TOGGLE (collapsed frames only) ═══
                  Below `collapseAt` the contextbar folds away; this bar is the
                  way back to it. In the permanent layout the column is always
                  there, so the toggle would be noise. -->
-            <button
-              v-if="collapsed && showRegion('contextbar')"
-              type="button"
-              class="nb-shell__contextbar-toggle"
-              :aria-expanded="contextbarOpen"
-              @click="contextbarOpen = !contextbarOpen"
-            >
-              <span>{{ contextbarLabel }}</span>
-              <span
-                class="nb-shell__contextbar-toggle-glyph"
-                aria-hidden="true"
+              <button
+                v-if="collapsed && showRegion('contextbar')"
+                type="button"
+                class="nb-shell__contextbar-toggle"
+                :aria-expanded="contextbarOpen"
+                @click="contextbarOpen = !contextbarOpen"
               >
-                {{ contextbarOpen ? '▾' : '▸' }}
-              </span>
-            </button>
+                <span>{{ contextbarLabel }}</span>
+                <span
+                  class="nb-shell__contextbar-toggle-glyph"
+                  aria-hidden="true"
+                >
+                  {{ contextbarOpen ? '▾' : '▸' }}
+                </span>
+              </button>
 
-            <!-- ═══ MAIN ROW: contextbar | main ═══
+              <!-- ═══ MAIN ROW: contextbar | main ═══
                  The contextbar is a secondary navigation column (a document
                  tree, a media browser) that runs from the bar above it to the
                  bottom of the frame. It scrolls on its own so the tree and the
                  page never fight over one scrollbar. -->
-            <div class="nb-shell__main-row">
-              <aside
-                v-if="showRegion('contextbar')"
-                v-show="!collapsed || contextbarOpen"
-                :ref="regionRef('contextbar')"
-                class="nb-shell__contextbar"
-                :class="regionClass('contextbar')"
-                :aria-label="contextbarLabel"
-                @click.capture="onContextbarActivate"
-              >
-                <slot name="contextbar" />
-              </aside>
-              <main
-                :id="resolvedMainId"
-                ref="mainRef"
-                tabindex="-1"
-                class="nb-shell__main"
-                :class="{ 'nb-shell__main--no-padding': !mainPadding }"
-                v-bind="mainLayerProps"
-              >
-                <SurfaceLayerScope :level="1">
-                  <slot />
-                </SurfaceLayerScope>
-              </main>
+              <div class="nb-shell__main-row">
+                <aside
+                  v-if="showRegion('contextbar')"
+                  v-show="!collapsed || contextbarOpen"
+                  :ref="regionRef('contextbar')"
+                  class="nb-shell__contextbar"
+                  :class="regionClass('contextbar')"
+                  :aria-label="contextbarLabel"
+                  @click.capture="onContextbarActivate"
+                >
+                  <slot name="contextbar" />
+                </aside>
+                <main
+                  :id="resolvedMainId"
+                  ref="mainRef"
+                  tabindex="-1"
+                  class="nb-shell__main"
+                  :class="{ 'nb-shell__main--no-padding': !mainPadding }"
+                  v-bind="mainLayerProps"
+                >
+                  <SurfaceLayerScope :level="1">
+                    <slot />
+                  </SurfaceLayerScope>
+                </main>
+              </div>
             </div>
 
             <!-- ═══ BOTTOM PANEL (optional) ═══ -->
@@ -418,6 +432,7 @@ const props = withDefaults(defineProps<IShellProps>(), {
   sidebarHeaderActionPosition: 'end',
   sidebarHeaderActionCompact: 'stack',
   topbar: 'auto',
+  frame: 'attached',
   collapseAt: 'md',
   navToggleLabel: 'Navigation',
   inspectorCloseLabel: 'Close inspector',
@@ -957,6 +972,75 @@ const { layerProps: mainLayerProps } = useSurfaceLayer({
 })
 
 /**
+ * The rail's collapse and expand are animated, and the animation has an
+ * order: the width moves over `--nb-motion-medium`, and the labels fade over
+ * `--nb-motion-quick` at whichever end of it they are visible. On expand the
+ * labels can arrive at once, revealed by the widening edge, so the children
+ * switch to verbose immediately. On collapse they have to be gone before the
+ * rail is narrow, so the children keep rendering verbose, with their labels
+ * fading out, until the width has settled, and only then switch to compact.
+ * Switching them at once would centre every icon in a rail that is still
+ * wide, and the icons would visibly jump before sliding back.
+ *
+ * `railVariant` is therefore the variant the children see, which lags the
+ * prop by the width's duration on the way down. The duration is the token's
+ * value, written here as a number because the timer needs one; the two are
+ * kept equal by hand, and a product that retunes the token on :root gets a
+ * label switch that is early or late by the difference, never a broken rail.
+ * Under reduced motion, or anywhere `matchMedia` is missing (a test), the
+ * switch is immediate and the classes are never set.
+ */
+const RAIL_MOTION_MS = 240
+const railVariant = ref(props.sidebarVariant)
+
+/**
+ * The width follows the prop at once, in both directions. It is the lagging
+ * children that make the collapse read as one movement: the rail narrows
+ * over its labels while they fade, and the rows change shape only once the
+ * rail has stopped. Two classes, then: `--rail-wide` for the width, and
+ * `--sidebar-<variant>` for the layout of what is inside.
+ */
+const railWidthVariant = computed(() =>
+  collapsed.value && hasSlotContent('sidebar-header-action')
+    ? 'verbose'
+    : props.sidebarVariant,
+)
+const railMotion = ref<'collapsing' | 'expanding' | null>(null)
+let railTimer: ReturnType<typeof setTimeout> | undefined
+
+const reducedMotion = () =>
+  typeof window === 'undefined' ||
+  typeof window.matchMedia !== 'function' ||
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+watch(
+  () => props.sidebarVariant,
+  (next) => {
+    clearTimeout(railTimer)
+    if (reducedMotion() || collapsed.value) {
+      railVariant.value = next
+      railMotion.value = null
+      return
+    }
+    if (next === 'verbose') {
+      railVariant.value = next
+      railMotion.value = 'expanding'
+      railTimer = setTimeout(() => {
+        railMotion.value = null
+      }, RAIL_MOTION_MS)
+      return
+    }
+    railMotion.value = 'collapsing'
+    railTimer = setTimeout(() => {
+      railVariant.value = next
+      railMotion.value = null
+    }, RAIL_MOTION_MS)
+  },
+)
+
+onBeforeUnmount(() => clearTimeout(railTimer))
+
+/**
  * The variant the rail actually renders. A rail collapsed by preference on a
  * desktop must not follow the person into the phone drawer as a 56px strip of
  * unnamed icons: below `collapseAt` the drawer always shows labels. Scoped to
@@ -966,7 +1050,7 @@ const { layerProps: mainLayerProps } = useSurfaceLayer({
 const effectiveSidebarVariant = computed(() =>
   collapsed.value && hasSlotContent('sidebar-header-action')
     ? 'verbose'
-    : props.sidebarVariant,
+    : railVariant.value,
 )
 
 // Provided so descendants of the `sidebar-*` slots (NbSidebarMenu,
@@ -1263,6 +1347,7 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/variables/breakpoints' as bp;
 
@@ -1305,7 +1390,7 @@ defineExpose({
   border-radius: 2px;
   font-size: 0.875rem;
   text-decoration: none;
-  transition: transform 0.12s ease;
+  transition: transform var(--nb-motion-quick) ease;
 
   &:focus-visible,
   &:focus {
@@ -1353,6 +1438,69 @@ defineExpose({
   height: 100%;
   overflow: visible; // required so tooltips overflow the sidebar edge
   z-index: 100;
+  // The rail is on screen before and after it changes width, so it moves on
+  // the standard curve: both ends soft, nothing arriving or leaving. The
+  // padding moves too, because the two layouts differ by a few pixels of it
+  // and the switch between them would otherwise be the one hard cut left.
+  transition:
+    width var(--nb-motion-medium) var(--nb-ease-standard),
+    padding var(--nb-motion-quick) var(--nb-ease-standard);
+}
+
+.nb-shell__sidebar-nav,
+.nb-shell__sidebar-bottom {
+  transition: padding var(--nb-motion-quick) var(--nb-ease-standard);
+}
+
+// ── Rail collapse and expand ──────────────────────────────────────────────────
+//
+// The two classes exist for the duration of the width change (see the script
+// for the order of events). While they are set the rail clips, so a label
+// that has not finished fading is cut by the moving edge rather than wrapping
+// under its icon, and the text of every row fades: out on the way down, in on
+// the way up. The icons are not listed and do not move, because the compact
+// and verbose rows put them on the same centre line.
+.nb-shell--rail-collapsing .nb-shell__sidebar,
+.nb-shell--rail-expanding .nb-shell__sidebar {
+  overflow: hidden;
+}
+
+.nb-shell--rail-collapsing .nb-shell__sidebar,
+.nb-shell--rail-expanding .nb-shell__sidebar {
+  :deep(.nb-sidebar-menu-item__label),
+  :deep(.nb-sidebar-menu-item__badge),
+  :deep(.nb-sidebar-menu-item__caret),
+  :deep(.nb-sidebar-menu-group__header),
+  :deep(.nb-sidebar-brand__text) {
+    transition: opacity var(--nb-motion-quick) var(--nb-ease-exit);
+  }
+}
+
+.nb-shell--rail-collapsing .nb-shell__sidebar {
+  :deep(.nb-sidebar-menu-item__label),
+  :deep(.nb-sidebar-menu-item__badge),
+  :deep(.nb-sidebar-menu-item__caret),
+  :deep(.nb-sidebar-menu-group__header),
+  :deep(.nb-sidebar-brand__text) {
+    opacity: 0;
+  }
+}
+
+.nb-shell--rail-expanding .nb-shell__sidebar {
+  :deep(.nb-sidebar-menu-item__label),
+  :deep(.nb-sidebar-menu-item__badge),
+  :deep(.nb-sidebar-menu-item__caret),
+  :deep(.nb-sidebar-menu-group__header),
+  :deep(.nb-sidebar-brand__text) {
+    animation: nb-shell-rail-text-in var(--nb-motion-quick) var(--nb-ease-enter)
+      both;
+  }
+}
+
+@keyframes nb-shell-rail-text-in {
+  from {
+    opacity: 0;
+  }
 }
 
 .nb-shell__sidebar-logo {
@@ -1491,6 +1639,18 @@ defineExpose({
   flex-direction: column;
   overflow: hidden;
   background: var(--nb-shell-body-bg);
+}
+
+// The page: fixedbar, contextbar and main, above the bottom panel. A column
+// that fills the body exactly as those three did when they were its direct
+// children, so the attached frame lays out as it always has. It is there so
+// the detached frame has one box to float apart from the bottom panel.
+.nb-shell__page {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .nb-shell__notification {
@@ -1756,19 +1916,38 @@ defineExpose({
   }
 }
 
+// A collapsed panel is its header, and the region says so as a basis rather
+// than leaving it to the content, because a basis is something the region can
+// move between: `auto` to 33% is a cut, 32px to 33% is a slide. The number is
+// the header plus the panel's own border and gap on both sides.
+.nb-shell__body:has(> .nb-shell__bottom > .nb-shell-panel.collapsed) {
+  > .nb-shell__bottom {
+    flex: 0 0
+      calc(
+        var(--nb-shell-panel-header-height) + 2 * var(--nb-shell-panel-gap) +
+          2px
+      );
+    overflow: hidden;
+  }
+}
+
+.nb-shell__bottom {
+  transition: flex-basis var(--nb-motion-medium) var(--nb-ease-standard);
+}
+
 // When the bottom panel is maximized, collapse the main area so the panel
 // fills the body below the topbar. `:has()` lets the parent react to the
 // size class set on the child. Scoped to .nb-shell__bottom so that panels
 // placed inside the main content area do not trigger this rule.
 //
-// The row, not `.nb-shell__main` inside it. Hiding only main left
-// `.nb-shell__main-row` holding its `flex: 1`, so the wrapper went on
-// claiming half the body as blank space and a "maximized" panel reached
-// halfway with the page gone: the worst of both sizes, and the reason this
-// looked like the two buttons were wired backwards.
+// The whole page, not `.nb-shell__main` inside it. Hiding only main left
+// its row holding its `flex: 1`, so the wrapper went on claiming half the
+// body as blank space and a "maximized" panel reached halfway with the page
+// gone: the worst of both sizes, and the reason this looked like the two
+// buttons were wired backwards.
 .nb-shell__body:has(> .nb-shell__bottom > .nb-bottom-panel.full),
 .nb-shell__body:has(> .nb-shell__bottom > .nb-shell-panel.full) {
-  .nb-shell__main-row {
+  > .nb-shell__page {
     display: none;
   }
   .nb-shell__bottom {
@@ -1806,9 +1985,11 @@ defineExpose({
   @include radius.surface(panel);
   display: flex;
   flex-direction: column;
+  // It stays beside the page when it closes, ready to come back, so it is a
+  // move on the standard curve rather than an exit.
   transition:
-    width 0.2s ease,
-    border-color 0.2s ease;
+    width var(--nb-motion-medium) var(--nb-ease-standard),
+    border-color var(--nb-motion-medium) var(--nb-ease-standard);
 
   &--visible {
     width: var(--nb-shell-inspector-width);
@@ -1884,8 +2065,8 @@ defineExpose({
     background: var(--nb-shell-inspector-resize-color);
     opacity: 0.4;
     transition:
-      opacity 0.12s ease,
-      width 0.12s ease;
+      opacity var(--nb-motion-quick) ease,
+      width var(--nb-motion-quick) ease;
   }
 
   &:hover::before,
@@ -2003,7 +2184,9 @@ defineExpose({
     // Capped so a verbose rail cannot take the whole of a 320px screen.
     width: min(var(--nb-shell-sidebar-width), 84vw);
     transform: translateX(-100%);
-    transition: transform 0.18s ease;
+    // Closed is the state this rule describes, so this is the exit: shorter,
+    // and committed. The open state below carries the entrance.
+    transition: transform var(--nb-motion-short) var(--nb-ease-exit);
     box-shadow: none;
 
     // The drawer is only ever on screen at phone and small-tablet widths, so
@@ -2025,13 +2208,25 @@ defineExpose({
   // of unrelated chrome above it is not a sheet), and it is why the component
   // renders a dismiss button inside the sheet, answers Escape, and marks the
   // body `inert` for as long as the sheet is up.
-  .nb-shell__inspector--overlay {
+  //
+  // Closed, the sheet waits just past the right edge rather than at zero
+  // width, so opening is a slide in from the side it belongs to and closing a
+  // slide back out. It is `inert` either way, and the row clips it.
+  .nb-shell__inspector {
     position: absolute;
     inset: 0;
     z-index: 250;
     width: 100%;
     max-width: none;
+    margin: 0;
     border-left: 0;
+    transform: translateX(100%);
+    transition: transform var(--nb-motion-short) var(--nb-ease-exit);
+  }
+
+  .nb-shell__inspector--overlay {
+    transform: none;
+    transition: transform var(--nb-motion-medium) var(--nb-ease-enter);
   }
 
   // The chrome gives its side padding back to the content at this size.
@@ -2114,6 +2309,7 @@ defineExpose({
 
 .nb-shell--drawer-open .nb-shell__sidebar {
   transform: translateX(0);
+  transition: transform var(--nb-motion-medium) var(--nb-ease-enter);
   box-shadow: 0 0 24px rgb(0 0 0 / 35%);
 }
 
@@ -2122,6 +2318,21 @@ defineExpose({
   inset: 0;
   z-index: 200;
   background: var(--nb-shell-scrim-bg);
+}
+
+// The scrim is part of the drawer's event and shares its timing: in with the
+// entrance, out with the exit.
+.nb-shell-scrim-enter-active {
+  transition: opacity var(--nb-motion-medium) var(--nb-ease-enter);
+}
+
+.nb-shell-scrim-leave-active {
+  transition: opacity var(--nb-motion-short) var(--nb-ease-exit);
+}
+
+.nb-shell-scrim-enter-from,
+.nb-shell-scrim-leave-to {
+  opacity: 0;
 }
 
 // A second, narrower step, in CSS alone because nothing about it needs the
@@ -2134,6 +2345,133 @@ defineExpose({
 
   .nb-shell__topbar {
     gap: 0.5rem;
+  }
+}
+
+// ── Detached frame ────────────────────────────────────────────────────────────
+//
+// `frame="detached"` floats the regions. The frame keeps a gutter on every
+// side and between every region, and each region becomes a card on the frame
+// ground with a corner and a lift of its own. Nothing inside a region moves:
+// the rail keeps its width, the topbar its height, the inspector its sizes.
+//
+// Gutters are flex `gap`, not margins on the regions, so a region that is not
+// rendered (an empty strip, a closed contextbar) leaves no gap behind. The one
+// exception is the inspector, which stays in the flow at zero width while it
+// is closed so it can animate open, and therefore carries its own margin only
+// while it is visible.
+//
+// The corner is the frame's own token, not the panel role: this is a layout
+// decision about the window, and it has to hold under the square appearance
+// too, where the panel role is zero.
+.nb-shell--detached {
+  --nb-shell-frame-gap: var(--nb-shell-detached-gap);
+
+  padding: var(--nb-shell-frame-gap);
+  gap: var(--nb-shell-frame-gap);
+
+  .nb-shell__middle,
+  .nb-shell__right,
+  .nb-shell__body {
+    gap: var(--nb-shell-frame-gap);
+  }
+
+  // One ground, the frame's, visible in every gutter. The body and the row
+  // painted the body colour so that an attached frame had no seams; here the
+  // seams are the point.
+  .nb-shell__content-row,
+  .nb-shell__body {
+    background: transparent;
+  }
+
+  .nb-shell__sidebar,
+  .nb-shell__outer-menu,
+  .nb-shell__inner-menu,
+  .nb-shell__menubar,
+  .nb-shell__notification,
+  .nb-shell__topbar,
+  .nb-shell__page,
+  .nb-shell__bottom,
+  .nb-shell__inspector {
+    @include radius.surface(null, var(--nb-shell-detached-radius));
+    box-shadow: var(--nb-shell-detached-shadow);
+  }
+
+  // The strips drew one rule along the edge they shared with the region
+  // below. A card shares no edge, so it takes the same border all round.
+  .nb-shell__outer-menu,
+  .nb-shell__inner-menu,
+  .nb-shell__menubar {
+    border: var(--nb-shell-menu-border);
+  }
+
+  .nb-shell__topbar {
+    border: var(--nb-shell-topbar-border);
+  }
+
+  // The banner inside stays square (its status bar needs a straight edge),
+  // and the card's corner clips it.
+  .nb-shell__notification {
+    overflow: hidden;
+  }
+
+  .nb-shell__page {
+    background: var(--nb-shell-body-bg);
+    border: var(--nb-shell-chrome-border);
+    overflow: hidden;
+  }
+
+  // The bottom panel's wrapper is the card. The panel inside draws its own
+  // border, so the wrapper draws none and hands the panel the frame's corner
+  // instead of the panel role's, or a square panel would show its corners
+  // through the round clip.
+  .nb-shell__bottom {
+    margin: 0;
+    overflow: hidden;
+
+    > .nb-shell-panel,
+    > .nb-bottom-panel {
+      @include radius.surface(null, var(--nb-shell-detached-radius));
+    }
+  }
+
+  // Closed, the inspector is a zero-width item with no margin and no border,
+  // so the page runs to the gutter. Open, it takes the gutter on the side it
+  // shares with the page and the full border a card wants.
+  .nb-shell__inspector {
+    margin: 0;
+    transition:
+      width var(--nb-motion-medium) ease,
+      margin var(--nb-motion-medium) ease,
+      border-color var(--nb-motion-medium) ease;
+
+    &--visible {
+      margin-inline-start: var(--nb-shell-frame-gap);
+      border: var(--nb-shell-inspector-border);
+    }
+
+    &--resizing {
+      transition: none;
+    }
+  }
+
+  // The sheet covers the content row, gutter included, as a card of its own.
+  &.nb-shell--collapsed .nb-shell__inspector--overlay {
+    margin: 0;
+    border: 0;
+  }
+
+  // The drawer floats inside the frame's gutter already (the middle layer is
+  // its containing block), but the scrim has to reach the window edge or a
+  // ring of undimmed ground is left around the dimmed page.
+  &.nb-shell--collapsed .nb-shell__scrim {
+    inset: calc(-1 * var(--nb-shell-frame-gap));
+  }
+
+  // A phone has no room for a desktop gutter. The frame keeps floating, with
+  // the smallest gap that still reads as one.
+  &.nb-shell--collapsed {
+    --nb-shell-frame-gap: var(--nb-base-unit);
   }
 }
 
@@ -2152,20 +2490,52 @@ defineExpose({
 // place is fine without an ease. Everything here is a transition on a state the
 // component reaches either way, so removing the transition removes the motion
 // and nothing else.
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-shell__inspector,
+  .nb-shell--detached .nb-shell__inspector,
+  .nb-shell--collapsed .nb-shell__inspector,
   .nb-shell__inspector-resize::before,
   .nb-shell__skip-link,
   .nb-shell__sidebar,
-  .nb-shell__scrim,
+  .nb-shell__sidebar-nav,
+  .nb-shell__sidebar-bottom,
+  .nb-shell--drawer-open .nb-shell__sidebar,
+  .nb-shell__bottom,
   .nb-shell__sidebar-header > * {
     transition: none;
   }
+
+  // The sheet and the drawer still have to be seen to arrive, so they keep a
+  // fade and lose the slide.
+  .nb-shell--collapsed .nb-shell__inspector {
+    transform: none;
+    opacity: 0;
+    transition: opacity var(--nb-motion-quick) var(--nb-ease-standard);
+  }
+
+  .nb-shell--collapsed .nb-shell__inspector--overlay {
+    opacity: 1;
+  }
+
+  .nb-shell--collapsed .nb-shell__sidebar {
+    transform: none;
+    opacity: 0;
+    transition: opacity var(--nb-motion-quick) var(--nb-ease-standard);
+    pointer-events: none;
+  }
+
+  .nb-shell--drawer-open .nb-shell__sidebar {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+// The rail's width, bound to the prop directly (see `railWidthVariant`).
+.nb-shell--rail-wide {
+  --nb-shell-sidebar-width: var(--nb-shell-sidebar-width-verbose);
 }
 
 .nb-shell--sidebar-verbose {
-  --nb-shell-sidebar-width: var(--nb-shell-sidebar-width-verbose);
-
   .nb-shell__sidebar {
     align-items: stretch;
     padding: 0.75rem 0;
@@ -2245,11 +2615,11 @@ defineExpose({
       position: absolute;
       inset: 0;
       opacity: 0;
-      transition: opacity 0.12s ease;
+      transition: opacity var(--nb-motion-quick) ease;
     }
 
     > .nb-shell__sidebar-logo {
-      transition: opacity 0.12s ease;
+      transition: opacity var(--nb-motion-quick) ease;
     }
 
     &:hover,

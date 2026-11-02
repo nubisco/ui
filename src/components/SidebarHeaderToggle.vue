@@ -112,8 +112,8 @@ const label = computed(() =>
   color: var(--nb-shell-sidebar-link-color);
   cursor: pointer;
   transition:
-    background-color 0.12s ease,
-    color 0.12s ease;
+    background-color var(--nb-motion-quick) ease,
+    color var(--nb-motion-quick) ease;
 
   &:hover {
     background: var(--nb-shell-sidebar-link-hover-bg);

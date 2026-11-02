@@ -319,7 +319,7 @@ const installDocumentDismiss = () => {
 // How long the exit animation runs before the node is detached. Must
 // match the tooltipDisappear duration below so the chip is not ripped
 // out mid-animation.
-const HIDE_ANIMATION_MS = 200
+const HIDE_ANIMATION_MS = 70
 
 // Self-life for a shown chip. Every tick re-verifies that the anchor is
 // still in the document and still hovered; N consecutive misses reap
@@ -643,7 +643,7 @@ const removeChip = (el: TTooltipEl, chip: TTooltipChip, immediate: boolean) => {
     chip.remove()
     return
   }
-  chip.style.animation = `tooltipDisappear ${HIDE_ANIMATION_MS}ms ease-in-out forwards`
+  chip.style.animation = `tooltipDisappear ${HIDE_ANIMATION_MS}ms cubic-bezier(0.2, 0, 1, 0.9) forwards`
   chip.__removeTimer__ = setTimeout(() => {
     chip.__removeTimer__ = undefined
     chip.remove()
@@ -1441,7 +1441,7 @@ const showTooltip = (
     body,
     tip,
     delay = 400,
-    animationTime = 300,
+    animationTime = 110,
     position,
     overflowOnly,
   } = options
@@ -1541,7 +1541,7 @@ const showTooltip = (
       tooltip.style.opacity = '1'
     } else {
       tooltip.style.transition = `opacity ${animationTime}ms ease-in-out`
-      tooltip.style.animation = `tooltipAppear ${animationTime}ms ease-in-out forwards`
+      tooltip.style.animation = `tooltipAppear ${animationTime}ms cubic-bezier(0, 0, 0.38, 0.9) forwards`
     }
 
     // Aria wiring: there is none, and that is the point.

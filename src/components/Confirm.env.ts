@@ -21,7 +21,7 @@
  * animation the user sees and the delay the queue waits are the same value by
  * construction. Change it here and both move together.
  */
-export const CONFIRM_LEAVE_MS = 200
+export const CONFIRM_LEAVE_MS = 150
 
 /**
  * Popups our own components teleport to `<body>`. They are visually inside

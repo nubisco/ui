@@ -119,6 +119,10 @@ describe('a select inside a menu', () => {
     )
     await nextTick()
     expect(open.value).toBe(true)
-    expect(document.querySelectorAll('.nb-select__option')).toHaveLength(0)
+    // The list leaves through a transition, so it is gone a frame later.
+    await vi.waitFor(() => {
+      if (document.querySelectorAll('.nb-select__option').length > 0)
+        throw new Error('list still open')
+    })
   })
 })

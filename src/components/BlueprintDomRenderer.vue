@@ -210,7 +210,7 @@ const canvasStyle = computed(() => ({
   // catches all pointer events, so hover styling lives there.
   pointer-events: none;
   opacity: 0.55;
-  transition: opacity 0.15s;
+  transition: opacity var(--nb-motion-short);
 
   // Inactive wires stay visible but dim, no flow.
   &--inactive {

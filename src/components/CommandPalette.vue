@@ -466,6 +466,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/variables/breakpoints' as bp;
 
@@ -607,14 +608,24 @@ onBeforeUnmount(() => {
 }
 
 // Transitions
-.nb-command-palette-enter-active,
-.nb-command-palette-leave-active {
-  transition: opacity 0.15s ease;
+// Same shape as NbModal: settle in, commit out, scrim and panel in step.
+.nb-command-palette-enter-active {
+  transition: opacity var(--nb-motion-medium) var(--nb-ease-enter);
 
   .nb-command-palette {
     transition:
-      opacity 0.15s ease,
-      transform 0.15s ease;
+      opacity var(--nb-motion-medium) var(--nb-ease-enter),
+      transform var(--nb-motion-medium) var(--nb-ease-enter);
+  }
+}
+
+.nb-command-palette-leave-active {
+  transition: opacity var(--nb-motion-short) var(--nb-ease-exit);
+
+  .nb-command-palette {
+    transition:
+      opacity var(--nb-motion-short) var(--nb-ease-exit),
+      transform var(--nb-motion-short) var(--nb-ease-exit);
   }
 }
 
@@ -632,7 +643,16 @@ onBeforeUnmount(() => {
 
   .nb-command-palette {
     opacity: 0;
-    transform: scale(0.97) translateY(-8px);
+    transform: scale(0.98) translateY(4px);
+  }
+}
+
+@include motion.reduced {
+  .nb-command-palette-enter-from,
+  .nb-command-palette-leave-to {
+    .nb-command-palette {
+      transform: none;
+    }
   }
 }
 

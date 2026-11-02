@@ -1200,8 +1200,8 @@ defineExpose({
   border-bottom: 1px solid var(--nb-c-field-border);
   border-radius: var(--nb-field-radius, 0);
   transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
+    border-color var(--nb-motion-short),
+    box-shadow var(--nb-motion-short);
 
   &--focused {
     outline: 2px solid var(--nb-c-primary);
@@ -1296,7 +1296,7 @@ defineExpose({
   padding: 0 var(--nb-field-padding-h) 0 0;
   color: var(--nb-c-text-muted);
   cursor: pointer;
-  transition: color 0.15s;
+  transition: color var(--nb-motion-short);
   flex-shrink: 0;
   // A 16px glyph is not something a thumb can find. The target grows, the
   // glyph does not.
@@ -1376,7 +1376,7 @@ defineExpose({
   border: none;
   color: var(--nb-c-text-muted);
   cursor: pointer;
-  transition: color 0.15s;
+  transition: color var(--nb-motion-short);
   @include touch.hit-area;
 
   &:hover {
@@ -1438,8 +1438,8 @@ defineExpose({
   border: 2px solid transparent;
   cursor: pointer;
   transition:
-    background 0.1s,
-    color 0.1s;
+    background var(--nb-motion-quick),
+    color var(--nb-motion-quick);
   position: relative;
 
   &:hover:not(:disabled) {

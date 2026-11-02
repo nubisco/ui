@@ -159,8 +159,18 @@ for (const [name, rawValue] of Object.entries(raw)) {
   }
 
   // ── Animation ────────────────────────────────────────────────────────────
+  if (name.startsWith('motion-')) {
+    out.animation[name.slice(7)] = token(rawValue, 'duration')
+    continue
+  }
+  if (name.startsWith('ease-')) {
+    out.animation[`ease-${name.slice(5)}`] = token(rawValue, 'cubicBezier')
+    continue
+  }
+  // Deprecated duration family, still exported so a consumer's token file
+  // does not lose a name it had.
   if (name.startsWith('animation-')) {
-    out.animation[name.slice(10)] = token(rawValue, 'duration')
+    out.animation[`legacy-${name.slice(10)}`] = token(rawValue, 'duration')
     continue
   }
 

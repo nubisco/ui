@@ -1028,7 +1028,7 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
     font: inherit;
     text-align: inherit;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: background var(--nb-motion-short);
 
     &:hover {
       background: var(--nb-dt-accent-hover);
@@ -1051,7 +1051,7 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
     font-size: var(--nb-font-size-14);
     color: var(--nb-c-text-subtle);
     opacity: 0;
-    transition: opacity 0.15s;
+    transition: opacity var(--nb-motion-short);
   }
 
   &__th--sortable:hover &__sort-icon {
@@ -1082,7 +1082,7 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
   }
 
   &__row {
-    transition: background 0.15s;
+    transition: background var(--nb-motion-short);
 
     // Hovered and selected rows lift their text to $text-primary.
     &:hover .nb-data-table__td {
@@ -1205,8 +1205,8 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
     @include radius.standalone(control);
     cursor: pointer;
     transition:
-      background 0.15s,
-      color 0.15s;
+      background var(--nb-motion-short),
+      color var(--nb-motion-short);
 
     &:hover {
       background: var(--nb-c-surface-hover);
@@ -1220,7 +1220,7 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
 
   &__expand-icon {
     font-size: var(--nb-font-size-14);
-    transition: transform 0.15s;
+    transition: transform var(--nb-motion-short);
   }
 
   &__expand[aria-expanded='true'] &__expand-icon {
