@@ -35,6 +35,9 @@ import { dirname, join, relative, resolve } from 'node:path'
 /** The directories that moved up one level, relative to `docs/`. */
 const MOVED = ['components', 'composables', 'directives', 'labs']
 
+/** The directories whose pages may be split into tab routes. */
+const SPLIT = ['components', 'principles']
+
 /** The tab routes a split page can have. */
 const TABS = ['usage', 'style', 'code', 'accessibility']
 
@@ -122,7 +125,7 @@ interface ISplitPage {
 
 function splitPages(srcDir: string): ISplitPage[] {
   const out: ISplitPage[] = []
-  for (const page of pagesUnder(srcDir, 'components')) {
+  for (const page of SPLIT.flatMap((dir) => pagesUnder(srcDir, dir))) {
     if (!page.endsWith('/usage.md')) continue
     const dir = dirname(page)
     const anchors: Record<string, string> = {}

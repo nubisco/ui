@@ -40,6 +40,15 @@
           {{ item.badge }}
         </NbBadge>
       </button>
+      <span
+        v-if="indicator"
+        class="nb-tabs__indicator"
+        aria-hidden="true"
+        :style="{
+          transform: `translateX(${indicator.left}px)`,
+          width: `${indicator.width}px`,
+        }"
+      />
     </div>
 
     <template v-for="item in items" :key="`panel-${item.id}`">
@@ -125,6 +134,9 @@ const rootClasses = computed(() => [
     'nb-tabs--disabled': props.disabled,
     // Only while the tabs do not fit, so a bar that fits renders as it did
     'nb-tabs--overflow': overflowing.value,
+    // Only once the active mark has been measured, so a bar without layout
+    // keeps the active tab's own underline or fill
+    'nb-tabs--indicator': indicator.value !== null,
   },
 ])
 
@@ -153,11 +165,13 @@ function select(item: ITabItem): void {
 
 // Matched on the dataset rather than through a selector, so ids carrying
 // characters a selector would have to escape still resolve
-function focusTab(id: string): void {
+function findTab(id: string | undefined): HTMLElement | undefined {
   const buttons = listRef.value?.querySelectorAll<HTMLElement>('[data-tab-id]')
-  buttons?.forEach((button) => {
-    if (button.dataset.tabId === id) button.focus()
-  })
+  return [...(buttons ?? [])].find((button) => button.dataset.tabId === id)
+}
+
+function focusTab(id: string): void {
+  findTab(id)?.focus()
 }
 
 // Arrow keys move and activate in one step (automatic activation), which is the
@@ -221,16 +235,16 @@ function updateFades(): void {
 function revealActive(): void {
   const list = listRef.value
   if (!scrolls.value || !list) return
-  const tab = [...list.querySelectorAll<HTMLElement>('[data-tab-id]')].find(
-    (button) => button.dataset.tabId === activeId.value,
-  )
+  const tab = findTab(activeId.value)
   if (tab) {
     const listRect = list.getBoundingClientRect()
     const tabRect = tab.getBoundingClientRect()
     const start = tabRect.left - listRect.left + list.scrollLeft
     const end = start + tabRect.width
-    const first = tab === list.firstElementChild
-    const last = tab === list.lastElementChild
+    // The mark is a child of the list too, so the ends are the tabs' own
+    const siblings = [...list.querySelectorAll<HTMLElement>('[data-tab-id]')]
+    const first = tab === siblings[0]
+    const last = tab === siblings[siblings.length - 1]
     if (start < list.scrollLeft + (first ? 0 : FADE_PX))
       list.scrollLeft = Math.max(0, first ? 0 : start - FADE_PX)
     else if (end > list.scrollLeft + list.clientWidth - (last ? 0 : FADE_PX))
@@ -239,11 +253,42 @@ function revealActive(): void {
   updateFades()
 }
 
-watch([activeId, scrolls], () => nextTick(revealActive))
+// ── The active mark slides ───────────────────────────────────────────────────
+//
+// The underline of the line variant and the filled block of the contained one
+// are one element placed under the active tab, so choosing another tab moves
+// it there instead of switching one mark off and the next on. It is measured
+// from the active tab, which means it exists only while the bar has a layout:
+// hidden, or in a DOM without one, the active tab keeps its own underline or
+// fill and nothing is lost. Offsets are read against the list, which is the
+// offset parent, so a scrolled bar needs no correction: the mark scrolls with
+// the tabs it sits under.
+const indicator = ref<{ left: number; width: number } | null>(null)
+
+function measureIndicator(): void {
+  const tab = findTab(activeId.value)
+  const width = tab?.offsetWidth ?? 0
+  if (!tab || width === 0) {
+    indicator.value = null
+    return
+  }
+  const left = tab.offsetLeft
+  const current = indicator.value
+  if (current && current.left === left && current.width === width) return
+  indicator.value = { left, width }
+}
+
+watch([activeId, scrolls], () =>
+  nextTick(() => {
+    revealActive()
+    measureIndicator()
+  }),
+)
 
 function onResize(): void {
   measureOverflow()
   revealActive()
+  measureIndicator()
 }
 
 // The root and each tab, never the list: the list's own box changes when it
@@ -271,6 +316,7 @@ watch(
 onMounted(() => {
   measureOverflow()
   revealActive()
+  measureIndicator()
   window.addEventListener('resize', onResize, { passive: true })
   if (typeof ResizeObserver !== 'undefined') {
     observer = new ResizeObserver(onResize)
@@ -307,6 +353,7 @@ function onKeydown(event: KeyboardEvent): void {
 
 <style scoped lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/logic/motion' as motion;
 @use '../styles/variables/breakpoints' as bp;
 
 // The scrolling bar, emitted twice: under the phone query with `$when` empty,
@@ -365,6 +412,10 @@ function onKeydown(event: KeyboardEvent): void {
   @at-root #{$r}--line#{$when} #{$r}__tab {
     margin-bottom: 0;
   }
+
+  @at-root #{$r}--line#{$when} #{$r}__indicator {
+    bottom: 0;
+  }
 }
 
 .nb-tabs {
@@ -375,8 +426,27 @@ function onKeydown(event: KeyboardEvent): void {
 
   // ── Bar ───────────────────────────────────────────────────────────────────────
   &__list {
+    position: relative;
+    // The sliding mark sits at z-index -1, which this keeps inside the list,
+    // above its own background
+    isolation: isolate;
     display: flex;
     align-items: stretch;
+  }
+
+  // ── The active mark ───────────────────────────────────────────────────────────
+  // One element under the active tab, moved there on the medium step. It is
+  // on screen before and after, so the standard curve. The tab's own mark is
+  // cleared while this one exists, further down in each variant.
+  &__indicator {
+    position: absolute;
+    left: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--nb-c-primary);
+    transition:
+      transform var(--nb-motion-medium) var(--nb-ease-standard),
+      width var(--nb-motion-medium) var(--nb-ease-standard);
   }
 
   &--full-width &__list &__tab {
@@ -464,6 +534,16 @@ function onKeydown(event: KeyboardEvent): void {
     font-weight: 600;
   }
 
+  // Hangs the same 2px over the list's rule as the tabs do
+  &--line &__indicator {
+    bottom: -2px;
+    height: 2px;
+  }
+
+  &--line.nb-tabs--indicator &__tab--active {
+    border-bottom-color: transparent;
+  }
+
   // ── Contained variant: segmented control, active block filled ────────────────
   &--contained &__list {
     gap: 2px;
@@ -499,6 +579,17 @@ function onKeydown(event: KeyboardEvent): void {
     color: var(--nb-c-white);
   }
 
+  // The list's 2px of padding, so the block covers exactly the tab's box
+  &--contained &__indicator {
+    top: 2px;
+    bottom: 2px;
+    @include radius.inset(3px);
+  }
+
+  &--contained.nb-tabs--indicator &__tab--active {
+    background: transparent;
+  }
+
   // ── The bar scrolls sideways when the tabs do not fit ────────────────────────
   // More tabs than fit used to run off the edge with no way to reach them. The
   // bar scrolls instead, without a visible scrollbar, and an edge fades out on
@@ -514,6 +605,13 @@ function onKeydown(event: KeyboardEvent): void {
   @include bp.phone-touch {
     &__tab {
       min-block-size: 44px;
+    }
+  }
+
+  // The mark lands where it would have slid to
+  @include motion.reduced {
+    &__indicator {
+      transition: none;
     }
   }
 
