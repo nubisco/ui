@@ -1,3 +1,10 @@
+## [5.46.1](https://github.com/nubisco/ui/compare/v5.46.0...v5.46.1) (2026-11-03)
+
+
+### Bug Fixes
+
+* **accordion, shell, glyphs:** closed panels take no height, the rail badge has its own tokens, and the icon warning tells the truth ([02298cb](https://github.com/nubisco/ui/commit/02298cbaecaac86faf8815828c0e7945a450fb04))
+
 # [5.46.0](https://github.com/nubisco/ui/compare/v5.45.0...v5.46.0) (2026-11-03)
 
 
