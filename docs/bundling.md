@@ -168,14 +168,19 @@ component is a value it cannot see through:
 
 ```
 [nubisco-ui] src/cms/blocks/SiteNavBlock.vue: no artwork linked for
-  <NbButton :icon="actionIcon">. The value is only known at runtime, so it will
-  throw on first render unless something resolves it.
+  <NbButton :icon="actionIcon">. The value is only known at runtime. If it is a
+  name, it will throw on first render unless something resolves it.
 ```
 
 Forwarded bindings are the one case where the plugin cannot tell a name from a
-module, so it reports rather than pulling a catalogue in on a guess. If those
-bindings are pass-through props in your own wrapper components, resolved
-wherever they are passed in, turn the warning off:
+module, so it reports rather than pulling a catalogue in on a guess. A local
+bound to a glyph import is understood, and so is a member of a namespace
+import of a catalogue (`Icons[item.icon]` with
+`import * as Icons from '@nubisco/ui/icons/all'`). A lookup in a map of your
+own (`NAV_ICONS[item.icon]`) is not, even when every value in it is a module:
+the plugin reports it and nothing throws. If those bindings are modules, or
+pass-through props in your own wrapper components resolved wherever they are
+passed in, turn the warning off:
 
 ```ts
 nubiscoUI({ glyphs: { warnUnresolved: false } })

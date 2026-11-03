@@ -188,6 +188,10 @@ function producesOnlyLinkedGlyphs(
   switch (node.type) {
     case 'Identifier':
       return isLinked(node.name)
+    // `Icons[item.icon]` or `Icons.house` on a namespace import of a glyph
+    // catalogue: every member is artwork, whichever one is picked.
+    case 'MemberExpression':
+      return node.object?.type === 'Identifier' && isLinked(node.object.name)
     // The test is not a value the prop receives; the two arms are.
     case 'ConditionalExpression':
       return recurse(node.consequent) && recurse(node.alternate)
@@ -416,10 +420,12 @@ export function nubiscoGlyphs(options: IGlyphOptions = {}) {
             unresolvedForwards
               .map((f) => `<${f.tag} :${f.prop}="${f.exp}">`)
               .join(', ') +
-            `. The value is only known at runtime, so it will throw on first ` +
-            `render unless something resolves it: ${register} for a known ` +
-            `set, or import '${catalogue}' in this file. Nothing to do if ` +
-            `these are pass-through props (set warnUnresolved: false).`,
+            `. The value is only known at runtime. If it is a name, it will ` +
+            `throw on first render unless something resolves it: ` +
+            `${register} for a known set, or import '${catalogue}' in this ` +
+            `file. If it is a glyph module, or a pass-through prop resolved ` +
+            `where it is passed in, nothing is needed: set ` +
+            `warnUnresolved: false to silence this.`,
         )
       }
 

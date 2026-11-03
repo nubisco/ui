@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { h, nextTick } from 'vue'
@@ -223,5 +225,22 @@ describe('NbAccordion', () => {
       expect(w.find('.nb-accordion-item__heading--aside').exists()).toBe(true)
       expect(w.find('.nb-info-hint').exists()).toBe(false)
     })
+  })
+})
+
+describe('AccordionItem closed height', () => {
+  it('lets a closed panel reach zero height, padding included', () => {
+    // A grid track closes to 0fr, but a box cannot close below its padding,
+    // so the body's bottom padding has to go with the track.
+    const source = readFileSync(
+      resolve(__dirname, '../src/components/AccordionItem.vue'),
+      'utf8',
+    )
+    expect(source).toMatch(
+      /&\[hidden\] > \.nb-accordion-item__body \{\s*padding-bottom: 0;/,
+    )
+    expect(source).toMatch(
+      /\.nb-accordion-item__body \{[^}]*transition: padding-bottom var\(--nb-motion-medium\)/,
+    )
   })
 })
