@@ -586,8 +586,17 @@ onBeforeUnmount(() => {
   text-align: center;
   font-variant-numeric: tabular-nums;
   pointer-events: none;
-  background: var(--nb-shell-sidebar-link-hover-bg, rgba(255, 255, 255, 0.16));
-  color: var(--nb-shell-sidebar-link-hover-color);
+  // Its own tokens, so a product can make the count legible on its rail
+  // without moving the link hover. The defaults are the hover tokens, which
+  // is what the pill always painted.
+  background: var(
+    --nb-shell-sidebar-badge-bg,
+    var(--nb-shell-sidebar-link-hover-bg, rgba(255, 255, 255, 0.16))
+  );
+  color: var(
+    --nb-shell-sidebar-badge-color,
+    var(--nb-shell-sidebar-link-hover-color)
+  );
   // A ring in the rail's own colour separates the pill from the icon below.
   box-shadow: 0 0 0 2px var(--nb-shell-sidebar-bg, transparent);
 

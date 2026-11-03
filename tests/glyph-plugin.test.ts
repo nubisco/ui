@@ -198,6 +198,27 @@ describe('glyph plugin: reporting what it could not link', () => {
     expect(out).toBeUndefined()
   })
 
+  it('says nothing for a member of a namespace import of a catalogue', async () => {
+    const out = await transform(
+      sfc(
+        '<NbButton :icon="Icons[item.icon]" />',
+        `\nimport * as Icons from '@nubisco/ui/icons/all'\n`,
+      ),
+    )
+    expect(warn).not.toHaveBeenCalled()
+    expect(out).toBeUndefined()
+  })
+
+  it('does not promise a throw it cannot know about', async () => {
+    // A lookup in the file's own map may hold modules, which never throw, so
+    // the message says what happens in either case and how to silence it.
+    await transform(sfc('<NbButton :icon="NAV_ICONS[item.icon]" />'))
+    const message = warn.mock.calls[0][0] as string
+    expect(message).toContain('If it is a name, it will throw')
+    expect(message).toContain('warnUnresolved: false')
+    expect(message).not.toContain('so it will throw')
+  })
+
   it('does not warn about NbIcon, which gets the catalogue instead', async () => {
     const out = await transform(sfc('<NbIcon :name="chosen" />'))
     expect(out).toContain("import '@nubisco/ui/icons/all'")

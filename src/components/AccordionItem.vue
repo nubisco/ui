@@ -288,11 +288,19 @@ function onKeydown(event: KeyboardEvent) {
       grid-template-rows var(--nb-motion-medium) var(--nb-ease-standard),
       visibility 0s var(--nb-motion-medium);
   }
+
+  &[hidden] > .nb-accordion-item__body {
+    padding-bottom: 0;
+  }
 }
 
 .nb-accordion-item__body {
   min-height: 0;
   padding: 0 var(--nb-accordion-pad-x) var(--nb-spacing-16);
+  // A track can close to nothing, a box cannot close below its own padding,
+  // so a closed panel kept the body's bottom padding as a blank strip under
+  // the heading. The padding goes with the track, on the same step.
+  transition: padding-bottom var(--nb-motion-medium) var(--nb-ease-standard);
   color: var(--nb-c-text);
   font-size: var(--nb-font-size-14);
   line-height: 1.5;
@@ -411,7 +419,8 @@ function onKeydown(event: KeyboardEvent) {
   .nb-accordion-item__header,
   .nb-accordion-item__heading--aside,
   .nb-accordion-item__panel,
-  .nb-accordion-item__panel[hidden] {
+  .nb-accordion-item__panel[hidden],
+  .nb-accordion-item__body {
     transition: none;
   }
 }
