@@ -2,6 +2,8 @@ import { glyphStubComputed } from './__mocks__/glyphStub'
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { stubPhone, unstubPhone } from './__mocks__/phoneLayout'
 import Tabs from '../src/components/Tabs.vue'
 
@@ -381,5 +383,83 @@ describe('Tabs on a phone', () => {
     // The phone always had the scrolling bar, overflow or not
     expect(wrapper.classes()).not.toContain('nb-tabs--overflow')
     wrapper.unmount()
+  })
+})
+
+describe('Tabs active mark', () => {
+  const geometry = [
+    { id: 'account', left: 0, width: 100 },
+    { id: 'billing', left: 100, width: 120 },
+    { id: 'automation', left: 220, width: 80 },
+  ]
+  const items = geometry.map(({ id }) => ({ id, label: id }))
+
+  // jsdom lays nothing out, so each tab answers with a known box
+  const layOut = (wrapper: ReturnType<typeof mount>) => {
+    wrapper.findAll<HTMLElement>('[role="tab"]').forEach((tab) => {
+      const box = geometry.find((g) => g.id === tab.element.dataset.tabId)!
+      Object.defineProperty(tab.element, 'offsetLeft', { value: box.left })
+      Object.defineProperty(tab.element, 'offsetWidth', { value: box.width })
+    })
+  }
+
+  const createWrapper = (props = {}) =>
+    mount(Tabs, {
+      props: { items, ...props },
+      attachTo: document.body,
+      global: { stubs: { NbIcon: NbIconStub, NbBadge: NbBadgeStub } },
+    })
+
+  const mark = (wrapper: ReturnType<typeof mount>) =>
+    wrapper.find('.nb-tabs__indicator')
+
+  it('leaves the active tab its own mark while the bar has no layout', () => {
+    const wrapper = createWrapper()
+    expect(mark(wrapper).exists()).toBe(false)
+    expect(wrapper.classes()).not.toContain('nb-tabs--indicator')
+    wrapper.unmount()
+  })
+
+  it('places one mark under the active tab once the bar is measured', async () => {
+    const wrapper = createWrapper({ modelValue: 'billing' })
+    layOut(wrapper)
+    window.dispatchEvent(new Event('resize'))
+    await nextTick()
+    expect(wrapper.classes()).toContain('nb-tabs--indicator')
+    expect(mark(wrapper).attributes('aria-hidden')).toBe('true')
+    expect(mark(wrapper).attributes('style')).toContain(
+      'transform: translateX(100px)',
+    )
+    expect(mark(wrapper).attributes('style')).toContain('width: 120px')
+    wrapper.unmount()
+  })
+
+  it('moves the mark to the tab that was chosen', async () => {
+    // Uncontrolled, so the click itself switches the tab
+    const wrapper = createWrapper()
+    layOut(wrapper)
+    window.dispatchEvent(new Event('resize'))
+    await nextTick()
+    expect(mark(wrapper).attributes('style')).toContain('translateX(0px)')
+    await wrapper.findAll('[role="tab"]')[2].trigger('click')
+    // The mark is measured a tick after the tab switched, once it has rendered
+    await nextTick()
+    await nextTick()
+    expect(mark(wrapper).attributes('style')).toContain('translateX(220px)')
+    expect(mark(wrapper).attributes('style')).toContain('width: 80px')
+    wrapper.unmount()
+  })
+
+  it('slides on the medium step and stays put under reduced motion', () => {
+    const source = readFileSync(
+      resolve(__dirname, '../src/components/Tabs.vue'),
+      'utf8',
+    )
+    expect(source).toMatch(
+      /&__indicator \{[^}]*transform var\(--nb-motion-medium\) var\(--nb-ease-standard\)/,
+    )
+    expect(source).toMatch(
+      /@include motion\.reduced \{\s*&__indicator \{\s*transition: none;/,
+    )
   })
 })

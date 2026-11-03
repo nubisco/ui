@@ -332,7 +332,7 @@ Mark the current route with `active`. Listen for `@click` to drive navigation ma
 
 `sidebarVariant` is a regular prop, so toggling between modes is just a state change. Because the same `NbSidebarMenu` / `NbSidebarMenuItem` / `NbSidebarMenuGroup` tree adapts to either variant, the application data model does not change.
 
-The switch is animated. The rail's width moves over `--nb-motion-medium` on the standard curve, and the labels, badges, carets, group headers and brand text fade over `--nb-motion-quick`. On collapse the rows keep their verbose layout until the width has settled, so the icons do not jump to the centre of a rail that is still wide; on expand they switch at once and the labels are revealed by the widening edge. Under `prefers-reduced-motion` the switch is instant. The timings and the reasoning are on [Motion](/principles/motion#the-application-frame).
+The switch is animated. The rail's width moves over `--nb-motion-medium` on the standard curve, and the labels, badges, carets, group headers and brand text fade over `--nb-motion-quick`. On collapse the rows keep their verbose layout until the width has settled, so the icons do not jump to the centre of a rail that is still wide; on expand they switch at once and the labels are revealed by the widening edge. Under `prefers-reduced-motion` the switch is instant. The timings and the reasoning are on [Motion](/principles/motion/code#the-application-frame).
 
 In compact mode:
 

@@ -929,7 +929,7 @@ real token is `--nb-zindex-toast`, and a product that guessed ran on the CSS
 fallback for months without a single visible symptom. The layer order is in
 [Z-index](/principles/z-index), spacing in
 [Spacing](/principles/spacing), and the transition rules for a stack that
-animates in [Motion](/principles/motion).
+animates in [Motion](/principles/motion/code).
 
 ---
 
@@ -1071,7 +1071,7 @@ template and the handlers, and each failure names the fix.
 - [Accessibility overview](/accessibility/overview) and
   [Keyboard interaction](/accessibility/keyboard) for live regions and focus.
 - [Layout](/principles/layout), [Spacing](/principles/spacing),
-  [Motion](/principles/motion), [Colour](/principles/color) and
+  [Motion](/principles/motion/usage), [Colour](/principles/color) and
   [Data visualisation](/principles/data-visualisation) for the tokens each
   surface is allowed to touch.
 

@@ -941,7 +941,7 @@ complete, which is a lie invented by a media query. Filling the track and pulsin
 it says "busy, no measurement" with no movement at all. Under
 `forced-colors: active` the same components repaint from the system palette
 rather than disappearing into it. The general rules are in
-[Motion](/principles/motion#reduced-motion).
+[Motion](/principles/motion/accessibility).
 
 `NbSpinner` and `NbSkeleton` each carry those rules twice: once in a media
 query, and once in a class the component sets from a `matchMedia` listener, so
@@ -1109,7 +1109,7 @@ rg -n "setInterval" src | rg -i "progress|percent"
   [Disabled and read-only](/patterns/disabled-and-read-only) ·
   [The app frame](/patterns/app-frame) ·
   [Building an inspector](/patterns/inspectors)
-- [Motion](/principles/motion) · [Accessibility overview](/accessibility/overview)
+- [Motion](/principles/motion/usage) · [Accessibility overview](/accessibility/overview)
   · [Keyboard interaction](/accessibility/keyboard) ·
   [Writing style](/content/writing-style)
 

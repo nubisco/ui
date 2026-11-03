@@ -29,6 +29,13 @@ primary color. It is the treatment for a page's own sections.
 mode switch that changes what a single surface does, such as sign in against
 sign up, not for page sections.
 
+In both variants the active mark is one element that slides to the chosen tab
+on the medium step, so the eye follows the selection rather than seeing one
+mark vanish and another appear. Under `prefers-reduced-motion` it lands in
+place. The mark is measured from the tabs, so a bar that is not laid out yet
+(a hidden panel, a closed accordion section) shows the active tab's own mark
+until it is, and nothing depends on timing.
+
 <preview>
   <NbTabs :items="clientTabs" />
   <NbTabs :items="authTabs" variant="contained" />
