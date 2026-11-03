@@ -1,3 +1,10 @@
+# [5.46.0](https://github.com/nubisco/ui/compare/v5.45.0...v5.46.0) (2026-11-03)
+
+
+### Features
+
+* **tabs:** the active mark slides to the chosen tab, and the Motion page shows its examples ([2d7faa4](https://github.com/nubisco/ui/commit/2d7faa47e4607aaaab2db5b247b8856eddd09a64))
+
 # [5.45.0](https://github.com/nubisco/ui/compare/v5.44.0...v5.45.0) (2026-11-02)
 
 
