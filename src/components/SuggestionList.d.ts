@@ -17,6 +17,16 @@ interface ISuggestionListProps<T = unknown> {
    */
   emptyText?: string
   /**
+   * Results are on their way: the host asked a server and has not heard back.
+   * The list stays open and shows `loadingText` (or the `#loading` slot) in
+   * place of the empty state, so "No results" is never shown for a search that
+   * has not finished. The rows already in `items` stay, so a refinement of a
+   * search keeps the old matches on screen until the new ones land.
+   */
+  loading?: boolean
+  /** Shown while `loading`. Present tense: "Searching". */
+  loadingText?: string
+  /**
    * Which side of the field the list opens on. `'top'` suits a composer at
    * the bottom of a panel, where a list below would fall off the screen.
    */

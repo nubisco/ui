@@ -7,6 +7,7 @@
     :class="`nb-suggestion-list--${placement}`"
     role="listbox"
     :aria-label="label || undefined"
+    :aria-busy="loading || undefined"
   >
     <div
       v-for="(item, index) in items"
@@ -29,8 +30,20 @@
         {{ labelOf(item) }}
       </slot>
     </div>
+    <!-- While results are pending the empty state is not the truth, so the
+         loading row takes its place. Both are presentation: neither is an
+         option, and the live region in the loading row says what is happening. -->
+    <div v-if="loading" class="nb-suggestion-list__loading" role="presentation">
+      <slot name="loading">
+        <NbInlineLoading
+          status="active"
+          :label="loadingText"
+          :reserve-space="false"
+        />
+      </slot>
+    </div>
     <div
-      v-if="items.length === 0"
+      v-else-if="items.length === 0"
       class="nb-suggestion-list__empty"
       role="presentation"
     >
@@ -62,6 +75,7 @@ import {
   watch,
 } from 'vue'
 import type { ISuggestionListProps } from './SuggestionList.d'
+import NbInlineLoading from './InlineLoading.vue'
 import { NB_TEXT_INPUT_CONTEXT } from './TextInput.context'
 import { useStableId } from '@/composables/useStableId.composable'
 
@@ -70,6 +84,8 @@ const props = withDefaults(defineProps<ISuggestionListProps<T>>(), {
   itemLabel: undefined,
   itemKey: undefined,
   emptyText: '',
+  loading: false,
+  loadingText: '',
   placement: 'bottom',
   label: '',
   for: undefined,
@@ -85,6 +101,7 @@ const emit = defineEmits<{
 defineSlots<{
   item?: (scope: { item: T; index: number; active: boolean }) => unknown
   empty?: () => unknown
+  loading?: () => unknown
 }>()
 
 const slots = useSlots()
@@ -96,7 +113,8 @@ const context = inject(NB_TEXT_INPUT_CONTEXT, null)
 
 const hasEmpty = computed(() => !!props.emptyText || !!slots.empty)
 const visible = computed(
-  () => props.open && (props.items.length > 0 || hasEmpty.value),
+  () =>
+    props.open && (props.items.length > 0 || hasEmpty.value || props.loading),
 )
 
 function labelOf(item: T): string {
@@ -329,7 +347,8 @@ defineExpose({
   }
 }
 
-.nb-suggestion-list__empty {
+.nb-suggestion-list__empty,
+.nb-suggestion-list__loading {
   padding: 8px 10px;
   font-size: var(--nb-font-size-13);
   color: var(--nb-c-text-subtle);
