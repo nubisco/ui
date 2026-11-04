@@ -125,6 +125,31 @@ describe('frame phone styles stay behind the gates', () => {
     )
   })
 
+  it('NbShell: the inspector sheet scrolls, and its dismiss button stays put', () => {
+    const desktop = outsideMedia(compiled('Shell.vue'))
+    // Three fluid panels stacked in the sheet were clipped at the bottom with
+    // no way to reach the rest, so the sheet scrolls as a page.
+    expect(
+      rule(desktop, '.nb-shell--collapsed .nb-shell__inspector--overlay'),
+    ).toContain('overflow-y: auto')
+    // In the flow and sticky, so the scrolling sheet never carries it away.
+    const dismiss = rule(desktop, '\n.nb-shell__inspector-dismiss')
+    expect(dismiss).toContain('position: sticky')
+    expect(dismiss).toContain('align-self: flex-end')
+    expect(dismiss).not.toContain('position: absolute')
+    // And the inspector itself still clips on the desktop column.
+    expect(rule(desktop, '\n.nb-shell__inspector')).toContain(
+      'overflow: hidden',
+    )
+  })
+
+  it('NbShellPanel: first in the sheet, its header keeps clear of the dismiss button', () => {
+    const css = compiled('ShellPanel.vue')
+    expect(css).toMatch(
+      /\.nb-shell__inspector-dismiss \+ \.nb-shell-panel > \.nb-shell-panel__header\s*\{[^}]*var\(--nb-shell-inspector-dismiss-inset, 0px\)/,
+    )
+  })
+
   it('NbCommandPalette: a full-width sheet from the top on a phone', () => {
     const css = compiled('CommandPalette.vue')
     const phone = phoneOf(css)

@@ -368,6 +368,16 @@ defineExpose({ setSize })
      that are NOT .full collapse to header-only. This works regardless of
      what the parent container is: any flex parent will do. -->
 <style lang="scss">
+// First in the inspector sheet, the panel's size buttons sat under the sheet's
+// own dismiss button, top right. The frame publishes how much room that button
+// takes (`--nb-shell-inspector-dismiss-inset`, only while the inspector is an
+// overlay), and a panel that follows the button directly keeps its header
+// clear of it. The other panels, and the desktop column, read the variable as
+// nothing. Unscoped, because the button belongs to the frame.
+.nb-shell__inspector-dismiss + .nb-shell-panel > .nb-shell-panel__header {
+  padding-inline-end: calc(8px + var(--nb-shell-inspector-dismiss-inset, 0px));
+}
+
 :has(> .nb-shell-panel.full) > .nb-shell-panel:not(.full) {
   flex: 0 0 auto !important;
 
