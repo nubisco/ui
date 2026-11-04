@@ -15,6 +15,13 @@ export interface IMenuProps {
 export interface IMenuItemProps {
   /** Phosphor icon name */
   icon?: TIconSource
+  /**
+   * A picture drawn in the icon's place, as a small round `NbAvatar`: the face
+   * of the person or the logo of the thing the row names. `null` draws the
+   * label's initials there, so a list where only some rows carry a picture
+   * still lines up. Takes the place of `icon` when set.
+   */
+  picture?: string | null
   /** Display label */
   label: string
   /** Keyboard shortcut display text (e.g. "Cmd+C"), display only */

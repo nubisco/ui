@@ -340,7 +340,7 @@ interface IBoardColumnMoveEvent {
 | `card`          | `{ item: IBoardItem, column: IBoardColumn, lane?: IBoardLane }` | Content of each card                                                         |
 | `column-header` | `{ column: IBoardColumn, count: number }`                       | Replaces the default column header (label and count); the color accent stays |
 | `column-footer` | `{ column: IBoardColumn, lane?: IBoardLane }`                   | Rendered at the bottom of each cell, e.g. an add-item composer               |
-| `lane-header`   | `{ lane: IBoardLane }`                                          | Custom lane header content                                                   |
+| `lane-header`   | `{ lane: IBoardLane }`                                          | The lane's label. Rendered inside the label span, so it keeps the typography |
 | `batch-actions` | `{ selected: string[], clear: () => void, phone: boolean }`     | Actions for the selection, shown in the batch bar (requires `selectable`)    |
 
 ## Keyboard

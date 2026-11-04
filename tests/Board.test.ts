@@ -748,3 +748,20 @@ describe('NbBoard selected card edge', () => {
     expect(rule).not.toMatch(/--nb-c-primary\b/)
   })
 })
+
+describe('NbBoard lane header slot', () => {
+  it('renders the slot inside the label span, so a product keeps the typography', () => {
+    const w = mount(Board, {
+      props: {
+        columns: columns(),
+        items: [{ id: 'a', columnId: 'todo', laneId: 'l1', title: 'Alpha' }],
+        lanes: [{ id: 'l1', label: 'Lane one' }],
+      },
+      slots: { 'lane-header': '<em class="mine">{{ params.lane.label }}</em>' },
+    })
+    const label = w.find('.nb-board__lane-label')
+    expect(label.exists()).toBe(true)
+    expect(label.find('em.mine').exists()).toBe(true)
+    expect(label.text()).toBe('Lane one')
+  })
+})
