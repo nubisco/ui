@@ -1910,7 +1910,7 @@ describe('delivery', () => {
 
   it('exports the placement type with the host', () => {
     expect(main).toMatch(
-      /export type \{[^}]*TToasterPlacement[^}]*\} from '\.\/components\/Toaster\.vue'/s,
+      /export type \{[^}]*TToasterPlacement[^}]*\} from '\.\/components\/Toaster\.d'/s,
     )
   })
 })
