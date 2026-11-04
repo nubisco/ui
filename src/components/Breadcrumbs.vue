@@ -43,7 +43,10 @@
             v-if="isCurrent(index)"
             class="nb-breadcrumbs__current"
             aria-current="page"
-            >{{ item.label }}</span
+            ><code v-if="item.code" class="nb-breadcrumbs__code">{{
+              item.label
+            }}</code
+            ><template v-else>{{ item.label }}</template></span
           >
           <NbButton
             v-else-if="isInteractive(item)"
@@ -53,9 +56,17 @@
             :href="item.href"
             :target="item.target"
             @click="onActivate(item, index, $event)"
-            >{{ item.label }}</NbButton
+            ><code v-if="item.code" class="nb-breadcrumbs__code">{{
+              item.label
+            }}</code
+            ><template v-else>{{ item.label }}</template></NbButton
           >
-          <span v-else class="nb-breadcrumbs__parent">{{ item.label }}</span>
+          <span v-else class="nb-breadcrumbs__parent"
+            ><code v-if="item.code" class="nb-breadcrumbs__code">{{
+              item.label
+            }}</code
+            ><template v-else>{{ item.label }}</template></span
+          >
 
           <!-- The switcher is its own control beside the label, so a crumb that
                links still links, and the current crumb can still be switched.
@@ -358,6 +369,18 @@ const collapsed = computed(
 
 .nb-breadcrumbs__parent {
   color: var(--nb-c-text-subtle);
+}
+
+// A crumb that is a key, a path or an identifier: the monospace face in a
+// small chip, so it reads as a value rather than a word. Sized in em so it
+// follows the crumb it sits in, and the chip stays inside the line box.
+.nb-breadcrumbs__code {
+  font-family: var(--nb-font-family-mono);
+  font-size: 0.88em;
+  padding: 0.1em 0.4em;
+  border-radius: var(--nb-radius-control, 4px);
+  background: var(--nb-c-discrete);
+  color: inherit;
 }
 
 .nb-breadcrumbs__link {

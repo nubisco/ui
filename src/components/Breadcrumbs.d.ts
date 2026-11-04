@@ -57,6 +57,11 @@ export interface IBreadcrumbItem {
    * initials there. Left out, the crumb is its label alone.
    */
   picture?: string | null
+  /**
+   * The label is a key, a path or an identifier rather than a name: drawn in
+   * the monospace face as a small chip, whatever the crumb renders as.
+   */
+  code?: boolean
   /** Called when the crumb is activated. Makes a crumb with no link a button. */
   onClick?: (event: MouseEvent) => void
   /**
