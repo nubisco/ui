@@ -1,5 +1,54 @@
 # Upgrading
 
+## To 5.47.0 from 5.46.x
+
+New, and nothing changes unless you use it:
+
+- **`NbGrid` takes thirds, fifths and sixths.** `grid` accepts `'1/3'`,
+  `'2/3'`, `'1/5'` to `'4/5'`, `'1/6'` and `'5/6'`, in a breakpoint map too,
+  sized with the same gap arithmetic as a column count. A tile two rows tall
+  is nesting, as it always was in a flex grid. See
+  [Thirds, fifths and sixths](/components/grid/code#thirds-fifths-and-sixths).
+- **`NbMenuItem` takes `picture`** (a 16px `NbAvatar` in the icon's place,
+  `null` for initials) **and a `leading` slot.** A dropdown that names people
+  can show their faces.
+- **A crumb can be a key.** `IBreadcrumbItem.code` draws the label as a
+  monospace chip, whatever the crumb renders as.
+- **`NbSuggestionList` takes `loading` and `loadingText`.** The list stays
+  open with a loading row in place of the empty state, and marks the listbox
+  busy, so "No results" is never shown for a search that has not finished.
+- **Every type a component module declares is exported from `@nubisco/ui`.**
+  `IBadgeProps`, `ICheckboxProps`, `IIconProps`, `IFormProps`, `IGridProps`
+  and its helpers, `IFileUploaderProps`, `ICropRect`, `TIconSource`, the chart
+  props and the rest. A deep import of a `.d` module can become a package
+  import.
+
+**Check this if a product stylesheet styled a bare element and expected the
+library's reset to win.** The reset now has zero specificity: every element
+selector in it sits inside `:where()`, so a component class, or a product's
+own `button { ... }`, beats it whatever order the stylesheets load in. That is
+what a reset is for, and it fixes a per-component sheet that loaded before the
+app sheet losing its field background to `[type='button']`. A rule that relied
+on the reset overriding an earlier element rule of yours now sees your rule.
+`[hidden]` keeps its weight.
+
+**The inspector sheet scrolls, and `NbShellPanel` keeps clear of its dismiss
+button.** On a phone, a column of `fluid` panels taller than the screen used to
+be clipped at the bottom with no way to reach the rest, and the first panel's
+size buttons sat under the sheet's own dismiss button. The sheet now scrolls
+as a page with the dismiss button sticky at the top right, and a panel that is
+first in the sheet reads `--nb-shell-inspector-dismiss-inset` itself. The
+desktop column is unchanged. A product that padded its first panel's header by
+hand can drop the padding.
+
+**`NbBoard`'s selected card outlines with `--nb-c-selected-edge`** rather than
+the accent, the token `NbCard` and `NbStat` already use, so it clears 3:1 in
+dark mode. A theme that set the accent alone sees the board's outline follow
+the selected edge token now.
+
+**`NbBoard`'s `lane-header` slot renders inside the label span.** A product
+that wrote `nb-board__lane-label` into its own slot content can drop it.
+
 ## To 5.44.0 from 5.43.2
 
 New, and nothing changes unless you use it:
@@ -329,6 +378,64 @@ end, and a `#search` field grows into the room the actions leave. It follows
 the table's width, so a table in a card or a split view wraps too. A toolbar
 that fits on one line is pixel-identical, and the batch bar still covers the
 whole toolbar. Global overrides added to stop the tools being clipped can go.
+
+## To 5.19.0 from 5.18.x
+
+**Every component has a phone layout, and the desktop does not move a pixel.**
+One signal drives it: the phone layout is on below 672px (the `md` breakpoint,
+where `NbShell` collapses), or on a touch screen too short to be anything but
+a phone held sideways. Every change sits behind that query, a phone check in
+script, or a new prop that defaults to the old output, so a product that does
+nothing renders as before at every desktop width.
+
+The signal is yours to use as well as the library's:
+
+- **In script:** `usePhoneLayout()` returns `phone` and `phoneTouch`, two
+  shared readonly refs (one listener per query for the whole app). Off the
+  document they are `false`, the desktop answer. `NB_PHONE_QUERY` and
+  `NB_PHONE_TOUCH_QUERY` are the media queries themselves, for a `matchMedia`
+  of your own.
+- **In styles:** `@include bp.phone { ... }` and `@include bp.phone-touch {
+... }` from `@nubisco/ui/styles/variables/breakpoints`. The touch variant is
+  where hit areas and field text grow: `hit-area()` gives a control an
+  invisible 44px tap box without changing how it looks, and
+  `touch-field-text()` keeps field text at 16px so iOS Safari stops zooming
+  in on focus. Both are in `@nubisco/ui/styles/logic/touch`.
+
+What changes on a phone, and the prop that controls it where there is one:
+
+- **`NbShell`:** the sidebar becomes a drawer that closes when a destination
+  is chosen, the topbar's actions can no longer be pushed off the screen, the
+  inspector opens as a sheet over the content, and a phone held sideways gets
+  the phone layout.
+- **`NbActionGroup`** is new: page actions that fold into one "more" menu on
+  a phone. `overflow="phone"` turns the folding on, `'never'` (the default)
+  renders exactly the buttons you would have placed by hand, `'always'` folds
+  at every width. See [Action Group](/components/action-group/usage).
+- **`NbModal`** is a bottom sheet, or a full screen for the larger sizes, and
+  stays above the keyboard. `NbMenu`, `NbSubmenu`, `NbUserMenu` and
+  `NbDatePicker` stay on screen and above the sheets. `NbNotificationCenter`
+  and `NbCommandPalette` fill the screen.
+- **`NbTabs`** scroll. **`NbDataTable`** can stack its rows into cards with
+  `stackOnPhone`, a column marked `primary` as the title, `phoneMeta` columns
+  on a muted line under it, `phoneHidden` columns left out.
+- **`NbBoard`** snaps one column at a time with each column scrolling on its
+  own, pins its batch bar to the foot of the screen, and `selectMode` (with
+  `v-model:selectMode`) lets a tap select, since a touch screen has no
+  modifier keys.
+- **`NbReorderList`** works by touch. **`NbInlineEdit`** takes `multiline`.
+  **`NbFloatingToolbar`** docks with `dock="phone"`. **`NbBreadcrumbs`**
+  collapse to the last crumb with `collapse="phone"`.
+- **Touch targets are 44px and field text is 16px** on a phone touch screen,
+  for every control.
+
+**What a product has to do.** Nothing to keep today's desktop. To work on a
+phone: gate every product-side phone change on `usePhoneLayout()` or the
+`bp.phone` mixins, never on a width of your own, so the product and the
+library change layout at the same moment. Replace a hand-rolled row of page
+actions with `NbActionGroup` and `overflow="phone"`. Give wide tables
+`stackOnPhone` and mark the `primary` column. Check the product at 390px and
+at 844 by 390 (a phone held sideways), because the second is a phone too.
 
 ## To 5.18.0 from 5.17.x
 
