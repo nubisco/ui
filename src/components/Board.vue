@@ -1190,10 +1190,12 @@ function onColumnDragEnd() {
 
 // Picked up by keyboard: outlined, because there is no pointer to show where
 // the card is going and the outline is what says "this one is in your hand".
-// A selected card: the primary outline, kept clear of the card's own
-// border, so it reads as chosen rather than as focused.
+// A selected card: the selected edge, kept clear of the card's own border, so
+// it reads as chosen rather than as focused. The edge token, not the accent:
+// the accent falls under 3:1 against the lighter layers in dark mode (see
+// accent.selected-edge), which is what NbCard and NbStat already paint.
 .nb-board__card--selected {
-  outline: 2px solid var(--nb-c-primary);
+  outline: 2px solid var(--nb-c-selected-edge);
   outline-offset: 2px;
   border-radius: var(--nb-radius-control, 4px);
 }

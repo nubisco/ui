@@ -733,3 +733,18 @@ describe('NbBoard on a phone', () => {
     expect(w.find('.act').text()).toBe('desk')
   })
 })
+
+describe('NbBoard selected card edge', () => {
+  it('outlines a selected card with the selected edge token, not the accent', async () => {
+    const { readFileSync } = await import('node:fs')
+    const { join } = await import('node:path')
+    const source = readFileSync(
+      join(import.meta.dirname, '../src/components/Board.vue'),
+      'utf8',
+    )
+    const rule = source.match(/\.nb-board__card--selected \{[^}]*\}/)?.[0]
+    expect(rule).toBeTruthy()
+    expect(rule).toMatch(/outline: 2px solid var\(--nb-c-selected-edge\)/)
+    expect(rule).not.toMatch(/--nb-c-primary\b/)
+  })
+})
