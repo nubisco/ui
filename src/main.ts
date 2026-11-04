@@ -138,6 +138,8 @@ export type { ICalendarEvent, ICalendarProps } from './components/Calendar.d'
 export { default as NbAvatar } from './components/Avatar.vue'
 export type { IAvatarProps, TAvatarSize } from './components/Avatar.d'
 export { default as NbBadge } from './components/Badge.vue'
+export type { IBadgeProps } from './components/Badge.d'
+export { EBadgeVariant, EBadgeSize } from './components/Badge.d'
 export { default as NbBanner } from './components/Banner.vue'
 export type { IBannerProps } from './components/Banner.d'
 export { EBannerStatus, EBannerVariant } from './components/Banner.d'
@@ -162,6 +164,8 @@ export type {
 } from './components/Charts/shared/types.d'
 export { default as NbButton } from './components/Button.vue'
 export type { IButtonProps, TButtonSize } from './components/Button.d'
+export { EButtonType } from './components/Button.d'
+export type { TButtonVariant } from './components/Button.d'
 export { default as NbDatePicker } from './components/DatePicker.vue'
 export type { IDatePickerProps } from './components/DatePicker.d'
 export { default as NbNubiscoMark } from './components/NubiscoMark.vue'
@@ -179,11 +183,15 @@ export type {
 export { default as NbVideo } from './components/Video.vue'
 export type { IVideoProps } from './components/Video.d'
 export { default as NbCheckbox } from './components/Checkbox.vue'
+export type { ICheckboxProps } from './components/Checkbox.d'
 export { default as NbCheckboxGroup } from './components/CheckboxGroup.vue'
 export type { ICheckboxGroupProps } from './components/CheckboxGroup.d'
+export { ECheckboxGroupDirection } from './components/CheckboxGroup.d'
 export { default as NbSwitch } from './components/Switch.vue'
 export type { ISwitchProps } from './components/Switch.d'
+export { ESwitchSize, ESwitchVariant } from './components/Switch.d'
 export { default as NbColorStrip } from './components/ColorStrip.vue'
+export type { IColorStripProps, IOption } from './components/ColorStrip.d'
 export { default as NbDataTable } from './components/DataTable.vue'
 export type {
   IDataTableColumn,
@@ -202,6 +210,8 @@ export type {
   IPaginationEmits,
 } from './components/Pagination.d'
 export { default as NbFlag } from './components/Flag.vue'
+export type { ESizePixel, IFlagProps } from './components/Flag.d'
+export type { TFlagSource } from './components/Flag.d'
 export { default as NbFloatingToolbar } from './components/FloatingToolbar.vue'
 export type {
   IFloatingToolbarProps,
@@ -210,6 +220,7 @@ export type {
   TFloatingToolbarOrientation,
   TFloatingToolbarPlacement,
 } from './components/FloatingToolbar.d'
+export type { TFloatingToolbarDock } from './components/FloatingToolbar.d'
 export { default as NbDragHandle } from './components/DragHandle.vue'
 export type {
   IDragHandleEvent,
@@ -229,20 +240,81 @@ export type {
   TDependencyType,
 } from './components/Charts/GanttChart.d'
 export { default as NbGrid } from './components/Grid.vue'
+export type {
+  TBreakpoint,
+  TGridType,
+  TGridTypeResponsive,
+  TGridTypeFn,
+  TGridTypeInput,
+  TGridAlign,
+  TGridAlignResponsive,
+  TGridAlignFn,
+  TGridAlignInput,
+  TGridJustify,
+  TGridJustifyResponsive,
+  TGridJustifyFn,
+  TGridJustifyInput,
+  TGridWrap,
+  TGridWrapResponsive,
+  TGridWrapFn,
+  TGridWrapInput,
+  TGapSize,
+  TGridGap,
+  TGridGapFn,
+  TGridGapInput,
+  TGridColumns,
+  TGridColumnsResponsive,
+  TGridColumnsFn,
+  TGridColumnsInput,
+  TGridShift,
+  TGridShiftResponsive,
+  TGridShiftFn,
+  TGridShiftInput,
+  TGridVisibleResponsive,
+  TGridVisibleFn,
+  TGridVisibleInput,
+  TBooleanResponsive,
+  TGridMode,
+  TClassCollection,
+  IHandlerContext,
+  IGridProps,
+} from './components/Grid.d'
 export { default as NbIcon } from './components/Icon.vue'
+export type { IIconProps } from './components/Icon.d'
+export {
+  EAnimation,
+  EAnimationMode,
+  EWeight,
+  EIconSize,
+} from './components/Icon.d'
+export type { TIconSource } from './components/Icon.d'
 export { default as NbInfoHint } from './components/InfoHint.vue'
 export type {
   IInfoHintProps,
   TInfoHintPlacement,
 } from './components/InfoHint.d'
 export { default as NbJsonTree } from './components/JsonTree.vue'
+export type {
+  TJsonPrimitive,
+  TJsonValue,
+  IJsonObject,
+  TJsonArray,
+  IJsonTreeProps,
+} from './components/JsonTree.d'
+export { EJsonNodeKind } from './components/JsonTree.d'
 export { default as NbInterpolationChart } from './components/Charts/InterpolationChart.vue'
 export type {
   IInterpolationPoint,
   IInterpolationChartProps,
 } from './components/Charts/InterpolationChart.d'
 export { default as NbLineChart } from './components/Charts/LineChart.vue'
+export type {
+  ILineChartProps,
+  TLineCurve,
+} from './components/Charts/LineChart.d'
 export { default as NbLabel } from './components/Label.vue'
+export type { ILabelProps } from './components/Label.d'
+export { ELabelSize } from './components/Label.d'
 export { default as NbField } from './components/Field.vue'
 export type { IFieldProps } from './components/Field.d'
 export { default as NbMenu } from './components/Menu.vue'
@@ -259,6 +331,7 @@ export type {
   IMenuBarProps,
   TMenuItemSize,
 } from './components/Menu.d'
+export type { IMenuContext } from './components/Menu.d'
 export type {
   ICommand,
   ICommandPaletteProps,
@@ -266,8 +339,11 @@ export type {
   TCommandSuggester,
 } from './components/CommandPalette.d'
 export { default as NbMessage } from './components/Message.vue'
+export type { IMessageProps } from './components/Message.d'
+export { EMessageVariant } from './components/Message.d'
 export { default as NbModal } from './components/Modal.vue'
 export type { IModalProps, TModalSize } from './components/Modal.d'
+export type { TModalRole } from './components/Modal.d'
 export { default as NbConfirm } from './components/Confirm.vue'
 export type {
   IConfirmProps,
@@ -283,6 +359,7 @@ export type { ILayerProps } from './components/Layer.d'
 export { default as NbPanel } from './components/Panel.vue'
 export type { IPanelProps } from './components/Panel.d'
 export { default as NbPieChart } from './components/Charts/PieChart.vue'
+export type { IPieChartProps } from './components/Charts/PieChart.d'
 export { default as NbShell } from './components/Shell.vue'
 export type {
   IShellProps,
@@ -301,6 +378,7 @@ export { default as NbSidebarHeaderToggle } from './components/SidebarHeaderTogg
 export type { ISidebarHeaderToggleProps } from './components/SidebarHeaderToggle.d'
 export type { ISidebarBrandProps } from './components/SidebarBrand.d'
 export { default as NbSidebarLink } from './components/SidebarLink.vue'
+export type { ISidebarLinkProps } from './components/SidebarLink.d'
 export { default as NbSidebarMenu } from './components/SidebarMenu.vue'
 export type { ISidebarMenuProps } from './components/SidebarMenu.d'
 export { default as NbSidebarMenuGroup } from './components/SidebarMenuGroup.vue'
@@ -312,10 +390,14 @@ export type { ISidebarStatusProps } from './components/SidebarStatus.d'
 export { default as NbToast } from './components/Toast.vue'
 export type { TToastVariant, IToastCta } from './components/Toast.vue'
 export { default as NbToaster } from './components/Toaster.vue'
-export type { TToasterPlacement } from './components/Toaster.vue'
 export type { IToasterProps } from './components/Toaster.d'
+export type { TToasterPlacement } from './components/Toaster.d'
 export { default as NbProgressBar } from './components/ProgressBar.vue'
 export type { IProgressBarProps } from './components/ProgressBar.d'
+export {
+  EProgressBarSize,
+  EProgressBarStatus,
+} from './components/ProgressBar.d'
 // ── Loading ──────────────────────────────────────────────────────────────────
 // Indeterminate waiting. NbProgressBar above covers the determinate case; pick
 // between them in docs/components/spinner.md.
@@ -357,18 +439,26 @@ export type {
   TWireframePart,
 } from './components/Wireframe.d'
 export { default as NbRadio } from './components/Radio.vue'
+export type { IRadioOption, IRadioProps } from './components/Radio.d'
+export { ERadioDirection } from './components/Radio.d'
 export { default as NbNotificationCenter } from './components/NotificationCenter.vue'
 export type {
-  INotificationCenterProps,
   INotificationItem,
-} from './components/NotificationCenter.vue'
+  INotificationTriggerProps,
+  INotificationMarkAllProps,
+  INotificationCenterProps,
+  IPanelPlacementOptions,
+  IPanelPlacement,
+} from './components/NotificationCenter.d'
 export { default as NbNotificationCenterItem } from './components/NotificationCenterItem.vue'
 export type {
-  INotificationCenterItemProps,
   TNotificationStatus,
-} from './components/NotificationCenterItem.vue'
+  TNotificationVariant,
+  INotificationCenterItemProps,
+} from './components/NotificationCenterItem.d'
 export { default as NbNumberInput } from './components/NumberInput.vue'
 export { default as NbSlider } from './components/Slider.vue'
+export type { ISliderProps, TActiveHandle } from './components/Slider.d'
 // ── Flow progress ────────────────────────────────────────────────────────────
 // A linear multi-step indicator. It reports where a wizard is, it does not own
 // the flow. NbWalkthrough is the other thing: a guided tour over existing UI.
@@ -385,6 +475,7 @@ export {
   EStepStatus,
 } from './components/Stepper.d'
 export { default as NbSparkline } from './components/Charts/Sparkline.vue'
+export type { ISparklineProps } from './components/Charts/Sparkline.d'
 
 // The chart colour contract. Charts paint through the eight `--nb-c-chart-*`
 // role tokens, but the sequential and diverging ramps cannot be expressed by
@@ -408,8 +499,10 @@ export type {
   ITableOfContentsProps,
   TTableOfContentsVariant,
 } from './components/TableOfContents.d'
+export type { ITableOfContentsNode } from './components/TableOfContents.d'
 export { default as NbTabs } from './components/Tabs.vue'
 export type { ITabItem, ITabsProps } from './components/Tabs.d'
+export { ETabsVariant, ETabsSize } from './components/Tabs.d'
 export { default as NbTextInput } from './components/TextInput.vue'
 export type { ISelectOption, ISelectProps } from './components/Select.d'
 
@@ -425,6 +518,7 @@ export type {
 } from './components/Tree.d'
 export { default as NbBottomPanel } from './components/BottomPanel.vue'
 export type { TBottomPanelSize } from './components/BottomPanel.d'
+export type { IBottomPanelProps } from './components/BottomPanel.d'
 export { default as NbShellPanel } from './components/ShellPanel.vue'
 export type {
   IShellPanelProps,
@@ -483,10 +577,21 @@ export type {
 // folder as the source of truth rather than comparing two lists that could both
 // be wrong in the same way.
 export { default as NbAiLabel } from './components/AiLabel.vue'
+export type { IAiLabelProps } from './components/AiLabel.d'
+export { EAiLabelVariant, EAiLabelSize } from './components/AiLabel.d'
 export { default as NbFileUploader } from './components/FileUploader.vue'
+export type { IFileItem, IFileUploaderProps } from './components/FileUploader.d'
+export { EFileUploaderStatus } from './components/FileUploader.d'
 export { default as NbForm } from './components/Form.vue'
+export type { IFormProps } from './components/Form.d'
 export { default as NbImageCropper } from './components/ImageCropper.vue'
+export type { ICropRect, IImageCropperProps } from './components/ImageCropper.d'
+export { EHandleName } from './components/ImageCropper.d'
 export { default as NbImagePicker } from './components/ImagePicker.vue'
+export type {
+  IImagePickerProps,
+  TImagePickerRejection,
+} from './components/ImagePicker.d'
 
 // Onboarding: walkthrough / product tour
 export { default as NbWalkthrough } from './components/Walkthrough.vue'
