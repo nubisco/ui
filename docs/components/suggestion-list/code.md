@@ -46,6 +46,49 @@ function onInput(event: Event) {
 
 `select` hands you the item. Replacing the typed `@que` with the full mention, and putting the caret after it, is yours to do, because only the product knows what a mention looks like in its text.
 
+## Results from a server
+
+When the suggestions come from a request, set `loading` while it is in flight.
+The list stays open with a loading row in place of the empty state, so "No
+results" is never shown for a search that has not finished, and the rows
+already on screen stay until the new ones land. Debounce the request on the
+host side: the list does not know what the person typed, only what you give it.
+
+```vue
+<template>
+  <nb-text-input v-model="query" label="Assign to">
+    <template #dropdown>
+      <nb-suggestion-list
+        v-model:open="open"
+        :items="people"
+        :loading="loading"
+        loading-text="Searching"
+        empty-text="No one matches"
+        @select="assign"
+      />
+    </template>
+  </nb-text-input>
+</template>
+
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+const query = ref('')
+const open = ref(false)
+const loading = ref(false)
+const people = ref([])
+let timer: ReturnType<typeof setTimeout>
+watch(query, (q) => {
+  clearTimeout(timer)
+  open.value = q.length > 0
+  loading.value = true
+  timer = setTimeout(async () => {
+    people.value = await searchPeople(q)
+    loading.value = false
+  }, 200)
+})
+</script>
+```
+
 ## Outside NbTextInput
 
 Inside the `#dropdown` slot the list finds its field. Anywhere else, give it the field's id with `for`. The element around both needs `position: relative`, since the list positions itself against it.
@@ -59,17 +102,19 @@ Inside the `#dropdown` slot the list finds its field. Anywhere else, give it the
 
 ## Props
 
-| Prop        | Type                                           | Default                  | Description                                                         |
-| ----------- | ---------------------------------------------- | ------------------------ | ------------------------------------------------------------------- |
-| `items`     | `T[]`                                          |                          | The suggestions, already filtered.                                  |
-| `open`      | `boolean`                                      | `true`                   | Whether the list shows. Supports `v-model:open`.                    |
-| `itemLabel` | `(item: T) => string`                          | `item.label` or the item | The text of a row.                                                  |
-| `itemKey`   | `(item: T, index: number) => string \| number` | the label                | A stable key for a row.                                             |
-| `emptyText` | `string`                                       | `''`                     | Shown when `items` is empty. Without it an empty list is not drawn. |
-| `placement` | `'bottom' \| 'top'`                            | `'bottom'`               | Which side of the field the list opens on.                          |
-| `label`     | `string`                                       | `''`                     | Accessible name of the list.                                        |
-| `for`       | `string`                                       | —                        | Id of the field, when the list is not in an `NbTextInput`.          |
-| `id`        | `string`                                       | generated                | Id of the list.                                                     |
+| Prop          | Type                                           | Default                  | Description                                                                                  |
+| ------------- | ---------------------------------------------- | ------------------------ | -------------------------------------------------------------------------------------------- |
+| `items`       | `T[]`                                          |                          | The suggestions, already filtered.                                                           |
+| `open`        | `boolean`                                      | `true`                   | Whether the list shows. Supports `v-model:open`.                                             |
+| `itemLabel`   | `(item: T) => string`                          | `item.label` or the item | The text of a row.                                                                           |
+| `itemKey`     | `(item: T, index: number) => string \| number` | the label                | A stable key for a row.                                                                      |
+| `emptyText`   | `string`                                       | `''`                     | Shown when `items` is empty. Without it an empty list is not drawn.                          |
+| `loading`     | `boolean`                                      | `false`                  | Results are pending. The list stays open and shows `loadingText` instead of the empty state. |
+| `loadingText` | `string`                                       | `''`                     | Shown while `loading`. Present tense: "Searching".                                           |
+| `placement`   | `'bottom' \| 'top'`                            | `'bottom'`               | Which side of the field the list opens on.                                                   |
+| `label`       | `string`                                       | `''`                     | Accessible name of the list.                                                                 |
+| `for`         | `string`                                       | —                        | Id of the field, when the list is not in an `NbTextInput`.                                   |
+| `id`          | `string`                                       | generated                | Id of the list.                                                                              |
 
 ## Events
 
@@ -81,10 +126,11 @@ Inside the `#dropdown` slot the list finds its field. Anywhere else, give it the
 
 ## Slots
 
-| Slot    | Props                     | Description            |
-| ------- | ------------------------- | ---------------------- |
-| `item`  | `{ item, index, active }` | One row.               |
-| `empty` | —                         | Replaces `empty-text`. |
+| Slot      | Props                     | Description               |
+| --------- | ------------------------- | ------------------------- |
+| `item`    | `{ item, index, active }` | One row.                  |
+| `empty`   | —                         | Replaces `empty-text`.    |
+| `loading` | —                         | Replaces the loading row. |
 
 ## Exposed
 
