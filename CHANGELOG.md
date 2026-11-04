@@ -1,3 +1,21 @@
+# [5.47.0](https://github.com/nubisco/ui/compare/v5.46.1...v5.47.0) (2026-11-04)
+
+
+### Bug Fixes
+
+* **board:** a selected card outlines with the selected edge token ([694fb95](https://github.com/nubisco/ui/commit/694fb95cc04a139ecdab67dc6aa86c6794d6ef89))
+* **shell:** the inspector sheet scrolls, and a panel first in it keeps clear of the dismiss button ([8ce762c](https://github.com/nubisco/ui/commit/8ce762c66d36b54def07971fc1efc8efe8b7c15e))
+* **styles:** the reset has zero specificity, so a component wins whatever order the sheets load in ([fc00976](https://github.com/nubisco/ui/commit/fc0097697730f8f8b4a054f0379de9425916d931))
+* **types:** every type a component module declares is reachable from the package ([fc66cfb](https://github.com/nubisco/ui/commit/fc66cfb32a6cb3005478b1d65259029eb494a3a7))
+
+
+### Features
+
+* **breadcrumbs:** a crumb can be a key, drawn as a monospace chip ([f9f0ab4](https://github.com/nubisco/ui/commit/f9f0ab42ace5fb7eb0f92502a408fb3cda08b754))
+* **grid:** thirds, fifths and sixths, and a tile two rows tall by nesting ([d2ffa95](https://github.com/nubisco/ui/commit/d2ffa95ab65ccea25f070f38f371c717e0919998))
+* **menu, board:** a menu row can lead with a picture, and a lane header keeps its typography ([6fdda67](https://github.com/nubisco/ui/commit/6fdda675a9e0cde86445385e34289b5fb0645b3b))
+* **suggestion-list:** a loading state, for suggestions that come from a server ([b9eb27d](https://github.com/nubisco/ui/commit/b9eb27ddb89823acd4d3fef342e2a09e81a0a868))
+
 ## [5.46.1](https://github.com/nubisco/ui/compare/v5.46.0...v5.46.1) (2026-11-03)
 
 
