@@ -102,6 +102,24 @@ The picture is decorative: the label beside it already names the crumb. On a
 phone with `collapse="phone"`, the label of the last crumb gives way to the
 ellipsis and the picture keeps its size.
 
+## A crumb that is a key
+
+A crumb whose label is an identifier rather than a name (a record key, a path,
+a version) sets `code`. The label is drawn in the monospace face as a small
+chip, and the crumb otherwise behaves as it would: a link stays a link, the
+current crumb stays current.
+
+```vue
+<template>
+  <nb-breadcrumbs
+    :items="[
+      { label: 'Records', to: '/records' },
+      { label: 'REC-2041', code: true },
+    ]"
+  />
+</template>
+```
+
 ## Item fields
 
 | Field               | Type                  | Description                                                        |
@@ -111,6 +129,7 @@ ellipsis and the picture keeps its size.
 | `onClick`           | `(event) => void`     | Makes a crumb with no link a button                                |
 | `current`           | `boolean`             | Marks the current page. Defaults to the last crumb                 |
 | `picture`           | `string \| null`      | A logo before the label. `null` draws initials                     |
+| `code`              | `boolean`             | The label is a key or an identifier: drawn as a monospace chip     |
 | `options`           | `IBreadcrumbOption[]` | The siblings. Adds the switcher chevron                            |
 | `value`             | `string \| number`    | The current option. Defaults to the option labelled like the crumb |
 | `switchLabel`       | `string`              | Accessible name of the chevron. Default `Switch <label>`           |
