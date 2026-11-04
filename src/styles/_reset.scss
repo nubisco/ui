@@ -1,5 +1,17 @@
 @use 'config';
 
+// Every element selector in here sits inside `:where()`, so the reset has
+// zero specificity and loses to anything a component or a product says about
+// the same element, whatever order the stylesheets load in. Without that, a
+// per-component sheet that loads before the app's own `@use '@nubisco/ui/styles'`
+// (a route chunk, measured on a contact form) had its `.nb-select__trigger`
+// background and border wiped by `[type='button'] { background: transparent;
+// border: 0 }`, which has the same specificity and came later. A reset is a
+// baseline, never a winner.
+//
+// Two rules stay at their natural specificity on purpose: `[hidden]`, because
+// a hidden element must stay hidden against a component's own `display`, and
+// the `*` box-sizing rule, which is already zero.
 @mixin reset {
   * {
     margin-block-start: 0;
@@ -16,7 +28,7 @@
   * 2. Prevent adjustments of font size after orientation changes in iOS.
   */
 
-  html {
+  :where(html) {
     line-height: 1.15; /* 1 */
     -webkit-text-size-adjust: 100%; /* 2 */
   }
@@ -28,7 +40,7 @@
   * Remove the margin in all browsers.
   */
 
-  body {
+  :where(body) {
     margin: 0;
   }
 
@@ -36,7 +48,7 @@
   * Render the `main` element consistently in IE.
   */
 
-  main {
+  :where(main) {
     display: block;
   }
 
@@ -45,7 +57,7 @@
   * `article` contexts in Chrome, Firefox, and Safari.
   */
 
-  h1 {
+  :where(h1) {
     font-size: 2em;
     margin: 0.67em 0;
   }
@@ -58,7 +70,7 @@
   * 2. Show the overflow in Edge and IE.
   */
 
-  hr {
+  :where(hr) {
     box-sizing: content-box; /* 1 */
     height: 0; /* 1 */
     overflow: visible; /* 2 */
@@ -69,7 +81,7 @@
   * 2. Correct the odd `em` font sizing in all browsers.
   */
 
-  pre {
+  :where(pre) {
     font-family: monospace; /* 1 */
     font-size: 1em; /* 2 */
   }
@@ -111,7 +123,7 @@
   * 2. Add the correct text decoration in Chrome, Edge, IE, Opera, and Safari.
   */
 
-  abbr[title] {
+  :where(abbr[title]) {
     border-bottom: none; /* 1 */
     text-decoration: underline; /* 2 */
     text-decoration: underline dotted; /* 2 */
@@ -121,8 +133,7 @@
   * Add the correct font weight in Chrome, Edge, and Safari.
   */
 
-  b,
-  strong {
+  :where(b, strong) {
     font-weight: bolder;
   }
 
@@ -131,9 +142,7 @@
   * 2. Correct the odd `em` font sizing in all browsers.
   */
 
-  code,
-  kbd,
-  samp {
+  :where(code, kbd, samp) {
     box-sizing: border-box;
     font-family: monospace; /* 1 */
     font-size: 1em; /* 2 */
@@ -143,7 +152,7 @@
   * Add the correct font size in all browsers.
   */
 
-  small {
+  :where(small) {
     font-size: 80%;
   }
 
@@ -152,19 +161,18 @@
   * all browsers.
   */
 
-  sub,
-  sup {
+  :where(sub, sup) {
     font-size: 75%;
     line-height: 0;
     position: relative;
     vertical-align: baseline;
   }
 
-  sub {
+  :where(sub) {
     bottom: -0.25em;
   }
 
-  sup {
+  :where(sup) {
     top: -0.5em;
   }
 
@@ -175,7 +183,7 @@
   * Remove the border on images inside links in IE 10.
   */
 
-  img {
+  :where(img) {
     border-style: none;
   }
 
@@ -187,11 +195,7 @@
   * 2. Remove the margin in Firefox and Safari.
   */
 
-  button,
-  input,
-  optgroup,
-  select,
-  textarea {
+  :where(button, input, optgroup, select, textarea) {
     font-family: inherit; /* 1 */
     font-size: 100%; /* 1 */
     line-height: 1.15; /* 1 */
@@ -207,8 +211,7 @@
   * 1. Show the overflow in Edge.
   */
 
-  button,
-  input {
+  :where(button, input) {
     /* 1 */
     overflow: visible;
   }
@@ -218,8 +221,7 @@
   * 1. Remove the inheritance of text transform in Firefox.
   */
 
-  button,
-  select {
+  :where(button, select) {
     /* 1 */
     text-transform: none;
   }
@@ -228,10 +230,7 @@
   * Correct the inability to style clickable types in iOS and Safari.
   */
 
-  button,
-  [type='button'],
-  [type='reset'],
-  [type='submit'] {
+  :where(button, [type='button'], [type='reset'], [type='submit']) {
     appearance: button;
     background-color: transparent;
     border: 0;
@@ -241,10 +240,12 @@
   * Remove the inner border and padding in Firefox.
   */
 
-  button::-moz-focus-inner,
-  [type='button']::-moz-focus-inner,
-  [type='reset']::-moz-focus-inner,
-  [type='submit']::-moz-focus-inner {
+  :where(
+    button,
+    [type='button'],
+    [type='reset'],
+    [type='submit']
+  )::-moz-focus-inner {
     border-style: none;
     padding: 0;
   }
@@ -253,10 +254,12 @@
   * Restore the focus styles unset by the previous rule.
   */
 
-  button:-moz-focusring,
-  [type='button']:-moz-focusring,
-  [type='reset']:-moz-focusring,
-  [type='submit']:-moz-focusring {
+  :where(
+    button:-moz-focusring,
+    [type='button']:-moz-focusring,
+    [type='reset']:-moz-focusring,
+    [type='submit']:-moz-focusring
+  ) {
     outline: 1px dotted ButtonText;
   }
 
@@ -264,7 +267,7 @@
   * Correct the padding in Firefox.
   */
 
-  fieldset {
+  :where(fieldset) {
     padding: 0.35em 0.75em 0.625em;
   }
 
@@ -275,7 +278,7 @@
   *    `fieldset` elements in all browsers.
   */
 
-  legend {
+  :where(legend) {
     box-sizing: border-box; /* 1 */
     color: inherit; /* 2 */
     display: table; /* 1 */
@@ -288,7 +291,7 @@
   * Add the correct vertical alignment in Chrome, Firefox, and Opera.
   */
 
-  progress {
+  :where(progress) {
     vertical-align: baseline;
   }
 
@@ -296,7 +299,7 @@
   * Remove the default vertical scrollbar in IE 10+.
   */
 
-  textarea {
+  :where(textarea) {
     overflow: auto;
   }
 
@@ -305,8 +308,7 @@
   * 2. Remove the padding in IE 10.
   */
 
-  [type='checkbox'],
-  [type='radio'] {
+  :where([type='checkbox'], [type='radio']) {
     box-sizing: border-box; /* 1 */
     padding: 0; /* 2 */
   }
@@ -315,8 +317,8 @@
   * Correct the cursor style of increment and decrement buttons in Chrome.
   */
 
-  [type='number']::-webkit-inner-spin-button,
-  [type='number']::-webkit-outer-spin-button {
+  :where([type='number'])::-webkit-inner-spin-button,
+  :where([type='number'])::-webkit-outer-spin-button {
     height: auto;
   }
 
@@ -325,7 +327,7 @@
   * 2. Correct the outline style in Safari.
   */
 
-  [type='search'] {
+  :where([type='search']) {
     appearance: textfield; /* 1 */
     outline-offset: -2px; /* 2 */
   }
@@ -334,7 +336,7 @@
   * Remove the inner padding in Chrome and Safari on macOS.
   */
 
-  [type='search']::-webkit-search-decoration {
+  :where([type='search'])::-webkit-search-decoration {
     -webkit-appearance: none;
   }
 
@@ -355,7 +357,7 @@
   * Add the correct display in Edge, IE 10+, and Firefox.
   */
 
-  details {
+  :where(details) {
     display: block;
   }
 
@@ -363,7 +365,7 @@
   * Add the correct display in all browsers.
   */
 
-  summary {
+  :where(summary) {
     display: list-item;
   }
 
@@ -374,7 +376,7 @@
   * Add the correct display in IE 10+.
   */
 
-  template {
+  :where(template) {
     display: none;
   }
 
@@ -386,7 +388,7 @@
     display: none;
   }
 
-  ul {
+  :where(ul) {
     padding-inline-start: 0;
   }
 }
