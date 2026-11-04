@@ -2083,15 +2083,24 @@ defineExpose({
 // same focus ring as the drawer toggle, because they are the two controls the
 // frame itself owns at small widths.
 .nb-shell__inspector-dismiss {
-  position: absolute;
+  // In the flow of the sheet's column rather than absolute, so the sheet can
+  // scroll and the button stays where a thumb expects it: sticky to the top,
+  // at the end of its row. The negative bottom margin pulls the content up
+  // under it, so the first thing in the sheet still starts at the top and the
+  // published dismiss inset still describes exactly what the button covers.
+  --nb-shell-inspector-dismiss-size: calc(var(--nb-base-unit) * 5); // 40px
+  position: sticky;
   top: calc(var(--nb-base-unit) * 1);
-  right: calc(var(--nb-base-unit) * 1);
+  align-self: flex-end;
+  flex-shrink: 0;
+  margin: calc(var(--nb-base-unit) * 1) calc(var(--nb-base-unit) * 1)
+    calc(-1 * (var(--nb-shell-inspector-dismiss-size) + var(--nb-base-unit))) 0;
   z-index: 6;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: calc(var(--nb-base-unit) * 5); // 40px
-  height: calc(var(--nb-base-unit) * 5);
+  width: var(--nb-shell-inspector-dismiss-size);
+  height: var(--nb-shell-inspector-dismiss-size);
   padding: 0;
   border: 0;
   border-radius: 2px;
@@ -2227,6 +2236,13 @@ defineExpose({
   .nb-shell__inspector--overlay {
     transform: none;
     transition: transform var(--nb-motion-medium) var(--nb-ease-enter);
+    // The sheet scrolls as a page. A column of fluid panels taller than the
+    // screen (three inspectors stacked, say) used to be clipped at the bottom
+    // with no way to reach the rest, because the inspector clips its overflow
+    // on the desktop so that its panels share the column. A `fill` panel keeps
+    // its own scroll: the sheet is still a bounded box.
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   // The chrome gives its side padding back to the content at this size.
@@ -2245,6 +2261,7 @@ defineExpose({
 .nb-shell--collapsed {
   .nb-shell__nav-toggle,
   .nb-shell__inspector-dismiss {
+    --nb-shell-inspector-dismiss-size: 44px;
     width: 44px;
     height: 44px;
   }

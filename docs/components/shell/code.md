@@ -1123,6 +1123,8 @@ Below `collapse-at` the inspector stops being a column and becomes a sheet. The 
 - <kbd>Esc</kbd> closes the sheet. If the navigation drawer is also open, Escape closes the drawer first: topmost wins, and a second Escape gets the sheet.
 - The **body is `inert` and `aria-hidden`** while the sheet is up, so Tab cannot walk into the page underneath and a screen reader does not read a page the user cannot see. This is also why the dismiss button has to exist: the drawer toggle is inside the body.
 - Focus moves to the dismiss button when the sheet opens and returns to whatever opened it when it closes, the same contract the drawer has.
+- **The sheet scrolls as a page.** A column of `fluid` panels taller than the screen scrolls, and the dismiss button stays at the top right while it does. A `fill` panel keeps its own internal scroll, as on the desktop.
+- **An `NbShellPanel` first in the sheet keeps its size buttons clear of the dismiss button** by reading `--nb-shell-inspector-dismiss-inset` itself. Your own component at the top of the sheet reads the same variable (see below).
 
 Closing emits `update:inspectorVisible`, so `v-model:inspector-visible` is all you need:
 
