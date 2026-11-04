@@ -120,22 +120,30 @@ A menu can hold fields instead of items: a filter panel, or a quick edit opened 
 
 ### Props
 
-| Prop         | Type      | Default     | Description                        |
-| ------------ | --------- | ----------- | ---------------------------------- |
-| `label`      | `string`  | required    | Display text                       |
-| `icon`       | `string`  | `undefined` | Phosphor icon name                 |
-| `shortcut`   | `string`  | `undefined` | Keyboard shortcut display text     |
-| `disabled`   | `boolean` | `false`     | Disables the item                  |
-| `danger`     | `boolean` | `false`     | Destructive action styling         |
-| `selectable` | `boolean` | `false`     | Checkbox-style toggle              |
-| `selected`   | `boolean` | `false`     | Whether selectable item is checked |
-| `radioGroup` | `string`  | `undefined` | Radio group name                   |
+| Prop         | Type             | Default     | Description                                                                            |
+| ------------ | ---------------- | ----------- | -------------------------------------------------------------------------------------- |
+| `label`      | `string`         | required    | Display text                                                                           |
+| `icon`       | `string`         | `undefined` | Phosphor icon name                                                                     |
+| `picture`    | `string \| null` | `undefined` | A picture in the icon's place, as a 16px `NbAvatar`. `null` draws the label's initials |
+| `shortcut`   | `string`         | `undefined` | Keyboard shortcut display text                                                         |
+| `disabled`   | `boolean`        | `false`     | Disables the item                                                                      |
+| `danger`     | `boolean`        | `false`     | Destructive action styling                                                             |
+| `selectable` | `boolean`        | `false`     | Checkbox-style toggle                                                                  |
+| `selected`   | `boolean`        | `false`     | Whether selectable item is checked                                                     |
+| `radioGroup` | `string`         | `undefined` | Radio group name                                                                       |
 
 ### Events
 
 | Event    | Payload | Description                        |
 | -------- | ------- | ---------------------------------- |
 | `select` | none    | Emitted when the item is activated |
+
+### Slots
+
+| Slot       | Description                                                                                    |
+| ---------- | ---------------------------------------------------------------------------------------------- |
+| `leading`  | Replaces what leads the label (the picture or the icon), for anything the two props cannot say |
+| `trailing` | After the shortcut: a badge, a count, a secondary control                                      |
 
 ## NbMenuDivider
 

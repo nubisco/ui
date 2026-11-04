@@ -19,7 +19,25 @@
     />
     <span v-else-if="selectable" class="nb-menu-item__check-placeholder" />
 
-    <NbIcon v-if="icon" :name="icon" :size="16" class="nb-menu-item__icon" />
+    <!-- What leads the label: a picture (the person or thing the row names),
+         the icon, or whatever the slot puts there. The picture is decorative,
+         because the label beside it already names the row. -->
+    <slot name="leading">
+      <NbAvatar
+        v-if="picture !== undefined"
+        class="nb-menu-item__icon nb-menu-item__picture"
+        :name="label"
+        :picture="picture"
+        :size="16"
+        decorative
+      />
+      <NbIcon
+        v-else-if="icon"
+        :name="icon"
+        :size="16"
+        class="nb-menu-item__icon"
+      />
+    </slot>
 
     <span class="nb-menu-item__label">{{ label }}</span>
 
@@ -31,11 +49,13 @@
 
 <script setup lang="ts">
 import NbIcon from './Icon.vue'
+import NbAvatar from './Avatar.vue'
 import { ref, computed, inject, onMounted, onBeforeUnmount } from 'vue'
 import type { IMenuItemProps, IMenuContext } from './Menu.d'
 
 const props = withDefaults(defineProps<IMenuItemProps>(), {
   icon: undefined,
+  picture: undefined,
   shortcut: undefined,
   disabled: false,
   danger: false,
@@ -167,6 +187,13 @@ defineExpose({ el: itemRef })
   &__icon {
     flex-shrink: 0;
     color: var(--nb-c-text-muted);
+  }
+
+  // A picture is a 16px circle in the icon's place, so rows with and without
+  // one keep their labels aligned.
+  &__picture {
+    inline-size: 16px;
+    block-size: 16px;
   }
 
   &__label {

@@ -48,9 +48,12 @@
           >
             {{ isCollapsed(lane.id) ? '&#9654;' : '&#9660;' }}
           </button>
-          <slot name="lane-header" :lane="lane">
-            <span class="nb-board__lane-label">{{ lane.label }}</span>
-          </slot>
+          <!-- The slot fills the label span rather than replacing it, so a
+               product's own header keeps the library's typography without
+               writing a library class into its markup. -->
+          <span class="nb-board__lane-label">
+            <slot name="lane-header" :lane="lane">{{ lane.label }}</slot>
+          </span>
           <span class="nb-board__lane-count">{{ laneCount(lane.id) }}</span>
         </div>
 
