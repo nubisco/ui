@@ -111,13 +111,14 @@ function handleGap(value: string, ctx: IHandlerContext): void {
 }
 
 /**
- * Handles grid prop (1-16 columns)
+ * Handles grid prop (1-16 columns, or a fraction such as '1/3')
  */
 function handleGrid(value: number | string, ctx: IHandlerContext): void {
   const { collection, breakpoint } = ctx
   const prefix = breakpoint ? `${breakpoint}-` : ''
 
-  collection[`${prefix}grid-${value}`] = true
+  // '2/3' is the class grid-2-3: a slash is not a class character.
+  collection[`${prefix}grid-${String(value).replace('/', '-')}`] = true
 }
 
 /**

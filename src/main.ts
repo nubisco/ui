@@ -266,6 +266,8 @@ export type {
   TGridColumnsResponsive,
   TGridColumnsFn,
   TGridColumnsInput,
+  TGridFraction,
+  TGridSpan,
   TGridShift,
   TGridShiftResponsive,
   TGridShiftFn,

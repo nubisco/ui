@@ -63,12 +63,35 @@ export type TGridColumns =
   | 14
   | 15
   | 16
-export type TGridColumnsResponsive = Partial<Record<TBreakpoint, TGridColumns>>
-export type TGridColumnsFn = () => TGridColumns
+// Shares the 16 columns cannot express. Thirds for a KPI block, fifths and
+// sixths for a row of tiles. The same gap arithmetic as a column count.
+export type TGridFraction =
+  | '1/3'
+  | '2/3'
+  | '1/5'
+  | '2/5'
+  | '3/5'
+  | '4/5'
+  | '1/6'
+  | '5/6'
+export type TGridSpan = TGridColumns | TGridFraction
+export type TGridColumnsResponsive = Partial<Record<TBreakpoint, TGridSpan>>
+export type TGridColumnsFn = () => TGridSpan
 export type TGridColumnsInput =
-  | TGridColumns
+  | TGridSpan
   | TGridColumnsResponsive
   | TGridColumnsFn
+
+export const GRID_FRACTIONS: readonly TGridFraction[] = [
+  '1/3',
+  '2/3',
+  '1/5',
+  '2/5',
+  '3/5',
+  '4/5',
+  '1/6',
+  '5/6',
+]
 
 // Grid shift (0-15)
 export type TGridShift =
@@ -226,6 +249,8 @@ export const gridPropDefinitions = {
     validator: (value: TGridColumnsInput): boolean => {
       if (value == null || typeof value === 'function') return true
       const isValidColumn = (v: number | string) => {
+        if (typeof v === 'string' && v.includes('/'))
+          return (GRID_FRACTIONS as readonly string[]).includes(v)
         const num = typeof v === 'string' ? parseInt(v, 10) : v
         return num >= 1 && num <= 16 && !isNaN(num)
       }

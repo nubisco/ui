@@ -1,3 +1,4 @@
+@use 'sass:list';
 @use 'sass:map';
 @use './common';
 @use '../variables/grid';
@@ -19,6 +20,26 @@
           #{grid.$grid-columns -
           $column} /
           #{grid.$grid-columns}
+      );
+      flex-basis: $span;
+      max-width: $span;
+      min-width: $span;
+    }
+  }
+  // Shares the 16 columns cannot express: thirds, fifths and sixths. The
+  // same arithmetic, with the fraction in place of columns over 16, so they
+  // share the row's gap the way a column count does.
+  @each $fraction in (1 3, 2 3, 1 5, 2 5, 3 5, 4 5, 1 6, 5 6) {
+    $n: list.nth($fraction, 1);
+    $d: list.nth($fraction, 2);
+    &.#{$prefix}grid-#{$n}-#{$d} {
+      $span: calc(
+        (100% * #{$n}) /
+          #{$d} - var(--nb-grid-parent-gap, 0px) *
+          var(--nb-grid-parent-row, 1) *
+          #{$d -
+          $n} /
+          #{$d}
       );
       flex-basis: $span;
       max-width: $span;
