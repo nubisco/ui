@@ -50,3 +50,37 @@ describe('NbGrid spans and gaps', () => {
     expect(rule('.nb-grid > *')).toContain('--nb-grid-parent-gap: 0px')
   })
 })
+
+describe('NbGrid fractions', () => {
+  const css = compileString('@use "grid"; @include grid.grid;', {
+    loadPaths: [resolve(__dirname, '../src/styles')],
+  }).css
+
+  it('turns a fraction into a class, at the base and at a breakpoint', () => {
+    const w = mount(Grid, { props: { grid: '1/3' } })
+    expect(w.classes()).toContain('grid-1-3')
+    const r = mount(Grid, { props: { grid: { sm: 16, md: '2/3' } } })
+    expect(r.classes()).toContain('sm-grid-16')
+    expect(r.classes()).toContain('md-grid-2-3')
+  })
+
+  it('sizes a third like a column count, sharing the row gap', () => {
+    const at = css.indexOf('.nb-grid.grid-1-3 {')
+    expect(at).toBeGreaterThanOrEqual(0)
+    const rule = css.slice(at, css.indexOf('}', at))
+    expect(rule).toContain('100% * 1 / 3')
+    expect(rule).toContain('var(--nb-grid-parent-gap, 0px)')
+    expect(rule).toContain('* 2 / 3')
+    expect(css).toContain('.nb-grid.md-grid-5-6 {')
+  })
+
+  it('refuses a fraction it has no class for', () => {
+    const validator = (
+      Grid.props as { grid: { validator: (v: unknown) => boolean } }
+    ).grid.validator
+    expect(validator('1/3')).toBe(true)
+    expect(validator({ md: '4/5' })).toBe(true)
+    expect(validator('1/7')).toBe(false)
+    expect(validator(8)).toBe(true)
+  })
+})

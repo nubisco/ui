@@ -92,7 +92,7 @@ console.log(myGrid.value.getRef()) // → HTMLElement
 
 ## Columns
 
-The `grid` prop sets how many of the 16 available columns a child item spans. The `shift` prop offsets it from the left edge.
+The `grid` prop sets how many of the 16 available columns a child item spans, or a fraction the columns cannot make (`'1/3'`, see [Thirds, fifths and sixths](#thirds-fifths-and-sixths)). The `shift` prop offsets it from the left edge.
 
 A span shares the gap of the row it sits in. Spans that add up to 16 fill the row exactly, gaps included: two `grid="8"` children of a `gap="md"` row are each `(100% - 16px) / 2`, and a wrapping row of them puts two on each line. Only a row's gap counts, since a column's gap is vertical.
 
@@ -134,6 +134,86 @@ A span shares the gap of the row it sits in. Spans that add up to 16 fill the ro
   <nb-grid dir="row">
     <nb-grid dir="col" grid="4">4 cols</nb-grid>
     <nb-grid dir="col" grid="12">12 cols</nb-grid>
+  </nb-grid>
+</template>
+```
+
+## Thirds, fifths and sixths
+
+Sixteen columns split into halves, quarters and eighths, and not into thirds.
+`grid` also takes a fraction, `'1/3'`, `'2/3'`, `'1/5'` to `'4/5'`, `'1/6'` and
+`'5/6'`, sized with the same arithmetic as a column count, so three `'1/3'`
+children of a `gap="md"` row fill it exactly, gaps included. A fraction works
+in a breakpoint map like any other span.
+
+<preview style-grid>
+  <div class="grid-demo-label">Fractions</div>
+  <nb-grid dir="row" class="grid-demo-row" gap="sm">
+    <nb-grid dir="col" grid="1/3" class="grid-demo-item">1/3</nb-grid>
+    <nb-grid dir="col" grid="2/3" class="grid-demo-item span-b">2/3</nb-grid>
+  </nb-grid>
+  <nb-grid dir="row" class="grid-demo-row" gap="sm">
+    <nb-grid dir="col" grid="1/3" class="grid-demo-item">1/3</nb-grid>
+    <nb-grid dir="col" grid="1/3" class="grid-demo-item span-b">1/3</nb-grid>
+    <nb-grid dir="col" grid="1/3" class="grid-demo-item">1/3</nb-grid>
+  </nb-grid>
+  <nb-grid dir="row" class="grid-demo-row" gap="sm">
+    <nb-grid dir="col" grid="1/5" class="grid-demo-item">1/5</nb-grid>
+    <nb-grid dir="col" grid="4/5" class="grid-demo-item span-b">4/5</nb-grid>
+  </nb-grid>
+  <nb-grid dir="row" class="grid-demo-row" gap="sm">
+    <nb-grid dir="col" grid="1/6" class="grid-demo-item">1/6</nb-grid>
+    <nb-grid dir="col" grid="5/6" class="grid-demo-item span-b">5/6</nb-grid>
+  </nb-grid>
+</preview>
+
+```vue
+<template>
+  <nb-grid dir="row" gap="md">
+    <nb-grid dir="col" grid="1/3">A third</nb-grid>
+    <nb-grid dir="col" grid="2/3">Two thirds</nb-grid>
+  </nb-grid>
+</template>
+```
+
+## A tile two rows tall
+
+`NbGrid` is a flex grid, so a child spans rows by nesting, not by a row count:
+put the rows that sit beside the tall tile inside a column of their own, and
+the tall tile stretches to their height (`align` defaults to `stretch`). The
+dashboard block of a headline figure beside a 3 x 2 grid of small tiles is a
+third beside two thirds, with the six tiles wrapping at `'1/3'` inside.
+
+<preview style-grid>
+  <div class="grid-demo-label">A headline beside six tiles</div>
+  <nb-grid dir="row" gap="sm">
+    <nb-grid dir="col" grid="1/3" class="grid-demo-item">Headline</nb-grid>
+    <nb-grid dir="col" grid="2/3">
+      <nb-grid dir="row" gap="sm" wrap="wrap">
+        <nb-grid dir="col" grid="1/3" class="grid-demo-item span-b">1</nb-grid>
+        <nb-grid dir="col" grid="1/3" class="grid-demo-item span-b">2</nb-grid>
+        <nb-grid dir="col" grid="1/3" class="grid-demo-item span-b">3</nb-grid>
+        <nb-grid dir="col" grid="1/3" class="grid-demo-item span-b">4</nb-grid>
+        <nb-grid dir="col" grid="1/3" class="grid-demo-item span-b">5</nb-grid>
+        <nb-grid dir="col" grid="1/3" class="grid-demo-item span-b">6</nb-grid>
+      </nb-grid>
+    </nb-grid>
+  </nb-grid>
+</preview>
+
+```vue
+<template>
+  <nb-grid dir="row" gap="md">
+    <nb-grid dir="col" grid="1/3">
+      <nb-stat label="Revenue" value="48,200" unit="EUR" />
+    </nb-grid>
+    <nb-grid dir="col" grid="2/3">
+      <nb-grid dir="row" gap="md" wrap="wrap">
+        <nb-grid v-for="tile in tiles" :key="tile.label" dir="col" grid="1/3">
+          <nb-stat v-bind="tile" />
+        </nb-grid>
+      </nb-grid>
+    </nb-grid>
   </nb-grid>
 </template>
 ```
