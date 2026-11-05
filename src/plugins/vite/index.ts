@@ -5,7 +5,7 @@ import type { Plugin } from 'vite'
 import { Components } from './vendor.js'
 import { COMPONENT_MANIFEST } from '../../components/manifest.js'
 import { nubiscoGlyphs, type IGlyphOptions } from './glyphs.js'
-import { nubiscoImports } from './imports.js'
+import { nubiscoImports, PROGRAMMATIC_MOUNTS } from './imports.js'
 
 /**
  * Compile-time resolution for `@nubisco/ui`.
@@ -123,6 +123,7 @@ export function nubiscoUI(options: INubiscoUIOptions = {}): Plugin[] {
         manifest: lookup,
         styleManifest,
         styles,
+        mounts: PROGRAMMATIC_MOUNTS,
         packageName: '@nubisco/ui',
         onResolve: (count) => {
           resolvedComponents += count
