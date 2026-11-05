@@ -34,6 +34,18 @@ import { parse, babelParse } from 'vue/compiler-sfc'
  * file actually uses.
  */
 
+/**
+ * Exports that mount a library component at runtime instead of rendering it
+ * from a template. `useConfirm()` creates its own app around NbConfirm, so no
+ * template ever names NbConfirm and, before this map, no build linked
+ * `Confirm.css`: every confirm dialog rendered unstyled. A spec in
+ * `tests/import-plugin.test.ts` reads the composables' own imports and fails
+ * if one mounts a component this map does not name.
+ */
+export const PROGRAMMATIC_MOUNTS: Record<string, string[]> = {
+  useConfirm: ['Confirm'],
+}
+
 interface INubiscoImportOptions {
   /** `Nb*` name to entry file, from the component manifest. */
   manifest: Map<string, string>
@@ -41,6 +53,12 @@ interface INubiscoImportOptions {
   styleManifest: Record<string, string[]>
   /** Inject stylesheets. When false this plugin only rewrites imports. */
   styles: boolean
+  /**
+   * Exports that mount a component at runtime, mapped to the entries they
+   * mount. No template names that component, so neither the resolver nor the
+   * rewrite below would otherwise link its stylesheets.
+   */
+  mounts?: Record<string, string[]>
   packageName: string
   /** Called with the number of components resolved in a file. */
   onResolve: (count: number) => void
@@ -70,8 +88,16 @@ interface ISpecifier {
 }
 
 export function nubiscoImports(options: INubiscoImportOptions) {
-  const { manifest, styleManifest, styles, packageName, onResolve } = options
+  const {
+    manifest,
+    styleManifest,
+    styles,
+    mounts = {},
+    packageName,
+    onResolve,
+  } = options
   const componentPrefix = `${packageName}/components/`
+  const composablePrefix = `${packageName}/composables/`
 
   return {
     name: 'nubisco-ui:imports',
@@ -135,7 +161,33 @@ export function nubiscoImports(options: INubiscoImportOptions) {
             continue
           }
 
-          if (source !== packageName) continue
+          /*
+           * A composable that mounts a component itself (`useConfirm` creates
+           * its own NbConfirm app) links that component's stylesheets, since
+           * no template ever names it. Only named value imports can say which
+           * export the file uses.
+           */
+          let mounted = ''
+          if (source === packageName || source.startsWith(composablePrefix)) {
+            for (const specifier of node.specifiers as any[]) {
+              if (specifier.type !== 'ImportSpecifier') continue
+              if (specifier.importKind === 'type') continue
+              const imported: string =
+                specifier.imported.name ?? specifier.imported.value
+              for (const entry of mounts[imported] ?? []) {
+                resolved += 1
+                mounted += sheetsFor(entry)
+              }
+            }
+          }
+
+          if (source !== packageName) {
+            if (mounted) {
+              magic.appendRight(end, mounted)
+              changed = true
+            }
+            continue
+          }
 
           const components: ISpecifier[] = []
           const rest: string[] = []
@@ -160,7 +212,13 @@ export function nubiscoImports(options: INubiscoImportOptions) {
             components.push({ imported, local })
           }
 
-          if (!splittable || !components.length) continue
+          if (!splittable || !components.length) {
+            if (mounted) {
+              magic.appendRight(end, mounted)
+              changed = true
+            }
+            continue
+          }
 
           const lines = components.map(({ imported, local }) => {
             const entry = manifest.get(imported) as string
@@ -172,7 +230,9 @@ export function nubiscoImports(options: INubiscoImportOptions) {
             )
           })
           if (rest.length) {
-            lines.push(`import { ${rest.join(', ')} } from '${source}'`)
+            lines.push(
+              `import { ${rest.join(', ')} } from '${source}'` + mounted,
+            )
           }
 
           resolved += components.length
