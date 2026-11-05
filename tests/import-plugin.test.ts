@@ -1,5 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
-import { nubiscoImports } from '../src/plugins/vite/imports'
+import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+import {
+  nubiscoImports,
+  PROGRAMMATIC_MOUNTS,
+} from '../src/plugins/vite/imports'
 
 /**
  * Style splitting used to ride entirely on the auto-import resolver, so an app
@@ -22,6 +28,7 @@ const styleManifest = {
   Button: ['styles/Button.css'],
   Panel: ['styles/Panel.css'],
   DataTable: ['styles/shared.css', 'styles/DataTable.css'],
+  Confirm: ['styles/Button.css', 'styles/Modal.css', 'styles/Confirm.css'],
 }
 
 const make = (styles = true) => {
@@ -30,6 +37,7 @@ const make = (styles = true) => {
     manifest,
     styleManifest,
     styles,
+    mounts: { useConfirm: ['Confirm'] },
     packageName: '@nubisco/ui',
     onResolve: (count) => {
       resolved += count
@@ -133,6 +141,117 @@ describe('hand-written imports get their stylesheets', () => {
       "import { NbPanel } from '@nubisco/ui/components/Panel'",
     )
     expect(out).toContain("import '@nubisco/ui/dist/styles/Panel.css'")
+  })
+})
+
+/**
+ * `useConfirm()` mounts NbConfirm in an app of its own, so no template names
+ * NbConfirm and neither the resolver nor the rewrite above ever saw it. Every
+ * confirm dialog opened through it rendered unstyled, and nothing failed.
+ */
+describe('composables that mount a component get its stylesheets', () => {
+  it('links Confirm.css for useConfirm from the barrel', () => {
+    const { transform, resolved } = make()
+    const out = transform(
+      `import { useConfirm } from '@nubisco/ui'\nexport const c = useConfirm()\n`,
+      '/app/src/composables/useThing.ts',
+    )
+    expect(out).toContain("import { useConfirm } from '@nubisco/ui'")
+    expect(out).toContain("import '@nubisco/ui/dist/styles/Modal.css'")
+    expect(out).toContain("import '@nubisco/ui/dist/styles/Confirm.css'")
+    expect(resolved()).toBe(1)
+  })
+
+  it('links it next to a split component import, each sheet once', () => {
+    const { transform } = make()
+    const out = transform(
+      sfc(`import { NbButton, useConfirm, useToast } from '@nubisco/ui'`),
+    )
+    expect(out).toContain(
+      "import { NbButton } from '@nubisco/ui/components/Button'",
+    )
+    expect(out).toContain("import { useConfirm, useToast } from '@nubisco/ui'")
+    expect(out).toContain("import '@nubisco/ui/dist/styles/Confirm.css'")
+    expect(out!.match(/styles\/Button\.css/g)).toHaveLength(1)
+  })
+
+  it('links it for the composable entry point too', () => {
+    const { transform } = make()
+    const out = transform(
+      `import { useConfirm } from '@nubisco/ui/composables/useConfirm.composable'\n`,
+      '/app/src/a.ts',
+    )
+    expect(out).toContain("import '@nubisco/ui/dist/styles/Confirm.css'")
+  })
+
+  it('links nothing for a type-only or non-mounting import', () => {
+    const { transform } = make()
+    expect(
+      transform(`import type { TConfirmFn } from '@nubisco/ui'\n`, '/a.ts'),
+    ).toBeUndefined()
+    expect(
+      transform(`import { type useConfirm } from '@nubisco/ui'\n`, '/a.ts'),
+    ).toBeUndefined()
+    expect(
+      transform(`import { dismissConfirms } from '@nubisco/ui'\n`, '/a.ts'),
+    ).toBeUndefined()
+  })
+
+  it('links no CSS when styles are turned off', () => {
+    const { transform } = make(false)
+    expect(
+      transform(`import { useConfirm } from '@nubisco/ui'\n`, '/a.ts'),
+    ).toBeUndefined()
+  })
+
+  it('is wired into nubiscoUI() with the real map', async () => {
+    const distRoot = mkdtempSync(path.join(tmpdir(), 'nb-dist-'))
+    writeFileSync(
+      path.join(distRoot, 'component-styles.json'),
+      JSON.stringify({ Confirm: ['styles/Confirm.css'] }),
+    )
+    const { default: nubiscoUI } = await import('../src/plugins/vite/index')
+    const plugins = nubiscoUI({ distRoot, glyphs: false }) as any[]
+    const imports = plugins.find((p) => p?.name === 'nubisco-ui:imports')
+    const out = imports.transform.call(
+      {},
+      `import { useConfirm } from '@nubisco/ui'\n`,
+      '/app/src/a.ts',
+    )?.code
+    expect(out).toContain("import '@nubisco/ui/dist/styles/Confirm.css'")
+  })
+
+  /*
+   * The map is hand-written, so pin it to the source: any composable that
+   * imports a styled component must have that component (or one that renders
+   * it) in PROGRAMMATIC_MOUNTS, or the next one ships unstyled the same way.
+   */
+  it('covers every styled component a composable imports', () => {
+    const root = path.resolve(__dirname, '../src')
+    const read = (file: string) => readFileSync(file, 'utf8')
+    const componentImports = (code: string) =>
+      [...code.matchAll(/from '(?:@\/components\/|\.\/)([A-Z]\w*)\.vue'/g)].map(
+        (m) => m[1],
+      )
+    const styled = (name: string) =>
+      /<style/.test(read(path.join(root, 'components', `${name}.vue`)))
+
+    const mounted = new Set(Object.values(PROGRAMMATIC_MOUNTS).flat())
+    const covered = new Set(mounted)
+    for (const name of mounted) {
+      const code = read(path.join(root, 'components', `${name}.vue`))
+      componentImports(code).forEach((dep) => covered.add(dep))
+    }
+
+    const dir = path.join(root, 'composables')
+    const missing: string[] = []
+    for (const file of readdirSync(dir)) {
+      if (!/\.ts$/.test(file) || file.endsWith('.d.ts')) continue
+      for (const name of componentImports(read(path.join(dir, file)))) {
+        if (styled(name) && !covered.has(name)) missing.push(`${file}: ${name}`)
+      }
+    }
+    expect(missing).toEqual([])
   })
 })
 
