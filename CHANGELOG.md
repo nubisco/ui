@@ -1,3 +1,10 @@
+## [5.47.1](https://github.com/nubisco/ui/compare/v5.47.0...v5.47.1) (2026-11-05)
+
+
+### Bug Fixes
+
+* **vite:** link Confirm.css for apps that call useConfirm ([#13](https://github.com/nubisco/ui/issues/13)) ([d18dc5a](https://github.com/nubisco/ui/commit/d18dc5acc8eda98d3dd9c7d82e8457c377d5a310)), closes [#5](https://github.com/nubisco/ui/issues/5)
+
 # [5.47.0](https://github.com/nubisco/ui/compare/v5.46.1...v5.47.0) (2026-11-04)
 
 
