@@ -83,6 +83,6 @@ The old washes measured 1.88:1 (orange) to 4.45:1 (blue) at this size in light. 
 - **Colour is never the only signal.** The word carries the state, so two badges that differ only in colour are a bug.
 - **A placeholder badge says what is missing** (`No labels`), and an interactive one is named for what pressing it does.
 
-Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+Casing, punctuation and tone are set library-wide, not by this component: [Writing style](/content/writing-style) is the source.
 
 <!--@include: ./_shared.md-->

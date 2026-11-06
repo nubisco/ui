@@ -31,12 +31,12 @@ async function remove(environment) {
 
 ## What this component decides for you
 
-Reading the twelve applications that consume this library turned up seven different confirmation mechanics and a long tail of destructive actions with no confirmation at all: deleting a CMS environment and every entry in it behind a `window.confirm`, regenerating an OAuth client secret on a single unguarded click, a `localStorage.clear()` in a command palette, deleting another user's comment. The variation was never a design choice, it was the cost of deciding again at every call site. So the decisions live here:
+A confirmation decided again at every call site varies at every call site, and the variation is never a design choice. Deleting an environment and everything in it, regenerating a client secret, clearing local storage, deleting another user's comment: each deserves the same guard. So the decisions live here:
 
 | Decision                               | What `NbConfirm` does                                                                                                                                                 | Why it is not a prop                                                                                                                                            |
 | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Button order                           | Cancel first, confirm second                                                                                                                                          | The exit is where the reading eye arrives first and the commit is where it stops. Flipping this per app makes muscle memory a hazard.                           |
-| Button emphasis                        | Ghost cancel, `danger` confirm (`primary` when `tone="neutral"`)                                                                                                      | A destructive action styled as a primary button is the one defect the old modal docs actively taught.                                                           |
+| Button emphasis                        | Ghost cancel, `danger` confirm (`primary` when `tone="neutral"`)                                                                                                      | A destructive action styled as a primary button reads as the safe, expected next step.                                                                          |
 | Initial focus                          | Cancel                                                                                                                                                                | The dialog appears under the hand that just clicked. A confirm button holding focus turns one stray <kbd>Space</kbd> into a deletion.                           |
 | <kbd>Esc</kbd>, backdrop, close button | All resolve to cancel, and all three are refused while `busy` (the close button is `disabled` and `aria-disabled` for as long as it is refused, never live-but-inert) | Three exits that mean the same thing. None of them can ever mean confirm, and none of them can un-fire a request that has already left.                         |
 | <kbd>Enter</kbd>                       | Nothing globally                                                                                                                                                      | An accept-on-Enter default fires the destructive action from a keystroke aimed at something else.                                                               |
@@ -54,9 +54,9 @@ Do not use it to report a result (that is a toast), to collect a form (that is `
 
 ## Why not `window.confirm`
 
-It is the mechanism most of the fleet reached for, and it is unavailable to some of it:
+It is the obvious mechanism, and it is unavailable in some environments:
 
-- Inside a **Tauri** webview it is a documented no-op. The dialog never appears and the call returns immediately, so the guard silently evaluates as "cancelled" (or, worse in the inverted spellings, as "confirmed"). Two of our apps hit this independently.
+- Inside a **Tauri** webview it is a documented no-op. The dialog never appears and the call returns immediately, so the guard silently evaluates as "cancelled" (or, worse in the inverted spellings, as "confirmed").
 - It cannot be **driven by a gamepad**. `NbConfirm` is ordinary DOM with real focus, so anything that produces <kbd>Tab</kbd>, <kbd>Space</kbd> and <kbd>Esc</kbd> drives it, controller mappings included.
 - It **blocks the main thread**, cannot be themed, cannot name the record in monospace, cannot show a pending state, and some browsers let the user suppress it permanently after the second appearance.
 
@@ -74,7 +74,7 @@ None of this cancels the work itself: pass an `AbortSignal` inside `onConfirm` i
 
 ## Tone
 
-`tone` is `danger` by default, because the confirmations we audited are overwhelmingly destructive and an opt-in safety default is one every call site can forget. Use `tone="neutral"` for a consequential but non-destructive commit: publishing a release, transferring ownership, sending an invite. The order, the focus rules and the dismissal rules do not change; only the confirm button's emphasis and the header icon do.
+`tone` is `danger` by default, because confirmations are overwhelmingly destructive and an opt-in safety default is one every call site can forget. Use `tone="neutral"` for a consequential but non-destructive commit: publishing a release, transferring ownership, sending an invite. The order, the focus rules and the dismissal rules do not change. Only the confirm button's emphasis and the header icon do.
 
 <preview>
   <NbGrid dir="row" gap="sm" align="center">
@@ -83,19 +83,19 @@ None of this cancels the work itself: pass an `AbortSignal` inside `onConfirm` i
   </NbGrid>
 </preview>
 
-## What this fixed in NbModal
+## What it relies on in NbModal
 
-`NbConfirm` renders a real `NbModal`. Four of that component's behaviours were wrong for a confirmation, and wrong for every other nested dialog in the fleet too, so they were fixed in `NbModal` itself rather than patched from outside it. `NbConfirm` configures them with props and does not reach into `NbModal`'s DOM.
+`NbConfirm` renders a real `NbModal`. The behaviours a confirmation needs are `NbModal`'s own, so every nested dialog gets them, and `NbConfirm` configures them with props rather than reaching into `NbModal`'s DOM.
 
-| Was                                                       | Now                                                                                                             | What `NbConfirm` passes                       |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| Every open instance answered <kbd>Esc</kbd> on `document` | Only the last `aria-modal` surface in the document answers, and `closeOnEscape` switches it off per instance    | `:close-on-escape="false"`, it answers itself |
-| `body { overflow }` was cleared on every close            | The page-scroll lock is counted across instances and restores the value the page had, rather than blanking it   | nothing, it is automatic                      |
-| The close control was always enabled                      | `closeDisabled` makes it `disabled` and `aria-disabled`                                                         | `:close-disabled="busy"`                      |
-| The content box scrolled with no keyboard way in          | A `ResizeObserver` and a `MutationObserver` mark it `tabindex="0" role="region"` whenever it actually overflows | nothing, it is automatic                      |
-| The dialog box could not be named or described            | `role`, `labelledBy`, `describedBy` and `busy` props, plus `tabindex="-1"` so focus always has a holder         | all four                                      |
+| `NbModal` behaviour                                                                                             | What `NbConfirm` passes                       |
+| --------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| Only the last `aria-modal` surface in the document answers, and `closeOnEscape` switches it off per instance    | `:close-on-escape="false"`, it answers itself |
+| The page-scroll lock is counted across instances and restores the value the page had, rather than blanking it   | nothing, it is automatic                      |
+| `closeDisabled` makes it `disabled` and `aria-disabled`                                                         | `:close-disabled="busy"`                      |
+| A `ResizeObserver` and a `MutationObserver` mark it `tabindex="0" role="region"` whenever it actually overflows | nothing, it is automatic                      |
+| `role`, `labelledBy`, `describedBy` and `busy` props, plus `tabindex="-1"` so focus always has a holder         | all four                                      |
 
-Every part of it is additive. An `NbModal` that passes none of the new props behaves as it did, except that it now answers <kbd>Esc</kbd> only when it is on top and no longer takes the scroll lock away from a dialog underneath it.
+An `NbModal` that passes none of these props still answers <kbd>Esc</kbd> only when it is on top, and never takes the scroll lock away from a dialog underneath it.
 
 ## Content
 
@@ -105,7 +105,7 @@ Every part of it is additive. An `NbModal` that passes none of the new props beh
 - **`cancelLabel` answers the title** when `Cancel` would be ambiguous: `Keep editing` against `Discard changes`.
 - **`busyLabel` is the verb in the present, with no ellipsis**: `Deleting`. Pass `formatError` so a failure reads as a sentence the user can act on rather than the default.
 
-Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+Casing, punctuation and tone are set library-wide, not by this component: [Writing style](/content/writing-style) is the source.
 
 ## Related
 

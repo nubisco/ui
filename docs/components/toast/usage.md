@@ -16,10 +16,8 @@ const toast = useToast()
 toast.success('Draft saved')
 ```
 
-::: warning This page used to say the opposite
-Until this release, this page stated as policy that the library shipped no container and walked you through building one. Three applications did exactly that. The 12-application audit found that each host lost something different: one had no auto-dismiss, so successes accumulated for the life of the route; one wrote `var(--nb-z-toast)`, a token that does not exist, and silently ran on the fallback instead of `--nb-zindex-toast`; one dropped `role="alert"`, the variant icon, the action and pause-on-hover.
-
-None of that was careless. It is what a container costs to get right, which is why it is library code now. The build-your-own recipe has been removed rather than corrected. If you have a local `Toaster.vue`, the [migration steps](/components/toaster/usage#replacing-a-hand-built-host) are four short ones.
+::: warning Do not build your own host
+A toast host has to get auto-dismiss, the stacking token (`--nb-zindex-toast`, not `--nb-z-toast`, which does not exist), `role="alert"`, the variant icon, the action and pause-on-hover all right at once. Each is easy to lose without noticing, which is why the container is library code. If you have a local `Toaster.vue`, the [migration steps](/components/toaster/usage#replacing-a-hand-built-host) are four short ones.
 :::
 
 <preview>
@@ -35,7 +33,7 @@ A toast is **news that expires**. Something finished, the user does not have to 
 
 ### An action succeeded and there is nothing on screen that says so
 
-"Draft saved", "Invitation sent", "3 rows imported". The audit found four applications confirming a successful save with nothing at all, which leaves the user pressing the button again to find out whether it worked. A four-word toast is the cheapest fix in this library.
+"Draft saved", "Invitation sent", "3 rows imported". A successful save with no confirmation at all leaves the user pressing the button again to find out whether it worked. A four-word toast is the cheapest fix in this library.
 
 ### An action failed in a way that is not about the page in front of you
 
@@ -56,7 +54,7 @@ Two questions disqualify a toast, and neither is about tone or severity:
 1. **Must the user act on it?** A toast times out. Anything that must be done cannot live on a surface that removes itself while it is being read.
 2. **Must the user be able to re-read it?** A toast is gone and unrecoverable. An error code, an ID, a list of what failed, anything the user might paste into a support ticket, cannot be the toast's only home.
 
-If either answer is yes, the message belongs somewhere with a lifetime. The audit shows what happens when it does not: 21 `alert()` calls thrown for exceptions in one application, and 30 page-level errors squeezed into `NbMessage`, a 12px inline field helper, in another.
+If either answer is yes, the message belongs somewhere with a lifetime: not a blocking `alert()`, and not `NbMessage`, which is a 12px inline field helper rather than a home for page-level errors.
 
 | What you have                                                    | Use instead                                                                                       | Because                                                                                               |
 | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -64,12 +62,12 @@ If either answer is yes, the message belongs somewhere with a lifetime. The audi
 | A failure that belongs to the page or the form                   | [`NbBanner`](/components/banner/usage) `variant="inline"`, in place                               | The user has to see the failure and the thing that failed together, for as long as it takes to fix it |
 | A condition that stays true while the page is open               | [`NbBanner`](/components/banner/usage) `variant="callout"`                                        | A standing fact that expires has been told to the user exactly once, at random                        |
 | A question that must be answered before anything continues       | [`useConfirm()`](/composables/use-confirm)                                                        | A toast cannot block, and it cannot be answered. A toast that "confirms" something confirms nothing   |
-| News that outlives the moment and has to be findable later       | [`NbNotificationCenter`](/components/notification-center/usage)                                   | Three applications hand-built a bell (312, 343 and 308 lines) because this distinction had no home    |
+| News that outlives the moment and has to be findable later       | [`NbNotificationCenter`](/components/notification-center/usage)                                   | A toast is gone once read. The notification centre keeps it until the user has dealt with it          |
 | Work that is still in progress on this screen                    | [`NbInlineLoading`](/components/inline-loading/usage) or [`NbSpinner`](/components/spinner/usage) | Progress belongs next to the thing making progress ([Status indicators](/patterns/status-indicators)) |
 | A per-row or per-item result in a long list                      | The row itself                                                                                    | Ten toasts for ten rows is a wall. Say "3 of 10 failed" once, and mark the rows                       |
 | Anything with an error code, an id, or a list the user must keep | An inline banner, a details panel, or the notification centre                                     | A toast cannot be scrolled back to                                                                    |
 
-Three more rules that come straight from what the fleet shipped:
+Three more rules:
 
 - **Never toast something the user can already see.** A row that disappeared reported itself.
 - **Never toast twice for one action.** One message for the request and another for the response is two interruptions for one thing. Keep the handle from `push()` and `update()` it.
@@ -90,7 +88,7 @@ The variant is not a colour choice. It sets the icon, the accent, the hidden sev
 
 ### When a warning should have been a banner
 
-Most `warning` toasts in the fleet were not warnings, they were conditions, and a condition on a surface with an eight-second lifetime has been told to the user exactly once, at random. One question separates them.
+A `warning` toast is often a condition rather than a warning, and a condition on a surface with an eight-second lifetime has been told to the user exactly once, at random. One question separates them.
 
 **Is it still true after the toast disappears?**
 

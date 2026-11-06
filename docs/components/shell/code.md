@@ -53,7 +53,7 @@ pageTabs: ['usage', 'code', 'accessibility']
 
 ## Contributing controls from a view
 
-The shell is declared once, at the root of the application. The controls that belong in it (a page title, a Save button, a filter chip) belong to the view the router just mounted, which is several levels below. Getting one into the other is the single most common thing our applications do with this component, and before `useShellSlot` every one of them solved it privately: eight of our twelve products put a hand-picked DOM id on a shell region and teleported into it by selector. `#cms-topbar`, `#nks-topbar-right`, `#verba-topbar`, `#ob-topbar-left`, `#nba-topbar-left`, `#tally-topbar`, `#page-actions`. Eight contracts, none of them compatible, and one of them shipped a live bug because a view queried for its target before the shell had rendered it.
+The shell is declared once, at the root of the application. The controls that belong in it (a page title, a Save button, a filter chip) belong to the view the router just mounted, which is several levels below. Getting one into the other is the most common thing an application does with this component. Solved privately, it means a hand-picked DOM id on a shell region and a teleport into it by selector: a contract no other application shares, and a live bug whenever a view queries for its target before the shell has rendered it.
 
 `useShellSlot` is the supported contract. The view names a region, not an element, and gets back an outlet to render into.
 
@@ -155,16 +155,14 @@ Delete the `mounted` flag with it: it existed to work around the ordering proble
 
 ## When the topbar is rendered
 
-The topbar used to render unconditionally, which meant an application with no topbar content still got a 50px strip and a border line under the header. Four of our products hid it from the outside, one with the only `:deep()` override in its entire codebase, one with a comment explaining that its selector was doubled to out-specify a scoped rule inside the built `ui.css`.
+An application with no topbar content gets no topbar: no 50px strip and no border line under the header to hide from outside. The check lives in the component, where the slots are: the topbar renders when `topbar-left` or `topbar-right` has content, or when a view has claimed one of them with `useShellSlot`. If neither, there is no topbar in the DOM and nothing to hide.
 
-The check now lives in the component, where the slots are: the topbar renders when `topbar-left` or `topbar-right` has content, or when a view has claimed one of them with `useShellSlot`. If neither, there is no topbar in the DOM and nothing to hide.
+Both halves stay in the DOM whenever the bar itself does, even when only one is filled. The left half is the flex spacer that keeps the right half against the right edge, which is why passing only `topbar-right` works.
 
-Both halves stay in the DOM whenever the bar itself does, even when only one is filled. The left half is the flex spacer that keeps the right half against the right edge, so an application passing only `topbar-right` sees exactly what it saw before.
+::: warning Two defaults that change the frame
+`topbar` defaults to `'auto'`. A layout that measures against a reserved 50px, or positions something against the topbar's bottom border while passing neither topbar slot, needs `topbar="always"`, which renders the strip unconditionally.
 
-::: warning One of two changes of default behaviour in this release
-`topbar` defaults to `'auto'`, and the shell rendered the strip unconditionally before this prop existed. Any layout that measured against the reserved 50px, or that positioned something against the topbar's bottom border while passing neither topbar slot, will see it move. `topbar="always"` is the exact previous behaviour and is the one-line fix. Every other consumer, including all four applications that were hiding the empty bar from the outside, gets the same pixels with less CSS.
-
-The other default change is `collapse-at`, which is new and defaults to `'md'`: below 672px the frame now becomes single-column, where before it kept squeezing three columns. Its opt-out is `collapse-at="none"`. See [A layout change below 672px](#what-the-drawer-does-for-you) and [Small viewports and zoom](#small-viewports-and-zoom).
+`collapse-at` defaults to `'md'`: below 672px the frame becomes single-column rather than squeezing three columns. Its opt-out is `collapse-at="none"`. See [A layout change below 672px](#what-the-drawer-does-for-you) and [Small viewports and zoom](#small-viewports-and-zoom).
 
 Two behavioural defaults changing at once, on the component every product mounts at its root, is more than we would normally ship together. They are here together because they are the same finding: the frame was deciding layout without looking at what it had been given. Both opt-outs are one attribute, and neither touches anything above 672px except the empty-topbar case above.
 :::
@@ -1109,10 +1107,10 @@ watch(useRoute(), () => (navOpen.value = false))
 - The drawer's slide is suppressed under `prefers-reduced-motion: reduce`.
 - Its navigation rows are **at least 44px tall, 4px apart**, a touch target rather than the permanent column's mouse density. The column itself is unchanged. Tune both with `--nb-shell-drawer-row-height` and `--nb-shell-drawer-row-gap` (see [CSS Custom Properties](#sidebar-and-inspector)).
 
-::: warning A layout change below 672px, and the second default change in this release
-Above 672px nothing moves. Below it, a product that had tuned its own mobile layout around the squeezed three-column frame (an override that hid the rail, a media query of its own that narrowed the inspector) will now find the shell doing it too. `collapse-at="none"` restores the previous behaviour exactly, and is the one-line fix while you delete your override.
+::: warning A layout change below 672px
+Above 672px nothing moves. Below it, the shell does what a hand-tuned mobile layout would (hiding the rail, turning the inspector into a sheet), so an override of your own that does the same thing now competes with it. `collapse-at="none"` keeps the three-column frame at every width, and is the one-line opt-out while you delete your override.
 
-This is the second default-behaviour change in the release, alongside `topbar="auto"` above. Both are opt-out with a single attribute, and this page flags each of them where it describes them.
+This and `topbar="auto"` above are the two defaults that change the frame. Both are opt-out with a single attribute.
 :::
 
 ### The inspector sheet, and the way out of it
@@ -1233,7 +1231,7 @@ Surfaces in the chrome slots keep counting from the chrome: an `NbPanel` in `top
 
 ## Theming the chrome
 
-Every rule that paints the shell frame reads a token. Set them on `:root` (or on `.nb-shell`, or on any ancestor of the shell) and the chrome retints. There is no need to write a selector that beats ours, which was the state of things before these tokens existed: the values were `var(--nb-c-surface)` and `var(--nb-c-border)` written directly into scoped rules, so an application that wanted a dark topbar had to out-specify a `[data-v-…]` selector inside a built stylesheet. One of our products carries a comment explaining that its class is doubled for exactly that reason. Deleting that comment is the point of this section.
+Every rule that paints the shell frame reads a token. Set them on `:root` (or on `.nb-shell`, or on any ancestor of the shell) and the chrome retints. There is no need to write a selector that beats ours, and no need to out-specify a `[data-v-…]` selector inside a built stylesheet to get, say, a dark topbar.
 
 The tokens come in three levels, so you override at the level you actually mean.
 
@@ -1261,7 +1259,7 @@ The tokens come in three levels, so you override at the level you actually mean.
 
 Each per-region token defaults to its chrome-level counterpart, and every chrome-level token defaults to a semantic colour token. Two consequences worth knowing:
 
-- **The defaults are the old pixels.** Everything resolves to what the scoped rules used to hard-code, so adopting the tokens changes nothing until you set one.
+- **The defaults change nothing.** Every token resolves to the shell's default colours, so nothing moves until you set one.
 - **Dark mode is already handled.** A `var()` resolves where it is used, not where it is declared, so `--nb-shell-chrome-bg: var(--nb-c-surface)` picks up the dark value inside `.dark` with no second declaration. If you override a token with a **literal colour**, you have opted out of that and owe both themes a value:
 
 ```css

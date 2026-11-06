@@ -37,6 +37,6 @@ It is deliberately **not** an editable spreadsheet. When cells need in-place edi
 - **Empty and failed are different sentences.** `empty-message` names what is missing (`No invoices yet`). A failed load passes `error` (or `error: true` for the default `Could not load the data`), never the empty copy.
 - **Batch actions are verb phrases**, and the selection count is the catalogue's `12 selected`, not a sentence you build.
 
-Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+Casing, punctuation and tone are set library-wide, not by this component: [Writing style](/content/writing-style) is the source.
 
 <!--@include: ./_shared.md-->

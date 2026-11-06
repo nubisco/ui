@@ -38,7 +38,7 @@ The dialog, the queue and the pending state are module state, shared by every ca
 
 ## Where window.confirm cannot go
 
-`window.confirm` is the mechanism most of the fleet reached for, and it is unavailable to parts of it. Inside a **Tauri** webview it is a documented no-op: the dialog never appears and the call returns immediately, so the guard silently evaluates as "cancelled". It also cannot be driven by a **gamepad**, blocks the main thread, cannot be themed, and cannot name the record it is about to destroy. `confirm()` is ordinary DOM with real focus management, so anything that produces <kbd>Tab</kbd>, <kbd>Space</kbd> and <kbd>Esc</kbd> drives it, controller mappings included.
+`window.confirm` is the obvious mechanism, and it is unavailable in some environments. Inside a **Tauri** webview it is a documented no-op: the dialog never appears and the call returns immediately, so the guard silently evaluates as "cancelled". It also cannot be driven by a **gamepad**, blocks the main thread, cannot be themed, and cannot name the record it is about to destroy. `confirm()` is ordinary DOM with real focus management, so anything that produces <kbd>Tab</kbd>, <kbd>Space</kbd> and <kbd>Esc</kbd> drives it, controller mappings included.
 
 ## Owning the async half
 

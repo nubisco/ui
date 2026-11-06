@@ -11,13 +11,13 @@ pageTabs: ['usage', 'code', 'accessibility']
 
 ## Why this is library code now
 
-The 12-application audit found three products with a hand-built host over `NbToast`, because the toast page used to state as policy that the library shipped no container. Each one lost something different:
+A host over `NbToast` has several parts that are easy to lose without noticing, and each one fails silently:
 
-- one had no auto-dismiss at all, so successes accumulated for the life of the route,
-- one wrote `var(--nb-z-toast)`, a name that does not exist, and silently ran on the fallback rather than `--nb-zindex-toast`,
-- one dropped `role="alert"`, the variant icon, the action and pause-on-hover.
+- without auto-dismiss, successes accumulate for the life of the route,
+- `var(--nb-z-toast)` is a name that does not exist, so a host that writes it runs on the fallback rather than `--nb-zindex-toast`,
+- without `role="alert"`, the variant icon, the action and pause-on-hover, the message loses its announcement, its severity cue and its undo.
 
-None of those are careless. They are what a container costs to get right. The page that caused them now points here.
+That is what a container costs to get right, so the library provides it.
 
 ## When to toast
 
@@ -81,7 +81,7 @@ Say what happened, in the past tense, without a full stop. Put anything the user
 | `cta: { label: 'Try again', ... }`                                    | `cta: { label: 'OK', ... }`                              |
 | One toast per action                                                  | One toast for the request and another for the response   |
 
-Tense, capitalisation and the sentence shapes are the fleet's, not this component's: [Writing style](/content/writing-style) is the source, and this section only adds what is peculiar to a message that removes itself.
+Tense, capitalisation and the sentence shapes are not this component's to decide: [Writing style](/content/writing-style) is the source, and this section only adds what is peculiar to a message that removes itself.
 
 Label the action with its verb from [Action labels](/content/action-labels): `Try again`, `Refresh`, `Undo`. `Cancel`, `Done`, `Close` and `Dismiss` get used interchangeably for leaving, so a toast's action should never be one of them: the close button is the exit, and a second control that also means "go away" is a coin toss for anyone reading the stack through a screen reader.
 

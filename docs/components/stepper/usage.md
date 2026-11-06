@@ -122,10 +122,9 @@ harder to read.
 
 ## Replacing a hand-rolled stepper
 
-The audit found three stepper implementations across two applications, two of
-them inside the same product and disagreeing with each other: an onboarding view
-and a simulation wizard, different geometry, different notion of what "done"
-looks like. If you are removing one, the mapping is usually:
+Hand-rolled steppers drift apart even inside one product: an onboarding view
+and a wizard end up with different geometry and a different notion of what
+"done" looks like. If you are removing one, the mapping is usually:
 
 | What the hand-rolled one had           | Here                                                     |
 | -------------------------------------- | -------------------------------------------------------- |

@@ -377,7 +377,7 @@ Every one of them is theme-aware, so the dialog is correct under `.dark` without
 
 ## Branded overrides
 
-A white-label product that has to restyle the parts of this dialog carrying its identity should not have to fork it or fight its specificity. Three hooks, in the order you should reach for them:
+A product that has to restyle the parts of this dialog carrying its identity should not have to fork it or fight its specificity. Three hooks, in the order you should reach for them:
 
 | Custom property                   | Overrides                                                  |
 | --------------------------------- | ---------------------------------------------------------- |

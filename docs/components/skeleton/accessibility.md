@@ -58,7 +58,7 @@ pageTabs: ['usage', 'code', 'accessibility']
   placeholders announces itself forty times over. If the load ends by moving
   focus into the content that arrived, that move is the announcement and
   `completeLabel` would repeat it. Choose one. What you must not do is choose
-  neither, which is what every hand-rolled placeholder in the fleet does today.
+  neither, because then a screen reader user is never told the content arrived.
 
 - **The message is fired on any unmount, including a failed one.** The component
   cannot tell the two apart: Vue does not update props on the render that

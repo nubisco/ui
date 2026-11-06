@@ -26,7 +26,7 @@ Set them when the words are wrong for your product (`inspector-label="Properties
 
 The shell renders one, as its first focusable element, pointing at the `<main>` it renders. It is off-screen until it takes focus and comes back into the top-left corner of the frame when it does.
 
-This is the shell's job rather than yours because the shell is the only thing that knows where `<main>` is. Every application that hand-rolled a skip link had to invent an id for a region it does not render, and wrap its own content in a div to have something to attach it to.
+This is the shell's job rather than yours because the shell is the only thing that knows where `<main>` is. A hand-rolled skip link has to invent an id for a region the application does not render, and wrap its own content in a div to have something to attach it to.
 
 ```vue
 <!-- Nothing to do: the link is already there. -->
@@ -49,7 +49,7 @@ This is the shell's job rather than yours because the shell is the only thing th
 
 The inspector column stays in the DOM at zero width when `inspector-visible` is false, because that is what lets it animate open and what gives a contributed panel somewhere to live before it is shown. While it is closed the shell puts `inert` and `aria-hidden` on it, so its controls are neither tabbable nor announced.
 
-That matters more now than it used to: `inspector` is a `useShellSlot` region, so a view can teleport a whole panel into a column the application has not opened. You do not need to guard the content with `v-if`, and you do not need to unmount your inspector view on close.
+That matters because `inspector` is a `useShellSlot` region, so a view can teleport a whole panel into a column the application has not opened. You do not need to guard the content with `v-if`, and you do not need to unmount your inspector view on close.
 
 ### The navigation drawer
 

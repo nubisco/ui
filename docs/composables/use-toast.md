@@ -23,7 +23,7 @@ toast.error('Could not reach the server', { title: 'Save failed' })
 
 `NbToast` knows how one message looks. `NbToaster` knows where the stack sits and how it moves. This file knows _when_ a message leaves, and that has to be one shared decision rather than a timer per item: while the pointer rests on the top toast, the two below it must stop counting down as well, and an item that owns its own timer cannot know that.
 
-Three applications in the 12-app audit hand-rolled this, and each lost a different part of it. One had no auto-dismiss at all, so successes accumulated for the life of the route.
+A hand-rolled queue tends to lose a part of this. Without a shared auto-dismiss, successes accumulate for the life of the route.
 
 ## A handle, not just a push
 

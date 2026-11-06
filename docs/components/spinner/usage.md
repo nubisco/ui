@@ -36,10 +36,8 @@ that never arrives.
 ## Sequencing a whole page load
 
 The three components are rarely a choice made once. A real screen loads in
-stages, and the stage decides the indicator. The audit found one app rendering
-the literal string "Loading" under eight different class names, largely because
-nobody had written down what a second and a third wait are supposed to look
-like.
+stages, and the stage decides the indicator. Each stage has its own answer,
+below, so a second and a third wait never fall back to a bare "Loading".
 
 **First paint.** Show the shell you already know: the page title, the empty
 table frame, the sidebar. Fill the unknown parts with
@@ -66,8 +64,7 @@ What is never fine is a scrim over results the user is still reading.
 
 **A named action the user started.** Saving, publishing, revoking. That is
 [`NbInlineLoading`](/components/inline-loading/usage), because the load is only
-half the story and the outcome is the half that four apps currently omit
-entirely.
+half the story, and the outcome is the half most often left out.
 
 ## Sizes
 
@@ -93,7 +90,7 @@ field scale is ever retuned.
 ## Do and don't
 
 - **Do** name what is loading. `label="Loading invoices"` beats `"Loading"`,
-  which is what a screen reader user hears from every spinner on the fleet.
+  which tells a screen reader user nothing about what is loading.
 - **Do** use `showLabel` on overlays. A scrim with an unlabelled ring gives a
   sighted user no more information than a frozen screen does.
 - **Don't** put a spinner where the content shape is already known. A list that

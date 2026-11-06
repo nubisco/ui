@@ -8,7 +8,7 @@ tabs: ['Usage', 'Api']
 
 `useShellSlot` lets a view render controls into a region of the surrounding [`NbShell`](/components/shell/usage): a page title in the topbar, a Save button next to it, a filter row in the fixedbar, a panel in the inspector.
 
-It exists because everybody needed it and everybody built it privately. Eight of our twelve applications put a hand-picked DOM id on a shell region and teleported into it by selector: `#cms-topbar`, `#nks-topbar-right`, `#verba-topbar`, `#ob-topbar-left`, `#nba-topbar-left`, `#tally-topbar`, `#page-actions`. Eight incompatible contracts, one of which shipped a bug because a view looked for its target before the shell had rendered it. This is the supported version, with those two failure modes handled rather than rediscovered.
+It replaces the private alternative: a hand-picked DOM id on a shell region and a teleport into it by selector. That gives every application its own incompatible contract, and a bug whenever a view looks for its target before the shell has rendered it. This is the supported version, with both of those failure modes handled.
 
 ## Basic usage
 
@@ -136,7 +136,7 @@ A `<Teleport>` in between is fine: teleporting moves DOM, not the component tree
 
 ## Destructive actions do not belong here
 
-A contributed control sits in the application's chrome, where it is visible on every route the view owns and where a mis-click costs the most. Anything irreversible you put in a region should confirm first, in a real dialog: `window.confirm` is a documented no-op inside a Tauri webview and cannot be driven from a gamepad, and two of our products discovered both facts the hard way.
+A contributed control sits in the application's chrome, where it is visible on every route the view owns and where a mis-click costs the most. Anything irreversible you put in a region should confirm first, in a real dialog: `window.confirm` is a documented no-op inside a Tauri webview and cannot be driven from a gamepad.
 
 </doc-tab>
 

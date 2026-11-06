@@ -35,7 +35,7 @@ pageTabs: ['usage', 'code']
 
 This is the reason the component exists, and it is worth being explicit about because the failure is quiet.
 
-Putting `display: grid` on the `<dl>` makes **every descendant a grid item**. A `<dt>` and `<dd>` pair then lines up by luck, and anything else placed in the list, a heading, a divider, a form field, gets pulled into the columns too. That is exactly how a hand-rolled definition list in the CMS swallowed two form fields.
+Putting `display: grid` on the `<dl>` makes **every descendant a grid item**. A `<dt>` and `<dd>` pair then lines up by luck, and anything else placed in the list, a heading, a divider, a form field, gets pulled into the columns too. A form field placed inside a hand-rolled grid `<dl>` disappears into a column.
 
 Here each row is its own grid, so a row can only ever lay out its own term and value. Anything else in the list is left alone.
 

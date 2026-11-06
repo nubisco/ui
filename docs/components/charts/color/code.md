@@ -197,7 +197,7 @@ Because `var()` resolves on the element that paints, the same override works sco
 
 Two things to check after an override, both covered on the Accessibility tab: every role clears 3:1 against the surface the chart sits on, in both themes, and no two of the roles you actually use collapse under a colour-vision simulation. `seriesColors()` picks from whatever you set, so it stays useful, but its ordering was searched against the defaults; re-run the search if a rebrand changes which pairs are close.
 
-Charts are not the only place the brand used to leak. The ghost button's hover border named the same violet ramp and now mixes `--nb-c-primary`, so setting the brand is enough there too. `--nb-c-primary` and these thirteen chart tokens are the whole colour surface a white-label product has to think about.
+Outside the charts, nothing else names a brand ramp either: the ghost button's hover border mixes `--nb-c-primary`, so setting the brand is enough there too. `--nb-c-primary` and these thirteen chart tokens are the whole colour surface a white-label product has to think about.
 
 The per-chart `colors` prop still exists and still wins. It is the right tool for one chart that means something specific (a status chart, a ramp, a curated set). It is the wrong tool for branding, which is what the tokens are for: thirteen declarations in one file instead of a `colors` array at every call site.
 

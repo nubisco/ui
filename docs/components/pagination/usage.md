@@ -23,6 +23,6 @@ pageTabs: ['usage', 'code', 'accessibility']
 - **The range uses a hyphen**, never an en dash, and the numbers are numerals.
 - **Translate the rest through the catalogue** (`paginationPageOf`, `paginationRange`, `paginationPrevious`), not by wrapping the component.
 
-Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+Casing, punctuation and tone are set library-wide, not by this component: [Writing style](/content/writing-style) is the source.
 
 <!--@include: ./_shared.md-->

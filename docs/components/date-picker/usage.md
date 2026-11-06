@@ -25,6 +25,6 @@ pageTabs: ['usage', 'code', 'accessibility']
 - **A range has two labels that read as a pair**: `Start date` and `End date`.
 - **An error names the allowed range** with real dates: `Choose a date after March 1, 2026.`
 
-Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+Casing, punctuation and tone are set library-wide, not by this component: [Writing style](/content/writing-style) is the source.
 
 <!--@include: ./_shared.md-->

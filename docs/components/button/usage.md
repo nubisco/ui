@@ -145,6 +145,6 @@ Every group above has exactly one filled button, and the exit is always
 - **An icon-only button needs an `aria-label`** that is the same verb phrase a visible label would use: `Delete entry`, not `Delete` or `Trash`. The button warns in development when it has no name.
 - **`...` only when pressing it opens a dialog that asks for more** (`Export...`). Never on a button that raises a confirmation.
 
-Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+Casing, punctuation and tone are set library-wide, not by this component: [Writing style](/content/writing-style) is the source.
 
 <!--@include: ./_shared.md-->

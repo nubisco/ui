@@ -93,9 +93,9 @@ The stack anchors with `inset-inline-start` and `inset-inline-end`, so `bottom-e
 
 ## Naming
 
-The conventions below are the fleet's ([Accessibility overview](/accessibility/overview), [Keyboard](/accessibility/keyboard)); what follows is what this component does with them.
+The conventions below are the library's ([Accessibility overview](/accessibility/overview), [Keyboard](/accessibility/keyboard)). What follows is what this component does with them.
 
-The region is a `region` landmark named by `label`, so it can be found deliberately rather than stumbled into. The close button is named by `closeLabel`, and the severity words by `statusLabels`, both stated once per queue: the fleet includes a Spanish-market product, and a hardcoded "Close" is a defect there.
+The region is a `region` landmark named by `label`, so it can be found deliberately rather than stumbled into. The close button is named by `closeLabel`, and the severity words by `statusLabels`, both stated once per queue, so a product in any language can translate them. A hardcoded "Close" is a defect in every interface that is not in English.
 
 ## What is still on you
 

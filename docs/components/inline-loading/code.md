@@ -10,9 +10,8 @@ pageTabs: ['usage', 'code', 'accessibility']
 ## The success dwell
 
 Going straight from `active` to gone is the failure this component exists to
-fix. The audit behind it found four products that confirmed a successful save
-with nothing at all: the spinner vanished, and the user was left to infer from
-silence that their work had been stored.
+fix. If the spinner simply vanishes, the user is left to infer from silence
+that their work was stored.
 
 `finished` therefore holds. After `dwell` milliseconds (1600 by default) the
 component emits `success`, and that event, not a timer of your own, is where

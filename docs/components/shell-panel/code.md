@@ -292,7 +292,7 @@ Set `fluid` on each panel where you want content-driven height. The panel then u
 
 `size` decides how a panel shares a column with its siblings. `fill` decides something else: whether the panel claims the height its parent has, and puts the scrollbar inside itself rather than on the page.
 
-The gap between those two is the one two of our applications kept closing by hand. Both re-declared the same pair of lines on `.nb-shell-panel` across six different stylesheets, because `default` only shares a column, `fluid` only shrinks to content, and neither of them says "take what is left, and scroll".
+Without `fill` the gap between those two has to be closed by hand on `.nb-shell-panel`, because `default` only shares a column, `fluid` only shrinks to content, and neither of them says "take what is left, and scroll".
 
 ```vue
 <template>

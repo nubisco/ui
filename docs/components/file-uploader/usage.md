@@ -36,4 +36,4 @@ The drop zone accent color matches the active `variant`.
 - **An error names the file and the fix**: `photo.heic is not a supported type. Use .jpg or .png.`
 - **Sizes use uppercase units with a space**: `500 KB`, `2 MB`.
 
-Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+Casing, punctuation and tone are set library-wide, not by this component: [Writing style](/content/writing-style) is the source.

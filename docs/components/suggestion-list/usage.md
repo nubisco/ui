@@ -7,7 +7,7 @@ tab: usage
 pageTabs: ['usage', 'code']
 ---
 
-The product decides **when** it opens and **what** it offers, because that is the product's business: which character starts a mention, how names match. The list does the part every product used to rewrite by hand:
+The product decides **when** it opens and **what** it offers, because that is the product's business: which character starts a mention, how names match. The list does the part every product would otherwise write by hand:
 
 - <kbd>↓</kbd> and <kbd>↑</kbd> move the active suggestion, wrapping at both ends.
 - <kbd>Enter</kbd> or <kbd>Tab</kbd> chooses it, a click chooses any row.

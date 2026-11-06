@@ -250,7 +250,7 @@ toast.info('Export ready', {
 
 `dismissAll()` is the harder version: it clears retained toasts too. Use it when nothing queued is true any more, which is sign-out, a tenant switch, or a session that has expired.
 
-If you would rather keep toasts across navigation, do nothing: that is the default, and it is a defensible choice for a product whose routes are panels of one workspace. What is not defensible is never deciding, which is what the audited applications did.
+If you would rather keep toasts across navigation, do nothing: that is the default, and it is a defensible choice for a product whose routes are panels of one workspace. What is not defensible is never deciding.
 
 ## Placement and size
 
@@ -489,12 +489,12 @@ Two different things live here, and the previous revision of this page confused 
 
 **Tokens the host reads.** These are library-wide values, defined by the [z-index](/principles/z-index) and [spacing](/principles/spacing) scales. Do not override them to move the stack: they are shared with the rest of the product, and moving them moves everything.
 
-| Token                | Used for                                                                                                                                                                                                                                                                                                                  |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--nb-zindex-toast`  | The stacking context, `modal + 50` so toasts clear open dialogs. It is a computed step on the [z-index scale](/principles/z-index), not a number: the name is `zindex`, not `z`, and one application spent a release painting its toasts under a dialog because it guessed the short form and `var()` fell back silently. |
-| `--nb-spacing-24`    | Default distance from the viewport edges.                                                                                                                                                                                                                                                                                 |
-| `--nb-spacing-12`    | Default gap between stacked toasts, and the default inset below `md`.                                                                                                                                                                                                                                                     |
-| `--nb-motion-medium` | Enter, exit and reflow duration.                                                                                                                                                                                                                                                                                          |
+| Token                | Used for                                                                                                                                                                                                                                                                       |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--nb-zindex-toast`  | The stacking context, `modal + 50` so toasts clear open dialogs. It is a computed step on the [z-index scale](/principles/z-index), not a number: the name is `zindex`, not `z`. A guessed short form makes `var()` fall back silently and paints toasts under an open dialog. |
+| `--nb-spacing-24`    | Default distance from the viewport edges.                                                                                                                                                                                                                                      |
+| `--nb-spacing-12`    | Default gap between stacked toasts, and the default inset below `md`.                                                                                                                                                                                                          |
+| `--nb-motion-medium` | Enter, exit and reflow duration.                                                                                                                                                                                                                                               |
 
 **Knobs you set.** These are the host's own custom properties, and they are the supported way to move or resize the stack for one product. Set them anywhere that inherits down to the toaster (`:root`, `body`, a theme class): the host reads them with the token defaults above as fallbacks and never declares them, precisely so that setting them further up the tree works without `:deep()`.
 
