@@ -1,5 +1,7 @@
+@use 'sass:color';
 @use 'sass:list';
 @use 'sass:map';
+@use 'sass:math';
 @use 'sass:meta';
 @use '../logic/a11y' as a11y;
 @use 'layers';
@@ -179,4 +181,132 @@ $_grounds: (
   }
 
   @return 'accent clears #{$minimum}:1 on every surface (worst #{$worst}:1)';
+}
+
+/// How far a repair may move the hue, in OKLCH degrees, before it counts as a
+/// different colour rather than the same colour made legible.
+$_max-hue-drift: 12deg;
+
+/// How much of the original chroma a repair has to keep. Below this the
+/// result reads as a grey with a tint, not as the brand.
+$_min-chroma-kept: 0.4;
+
+/// The worst of a mode's four grounds for one colour.
+@function _worst($value, $mode) {
+  $worst: null;
+  $ground: null;
+  @each $g in map.get($_grounds, $mode) {
+    $r: a11y.contrast-ratio($value, $g);
+    @if $worst == null or $r < $worst {
+      $worst: $r;
+      $ground: $g;
+    }
+  }
+  @return (ratio: $worst, ground: $ground);
+}
+
+/// Repairs one half of an accent to the nearest lightness that clears the
+/// gate on every surface of its mode.
+///
+/// This is `a11y-color()` from `logic/_a11y.scss`, pointed at the worst of
+/// the four grounds: it walks lightness in 1% steps (darker in light mode,
+/// lighter in dark) and keeps the HSL hue. Contrast is rounded to a
+/// hundredth there, so the walk goes on until the value clears the bar by
+/// 0.02, and a value at exactly 4.5 after rounding is never shipped.
+///
+/// A hue that cannot be made legible without leaving itself is refused, the
+/// way `assert-accent-contrast()` refuses everything: more than
+/// `$_max-hue-drift` of OKLCH hue, or less than `$_min-chroma-kept` of its
+/// chroma, and the build fails with the measurements.
+///
+/// @param {Color} $value - one half of the pair
+/// @param {String} $mode - light or dark
+/// @param {Number} $minimum - the ratio to clear
+/// @return {Map} (value, repaired, before, after, ground)
+/// @access public
+/// @group @nubisco/colors
+@function repair-accent($value, $mode, $minimum: 4.5) {
+  $start: _worst($value, $mode);
+  @if map.get($start, ratio) >= $minimum {
+    @return (
+      value: $value,
+      repaired: false,
+      before: map.get($start, ratio),
+      after: map.get($start, ratio),
+      ground: map.get($start, ground)
+    );
+  }
+
+  $step: 1%;
+  @if $mode == light {
+    $step: -1%;
+  }
+  $out: a11y.a11y-color($value, map.get($start, ground));
+  $now: _worst($out, $mode);
+  $guard: 0;
+  @while map.get($now, ratio) < $minimum + 0.02 and $guard < 100 {
+    $out: color.scale($out, $lightness: $step);
+    $now: _worst($out, $mode);
+    $guard: $guard + 1;
+  }
+
+  // Whole channels, so the value the warning prints is one a person can
+  // paste back in, and the ramp is generated from the colour that was named.
+  $out: color.change(
+    color.to-space($out, rgb),
+    $red: math.round(color.channel($out, 'red', $space: rgb)),
+    $green: math.round(color.channel($out, 'green', $space: rgb)),
+    $blue: math.round(color.channel($out, 'blue', $space: rgb))
+  );
+  $now: _worst($out, $mode);
+
+  $h0: color.channel($value, 'hue', $space: oklch);
+  $h1: color.channel($out, 'hue', $space: oklch);
+  $c0: color.channel($value, 'chroma', $space: oklch);
+  $c1: color.channel($out, 'chroma', $space: oklch);
+  $drift: math.abs($h1 - $h0);
+  @if $drift > 180deg {
+    $drift: 360deg - $drift;
+  }
+  // A near-grey has no hue to leave, so only a coloured accent is checked.
+  @if $c0 > 0.04 and ($drift > $_max-hue-drift or $c1 < $c0 * $_min-chroma-kept)
+  {
+    @error "Accent #{$value} is #{map.get($start, ratio)}:1 on #{$mode} surface #{map.get($start, ground)}, below #{$minimum}:1, and cannot be repaired without leaving its hue (the nearest legible value, #{$out}, moves #{math.round($drift)} of hue and keeps #{math.round(math.div($c1, $c0) * 100)}% of the chroma). Pick a different #{$mode} value.";
+  }
+
+  @return (
+    value: $out,
+    repaired: true,
+    before: map.get($start, ratio),
+    after: map.get($now, ratio),
+    ground: map.get($start, ground)
+  );
+}
+
+/// Repairs both halves of a pair, and says what it did.
+///
+/// `app-theme()` runs every supplied accent through this. A pair that clears
+/// the gate comes back untouched and silent. A half that does not is moved to
+/// the nearest lightness that does, and the build prints a warning naming the
+/// old value, the new one and both measurements, so the change is never
+/// silent. A hue that cannot be repaired fails the build (see
+/// `repair-accent()`).
+///
+/// @param {List} $accent - a `(light, dark)` pair
+/// @return {List} the repaired pair
+/// @access public
+/// @group @nubisco/colors
+@function repair-accent-pair($accent, $minimum: 4.5) {
+  $pair: accent-pair($accent);
+  $out: ();
+  $modes: (light, dark);
+  @for $i from 1 through 2 {
+    $mode: list.nth($modes, $i);
+    $r: repair-accent(list.nth($pair, $i), $mode, $minimum);
+    @if map.get($r, repaired) {
+      @warn "Accent #{list.nth($pair, $i)} was #{map.get($r, before)}:1 on #{$mode} surface #{map.get($r, ground)}, below #{$minimum}:1. Repaired to #{map.get($r, value)} at #{map.get($r, after)}:1 on the worst #{$mode} surface, same HSL hue. Pass that value to silence this.";
+    }
+    $out: list.append($out, map.get($r, value), $separator: comma);
+  }
+  @return $out;
 }

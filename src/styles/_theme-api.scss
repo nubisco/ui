@@ -304,12 +304,22 @@ $_max-step: 900;
 /// @param {String} $id - the app's identifier, chosen by the app. The library
 ///   keeps no registry of these: it never needs to know which products exist.
 /// @param {String} $category - one of `creatives`, `engineers`, `home`, `fun`, `education`, `agents`
-/// @param {List} $accent - an optional `(light, dark)` override
+/// `info` is not themed. A blue product gets its own primary and the
+/// library's info blue, two unrelated blues. Set `info` in a `theme()` call
+/// alongside this one if that matters for the product.
+///
+/// @param {List} $accent - an optional `(light, dark)` override, repaired to
+///   clear 4.5:1 if it does not (see `repair-accent-pair()`)
 @mixin app-theme($id, $category, $accent: null) {
   $category-pair: categories.category($category);
   $pair: $category-pair;
   @if $accent != null {
-    $pair: categories.accent-pair($accent);
+    // A supplied accent that fails the gate is moved to the nearest
+    // lightness that clears 4.5:1 on the worst surface of its mode, with a
+    // build warning saying exactly what changed. One that cannot be repaired
+    // without leaving its hue fails the build. The six category pairs clear
+    // already (tests/categoryContrast.test.ts) and pass through untouched.
+    $pair: categories.repair-accent-pair($accent);
   }
 
   $light-hex: list.nth($pair, 1);

@@ -152,13 +152,18 @@ describe('the accent an app supplies is held to the same bar', () => {
 describe('the guard actually bites', () => {
   // A contrast test that cannot fail is decoration. This proves the mechanism
   // by feeding it a value that must not pass.
-  it('rejects an accent that is too light for a light surface', () => {
+  it('repairs an accent that is too light for a light surface', () => {
+    // #f0d0dd measures about 1.2:1 on the light layers. app-theme() no longer
+    // ships it: it moves it to the nearest lightness that clears AA on the
+    // worst light layer (tests/accentRepair.test.ts covers the warning and
+    // the refusal), so the primary this measures has to clear.
     const { light } = themeResolvers(
       `@include nb.app-theme('probe', $category: 'fun', $accent: (#f0d0dd, #f686ae));`,
       'probe',
     )
     const value = light('--nb-c-primary') as string
     const worst = Math.min(...surfaces.light.map((g) => ratio(value, g)))
-    expect(worst).toBeLessThan(AA)
+    expect(worst).toBeGreaterThanOrEqual(AA)
+    expect(ratio('#f0d0dd', surfaces.light[2])).toBeLessThan(AA)
   })
 })
