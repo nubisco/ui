@@ -60,14 +60,14 @@ const availableProps: PreviewPropDef[] = [
     name: 'color',
     type: 'color',
     default: null,
+    // Tokens only, the same rule the docs state for `color`.
     options: [
-      'grey',
+      'var(--nb-c-text-muted)',
       'var(--nb-c-primary)',
-      'red',
-      'green',
-      'blue',
-      'yellow',
-      'cyan',
+      'var(--nb-c-danger)',
+      'var(--nb-c-success)',
+      'var(--nb-c-info)',
+      'var(--nb-c-warning)',
     ],
   },
   {

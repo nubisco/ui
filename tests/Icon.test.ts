@@ -40,7 +40,7 @@ describe('Icon', () => {
   })
 
   it('applies color style when color is provided', () => {
-    const wrapper = createWrapper({ name: house, color: 'red' })
+    const wrapper = createWrapper({ name: house, color: 'var(--nb-c-danger)' })
     expect(wrapper.attributes('style')).toContain('color: red')
   })
 

@@ -33,16 +33,16 @@ pageTabs: ['usage', 'code']
 
 ## Props
 
-| Prop        | Type               | Default     | Description                                                     |
-| ----------- | ------------------ | ----------- | --------------------------------------------------------------- |
-| `name`      | `string \| module` | required    | Icon name in kebab-case (e.g. `arrow-right`), or an icon module |
-| `icon`      | `module`           | -           | An imported icon module; wins over `name`                       |
-| `size`      | `string \| number` | `'sm'`      | `sm`, `md`, `lg`, `xl` (16 to 32px), or pixels (see Sizes)      |
-| `weight`    | `string`           | `'regular'` | Icon weight variant (see weights table)                         |
-| `color`     | `string`           | -           | Any valid CSS color value                                       |
-| `label`     | `string`           | -           | Accessible name; makes the icon informative (`role="img"`)      |
-| `title`     | `string`           | -           | Native tooltip, and also the accessible name when no `label`    |
-| `clickable` | `boolean`          | `false`     | Deprecated. Use `NbButton variant="ghost"` with `icon` instead  |
+| Prop        | Type               | Default     | Description                                                          |
+| ----------- | ------------------ | ----------- | -------------------------------------------------------------------- |
+| `name`      | `string \| module` | required    | Icon name in kebab-case (e.g. `arrow-right`), or an icon module      |
+| `icon`      | `module`           | -           | An imported icon module; wins over `name`                            |
+| `size`      | `string \| number` | `'sm'`      | `sm`, `md`, `lg`, `xl` (16 to 32px), or pixels (see Sizes)           |
+| `weight`    | `string`           | `'regular'` | Icon weight variant (see weights table)                              |
+| `color`     | `string`           | -           | A colour token, `var(--nb-c-*)`. Never a literal colour (see Colour) |
+| `label`     | `string`           | -           | Accessible name; makes the icon informative (`role="img"`)           |
+| `title`     | `string`           | -           | Native tooltip, and also the accessible name when no `label`         |
+| `clickable` | `boolean`          | `false`     | Deprecated. Use `NbButton variant="ghost"` with `icon` instead       |
 
 ## Decorative or informative
 
@@ -180,6 +180,26 @@ Under `prefers-reduced-motion: reduce` the travel stops. The three that say
 "working" (`refresh`, `cog`, `hourglass`) keep looping as an opacity breath
 instead, because a frozen loading glyph reads as a hung page. The rest stand
 still. See [Motion accessibility](/principles/motion/accessibility).
+
+## Colour
+
+An icon takes the colour of the text around it: every glyph is drawn with
+`fill: currentColor`. That is almost always right, and it is what keeps an icon
+and its label the same colour in every theme.
+
+When an icon has to differ, it differs by role, and `color` takes a token:
+
+```vue
+<NbIcon name="warning" color="var(--nb-c-warning)" />
+<NbIcon name="check-circle" color="var(--nb-c-success)" />
+<NbIcon name="info" color="var(--nb-c-text-muted)" />
+```
+
+**Tokens only.** The prop accepts any CSS colour, but a hex, `rgb()` or a named
+colour paints the icon off-theme: it does not follow dark mode, a white-label
+theme or a contrast change. The library's own tests fail on a literal colour
+passed to `NbIcon color` anywhere in its sources or these docs, and a product
+can hold itself to the same rule.
 
 ## Clickable icons are buttons
 
