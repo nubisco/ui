@@ -223,3 +223,52 @@ describe('Icon: the size scale', () => {
     }
   })
 })
+
+describe('Icon: clickable, deprecated', () => {
+  it('warns once, pointing at NbButton', async () => {
+    // A fresh copy of the component, so an earlier spec has not already
+    // spent the one warning.
+    vi.resetModules()
+    const { default: Fresh } = await import('../src/components/Icon.vue')
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      mount(Fresh, { props: { name: house, clickable: true } })
+      mount(Fresh, { props: { name: house, clickable: true } })
+      const messages = warn.mock.calls
+        .map((c) => String(c[0]))
+        .filter((m) => m.includes('clickable'))
+      expect(messages).toHaveLength(1)
+      expect(messages[0]).toContain('NbButton variant="ghost"')
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('is a tab stop with a name', () => {
+    const wrapper = mount(Icon, {
+      props: { name: house, clickable: true, label: 'Home' },
+    })
+    expect(wrapper.attributes('tabindex')).toBe('0')
+    expect(wrapper.attributes('role')).toBe('button')
+    expect(wrapper.attributes('aria-label')).toBe('Home')
+    expect(wrapper.attributes('aria-hidden')).toBeUndefined()
+  })
+
+  it('is pressed by Enter, and by Space on release', async () => {
+    const wrapper = mount(Icon, { props: { name: house, clickable: true } })
+    await wrapper.trigger('keydown', { key: 'Enter' })
+    expect(wrapper.emitted('click')).toHaveLength(1)
+    await wrapper.trigger('keydown', { key: ' ' })
+    expect(wrapper.emitted('click')).toHaveLength(1)
+    await wrapper.trigger('keyup', { key: ' ' })
+    expect(wrapper.emitted('click')).toHaveLength(2)
+  })
+
+  it('ignores keys when not clickable', async () => {
+    const wrapper = mount(Icon, { props: { name: house } })
+    await wrapper.trigger('keydown', { key: 'Enter' })
+    await wrapper.trigger('keyup', { key: ' ' })
+    expect(wrapper.emitted('click')).toBeUndefined()
+    expect(wrapper.attributes('tabindex')).toBeUndefined()
+  })
+})

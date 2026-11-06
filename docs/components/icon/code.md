@@ -42,7 +42,7 @@ pageTabs: ['usage', 'code']
 | `color`     | `string`           | -           | Any valid CSS color value                                       |
 | `label`     | `string`           | -           | Accessible name; makes the icon informative (`role="img"`)      |
 | `title`     | `string`           | -           | Native tooltip, and also the accessible name when no `label`    |
-| `clickable` | `boolean`          | `false`     | Adds pointer cursor and `role="button"`                         |
+| `clickable` | `boolean`          | `false`     | Deprecated. Use `NbButton variant="ghost"` with `icon` instead  |
 
 ## Decorative or informative
 
@@ -181,10 +181,35 @@ Under `prefers-reduced-motion: reduce` the travel stops. The three that say
 instead, because a frozen loading glyph reads as a hung page. The rest stand
 still. See [Motion accessibility](/principles/motion/accessibility).
 
+## Clickable icons are buttons
+
+`clickable` is deprecated and warns once in development. An icon that does
+something on a click is a button, and the library already has one with the
+padding, focus ring and accessible-name check an icon lacks:
+
+```vue
+<!-- before -->
+<NbIcon name="trash" clickable @click="remove" />
+
+<!-- after -->
+<NbButton
+  v-nb-tooltip="{ body: 'Delete' }"
+  variant="ghost"
+  size="sm"
+  icon="trash"
+  @click="remove"
+/>
+```
+
+Until it is removed, a clickable icon is at least reachable: it is a tab stop,
+Enter and Space press it, it shows a focus ring, and on a phone touch screen it
+takes taps over a 44px box. Name it with `label` so it is not announced as just
+"button".
+
 ## Events
 
-| Event   | Payload      | Description                           |
-| ------- | ------------ | ------------------------------------- |
-| `click` | `MouseEvent` | Only fires when `clickable` is `true` |
+| Event   | Payload                       | Description                                        |
+| ------- | ----------------------------- | -------------------------------------------------- |
+| `click` | `MouseEvent \| KeyboardEvent` | Only fires when `clickable` is `true` (deprecated) |
 
 <!--@include: ./_shared.md-->

@@ -86,6 +86,11 @@ interface IIconProps {
    * Without `label` or `title` the icon is decorative and `aria-hidden`.
    */
   label?: string
+  /**
+   * @deprecated An icon that does something is a button. Use
+   * `<NbButton variant="ghost" icon="...">` with `v-nb-tooltip` naming the
+   * action. Warns once in development.
+   */
   clickable?: boolean
   hoverable?: boolean
 }
