@@ -126,7 +126,8 @@ export type TGridVisibleInput =
 // Boolean responsive type (for first, last, reverse — array of breakpoints, not objects)
 export type TBooleanResponsive = boolean | TBreakpoint[]
 
-// Grid mode
+// Grid mode: Carbon's gutter modes as a default gap. Wide 32px, narrow 16px,
+// condensed 1px. A `gap` prop wins over the mode.
 export type TGridMode = 'wide' | 'narrow' | 'condensed'
 
 // Class collection type
@@ -158,7 +159,8 @@ export interface IGridProps {
   flex?: boolean | null
   shrink?: boolean | null
   distributed?: boolean
-  mode?: TGridMode
+  mode?: TGridMode | null
+  hang?: boolean
   tabIndex?: string | null
 }
 
@@ -353,14 +355,24 @@ export const gridPropDefinitions = {
     default: false,
   },
 
+  // No default: a mode sets a gap, and a grid that never asked for one must
+  // keep rendering without it.
   mode: {
     type: String as PropType<TGridMode>,
-    default: 'wide',
-    validator: (value: string): boolean => {
+    default: null,
+    validator: (value: string | null): boolean => {
+      if (value == null) return true
       return (['wide', 'narrow', 'condensed'] as const).includes(
         value as TGridMode,
       )
     },
+  },
+
+  // Insets this span's content so its text sits as far from the gutter as it
+  // would in a wide grid, while the box itself keeps hugging the gutter.
+  hang: {
+    type: Boolean as PropType<boolean>,
+    default: false,
   },
 
   tabIndex: {

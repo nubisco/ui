@@ -119,3 +119,47 @@ describe('NbGrid shift', () => {
     expect(gridRule('.nb-grid.shift-4')).not.toContain('margin-left')
   })
 })
+
+describe('NbGrid modes', () => {
+  it('emits no mode, and so no gap, unless one is asked for', () => {
+    const w = mount(Grid)
+    expect(w.classes().some((c) => c.startsWith('nb-grid--'))).toBe(false)
+    expect(w.classes()).not.toContain('wide')
+  })
+
+  it('turns a mode into a modifier class', () => {
+    expect(mount(Grid, { props: { mode: 'narrow' } }).classes()).toContain(
+      'nb-grid--narrow',
+    )
+  })
+
+  it('gives each mode its gutter, on the gap arithmetic spans share', () => {
+    expect(gridRule('.nb-grid.nb-grid--wide')).toContain(
+      'gap: var(--nb-spacing-32)',
+    )
+    expect(gridRule('.nb-grid.nb-grid--narrow')).toContain(
+      'gap: var(--nb-spacing-16)',
+    )
+    expect(gridRule('.nb-grid.nb-grid--condensed')).toContain('gap: 1px')
+    expect(gridRule('.nb-grid.nb-grid--condensed > *')).toContain(
+      '--nb-grid-parent-gap: 1px',
+    )
+  })
+
+  // Same specificity, so source order decides: a gap prop set alongside a
+  // mode has to come later in the sheet to win.
+  it('lets a gap prop override the mode', () => {
+    const mode = gridCss.indexOf('.nb-grid.nb-grid--wide {')
+    expect(mode).toBeLessThan(gridCss.indexOf('.nb-grid.gap-md {'))
+    expect(mode).toBeLessThan(gridCss.indexOf('.nb-grid.md-gap-sm {'))
+  })
+
+  it('hangs a span by the difference from a wide half gutter', () => {
+    expect(mount(Grid, { props: { hang: true } }).classes()).toContain(
+      'nb-grid--hang',
+    )
+    const hang = gridRule('.nb-grid.nb-grid--hang')
+    expect(hang).toContain('padding-inline-start')
+    expect(hang).toContain('var(--nb-spacing-32) - var(--nb-grid-parent-gap')
+  })
+})

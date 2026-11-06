@@ -16,3 +16,17 @@ $gap-ratios: (
   xl: var(--nb-spacing-32),
   xxl: var(--nb-spacing-48),
 ) !default;
+
+// Carbon's three gutter modes, as default gaps on Nubisco's arithmetic: a
+// mode is the gap a grid takes when it is not given one, and a `gap` prop
+// still wins. Wide for text and mixed content, narrow for a tighter page,
+// condensed for a wall of tiles that should read as one surface.
+$grid-modes: (
+  wide: var(--nb-spacing-32),
+  narrow: var(--nb-spacing-16),
+  condensed: 1px,
+) !default;
+
+// The gutter a hang measures against: a span's content sits as far from the
+// gutter's centre line as it would in a wide grid, whatever this grid's gap.
+$grid-hang-reference: var(--nb-spacing-32) !default;

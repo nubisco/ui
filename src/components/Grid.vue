@@ -296,7 +296,8 @@ const generateGridClasses = (props: any): TClassCollection => {
     ...processResponsiveProp(props.visible, handleVisible),
     ...(props.flex ? { flex: true } : {}),
     ...(props.distributed ? { distributed: true } : {}),
-    ...(props.mode ? { [props.mode]: true } : {}),
+    ...(props.mode ? { [`nb-grid--${props.mode}`]: true } : {}),
+    ...(props.hang ? { 'nb-grid--hang': true } : {}),
     ...(props.grow ? { grow: true } : {}),
     ...(props.shrink !== null && props.shrink !== undefined
       ? { [`shrink-${props.shrink ? '1' : '0'}`]: true }
