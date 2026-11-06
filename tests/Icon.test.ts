@@ -41,7 +41,7 @@ describe('Icon', () => {
 
   it('applies color style when color is provided', () => {
     const wrapper = createWrapper({ name: house, color: 'var(--nb-c-danger)' })
-    expect(wrapper.attributes('style')).toContain('color: red')
+    expect(wrapper.attributes('style')).toContain('color: var(--nb-c-danger)')
   })
 
   it('applies role button when clickable', () => {
