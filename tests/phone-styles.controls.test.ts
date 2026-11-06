@@ -85,6 +85,7 @@ const touched = [
   'TextInput.vue',
   'NumberInput.vue',
   'Tabs.vue',
+  'MenuItem.vue',
   'DataTable.vue',
   'Board.vue',
   'ReorderList.vue',
@@ -125,6 +126,13 @@ describe('touch targets on a phone touch screen', () => {
     ['TreeNode.vue', '.nb-tree-node__toggle::after', 'inset-block'],
     ['ReorderList.vue', '.nb-reorder-list__grab::after', 'inset-block'],
     ['Tabs.vue', '.nb-tabs__tab', 'min-block-size: 44px'],
+    // The hit-area mixin, where a row is tall enough but can be narrow.
+    ['Checkbox.vue', '.nb-checkbox__control::after', 'inset-inline'],
+    ['Radio.vue', '.nb-radio__control::after', 'inset-inline'],
+    ['Tabs.vue', '.nb-tabs__tab::after', 'inset-inline'],
+    ['MenuItem.vue', '.nb-menu-item::after', 'inset-inline'],
+    ['DataTable.vue', '.nb-data-table__sort::after', 'inset-block'],
+    ['DataTable.vue', '.nb-data-table__expand::after', 'inset-block'],
   ]
   it.each(cases)('%s %s', (file, selector, declaration) => {
     const rules = rulesOf(file)

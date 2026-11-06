@@ -63,6 +63,7 @@ function handleChange(e: Event) {
 @use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/variables/breakpoints' as bp;
+@use '../styles/logic/touch' as touch;
 
 .nb-checkbox {
   display: inline-flex;
@@ -91,6 +92,9 @@ function handleChange(e: Event) {
     flex-shrink: 0;
     // Centers the 16px box against the first 20px text line
     margin-top: 2px;
+    // The padded row is 44px tall but only as wide as the box when there is
+    // no label (a table's select column), so the box gets a 44px square too.
+    @include touch.hit-area($position: false);
   }
 
   &__input {

@@ -106,6 +106,7 @@ function optionClasses(option: IRadioOption) {
 <style scoped lang="scss">
 @use '../styles/logic/motion' as motion;
 @use '../styles/variables/breakpoints' as bp;
+@use '../styles/logic/touch' as touch;
 @use '../styles/logic/radius' as radius;
 
 .nb-radio {
@@ -170,6 +171,9 @@ function optionClasses(option: IRadioOption) {
     justify-content: center;
     // Centers the 18px circle against the first 20px text line
     margin-top: 1px;
+    // A 44px square around the circle on a phone touch screen, for a short
+    // label whose row is tall enough but narrow.
+    @include touch.hit-area($position: false);
   }
 
   // Native input: hidden but still focusable
