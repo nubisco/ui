@@ -1393,7 +1393,7 @@ defineExpose({
   border-radius: 2px;
   font-size: var(--nb-type-body-compact-size);
   text-decoration: none;
-  transition: transform var(--nb-motion-quick) ease;
+  transition: transform var(--nb-motion-quick) var(--nb-ease-standard);
 
   &:focus-visible,
   &:focus {
