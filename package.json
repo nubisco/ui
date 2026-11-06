@@ -131,7 +131,8 @@
     "src/assets/nubisco-mark.svg",
     "src/assets/nubisco-platform-mark.svg",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "scripts": {
     "clean": "rm -rf dist",
