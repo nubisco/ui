@@ -22,10 +22,9 @@ interface IUseInlineLoading {
 /**
  * Drives the NbInlineLoading state machine for a single action.
  *
- * The audit found four apps that confirmed a successful save with nothing at
- * all, and none of them were being careless: they were all writing the same
- * try/catch/finally by hand and the finally reset the flag before anything
- * could be shown. Handing the sequence over removes the chance to get it
+ * Written by hand, the try/catch/finally sequence tends to confirm a
+ * successful save with nothing at all, because the finally resets the flag
+ * before anything can be shown. Handing the sequence over removes the chance to get it
  * wrong.
  *
  * Two behaviours are worth knowing about:

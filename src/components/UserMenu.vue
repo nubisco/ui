@@ -299,7 +299,7 @@ const props = withDefaults(defineProps<IUserMenuProps>(), {
   showAccountActions: true,
   showProfile: true,
   // The vendor mark renders BY DEFAULT, and that is the wrong default: a
-  // client product should not have to opt out of showing someone else's
+  // consuming product should not have to opt out of showing someone else's
   // brand inside its own account menu. It stays 'footer' here only because
   // flipping it would silently remove the footer from every product already
   // shipping one, which is a breaking change. Two escapes exist today and

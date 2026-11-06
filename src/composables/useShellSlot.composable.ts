@@ -168,11 +168,9 @@ export interface IShellSlot {
 /**
  * Contribute controls from a view into a region of the surrounding `NbShell`.
  *
- * Eight of our twelve applications solved this with a hand-rolled DOM id
- * (`#cms-topbar`, `#ob-topbar-left`, `#page-actions`, five more), and every one
- * of them re-derived the same two problems: the target element does not exist
- * when the view mounts, and during a route transition two views hold the region
- * at once. This composable is the supported answer to both.
+ * A hand-rolled DOM id used as a teleport target has two problems: the
+ * target element does not exist when the view mounts, and during a route
+ * transition two views hold the region at once. This composable is the supported answer to both.
  *
  * ```vue
  * <script setup lang="ts">

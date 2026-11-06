@@ -5,8 +5,7 @@ import type { IToastQueue } from '../composables/useToast.composable'
  *
  * The suffix is the inline edge, so it follows the document direction rather
  * than the screen: `-end` is the right in a left-to-right document and the
- * left in Arabic or Hebrew. The audit found five different breakpoint scales
- * and no shared idea of "the corner"; naming the edge logically is what stops
+ * left in Arabic or Hebrew. Naming the edge logically is what stops
  * a right-to-left build from putting the stack on top of the shell rail.
  */
 type TToasterPlacement =
