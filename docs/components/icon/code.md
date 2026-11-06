@@ -137,7 +137,7 @@ Not every icon has all weights. If a requested weight is not available, the comp
 starred item, the current tab, a toggled-on control), so the change of weight
 itself says "on". The other four exist in the set, not in the product: `thin`
 and `light` vanish at 16px, `bold` shouts, and `duotone` is for pictograms
-(see [Icons beyond the catalogue](/components/icon/beyond-the-catalogue)). A
+(see [Icons beyond the catalogue](/principles/icons)). A
 page that mixes weights reads as several icon sets.
 
 A literal weight also keeps the bundle small: `weight="fill"` on `NbIcon`, or
