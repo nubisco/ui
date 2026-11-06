@@ -633,7 +633,8 @@ const wrapperClasses = computed(() => ({
   &__count {
     align-self: flex-end;
     flex-shrink: 0;
-    font-size: var(--nb-font-size-12);
+    font-size: var(--nb-type-helper-text-size);
+    line-height: var(--nb-type-helper-text-line-height);
     color: var(--nb-c-text-muted);
     font-variant-numeric: tabular-nums;
   }
