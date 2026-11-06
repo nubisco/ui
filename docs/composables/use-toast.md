@@ -97,7 +97,7 @@ That includes anything raised _during_ the navigation. `afterEach` fires after t
 ```ts
 import { createToastQueue } from '@nubisco/ui'
 
-// A Spanish-market product states its strings once, not per call.
+// A product in another language states its strings once, not per call.
 export const toast = createToastQueue({
   max: 2,
   statusLabels: {
