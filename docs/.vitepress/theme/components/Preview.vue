@@ -336,6 +336,20 @@ const previewWrapperClasses = computed(() => ({
   :deep(.preview--boolean-control) {
     justify-content: space-between;
   }
+  // The row of controls wraps rather than squeezing. Every control is
+  // `flex: 1 1 0`, and a text field deliberately has `min-width: 0` (it must
+  // never force its container wider), so in a single unwrapped row the other
+  // controls kept their content width and the text field was left with none.
+  // A text field gets a real basis and floor instead, and the row breaks
+  // onto a second line when the controls no longer fit.
+  .preview--header {
+    flex-wrap: wrap;
+
+    > :deep(.nb-text-input) {
+      flex: 1 1 calc(var(--nb-base-unit) * 30);
+      min-width: calc(var(--nb-base-unit) * 22);
+    }
+  }
   &.constrained {
     overflow: hidden;
   }
