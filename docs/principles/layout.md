@@ -41,18 +41,21 @@ and an `mq()` mixin. `NbGrid` compiles the same map into class prefixes. Both
 read the same source, so a hand-written media query and a `NbGrid` responsive
 map switch on the same pixel.
 
-**2. The library ships no viewport media queries of its own.**
-Outside of the generated grid classes, every `@media` rule in `src/` is a
-`prefers-reduced-motion` block. No component reflows itself at a viewport
-width. Components cap their own size instead (`NbModal` at 520 to 1600px,
+**2. The library reflows on one signal, the phone, and caps everything else.**
+Apart from the generated grid classes, the library's viewport queries are the
+phone signal (`$phone-query` in `_breakpoints.scss`, `usePhoneLayout()` in
+script, unit-tested to match): below `md`, or a touch screen too short to be
+anything but a phone held sideways. `NbShell` collapses there by default
+(`collapseAt`), `NbModal` becomes a sheet, fields grow to touch size. Above it,
+components cap their own size instead (`NbModal` at 520 to 1600px,
 `NbCommandPalette` at 640px, `NbToast` at 380px), which is why they behave
-identically in a 1440px window and in a 424px sliver of one. Responsive
-behaviour is a decision the application makes, and this page is where the
-values for it come from.
+identically in a 1440px window and in a 424px sliver of one. Any other
+responsive behaviour is a decision the application makes, and this page is
+where the values for it come from.
 
 **3. Inside `NbShell`, the viewport is not the layout width.**
 The shell subtracts a sidebar (56px or 240px), an inspector (288px up to 75vw)
-and 56px of main padding before your content sees a single pixel. A viewport
+and 48px of main padding before your content sees a single pixel. A viewport
 media query at `lg` can fire while your content column is 424px wide. The
 **Inside the shell** tab has the arithmetic and the rule that follows from it.
 
@@ -169,25 +172,12 @@ classes sit inside the same media queries.
 </template>
 ```
 
-## Known trap: `dir` cannot go back to `row` in a map
+## `dir` in a map goes both ways
 
-`NbGrid` treats `row` as the grid default and skips emitting a class for it at
-a breakpoint, so `:dir="{ sm: 'col', md: 'row' }"` produces only `sm-col`. The
-element stays a column above 672px. The CSS class it would need
-(`.nb-grid.md-row`, inside the 672px query) is generated and present in the
-stylesheet, the component just never puts it on the element.
-
-Until that is fixed in the component, write the direction the other way round,
-which needs no reversal:
-
-```vue
-<!-- Correct: column is the base, row is added at md -->
-<nb-grid dir="col" class="md-row">...</nb-grid>
-```
-
-The base `dir="col"` gives the column everywhere, and the hand-written
-`md-row` class flips it at 672px using the library's own generated rule. Do not
-work around this with an inline `@media` and a fresh pixel value.
+`:dir="{ sm: 'col', md: 'row' }"` is a column from 320px and a row from 672px.
+`NbGrid` emits the breakpoint's `row` like any other value (`md-row`), so a
+map can switch back to a row. Older versions skipped it, and the workaround of
+a hand-written `class="md-row"` can go.
 
 ## Rules
 
@@ -212,21 +202,22 @@ work around this with an inline `@media` and a fresh pixel value.
 `NbGrid` is a flexbox implementation of a 16-column grid, configured in
 `src/styles/variables/_grid.scss`.
 
-| Setting                                     | Value    | Token                 |
-| ------------------------------------------- | -------- | --------------------- |
-| Columns                                     | `16`     | `--nb-grid-columns`   |
-| Gutter                                      | `16px`   | `--nb-grid-gutter`    |
-| Max content width                           | `1440px` | `--nb-grid-max-width` |
-| Base unit (everything else derives from it) | `8px`    | `--nb-base-unit`      |
+| Setting                                     | Value                         | Token                 |
+| ------------------------------------------- | ----------------------------- | --------------------- |
+| Columns                                     | `16`                          | `--nb-grid-columns`   |
+| Page margin (`container`)                   | `0` phone, `16px`, `24px` xxl | `--nb-grid-gutter`    |
+| Max content width                           | `1440px`                      | `--nb-grid-max-width` |
+| Base unit (everything else derives from it) | `8px`                         | `--nb-base-unit`      |
 
-Sixteen divides cleanly by 2, 4 and 8, so halves, thirds (5 + 6 + 5), quarters
-and the 11/5 split above are all expressible without fractional columns.
+Sixteen divides cleanly into halves, quarters and eighths, and the 11/5 split
+above. It does not divide into thirds, fifths or sixths, so `grid` also takes a
+fraction (`'1/3'`, `'2/3'`, `'1/5'` to `'4/5'`, `'1/6'`, `'5/6'`) on the same
+arithmetic. See [Thirds, fifths and sixths](/components/grid/code#thirds-fifths-and-sixths).
 
-`grid` accepts 1 to 16 and sets `flex-basis`, `max-width` and `min-width` to
-`calc(100% * n / 16)`. `shift` accepts 1 to 15 and sets a matching
-`margin-left`. Note the asymmetry: there is no `.shift-0` rule, so passing
-`:shift="0"` puts a class on the element that no stylesheet defines. To remove
-a shift at a wider breakpoint, do not pass `shift` at the narrow one.
+`grid` accepts 1 to 16 or a fraction, and sets `flex-basis`, `max-width` and
+`min-width` to the span's share of the row minus its share of the gaps.
+`shift` accepts 0 to 15 and sets a matching `margin-inline-start`, so it
+mirrors under right-to-left, and `0` takes a shift back off at a breakpoint.
 
 **Percentages, not pixels.** A `grid` span is a percentage of its parent, so a
 `grid="8"` inside a 424px shell column is 212px, not half of your monitor. This
@@ -235,24 +226,31 @@ column spans can disagree. See the **Inside the shell** tab.
 
 ## Gutters and gaps
 
-The grid does not apply a gutter for you. `--nb-grid-gutter` is a published
-token (16px) that nothing in the library consumes: gaps come from the `gap`
-prop, and a grid with no `gap` has none.
+A grid has no gutter unless you give it one, with `gap` or with `mode`. What
+a step means is [Spacing and rhythm](/principles/spacing#choosing-a-step)'s
+call, and this table follows it:
 
 | `gap` | Computed | Use it for                                                                |
 | ----- | -------: | ------------------------------------------------------------------------- |
-| `xxs` |    `2px` | Hairline separation. Icon next to its own label, chips in a dense row.    |
+| `xxs` |    `2px` | One thing. Icon next to its own label, chips in a dense row.              |
 | `xs`  |    `4px` | Tightly bound controls that read as one unit (a split button, a stepper). |
-| `sm`  |    `8px` | Related controls in a toolbar. Fields in one row of a form.               |
-| `md`  |   `16px` | The default gutter. Between grid columns, between cards.                  |
-| `lg`  |   `24px` | Between sections of a page.                                               |
-| `xl`  |   `32px` | Between major regions that should read as separate.                       |
-| `xxl` |   `48px` | Around a lone, centred thing: an empty state, a sign-in card.             |
+| `sm`  |    `8px` | Two controls that act together. Related controls in a toolbar.            |
+| `md`  |   `16px` | Sibling fields in a form. Between grid columns, between cards.            |
+| `lg`  |   `24px` | Between groups inside one section.                                        |
+| `xl`  |   `32px` | Between sections of a page.                                               |
+| `xxl` |   `48px` | A major break the eye should treat as a page boundary.                    |
 
-Gap values are compiled pixels (`gap: 16px`), not `var()` references, so
-overriding `--nb-spacing-16` in your app does not move them. Where you need a
-gap that tracks a token, set `gap` in your own style block instead of using the
-prop.
+Each gap reads its token (`gap: var(--nb-spacing-16)`), so a product that
+retunes the spacing scale moves its grid gaps with its padding.
+
+### Modes, hang and subgrid
+
+`mode` gives a grid Carbon's gutters when it has no `gap`: `wide` 32px,
+`narrow` 16px, `condensed` 1px. `hang` on a span keeps its box against the
+gutter and insets its text to where a wide grid would put it. `subgrid` makes
+a nested grid take its parent's gap, so its spans land on the parent's column
+lines. `ratio` holds a span at an aspect ratio. All four are on the
+[Grid code tab](/components/grid/code#modes).
 
 Reach for `gap` before you reach for margins. Two apps in the audit accumulated
 462 and 287 hardcoded pixel values respectively, against zero spacing tokens;
@@ -305,9 +303,22 @@ all wrong. Three tools, three jobs.
 - The layout changes at a breakpoint. This is the strongest reason: the map
   form keeps the five widths in one place and out of your stylesheet.
 - You are dividing a region into proportional columns (`grid` spans).
+- You want a page frame outside the shell: `container` applies the max width
+  and the page margin.
 - You are inside a `.md` or `.vue` file where a style block would be awkward:
   documentation pages, a slot passed from a parent, a template-only component.
 - You want the order props (`first`, `last`, `reverse`) per breakpoint.
+
+## Use `NbCardGrid` when
+
+- You have a collection of like things (cards, tiles, thumbnails) and the
+  question is "how many fit", not "how much of the page does this take".
+  `<nb-card-grid min="280px">` reflows from four across to one at every width,
+  with no breakpoint, and clamps the minimum to the container so a phone or a
+  narrow inspector never overflows. `ratio` holds every tile at one shape.
+- You were about to write `repeat(auto-fit, minmax(...))` by hand. That is
+  what `NbCardGrid` is, written once, with one minimum instead of a different
+  one per view.
 
 ## Use plain flexbox in a style block when
 
@@ -324,16 +335,16 @@ all wrong. Three tools, three jobs.
 - The layout is genuinely two dimensional: a form of label and control pairs
   that must align across rows, a dashboard where cards span rows and columns.
   `NbGrid` is flexbox. It has no row tracks and cannot align across rows.
-- You want intrinsic responsiveness with no breakpoint at all. This is the
-  single most useful pattern on this page:
+- You want intrinsic responsiveness with no breakpoint for something that is
+  not a collection of cards (for a collection, use `NbCardGrid` above):
 
 ```vue
 <style scoped lang="scss">
-// Cards reflow from four across to one, at every width in between,
-// with no media query and no invented breakpoint.
-.card-wall {
+// Filter controls reflow from four across to one, at every width in
+// between, with no media query and no invented breakpoint.
+.filter-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   gap: var(--nb-spacing-16);
 }
 </style>
@@ -386,20 +397,22 @@ container width: cap the paragraph, and let the panel around it fill.
 
 ## Page and region widths
 
-`--nb-grid-max-width` (1440px) is published as the maximum content width.
-Nothing in the library applies it, which means it is yours to apply and yours
-to override. On a full-bleed marketing or settings page, apply it to the
-content wrapper, not to the page background, so the background still bleeds.
+`--nb-grid-max-width` (1440px) is the maximum content width, and
+`--nb-grid-gutter` is the page margin: 0 on a phone, 16px from `md` to `xl`,
+24px at `xxl`. `NbGrid`'s `container` prop applies both, centred. On a
+full-bleed marketing or settings page outside the shell, put it on the content
+wrapper, not on the page background, so the background still bleeds.
 
 ```vue
-<style scoped lang="scss">
-.page-content {
-  width: 100%;
-  max-width: var(--nb-grid-max-width);
-  margin-inline: auto;
-}
-</style>
+<template>
+  <section class="hero">
+    <nb-grid container dir="row" mode="wide" wrap="wrap">...</nb-grid>
+  </section>
+</template>
 ```
+
+A full-bleed public surface may also breathe with the viewport through
+`--nb-fluid-spacing-01` to `-04` (0, 2vw, 5vw, 10vw). Never inside the shell.
 
 Inside the shell, a max width is usually the wrong instinct: the shell has
 already constrained the content for you, and a second cap leaves a stripe of
@@ -429,26 +442,28 @@ piece of UI can survive in.
 
 `NbShell` is a fixed frame: `height: 100vh`, `overflow: hidden`, a column
 sidebar on the left, an optional inspector column on the right, and a `main`
-region with `1.5rem 1.75rem` of padding that scrolls internally.
+region with `1.5rem var(--nb-shell-chrome-padding-x)` of padding (24px on
+each side) that scrolls internally. That padding is the page margin inside the
+shell, so do not add a `container` there.
 
 Your content sees:
 
 ```
-viewport - sidebar - inspector - 56px of main padding
+viewport - sidebar - inspector - 48px of main padding
 ```
 
 | Viewport | Sidebar         | Inspector           | Content width | The grid class that is active |
 | -------: | --------------- | ------------------- | ------------: | ----------------------------- |
-|   1440px | compact (56px)  | closed              |      `1328px` | `xl`                          |
-|   1440px | compact (56px)  | `md` (560px)        |       `768px` | `xl`                          |
-|   1440px | verbose (240px) | `md` (560px)        |       `584px` | `xl`                          |
-|   1280px | verbose (240px) | `md` (560px)        |       `424px` | `md`                          |
-|   1600px | compact (56px)  | `xl` (75vw, 1200px) |       `288px` | `xxl`                         |
+|   1440px | compact (56px)  | closed              |      `1336px` | `xl`                          |
+|   1440px | compact (56px)  | `md` (560px)        |       `776px` | `xl`                          |
+|   1440px | verbose (240px) | `md` (560px)        |       `592px` | `xl`                          |
+|   1280px | verbose (240px) | `md` (560px)        |       `432px` | `lg`                          |
+|   1600px | compact (56px)  | `xl` (75vw, 1200px) |       `296px` | `xxl`                         |
 
 Read the last row again. The window is at `xxl` and the content column is
-288px, narrower than a phone. Every `NbGrid` breakpoint class in that column is
+296px, narrower than a phone. Every `NbGrid` breakpoint class in that column is
 firing on the window's width, so a `:grid="{ xl: 4 }"` span resolves to 4 of 16
-columns of 288px, which is 72px.
+columns of 296px, which is 74px.
 
 **The rule.** Inside the shell, do not let a viewport breakpoint decide
 anything that lives in the content column. Decide it from the state you already
@@ -494,7 +509,7 @@ const cards = ref([{ id: 'a', title: 'Throughput' }])
 | Inspector `xl`    | `75vw`            | `--nb-shell-inspector-width`         |
 | Topbar height     | `50px`            | `--nb-shell-topbar-height`           |
 | Chrome padding, x | `24px`            | `--nb-shell-chrome-padding-x`        |
-| Main padding      | `1.5rem 1.75rem`  | fixed in `NbShell`                   |
+| Main padding      | `1.5rem` x `24px` | `--nb-shell-chrome-padding-x`        |
 
 All the `--nb-shell-*` variables are declared on `:root`, so an application
 overrides them in its own stylesheet without fighting scoped-style specificity.
@@ -514,17 +529,8 @@ transparent border; visible, it animates to `--nb-shell-inspector-width` over
   itself on mount (a canvas, a virtualised list, a chart) needs a
   `ResizeObserver`, not a resize listener on `window`. The window does not
   change size when the inspector opens.
-- **The width animation does not currently check `prefers-reduced-motion`.**
-  Until it does, an application that needs it can turn the animation off from
-  its own stylesheet:
-
-```css
-@media (prefers-reduced-motion: reduce) {
-  .nb-shell__inspector {
-    transition: none;
-  }
-}
-```
+- **The width animation respects `prefers-reduced-motion`.** Under `reduce`
+  the column snaps open, with no transition to switch off in the application.
 
 - **`resizable` clamps the drag between 288px and 50% of the viewport.** The
   chosen width comes back through `v-model:inspector-width`; persisting it is
@@ -571,35 +577,39 @@ which is what four applications were fighting from the outside.
 
 <doc-tab name="Small screens">
 
-## What the library does and does not do
+## What the library does on a phone
 
-Be honest about the starting point: `NbShell` is a desktop frame. It is
-`100vh`, its sidebar is always present, and its inspector is a column beside
-the content rather than an overlay. There is no mobile variant of the shell and
-no automatic collapse. Everything below is what an application has to decide.
+`NbShell` collapses below `collapseAt` (`md` by default, `lg` or `none` to
+change it), and also on a touch screen too short to be anything but a phone
+held sideways. Collapsed, the sidebar becomes an overlay drawer opened from a
+topbar toggle, the inspector becomes a sheet over the content with its own
+dismiss control, the contextbar folds away, and `main` drops to `1rem` of
+padding. The drawer closes after navigation, and focus follows both overlays.
+None of it touches the desktop.
 
-What the library does give you for free: every component caps its own width and
-degrades to full width rather than overflowing, `NbNotificationCenter` is
-capped at `100vw - 16px`, and `NbModal`'s tallest size also caps against
-`100dvh` so a mobile address bar cannot overhang it.
+Every component caps its own width and degrades to full width rather than
+overflowing, `NbModal` becomes a sheet, and fields and frame controls grow to
+44px touch targets on a touch screen. Your own phone changes go through the
+same signal: the `phone` and `phone-touch` mixins in SCSS, `usePhoneLayout()`
+in script. Never a raw width.
 
 ## Making a shell usable narrow
 
-Work down the frame, in this order, because each step buys the most width for
-the least loss of function.
+What is left to the application, in this order, because each step buys the
+most width for the least loss of function.
 
-1. **Close the inspector below `lg`.** It is the widest thing on screen. Drive
-   `inspector-visible` from your own state and reopen it as an overlay if the
-   content demands it. Below 1056px there is not enough room for content and a
-   560px column.
+1. **Close the inspector below `lg`.** Above `collapseAt` it is still a column
+   beside the content, and below 1056px there is not enough room for content
+   and a 560px column. Drive `inspector-visible` from your own state.
 2. **Keep the sidebar compact below `xl`.** The verbose variant costs 184px
    more. `sidebar-variant` is a prop, so this is one binding.
-3. **Collapse the topbar's secondary actions into a menu.** Do this by moving
-   controls into `NbMenu`, not by hiding them: an action that disappears below
-   a width is an action the narrow user cannot perform.
+3. **Put page actions in `NbActionGroup` with `overflow="phone"`.** Do not hide
+   them: an action that disappears below a width is an action the narrow user
+   cannot perform.
 4. **Let the content column go single-column.** Base (unprefixed) values in a
    `NbGrid` map are the narrow case, so `:grid="{ sm: 16, lg: 8 }"` is already
-   single-column narrow with no extra work.
+   single-column narrow with no extra work. For collections, `NbCardGrid` does
+   it with no map at all.
 
 ## Touch and pointer
 
@@ -610,9 +620,9 @@ the least loss of function.
   row actions and hover-only affordances have no touch equivalent. If an action
   only appears on hover, it must also be reachable from a menu or a focused
   state.
-- **Drag handles need an alternative.** The inspector resize handle is
-  mouse-driven (`mousedown` / `mousemove`). On touch, and for keyboard users,
-  the `inspectorSize` prop is the path; do not make resizing the only way to
+- **Drag handles need an alternative.** The inspector resize handle takes
+  pointer events, so it works with a pen or a finger, but for keyboard users
+  the `inspectorSize` prop is the path. Do not make resizing the only way to
   see something.
 
 ## Accessibility of a responsive layout
