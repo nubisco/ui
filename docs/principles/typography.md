@@ -176,6 +176,8 @@ Nubisco is a **product interface** library: dashboards, forms, tables, inspector
 
 On a dense screen, row text and its title are the **same size** and differ by weight, and meta is the only 12px rung. That is how a list stays scannable: the eye sorts by weight at 14px, and by size only across two steps.
 
+For product pages, [Information hierarchy](/principles/hierarchy#type-one-size-per-role) names the component that renders each role.
+
 ## Weight falls as size rises
 
 Size already carries hierarchy, so weight is spent where size cannot do the job.

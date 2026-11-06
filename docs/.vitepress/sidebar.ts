@@ -42,6 +42,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Design Tokens', link: '/design-tokens' },
       { text: 'Layout and breakpoints', link: '/principles/layout' },
       { text: 'Spacing and rhythm', link: '/principles/spacing' },
+      { text: 'Information hierarchy', link: '/principles/hierarchy' },
       { text: 'Motion', link: '/principles/motion/usage' },
       { text: 'Data visualisation', link: '/principles/data-visualisation' },
       { text: 'Z-Index', link: '/principles/z-index' },

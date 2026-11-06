@@ -453,14 +453,21 @@ by role:
 <NbButton size="xs" variant="ghost" outlined icon="x">Unbind</NbButton>
 ```
 
-::: danger Do not use bare `ghost` for actions
+::: danger Do not use bare `ghost` for labelled actions
 `variant="ghost"` is **transparent with a transparent border** until
-hover, it is styled to look like plain text at rest. It is for
-toolbar-icon affordances inside a dense header, not for a labelled action
-a user must discover. An inspector full of ghost "buttons" reads as a
-list of grey words. Use `primary` / `secondary`, and reach for
-`ghost outlined` only when you genuinely want a quiet, dismissive control
-that still carries a border.
+hover, it is styled to look like plain text at rest. A labelled action a
+user must discover (Bind, Re-learn, Apply) is never bare ghost: an
+inspector full of ghost "buttons" reads as a list of grey words. Use
+`primary` / `secondary`, and reach for `ghost outlined` only when you
+genuinely want a quiet, dismissive control that still carries a border.
+
+Bare `ghost` is right for an **icon button**: a row action, a toolbar
+tool, a dashboard tile's control. That is the row-action standard: an
+`NbButton` with `size="sm"`, `variant="ghost"` and an `icon`, a
+`v-nb-tooltip` naming the action, and an `aria-label` naming the action
+and the row. The icon is what makes it read as a control at rest, so the
+two rules do not conflict: no bare ghost with words, bare ghost with an
+icon. See [Information hierarchy](/principles/hierarchy#emphasis-one-filled-button-per-region).
 :::
 
 The argument is about **at rest**, so this demo is deliberately static: do not
@@ -664,7 +671,8 @@ Before you ship an inspector, confirm:
 - [ ] Help text is subtle and shares its control's left edge (column 2 in a
       row field, column 1 in a `stack` field), the same for every row.
 - [ ] Panel headers are the muted default, not overridden bright.
-- [ ] Every action is a real button variant, never bare `ghost`.
+- [ ] Every labelled action is a real button variant, never bare `ghost`
+      (icon buttons with a tooltip are the exception, per the row-action standard).
 - [ ] One `gap` sets the spacing, no scattered margins.
 - [ ] Every row is an `NbField`, with no bare labelled fields left relying on
       the legacy in-place conversion.

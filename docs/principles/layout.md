@@ -240,6 +240,12 @@ call, and this table follows it:
 | `xl`  |   `32px` | Between sections of a page.                                               |
 | `xxl` |   `48px` | A major break the eye should treat as a page boundary.                    |
 
+Which of these a page's groups, regions and headline region take, and why
+equal gaps make every region a peer, is on
+[Information hierarchy](/principles/hierarchy#spacing-the-gap-states-the-relationship).
+The same page says which region is first and widest
+([Position](/principles/hierarchy#position-area-is-rank)).
+
 Each gap reads its token (`gap: var(--nb-spacing-16)`), so a product that
 retunes the spacing scale moves its grid gaps with its padding.
 

@@ -60,6 +60,10 @@ Depth is a system of its own, described in [Theming, Layers](/theming). What mat
 | `--nb-c-document`                                               | A paper-like ground for document content. Nothing in the library paints it; it exists for editor products that need a page that is not a UI surface.                                                                      |
 | `--nb-c-contrast`                                               | Maximum contrast against the current theme's surfaces: black in light, near-white in dark. For a deliberate inversion, not for body text.                                                                                 |
 
+When to raise a region at all, and why a page has at most one raised region,
+is on [Information hierarchy](/principles/hierarchy#layer-a-surface-is-a-group).
+That page also holds the rule this one implies: hue is status, never rank.
+
 ### Text
 
 Three tiers. All three are measured against every surface they can land on, including hover surfaces.
