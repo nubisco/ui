@@ -692,6 +692,11 @@ The reasons, since each of these has one:
 - **Placeholders are not instructions.** `dd/mm/yyyy` and `ACME-1024` are
   placeholders. "Enter your first name" is a label that lost its nerve, and it
   vanishes the moment the user types.
+- **A placeholder is optional, and the default is none.** Add one only when
+  the shape of the value is not obvious from the label. It disappears on the
+  first keystroke, it is low contrast by design, and some screen readers skip
+  it, so it can never hold anything the user needs: requirements go in the
+  hint, where they stay.
 - **Error text names the fix, not the failure.** "Enter a work email address"
   beats "Invalid input". "Choose a role" beats "Required field". The user
   already knows something is wrong: the red told them. What they do not know is
