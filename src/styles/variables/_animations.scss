@@ -10,7 +10,9 @@
 ///   on screen before and after (a width, a knob, a chevron), `enter` for an
 ///   arrival, `exit` for a departure. These are the productive curves of the
 ///   Carbon design system, which this library grew out of: nothing in them
-///   overshoots, bounces or lingers, which is the brief.
+///   overshoots, bounces or lingers, which is the brief. Beside them sit
+///   the three expressive curves (`-expressive`), for the arrival of a page
+///   or a critical alert only, never for a control.
 ///
 /// `$timings` is the legacy duration family (`--nb-animation-*`). It is
 /// still emitted so nothing a product wrote against it breaks, and it is
@@ -29,6 +31,9 @@ $motion: (
   short: 150ms,
   medium: 240ms,
   long: 400ms,
+  // Expressive only: a page arriving or a critical alert, never a control,
+  // and never something the person is waiting on.
+  slow: 700ms,
 ) !default;
 
 /// Easing curves.
@@ -38,6 +43,10 @@ $easing: (
   standard: cubic-bezier(0.2, 0, 0.38, 0.9),
   enter: cubic-bezier(0, 0, 0.38, 0.9),
   exit: cubic-bezier(0.2, 0, 1, 0.9),
+  // Expressive: the arrival of a page or a critical alert, never a control.
+  standard-expressive: cubic-bezier(0.4, 0.14, 0.3, 1),
+  enter-expressive: cubic-bezier(0, 0, 0.3, 1),
+  exit-expressive: cubic-bezier(0.4, 0.14, 1, 1),
 ) !default;
 
 /// Legacy duration family. Deprecated: read `$motion` and `--nb-motion-*`.
