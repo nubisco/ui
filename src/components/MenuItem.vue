@@ -113,6 +113,7 @@ defineExpose({ el: itemRef })
 <style lang="scss">
 @use '../styles/logic/radius' as radius;
 @use '../styles/variables/breakpoints' as bp;
+@use '../styles/logic/touch' as touch;
 
 .nb-menu-item {
   // --nb-menu-item-h base default lives at :root in styles/_theme.scss; the
@@ -220,6 +221,12 @@ defineExpose({ el: itemRef })
   .nb-menu-item {
     min-block-size: 44px;
   }
+}
+
+// The row is already 44px tall there; the mixin keeps the same rule as every
+// other control, so a narrow item (an icon row in a toolbar menu) is covered.
+.nb-menu-item {
+  @include touch.hit-area;
 }
 
 // Size variants applied via parent .nb-menu

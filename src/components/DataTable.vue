@@ -772,6 +772,7 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
 @use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/variables/breakpoints' as bp;
+@use '../styles/logic/touch' as touch;
 
 .nb-data-table {
   /*
@@ -1032,6 +1033,9 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
     text-align: inherit;
     cursor: pointer;
     transition: background var(--nb-motion-short);
+    // A fingertip tall on a phone touch screen when the table is not stacked
+    // (stacked tables size it outright below).
+    @include touch.hit-area;
 
     &:hover {
       background: var(--nb-dt-accent-hover);
@@ -1209,6 +1213,7 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
     background: transparent;
     color: var(--nb-c-text-muted);
     @include radius.standalone(control);
+    @include touch.hit-area;
     cursor: pointer;
     transition:
       background var(--nb-motion-short),

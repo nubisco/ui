@@ -355,6 +355,7 @@ function onKeydown(event: KeyboardEvent): void {
 @use '../styles/logic/radius' as radius;
 @use '../styles/logic/motion' as motion;
 @use '../styles/variables/breakpoints' as bp;
+@use '../styles/logic/touch' as touch;
 
 // The scrolling bar, emitted twice: under the phone query with `$when` empty,
 // which gives exactly the selectors the phone has always had, and under
@@ -606,6 +607,11 @@ function onKeydown(event: KeyboardEvent): void {
     &__tab {
       min-block-size: 44px;
     }
+  }
+
+  // And at least 44px wide: a one-letter or icon-only tab is narrower.
+  &__tab {
+    @include touch.hit-area;
   }
 
   // The mark lands where it would have slid to
