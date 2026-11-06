@@ -1,16 +1,18 @@
-@use 'sass:math';
 @use './layout';
 
 $grid-max-width: 1440 !default;
 $grid-columns: 16 !default;
 $grid-gutter: layout.$base-unit * 2 !default;
 
+// The gap scale is the spacing scale under seven names, read through the
+// tokens rather than compiled to pixels, so a product that retunes
+// `--nb-spacing-16` moves its grid gaps with its padding.
 $gap-ratios: (
-  xxs: #{math.div(layout.$base-unit, 4)}px,
-  xs: #{math.div(layout.$base-unit, 2)}px,
-  sm: #{layout.$base-unit}px,
-  md: #{layout.$base-unit * 2}px,
-  lg: #{layout.$base-unit * 3}px,
-  xl: #{layout.$base-unit * 4}px,
-  xxl: #{layout.$base-unit * 6}px,
+  xxs: var(--nb-spacing-2),
+  xs: var(--nb-spacing-4),
+  sm: var(--nb-spacing-8),
+  md: var(--nb-spacing-16),
+  lg: var(--nb-spacing-24),
+  xl: var(--nb-spacing-32),
+  xxl: var(--nb-spacing-48),
 ) !default;

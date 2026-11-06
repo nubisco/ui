@@ -40,7 +40,9 @@ describe('NbGrid spans and gaps', () => {
   })
 
   it('hands each gap to the children, and only a row gap counts', () => {
-    expect(rule('.nb-grid.gap-md > *')).toContain('--nb-grid-parent-gap: 16px')
+    expect(rule('.nb-grid.gap-md > *')).toContain(
+      '--nb-grid-parent-gap: var(--nb-spacing-16)',
+    )
     expect(rule('.nb-grid.row > *')).toContain('--nb-grid-parent-row: 1')
     expect(rule('.nb-grid.col > *')).toContain('--nb-grid-parent-row: 0')
     expect(rule('.nb-grid.md-row > *')).toContain('--nb-grid-parent-row: 1')
@@ -103,6 +105,13 @@ describe('NbGrid shift', () => {
     expect(gridRule('.nb-grid.lg-shift-0')).toContain('margin-inline-start')
     expect(gridCss).toContain('.nb-grid.shift-15 {')
     expect(gridCss).not.toContain('.nb-grid.shift-16 {')
+  })
+
+  it('reads every gap from a spacing token, not a compiled pixel', () => {
+    expect(gridRule('.nb-grid.gap-md')).toContain('gap: var(--nb-spacing-16)')
+    expect(gridRule('.nb-grid.lg-gap-xxs')).toContain(
+      'gap: var(--nb-spacing-2)',
+    )
   })
 
   it('shifts on the logical start edge so it mirrors under RTL', () => {
