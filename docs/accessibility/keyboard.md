@@ -29,7 +29,7 @@ Any positive value is a bug. `tabindex="3"` lifts an element above the entire na
 
 ### Never remove a focus indicator
 
-`outline: none` on a focusable element with nothing put back is the defect. There are 26 `outline: none` declarations across `src/components`, and the legitimate ones all follow the same shape: the ring moves outward to a wrapper that can draw it around the whole control. `NbTextInput` and `NbNumberInput` strip the native input's outline and let `.nb-text-input__field-wrapper--focused` carry the visible state; `NbSelect` does the same on its trigger. **If you write `outline: none`, the same rule block or an ancestor must draw the replacement.**
+`outline: none` on a focusable element with nothing put back is the defect. There are 28 `outline: none` declarations across `src/components`, and the legitimate ones all follow the same shape: the ring moves outward to a wrapper that can draw it around the whole control. `NbTextInput` and `NbNumberInput` strip the native input's outline and let `.nb-text-input__field-wrapper--focused` carry the visible state; `NbSelect` does the same on its trigger. **If you write `outline: none`, the same rule block or an ancestor must draw the replacement.**
 
 Two of those wrappers key off `@focus`/`@blur` rather than `:focus-visible`, so they ring on a mouse click too. That is a cosmetic inconsistency rather than a failure, and it is the direction to be inconsistent in: too much ring is a nuisance, too little is a barrier.
 

@@ -60,7 +60,7 @@ From this section forward, a component page with no **Accessibility** heading me
 A page **with** an Accessibility heading is a commitment. Everything it claims is true of the current source, and anything it does not claim is yours.
 :::
 
-45 of the 73 component pages currently carry an Accessibility tab (a test, `tests/a11yDocsCounts.test.ts`, holds this number to the source). The rest are silent, and the silence is honest rather than reassuring. The three states in full:
+46 of the 73 component pages currently carry an Accessibility tab (a test, `tests/a11yDocsCounts.test.ts`, holds this number to the source). The rest are silent, and the silence is honest rather than reassuring. The three states in full:
 
 - **Section present, claims made.** Load-bearing. `NbTabs`, `NbConfirm`, `NbDataTable`, `NbWalkthrough`, `NbShell` and fourteen others are in this state. Build on what they say.
 - **Section present, gap stated.** We know about it and we are telling you, with the workaround. This is the most useful state a page can be in and we would rather write it than a section that quietly omits the bad news.
@@ -118,12 +118,6 @@ its opener and takes <kbd>Home</kbd>, <kbd>End</kbd>, wrapping and typeahead.
 
 ::: tip Fixed: `NbBadge` variants name intents, and the dark focus ring clears 3:1
 `NbBadge` takes `neutral`, `info`, `success`, `warning`, `danger` and `primary`, each painting a measured status surface pair (4.84:1 or better on every plane in both themes). The old colour names are deprecated aliases. The dark `--nb-c-focus-ring` is lifted toward white and measures 6.88 / 5.96 / 4.92 / 3.87 on layers 0 to 3, where it was 2.27 on layer 3. See [Colour and contrast](/accessibility/color-contrast).
-:::
-
-::: warning `NbMenu` closes without restoring focus
-<kbd>Esc</kbd> and <kbd>Tab</kbd> both close the menu, which is correct, but `close()` only emits. Focus is left on a menu item that has just been removed from the document, and the browser drops it to `<body>`. The next <kbd>Tab</kbd> starts from the top of the page.
-
-**What to do.** Restore it in your `@close` handler. See [Focus management](/accessibility/keyboard#where-focus-goes).
 :::
 
 ## How to test

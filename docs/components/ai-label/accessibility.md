@@ -5,6 +5,10 @@ intro: 'The AI label marks content a model wrote or changed. It is present where
 source: src/components/AiLabel.vue
 tab: accessibility
 pageTabs: ['usage', 'style', 'code', 'accessibility']
+a11y:
+  automated: not recorded
+  keyboard: tested
+  screenReader: not recorded
 ---
 
 ## The mark
