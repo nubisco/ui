@@ -215,8 +215,8 @@ The consequences for this library, concretely:
 - **Scrims flatten.** `--nb-c-scrim` is a `color-mix` to transparent. In forced colours, a dialog can end up visually continuous with the page behind it, so give overlay surfaces an explicit `border`.
 - **Layer depth disappears entirely.** The whole four-level surface system is `background-color`. Structure that only exists as a lightness difference is gone.
 
-::: warning Forced-colours handling is partial
-Six components carry a `@media (forced-colors: active)` block: `NbToast`, `NbToaster`, `NbSpinner`, `NbSkeleton`, `NbNotificationCenter` and `NbNotificationCenterItem`. Everything else survives only by construction (outlines and inline SVG). Selected rows in `NbDataTable` and `NbTree`, the modal scrim and dialog edge, and the `NbSelect` highlight still vanish.
+::: warning Forced colours are handled in 6 component files, not everywhere
+`@media (forced-colors: active)` blocks exist in `NbToast` (a 3px inline-start border per severity, so severity survives without hue), `NbToaster`, `NbSpinner` (the arc in `CanvasText` on a `Canvas` track), `NbSkeleton`, `NbNotificationCenter` and `NbNotificationCenterItem`. Everywhere else, survival is a consequence of using outlines and inline SVG, not of a deliberate pass. The known holes: selected rows in `NbDataTable` and `NbTree`, the `NbModal` scrim and dialog edge, the `NbSelect` highlight, and field borders.
 
 Where you need a state to survive, restore it with a system colour:
 

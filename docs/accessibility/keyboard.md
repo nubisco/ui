@@ -29,7 +29,7 @@ Any positive value is a bug. `tabindex="3"` lifts an element above the entire na
 
 ### Never remove a focus indicator
 
-`outline: none` on a focusable element with nothing put back is the defect. There are twenty `outline: none` declarations across `src/components`, and the legitimate ones all follow the same shape: the ring moves outward to a wrapper that can draw it around the whole control. `NbTextInput` and `NbNumberInput` strip the native input's outline and let `.nb-text-input__field-wrapper--focused` carry the visible state; `NbSelect` does the same on its trigger. **If you write `outline: none`, the same rule block or an ancestor must draw the replacement.**
+`outline: none` on a focusable element with nothing put back is the defect. There are 26 `outline: none` declarations across `src/components`, and the legitimate ones all follow the same shape: the ring moves outward to a wrapper that can draw it around the whole control. `NbTextInput` and `NbNumberInput` strip the native input's outline and let `.nb-text-input__field-wrapper--focused` carry the visible state; `NbSelect` does the same on its trigger. **If you write `outline: none`, the same rule block or an ancestor must draw the replacement.**
 
 Two of those wrappers key off `@focus`/`@blur` rather than `:focus-visible`, so they ring on a mouse click too. That is a cosmetic inconsistency rather than a failure, and it is the direction to be inconsistent in: too much ring is a nuisance, too little is a barrier.
 
@@ -43,6 +43,8 @@ Use `:focus-visible`, not `:focus`. `:focus` fires on click, which puts a ring o
 ```
 
 Two pixels, `--nb-c-focus-ring`, and an offset. Positive offset when the control has room around it, `-2px` when it is flush against a neighbour (table cells, menu rows, sidebar links all use the inset form). The library uses `outline`, never `box-shadow`, because outlines survive forced-colours mode and box-shadows are discarded.
+
+**Elements you write get this ring by default.** The stylesheet draws exactly that ring under `:focus-visible` on every element without an `nb-` class (`src/styles/_focus.scss`), at zero specificity, so a plain `<a>` or `<button>` in your page has a visible ring and any rule of yours replaces it. Library elements keep the ring their component draws.
 
 ## Keys and what they mean
 
@@ -85,31 +87,7 @@ This is the finding the fleet audit produced most often, and it is invisible unl
 
 Focus returns to the element that opened it. Always, in every case, including cancel, including confirm, including Escape and including a click on the scrim.
 
-`NbConfirm` does this: it records `document.activeElement` on open and restores it on close, which is why a delete launched from a row's overflow menu puts you back on that row instead of at the top of the table.
-
-`NbModal` does not. If you are building a bespoke dialog on `NbModal`, this is yours:
-
-```ts
-import { ref, watch, nextTick } from 'vue'
-
-const open = ref(false)
-const previouslyFocused = ref<HTMLElement | null>(null)
-
-watch(open, async (isOpen) => {
-  if (isOpen) {
-    previouslyFocused.value = document.activeElement as HTMLElement | null
-    await nextTick()
-    dialogBody.value
-      ?.querySelector<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      )
-      ?.focus()
-  } else {
-    previouslyFocused.value?.focus()
-    previouslyFocused.value = null
-  }
-})
-```
+`NbModal`, `NbConfirm` and `NbCommandPalette` all do this through one composable, `useFocusTrap`: it records `document.activeElement` on open and restores it on close, which is why a delete launched from a row's overflow menu puts you back on that row instead of at the top of the table. `NbMenu` restores its opener the same way. A dialog built on `NbModal` needs nothing of yours here.
 
 **Where inside the dialog?** The first interactive control, or the dialog container itself with `tabindex="-1"` if there is a lot of text to read first. Not the destructive button. `NbConfirm` focuses Cancel deliberately: a dialog that appears with a destructive default under an already-travelling <kbd>Space</kbd> keypress will delete the record.
 
@@ -162,39 +140,7 @@ Focus that jumps because a fetch resolved, a poll ticked or a toast arrived is a
 
 While a modal dialog is open, everything behind it is inert. <kbd>Tab</kbd> from the last control inside wraps to the first, <kbd>Shift</kbd>+<kbd>Tab</kbd> from the first wraps to the last, and focus that ends up outside is pulled back in.
 
-Two library components implement this today: `NbConfirm` and `NbWalkthrough`. `NbModal` does not, so a bespoke dialog needs the trap written by hand. The shape both use:
-
-```ts
-function focusables(): HTMLElement[] {
-  return Array.from(
-    dialog.value?.querySelectorAll<HTMLElement>(
-      'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    ) ?? [],
-  ).filter((el) => el.offsetParent !== null)
-}
-
-function onKeydown(event: KeyboardEvent) {
-  if (event.key !== 'Tab') return
-  const items = focusables()
-  if (!items.length) return
-  const first = items[0]
-  const last = items[items.length - 1]
-  const active = document.activeElement
-
-  if (event.shiftKey && (active === first || !dialog.value?.contains(active))) {
-    event.preventDefault()
-    last.focus()
-  } else if (
-    !event.shiftKey &&
-    (active === last || !dialog.value?.contains(active))
-  ) {
-    event.preventDefault()
-    first.focus()
-  }
-}
-```
-
-The `offsetParent` filter matters: a control inside a collapsed section is in the DOM, matches the selector, and cannot be focused. Without the filter, <kbd>Tab</kbd> silently stops working at that point in the cycle.
+`NbModal`, `NbConfirm` and `NbCommandPalette` share one implementation, `useFocusTrap` (`src/composables/useFocusTrap.composable.ts`), and `NbWalkthrough` holds focus on its popover. The trap handles the long tail you would otherwise get wrong by hand: focusables inside collapsed sections, a dialog whose every control is disabled while it is busy, a listbox teleported out of the dialog by a control inside it, two stacked dialogs answering one <kbd>Tab</kbd>, and focus that leaves by a route no keystroke explains. Build a dialog on `NbModal` rather than writing a trap.
 
 **Trap only true modals.** A dropdown, a popover or a non-modal side panel must not trap: they close on <kbd>Tab</kbd> out instead. `NbMenu` gets this right (<kbd>Tab</kbd> closes the menu and the tab sequence resumes).
 
@@ -206,20 +152,14 @@ The mechanism is a **roving `tabindex`**: exactly one descendant has `tabindex="
 
 What the library implements, verified against source:
 
-| Component              | Keys                                                                | Notes                                                                                                                                                                      |
-| ---------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`NbTabs`**           | <kbd>&larr;</kbd> <kbd>&rarr;</kbd> <kbd>Home</kbd> <kbd>End</kbd>  | Roving `tabindex` on the active tab. Disabled tabs are skipped, and the ends wrap. Selection follows focus.                                                                |
-| **`NbMenu`**           | <kbd>&uarr;</kbd> <kbd>&darr;</kbd> <kbd>Esc</kbd> <kbd>Tab</kbd>   | Skips `aria-disabled` items. <kbd>Esc</kbd> and <kbd>Tab</kbd> both close. Does not wrap at the ends.                                                                      |
-| **`NbAccordion`**      | <kbd>&uarr;</kbd> <kbd>&darr;</kbd> <kbd>Home</kbd> <kbd>End</kbd>  | Between headers, skipping disabled ones, wrapping at both ends. Items are re-sorted by document position, so a `v-for` that reorders still moves focus correctly.          |
-| **`NbReorderList`**    | <kbd>&uarr;</kbd> <kbd>&darr;</kbd>                                 | Moves the **item**, not the cursor, and announces the result through an `aria-live="assertive"` region. This is the answer to a reorder that would otherwise be drag-only. |
-| **`NbTree`**           | <kbd>&uarr;</kbd> <kbd>&darr;</kbd> <kbd>Home</kbd> <kbd>End</kbd>  | Moves through visible nodes. **See the gap below.**                                                                                                                        |
-| **`NbCommandPalette`** | <kbd>&uarr;</kbd> <kbd>&darr;</kbd> <kbd>Enter</kbd> <kbd>Esc</kbd> | Focus stays in the input and the arrows move a highlight in the list. **See the gap below.**                                                                               |
-
-::: warning Two composites are incomplete, and here is exactly how
-**`NbTree` has no tab stop.** Every `treeitem` carries `tabindex="-1"` and the `<ul role="tree">` container carries none, so the arrow handling is correct and unreachable: nothing puts focus into the tree in the first place. Until it is fixed, give the tree an entry point from your side, either by focusing the first node when the panel that contains it opens, or by rendering the tree inside a container you focus yourself.
-
-**`NbCommandPalette` is not wired as a combobox.** The arrows move a visual highlight, but there is no `role="listbox"`, no `role="option"` and no `aria-activedescendant`, so a screen reader hears the query being typed and never hears the results change. It is usable by keyboard and not yet usable by a reader.
-:::
+| Component              | Keys                                                                                                            | Notes                                                                                                                                                                                                                                            |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`NbTabs`**           | <kbd>&larr;</kbd> <kbd>&rarr;</kbd> <kbd>Home</kbd> <kbd>End</kbd>                                              | Roving `tabindex` on the active tab. Disabled tabs are skipped, and the ends wrap. Selection follows focus.                                                                                                                                      |
+| **`NbMenu`**           | <kbd>&uarr;</kbd> <kbd>&darr;</kbd> <kbd>Home</kbd> <kbd>End</kbd> <kbd>Esc</kbd> <kbd>Tab</kbd>, letters       | Skips `aria-disabled` items and wraps at the ends. A letter moves to the next item starting with it. <kbd>Esc</kbd> and <kbd>Tab</kbd> close, and focus returns to the opener.                                                                   |
+| **`NbAccordion`**      | <kbd>&uarr;</kbd> <kbd>&darr;</kbd> <kbd>Home</kbd> <kbd>End</kbd>                                              | Between headers, skipping disabled ones, wrapping at both ends. Items are re-sorted by document position, so a `v-for` that reorders still moves focus correctly.                                                                                |
+| **`NbReorderList`**    | <kbd>&uarr;</kbd> <kbd>&darr;</kbd>                                                                             | Moves the **item**, not the cursor, and announces the result through an `aria-live="assertive"` region. This is the answer to a reorder that would otherwise be drag-only.                                                                       |
+| **`NbTree`**           | <kbd>&uarr;</kbd> <kbd>&darr;</kbd> <kbd>&larr;</kbd> <kbd>&rarr;</kbd> <kbd>Home</kbd> <kbd>End</kbd>, letters | One roving tab stop (the last focused row, else the selected, else the first). <kbd>&rarr;</kbd> opens a branch, then steps into it; <kbd>&larr;</kbd> closes it, then steps out to the parent. A letter jumps to the next row starting with it. |
+| **`NbCommandPalette`** | <kbd>&uarr;</kbd> <kbd>&darr;</kbd> <kbd>Enter</kbd> <kbd>Esc</kbd>                                             | A modal dialog. Focus stays in the search box, a `combobox` that points at the highlighted `option` with `aria-activedescendant`, so a reader hears the results change. Focus returns to the opener on close.                                    |
 
 ::: tip Selection following focus, and when it must not
 In `NbTabs`, arrowing to a tab selects it. That is correct for tabs whose panels are already rendered and cheap. If activating a tab triggers a network request or discards unsaved input, decouple them: arrow to move focus, <kbd>Enter</kbd> or <kbd>Space</kbd> to activate, and set `aria-selected` only on activation. A keyboard user should not be able to fire five requests by holding <kbd>→</kbd>.
@@ -296,49 +236,26 @@ The same rule covers list items, kanban cards you did not build with `NbCard`, a
 
 A shell puts a sidebar of twenty navigation links before the content on every single page. Without a skip link, reaching the content by keyboard costs twenty-one <kbd>Tab</kbd> presses, every time, on every route.
 
-`NbShell` renders `<nav>`, `<main>` and `<aside>` but ships **no skip link**, because the skip target and its label depend on your product's layout. Add one as the first focusable element in your app root:
+`NbShell` ships one, on by default: the first focusable element in the frame, hidden until it takes focus, pointing at the shell's own `<main>`. The shell owns it because the shell is the only thing that knows where `<main>` is. Three props cover what differs per product:
 
-```vue
-<template>
-  <a class="skip-link" href="#nb-main">Skip to main content</a>
-  <NbShell>
-    <template #sidebar-nav><AppNav /></template>
-    <div id="nb-main" tabindex="-1">
-      <RouterView />
-    </div>
-  </NbShell>
-</template>
+| Prop                    | Default               | Use                                                                          |
+| ----------------------- | --------------------- | ---------------------------------------------------------------------------- |
+| `skip-to-content`       | `true`                | Turn it off only if your app root already renders one                        |
+| `skip-to-content-label` | `'Skip to content'`   | The link text, for a localised application                                   |
+| `main-id`               | a stable per-shell id | The `id` on `<main>` and the link's target, when something else addresses it |
 
-<style scoped lang="scss">
-.skip-link {
-  position: absolute;
-  top: var(--nb-spacing-8);
-  left: var(--nb-spacing-8);
-  z-index: var(--nb-zindex-navigation);
-  padding: var(--nb-spacing-8) var(--nb-spacing-16);
-  background: var(--nb-c-surface);
-  color: var(--nb-c-text);
-  border: 1px solid var(--nb-c-focus-ring);
-  border-radius: var(--nb-radius-xs);
-  transform: translateY(-200%);
-
-  &:focus {
-    transform: none;
-  }
-}
-</style>
-```
+If you build a layout without `NbShell`, write the link yourself as the first focusable element, pointing at your main region (`tabindex="-1"` on the target so it can take focus).
 
 ::: warning Move it off-screen with `transform`, not `display: none`
 An element that is `display: none` or `visibility: hidden` cannot receive focus, so a hidden skip link is a skip link that does not work. Move it out of view and bring it back on `:focus`. And use `:focus` here, not `:focus-visible`: this element only ever receives focus from the keyboard, and some browsers will not treat a programmatic focus as "visible".
 :::
 
-Name your landmarks while you are there. `NbShell` renders the elements; only you can distinguish them:
+Name your landmarks while you are there. `NbShell` names its sidebar and inspector (`sidebar-label`, `inspector-label`); give them words your product uses, and name any landmark you add:
 
 ```vue
-<template #sidebar-nav>
-  <nav aria-label="Product sections"><AppNav /></nav>
-</template>
+<NbShell sidebar-label="Product sections" inspector-label="Details">
+  ...
+</NbShell>
 ```
 
 Two unnamed `<nav>` landmarks in the reader's landmark list are useless. Two named ones are the fastest navigation the page has.
