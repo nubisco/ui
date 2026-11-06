@@ -489,3 +489,4 @@ If the first number is large and the second is zero, you are one of the two appl
 - [Layout](/principles/layout) for the `NbGrid` API this page prescribes: every responsive prop, the 16-column grid, breakpoints, and the shell. That page owns the API; this page owns what a step means. See [Choosing a step](#choosing-a-step).
 - [Typography](/principles/typography) for type sets and line height, which set the vertical rhythm this page assumes.
 - [Theming](/theming) for layers, surfaces and the shell chrome tokens.
+- [Information hierarchy](/principles/hierarchy#spacing-the-gap-states-the-relationship) for which step a group, a region and the headline region take, and why more space reads as more important.
