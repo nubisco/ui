@@ -88,7 +88,7 @@
   // and ends. Edges only — never the left, where the resize handle lives.
   // Border-color only (paint, not layout).
   .nb-shell-panel {
-    transition: border-color 0.12s ease;
+    transition: border-color var(--nb-motion-quick) ease;
   }
   .nb-shell-panel:hover,
   .nb-shell-panel:focus-within {

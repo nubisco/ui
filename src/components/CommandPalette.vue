@@ -551,7 +551,7 @@ onBeforeUnmount(() => {
   // Concentric with the results list that insets it.
   // 4px of padding plus the container's 1px border.
   @include radius.inset(5px);
-  transition: background 0.08s;
+  transition: background var(--nb-motion-micro);
 
   &:hover,
   &--highlighted {
