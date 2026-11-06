@@ -27,6 +27,7 @@ import {
 } from 'vue'
 import type { IMenuProps, IMenuContext } from './Menu.d'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
+import { openModalSurfaces } from '@/composables/useFocusTrap.composable'
 
 const props = withDefaults(defineProps<IMenuProps>(), {
   open: false,
@@ -174,31 +175,64 @@ function onKeydown(e: KeyboardEvent) {
   const focused = menuItems.indexOf(document.activeElement as HTMLElement)
   if (focused >= 0) highlighted.value = focused
 
+  const enabled = (i: number) =>
+    menuItems[i]?.getAttribute('aria-disabled') !== 'true'
+
+  /** The next enabled item from `from` in `step`, wrapping; -1 if none. */
+  function seek(from: number, step: 1 | -1): number {
+    for (let n = 1; n <= menuItems.length; n++) {
+      const i = (from + step * n + menuItems.length * n) % menuItems.length
+      if (enabled(i)) return i
+    }
+    return -1
+  }
+
   if (e.key === 'ArrowDown') {
     e.preventDefault()
     e.stopPropagation()
-    let next = highlighted.value + 1
-    // Skip separators: find next focusable item
-    while (
-      next < menuItems.length &&
-      menuItems[next]?.getAttribute('aria-disabled') === 'true'
-    ) {
-      next++
-    }
-    if (next < menuItems.length) focusItem(next)
+    // Wraps from the last item to the first, as the WAI-ARIA menu does.
+    const next = seek(highlighted.value, 1)
+    if (next >= 0) focusItem(next)
   } else if (e.key === 'ArrowUp') {
     e.preventDefault()
     e.stopPropagation()
-    let prev = highlighted.value - 1
-    while (
-      prev >= 0 &&
-      menuItems[prev]?.getAttribute('aria-disabled') === 'true'
-    ) {
-      prev--
-    }
+    const start = highlighted.value < 0 ? 0 : highlighted.value
+    const prev = seek(start, -1)
     if (prev >= 0) focusItem(prev)
+  } else if (e.key === 'Home') {
+    e.preventDefault()
+    e.stopPropagation()
+    const first = seek(-1, 1)
+    if (first >= 0) focusItem(first)
+  } else if (e.key === 'End') {
+    e.preventDefault()
+    e.stopPropagation()
+    const last = seek(menuItems.length, -1)
+    if (last >= 0) focusItem(last)
   } else if (e.key === 'Tab') {
     close()
+  } else if (
+    e.key.length === 1 &&
+    e.key !== ' ' &&
+    !e.ctrlKey &&
+    !e.metaKey &&
+    !e.altKey &&
+    // A field inside the menu (a filter, a quick edit) takes its own letters.
+    !(e.target as HTMLElement).closest('input, textarea, [contenteditable]')
+  ) {
+    // First-letter typeahead: the next enabled item whose label starts with
+    // the key, wrapping, so pressing it again walks the matches.
+    const key = e.key.toLowerCase()
+    for (let n = 1; n <= menuItems.length; n++) {
+      const i = (highlighted.value + n + menuItems.length) % menuItems.length
+      const label = (menuItems[i].textContent ?? '').trim().toLowerCase()
+      if (enabled(i) && label.startsWith(key)) {
+        e.preventDefault()
+        e.stopPropagation()
+        focusItem(i)
+        break
+      }
+    }
   }
 }
 
@@ -230,10 +264,51 @@ function adjustPosition() {
   menuRef.value.style.maxHeight = `${availableHeight}px`
 }
 
+/*
+ * Focus goes back to whatever opened the menu when it closes. Without this the
+ * list unmounted under the focused item and focus fell to <body>, so a
+ * keyboard user who picked an action started again from the top of the page.
+ *
+ * Two cases leave focus alone. If it has already gone somewhere real (a press
+ * outside landed on another control), taking it back would undo what the
+ * user just did. And if a modal surface is open and the opener is not inside
+ * it, restoring would pull focus out of the dialog's trap. Submenus hand
+ * focus to their own trigger in this menu, so only this, the root, restores.
+ */
+let opener: HTMLElement | null = null
+
+function captureOpener() {
+  opener =
+    document.activeElement instanceof HTMLElement &&
+    document.activeElement !== document.body
+      ? document.activeElement
+      : null
+}
+
+function focusIsOurs(el: Element | null): boolean {
+  if (!el || el === document.body) return true
+  if (!el.isConnected) return true
+  if (menuRef.value?.contains(el)) return true
+  for (const surface of surfaces) if (surface.contains(el)) return true
+  return false
+}
+
+function restoreFocus() {
+  const target = opener
+  opener = null
+  if (!target?.isConnected) return
+  const modals = openModalSurfaces()
+  const top = modals[modals.length - 1]
+  if (top && !top.contains(target)) return
+  if (!focusIsOurs(document.activeElement)) return
+  target.focus()
+}
+
 watch(
   () => props.open,
   (val) => {
     if (val) {
+      captureOpener()
       highlighted.value = -1
       document.addEventListener('mousedown', onClickOutside)
       nextTick(() => {
@@ -247,6 +322,7 @@ watch(
     } else {
       highlighted.value = -1
       document.removeEventListener('mousedown', onClickOutside)
+      restoreFocus()
     }
   },
 )
