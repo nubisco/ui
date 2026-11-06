@@ -65,7 +65,7 @@ const date = ref<string | null>(null)
 
 ### Typing a date
 
-A typed date is read in the field order of the `locale`, the same order the field displays dates in. With `locale="pt-PT"`, `05/12/2024` is 5 December. With `locale="en-US"`, it is 12 May. Day, month and year can be separated by `/`, `.`, `-` or spaces, and the year needs four digits. An ISO date (`2024-12-05`) is accepted in any locale, and so is a date that starts with a four-digit year.
+A typed date is read in the field order of the `locale`, the same order the field displays dates in. With `locale="en-GB"`, `05/12/2024` is 5 December. With `locale="en-US"`, it is 12 May. Day, month and year can be separated by `/`, `.`, `-` or spaces, and the year needs four digits. An ISO date (`2024-12-05`) is accepted in any locale, and so is a date that starts with a four-digit year.
 
 Nothing is emitted until the text is a complete date that exists on the calendar, so the field is never rewritten while someone is still typing. `31/02/2024` emits nothing. Clearing the field emits `null`.
 
