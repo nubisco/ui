@@ -250,6 +250,7 @@ defineExpose({ files, setFileStatus })
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 // The drop label is text on the page, not on a fill: see logic/_ink.scss.
 @use '../styles/logic/ink' as ink;
@@ -439,6 +440,26 @@ defineExpose({ files, setFileStatus })
 @keyframes nb-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+// The upload spinner is a loop of travel. Under reduced motion it stops
+// turning and breathes in place instead, as NbButton's spinner does, so it
+// still says "working".
+@include motion.reduced {
+  .nb-file-uploader__spinner {
+    animation: nb-file-uploader-breathe 1600ms ease-in-out infinite;
+  }
+}
+
+@keyframes nb-file-uploader-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+
+  50% {
+    opacity: 1;
   }
 }
 </style>

@@ -764,6 +764,7 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/variables/breakpoints' as bp;
 
@@ -1576,5 +1577,26 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+// The loading shimmer is a travelling highlight. Under reduced motion the
+// bar fades in place instead, as NbSkeleton's does: no movement, still alive.
+@include motion.reduced {
+  .nb-data-table__skeleton {
+    background-image: none;
+    background-color: var(--nb-c-bg-soft);
+    animation: nb-data-table-fade 2000ms ease-in-out infinite;
+  }
+}
+
+@keyframes nb-data-table-fade {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 </style>

@@ -2248,6 +2248,7 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 .nb-blueprint {
   position: relative;
   flex: 1;
@@ -2388,6 +2389,14 @@ defineExpose({
 
   &:hover {
     background: var(--nb-c-layer-3, #232838);
+  }
+}
+
+// The marching ants are decoration on a selection the dashed outline already
+// shows. Under reduced motion the dashes hold still and the selection stays.
+@include motion.reduced {
+  .nb-blueprint__selection-ants {
+    animation: none;
   }
 }
 </style>

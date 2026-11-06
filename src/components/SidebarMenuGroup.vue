@@ -70,6 +70,7 @@ const collapsed = ref(props.collapsible && props.defaultCollapsed)
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 .nb-sidebar-menu-group {
   list-style: none;
   margin: 0.75rem 0 0.25rem;
@@ -123,7 +124,7 @@ const collapsed = ref(props.collapsible && props.defaultCollapsed)
 }
 
 .nb-sidebar-menu-group__caret {
-  transition: transform var(--nb-motion-short) ease;
+  transition: transform var(--nb-motion-quick) var(--nb-ease-standard);
   color: var(--nb-shell-sidebar-link-color);
 
   &--collapsed {
@@ -145,5 +146,13 @@ const collapsed = ref(props.collapsible && props.defaultCollapsed)
   border: 0;
   background: var(--nb-shell-sidebar-link-hover-bg);
   margin: 0.5rem 0.625rem;
+}
+
+// The caret is travel: under reduced motion it snaps, like the accordion
+// chevron.
+@include motion.reduced {
+  .nb-sidebar-menu-group__caret {
+    transition: none;
+  }
 }
 </style>
