@@ -35,6 +35,7 @@ export type {
   TGridShiftResponsive,
   TBooleanResponsive,
   TGridMode,
+  TGridRatio,
   TBreakpoint,
 } from './components/Grid.d'
 
