@@ -5,6 +5,10 @@ intro: '`NbStructuredList` is read-only rows under column headers: the roles of 
 source: src/components/StructuredList.vue
 tab: accessibility
 pageTabs: ['usage', 'code', 'accessibility']
+a11y:
+  automated: not recorded
+  keyboard: native
+  screenReader: not recorded
 ---
 
 - The list is `role="table"`, with a `rowgroup` for the header and one for

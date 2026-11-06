@@ -77,6 +77,7 @@ const ariaCurrent = computed(() => {
 
 <style scoped lang="scss">
 @use '../styles/variables/breakpoints' as breakpoints;
+@use '../styles/logic/motion' as motion;
 
 .nb-contained-list-item + .nb-contained-list-item {
   border-block-start: 1px solid var(--nb-c-border);
@@ -158,7 +159,7 @@ const ariaCurrent = computed(() => {
 
 .nb-contained-list-item__title {
   min-inline-size: 0;
-  font-size: var(--nb-type-heading-compact-size, var(--nb-font-size-14));
+  font-size: var(--nb-type-heading-compact-size);
   font-weight: var(
     --nb-type-heading-compact-weight,
     var(--nb-font-weight-semibold)
@@ -190,7 +191,7 @@ const ariaCurrent = computed(() => {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-contained-list-item--interactive > .nb-contained-list-item__row {
     transition: none;
   }
