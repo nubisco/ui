@@ -149,6 +149,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Spinner', link: '/components/spinner/usage' },
       { text: 'Stat', link: '/components/stat/usage' },
       { text: 'Stepper', link: '/components/stepper/usage' },
+      { text: 'Structured List', link: '/components/structured-list/usage' },
       { text: 'Suggestion List', link: '/components/suggestion-list/usage' },
       { text: 'Switch', link: '/components/switch/usage' },
       {

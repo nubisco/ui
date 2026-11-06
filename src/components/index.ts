@@ -26,6 +26,7 @@ import NbColorStrip from './ColorStrip.vue'
 import NbDataTable from './DataTable.vue'
 import NbDefinitionList from './DefinitionList.vue'
 import NbDefinitionListItem from './DefinitionListItem.vue'
+import NbStructuredList from './StructuredList.vue'
 import NbContainedList from './ContainedList.vue'
 import NbContainedListItem from './ContainedListItem.vue'
 import NbDragHandle from './DragHandle.vue'
@@ -133,6 +134,7 @@ const components = {
   NbCheckboxGroup,
   NbDefinitionList,
   NbDefinitionListItem,
+  NbStructuredList,
   NbContainedList,
   NbContainedListItem,
   NbDragHandle,
