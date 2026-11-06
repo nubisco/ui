@@ -176,5 +176,6 @@ The card picks its element from its behaviour, so each case gets the right keybo
 | `--nb-card-media-width` | `96px`   | Width of the thumbnail in a horizontal card. `72px` on a phone. |
 | `--nb-card-image-ratio` | `16 / 9` | Shape of the media box. Set by `imageRatio`.                    |
 | `--nb-card-image-fit`   | `cover`  | `object-fit` of the image. Set by `imageFit`.                   |
+| Typography              |          | Title `heading-compact`, subtitle and body `body-sm`.           |
 
 <!--@include: ./_shared.md-->

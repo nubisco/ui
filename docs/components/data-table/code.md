@@ -66,7 +66,7 @@ The table takes care of the measurements, so there is nothing to size by hand:
   `body-md` in `--nb-c-text-muted`.
 - **Toolbar** as tall as a row, at most 48px. Buttons in it fill that height
   and lose their corners, whatever `size` they were given.
-- **Header** in the `label-lg` type set (14px semibold) on a fill one step
+- **Header** in the `heading-compact` type set (14/18 semibold) on a fill one step
   deeper than the table, with no rule under it.
 - **Rows** in `body-md` (14px regular) and `--nb-c-text-muted`, a rule under
   each one and none between columns. A hovered or selected row lifts its text

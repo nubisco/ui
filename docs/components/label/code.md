@@ -28,7 +28,7 @@ pageTabs: ['usage', 'code', 'accessibility']
 | `for`      | `string`       | `undefined` | Maps to the HTML `for` attribute (links to input) |
 | `required` | `boolean`      | `false`     | Appends a red `*` asterisk                        |
 | `disabled` | `boolean`      | `false`     | Reduces opacity                                   |
-| `size`     | `'sm' \| 'md'` | `'md'`      | `sm` renders 11px uppercase; `md` renders 12px    |
+| `size`     | `'sm' \| 'md'` | `'md'`      | Both render the `label` type set (12/16 regular)  |
 
 ## Slots
 
