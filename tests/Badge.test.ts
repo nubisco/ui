@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import Badge from '../src/components/Badge.vue'
 
@@ -8,30 +8,49 @@ describe('Badge', () => {
     expect(wrapper.text()).toBe('Active')
   })
 
-  it('applies default grey variant class', () => {
+  it('applies the neutral intent by default', () => {
     const wrapper = mount(Badge)
-    expect(wrapper.classes()).toContain('nb-badge--grey')
+    expect(wrapper.classes()).toContain('nb-badge--neutral')
   })
 
-  it('applies custom variant class', () => {
-    const wrapper = mount(Badge, { props: { variant: 'blue' } })
-    expect(wrapper.classes()).toContain('nb-badge--blue')
-  })
-
-  it('applies all variant classes', () => {
+  it('applies every intent class', () => {
     const variants = [
-      'grey',
-      'blue',
-      'orange',
-      'green',
-      'red',
-      'purple',
+      'neutral',
+      'info',
+      'success',
+      'warning',
+      'danger',
       'primary',
-    ]
+    ] as const
     for (const variant of variants) {
       const wrapper = mount(Badge, { props: { variant } })
       expect(wrapper.classes()).toContain(`nb-badge--${variant}`)
     }
+  })
+
+  it('renders a colour-named variant as its intent, and warns once', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const aliases = {
+      grey: 'neutral',
+      blue: 'info',
+      green: 'success',
+      orange: 'warning',
+      red: 'danger',
+      purple: 'primary',
+    } as const
+    for (const [variant, intent] of Object.entries(aliases)) {
+      const wrapper = mount(Badge, {
+        props: { variant: variant as keyof typeof aliases },
+      })
+      expect(wrapper.classes()).toContain(`nb-badge--${intent}`)
+      expect(wrapper.classes()).not.toContain(`nb-badge--${variant}`)
+    }
+    mount(Badge, { props: { variant: 'grey' } })
+    const calls = warn.mock.calls.filter((c) =>
+      String(c[0]).includes('[NbBadge]'),
+    )
+    expect(calls).toHaveLength(6)
+    warn.mockRestore()
   })
 
   it('applies default medium size class', () => {

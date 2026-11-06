@@ -1,14 +1,34 @@
 import type { TIconSource } from '../types/Glyph.d'
 
-// FIXME replace the variant with the existing variants
+/**
+ * What the badge means, not what colour it is. Each intent paints the
+ * library's status surface pair (`--nb-c-<intent>-surface` under
+ * `--nb-c-on-<intent>-surface`), measured at AA or better; `primary` is the
+ * filled accent with its `-a11y` foreground.
+ *
+ * The colour names are deprecated aliases. They render as the intent they
+ * map to and warn once in development: grey is neutral, blue is info, green
+ * is success, orange is warning, red is danger, purple is primary.
+ */
 enum EBadgeVariant {
-  Grey = 'grey',
-  Blue = 'blue',
-  Orange = 'orange',
-  Green = 'green',
-  Red = 'red',
-  Purple = 'purple',
+  Neutral = 'neutral',
+  Info = 'info',
+  Success = 'success',
+  Warning = 'warning',
+  Danger = 'danger',
   Primary = 'primary',
+  /** @deprecated use `neutral` */
+  Grey = 'grey',
+  /** @deprecated use `info` */
+  Blue = 'blue',
+  /** @deprecated use `warning` */
+  Orange = 'orange',
+  /** @deprecated use `success` */
+  Green = 'green',
+  /** @deprecated use `danger` */
+  Red = 'red',
+  /** @deprecated use `primary` */
+  Purple = 'purple',
 }
 
 enum EBadgeSize {
