@@ -53,7 +53,44 @@ describe('glyph plugin: literal names', () => {
   it('rewrites an icon name forwarded through another component', async () => {
     const out = await transform(sfc('<NbButton icon="plus">Add</NbButton>'))
     expect(out).toContain("from '@nubisco/ui/icons/plus'")
-    expect(out).toContain(':icon="__nb_icon_plus"')
+    expect(out).toContain(':icon="__nb_icon_plus_regular"')
+  })
+
+  // NbButton forwards its own `icon-weight` (regular by default), so its icon
+  // links one weight, not all six.
+  it('links one weight through NbButton, regular unless icon-weight says', async () => {
+    const plain = await transform(sfc('<NbButton icon="plus">Add</NbButton>'))
+    expect(plain).toContain(
+      "import { regular as __nb_icon_plus_regular } from '@nubisco/ui/icons/plus'",
+    )
+    const filled = await transform(
+      sfc('<NbButton icon="star" icon-weight="fill" />'),
+    )
+    expect(filled).toContain(
+      "import { fill as __nb_icon_star_fill } from '@nubisco/ui/icons/star'",
+    )
+    const camel = await transform(
+      sfc('<NbButton icon="star" iconWeight="fill" />'),
+    )
+    expect(camel).toContain('__nb_icon_star_fill')
+  })
+
+  it('links every weight through NbButton when icon-weight is bound', async () => {
+    const out = await transform(
+      sfc(
+        '<NbButton icon="star" :icon-weight="active ? \'fill\' : \'regular\'" />',
+      ),
+    )
+    expect(out).toContain(
+      "import * as __nb_icon_star from '@nubisco/ui/icons/star'",
+    )
+  })
+
+  it('still links every weight through a component with no weight prop', async () => {
+    const out = await transform(sfc('<NbMenuItem icon="plus" />'))
+    expect(out).toContain(
+      "import * as __nb_icon_plus from '@nubisco/ui/icons/plus'",
+    )
   })
 
   it('links a flag by country code', async () => {
@@ -145,12 +182,14 @@ describe('glyph plugin: bound names on forwarding components', () => {
       sfc(`<NbButton :icon="copied ? 'check' : 'copy'">Copy</NbButton>`),
     )
     expect(out).toContain(
-      "import * as __nb_icon_check from '@nubisco/ui/icons/check'",
+      "import { regular as __nb_icon_check_regular } from '@nubisco/ui/icons/check'",
     )
     expect(out).toContain(
-      "import * as __nb_icon_copy from '@nubisco/ui/icons/copy'",
+      "import { regular as __nb_icon_copy_regular } from '@nubisco/ui/icons/copy'",
     )
-    expect(out).toContain(':icon="copied ? __nb_icon_check : __nb_icon_copy"')
+    expect(out).toContain(
+      ':icon="copied ? __nb_icon_check_regular : __nb_icon_copy_regular"',
+    )
     expect(out).not.toContain('icons/all')
   })
 

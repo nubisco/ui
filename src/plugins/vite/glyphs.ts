@@ -20,7 +20,8 @@ import { parse, babelParse } from 'vue/compiler-sfc'
  *   <NbIcon name="check" />                       →  :name="<one weight>"
  *   <NbIcon name="check" weight="bold" />         →  :name="<bold only>"
  *   <NbFlag name="pt" />                          →  :name="<that flag>"
- *   <NbButton icon="plus" />                      →  :icon="<all weights>"
+ *   <NbButton icon="plus" />                      →  :icon="<regular only>"
+ *   <NbButton icon="plus" icon-weight="fill" />   →  :icon="<fill only>"
  *   <NbIcon :name="open ? 'caret-up' : 'caret-down'" />  both literals
  *
  * What it cannot rewrite is a name only known at runtime, which is a real and
@@ -128,16 +129,32 @@ function walk(node: any, visit: (node: any) => void) {
   for (const branch of node.branches ?? []) walk(branch, visit)
 }
 
-/** The statically known weight of an `<NbIcon>`, if it has one. */
-function staticWeight(element: any): string | undefined {
+/**
+ * Components that forward `icon` to NbIcon together with a weight prop of
+ * their own, which defaults to regular. For these the weight is as knowable
+ * as it is on NbIcon, so the import narrows the same way.
+ */
+const WEIGHT_FORWARDING_TAGS = new Map([
+  ['NbButton', ['iconWeight', 'icon-weight']],
+  ['nb-button', ['iconWeight', 'icon-weight']],
+])
+
+/**
+ * The statically known weight of an `<NbIcon>` (read from `weight`) or of a
+ * weight-forwarding component (read from its own prop), if it has one.
+ */
+function staticWeight(
+  element: any,
+  names: string[] = ['weight'],
+): string | undefined {
   for (const prop of element.props ?? []) {
-    if (prop.type === NODE_ATTRIBUTE && prop.name === 'weight') {
+    if (prop.type === NODE_ATTRIBUTE && names.includes(prop.name)) {
       return WEIGHTS.has(prop.value?.content) ? prop.value.content : undefined
     }
     if (
       prop.type === NODE_DIRECTIVE &&
       prop.name === 'bind' &&
-      prop.arg?.content === 'weight'
+      names.includes(prop.arg?.content)
     ) {
       // Bound weight: keep every weight available.
       return undefined
@@ -322,10 +339,16 @@ export function nubiscoGlyphs(options: IGlyphOptions = {}) {
         const isFlag = FLAG_TAGS.has(tag)
         if (!isIcon && !isFlag && !/^(Nb[A-Z]|nb-)/.test(tag)) return
 
-        // On NbIcon itself a static `weight` narrows the import to one weight.
-        // A forwarding component applies its own weight downstream, so it gets
-        // the whole module.
-        const weight = isIcon ? staticWeight(element) : undefined
+        // On NbIcon itself a static `weight` narrows the import to one weight,
+        // and so does a component that forwards a weight of its own (NbButton's
+        // `icon-weight`). Any other forwarding component applies a weight the
+        // plugin cannot see, so it gets the whole module.
+        const forwardedWeight = WEIGHT_FORWARDING_TAGS.get(tag)
+        const weight = isIcon
+          ? staticWeight(element)
+          : forwardedWeight
+            ? staticWeight(element, forwardedWeight)
+            : undefined
 
         for (const prop of element.props ?? []) {
           /* ---- static: name="check" / icon="plus" / flag="pt" ---------- */

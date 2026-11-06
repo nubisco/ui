@@ -27,6 +27,7 @@
         v-else-if="icon"
         :name="icon"
         :size="iconSize"
+        :weight="iconWeight"
         class="nb-button__icon"
       />
     </div>
@@ -68,6 +69,7 @@ const props = withDefaults(defineProps<IButtonProps>(), {
   disabled: false,
   loading: false,
   icon: undefined,
+  iconWeight: 'regular',
   type: EButtonType.Button,
   href: undefined,
   target: undefined,

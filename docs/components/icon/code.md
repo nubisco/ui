@@ -11,22 +11,23 @@ pageTabs: ['usage', 'code']
 
 <preview dir="row">
   <NbIcon name="sparkle" />
-  <NbIcon name="gear" weight="duotone" :size="24" color="#4f46e5" />
-  <NbIcon name="trash" weight="bold" clickable @click="() => isDialogOpen = true" />
-  <NbModal :open="isDialogOpen">
-    <template #header>Hello World!</template>
-    <p>You clicked the icon.</p>
-    <template #footer>
-      <NbButton size="lg" @click="isDialogOpen = false">Close</NbButton>
-    </template>
-  </NbModal>
+  <NbIcon name="gear" size="md" color="var(--nb-c-text-muted)" />
+  <NbIcon name="star" weight="fill" color="var(--nb-c-primary)" label="Starred" />
 </preview>
 
 ```vue
 <template>
+  <!-- decorative, 16px, the colour of the text around it -->
   <NbIcon name="sparkle" />
-  <NbIcon name="gear" weight="duotone" :size="24" color="#4f46e5" />
-  <NbIcon name="trash" weight="bold" clickable @click="console.log('remove')" />
+  <!-- one step up the scale, painted with a token -->
+  <NbIcon name="gear" size="md" color="var(--nb-c-text-muted)" />
+  <!-- fill marks a selected state; named because no text says "starred" -->
+  <NbIcon
+    name="star"
+    weight="fill"
+    color="var(--nb-c-primary)"
+    label="Starred"
+  />
 </template>
 ```
 
@@ -131,6 +132,17 @@ how to ship the whole set deliberately when you need it.
 | `duotone` | Two-tone with foreground/background |
 
 Not every icon has all weights. If a requested weight is not available, the component falls back to `regular`.
+
+**Use `regular` everywhere, and `fill` only for a selected or active state** (a
+starred item, the current tab, a toggled-on control), so the change of weight
+itself says "on". The other four exist in the set, not in the product: `thin`
+and `light` vanish at 16px, `bold` shouts, and `duotone` is for pictograms
+(see [Icons beyond the catalogue](/components/icon/beyond-the-catalogue)). A
+page that mixes weights reads as several icon sets.
+
+A literal weight also keeps the bundle small: `weight="fill"` on `NbIcon`, or
+`icon-weight="fill"` on `NbButton`, links that one weight of the icon and no
+other. A bound weight links all six.
 
 ## Sizes
 
