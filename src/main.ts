@@ -309,7 +309,7 @@ export {
   EWeight,
   EIconSize,
 } from './components/Icon.d'
-export type { TIconSource } from './components/Icon.d'
+export type { TIconSource, TIconSize } from './components/Icon.d'
 export { default as NbInfoHint } from './components/InfoHint.vue'
 export type {
   IInfoHintProps,

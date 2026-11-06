@@ -32,16 +32,13 @@ import CheckboxGroup from './components/CheckboxGroup.vue'
 import ColorStrip from './components/ColorStrip.vue'
 import CommandPalette from './components/CommandPalette.vue'
 import Confirm from './components/Confirm.vue'
+import ContainedList from './components/ContainedList.vue'
+import ContainedListItem from './components/ContainedListItem.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataTable from './components/DataTable.vue'
 import DatePicker from './components/DatePicker.vue'
 import DefinitionList from './components/DefinitionList.vue'
 import DefinitionListItem from './components/DefinitionListItem.vue'
-import PageLayout from './components/PageLayout.vue'
-import PageHeader from './components/PageHeader.vue'
-import StructuredList from './components/StructuredList.vue'
-import ContainedList from './components/ContainedList.vue'
-import ContainedListItem from './components/ContainedListItem.vue'
 import DragHandle from './components/DragHandle.vue'
 import EmptyState from './components/EmptyState.vue'
 import Field from './components/Field.vue'
@@ -74,9 +71,12 @@ import NotificationCenterItem from './components/NotificationCenterItem.vue'
 import NubiscoMark from './components/NubiscoMark.vue'
 import NubiscoPlatformMark from './components/NubiscoPlatformMark.vue'
 import NumberInput from './components/NumberInput.vue'
+import PageHeader from './components/PageHeader.vue'
+import PageLayout from './components/PageLayout.vue'
 import Pagination from './components/Pagination.vue'
 import Panel from './components/Panel.vue'
 import PieChart from './components/Charts/PieChart.vue'
+import PrimaryActionScope from './components/PrimaryActionScope.vue'
 import ProgressBar from './components/ProgressBar.vue'
 import Radio from './components/Radio.vue'
 import ReorderList from './components/ReorderList.vue'
@@ -99,6 +99,7 @@ import Spinner from './components/Spinner.vue'
 import Stat from './components/Stat.vue'
 import Stepper from './components/Stepper.vue'
 import StepperStep from './components/StepperStep.vue'
+import StructuredList from './components/StructuredList.vue'
 import Submenu from './components/Submenu.vue'
 import SuggestionList from './components/SuggestionList.vue'
 import SurfaceLayerScope from './components/SurfaceLayerScope.vue'
@@ -150,16 +151,13 @@ declare module 'vue' {
     NbColorStrip: typeof ColorStrip
     NbCommandPalette: typeof CommandPalette
     NbConfirm: typeof Confirm
+    NbContainedList: typeof ContainedList
+    NbContainedListItem: typeof ContainedListItem
     NbCopyButton: typeof CopyButton
     NbDataTable: typeof DataTable
     NbDatePicker: typeof DatePicker
     NbDefinitionList: typeof DefinitionList
     NbDefinitionListItem: typeof DefinitionListItem
-    NbPageLayout: typeof PageLayout
-    NbPageHeader: typeof PageHeader
-    NbStructuredList: typeof StructuredList
-    NbContainedList: typeof ContainedList
-    NbContainedListItem: typeof ContainedListItem
     NbDragHandle: typeof DragHandle
     NbEmptyState: typeof EmptyState
     NbField: typeof Field
@@ -192,9 +190,12 @@ declare module 'vue' {
     NbNubiscoMark: typeof NubiscoMark
     NbNubiscoPlatformMark: typeof NubiscoPlatformMark
     NbNumberInput: typeof NumberInput
+    NbPageHeader: typeof PageHeader
+    NbPageLayout: typeof PageLayout
     NbPagination: typeof Pagination
     NbPanel: typeof Panel
     NbPieChart: typeof PieChart
+    NbPrimaryActionScope: typeof PrimaryActionScope
     NbProgressBar: typeof ProgressBar
     NbRadio: typeof Radio
     NbReorderList: typeof ReorderList
@@ -217,6 +218,7 @@ declare module 'vue' {
     NbStat: typeof Stat
     NbStepper: typeof Stepper
     NbStepperStep: typeof StepperStep
+    NbStructuredList: typeof StructuredList
     NbSubmenu: typeof Submenu
     NbSuggestionList: typeof SuggestionList
     NbSurfaceLayerScope: typeof SurfaceLayerScope
