@@ -93,9 +93,24 @@ describe('Message', () => {
     expect(wrapper.find('.nb-message__tooltip').exists()).toBe(true)
   })
 
-  it('hides text span in icon-only mode', () => {
+  // Visually hidden, not removed: a field's aria-describedby reads it.
+  it('keeps the text in the accessibility tree in icon-only mode', () => {
     const wrapper = createWrapper({ iconOnly: true })
-    expect(wrapper.find('.nb-message__text').exists()).toBe(false)
+    expect(wrapper.find('.nb-message__text').exists()).toBe(true)
+    expect(wrapper.find('.nb-message__tooltip').attributes('aria-hidden')).toBe(
+      'true',
+    )
+  })
+
+  it('is not a live region with live="off"', () => {
+    const wrapper = createWrapper({ variant: 'error', live: 'off' })
+    expect(wrapper.attributes('role')).toBeUndefined()
+    expect(wrapper.attributes('aria-live')).toBeUndefined()
+  })
+
+  it('is an alert with live="alert"', () => {
+    const wrapper = createWrapper({ variant: 'error', live: 'alert' })
+    expect(wrapper.attributes('role')).toBe('alert')
   })
 
   it('has role status', () => {

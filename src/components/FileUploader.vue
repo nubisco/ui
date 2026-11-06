@@ -76,6 +76,9 @@
             class="nb-file-uploader__remove"
             type="button"
             :aria-label="`Remove ${item.file.name}`"
+            :aria-describedby="
+              item.error ? `${uploaderId}-error-${i}` : undefined
+            "
             :disabled="disabled"
             @click="removeFile(i)"
           >
@@ -83,7 +86,15 @@
           </button>
         </span>
 
-        <div v-if="item.error" class="nb-file-uploader__error">
+        <!-- Mounts only when a file the person just chose is refused (the
+             list is empty on first render), so role="alert" announces the
+             refusal at the moment it happens and never on page load. -->
+        <div
+          v-if="item.error"
+          :id="`${uploaderId}-error-${i}`"
+          class="nb-file-uploader__error"
+          role="alert"
+        >
           {{ item.error }}
         </div>
       </li>
@@ -102,6 +113,7 @@ import {
 import NbButton from './Button.vue'
 import NbIcon from './Icon.vue'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
+import { useStableId } from '@/composables/useStableId.composable'
 
 const props = withDefaults(defineProps<IFileUploaderProps>(), {
   buttonLabel: 'Add file',
@@ -114,6 +126,8 @@ const props = withDefaults(defineProps<IFileUploaderProps>(), {
 // with a transparent border, so they vanish when they land on a container of the
 // same layer. Taking the current layer here moves those rows one step deeper.
 const { layerProps } = useSurfaceLayer()
+
+const uploaderId = useStableId({})
 
 const emit = defineEmits<{
   /** Emitted whenever the file list changes. */

@@ -1,15 +1,18 @@
 <template>
   <div :class="rootClasses">
     <!-- DEFAULT variant: label above -->
-    <NbLabel v-if="variant === 'default' && label" class="nb-slider__label">{{
-      label
-    }}</NbLabel>
+    <NbLabel
+      v-if="variant === 'default' && label"
+      :id="labelId"
+      class="nb-slider__label"
+      >{{ label }}</NbLabel
+    >
 
     <!-- Field box: display:contents in default (passthrough), styled in fluid -->
     <div class="nb-slider__field-box">
       <!-- FLUID variant: label inside the box -->
       <div v-if="variant === 'fluid' && label" class="nb-slider__inner-header">
-        <label class="nb-slider__inner-label">{{ label }}</label>
+        <label :id="labelId" class="nb-slider__inner-label">{{ label }}</label>
       </div>
 
       <NbGrid dir="row" align="center" gap="sm" class="nb-slider__row">
@@ -61,7 +64,17 @@
               <div
                 v-if="!range"
                 class="nb-slider__track__handle"
+                role="slider"
+                :tabindex="disabled ? -1 : 0"
+                :aria-valuemin="min"
+                :aria-valuemax="max"
+                :aria-valuenow="singleValue"
+                :aria-labelledby="label ? labelId : undefined"
+                :aria-disabled="disabled || undefined"
+                :aria-invalid="invalid"
+                :aria-describedby="messageId"
                 :style="{ left: `${valueToPercent(singleValue)}%` }"
+                @keydown="onHandleKeydown(null, $event)"
                 @mousedown.stop="onHandleMousedown(null, $event)"
                 @touchstart.stop.passive="onHandleTouchstart(null, $event)"
               />
@@ -70,17 +83,49 @@
               <template v-else>
                 <div
                   class="nb-slider__track__handle nb-slider__track__handle--low"
+                  role="slider"
+                  :tabindex="disabled ? -1 : 0"
+                  :aria-valuemin="min"
+                  :aria-valuemax="highValue"
+                  :aria-valuenow="lowValue"
+                  :aria-label="label ? undefined : 'Minimum'"
+                  :aria-labelledby="
+                    label ? `${labelId} ${baseId}-low` : undefined
+                  "
+                  :aria-disabled="disabled || undefined"
+                  :aria-invalid="invalid"
+                  :aria-describedby="messageId"
                   :style="{ left: `${valueToPercent(lowValue)}%` }"
+                  @keydown="onHandleKeydown('low', $event)"
                   @mousedown.stop="onHandleMousedown('low', $event)"
                   @touchstart.stop.passive="onHandleTouchstart('low', $event)"
                 />
                 <div
                   class="nb-slider__track__handle nb-slider__track__handle--high"
+                  role="slider"
+                  :tabindex="disabled ? -1 : 0"
+                  :aria-valuemin="lowValue"
+                  :aria-valuemax="max"
+                  :aria-valuenow="highValue"
+                  :aria-label="label ? undefined : 'Maximum'"
+                  :aria-labelledby="
+                    label ? `${labelId} ${baseId}-high` : undefined
+                  "
+                  :aria-disabled="disabled || undefined"
+                  :aria-invalid="invalid"
+                  :aria-describedby="messageId"
                   :style="{ left: `${valueToPercent(highValue)}%` }"
+                  @keydown="onHandleKeydown('high', $event)"
                   @mousedown.stop="onHandleMousedown('high', $event)"
                   @touchstart.stop.passive="onHandleTouchstart('high', $event)"
                 />
                 <div class="nb-slider__tick" />
+                <span :id="`${baseId}-low`" class="nb-slider__sr-only">
+                  Minimum
+                </span>
+                <span :id="`${baseId}-high`" class="nb-slider__sr-only">
+                  Maximum
+                </span>
               </template>
             </div>
 
@@ -113,18 +158,15 @@
     <!-- /__field-box -->
 
     <!-- Messages below -->
-    <NbMessage v-if="error" variant="error" class="nb-slider__message">{{
-      error
-    }}</NbMessage>
     <NbMessage
-      v-else-if="warning"
-      variant="warning"
+      v-if="messageVariant"
+      :id="messageId"
+      :key="messageKey"
+      :variant="messageVariant"
+      :live="messageLive"
       class="nb-slider__message"
-      >{{ warning }}</NbMessage
+      >{{ messageText }}</NbMessage
     >
-    <NbMessage v-else-if="helper" variant="helper" class="nb-slider__message">{{
-      helper
-    }}</NbMessage>
   </div>
 </template>
 
@@ -136,6 +178,8 @@ import NbMessage from './Message.vue'
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { ESizeShort } from '@/types/Size.d'
 import type { ISliderProps, TActiveHandle } from './Slider.d'
+import { useStableId } from '@/composables/useStableId.composable'
+import { useFieldMessage } from '@/composables/useFieldMessage.composable'
 
 const props = withDefaults(defineProps<ISliderProps>(), {
   min: 0,
@@ -155,6 +199,18 @@ const emit = defineEmits<{
 }>()
 
 const trackRef = ref<HTMLElement | null>(null)
+
+const autoId = useStableId({})
+const baseId = computed(() => props.id ?? autoId)
+const labelId = computed(() => `${baseId.value}-label`)
+const {
+  variant: messageVariant,
+  text: messageText,
+  messageId,
+  invalid,
+  live: messageLive,
+  key: messageKey,
+} = useFieldMessage(props, baseId)
 
 const activeHandle = ref<TActiveHandle>(null)
 
@@ -370,6 +426,61 @@ function onHandleTouchstart(handle: TActiveHandle, _e: TouchEvent) {
   startTouchDrag()
 }
 
+/**
+ * The handles are the slider (role="slider"), so they take the keys the
+ * WAI-ARIA slider pattern names: arrows by one step, Page Up and Page Down by
+ * ten, Home and End to the ends. A range handle stops at the other one.
+ */
+function onHandleKeydown(handle: TActiveHandle, e: KeyboardEvent) {
+  if (props.disabled) return
+  const minV = props.min ?? 0
+  const maxV = props.max ?? 100
+  const stepV = props.step ?? 1
+  const current =
+    handle === 'low'
+      ? lowValue.value
+      : handle === 'high'
+        ? highValue.value
+        : singleValue.value
+  let next: number
+  switch (e.key) {
+    case 'ArrowRight':
+    case 'ArrowUp':
+      next = current + stepV
+      break
+    case 'ArrowLeft':
+    case 'ArrowDown':
+      next = current - stepV
+      break
+    case 'PageUp':
+      next = current + stepV * 10
+      break
+    case 'PageDown':
+      next = current - stepV * 10
+      break
+    case 'Home':
+      next = minV
+      break
+    case 'End':
+      next = maxV
+      break
+    default:
+      return
+  }
+  e.preventDefault()
+  next = roundToStep(next)
+  let value: number | [number, number]
+  if (handle === 'low') {
+    value = [Math.max(minV, Math.min(highValue.value, next)), highValue.value]
+  } else if (handle === 'high') {
+    value = [lowValue.value, Math.max(lowValue.value, Math.min(maxV, next))]
+  } else {
+    value = Math.max(minV, Math.min(maxV, next))
+  }
+  emit('update:modelValue', value)
+  emit('change', value)
+}
+
 onBeforeUnmount(() => {
   stopDrag()
   stopTouchDrag()
@@ -543,6 +654,11 @@ const trackAreaClasses = computed(() => ({
         cursor: grabbing;
       }
 
+      &:focus-visible {
+        outline: 2px solid var(--nb-c-focus-ring);
+        outline-offset: 2px;
+      }
+
       &--low {
         border-radius: 0;
         clip-path: polygon(0 50%, 100% 0, 100% 100%);
@@ -553,6 +669,26 @@ const trackAreaClasses = computed(() => ({
         clip-path: polygon(100% 50%, 0 0, 0 100%);
       }
     }
+  }
+
+  // A range handle is clipped to a triangle, which clips its outline too, so
+  // the track carries the ring while either handle has keyboard focus.
+  &--range &__track:has(.nb-slider__track__handle:focus-visible) {
+    outline: 2px solid var(--nb-c-focus-ring);
+    outline-offset: 6px;
+  }
+
+  &__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
 
   &__tick {

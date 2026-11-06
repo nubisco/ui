@@ -26,6 +26,8 @@
           :aria-haspopup="'listbox'"
           :aria-disabled="disabled || undefined"
           :aria-required="required || undefined"
+          :aria-invalid="invalid"
+          :aria-describedby="messageId"
           :disabled="disabled || undefined"
           @click="toggleDropdown"
           @focus="focused = true"
@@ -55,6 +57,8 @@
             v-if="error"
             variant="error"
             :icon-only="true"
+            live="off"
+            aria-hidden="true"
             class="nb-select__status-icon"
             >{{ error }}</NbMessage
           >
@@ -62,6 +66,8 @@
             v-else-if="warning"
             variant="warning"
             :icon-only="true"
+            live="off"
+            aria-hidden="true"
             class="nb-select__status-icon"
             >{{ warning }}</NbMessage
           >
@@ -87,18 +93,30 @@
         </button>
       </SelectControl>
 
-      <NbMessage v-if="error" variant="error" class="nb-select__message">{{
-        error
-      }}</NbMessage>
+      <NbMessage
+        v-if="error"
+        :id="ids.error"
+        :key="messageKey"
+        variant="error"
+        :live="messageLive"
+        class="nb-select__message"
+        >{{ error }}</NbMessage
+      >
       <NbMessage
         v-else-if="warning"
+        :id="ids.warning"
+        :key="messageKey"
         variant="warning"
+        :live="messageLive"
         class="nb-select__message"
         >{{ warning }}</NbMessage
       >
       <NbMessage
         v-else-if="helper"
+        :id="ids.helper"
+        :key="messageKey"
         variant="helper"
+        :live="messageLive"
         class="nb-select__message"
         >{{ helper }}</NbMessage
       >
@@ -117,6 +135,8 @@
           :aria-haspopup="'listbox'"
           :aria-disabled="disabled || undefined"
           :aria-required="required || undefined"
+          :aria-invalid="invalid"
+          :aria-describedby="messageId"
           :disabled="disabled || undefined"
           @click="toggleDropdown"
           @focus="focused = true"
@@ -141,8 +161,11 @@
             </label>
             <NbMessage
               v-if="helper && !error && !warning"
+              :id="ids.helper"
               variant="helper"
               :icon-only="true"
+              live="off"
+              aria-hidden="true"
               class="nb-select__inner-message"
               >{{ helper }}</NbMessage
             >
@@ -193,13 +216,19 @@
 
       <NbMessage
         v-if="error"
+        :id="ids.error"
+        :key="messageKey"
         variant="error"
+        :live="messageLive"
         class="nb-select__fluid-message"
         >{{ error }}</NbMessage
       >
       <NbMessage
         v-else-if="warning"
+        :id="ids.warning"
+        :key="messageKey"
         variant="warning"
+        :live="messageLive"
         class="nb-select__fluid-message"
         >{{ warning }}</NbMessage
       >
@@ -335,6 +364,7 @@ import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
 import NbGrid from './Grid.vue'
 import NbIcon from './Icon.vue'
+import { useFieldMessage } from '@/composables/useFieldMessage.composable'
 import {
   ref,
   computed,
@@ -445,6 +475,13 @@ const dropdownStyle = ref({
 
 const autoId = `nb-select-${useId()}`
 const inputId = computed(() => props.id ?? autoId)
+const {
+  ids,
+  messageId,
+  invalid,
+  live: messageLive,
+  key: messageKey,
+} = useFieldMessage(props, inputId)
 const listboxId = computed(() => `${inputId.value}-listbox`)
 const optionId = (index: number) => `${inputId.value}-option-${index}`
 
@@ -759,6 +796,7 @@ const triggerSlot = computed(() => ({
     'aria-expanded': isOpen.value,
     'aria-haspopup': 'listbox' as const,
     'aria-controls': isOpen.value ? listboxId.value : undefined,
+    'aria-invalid': invalid.value,
     onClick: toggleDropdown,
   },
 }))

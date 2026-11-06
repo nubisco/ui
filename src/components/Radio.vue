@@ -1,8 +1,15 @@
 <template>
   <div :class="rootClasses">
-    <NbLabel v-if="label">{{ label }}</NbLabel>
+    <NbLabel v-if="label" :id="labelId">{{ label }}</NbLabel>
 
-    <div :class="['nb-radio__group', `nb-radio__group--${direction}`]">
+    <div
+      :class="['nb-radio__group', `nb-radio__group--${direction}`]"
+      role="radiogroup"
+      :aria-labelledby="label ? labelId : undefined"
+      :aria-invalid="invalid"
+      :aria-describedby="messageId"
+      :aria-disabled="disabled || undefined"
+    >
       <label
         v-for="option in options"
         :key="option.value"
@@ -27,18 +34,15 @@
       </label>
     </div>
 
-    <NbMessage v-if="error" variant="error" class="nb-radio__message">{{
-      error
-    }}</NbMessage>
     <NbMessage
-      v-else-if="warning"
-      variant="warning"
+      v-if="messageVariant"
+      :id="messageId"
+      :key="messageKey"
+      :variant="messageVariant"
+      :live="messageLive"
       class="nb-radio__message"
-      >{{ warning }}</NbMessage
+      >{{ messageText }}</NbMessage
     >
-    <NbMessage v-else-if="helper" variant="helper" class="nb-radio__message">{{
-      helper
-    }}</NbMessage>
   </div>
 </template>
 
@@ -47,6 +51,8 @@ import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
 import { computed } from 'vue'
 import { ERadioDirection, IRadioProps, IRadioOption } from './Radio.d'
+import { useStableId } from '@/composables/useStableId.composable'
+import { useFieldMessage } from '@/composables/useFieldMessage.composable'
 
 const props = withDefaults(defineProps<IRadioProps>(), {
   id: 'radio',
@@ -59,6 +65,22 @@ const props = withDefaults(defineProps<IRadioProps>(), {
 })
 
 defineEmits<{ 'update:modelValue': [value: string] }>()
+
+// `id` defaults to 'radio', which every instance would share, so the
+// generated base is used unless a consumer set one.
+const autoId = useStableId({})
+const baseId = computed(() =>
+  props.id && props.id !== 'radio' ? props.id : autoId,
+)
+const labelId = computed(() => `${baseId.value}-label`)
+const {
+  variant: messageVariant,
+  text: messageText,
+  messageId,
+  invalid,
+  live: messageLive,
+  key: messageKey,
+} = useFieldMessage(props, baseId)
 
 const rootClasses = computed(() => [
   'nb-radio',

@@ -17,17 +17,17 @@
     >
 
     <div class="nb-field__control">
-      <slot :id="controlId" />
+      <slot :id="controlId" :describedby="hasHint ? hintId : undefined" />
     </div>
 
-    <div v-if="hint || $slots.hint" class="nb-field__hint">
+    <div v-if="hasHint" :id="hintId" class="nb-field__hint">
       <slot name="hint">{{ hint }}</slot>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, useId } from 'vue'
+import { computed, useId, useSlots } from 'vue'
 import type { IFieldProps } from './Field.d'
 
 const props = withDefaults(defineProps<IFieldProps>(), {
@@ -44,6 +44,13 @@ const props = withDefaults(defineProps<IFieldProps>(), {
 // visible, correctly-styled label.
 const autoId = useId()
 const controlId = computed(() => props.labelFor ?? autoId)
+
+// The hint has its own id, handed to the default slot as `describedby`, so a
+// control bound with `:aria-describedby="describedby"` has its hint read
+// with it. Undefined when there is no hint, so nothing points at nothing.
+const slots = useSlots()
+const hasHint = computed(() => !!props.hint || !!slots.hint)
+const hintId = computed(() => `${controlId.value}-hint`)
 </script>
 
 <style scoped lang="scss">

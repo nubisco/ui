@@ -41,6 +41,8 @@
             :id="inputId"
             ref="nativeRef"
             v-bind="$attrs"
+            :aria-invalid="invalid"
+            :aria-describedby="describedBy"
             class="nb-text-input__field--transparent"
             :value="model"
             :placeholder="placeholder"
@@ -61,6 +63,8 @@
             :id="inputId"
             ref="nativeRef"
             v-bind="$attrs"
+            :aria-invalid="invalid"
+            :aria-describedby="describedBy"
             type="text"
             class="nb-text-input__field--transparent"
             :value="model"
@@ -84,6 +88,8 @@
             ref="nativeRef"
             v-bind="$attrs"
             v-model="model"
+            :aria-invalid="invalid"
+            :aria-describedby="describedBy"
             class="nb-text-input__field"
             :placeholder="placeholder"
             :disabled="disabled"
@@ -100,6 +106,8 @@
             ref="nativeRef"
             v-bind="$attrs"
             v-model="model"
+            :aria-invalid="invalid"
+            :aria-describedby="describedBy"
             class="nb-text-input__field"
             :type="type"
             :placeholder="placeholder"
@@ -133,7 +141,10 @@
 
       <NbMessage
         v-if="hasMessage"
+        :id="messageId"
+        :key="messageKey"
         :variant="messageVariant"
+        :live="messageLive"
         class="nb-text-input__message"
       >
         {{ messageText }}
@@ -172,7 +183,10 @@
           </label>
           <NbMessage
             v-if="hasMessage"
+            :id="messageId"
+            :key="messageKey"
             :variant="messageVariant"
+            :live="messageLive"
             icon-only
             class="nb-text-input__inner-message"
           >
@@ -188,6 +202,8 @@
           ref="nativeRef"
           v-bind="$attrs"
           v-model="model"
+          :aria-invalid="invalid"
+          :aria-describedby="describedBy"
           class="nb-text-input__field"
           :type="type"
           :placeholder="placeholder"
@@ -211,12 +227,17 @@
 
 <script setup lang="ts">
 import NbGrid from './Grid.vue'
-import { computed, nextTick, provide, ref, useId, watch } from 'vue'
+import { computed, nextTick, provide, ref, useAttrs, watch } from 'vue'
 import type { IReadableFieldComponent } from '@/types/Props.d'
 import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
 import { NB_TEXT_INPUT_CONTEXT } from './TextInput.context'
 import { useNbStrings } from '@/composables/useNbStrings.composable'
+import { useStableId } from '@/composables/useStableId.composable'
+import {
+  joinDescribedBy,
+  useFieldMessage,
+} from '@/composables/useFieldMessage.composable'
 
 // Ensure $attrs (class, style, event listeners, native attrs) flow to the native element
 defineOptions({ inheritAttrs: false })
@@ -302,8 +323,9 @@ provide(NB_TEXT_INPUT_CONTEXT, { field: nativeRef })
 
 const focused = ref(false)
 
-// Stable generated ID per instance
-const autoId = `nb-input-${useId()}`
+// Positional on purpose: two forms on one page can share a field name, and
+// a name-derived id would then collide and break the label's `for`.
+const autoId = useStableId({})
 const inputId = computed(() => props.id ?? autoId)
 
 // Overlay mode: active when a highlight function is provided
@@ -326,18 +348,26 @@ function syncScroll() {
 
 watch(mirrorHtml, () => nextTick(syncScroll))
 
-const messageVariant = computed(() => {
-  if (props.error) return 'error'
-  if (props.warning) return 'warning'
-  return 'helper'
-})
-
-// Falls through on empty, like messageVariant above: every message prop
-// defaults to '', which ?? would treat as set, so error would always win.
-const messageText = computed(
-  () => props.error || props.warning || props.helper || '',
-)
+// Error, then warning, then helper. Every message prop defaults to '', so
+// the composable falls through on empty rather than on null.
+const {
+  variant: fieldMessageVariant,
+  text: messageText,
+  messageId,
+  invalid,
+  live: messageLive,
+  key: messageKey,
+} = useFieldMessage(props, inputId)
+const messageVariant = computed(() => fieldMessageVariant.value ?? 'helper')
 const hasMessage = computed(() => !!messageText.value)
+
+const attrs = useAttrs()
+const describedBy = computed(() =>
+  joinDescribedBy(
+    attrs['aria-describedby'] as string | undefined,
+    messageId.value,
+  ),
+)
 
 const wrapperClasses = computed(() => ({
   'nb-text-input__field-wrapper--focused': focused.value,
