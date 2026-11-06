@@ -349,6 +349,7 @@ $_max-step: 900;
   .dark [data-nb-theme='#{$id}'] {
     @include accent.subtle(50%);
     @include accent.selected-edge(70%);
+    @include accent.focus-ring(70%);
     @include accent.link;
   }
 }

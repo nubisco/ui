@@ -59,8 +59,22 @@
 }
 
 /// The focus ring, used by every interactive control via `:focus-visible`.
-@mixin focus-ring {
-  --nb-c-focus-ring: var(--nb-c-primary);
+///
+/// Same problem, same answer as the selected edge: WCAG 1.4.11 asks 3:1 of
+/// the ring against what it sits on, and the dark primary alone measured
+/// 4.04 / 3.50 / 2.89 / 2.27 on layers 0 to 3, so a keyboard user lost the
+/// ring inside every dark dialog. The dark half mixes 70% of the accent with
+/// white, the selected edge's lift, which clears 3:1 on every dark layer and
+/// hover. `tests/focusRingContrast.test.ts` holds both halves to it.
+///
+/// @param {Number} $weight - how much accent the mix carries: 100% in light,
+///   70% in dark.
+@mixin focus-ring($weight: 100%) {
+  --nb-c-focus-ring: color-mix(
+    in srgb,
+    var(--nb-c-primary) #{$weight},
+    var(--nb-c-white)
+  );
 }
 
 /// Links: the primary drawn as ink, with hover and visited states.

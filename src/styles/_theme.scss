@@ -834,6 +834,7 @@
     // white than the light 500 does to reach the tint this token used to alias.
     @include accent.subtle(50%);
     @include accent.selected-edge(70%);
+    @include accent.focus-ring(70%);
     @include accent.link;
     --nb-c-primary-a11y: #{colors.color-contrast(
         colors.get-color('grape-hyacinth', 400)
