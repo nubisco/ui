@@ -9,29 +9,32 @@ pageTabs: ['usage', 'style', 'code', 'accessibility']
 
 ## Action hierarchy
 
-Three variants carry the hierarchy. Reach for these first; the status colours
-below are a different tool for a different job.
+Four variants carry the hierarchy, with `link` below them. Reach for these
+first; the status colours below are a different tool for a different job. The
+full ladder, and when each rung applies, is on the Usage tab.
 
 <preview dir="row">
-  <NbButton variant="ghost">Cancel</NbButton>
-  <NbButton variant="secondary">Save draft</NbButton>
+  <NbButton variant="secondary">Cancel</NbButton>
+  <NbButton variant="tertiary">Save draft</NbButton>
   <NbButton variant="primary">Publish</NbButton>
 </preview>
 
 ```vue
-<NbButton variant="ghost">Cancel</NbButton>
-<NbButton variant="secondary">Save draft</NbButton>
+<NbButton variant="secondary">Cancel</NbButton>
+<NbButton variant="tertiary">Save draft</NbButton>
 <NbButton variant="primary">Publish</NbButton>
 ```
 
-| Variant     | Use it for                                                  |
-| ----------- | ----------------------------------------------------------- |
-| `primary`   | The one action the screen exists for. At most one per view. |
-| `secondary` | A real alternative the user might reasonably take instead.  |
-| `ghost`     | Everything else: Cancel, Back, and toolbar actions.         |
+| Variant     | Use it for                                                                   |
+| ----------- | ---------------------------------------------------------------------------- |
+| `primary`   | The one action the screen or region exists for. One per header.              |
+| `tertiary`  | A standalone action of lower rank. Exactly `primary` outlined, under a name. |
+| `secondary` | Only beside a primary, as its negative half: Cancel, Discard, Back.          |
+| `ghost`     | Rows, toolbars and tiles: icon buttons with a tooltip.                       |
 
-**One primary per view.** Two filled buttons side by side is two screens'
-worth of emphasis on one, and the eye picks neither.
+**One primary per header.** Two filled buttons side by side is two screens'
+worth of emphasis on one, and the eye picks neither. `NbPanel`, `NbCard` and
+`NbPageHeader` warn in development when their `actions` slot holds two.
 
 **Cancel is never `danger`.** Cancel does not destroy anything; the button it
 sits next to might.
@@ -84,20 +87,20 @@ icon. Production builds stay silent.
 
 ## Props
 
-| Prop         | Type                                                                                            | Default     | Description                                                                                                                |
-| ------------ | ----------------------------------------------------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `variant`    | `'primary' \| 'secondary' \| 'ghost' \| 'link' \| 'danger' \| 'success' \| 'warning' \| 'info'` | -           | Visual role. Omitted, the button renders the high-contrast base treatment. `link` reads as a text link and ignores `size`. |
-| `outlined`   | `boolean`                                                                                       | `false`     | Transparent bg with colored border/text                                                                                    |
-| `size`       | `'xxs' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| 'xxl'`                                        | `'md'`      | Button size. The full scale, all seven backed by CSS (since 1.55.0)                                                        |
-| `disabled`   | `boolean`                                                                                       | `false`     | Disables the button                                                                                                        |
-| `loading`    | `boolean`                                                                                       | `false`     | Shows a spinner and prevents interaction                                                                                   |
-| `icon`       | `string \| module`                                                                              | -           | Icon name or module, rendered by `NbIcon` after the text                                                                   |
-| `iconWeight` | `'regular' \| 'fill' \| ...`                                                                    | `'regular'` | The icon's weight. `fill` only for a selected or active state. A literal links that one weight                             |
-| `type`       | `'button' \| 'submit' \| 'reset'`                                                               | `'button'`  | Native `<button>` type. Ignored when `href` is set                                                                         |
-| `href`       | `string`                                                                                        | -           | When provided, renders as `<a>` instead of `<button>`                                                                      |
-| `target`     | `string`                                                                                        | -           | Forwarded to `<a>`. Only used when `href` is set (e.g. `_blank`)                                                           |
-| `rel`        | `string`                                                                                        | -           | Forwarded to `<a>`. Only used when `href` is set (e.g. `noopener`)                                                         |
-| `to`         | `string \| object`                                                                              | -           | When provided, renders as a `<RouterLink>` for Vue Router navigation                                                       |
+| Prop         | Type                                                                                                          | Default     | Description                                                                                                                |
+| ------------ | ------------------------------------------------------------------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `variant`    | `'primary' \| 'tertiary' \| 'secondary' \| 'ghost' \| 'link' \| 'danger' \| 'success' \| 'warning' \| 'info'` | -           | Visual role. Omitted, the button renders the high-contrast base treatment. `link` reads as a text link and ignores `size`. |
+| `outlined`   | `boolean`                                                                                                     | `false`     | Transparent bg with colored border/text                                                                                    |
+| `size`       | `'xxs' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| 'xxl'`                                                      | `'md'`      | Button size. The full scale, all seven backed by CSS (since 1.55.0)                                                        |
+| `disabled`   | `boolean`                                                                                                     | `false`     | Disables the button                                                                                                        |
+| `loading`    | `boolean`                                                                                                     | `false`     | Shows a spinner and prevents interaction                                                                                   |
+| `icon`       | `string \| module`                                                                                            | -           | Icon name or module, rendered by `NbIcon` after the text                                                                   |
+| `iconWeight` | `'regular' \| 'fill' \| ...`                                                                                  | `'regular'` | The icon's weight. `fill` only for a selected or active state. A literal links that one weight                             |
+| `type`       | `'button' \| 'submit' \| 'reset'`                                                                             | `'button'`  | Native `<button>` type. Ignored when `href` is set                                                                         |
+| `href`       | `string`                                                                                                      | -           | When provided, renders as `<a>` instead of `<button>`                                                                      |
+| `target`     | `string`                                                                                                      | -           | Forwarded to `<a>`. Only used when `href` is set (e.g. `_blank`)                                                           |
+| `rel`        | `string`                                                                                                      | -           | Forwarded to `<a>`. Only used when `href` is set (e.g. `noopener`)                                                         |
+| `to`         | `string \| object`                                                                                            | -           | When provided, renders as a `<RouterLink>` for Vue Router navigation                                                       |
 
 ### Link buttons
 

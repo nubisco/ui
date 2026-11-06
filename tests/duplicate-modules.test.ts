@@ -101,6 +101,7 @@ describe('with two copies of the library modules', () => {
         import('../src/components/Blueprint.context'),
         import('../src/components/Accordion.context'),
         import('../src/components/CheckboxGroup.context'),
+        import('../src/components/PrimaryAction.context'),
       ])
     const [a, b] = await twoCopies(load)
     const keysOf = (mods: Record<string, unknown>[]) =>
@@ -118,6 +119,7 @@ describe('with two copies of the library modules', () => {
       'NB_CHECKBOX_GROUP_CONTEXT',
       'NB_COMMAND_PALETTE_KEY',
       'NB_LAYER_INJECTION_KEY',
+      'NB_PRIMARY_ACTION_SCOPE',
       'NB_SHELL_LAYOUT_KEY',
       'NB_SHELL_SLOT_KEY',
       'NB_STEPPER_CONTEXT',

@@ -5,9 +5,9 @@
       'nb-button',
       // `variant` is optional, and interpolating it unguarded put a literal
       // `nb-button--undefined` class on every button that did not pass one.
-      variant ? `nb-button--${variant}` : null,
+      resolvedVariant ? `nb-button--${resolvedVariant}` : null,
       `nb-button--${size}`,
-      { 'nb-button--outlined': outlined },
+      { 'nb-button--outlined': resolvedOutlined },
       { 'nb-button--loading': loading },
       { 'nb-button--icon-only': isIconOnly },
     ]"
@@ -52,7 +52,9 @@ function iconKey(icon: unknown): string {
 import {
   computed,
   getCurrentInstance,
+  inject,
   nextTick,
+  onBeforeUnmount,
   onMounted,
   useSlots,
   type Component,
@@ -61,6 +63,7 @@ import { ESize } from '@/types/Size.d'
 import { EButtonType, IButtonProps } from './Button.d'
 import NbIcon from './Icon.vue'
 import { useRouterLink } from '@/composables/useRouterLink.composable'
+import { NB_PRIMARY_ACTION_SCOPE } from './PrimaryAction.context'
 
 const props = withDefaults(defineProps<IButtonProps>(), {
   variant: undefined,
@@ -78,6 +81,30 @@ const props = withDefaults(defineProps<IButtonProps>(), {
 })
 
 defineEmits<{ click: [event: MouseEvent] }>()
+
+// `tertiary` is a name for a button that already existed: primary, outlined.
+// It renders exactly the classes `variant="primary" outlined` does.
+const resolvedVariant = computed(() =>
+  props.variant === 'tertiary' ? 'primary' : props.variant,
+)
+const resolvedOutlined = computed(
+  () => props.outlined || props.variant === 'tertiary',
+)
+
+// Inside a header's actions slot (NbPanel, NbCard, NbPageHeader), a filled
+// primary counts itself, so the header can warn when it holds two.
+const primaryScope = inject(NB_PRIMARY_ACTION_SCOPE, null)
+let uncountPrimary: (() => void) | null = null
+onMounted(() => {
+  if (
+    primaryScope &&
+    resolvedVariant.value === 'primary' &&
+    !resolvedOutlined.value
+  ) {
+    uncountPrimary = primaryScope.register()
+  }
+})
+onBeforeUnmount(() => uncountPrimary?.())
 
 const slots = useSlots()
 const isIconOnly = computed(

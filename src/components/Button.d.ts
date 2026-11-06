@@ -23,6 +23,7 @@ type TButtonSize = `${ESize}`
 /** The action hierarchy, then the four status roles. */
 type TButtonVariant =
   | 'primary'
+  | 'tertiary'
   | 'secondary'
   | 'ghost'
   | 'link'
@@ -37,7 +38,12 @@ interface IButtonProps {
    * silently: `varaint="primary"` and `variant="primry"` both compiled and
    * both rendered the base button.
    *
-   * `primary` / `secondary` / `ghost` are the action hierarchy. `link` is
+   * `primary` / `tertiary` / `secondary` / `ghost` are the action hierarchy.
+   * `primary` is the one filled action of a page or region header.
+   * `tertiary` is primary outlined, under its own name: a standalone action of
+   * lower rank (it renders exactly `variant="primary" outlined`).
+   * `secondary` belongs only beside a primary, as its negative half (Cancel,
+   * Discard). `ghost` is for rows, toolbars and tiles. `link` is
    * the quietest of them: no box at all, it reads as a text link in the line
    * it sits in (its font size, weight and line height come from there, so
    * `size` does not change it), underlined on hover and focus. The four

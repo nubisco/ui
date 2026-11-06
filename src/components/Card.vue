@@ -76,7 +76,9 @@
         <slot name="meta" />
       </span>
       <div v-if="$slots.actions" class="nb-card__actions">
-        <slot name="actions" />
+        <PrimaryActionScope owner="NbCard">
+          <slot name="actions" />
+        </PrimaryActionScope>
       </div>
       <span v-if="supportText || $slots.subtitle" class="nb-card__subtitle">
         <slot name="subtitle">{{ supportText }}</slot>
@@ -101,6 +103,7 @@ import { computed, provide, ref, useSlots, watch } from 'vue'
 import * as iconImage from '@nubisco/ui/icons/image'
 import type { ICardProps } from './CardGrid.d'
 import NbIcon from './Icon.vue'
+import PrimaryActionScope from './PrimaryActionScope.vue'
 import {
   clampLayer,
   layerClassFor,

@@ -13,6 +13,7 @@ const availableProps: PreviewPropDef[] = [
     default: 'primary',
     options: [
       { value: 'primary', label: 'primary' },
+      { value: 'tertiary', label: 'tertiary' },
       { value: 'secondary', label: 'secondary' },
       { value: 'ghost', label: 'ghost' },
       { value: 'link', label: 'link' },

@@ -22,6 +22,45 @@ pageTabs: ['usage', 'style', 'code', 'accessibility']
   </measure>
 </preview>
 
+## The emphasis ladder
+
+A button's variant is its rank. Each region of a page has **one** button at
+the top rung, and everything else steps down from it. If two buttons on one
+screen are equally loud, neither is the point.
+
+<preview dir="row">
+  <NbButton variant="primary">Publish</NbButton>
+  <NbButton variant="tertiary">Export</NbButton>
+  <NbButton variant="secondary">Cancel</NbButton>
+  <NbButton variant="ghost" icon="pencil-simple" aria-label="Edit" />
+  <NbButton variant="link">Learn more</NbButton>
+  <NbButton variant="danger" outlined>Delete</NbButton>
+</preview>
+
+| Rung      | Write                          | For                                                                                                       |
+| --------- | ------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| Primary   | `variant="primary"`            | The one action a page or a region exists for, in its header. Once per page header, once per panel header. |
+| Tertiary  | `variant="tertiary"`           | A standalone action of lower rank. It is `primary` outlined under its own name, and renders identically.  |
+| Secondary | `variant="secondary"`          | **Only beside a primary**, as its negative half: Cancel, Discard, Back. Never a positive action alone.    |
+| Ghost     | `variant="ghost"`              | Rows, toolbars and dashboard tiles: an icon button with a tooltip, per the row-action standard.           |
+| Link      | `variant="link"`               | An action that reads as part of a sentence.                                                               |
+| Danger    | `variant="danger"`, `outlined` | Destructive controls only. Outlined unless it is the region's one action (a confirm dialog's Delete).     |
+
+- **When the page header has a primary, regions step down.** Their actions
+  become tertiary or ghost, so the page's own action stays the loudest.
+- **Past three actions, prefer tertiary and ghost over secondary.**
+- **A labelled action is never bare ghost.** Without an icon it reads as grey
+  text at rest. Bare ghost is for icon buttons.
+- **Two filled primaries in one header warn in development.** `NbPanel`,
+  `NbCard` and `NbPageHeader` count the filled `primary` buttons in their
+  `actions` slot and warn when there are two. Outlined and tertiary buttons do
+  not count.
+
+The status variants (`success`, `info`, `warning`) say what a press means, not
+how loud it is: they are not rungs. A button with no `variant` renders the
+high-contrast base treatment, which is not on the ladder either: give every
+button a variant. See [Information hierarchy](/principles/hierarchy#emphasis-one-filled-button-per-region).
+
 ## Features
 
 - **Color Tints**: Six distinct color variants (primary, secondary, success, info, warning, danger)
