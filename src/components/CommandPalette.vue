@@ -609,52 +609,11 @@ onBeforeUnmount(() => {
 
 // Transitions
 // Same shape as NbModal: settle in, commit out, scrim and panel in step.
-.nb-command-palette-enter-active {
-  transition: opacity var(--nb-motion-medium) var(--nb-ease-enter);
-
-  .nb-command-palette {
-    transition:
-      opacity var(--nb-motion-medium) var(--nb-ease-enter),
-      transform var(--nb-motion-medium) var(--nb-ease-enter);
-  }
-}
-
-.nb-command-palette-leave-active {
-  transition: opacity var(--nb-motion-short) var(--nb-ease-exit);
-
-  .nb-command-palette {
-    transition:
-      opacity var(--nb-motion-short) var(--nb-ease-exit),
-      transform var(--nb-motion-short) var(--nb-ease-exit);
-  }
-}
-
-.nb-command-palette-enter-from {
-  opacity: 0;
-
-  .nb-command-palette {
-    opacity: 0;
-    transform: scale(0.97) translateY(-8px);
-  }
-}
-
-.nb-command-palette-leave-to {
-  opacity: 0;
-
-  .nb-command-palette {
-    opacity: 0;
-    transform: scale(0.98) translateY(4px);
-  }
-}
-
-@include motion.reduced {
-  .nb-command-palette-enter-from,
-  .nb-command-palette-leave-to {
-    .nb-command-palette {
-      transform: none;
-    }
-  }
-}
+@include motion.dialog(
+  nb-command-palette,
+  '.nb-command-palette',
+  $enter-from: scale(0.97) translateY(-8px)
+);
 
 // ── Phone ─────────────────────────────────────────────────────────────────
 // A 640px card 15vh down a phone screen ran its results under the on-screen

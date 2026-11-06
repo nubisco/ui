@@ -300,25 +300,5 @@ defineExpose({
 // Arrives from its trigger (enter curve, quick) and fades away (exit curve,
 // micro): a popover that slides back out is a popover the eye follows away
 // from the thing the person is about to do next.
-.nb-menu-enter-active {
-  transition:
-    opacity var(--nb-motion-quick) var(--nb-ease-enter),
-    transform var(--nb-motion-quick) var(--nb-ease-enter);
-}
-.nb-menu-leave-active {
-  transition: opacity var(--nb-motion-micro) var(--nb-ease-exit);
-}
-.nb-menu-enter-from {
-  opacity: 0;
-  transform: translateY(-4px);
-}
-.nb-menu-leave-to {
-  opacity: 0;
-}
-
-@include motion.reduced {
-  .nb-menu-enter-from {
-    transform: none;
-  }
-}
+@include motion.popover(nb-menu);
 </style>

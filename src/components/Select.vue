@@ -1342,25 +1342,5 @@ defineExpose({
 
 // The list arrives from its trigger (enter curve, quick) and fades away
 // (exit curve, micro), like every popover in the library.
-.nb-select-pop-enter-active {
-  transition:
-    opacity var(--nb-motion-quick) var(--nb-ease-enter),
-    transform var(--nb-motion-quick) var(--nb-ease-enter);
-}
-.nb-select-pop-leave-active {
-  transition: opacity var(--nb-motion-micro) var(--nb-ease-exit);
-}
-.nb-select-pop-enter-from {
-  opacity: 0;
-  transform: translateY(-4px);
-}
-.nb-select-pop-leave-to {
-  opacity: 0;
-}
-
-@include motion.reduced {
-  .nb-select-pop-enter-from {
-    transform: none;
-  }
-}
+@include motion.popover(nb-select-pop);
 </style>

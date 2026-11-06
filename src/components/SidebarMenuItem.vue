@@ -667,20 +667,13 @@ onBeforeUnmount(() => {
 <style lang="scss">
 @use '../styles/logic/motion' as motion;
 // Flyout is teleported to body so it lives outside the scoped tree.
-@keyframes nb-sidebar-menu-item-flyout-in {
-  from {
-    opacity: 0;
-    transform: translateX(-4px);
-  }
-}
 
 .nb-sidebar-menu-item__flyout {
   position: fixed;
   z-index: 1000;
   // Mounted and unmounted outright, so the entrance is a keyframe: from the
   // rail it belongs to, on the enter curve, quick.
-  animation: nb-sidebar-menu-item-flyout-in var(--nb-motion-quick)
-    var(--nb-ease-enter);
+  @include motion.popover-in(nb-sidebar-menu-item-flyout-in, translateX(-4px));
   min-width: 200px;
   max-width: 280px;
   padding: 6px;
@@ -720,12 +713,6 @@ onBeforeUnmount(() => {
     width: 100%;
     height: auto;
     justify-content: flex-start;
-  }
-}
-
-@include motion.reduced {
-  .nb-sidebar-menu-item__flyout {
-    animation: none;
   }
 }
 </style>

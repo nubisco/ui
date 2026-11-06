@@ -266,25 +266,5 @@ onBeforeUnmount(() => {
 // Arrives from its trigger (enter curve, quick) and fades away (exit curve,
 // micro): a popover that slides back out is a popover the eye follows away
 // from the thing the person is about to do next.
-.nb-submenu-enter-active {
-  transition:
-    opacity var(--nb-motion-quick) var(--nb-ease-enter),
-    transform var(--nb-motion-quick) var(--nb-ease-enter);
-}
-.nb-submenu-leave-active {
-  transition: opacity var(--nb-motion-micro) var(--nb-ease-exit);
-}
-.nb-submenu-enter-from {
-  opacity: 0;
-  transform: translateX(-4px);
-}
-.nb-submenu-leave-to {
-  opacity: 0;
-}
-
-@include motion.reduced {
-  .nb-submenu-enter-from {
-    transform: none;
-  }
-}
+@include motion.popover(nb-submenu, translateX(-4px));
 </style>

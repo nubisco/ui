@@ -375,7 +375,7 @@ defineExpose({ open, close, isOpen })
     var(--nb-c-scrim);
   text-align: left;
 
-  animation: nb-info-hint-in var(--nb-motion-quick) var(--nb-ease-enter);
+  @include motion.popover-in(nb-info-hint-in, scale(0.96));
 }
 
 .nb-info-hint--title {
@@ -453,22 +453,7 @@ defineExpose({ open, close, isOpen })
   border-right: none;
 }
 
-@keyframes nb-info-hint-in {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
 @include motion.reduced {
-  .nb-info-hint--popover {
-    animation: none;
-  }
-
   .nb-info-hint--trigger {
     transition: none;
   }

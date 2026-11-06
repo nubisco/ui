@@ -475,36 +475,7 @@ $modal-sizes: (
  * entrance settles (enter curve, medium); the exit commits (exit curve,
  * short): a dialog that leaves as slowly as it arrived looks as if it changed
  * its mind. */
-.nb-modal-enter-active {
-  transition: opacity var(--nb-motion-medium) var(--nb-ease-enter);
-  .nb-modal--content {
-    transition:
-      opacity var(--nb-motion-medium) var(--nb-ease-enter),
-      transform var(--nb-motion-medium) var(--nb-ease-enter);
-  }
-}
-.nb-modal-leave-active {
-  transition: opacity var(--nb-motion-short) var(--nb-ease-exit);
-  .nb-modal--content {
-    transition:
-      opacity var(--nb-motion-short) var(--nb-ease-exit),
-      transform var(--nb-motion-short) var(--nb-ease-exit);
-  }
-}
-.nb-modal-enter-from {
-  opacity: 0;
-  .nb-modal--content {
-    transform: scale(0.96) translateY(-8px);
-    opacity: 0;
-  }
-}
-.nb-modal-leave-to {
-  opacity: 0;
-  .nb-modal--content {
-    transform: scale(0.98) translateY(4px);
-    opacity: 0;
-  }
-}
+@include motion.dialog(nb-modal, '.nb-modal--content');
 
 // The phone layout. A centred box with a 20px margin wastes a third of a
 // phone's width and puts the actions out of the thumb's reach, so the dialog
@@ -565,8 +536,9 @@ $modal-sizes: (
   }
 }
 
-// Without motion the dialog, and the sheet, only fade, like the scrim: the
-// fade is the feedback, the travel was the decoration.
+// Without motion the sheet only fades, like the scrim: the fade is the
+// feedback, the travel was the decoration. The mixin's own reduced rule
+// comes before the phone layout above, so the sheet is cancelled here.
 @include motion.reduced {
   .nb-modal-enter-from,
   .nb-modal-leave-to {
