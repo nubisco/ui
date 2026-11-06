@@ -1,5 +1,6 @@
 import type { TIconSource } from '@/types/Glyph.d'
 import type { TGapSize, TGridRatio } from './Grid.d'
+import type { THeadingLevel } from './Panel.d'
 
 export interface ICardGridProps {
   /**
@@ -41,6 +42,29 @@ export interface ICardProps {
   title?: string
   /** One line under the title: a type, an owner, a version. */
   subtitle?: string
+  /**
+   * The same line as `subtitle`, under the name `NbPanel` uses for it, so a
+   * card and a panel take the same two props. Wins over `subtitle` when both
+   * are set.
+   */
+  description?: string
+  /**
+   * The element the title renders as. A card's title is a heading, at the
+   * `heading-compact` size whatever the level. A clickable card (one that is
+   * a button) renders it as a plain span instead, since a heading inside a
+   * button is flattened into the button's name.
+   *
+   * @default 'h3'
+   */
+  headingLevel?: THeadingLevel
+  /**
+   * Keep the border and the padding, paint no surface, and do not deepen the
+   * contents. For tiles that are regions of the page, sitting on its ground,
+   * beside the one raised region the page is for.
+   *
+   * @default false
+   */
+  flat?: boolean
   /** Icon name, rendered in the card's header. */
   icon?: TIconSource
   /**
