@@ -27,7 +27,7 @@ function selectors(): string[] {
 
 // Rules that keep their natural specificity, each for a reason written in
 // the stylesheet.
-const KEPT = new Set(['*', '[hidden]', ':focus-visible'])
+const KEPT = new Set(['*', '[hidden]'])
 
 describe('reset specificity', () => {
   it('compiles to more than a handful of rules', () => {

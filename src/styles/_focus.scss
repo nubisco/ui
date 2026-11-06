@@ -1,0 +1,28 @@
+/**
+ * A default focus ring for everything the library does not draw itself.
+ *
+ * The reset used to set `:focus-visible { outline: 0 }` on every element, so
+ * that the library's own controls showed only the ring they draw. That also
+ * took the ring off every plain `<a>` and `<button>` an application writes
+ * outside a component, which is the one thing a keyboard user cannot do
+ * without (WCAG 2.4.7).
+ *
+ * So the default is now the house ring: 2px of `--nb-c-focus-ring`, 2px
+ * out, drawn with `outline` so forced colours keeps it. Both rules sit in
+ * `:where()`, at zero specificity, so every component that draws its own
+ * ring (or deliberately none, on a wrapper-focused field) still wins
+ * whatever the load order.
+ *
+ * The second rule keeps the library's own elements as they were: anything
+ * with an `nb-` class has no ring unless its component draws one. Without
+ * it, a native input inside a field whose wrapper carries the ring would
+ * show two.
+ */
+:where(:focus-visible) {
+  outline: 2px solid var(--nb-c-focus-ring);
+  outline-offset: 2px;
+}
+
+:where([class^='nb-']:focus-visible, [class*=' nb-']:focus-visible) {
+  outline: 0;
+}

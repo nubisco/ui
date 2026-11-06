@@ -394,9 +394,8 @@
   }
 }
 
-:focus-visible {
-  outline: 0;
-}
+// The focus-visible default lives in _focus.scss: a ring for elements the
+// library does not style, none for its own.
 
 @if config.$css--reset == true {
   @include reset;
