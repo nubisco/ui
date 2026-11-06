@@ -14,8 +14,13 @@ export type TFontsOptions = NonNullable<Parameters<typeof Unfonts>[0]>
  * CDN). These are the two families declared as the library defaults in
  * `src/styles/variables/_type.scss` (`--nb-font-family-sans` / `-mono`):
  *
- * - Plus Jakarta Sans: weights 400, 500, 600, 700 (sans default)
- * - Fira Code: weights 400, 600 (mono default)
+ * - IBM Plex Sans: weights 300, 400, 600 (sans default)
+ * - IBM Plex Mono: weights 400, 600 (mono default)
+ *
+ * These are the only weights the library uses: light for display and the
+ * large headings, regular for body and titles from 20px up, semibold for the
+ * small headings, labels that need it and emphasis. Medium (500) and bold
+ * (700) are not loaded, because no component asks for them.
  *
  * Only `normal` styles are loaded. Every subset shipped by Fontsource is
  * imported, but each `@font-face` carries a `unicode-range`, so the browser
@@ -23,18 +28,18 @@ export type TFontsOptions = NonNullable<Parameters<typeof Unfonts>[0]>
  * baked into the Fontsource stylesheets.
  *
  * Consumers must install the source packages themselves:
- * `pnpm add -D @fontsource/plus-jakarta-sans @fontsource/fira-code`.
+ * `pnpm add -D @fontsource/ibm-plex-sans @fontsource/ibm-plex-mono`.
  */
 export const DEFAULT_FONTS: TFontsOptions = {
   fontsource: {
     families: [
       {
-        name: 'Plus Jakarta Sans',
-        weights: [400, 500, 600, 700],
+        name: 'IBM Plex Sans',
+        weights: [300, 400, 600],
         styles: ['normal'],
       },
       {
-        name: 'Fira Code',
+        name: 'IBM Plex Mono',
         weights: [400, 600],
         styles: ['normal'],
       },
@@ -45,8 +50,8 @@ export const DEFAULT_FONTS: TFontsOptions = {
 /**
  * Vite plugin that loads NubiscoUI's typefaces.
  *
- * Called with no arguments it self-hosts the library defaults (Plus Jakarta
- * Sans + Fira Code) via Fontsource, keeping every existing consumer's output
+ * Called with no arguments it self-hosts the library defaults (IBM Plex Sans
+ * + IBM Plex Mono) via Fontsource, keeping every existing consumer's output
  * unchanged. Pass an options object to fully replace that configuration: load
  * different families/weights, point the `custom` provider at your own woff2
  * files, or use any other provider `unplugin-fonts` supports.

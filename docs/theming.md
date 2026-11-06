@@ -979,9 +979,9 @@ NubiscoUI ships with two typefaces via the `fonts` Vite plugin, and a SCSS-drive
 
 ### Typefaces
 
-**Plus Jakarta Sans** (`--nb-font-family-sans`), the primary typeface for all UI text. Used for labels, body copy, headings, and display type.
+**IBM Plex Sans** (`--nb-font-family-sans`), the primary typeface for all UI text. Used for labels, body copy, headings, and display type. It was drawn for the 12 to 14px range a product interface lives in, and its figures can be set tabular.
 
-**Fira Code** (`--nb-font-family-mono`), monospace, used exclusively for code, JSON viewers, inline code, and keyboard shortcuts. Ligatures enabled by default.
+**IBM Plex Mono** (`--nb-font-family-mono`), monospace, used exclusively for code, JSON viewers, inline code, and keyboard shortcuts. It is metrically tuned to Plex Sans, so code inside a sentence does not jump.
 
 Both are bundled in the library and served via the fonts plugin. No CDN dependency.
 
@@ -1017,10 +1017,10 @@ Edit `$typeSets` in `src/styles/variables/_type.scss`:
 $typeSets: (
   // ...existing sets...
   caption: (
-      size: 11,
+      size: 12,
       weight: regular,
-      line-height: 1.4,
-      letter-spacing: 0.01em,
+      line-height: 16px,
+      letter-spacing: 0.32px,
     )
 ) !default;
 ```

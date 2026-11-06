@@ -1174,7 +1174,7 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   font-size: 12px;
   line-height: 16px;
   color: var(--nb-c-text-subtle);
-  font-family: 'Geist Mono', 'Fira Code', monospace;
+  font-family: 'Geist Mono', 'IBM Plex Mono', monospace;
   padding: 0 var(--nb-blueprint-pad-right) 8px var(--nb-blueprint-pad-left);
 }
 
@@ -1207,7 +1207,7 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
 }
 
 .nb-blueprint-card__row-value {
-  font-family: 'Geist Mono', 'Fira Code', monospace;
+  font-family: 'Geist Mono', 'IBM Plex Mono', monospace;
   font-size: 12px;
   line-height: 16px;
   color: var(--nb-c-text);
