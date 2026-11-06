@@ -19,7 +19,7 @@ Severity decides which region speaks. `error` and `warning` are assertive and in
 
 The announcement reads the severity word, then the title, then the message, and then, if there is an action, its label and the key that reaches it.
 
-**A toast that is still waiting for a slot is not announced yet.** The announcer follows the visible records, so with the cap full the fourth message is spoken at the moment it is admitted, not at the moment it was raised. It is late, never lost, and it is the right way round: announcing something a sighted user cannot see, with a `Retry` that is not on screen, is worse than announcing it a few seconds later along with everyone else. If a message cannot afford to wait for a slot, it is not a toast: see [When to toast](#when-to-toast).
+**A toast that is still waiting for a slot is not announced yet.** The announcer follows the visible records, so with the cap full the fourth message is spoken at the moment it is admitted, not at the moment it was raised. It is late, never lost, and it is the right way round: announcing something a sighted user cannot see, with a `Try again` that is not on screen, is worse than announcing it a few seconds later along with everyone else. If a message cannot afford to wait for a slot, it is not a toast: see [When to toast](#when-to-toast).
 
 Only one thing speaks. The visible toasts are rendered with `aria-live="off"`, which switches off the live region that `NbToast`'s standalone `role="alert"` would otherwise create, so the announcer is the only voice. Each toast still carries the severity word visually hidden, so browse mode reads "Error. Could not reach the server" rather than a sentence whose severity was only ever a colour and an `aria-hidden` icon.
 

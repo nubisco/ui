@@ -635,8 +635,8 @@ must be a real `null` binding, not the string `"null"`.
 ## Rule 6: what it says
 
 The general rules live in [writing style](/content/writing-style), and the
-button text lives in [Writing style](/content/writing-style), including the
-per-kind table of titles and calls to action. Read those. Only four things are
+button text lives in [Action labels](/content/action-labels#empty-state-calls-to-action),
+including the per-kind table of titles and calls to action. Read those. Only four things are
 specific to this pattern:
 
 1. **An error never blames the user.** `Could not load invoices` is ours to own.

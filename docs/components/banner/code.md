@@ -50,7 +50,7 @@ Put the way to resolve the banner in the `action` slot. Keep it to one or two co
       The content is live in the API; the site may still serve old HTML.
       <template #action>
         <NbButton size="sm" variant="ghost">Check rebuild</NbButton>
-        <NbButton size="sm" variant="primary">Retry</NbButton>
+        <NbButton size="sm" variant="primary">Try again</NbButton>
       </template>
     </NbBanner>
   </div>
@@ -64,7 +64,7 @@ Put the way to resolve the banner in the `action` slot. Keep it to one or two co
       <NbButton size="sm" variant="ghost" @click="check"
         >Check rebuild</NbButton
       >
-      <NbButton size="sm" variant="primary" @click="retry">Retry</NbButton>
+      <NbButton size="sm" variant="primary" @click="retry">Try again</NbButton>
     </template>
   </NbBanner>
 </template>

@@ -60,8 +60,9 @@ contradiction is named in place.
 | Plurals                                       | `Intl.PluralRules`. Never a ternary, never `(s)`.                                                                                                                                              |
 
 Action verbs (`Save` against `Done`, `Close` against `Cancel`, `Delete` against
-`Remove`) follow one rule: the button says the verb of the thing it does. This
-page governs everything else.
+`Remove`, `Try again` against `Retry`) follow one rule: the button says the verb
+of the thing it does. [Action labels](./action-labels.md) is the register of
+those verbs. This page governs everything else.
 
 ## Voice
 
