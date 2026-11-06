@@ -332,6 +332,7 @@ onBeforeUnmount(cleanupPointer)
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/logic/touch' as touch;
 
@@ -477,7 +478,7 @@ onBeforeUnmount(cleanupPointer)
   border: 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-reorder-list__row {
     transition: none;
   }

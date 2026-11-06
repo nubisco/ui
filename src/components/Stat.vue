@@ -130,6 +130,7 @@ const tone = computed<'positive' | 'negative' | 'neutral'>(() => {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 
 .nb-stat {
@@ -279,7 +280,7 @@ const tone = computed<'positive' | 'negative' | 'neutral'>(() => {
   cursor: not-allowed;
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-stat--interactive {
     transition: none;
   }

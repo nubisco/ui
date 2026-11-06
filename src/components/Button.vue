@@ -178,6 +178,7 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/variables/breakpoints' as bp;
 @use '../styles/logic/touch' as touch;
@@ -599,7 +600,7 @@ onMounted(() => {
   // and breathe it instead: no rotation, still alive. This matches what
   // NbSpinner does under the same preference, so the two indicators do not
   // disagree inside one product.
-  @media (prefers-reduced-motion: reduce) {
+  @include motion.reduced {
     .nb-button__spinner {
       border-top-color: currentcolor;
       animation: nb-button-spinner-breathe 1600ms ease-in-out infinite;

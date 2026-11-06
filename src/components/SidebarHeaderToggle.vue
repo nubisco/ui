@@ -99,6 +99,7 @@ const label = computed(() =>
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 .nb-sidebar-header-toggle {
   display: inline-flex;
   align-items: center;
@@ -143,7 +144,7 @@ const label = computed(() =>
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-sidebar-header-toggle {
     transition: none;
   }

@@ -71,6 +71,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/variables/breakpoints' as bp;
 
 .nb-back-to-top {
@@ -114,7 +115,7 @@ onBeforeUnmount(() => {
   transform: translateY(calc(var(--nb-base-unit) * 1));
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-back-to-top-enter-active,
   .nb-back-to-top-leave-active {
     transition: none;

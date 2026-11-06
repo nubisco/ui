@@ -283,6 +283,7 @@ const rootClasses = computed(() => [
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 .nb-spinner {
   display: inline-flex;
   align-items: center;
@@ -433,7 +434,7 @@ const rootClasses = computed(() => [
   // component. The class and the media query carry the same rules so the
   // behaviour survives both a runtime preference change and a first paint
   // before any script has run.
-  @media (prefers-reduced-motion: reduce) {
+  @include motion.reduced {
     .nb-spinner__arc {
       stroke-dasharray: none;
       animation: nb-spinner-breathe 1600ms ease-in-out infinite;

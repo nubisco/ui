@@ -388,6 +388,7 @@ defineExpose({ cancel, dragging, grabbed, el: handleRef })
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 
 .nb-drag-handle {
@@ -463,7 +464,7 @@ defineExpose({ cancel, dragging, grabbed, el: handleRef })
   border: 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-drag-handle {
     transition: none;
   }

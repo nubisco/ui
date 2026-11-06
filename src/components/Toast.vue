@@ -213,6 +213,7 @@ watch(
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 
 @use '../styles/variables/breakpoints' as bp;
@@ -464,7 +465,7 @@ watch(
  * decoration, but stops it sliding: it steps rather than sweeps, so nothing
  * is animating continuously in the corner of the eye.
  */
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-toast__progress {
     animation-timing-function: steps(8, end);
   }

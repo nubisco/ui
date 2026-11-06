@@ -166,6 +166,7 @@ const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/variables/breakpoints' as breakpoints;
 
@@ -398,7 +399,7 @@ const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-card--interactive {
     transition: none;
   }

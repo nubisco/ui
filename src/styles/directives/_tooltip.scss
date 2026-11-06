@@ -1,3 +1,4 @@
+@use '../logic/motion' as motion;
 @mixin tooltip {
   // The description node. Not a chip: it is the text of the tooltip as
   // assistive technology sees it, present from the moment the binding mounts,
@@ -274,7 +275,7 @@
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
+  @include motion.reduced {
     .nb-tooltip {
       animation: none !important;
       transform: none;

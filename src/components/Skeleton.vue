@@ -212,6 +212,7 @@ const rootStyle = computed(() => {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 .nb-skeleton {
   display: flex;
   flex-direction: column;
@@ -356,7 +357,7 @@ const rootStyle = computed(() => {
   // A travelling highlight is exactly the kind of motion reduced-motion asks
   // us to drop, but a dead grey block reads as broken layout. The bar fades in
   // place instead: no movement, still alive.
-  @media (prefers-reduced-motion: reduce) {
+  @include motion.reduced {
     // Scoped away from --static so `animated: false` stays genuinely still.
     &:not(.nb-skeleton--static) .nb-skeleton__fill {
       background-image: none;
