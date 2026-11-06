@@ -163,3 +163,72 @@ describe('NbGrid modes', () => {
     expect(hang).toContain('var(--nb-spacing-32) - var(--nb-grid-parent-gap')
   })
 })
+
+describe('NbGrid page container', () => {
+  it('is opt-in', () => {
+    expect(mount(Grid).classes()).not.toContain('nb-grid--container')
+    expect(mount(Grid, { props: { container: true } }).classes()).toContain(
+      'nb-grid--container',
+    )
+  })
+
+  it('applies the max width and the page margin from the tokens', () => {
+    const c = gridRule('.nb-grid.nb-grid--container')
+    expect(c).toContain('max-width: var(--nb-grid-max-width)')
+    expect(c).toContain('margin-inline: auto')
+    expect(c).toContain('padding-inline: var(--nb-grid-gutter)')
+  })
+
+  // 0 on a phone through the phone signal, 24px at xxl, and the 16px the
+  // theme declares everywhere in between.
+  it('moves the margin only at the edges of the scale', () => {
+    const phone = gridCss.indexOf('@media (max-width: 671.98px)')
+    expect(phone).toBeGreaterThanOrEqual(0)
+    expect(gridCss.slice(phone, gridCss.indexOf('}', phone))).toContain(
+      '--nb-grid-gutter: 0px',
+    )
+    const xxl = gridCss.lastIndexOf('(min-width: 1584px)')
+    expect(gridCss.slice(xxl, gridCss.indexOf('}', xxl) + 40)).toContain(
+      '--nb-grid-gutter: 24px',
+    )
+  })
+})
+
+describe('NbGrid subgrid', () => {
+  it('takes the parent gap instead of its own, whatever gap it was given', () => {
+    expect(
+      mount(Grid, { props: { subgrid: true, gap: 'xl' } }).classes(),
+    ).toContain('nb-grid--subgrid')
+    const sub = gridRule('.nb-grid.nb-grid--subgrid')
+    expect(sub).toContain('gap: var(--nb-grid-parent-gap, 0px)')
+    expect(gridRule('.nb-grid.nb-grid--subgrid > *')).toContain(
+      '--nb-grid-parent-gap: inherit',
+    )
+    // Later in the sheet than every gap rule, at the same specificity.
+    expect(gridCss.indexOf('.nb-grid.nb-grid--subgrid {')).toBeGreaterThan(
+      gridCss.lastIndexOf('.nb-grid.xxl-gap-xxl {'),
+    )
+  })
+})
+
+describe('NbGrid ratio', () => {
+  it('turns a ratio into a class holding that aspect ratio', () => {
+    expect(mount(Grid, { props: { ratio: '16:9' } }).classes()).toContain(
+      'nb-grid--ratio-16-9',
+    )
+    expect(gridRule('.nb-grid.nb-grid--ratio-16-9')).toContain(
+      'aspect-ratio: 16/9',
+    )
+    for (const r of ['1-1', '2-1', '2-3', '3-2', '4-3'])
+      expect(gridCss).toContain(`.nb-grid.nb-grid--ratio-${r} {`)
+  })
+
+  it('refuses a ratio it has no class for', () => {
+    const validator = (
+      Grid.props as { ratio: { validator: (v: unknown) => boolean } }
+    ).ratio.validator
+    expect(validator('4:3')).toBe(true)
+    expect(validator('5:4')).toBe(false)
+    expect(validator(null)).toBe(true)
+  })
+})

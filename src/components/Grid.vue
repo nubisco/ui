@@ -298,6 +298,11 @@ const generateGridClasses = (props: any): TClassCollection => {
     ...(props.distributed ? { distributed: true } : {}),
     ...(props.mode ? { [`nb-grid--${props.mode}`]: true } : {}),
     ...(props.hang ? { 'nb-grid--hang': true } : {}),
+    ...(props.container ? { 'nb-grid--container': true } : {}),
+    ...(props.subgrid ? { 'nb-grid--subgrid': true } : {}),
+    ...(props.ratio
+      ? { [`nb-grid--ratio-${props.ratio.replace(':', '-')}`]: true }
+      : {}),
     ...(props.grow ? { grow: true } : {}),
     ...(props.shrink !== null && props.shrink !== undefined
       ? { [`shrink-${props.shrink ? '1' : '0'}`]: true }

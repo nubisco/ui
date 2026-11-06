@@ -1,5 +1,10 @@
 <template>
-  <div class="nb-card-grid" :data-gap="gap" :style="style">
+  <div
+    class="nb-card-grid"
+    :data-gap="gap"
+    :data-ratio="ratio ? ratio.replace(':', '-') : undefined"
+    :style="style"
+  >
     <slot />
   </div>
 </template>
@@ -26,6 +31,7 @@ const style = computed(() => ({
 </script>
 
 <style scoped lang="scss">
+@use 'sass:list';
 @use 'sass:map';
 @use '../styles/variables/grid' as grid;
 
@@ -38,6 +44,18 @@ const style = computed(() => ({
 @each $name, $value in grid.$gap-ratios {
   .nb-card-grid[data-gap='#{$name}'] {
     gap: #{$value};
+  }
+}
+
+// Every tile holds the ratio. A grid item with an aspect ratio aligns to the
+// start rather than stretching, so a taller neighbour does not distort it,
+// and its content can still grow it. Below `min` the column is the container
+// and the tile keeps its shape at that width.
+@each $ratio in grid.$grid-ratios {
+  $w: list.nth($ratio, 1);
+  $h: list.nth($ratio, 2);
+  .nb-card-grid[data-ratio='#{$w}-#{$h}'] > :slotted(*) {
+    aspect-ratio: #{$w} / #{$h};
   }
 }
 </style>
