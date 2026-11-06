@@ -277,6 +277,7 @@ export type {
   TGridVisibleInput,
   TBooleanResponsive,
   TGridMode,
+  TGridRatio,
   TClassCollection,
   IHandlerContext,
   IGridProps,
