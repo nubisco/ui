@@ -22,20 +22,20 @@ All breakpoints are **mobile-first** (`min-width`). Base styles apply at all vie
 
 Most layout props (`dir`, `gap`, `grid`, `justify`, `align`, `wrap`, `visible`) accept three input forms:
 
-**1. Scalar** — applies at all viewport sizes:
+**1. Scalar**: applies at all viewport sizes:
 
 ```vue
 <nb-grid dir="col">...</nb-grid>
 ```
 
-**2. Breakpoint map** — different values per breakpoint. Rules cascade upward; only the breakpoints you define are set:
+**2. Breakpoint map**: different values per breakpoint. Rules cascade upward; only the breakpoints you define are set:
 
 ```vue
 <!-- col until 672px, then row -->
 <nb-grid :dir="{ sm: 'col', md: 'row' }">...</nb-grid>
 ```
 
-**3. Function** — called reactively at render time. Any reactive state accessed inside is tracked automatically:
+**3. Function**: called reactively at render time. Any reactive state accessed inside is tracked automatically:
 
 ```vue
 <script setup lang="ts">
@@ -49,7 +49,7 @@ const isExpanded = ref(false)
 ```
 
 ::: tip
-The function form is for dynamic logic that does not map cleanly to breakpoints — for example, toggling layout based on component state. For viewport-driven changes, use the breakpoint map.
+The function form is for dynamic logic that does not map cleanly to breakpoints, for example toggling layout based on component state. For viewport-driven changes, use the breakpoint map.
 :::
 
 ### Props that accept responsive forms
@@ -240,7 +240,9 @@ Pass a breakpoint map to change column spans at different screen widths.
 
 ## Column shift (offset)
 
-Use `shift` to push a column to the right by a number of column widths.
+Use `shift` to push a column along by a number of column widths, from 0 to 15.
+It is a `margin-inline-start`, so it mirrors under right-to-left. `0` is a real
+rule, so a breakpoint map can take a shift back off: `:shift="{ sm: 4, lg: 0 }"`.
 
 <preview style-grid>
   <nb-grid dir="col" gap="xs">
@@ -351,6 +353,142 @@ Use `shift` to push a column to the right by a number of column widths.
 </template>
 ```
 
+## Modes
+
+`mode` is a default gutter, Carbon's three: `wide` 32px, `narrow` 16px,
+`condensed` 1px. It applies only when there is no `gap`, so a `gap` (scalar or
+at a breakpoint) wins over it. Spans share a mode's gutter the way they share a
+`gap`, so spans that add up to 16 still fill the row. Without `mode` or `gap`
+a grid has no gutter.
+
+<preview style-grid>
+  <div class="grid-demo-label">condensed: a wall of tiles read as one surface</div>
+  <nb-grid dir="row" mode="condensed" wrap="wrap">
+    <nb-grid dir="col" grid="4" class="grid-demo-item">1</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item span-b">2</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item">3</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item span-b">4</nb-grid>
+  </nb-grid>
+</preview>
+
+```vue
+<template>
+  <nb-grid dir="row" mode="condensed" wrap="wrap">
+    <nb-grid v-for="tile in tiles" :key="tile.id" dir="col" grid="4">
+      <tile-preview :tile="tile" />
+    </nb-grid>
+  </nb-grid>
+</template>
+```
+
+### Hang
+
+In a narrow or condensed grid the boxes hug the gutter, which leaves their
+text hard against it. `hang` on a span keeps the box where it is and insets
+its content by the difference between a wide half gutter and this grid's half
+gutter: nothing in a wide grid, 8px in a narrow one, 15.5px in a condensed one.
+The text sits as far from the gutter's centre line as it would in a wide grid.
+
+<preview style-grid>
+  <nb-grid dir="row" mode="condensed">
+    <nb-grid dir="col" grid="8" style="background: var(--nb-c-layer-2); padding-block: 8px">No hang: the text meets the gutter</nb-grid>
+    <nb-grid dir="col" grid="8" hang style="background: var(--nb-c-layer-2); padding-block: 8px">Hang: the box meets the gutter, the text does not</nb-grid>
+  </nb-grid>
+</preview>
+
+```vue
+<template>
+  <nb-grid dir="row" mode="condensed">
+    <nb-grid dir="col" grid="8" hang>Caption</nb-grid>
+    <nb-grid dir="col" grid="8" hang>Caption</nb-grid>
+  </nb-grid>
+</template>
+```
+
+## Page container
+
+`container` makes a grid the page frame: `--nb-grid-max-width` (1440px),
+centred, with `--nb-grid-gutter` as its inline margin. The margin is 0 on a
+phone (the phone signal), 16px from `md` to `xl` and 24px at `xxl`. It is
+opt-in and meant for a page outside `NbShell`. Inside the shell, `main`
+already supplies the margin from `--nb-shell-chrome-padding-x`, so a container
+there would add a second one.
+
+```vue
+<template>
+  <nb-grid is="main" container dir="row" mode="wide" wrap="wrap">
+    <nb-grid dir="col" :grid="{ sm: 16, lg: 8 }">...</nb-grid>
+    <nb-grid dir="col" :grid="{ sm: 16, lg: 8 }">...</nb-grid>
+  </nb-grid>
+</template>
+```
+
+## Subgrid
+
+A grid nested in a span starts a fresh 16 columns of the span's width. Its
+spans line up with the parent's columns when the two gaps match, and drift
+when they do not. `subgrid` drops the nested grid's own gap and takes its
+parent's, so its spans land on the parent's column lines whatever `gap` it was
+given. Below, the nested halves sit exactly under the parent's quarters.
+
+<preview style-grid>
+  <nb-grid dir="row" gap="lg">
+    <nb-grid dir="col" grid="4" class="grid-demo-item">4</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item span-b">4</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item">4</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item span-b">4</nb-grid>
+  </nb-grid>
+  <nb-grid dir="row" gap="lg" style="margin-top: 8px">
+    <nb-grid dir="col" grid="8">
+      <nb-grid dir="row" subgrid gap="xs">
+        <nb-grid dir="col" grid="8" class="grid-demo-item">a quarter</nb-grid>
+        <nb-grid dir="col" grid="8" class="grid-demo-item span-b">a quarter</nb-grid>
+      </nb-grid>
+    </nb-grid>
+    <nb-grid dir="col" grid="8" class="grid-demo-item">8</nb-grid>
+  </nb-grid>
+</preview>
+
+```vue
+<template>
+  <nb-grid dir="row" gap="lg">
+    <nb-grid dir="col" grid="8">
+      <nb-grid dir="row" subgrid>
+        <nb-grid dir="col" grid="8">Quarter</nb-grid>
+        <nb-grid dir="col" grid="8">Quarter</nb-grid>
+      </nb-grid>
+    </nb-grid>
+    <nb-grid dir="col" grid="8">Half</nb-grid>
+  </nb-grid>
+</template>
+```
+
+## Aspect ratio
+
+`ratio` holds a span at `'1:1'`, `'2:1'`, `'2:3'`, `'3:2'`, `'4:3'` or
+`'16:9'`, so a row of tiles lines up before anything loads. It is a preferred
+height: content taller than the ratio grows the box instead of being clipped.
+In a row, flexbox stretches every item to the tallest one, so set
+`align="start"` on the row when a tile must keep its shape beside taller
+content. For a wall of same-shaped tiles, `NbCardGrid` takes the same `ratio`.
+
+<preview style-grid>
+  <nb-grid dir="row" gap="sm" align="start">
+    <nb-grid dir="col" grid="4" ratio="1:1" class="grid-demo-item">1:1</nb-grid>
+    <nb-grid dir="col" grid="4" ratio="4:3" class="grid-demo-item span-b">4:3</nb-grid>
+    <nb-grid dir="col" grid="8" ratio="16:9" class="grid-demo-item">16:9</nb-grid>
+  </nb-grid>
+</preview>
+
+```vue
+<template>
+  <nb-grid dir="row" gap="md" align="start">
+    <nb-grid dir="col" grid="8" ratio="16:9">...</nb-grid>
+    <nb-grid dir="col" grid="8" ratio="16:9">...</nb-grid>
+  </nb-grid>
+</template>
+```
+
 ## Horizontal alignment (`justify`)
 
 <preview style-grid>
@@ -425,7 +563,7 @@ Use `shift` to push a column to the right by a number of column widths.
 The `wrap` prop controls what happens when children overflow the container's inline axis.
 
 <preview style-grid>
-  <div class="grid-demo-label">nowrap — items overflow</div>
+  <div class="grid-demo-label">nowrap: items overflow</div>
   <NbGrid is="ul" wrap="nowrap" gap="sm">
     <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
     <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
@@ -434,7 +572,7 @@ The `wrap` prop controls what happens when children overflow the container's inl
     <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
     <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
   </NbGrid>
-  <div class="grid-demo-label">wrap — items flow to next line</div>
+  <div class="grid-demo-label">wrap: items flow to next line</div>
   <NbGrid is="ul" wrap="wrap" gap="sm"">
     <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
     <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
@@ -443,7 +581,7 @@ The `wrap` prop controls what happens when children overflow the container's inl
     <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
     <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
   </NbGrid>
-  <div class="grid-demo-label">reverse — wraps and reverses row order</div>
+  <div class="grid-demo-label">reverse: wraps and reverses row order</div>
   <NbGrid is="ul" wrap="reverse" gap="sm">
     <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
     <NbGrid is="li" dir="col" class="grid-demo-item demo-small">long string</NbGrid>
@@ -476,7 +614,7 @@ The `wrap` prop controls what happens when children overflow the container's inl
   <nb-grid dir="row" gap="sm">
     <nb-grid dir="col" class="grid-demo-item demo-small">DOM first</nb-grid>
     <nb-grid dir="col" class="grid-demo-item demo-small">DOM second</nb-grid>
-    <nb-grid dir="col" first class="grid-demo-item demo-small order-first">DOM third — renders first</nb-grid>
+    <nb-grid dir="col" first class="grid-demo-item demo-small order-first">DOM third, renders first</nb-grid>
   </nb-grid>
 </preview>
 
@@ -485,7 +623,7 @@ The `wrap` prop controls what happens when children overflow the container's inl
   <nb-grid dir="row">
     <nb-grid dir="col">DOM first</nb-grid>
     <nb-grid dir="col">DOM second</nb-grid>
-    <nb-grid dir="col" first>DOM third — renders first</nb-grid>
+    <nb-grid dir="col" first>DOM third, renders first</nb-grid>
   </nb-grid>
 </template>
 ```
@@ -557,27 +695,31 @@ The `wrap` prop controls what happens when children overflow the container's inl
 
 ## Props
 
-| Prop          | Type                                                     | Default  | Description                                                |
-| ------------- | -------------------------------------------------------- | -------- | ---------------------------------------------------------- |
-| `dir`         | `'row' \| 'col' \| ResponsiveMap \| Fn`                  | `'row'`  | Main axis direction                                        |
-| `gap`         | `GapToken \| ResponsiveMap \| Fn`                        | -        | Gap between children                                       |
-| `grid`        | `number \| ResponsiveMap \| Fn`                          | -        | Number of columns to span (1–16)                           |
-| `shift`       | `number \| ResponsiveMap \| Fn`                          | -        | Column offset from the left edge                           |
-| `justify`     | `JustifyValue \| ResponsiveMap \| Fn`                    | -        | Horizontal alignment of children                           |
-| `align`       | `AlignValue \| ResponsiveMap \| Fn`                      | -        | Vertical alignment of children                             |
-| `distributed` | `boolean`                                                | `false`  | Children grow equally to fill width                        |
-| `wrap`        | `'wrap' \| 'nowrap' \| 'reverse' \| ResponsiveMap \| Fn` | -        | Wrapping behaviour                                         |
-| `grow`        | `boolean`                                                | `false`  | Flex-grow: child expands to fill remaining space           |
-| `visible`     | `boolean \| ResponsiveMap \| Fn`                         | `true`   | Show or hide the element                                   |
-| `first`       | `boolean \| string[]`                                    | `false`  | Render this item visually first; array form per breakpoint |
-| `last`        | `boolean \| string[]`                                    | `false`  | Render this item visually last; array form per breakpoint  |
-| `reverse`     | `boolean \| string[]`                                    | `false`  | Reverse child order; array form per breakpoint             |
-| `is`          | `string`                                                 | `'div'`  | HTML element tag to render (e.g. `'ul'`, `'li'`, `'nav'`)  |
-| `mode`        | `'wide' \| 'narrow' \| 'condensed'`                      | `'wide'` | Predefined gap preset                                      |
+| Prop          | Type                                                     | Default | Description                                                |
+| ------------- | -------------------------------------------------------- | ------- | ---------------------------------------------------------- |
+| `dir`         | `'row' \| 'col' \| ResponsiveMap \| Fn`                  | `'row'` | Main axis direction                                        |
+| `gap`         | `GapToken \| ResponsiveMap \| Fn`                        | -       | Gap between children                                       |
+| `grid`        | `number \| Fraction \| ResponsiveMap \| Fn`              | -       | Columns to span (1 to 16), or a fraction such as `'1/3'`   |
+| `shift`       | `number \| ResponsiveMap \| Fn`                          | -       | Column offset (0 to 15) from the start edge                |
+| `justify`     | `JustifyValue \| ResponsiveMap \| Fn`                    | -       | Horizontal alignment of children                           |
+| `align`       | `AlignValue \| ResponsiveMap \| Fn`                      | -       | Vertical alignment of children                             |
+| `distributed` | `boolean`                                                | `false` | Children grow equally to fill width                        |
+| `wrap`        | `'wrap' \| 'nowrap' \| 'reverse' \| ResponsiveMap \| Fn` | -       | Wrapping behaviour                                         |
+| `grow`        | `boolean`                                                | `false` | Flex-grow: child expands to fill remaining space           |
+| `visible`     | `boolean \| ResponsiveMap \| Fn`                         | `true`  | Show or hide the element                                   |
+| `first`       | `boolean \| string[]`                                    | `false` | Render this item visually first; array form per breakpoint |
+| `last`        | `boolean \| string[]`                                    | `false` | Render this item visually last; array form per breakpoint  |
+| `reverse`     | `boolean \| string[]`                                    | `false` | Reverse child order; array form per breakpoint             |
+| `is`          | `string`                                                 | `'div'` | HTML element tag to render (e.g. `'ul'`, `'li'`, `'nav'`)  |
+| `mode`        | `'wide' \| 'narrow' \| 'condensed'`                      | -       | Default gutter (32, 16, 1px) when there is no `gap`        |
+| `hang`        | `boolean`                                                | `false` | Insets the content to the wide-grid key line               |
+| `container`   | `boolean`                                                | `false` | Page container: max width, centred, page margin            |
+| `subgrid`     | `boolean`                                                | `false` | Takes the parent's gap so spans land on its column lines   |
+| `ratio`       | `'1:1' \| '2:1' \| '2:3' \| '3:2' \| '4:3' \| '16:9'`    | -       | Holds the element at an aspect ratio                       |
 
 ## Gap tokens
 
-`xxs` (2px) · `xs` (4px) · `sm` (8px) · `md` (16px) · `lg` (24px) · `xl` (32px) · `xxl` (48px)
+`xxs` (2px) · `xs` (4px) · `sm` (8px) · `md` (16px) · `lg` (24px) · `xl` (32px) · `xxl` (48px). Each reads `--nb-spacing-N`, so retuning the scale moves the gaps.
 
 ## Justify values
 

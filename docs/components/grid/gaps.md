@@ -2,15 +2,18 @@
 
 ## Gaps
 
-| Gap Name | Value |
-| -------- | ----- |
-| xxs      | 2px   |
-| xs       | 4px   |
-| sm       | 8px   |
-| md       | 16px  |
-| lg       | 24px  |
-| xl       | 32px  |
-| xxl      | 48px  |
+Each gap reads a spacing token, so a product that retunes the scale moves its
+grid gaps with it.
+
+| Gap Name | Value | Token             |
+| -------- | ----- | ----------------- |
+| xxs      | 2px   | `--nb-spacing-2`  |
+| xs       | 4px   | `--nb-spacing-4`  |
+| sm       | 8px   | `--nb-spacing-8`  |
+| md       | 16px  | `--nb-spacing-16` |
+| lg       | 24px  | `--nb-spacing-24` |
+| xl       | 32px  | `--nb-spacing-32` |
+| xxl      | 48px  | `--nb-spacing-48` |
 
 ### Basic Column
 
@@ -159,72 +162,85 @@
 
 :::
 
-### Basic Modes
+### Modes
+
+A mode is a default gutter, Carbon's three: `wide` is 32px, `narrow` 16px and
+`condensed` 1px. It applies only when the grid has no `gap` of its own, so
+`mode="narrow" :gap="{ lg: 'xl' }"` is 16px below `lg` and 32px from it. Spans
+share a mode's gutter exactly as they share a `gap`, so they still add up to
+the row. A grid with no `mode` and no `gap` has no gutter, as before.
 
 :::tabs
 == Preview
 
 <preview style-grid>
-  <nb-grid dir="col" gap="md">
-    <nb-grid dir="row">parent is wide</nb-grid>
-    <nb-grid dir="row">parent is wide</nb-grid>
+  <div class="grid-demo-label">wide (32px)</div>
+  <nb-grid dir="row" mode="wide">
+    <nb-grid dir="col" grid="4" class="grid-demo-item">4</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item span-b">4</nb-grid>
+    <nb-grid dir="col" grid="8" class="grid-demo-item">8</nb-grid>
   </nb-grid>
-  <nb-grid dir="col" gap="sm" mode="narrow">
-    <nb-grid dir="row">parent is narrow</nb-grid>
-    <nb-grid dir="row">parent is narrow</nb-grid>
+  <div class="grid-demo-label">narrow (16px)</div>
+  <nb-grid dir="row" mode="narrow">
+    <nb-grid dir="col" grid="4" class="grid-demo-item">4</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item span-b">4</nb-grid>
+    <nb-grid dir="col" grid="8" class="grid-demo-item">8</nb-grid>
   </nb-grid>
-  <nb-grid dir="col" gap="xs" mode="condensed">
-    <nb-grid dir="row">parent is condensed</nb-grid>
-    <nb-grid dir="row">parent is condensed</nb-grid>
+  <div class="grid-demo-label">condensed (1px)</div>
+  <nb-grid dir="row" mode="condensed">
+    <nb-grid dir="col" grid="4" class="grid-demo-item">4</nb-grid>
+    <nb-grid dir="col" grid="4" class="grid-demo-item span-b">4</nb-grid>
+    <nb-grid dir="col" grid="8" class="grid-demo-item">8</nb-grid>
   </nb-grid>
 </preview>
 == Code
 
 ```vue
 <template>
-  <nb-grid dir="col" gap="md">
-    <nb-grid dir="row">parent is wide</nb-grid>
-    <nb-grid dir="row">parent is wide</nb-grid>
+  <nb-grid dir="row" mode="wide">
+    <nb-grid dir="col" grid="4">4</nb-grid>
+    <nb-grid dir="col" grid="4">4</nb-grid>
+    <nb-grid dir="col" grid="8">8</nb-grid>
   </nb-grid>
-  <nb-grid dir="col" gap="sm" mode="narrow">
-    <nb-grid dir="row">parent is narrow</nb-grid>
-    <nb-grid dir="row">parent is narrow</nb-grid>
-  </nb-grid>
-  <nb-grid dir="col" gap="xs" mode="condensed">
-    <nb-grid dir="row">parent is condensed</nb-grid>
-    <nb-grid dir="row">parent is condensed</nb-grid>
-  </nb-grid>
+  <nb-grid dir="row" mode="narrow">...</nb-grid>
+  <nb-grid dir="row" mode="condensed">...</nb-grid>
 </template>
 ```
 
 :::
 
-### Basic Responsive
+### Responsive
+
+`gap` takes a breakpoint map keyed by `sm`, `md`, `lg`, `xl` and `xxl`, with
+values from the gap scale. Here the gap is `xs` (4px) from 320px and `xl`
+(32px) from 672px.
 
 :::tabs
 == Preview
 
 <preview style-grid>
-  <nb-grid dir="row" :gap="{ s: 's', m: 'xl' }">
-    <nb-grid dir="col" grow>Sample</nb-grid>
-    <nb-grid dir="col" grow>Sample</nb-grid>
+  <nb-grid dir="row" :gap="{ sm: 'xs', md: 'xl' }">
+    <nb-grid dir="col" grow class="grid-demo-item">Sample</nb-grid>
+    <nb-grid dir="col" grow class="grid-demo-item span-b">Sample</nb-grid>
   </nb-grid>
-  <nb-grid dir="col" :gap="{ s: 's', m: 'xl' }">
-    <nb-grid dir="row">Sample</nb-grid>
-    <nb-grid dir="row">Sample</nb-grid>
+  <nb-grid dir="col" :gap="{ sm: 'xs', md: 'xl' }">
+    <nb-grid dir="row" class="grid-demo-item">Sample</nb-grid>
+    <nb-grid dir="row" class="grid-demo-item span-b">Sample</nb-grid>
   </nb-grid>
 </preview>
 == Code
 
 ```vue
 <template>
-  <nb-grid dir="row" :gap="{ s: 's', m: 'xl' }">
+  <nb-grid dir="row" :gap="{ sm: 'xs', md: 'xl' }">
     <nb-grid dir="col" grow>Sample</nb-grid>
     <nb-grid dir="col" grow>Sample</nb-grid>
   </nb-grid>
-  <nb-grid dir="col" :gap="{ s: 's', m: 'xl' }">
+  <nb-grid dir="col" :gap="{ sm: 'xs', md: 'xl' }">
     <nb-grid dir="row">Sample</nb-grid>
     <nb-grid dir="row">Sample</nb-grid>
   </nb-grid>
 </template>
 ```
+
+:::

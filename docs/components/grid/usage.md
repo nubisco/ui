@@ -16,7 +16,7 @@ The grid is configured at compile time via `src/styles/variables/_grid.scss`.
 
 <preview style-grid>
   <div class="grid-demo-label">Grid structure</div>
-  <div class="grid-demo-description">Column-spanning overview — each row uses the same 16-column total width.</div>
+  <div class="grid-demo-description">Column-spanning overview: each row uses the same 16-column total width.</div>
   <nb-grid dir="row" gap="sm">
     <nb-grid dir="col" grid="1" class="grid-demo-item">1</nb-grid>
     <nb-grid dir="col" grid="1" class="grid-demo-item">2</nb-grid>
@@ -80,6 +80,11 @@ The `gap` prop controls spacing between children using named size tokens.
 | `xl`  | 32px  |
 | `xxl` | 48px  |
 
+Each gap reads the matching `--nb-spacing-*` token. A grid without a `gap`
+has no gutter unless it takes a `mode`: `wide` (32px), `narrow` (16px) or
+`condensed` (1px), Carbon's gutter modes, which a `gap` overrides. The Code tab
+covers modes, `hang`, `subgrid`, the page `container` and `ratio`.
+
 ## Column gaps
 
 <preview style-grid>
@@ -110,7 +115,7 @@ Use `first` and `last` boolean props to reorder items visually without changing 
 <preview style-grid>
   <nb-grid dir="row" gap="sm">
     <nb-grid dir="col" class="grid-demo-item demo-small">DOM first</nb-grid>
-    <nb-grid dir="col" last class="grid-demo-item demo-small order-last">DOM second — renders last</nb-grid>
+    <nb-grid dir="col" last class="grid-demo-item demo-small order-last">DOM second, renders last</nb-grid>
     <nb-grid dir="col" class="grid-demo-item demo-small">DOM third</nb-grid>
   </nb-grid>
 </preview>
