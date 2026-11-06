@@ -1,14 +1,15 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * Browser tests, deliberately **local-only**.
+ * Browser tests.
  *
- * `test:e2e` is not part of `quality:check` and is not wired into CI. These
- * checks want a real browser and a running documentation site, which is a
- * heavier thing to ask of a pipeline than the jsdom suite, and the jsdom suite
- * already guards the logic. What lives here is what jsdom genuinely cannot
- * answer: computed styles, teleported overlays, and the focus behaviour of a
- * real focus trap.
+ * `test:e2e` is not part of `quality:check` (the pre-commit hook stays fast),
+ * but CI runs it on Chromium in its own job ("Browser tests" in
+ * .github/workflows/ci.yml), so the only real-browser accessibility checks in
+ * the repository run on every push. These checks want a real browser and a
+ * running documentation site, which the jsdom suite cannot give. What lives
+ * here is what jsdom genuinely cannot answer: computed styles, teleported
+ * overlays, and the focus behaviour of a real focus trap.
  *
  * Run with `pnpm run test:e2e`.
  */
@@ -16,7 +17,8 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
   forbidOnly: true,
-  retries: 0,
+  // One retry in CI only, for a cold dev server's first compile.
+  retries: process.env.CI ? 1 : 0,
   reporter: [['list']],
 
   use: {
@@ -44,7 +46,8 @@ export default defineConfig({
   webServer: {
     command: 'pnpm run docs:dev -- --port 5178 --strictPort',
     url: 'http://localhost:5178/',
-    reuseExistingServer: true,
+    // CI always starts a fresh server; locally an open one is reused.
+    reuseExistingServer: !process.env.CI,
     timeout: 180_000,
   },
 })

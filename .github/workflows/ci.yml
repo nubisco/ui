@@ -100,6 +100,33 @@ jobs:
 
       - run: pnpm test
 
+  e2e:
+    # The browser suite (focus trap, teleported overlays, computed styles):
+    # what jsdom cannot answer. Chromium only, which is enough for a gate.
+    # Playwright starts the docs dev server itself (playwright.config.ts).
+    name: Browser tests
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          check-latest: true
+
+      - uses: actions/cache/restore@v6
+        with:
+          path: node_modules
+          key: node_modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - run: pnpm run test:e2e --project=chromium
+
   coverage:
     name: Coverage
     needs: setup
