@@ -2,6 +2,7 @@
 @use 'sass:map';
 @use '../config';
 @use '../variables/breakpoints';
+@use '../variables/grid' as vars;
 @use './mixins';
 
 // grid styles
@@ -21,6 +22,27 @@
     > * {
       flex: 1;
     }
+  }
+
+  // Modes come before every gap rule, at the same specificity, so a `gap`
+  // prop (base or at a breakpoint) wins over the mode's default.
+  @each $mode, $gap in vars.$grid-modes {
+    &.nb-grid--#{$mode} {
+      gap: $gap;
+      > * {
+        --nb-grid-parent-gap: #{$gap};
+      }
+    }
+  }
+
+  // Hang: the box keeps its edges, hugging the gutter, and its content is
+  // inset so the text sits as far from the gutter's centre line as it would
+  // in a wide grid. Nothing in a wide grid, 8px in a narrow one, 15.5px in a
+  // condensed one.
+  &.nb-grid--hang {
+    padding-inline-start: calc(
+      (#{vars.$grid-hang-reference} - var(--nb-grid-parent-gap, 0px)) / 2
+    );
   }
 }
 
