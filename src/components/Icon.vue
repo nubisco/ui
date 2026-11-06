@@ -4,6 +4,8 @@
     :style="styles"
     v-bind="attributes"
     @click="!clickable ? undefined : emit('click', $event)"
+    @keydown="onKeydown"
+    @keyup="onKeyup"
   >
     <component
       :is="iconComponent"
@@ -16,6 +18,7 @@
 
 <script lang="ts">
 const warnedSizes = new Set<string>()
+let warnedClickable = false
 
 /** Every name `size` accepts, the deprecated ones included. */
 const ICON_SIZE_NAMES: readonly string[] = [
@@ -81,6 +84,44 @@ function checkSize(size: IIconProps['size']) {
 }
 watch(() => props.size, checkSize, { immediate: true })
 
+/*
+ * `clickable` is deprecated: an icon that does something is a button, and
+ * `NbButton variant="ghost"` with `icon` is that button, with padding, a focus
+ * ring and a name check. Until it goes, a clickable icon at least behaves
+ * like one: it is a tab stop, Enter and Space press it, and on a phone touch
+ * screen it takes taps over a fingertip-sized box.
+ */
+watch(
+  () => props.clickable,
+  (clickable) => {
+    if (!clickable || warnedClickable) return
+    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production')
+      return
+    warnedClickable = true
+    console.warn(
+      '[NbIcon] `clickable` is deprecated. An icon that does something is a ' +
+        'button: use <NbButton variant="ghost" icon="..." /> with ' +
+        'v-nb-tooltip naming the action.',
+    )
+  },
+  { immediate: true },
+)
+
+function onKeydown(event: KeyboardEvent) {
+  if (!props.clickable) return
+  if (event.key === 'Enter') {
+    event.preventDefault()
+    emit('click', event)
+  } else if (event.key === ' ') {
+    // Space presses on release, as on a native button; stop the page scroll.
+    event.preventDefault()
+  }
+}
+
+function onKeyup(event: KeyboardEvent) {
+  if (props.clickable && event.key === ' ') emit('click', event)
+}
+
 const source = computed(() => props.icon ?? props.name)
 
 /**
@@ -141,7 +182,7 @@ const attributes = computed(() => {
     // that name; unnamed, it is hidden from assistive technology, and the SVG
     // inside is never a tab stop in the browsers that still make it one.
     ...(props.clickable
-      ? { role: 'button', 'aria-label': accessibleName.value }
+      ? { role: 'button', tabindex: 0, 'aria-label': accessibleName.value }
       : isInformative.value
         ? { role: 'img', 'aria-label': accessibleName.value }
         : { 'aria-hidden': 'true' as const }),
@@ -218,6 +259,7 @@ const styles = computed(() => {
 <style lang="scss" scoped>
 @use 'sass:map';
 @use '../styles/logic/motion' as motion;
+@use '../styles/logic/touch' as touch;
 
 .nb-icon {
   display: flex;
@@ -225,6 +267,19 @@ const styles = computed(() => {
   position: relative;
   &:not(.hoverable):not(.box-clickable) {
     pointer-events: none;
+  }
+
+  // Deprecated, see the `clickable` warning. Until it goes it is a real
+  // target: a pointer, a focus ring and a fingertip of hit area on a phone.
+  &.box-clickable {
+    cursor: pointer;
+    outline: none;
+    @include touch.hit-area($position: false);
+
+    &:focus-visible {
+      outline: 1px solid var(--nb-c-focus-ring);
+      outline-offset: 2px;
+    }
   }
 
   svg {
