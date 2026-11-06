@@ -20,6 +20,12 @@ describe('Switch', () => {
     expect(wrapper.find('input[type="checkbox"]').exists()).toBe(true)
   })
 
+  // Announced as a switch (on/off), not a checkbox (checked/not checked).
+  it('gives the input role="switch"', () => {
+    const wrapper = createWrapper()
+    expect(wrapper.find('input').attributes('role')).toBe('switch')
+  })
+
   it('renders unchecked by default', () => {
     const wrapper = createWrapper({ modelValue: false })
     expect(wrapper.find('input[type="checkbox"]').element.checked).toBe(false)
