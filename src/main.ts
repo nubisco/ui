@@ -711,6 +711,8 @@ export type {
 // Plural forms through Intl.PluralRules, never a ternary on `count === 1`.
 export { pluralize } from './utils/pluralize.helper'
 export type { IPluralForms } from './utils/pluralize.helper'
+// Middle truncation for long record names, which keeps both ends readable.
+export { truncateMiddle } from './utils/truncateMiddle.helper'
 export { useInlineLoading } from './composables/useInlineLoading.composable'
 export type {
   TInlineLoadingStatus,

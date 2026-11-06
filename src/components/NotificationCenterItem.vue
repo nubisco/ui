@@ -52,6 +52,7 @@
           v-if="body || $slots.default"
           class="nb-notification-item__body"
           data-nb-notification-body
+          :title="body || undefined"
         >
           <slot>{{ body }}</slot>
         </span>

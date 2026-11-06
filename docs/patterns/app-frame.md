@@ -1091,6 +1091,10 @@ the frame's.
 - **Truncate the middle of a long record name, never the parents.** The parents
   are what the user is aiming at; the current crumb is the one they can already
   read on the page in the `<h1>`.
+  `truncateMiddle(name, 32)` from the package does the cut: it keeps the start
+  and the end (`quarterly-r...-11-05.pdf`), counts code points so nothing is
+  split in half, and leaves the full name for you to put in the crumb's
+  `title`.
 
 ## Where the user menu lives
 

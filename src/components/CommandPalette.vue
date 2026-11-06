@@ -56,9 +56,11 @@
                   :size="16"
                   class="nb-command-palette__item-icon"
                 />
-                <span class="nb-command-palette__item-label">{{
-                  item.label
-                }}</span>
+                <span
+                  class="nb-command-palette__item-label"
+                  :title="item.label"
+                  >{{ item.label }}</span
+                >
                 <span
                   v-if="item.shortcut"
                   class="nb-command-palette__item-shortcut"

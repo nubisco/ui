@@ -40,7 +40,12 @@ body {
     text-align: center;
   }
 
+  // Needs a width to clip against (a block, a flex child with min-width: 0,
+  // or a table cell). Pair it with a title or tooltip: clipped text with no
+  // route to the full string fails the writing style's truncation rule.
   &-ellipsed {
+    overflow: hidden;
+    white-space: nowrap;
     text-overflow: ellipsis;
   }
 
