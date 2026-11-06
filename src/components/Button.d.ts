@@ -1,5 +1,6 @@
 import type { TIconSource } from '@/types/Glyph.d'
 import { ESize } from '@/types/Size.d'
+import type { EWeight } from './Icon.d'
 
 enum EButtonType {
   Button = 'button',
@@ -53,6 +54,12 @@ interface IButtonProps {
   loading?: boolean
   /** Icon name passed directly to NbIcon. Rendered in the trailing padding area. Hidden while loading. */
   icon?: TIconSource
+  /**
+   * The icon's weight. `regular` everywhere, `fill` only for a selected or
+   * active state. Forwarded to NbIcon, and read at compile time by the glyph
+   * plugin so `<NbButton icon="plus">` links one weight rather than six.
+   */
+  iconWeight?: `${EWeight}`
   /** Native button type. Ignored when `href` is provided. */
   type?: `${EButtonType}`
   /** When provided the component renders as an `<a>` element instead of `<button>`. */
