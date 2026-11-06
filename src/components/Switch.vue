@@ -19,6 +19,7 @@
         v-model="model"
         :name="name"
         type="checkbox"
+        role="switch"
         :disabled="disabled"
       />
       <div class="slider round" />
@@ -146,8 +147,17 @@ const wrapperClasses = computed(() => ({
         background-color: var(--nb-c-component-disabled);
       }
     }
+    // Visually hidden, not display:none: display:none took the only control
+    // out of the tab order, so a switch could not be reached by keyboard.
+    // Absolute inside the track, so nothing on screen moves.
     input {
-      display: none;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      opacity: 0;
+      cursor: inherit;
       &:checked + .slider {
         &:before {
           -webkit-transform: translateX(calc(var(--nb-base-unit) * 2));
@@ -155,8 +165,9 @@ const wrapperClasses = computed(() => ({
           transform: translateX(calc(var(--nb-base-unit) * 2));
         }
       }
-      &:focus + .slider {
-        box-shadow: 0 0 1px var(--nb-c-component-active);
+      &:focus-visible + .slider {
+        outline: 2px solid var(--nb-c-focus-ring);
+        outline-offset: 2px;
       }
     }
     &:not([aria-disabled='true']) {
