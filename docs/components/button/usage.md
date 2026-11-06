@@ -98,4 +98,14 @@ Every group above has exactly one filled button, and the exit is always
 `ghost`. See the whole pattern working on a real screen in
 [Team management](/patterns/team-management).
 
+## Content
+
+- **The label is the verb of what the button does**, plus a noun when the verb alone is ambiguous: `Save`, `Create project`, `Delete environment`. The one verb per intent is in [Action labels](/content/action-labels).
+- **One or two words, sentence case, no period.** Never `OK`, `Done`, `Yes`, `Submit` or `Retry` (it is `Try again`).
+- **The label never truncates.** A button's width comes from its content. If it does not fit, the label is too long or the layout is too tight, and the fix is one of those, not an ellipsis.
+- **An icon-only button needs an `aria-label`** that is the same verb phrase a visible label would use: `Delete entry`, not `Delete` or `Trash`. The button warns in development when it has no name.
+- **`...` only when pressing it opens a dialog that asks for more** (`Export...`). Never on a button that raises a confirmation.
+
+Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+
 <!--@include: ./_shared.md-->

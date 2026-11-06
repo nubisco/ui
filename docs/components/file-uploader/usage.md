@@ -28,3 +28,12 @@ The color accent follows the `variant` prop, which maps directly to `NbButton` v
 Dragging any file over the component reveals the drop zone: a dashed bordered area with a prompt to drop. Releasing the file triggers the same validation and file-list logic as clicking the button.
 
 The drop zone accent color matches the active `variant`.
+
+## Content
+
+- **The button says `Add file`** (pass `Add files` when it takes several), the library default. Not `Browse`, not `Upload` when nothing is sent until the form is saved.
+- **The description states the limits the uploader enforces**, in the same numbers: `Max file size is 500 KB. Supported file types are .jpg, .png and .pdf.` A limit the user meets only as an error is a limit you hid.
+- **An error names the file and the fix**: `photo.heic is not a supported type. Use .jpg or .png.`
+- **Sizes use uppercase units with a space**: `500 KB`, `2 MB`.
+
+Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.

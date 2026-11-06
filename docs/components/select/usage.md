@@ -38,4 +38,13 @@ pageTabs: ['usage', 'code']
   <NbSelect v-model="locale" label="Locale" disabled :options="localeOptions" />
 </preview>
 
+## Content
+
+- **The label names the thing being chosen**, not the action: `Role`, not `Select a role`.
+- **Options are sentence-case nouns, sorted the way a reader scans them**: by frequency for short lists, alphabetically for long ones. No trailing periods.
+- **The placeholder for an empty select is optional.** When used, it says what is missing (`No role`), never `Please select...`.
+- **The search box says `Search`**, with no ellipsis. Override `searchPlaceholder` only to name what is searched (`Search members`).
+
+Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+
 <!--@include: ./_shared.md-->

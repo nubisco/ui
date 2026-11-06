@@ -97,6 +97,16 @@ None of this cancels the work itself: pass an `AbortSignal` inside `onConfirm` i
 
 Every part of it is additive. An `NbModal` that passes none of the new props behaves as it did, except that it now answers <kbd>Esc</kbd> only when it is on top and no longer takes the scroll lock away from a dialog underneath it.
 
+## Content
+
+- **`title` is the action, not a question**: `Delete environment`, never `Are you sure?` and never a trailing question mark.
+- **`message` is the consequence in one sentence**, naming what is lost: `Every entry, release and API key in it is deleted. This cannot be undone.`
+- **`confirmLabel` repeats the verb phrase** so the button stands alone in a screen reader's list of actions. The `Confirm` default exists only so the button is never empty.
+- **`cancelLabel` answers the title** when `Cancel` would be ambiguous: `Keep editing` against `Discard changes`.
+- **`busyLabel` is the verb in the present, with no ellipsis**: `Deleting`. Pass `formatError` so a failure reads as a sentence the user can act on rather than the default.
+
+Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+
 ## Related
 
 - [Modal](/components/modal/usage) for dialogs that carry a form or a task.

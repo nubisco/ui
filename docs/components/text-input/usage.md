@@ -49,4 +49,14 @@ All three sizes align to the 8px base-unit grid.
   <NbTextInput label="Read-only" model-value="Cannot be changed" readonly style="width: 240px" />
 </preview>
 
+## Content
+
+- **The label is a noun phrase of one to three words**, sentence case, no colon and no period: `Email address`, `Project name`.
+- **A placeholder is optional, and the default is none.** When you add one it shows the shape of the value (`ACME-1024`), never an instruction, and never anything the user needs once they start typing.
+- **`helper` says what the user needs before they answer**, as a sentence with a period, or a fragment without one (`Maximum 200 characters`).
+- **`error` names the fix, not the failure**: `Enter a work email address`, not `Invalid input`. Two lines at most.
+- **State a limit the user can hit.** With `maxlength`, add `show-count` so the limit is visible before it stops them.
+
+Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+
 <!--@include: ./_shared.md-->
