@@ -1,4 +1,5 @@
 @use 'sass:math';
+@use 'sass:list';
 @use 'sass:map';
 @use '../config';
 @use '../variables/breakpoints';
@@ -68,6 +69,51 @@
       > * {
         flex: 1;
       }
+    }
+
+    // The page container: the grid's maximum width, centred, with the page
+    // margin as inline padding. Opt-in, for a page outside NbShell, whose
+    // main region already supplies its margin.
+    &.nb-grid--container {
+      width: 100%;
+      max-width: var(--nb-grid-max-width);
+      margin-inline: auto;
+      padding-inline: var(--nb-grid-gutter);
+    }
+
+    // A subgrid drops its own gap and takes its parent's, so its spans land
+    // on the parent's column lines instead of adding a second gutter. After
+    // every gap rule, so it wins over a `gap` prop at any breakpoint.
+    &.nb-grid--subgrid {
+      gap: var(--nb-grid-parent-gap, 0px);
+      > * {
+        --nb-grid-parent-gap: inherit;
+      }
+    }
+
+    // A ratio is a preferred height from the width. Taller content still
+    // grows the box, and in a stretched row the tallest item sets the line:
+    // `align="start"` on the row keeps every tile at its own shape.
+    @each $ratio in vars.$grid-ratios {
+      $w: list.nth($ratio, 1);
+      $h: list.nth($ratio, 2);
+      &.nb-grid--ratio-#{$w}-#{$h} {
+        aspect-ratio: #{$w} / #{$h};
+      }
+    }
+  }
+
+  // The page margin. 16px from md to xl, 24px at xxl, and none on a phone,
+  // where the margin would cost a tenth of the width. Declared once on :root
+  // in the theme, moved here only at the edges of the scale.
+  @include breakpoints.phone {
+    :root {
+      --nb-grid-gutter: 0px;
+    }
+  }
+  @include breakpoints.mq('xxl') {
+    :root {
+      --nb-grid-gutter: #{vars.$grid-gutter-max}px;
     }
   }
 }

@@ -130,6 +130,17 @@ export type TBooleanResponsive = boolean | TBreakpoint[]
 // condensed 1px. A `gap` prop wins over the mode.
 export type TGridMode = 'wide' | 'narrow' | 'condensed'
 
+// Aspect ratios a span or a card grid tile can hold, as width:height.
+export type TGridRatio = '1:1' | '2:1' | '2:3' | '3:2' | '4:3' | '16:9'
+export const GRID_RATIOS: readonly TGridRatio[] = [
+  '1:1',
+  '2:1',
+  '2:3',
+  '3:2',
+  '4:3',
+  '16:9',
+]
+
 // Class collection type
 export type TClassCollection = Record<string, boolean>
 
@@ -161,6 +172,9 @@ export interface IGridProps {
   distributed?: boolean
   mode?: TGridMode | null
   hang?: boolean
+  container?: boolean
+  subgrid?: boolean
+  ratio?: TGridRatio | null
   tabIndex?: string | null
 }
 
@@ -373,6 +387,29 @@ export const gridPropDefinitions = {
   hang: {
     type: Boolean as PropType<boolean>,
     default: false,
+  },
+
+  // Makes this grid the page container: `--nb-grid-max-width`, centred, with
+  // `--nb-grid-gutter` as its inline margin. For a page outside NbShell.
+  container: {
+    type: Boolean as PropType<boolean>,
+    default: false,
+  },
+
+  // Drops this grid's own gap and takes its parent's, so nested spans fall on
+  // the parent's column lines.
+  subgrid: {
+    type: Boolean as PropType<boolean>,
+    default: false,
+  },
+
+  // Holds the span at an aspect ratio. Content taller than the ratio still
+  // grows the box rather than being clipped.
+  ratio: {
+    type: String as PropType<TGridRatio>,
+    default: null,
+    validator: (value: string | null): boolean =>
+      value == null || (GRID_RATIOS as readonly string[]).includes(value),
   },
 
   tabIndex: {

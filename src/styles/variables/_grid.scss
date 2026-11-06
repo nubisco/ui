@@ -2,7 +2,10 @@
 
 $grid-max-width: 1440 !default;
 $grid-columns: 16 !default;
+// The page margin a container applies: 16px from md to xl, 24px at xxl and
+// none on a phone (see grid/index.scss).
 $grid-gutter: layout.$base-unit * 2 !default;
+$grid-gutter-max: layout.$base-unit * 3 !default;
 
 // The gap scale is the spacing scale under seven names, read through the
 // tokens rather than compiled to pixels, so a product that retunes
@@ -30,3 +33,7 @@ $grid-modes: (
 // The gutter a hang measures against: a span's content sits as far from the
 // gutter's centre line as it would in a wide grid, whatever this grid's gap.
 $grid-hang-reference: var(--nb-spacing-32) !default;
+
+// Aspect ratios a span (`NbGrid` `ratio`) or a card grid tile (`NbCardGrid`
+// `ratio`) can hold, as width and height. Carbon's set.
+$grid-ratios: (1 1, 2 1, 2 3, 3 2, 4 3, 16 9) !default;

@@ -4,6 +4,33 @@ import CardGrid from '../src/components/CardGrid.vue'
 import Card from '../src/components/Card.vue'
 import Panel from '../src/components/Panel.vue'
 import { defineComponent } from 'vue'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { parse, compileStyle } from 'vue/compiler-sfc'
+import { compileString } from 'sass-embedded'
+
+// The component's style as it ships: Sass, then Vue's scoping, so the
+// `:slotted()` rule is checked in the form the browser receives.
+function cardGridCss(): string {
+  const path = join(__dirname, '../src/components/CardGrid.vue')
+  const { descriptor } = parse(readFileSync(path, 'utf8'))
+  return descriptor.styles
+    .map(
+      (s) =>
+        compileStyle({
+          source: compileString(s.content, {
+            syntax: 'scss',
+            url: pathToFileURL(path),
+            style: 'expanded',
+          }).css,
+          filename: path,
+          id: 'data-v-test',
+          scoped: true,
+        }).code,
+    )
+    .join('\n')
+}
 
 describe('NbCardGrid', () => {
   it('lays out columns from a minimum card width, not a page span', () => {
@@ -38,6 +65,37 @@ describe('NbCardGrid', () => {
     expect(
       mount(CardGrid, { props: { gap: 'lg' } }).attributes('data-gap'),
     ).toBe('lg')
+  })
+
+  it('reads its gaps from the spacing tokens', () => {
+    expect(cardGridCss()).toContain('gap: var(--nb-spacing-16)')
+  })
+
+  it('holds every tile at a ratio, and has no ratio unless asked', () => {
+    expect(mount(CardGrid).attributes('data-ratio')).toBeUndefined()
+    const w = mount(CardGrid, { props: { ratio: '16:9' } })
+    expect(w.attributes('data-ratio')).toBe('16-9')
+    const css = cardGridCss()
+    // Slotted tiles carry the slot scope id, not the component's.
+    expect(css).toMatch(
+      /\.nb-card-grid\[data-ratio="16-9"\] > \[data-v-test-s\]\s*\{\s*aspect-ratio: 16\/9/,
+    )
+    for (const r of ['1-1', '2-1', '2-3', '3-2', '4-3'])
+      expect(css).toContain(`[data-ratio="${r}"]`)
+  })
+
+  // A phone: the container is narrower than `min`, so the column is the
+  // container (min(min, 100%)) and the ratio scales the tile with it instead
+  // of a fixed-size tile overflowing the screen.
+  it('keeps the ratio when a phone shrinks the column below min', () => {
+    const w = mount(CardGrid, { props: { min: '400px', ratio: '4:3' } })
+    expect(w.attributes('style')).toContain('minmax(min(400px, 100%), 1fr)')
+    expect(w.attributes('data-ratio')).toBe('4-3')
+    const css = cardGridCss()
+    const rule = css.slice(css.indexOf('[data-ratio="4-3"]'))
+    expect(rule.slice(0, rule.indexOf('}'))).not.toMatch(
+      /(?:^|[^-])(?:width|height|overflow)\s*:/,
+    )
   })
 })
 

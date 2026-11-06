@@ -1,5 +1,5 @@
 import type { TIconSource } from '@/types/Glyph.d'
-import type { TGapSize } from './Grid.d'
+import type { TGapSize, TGridRatio } from './Grid.d'
 
 export interface ICardGridProps {
   /**
@@ -26,6 +26,14 @@ export interface ICardGridProps {
    * cards across a desktop makes them look like panels instead.
    */
   fill?: 'auto-fill' | 'auto-fit'
+  /**
+   * Holds every tile at an aspect ratio (`'1:1'`, `'2:1'`, `'2:3'`, `'3:2'`,
+   * `'4:3'`, `'16:9'`), for a wall of thumbnails or tiles that should line
+   * up before their content loads. A tile whose content is taller grows
+   * rather than clipping. On a phone, where a column shrinks below `min`, the
+   * tile keeps its shape at the narrower width.
+   */
+  ratio?: TGridRatio
 }
 
 export interface ICardProps {
