@@ -34,8 +34,8 @@
       </div>
       <div class="durations__row durations__row--loop">
         <div class="durations__label">
-          <code>--nb-motion-loop</code>
-          <span class="durations__ms">{{ label(1000) }}</span>
+          <code>A loop</code>
+          <span class="durations__ms">{{ label(900) }}</span>
         </div>
         <div class="durations__cell durations__cell--loop">
           <div class="durations__track durations__track--loop">
@@ -161,7 +161,7 @@ function label(ms: number): string {
   border-radius: 50%;
   border: 3px solid var(--nb-c-layer-3, var(--nb-c-border));
   border-top-color: var(--nb-c-primary);
-  animation: durations-spin var(--nb-motion-loop) linear infinite;
+  animation: durations-spin var(--durations-loop, 900ms) linear infinite;
 }
 
 @keyframes durations-spin {
@@ -179,7 +179,8 @@ function label(ms: number): string {
   .durations__arc {
     border-top-color: var(--nb-c-primary);
     border-color: var(--nb-c-primary);
-    animation: durations-breathe var(--nb-motion-loop) ease-in-out infinite;
+    animation: durations-breathe var(--durations-loop, 900ms) ease-in-out
+      infinite;
   }
 }
 

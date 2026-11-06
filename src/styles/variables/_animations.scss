@@ -18,8 +18,9 @@
 ///
 /// @group @nubisco/motion
 
-/// Durations. Loops are the one step that is not a transition: a second of
-/// waiting to see a menu is a bug, a one-second spinner cycle is a loop.
+/// Durations. Loops have no step: each loop is a literal tuned to its
+/// indicator, deliberately spread so two on one screen do not beat against
+/// each other, and listed in tests/motion-conformance.test.ts.
 /// @type Map
 /// @access public
 $motion: (
@@ -28,7 +29,6 @@ $motion: (
   short: 150ms,
   medium: 240ms,
   long: 400ms,
-  loop: 1s,
 ) !default;
 
 /// Easing curves.

@@ -17,7 +17,6 @@ The six steps and three curves are declared in `src/styles/variables/_animations
   --nb-motion-short: 150ms;
   --nb-motion-medium: 240ms;
   --nb-motion-long: 400ms;
-  --nb-motion-loop: 1s;
 
   --nb-ease-standard: cubic-bezier(0.2, 0, 0.38, 0.9);
   --nb-ease-enter: cubic-bezier(0, 0, 0.38, 0.9);
