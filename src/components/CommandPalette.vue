@@ -521,7 +521,7 @@ onBeforeUnmount(() => {
   line-height: var(--nb-type-body-lg-line-height);
 
   &::placeholder {
-    color: var(--nb-c-text-subtle);
+    color: var(--nb-c-text-placeholder);
   }
 }
 

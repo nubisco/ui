@@ -486,7 +486,7 @@ const wrapperClasses = computed(() => ({
     line-height: var(--nb-field-line-height);
 
     &::placeholder {
-      color: var(--nb-c-text-subtle);
+      color: var(--nb-c-text-placeholder);
     }
     &:disabled {
       cursor: not-allowed;

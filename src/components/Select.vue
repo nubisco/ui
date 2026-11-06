@@ -980,7 +980,7 @@ defineExpose({
   @include touch.touch-field-text;
 
   &::placeholder {
-    color: var(--nb-c-text-subtle);
+    color: var(--nb-c-text-placeholder);
   }
 
   &:focus {
@@ -1009,7 +1009,7 @@ defineExpose({
   @include touch.touch-field-text;
 
   &::placeholder {
-    color: var(--nb-c-text-subtle);
+    color: var(--nb-c-text-placeholder);
   }
 
   &:focus {

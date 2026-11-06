@@ -297,11 +297,11 @@ describe('link variant', () => {
     expect(body).toMatch(/font-weight:\s*inherit/)
   })
 
-  it('is drawn in primary ink, the colour held at AA on every layer', () => {
-    // inkContrast.test.ts measures ink(primary) on all four layers of both
-    // themes, so reusing the expression is what carries the guarantee here.
+  it('is drawn in the link role, the colour held at AA on every layer', () => {
+    // textRoles.test.ts measures --nb-c-link (primary drawn as ink) on all
+    // four layers and their hovers in both themes.
     expect(bodiesOf('.nb-button--link')).toMatch(
-      /color:\s*var\(--nb-button-link-color,\s*color-mix\(in srgb, var\(--nb-c-primary\), var\(--nb-c-ink-toward, var\(--nb-c-white\)\) var\(--nb-c-primary-ink-lift, 0%\)\)\)/,
+      /color:\s*var\(--nb-button-link-color,\s*var\(--nb-c-link\)\)/,
     )
   })
 

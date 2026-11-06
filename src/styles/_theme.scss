@@ -22,6 +22,18 @@
   }
 }
 
+/// The text roles beyond the three tiers, as literals so a nested `.dark`
+/// region resolves its own.
+///
+/// `text-placeholder` is the subtle tier's value under its own name (AA,
+/// 4.50 on the worst field fill, dark plane 2), so placeholder text can move
+/// without moving every other subtle label. `icon` is the muted tier: an icon
+/// beside a label reads with the label, and 3:1 is the bar it has to clear.
+@mixin text-roles($ramp) {
+  --nb-c-text-placeholder: #{layers.token($ramp, text-subtle)};
+  --nb-c-icon: #{layers.token($ramp, text-muted)};
+}
+
 /// Points every contextual per-plane token at one level's values.
 @mixin plane-aliases($level) {
   @each $role, $token in layers.$plane-roles {
@@ -295,6 +307,7 @@
     --nb-c-text-subtle-a11y: #{colors.color-contrast(
         layers.token(layers.$light, text-subtle)
       )};
+    @include text-roles(layers.$light);
 
     /*
      * Form fields.
@@ -333,6 +346,14 @@
     --nb-c-status-valid: var(--nb-c-emerald-reflection-700);
     --nb-c-status-warning: var(--nb-c-phoenix-flames-700);
     --nb-c-status-error: var(--nb-c-chicken-comb-600);
+    // The two the glyph tier was missing. Worst case over the four layers and
+    // their hovers: info 3.84, neutral 4.23 (held to 3:1, tests/textRoles).
+    --nb-c-status-info: var(--nb-c-the-blues-brothers-500);
+    --nb-c-status-neutral: var(--nb-c-nouveau-gray-600);
+    // Error TEXT, a message under a field: held to 4.5:1 rather than the
+    // glyph's 3:1, so it is one step darker than the error glyph. Worst case
+    // 5.84 over the layers and their hovers.
+    --nb-c-text-error: var(--nb-c-chicken-comb-650);
 
     // == Data visualisation roles ==========================================
     // Charts address colour by ROLE, never by ramp: a series is "chart-3",
@@ -423,6 +444,7 @@
 
     // Focus ring: used by all interactive controls via :focus-visible
     @include accent.focus-ring;
+    @include accent.link;
 
     // ── Scrim / overlay ───────────────────────────────────────────────────
     // The dim laid over the page by anything that takes over the viewport:
@@ -812,6 +834,7 @@
     // white than the light 500 does to reach the tint this token used to alias.
     @include accent.subtle(50%);
     @include accent.selected-edge(70%);
+    @include accent.link;
     --nb-c-primary-a11y: #{colors.color-contrast(
         colors.get-color('grape-hyacinth', 400)
       )};
@@ -924,6 +947,7 @@
         layers.token(layers.$dark, text-muted)
       )};
     --nb-c-text-subtle: #{layers.token(layers.$dark, text-subtle)};
+    @include text-roles(layers.$dark);
 
     // Background tiers: deepest layer for page background
     --nb-c-bg: var(--nb-c-layer-0);
@@ -958,6 +982,11 @@
     --nb-c-status-valid: #{colors.get-color('emerald-reflection', 400)};
     --nb-c-status-warning: #{colors.get-color('phoenix-flames', 400)};
     --nb-c-status-error: #{colors.get-color('chicken-comb', 300)};
+    // Measured on the lightest dark plane (layer-3), the worst case: info
+    // 4.16, neutral 4.24. Text error 4.64 over every layer and hover.
+    --nb-c-status-info: #{colors.get-color('the-blues-brothers', 300)};
+    --nb-c-status-neutral: #{colors.get-color('nouveau-gray', 350)};
+    --nb-c-text-error: #{colors.get-color('chicken-comb', 250)};
 
     // Data visualisation roles, dark. Same eight hues, stepped up their
     // ramps, exactly as --nb-c-primary and the status colours are stepped
