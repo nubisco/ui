@@ -127,6 +127,7 @@ const canvasStyle = computed(() => ({
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 .nb-blueprint__grid {
   --nb-blueprint-grid-gap: 24px;
   --_grid-color: var(--nb-blueprint-grid-color, var(--nb-c-border));
@@ -240,6 +241,25 @@ const canvasStyle = computed(() => ({
 @keyframes nb-wire-flow {
   to {
     stroke-dashoffset: -24;
+  }
+}
+
+// The flowing dashes say "signal is live". Under reduced motion the dashes
+// hold still and the wire breathes instead, so it still says live.
+@include motion.reduced {
+  .nb-blueprint__wire-flow {
+    animation: nb-wire-breathe 2400ms ease-in-out infinite;
+  }
+}
+
+@keyframes nb-wire-breathe {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.7;
   }
 }
 </style>

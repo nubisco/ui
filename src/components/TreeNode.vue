@@ -334,6 +334,7 @@ function onKeydown(e: KeyboardEvent) {
 </script>
 
 <style lang="scss" scoped>
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/logic/touch' as touch;
 
@@ -578,6 +579,14 @@ function onKeydown(e: KeyboardEvent) {
   &--drop-inside > .nb-tree-node__label {
     background: color-mix(in srgb, var(--nb-c-primary) 15%, transparent);
     box-shadow: inset 0 0 0 2px var(--nb-c-primary);
+  }
+}
+
+// The toggle chevron is travel: under reduced motion it snaps, like the
+// accordion chevron. The children never animated.
+@include motion.reduced {
+  .nb-tree-node__toggle-icon {
+    transition: none;
   }
 }
 </style>

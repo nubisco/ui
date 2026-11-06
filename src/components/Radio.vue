@@ -184,7 +184,7 @@ function optionClasses(option: IRadioOption) {
     height: 9px;
     @include radius.circular;
     background: var(--nb-c-contrast);
-    animation: nb-radio-pop var(--nb-motion-quick) ease;
+    animation: nb-radio-pop var(--nb-motion-quick) var(--nb-ease-enter);
   }
 
   // ── Option label text ─────────────────────────────────────────────────────────
@@ -268,6 +268,20 @@ function optionClasses(option: IRadioOption) {
     to {
       transform: scale(1);
     }
+  }
+}
+
+// The dot's pop is travel (a scale). Under reduced motion the dot fades in
+// where it lands, so the selection is still seen to be the click's result.
+@include motion.reduced {
+  .nb-radio__dot {
+    animation-name: nb-radio-fade;
+  }
+}
+
+@keyframes nb-radio-fade {
+  from {
+    opacity: 0;
   }
 }
 </style>
