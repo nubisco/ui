@@ -643,7 +643,7 @@ const removeChip = (el: TTooltipEl, chip: TTooltipChip, immediate: boolean) => {
     chip.remove()
     return
   }
-  chip.style.animation = `tooltipDisappear ${HIDE_ANIMATION_MS}ms cubic-bezier(0.2, 0, 1, 0.9) forwards`
+  chip.style.animation = `tooltipDisappear var(--nb-motion-micro) var(--nb-ease-exit) forwards`
   chip.__removeTimer__ = setTimeout(() => {
     chip.__removeTimer__ = undefined
     chip.remove()
@@ -1441,7 +1441,7 @@ const showTooltip = (
     body,
     tip,
     delay = 400,
-    animationTime = 110,
+    animationTime,
     position,
     overflowOnly,
   } = options
@@ -1540,8 +1540,14 @@ const showTooltip = (
       // asked for less motion still needs to be able to read it instantly.
       tooltip.style.opacity = '1'
     } else {
-      tooltip.style.transition = `opacity ${animationTime}ms ease-in-out`
-      tooltip.style.animation = `tooltipAppear ${animationTime}ms cubic-bezier(0, 0, 0.38, 0.9) forwards`
+      // The tokens, not their values, so a product that retunes them on
+      // :root retunes the tooltip too. An explicit `animationTime` wins.
+      const appear =
+        animationTime === undefined
+          ? 'var(--nb-motion-quick)'
+          : `${animationTime}ms`
+      tooltip.style.transition = `opacity ${appear} ease-in-out`
+      tooltip.style.animation = `tooltipAppear ${appear} var(--nb-ease-enter) forwards`
     }
 
     // Aria wiring: there is none, and that is the point.
