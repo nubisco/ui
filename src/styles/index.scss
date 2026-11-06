@@ -10,7 +10,7 @@
 @use 'patterns/inspector';
 @use 'presets/classic-fields';
 @use 'appearance';
-@use 'ai';
+@use 'contrast';
 
 @include theme.base;
 @include theme.classes;
@@ -24,3 +24,6 @@
 // The rounded scale. Square needs no rules: the semantic roles are already
 // the square values, so this only adds the opt-in half.
 @include appearance.appearance;
+// Increased contrast. Scoped to the media query and to [data-nb-contrast], so
+// it changes nothing for anyone who has not asked for it.
+@include contrast.contrast;

@@ -1,0 +1,64 @@
+/// Increased contrast: `prefers-contrast: more`, or `data-nb-contrast="more"`.
+///
+/// The default ramp is tuned for long sessions: layer borders sit at 1.95 to
+/// 3.50:1 on purpose, so depth reads without the page turning into a
+/// wireframe, and the third text tier is held to AA. A person who has asked
+/// the operating system for more contrast has told us that trade is the wrong
+/// one for them. This scope re-points every layer border, and with it
+/// `--nb-c-border`, to the plane's `border-strong` value (3:1 or better on its
+/// own plane, 1.4.11's bar for a boundary), and lifts the subtle and
+/// placeholder tiers to the muted tier (AAA on every plane).
+///
+/// Fills do not move: the layer surfaces, hovers and state surfaces keep
+/// their values, so the depth order and every measured text pair still hold.
+///
+/// Selected three ways:
+///
+/// - the media query, automatically, unless `data-nb-contrast="standard"` is
+///   set on `<html>` (an application with its own contrast setting);
+/// - `data-nb-contrast="more"` on `<html>` or any subtree, whatever the
+///   operating system says;
+/// - nested inside `.dark`, or with `.dark` inside it, the dark values apply.
+///
+/// `tests/contrastMore.test.ts` measures both halves.
+///
+/// @group @nubisco/theme
+
+@use 'variables/layers';
+
+@mixin _values($ramp) {
+  @for $i from 0 through 3 {
+    --nb-c-layer-border-#{$i}: #{layers.level($ramp, border-strong, $i)};
+  }
+  // Re-declared, because an alias resolved on an ancestor would freeze to the
+  // ancestor's border (see `_accent.scss` for why).
+  --nb-c-border: var(--nb-c-layer-border-1);
+  --nb-c-text-subtle: #{layers.token($ramp, text-muted)};
+  --nb-c-text-placeholder: #{layers.token($ramp, text-muted)};
+}
+
+/// No `.nb-layer-N` rules are needed: each one points `--nb-c-border` at
+/// `--nb-c-layer-border-N`, which resolves on its own element to the raised
+/// value inherited from this scope.
+@mixin contrast {
+  [data-nb-contrast='more'] {
+    @include _values(layers.$light);
+  }
+
+  .dark[data-nb-contrast='more'],
+  .dark [data-nb-contrast='more'],
+  [data-nb-contrast='more'] .dark {
+    @include _values(layers.$dark);
+  }
+
+  @media (prefers-contrast: more) {
+    :root:not([data-nb-contrast='standard']) {
+      @include _values(layers.$light);
+    }
+
+    :root:not([data-nb-contrast='standard']).dark,
+    :root:not([data-nb-contrast='standard']) .dark {
+      @include _values(layers.$dark);
+    }
+  }
+}
