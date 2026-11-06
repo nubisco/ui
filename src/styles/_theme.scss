@@ -7,6 +7,7 @@
 @use 'variables/colors';
 @use 'variables/layers';
 @use 'variables/type';
+@use 'variables/breakpoints' as bp;
 @use 'variables/grid';
 @use 'variables/animations';
 
@@ -55,7 +56,7 @@
     }
 
     /*
-    * Font size
+    * Font size. 8, 9, 10, 11 and 13 are deprecated (see type.$deprecatedFontSizes).
     */
     @each $key, $value in type.$fontSizes {
       --nb-font-size-#{$key}: #{$value};
@@ -96,7 +97,15 @@
       --nb-type-#{$name}-family: var(
         --nb-font-family-#{if(sass($family): $family; else: sans)}
       );
+      @if map.get($props, transform) {
+        --nb-type-#{$name}-text-transform: #{map.get($props, transform)};
+      }
     }
+
+    /*
+    * Measure: the comfortable line length for running prose
+    */
+    --nb-measure: #{type.$measure};
 
     /*
     * Spacing sizes
@@ -513,8 +522,10 @@
   * Font size utilities — set font-size only; line-height comes from type sets or component styles
   */
   @each $key, $value in type.$fontSizes {
-    .text-#{$key} {
-      font-size: var(--nb-font-size-#{$key});
+    @if $key >= type.$fontSizeFloor {
+      .text-#{$key} {
+        font-size: var(--nb-font-size-#{$key});
+      }
     }
   }
 
@@ -537,19 +548,42 @@
       font-weight: var(--nb-type-#{$name}-weight);
       line-height: var(--nb-type-#{$name}-line-height);
       letter-spacing: var(--nb-type-#{$name}-letter-spacing);
+      @if map.get($props, transform) {
+        text-transform: var(--nb-type-#{$name}-text-transform);
+      }
     }
   }
 
   /*
-  * Heading elements — wired to the corresponding heading type set
+  * Display sets step down on a phone, through the phone signal only
+  */
+  @include bp.phone {
+    :root {
+      @each $name, $props in type.$displayPhone {
+        --nb-type-#{$name}-size: var(--nb-font-size-#{map.get($props, size)});
+        --nb-type-#{$name}-line-height: #{map.get($props, line-height)};
+      }
+    }
+  }
+
+  /*
+  * Tabular figures: digits of one width, for numbers that line up or tick
+  */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
+  * Heading elements, wired to the product ladder: a page title, a region,
+  * a panel, then row-level titles and a label
   */
   $heading-type-set-map: (
-    1: 'heading-06',
-    2: 'heading-05',
-    3: 'heading-04',
-    4: 'heading-03',
-    5: 'heading-02',
-    6: 'heading-01',
+    1: 'heading-03',
+    2: 'heading-02',
+    3: 'heading-01',
+    4: 'heading-compact',
+    5: 'heading-compact',
+    6: 'label',
   );
   @each $level, $set-name in $heading-type-set-map {
     h#{$level} {

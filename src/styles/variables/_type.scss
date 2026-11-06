@@ -32,126 +32,205 @@ $letterSpacing: (
   wider: 0.05em,
 ) !default;
 
-// Type sets — pre-configured typographic roles.
-// Each value is a map with: size (font-size key), weight (font-weight key),
-// line-height (unitless), letter-spacing, and optionally family (defaults to sans).
+// Type sets: pre-configured typographic roles, the productive ladder.
+//
+// One size per role, and weight falls as size rises: semibold is spent on
+// the two smallest headings, where size alone cannot separate a title from
+// the body, and from 20px up the size carries the hierarchy at regular or
+// light. Nothing sits below 12px.
+//
+// Each value is a map with: size (a $fontSizes key), weight (a $fontWeight
+// key), line-height (an integer pixel value on the 4px rhythm),
+// letter-spacing, and optionally family (defaults to sans) and transform
+// (a text-transform, used by overline). Tracking follows the size: 0.32px at
+// 12, 0.16px at 14, 0 at 16 and up, negative on the large headings.
 /// @type Map
 /// @access public
 /// @group @nubisco/type
 $typeSets: (
-  // ── Labels: UI controls, tags, badges, chips, table headers ──
+  // ── Labels: field labels, tags, chips, captions ──
+  label: (
+      size: 12,
+      weight: regular,
+      line-height: 16px,
+      letter-spacing: 0.32px,
+    ),
+  // The older names, kept working, their values now on the ladder.
   label-sm: (
-      size: 11,
-      weight: semibold,
-      line-height: 1.4,
-      letter-spacing: 0,
+      size: 12,
+      weight: regular,
+      line-height: 16px,
+      letter-spacing: 0.32px,
     ),
   label-md: (
     size: 12,
-    weight: semibold,
-    line-height: 1.4,
-    letter-spacing: 0,
+    weight: regular,
+    line-height: 16px,
+    letter-spacing: 0.32px,
   ),
   label-lg: (
     size: 14,
-    weight: semibold,
-    line-height: 1.4,
-    letter-spacing: 0,
+    weight: regular,
+    line-height: 18px,
+    letter-spacing: 0.16px,
   ),
-  // ── Body: paragraph text, descriptions, form help text ──
+  // ── Helper text: the hint or error under a field ──
+  helper-text: (
+      size: 12,
+      weight: regular,
+      line-height: 16px,
+      letter-spacing: 0.32px,
+    ),
+  // ── Overline: the uppercase micro-label over a group or a panel ──
+  overline: (
+      size: 12,
+      weight: semibold,
+      line-height: 16px,
+      letter-spacing: 0.06em,
+      transform: uppercase,
+    ),
+  // ── Body: paragraph text, descriptions, row text ──
+  // body-sm is the support role (meta, timestamps, secondary lines).
   body-sm: (
       size: 12,
       weight: regular,
-      line-height: 1.5,
-      letter-spacing: 0,
+      line-height: 16px,
+      letter-spacing: 0.32px,
     ),
+  // body-compact is text inside a component, up to a few lines.
+  body-compact: (
+      size: 14,
+      weight: regular,
+      line-height: 18px,
+      letter-spacing: 0.16px,
+    ),
+  // body-md is the paragraph role.
   body-md: (
-    size: 14,
-    weight: regular,
-    line-height: 1.5,
-    letter-spacing: 0,
-  ),
+      size: 14,
+      weight: regular,
+      line-height: 20px,
+      letter-spacing: 0.16px,
+    ),
   body-lg: (
     size: 16,
     weight: regular,
-    line-height: 1.625,
+    line-height: 24px,
     letter-spacing: 0,
   ),
-  // ── Code: inline code, code blocks, JSON viewers ──
+  // ── Code: inline code, code blocks, JSON viewers, keys and IDs ──
   code-sm: (
-      size: 11,
+      size: 12,
       weight: regular,
-      line-height: 1.5,
-      letter-spacing: 0,
+      line-height: 16px,
+      letter-spacing: 0.32px,
       family: mono,
     ),
   code-md: (
-    size: 13,
+    size: 14,
     weight: regular,
-    line-height: 1.5,
-    letter-spacing: 0,
+    line-height: 20px,
+    letter-spacing: 0.16px,
     family: mono,
   ),
   code-lg: (
     size: 16,
     weight: regular,
-    line-height: 1.5,
+    line-height: 24px,
     letter-spacing: 0,
     family: mono,
   ),
-  // ── Headings: section titles, card titles, dialogs ──
+  // ── Headings ──
+  // heading-compact: a row or component title, a column header.
+  heading-compact: (
+      size: 14,
+      weight: semibold,
+      line-height: 18px,
+      letter-spacing: 0.16px,
+    ),
+  // heading-01: a panel or container title.
   heading-01: (
       size: 16,
       weight: semibold,
-      line-height: 1.3,
+      line-height: 22px,
       letter-spacing: 0,
     ),
+  // heading-02: a region title.
   heading-02: (
-    size: 20,
-    weight: semibold,
-    line-height: 1.25,
-    letter-spacing: -0.01em,
-  ),
+      size: 20,
+      weight: regular,
+      line-height: 28px,
+      letter-spacing: -0.01em,
+    ),
+  // heading-03: a page title.
   heading-03: (
-    size: 24,
-    weight: semibold,
-    line-height: 1.2,
-    letter-spacing: -0.015em,
-  ),
+      size: 24,
+      weight: regular,
+      line-height: 32px,
+      letter-spacing: -0.015em,
+    ),
   heading-04: (
     size: 32,
-    weight: bold,
-    line-height: 1.15,
+    weight: regular,
+    line-height: 40px,
     letter-spacing: -0.02em,
   ),
   heading-05: (
     size: 42,
-    weight: bold,
-    line-height: 1.1,
+    weight: light,
+    line-height: 50px,
     letter-spacing: -0.02em,
   ),
   heading-06: (
     size: 54,
-    weight: bold,
-    line-height: 1.05,
+    weight: light,
+    line-height: 64px,
     letter-spacing: -0.025em,
   ),
   // ── Display: hero sections, landing pages ──
+  // Both step down on a phone (see $displayPhone).
   display-01: (
       size: 60,
-      weight: bold,
-      line-height: 1,
+      weight: light,
+      line-height: 68px,
       letter-spacing: -0.03em,
     ),
   display-02: (
     size: 76,
-    weight: bold,
-    line-height: 1,
+    weight: light,
+    line-height: 84px,
     letter-spacing: -0.03em,
   )
 ) !default;
 
-// Initial map of font sizes in rem
+// The size and line height each display set takes on a phone, where 60 and
+// 76px would overflow a 360px screen. Applied through the phone signal only,
+// so the desktop does not move.
+/// @type Map
+/// @access public
+/// @group @nubisco/type
+$displayPhone: (
+  display-01: (
+    size: 42,
+    line-height: 50px,
+  ),
+  display-02: (
+    size: 54,
+    line-height: 64px,
+  ),
+) !default;
+
+// Comfortable line length for running prose. Emitted as --nb-measure.
+/// @type Number
+/// @access public
+/// @group @nubisco/type
+$measure: 65ch !default;
+
+// Initial map of font sizes in rem.
+//
+// The floor is 12px. 8, 9, 10, 11 and 13 are deprecated: they are still
+// emitted as --nb-font-size-N for one minor so nothing breaks, no library
+// component uses them, and 8 to 11 no longer get a .text-N utility. Move to
+// a type set (label, helper-text, body-sm, body-compact) instead.
 /// @type Map
 /// @access public
 /// @group @nubisco/type
@@ -180,20 +259,38 @@ $fontSizes: (
   76: 4.75rem,
 ) !default;
 
-// Initial map of heading font sizes in rem
+// The deprecated font size steps, kept for one minor. See $fontSizes.
+/// @type List
+/// @access public
+/// @group @nubisco/type
+$deprecatedFontSizes: (8, 9, 10, 11, 13) !default;
+
+// The smallest step that gets a .text-N utility.
+/// @type Number
+/// @access public
+/// @group @nubisco/type
+$fontSizeFloor: 12 !default;
+
+// Font size (px) of each heading element, h1 to h6. They follow the type sets
+// wired to them in the theme: heading-03, heading-02, heading-01,
+// heading-compact, heading-compact and label.
 /// @type Map
 /// @access public
 /// @group @nubisco/type
 $headings: (
-  1: 54,
-  2: 42,
-  3: 32,
-  4: 24,
-  5: 20,
-  6: 16,
+  1: 24,
+  2: 20,
+  3: 16,
+  4: 14,
+  5: 14,
+  6: 12,
 ) !default;
 
-// Initial map of font weight values
+// Initial map of font weight values.
+// Weights the library uses: light (display and the largest headings),
+// regular (body, labels, headings from 20px up) and semibold (the small
+// headings, overline, emphasis). Bold stays as a token for products that load
+// it, but the fonts plugin does not load it and no component uses it.
 /// @type Map
 /// @access public
 /// @group @nubisco/type
