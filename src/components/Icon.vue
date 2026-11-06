@@ -188,6 +188,9 @@ const styles = computed(() => {
 </script>
 
 <style lang="scss" scoped>
+@use 'sass:map';
+@use '../styles/logic/motion' as motion;
+
 .nb-icon {
   display: flex;
   line-height: 1em;
@@ -245,479 +248,465 @@ const styles = computed(() => {
     width: var(--nb-font-size-8);
   }
 
-  // animations
-  &-animation-hover-swing-right:hover {
-    animation: swing-right 0.5s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
+  // Animations.
+  //
+  // Every keyframe starts and ends at the icon's own size: an animated icon is
+  // the same size as its static neighbour, and only the gesture moves. The
+  // timing reads the motion tokens, so a product that retunes
+  // `--nb-motion-loop` retunes these with it. A continuous spin is linear
+  // (constant speed is what "still working" looks like); the gestures ease on
+  // the standard curve.
+  //
+  // `loading` marks the ones that say "working" (a spin, a turn, a timer).
+  // Under reduced motion they keep looping as an opacity breath, and the rest,
+  // which are pure travel, stop. See docs/principles/motion/accessibility.md.
+  $animations: (
+    swing-right: (
+      duration: calc(var(--nb-motion-loop) / 2),
+    ),
+    wobble: (),
+    expand: (
+      duration: calc(var(--nb-motion-loop) / 2),
+    ),
+    refresh: (
+      easing: linear,
+      loading: true,
+    ),
+    heart: (
+      duration: calc(var(--nb-motion-loop) / 2),
+    ),
+    undo: (),
+    italic: (),
+    cog: (
+      duration: calc(var(--nb-motion-loop) * 5),
+      loading: true,
+    ),
+    wrench: (
+      origin: 79% 26%,
+    ),
+    mouse-pointer: (),
+    magic: (),
+    lock: (),
+    unlock: (
+      origin: 75% 25%,
+    ),
+    hourglass: (
+      loading: true,
+    ),
+    eraser: (),
+    rocket: (),
+    times: (),
+  );
+
+  $defaults: (
+    duration: var(--nb-motion-loop),
+    easing: var(--nb-ease-standard),
+  );
+
+  @each $name, $given in $animations {
+    $spec: map.merge($defaults, $given);
+    &-animation-hover-#{$name}:hover,
+    &-animation-always-#{$name} {
+      @if map.has-key($spec, origin) {
+        transform-origin: map.get($spec, origin);
+      }
+      animation: $name map.get($spec, duration) map.get($spec, easing) infinite;
+    }
   }
-  &-animation-always-swing-right {
-    animation: swing-right 0.5s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
+
+  // The one reduced-motion block. Travel stops; a loading glyph keeps looping
+  // as a tint, because a frozen "working" icon reads as a hung page.
+  @include motion.reduced {
+    @each $name, $spec in $animations {
+      &-animation-hover-#{$name}:hover,
+      &-animation-always-#{$name} {
+        @if map.get($spec, loading) {
+          animation: nb-icon-breathe
+            calc(var(--nb-motion-loop) * 1.6)
+            var(--nb-ease-standard)
+            infinite;
+        } @else {
+          animation: none;
+        }
+      }
+    }
   }
-  &-animation-hover-wobble:hover {
-    animation: wobble 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-always-wobble {
-    animation: wobble 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-hover-expand:hover {
-    animation: expand 0.5s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-always-expand {
-    animation: expand 0.5s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-hover-refresh:hover {
-    animation: refresh 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-always-refresh {
-    animation: refresh 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-hover-heart:hover {
-    animation: heart 0.5s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-always-heart {
-    animation: heart 0.5s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-hover-undo:hover {
-    animation: undo 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-always-undo {
-    animation: undo 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-hover-italic:hover {
-    animation: italic 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-always-italic {
-    animation: italic 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-hover-cog:hover {
-    animation: cog 5s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-always-cog {
-    animation: cog 5s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-hover-wrench:hover {
-    transform-origin: 79% 26%;
-    animation: wrench 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-always-wrench {
-    transform-origin: 79% 26%;
-    animation: wrench 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-hover-mouse-pointer:hover {
-    animation: mouse-pointer 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-always-mouse-pointer {
-    animation: mouse-pointer 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-hover-magic:hover {
-    animation: magic 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-always-magic {
-    animation: magic 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-hover-lock:hover {
-    animation: lock 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-always-lock {
-    animation: lock 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-hover-unlock:hover {
-    transform-origin: 75% 25%;
-    animation: unlock 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-always-unlock {
-    transform-origin: 75% 25%;
-    animation: unlock 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-hover-hourglass:hover {
-    animation: hourglass 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-always-hourglass {
-    animation: hourglass 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-hover-eraser:hover {
-    animation: eraser 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-always-eraser {
-    animation: eraser 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-hover-rocket:hover {
-    animation: rocket 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-always-rocket {
-    animation: rocket 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-hover-times:hover {
-    animation: times 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
-  }
-  &-animation-always-times {
-    animation: times 1s cubic-bezier(0.36, 0.07, 0.57, 0.99) infinite;
+
+  @keyframes nb-icon-breathe {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
   }
 
   @keyframes swing-right {
     0% {
-      transform: scale(1.5) translateX(0);
+      transform: translateX(0);
     }
     33% {
-      transform: scale(1.5) translateX(-5px);
+      transform: translateX(-5px);
     }
     66% {
-      transform: scale(1.5) translateX(5px);
+      transform: translateX(5px);
     }
     100% {
-      transform: scale(1.5) translateX(0);
+      transform: translateX(0);
     }
   }
   @keyframes wobble {
     0% {
-      transform: scale(1.5) translate(0, 0);
+      transform: translate(0, 0);
     }
     20% {
-      transform: scale(1.5) translate(-5px, 5px);
+      transform: translate(-5px, 5px);
     }
     40% {
-      transform: scale(1.5) translate(-5px, -5px);
+      transform: translate(-5px, -5px);
     }
     60% {
-      transform: scale(1.5) translate(5px, 5px);
+      transform: translate(5px, 5px);
     }
     80% {
-      transform: scale(1.5) translate(5px, -5px);
+      transform: translate(5px, -5px);
     }
     100% {
-      transform: scale(1.5) translate(0, 0);
+      transform: translate(0, 0);
     }
   }
   @keyframes expand {
     0% {
-      transform: scale(1.5) translate(0, 0);
+      transform: translate(0, 0);
     }
     25% {
-      transform: scale(1.5) translate(-5px, 5px);
+      transform: translate(-5px, 5px);
     }
     50% {
-      transform: scale(2) translate(0, 0);
+      transform: scale(1.25);
     }
     75% {
-      transform: scale(1.5) translate(5px, -5px);
+      transform: translate(5px, -5px);
     }
     100% {
-      transform: scale(1.5) translate(0, 0);
+      transform: translate(0, 0);
     }
   }
   @keyframes refresh {
     from {
-      transform: scale(1.5) rotate(0);
+      transform: rotate(0);
     }
     to {
-      transform: scale(1.5) rotate(360deg);
+      transform: rotate(360deg);
     }
   }
   @keyframes heart {
     0% {
-      transform: scale(1.5);
+      transform: none;
     }
     20% {
-      transform: scale(2);
+      transform: scale(1.25);
     }
     30% {
-      transform: scale(1.5);
+      transform: none;
     }
     40% {
-      transform: scale(2);
+      transform: scale(1.25);
     }
     100% {
-      transform: scale(1.5);
+      transform: none;
     }
   }
   @keyframes undo {
     0% {
-      transform: scale(1.5) translateX(0) rotate(0);
+      transform: translateX(0) rotate(0);
     }
     33% {
-      transform: scale(1.5) translateX(10px) rotate(0);
+      transform: translateX(10px) rotate(0);
     }
     66% {
-      transform: scale(1.5) translateX(-10px) rotate(-360deg);
+      transform: translateX(-10px) rotate(-360deg);
     }
     100% {
-      transform: scale(1.5) translateX(0) rotate(-360deg);
+      transform: translateX(0) rotate(-360deg);
     }
   }
   @keyframes italic {
     0% {
-      transform: scale(1.5) skewX(0);
+      transform: skewX(0);
     }
     50% {
-      transform: scale(1.5) skewX(12deg);
+      transform: skewX(12deg);
     }
     100% {
-      transform: scale(1.5) skewX(0);
+      transform: skewX(0);
     }
   }
   @keyframes cog {
     0% {
-      transform: scale(1.5) rotate(0);
+      transform: rotate(0);
     }
     10% {
-      transform: scale(1.5) rotate(45deg);
+      transform: rotate(45deg);
     }
     17% {
-      transform: scale(1.5) rotate(45deg);
+      transform: rotate(45deg);
     }
     20% {
-      transform: scale(1.5) rotate(90deg);
+      transform: rotate(90deg);
     }
     27% {
-      transform: scale(1.5) rotate(90deg);
+      transform: rotate(90deg);
     }
     30% {
-      transform: scale(1.5) rotate(135deg);
+      transform: rotate(135deg);
     }
     37% {
-      transform: scale(1.5) rotate(135deg);
+      transform: rotate(135deg);
     }
     40% {
-      transform: scale(1.5) rotate(180deg);
+      transform: rotate(180deg);
     }
     47% {
-      transform: scale(1.5) rotate(180deg);
+      transform: rotate(180deg);
     }
     50% {
-      transform: scale(1.5) rotate(225deg);
+      transform: rotate(225deg);
     }
     57% {
-      transform: scale(1.5) rotate(225deg);
+      transform: rotate(225deg);
     }
     60% {
-      transform: scale(1.5) rotate(270deg);
+      transform: rotate(270deg);
     }
     67% {
-      transform: scale(1.5) rotate(270deg);
+      transform: rotate(270deg);
     }
     70% {
-      transform: scale(1.5) rotate(315deg);
+      transform: rotate(315deg);
     }
     77% {
-      transform: scale(1.5) rotate(315deg);
+      transform: rotate(315deg);
     }
     80% {
-      transform: scale(1.5) rotate(360deg);
+      transform: rotate(360deg);
     }
     100% {
-      transform: scale(1.5) rotate(360deg);
+      transform: rotate(360deg);
     }
   }
   @keyframes wrench {
     0% {
-      transform: scale(1.5) rotate(0);
+      transform: rotate(0);
     }
     20% {
-      transform: scale(1.5) rotate(30deg);
+      transform: rotate(30deg);
     }
     30% {
-      transform: scale(1.5) rotate(-20deg);
+      transform: rotate(-20deg);
     }
     50% {
-      transform: scale(1.5) rotate(30deg);
+      transform: rotate(30deg);
     }
     60% {
-      transform: scale(1.5) rotate(-20deg);
+      transform: rotate(-20deg);
     }
     100% {
-      transform: scale(1.5) rotate(0);
+      transform: rotate(0);
     }
   }
   @keyframes mouse-pointer {
     0% {
-      transform: scale(1.5);
+      transform: none;
     }
     20% {
-      transform: scale(1.5);
+      transform: none;
     }
     22.5% {
-      transform: scale(1.2);
+      transform: scale(0.8);
     }
     32.5% {
-      transform: scale(1.2);
+      transform: scale(0.8);
     }
     35% {
-      transform: scale(1.5);
+      transform: none;
     }
     100% {
-      transform: scale(1.5);
+      transform: none;
     }
   }
   @keyframes magic {
     0% {
-      transform: scale(1.5) translate(0, 0) rotate(0);
+      transform: translate(0, 0) rotate(0);
     }
     10% {
-      transform: scale(1.5) translate(-5px, 2.5px) rotate(-10deg);
+      transform: translate(-5px, 2.5px) rotate(-10deg);
     }
     20% {
-      transform: scale(1.5) translate(-10px, 0) rotate(-20deg);
+      transform: translate(-10px, 0) rotate(-20deg);
     }
     30% {
-      transform: scale(1.5) translate(-5px, -2.5px) rotate(-30deg);
+      transform: translate(-5px, -2.5px) rotate(-30deg);
     }
     40% {
-      transform: scale(1.5) translate(0, 0) rotate(-20deg);
+      transform: translate(0, 0) rotate(-20deg);
     }
     50% {
-      transform: scale(1.5) translate(5px, 2.5px) rotate(-10deg);
+      transform: translate(5px, 2.5px) rotate(-10deg);
     }
     60% {
-      transform: scale(1.5) translate(10px, 0) rotate(0);
+      transform: translate(10px, 0) rotate(0);
     }
     70% {
-      transform: scale(1.5) translate(5px, -2.5px) rotate(10deg);
+      transform: translate(5px, -2.5px) rotate(10deg);
     }
     100% {
-      transform: scale(1.5) translate(0, 0) rotate(0);
+      transform: translate(0, 0) rotate(0);
     }
   }
   @keyframes lock {
     0% {
-      transform: scale(1.5) translateY(0);
+      transform: translateY(0);
     }
     20% {
-      transform: scale(1.5) translateY(-5px);
+      transform: translateY(-5px);
     }
     30% {
-      transform: scale(1.5) translateY(5px);
+      transform: translateY(5px);
     }
     50% {
-      transform: scale(1.5) translateY(-5px);
+      transform: translateY(-5px);
     }
     60% {
-      transform: scale(1.5) translateY(5px);
+      transform: translateY(5px);
     }
     100% {
-      transform: scale(1.5) translateY(0);
+      transform: translateY(0);
     }
   }
   @keyframes unlock {
     0% {
-      transform: scale(1.5) rotate(-15deg);
+      transform: rotate(-15deg);
     }
     15% {
-      transform: scale(1.5) rotate(-40deg);
+      transform: rotate(-40deg);
     }
     30% {
-      transform: scale(1.5) rotate(5deg);
+      transform: rotate(5deg);
     }
     45% {
-      transform: scale(1.5) rotate(-30deg);
+      transform: rotate(-30deg);
     }
     60% {
-      transform: scale(1.5) rotate(-5deg);
+      transform: rotate(-5deg);
     }
     75% {
-      transform: scale(1.5) rotate(-20deg);
+      transform: rotate(-20deg);
     }
     90% {
-      transform: scale(1.5) rotate(-15deg);
+      transform: rotate(-15deg);
     }
     100% {
-      transform: scale(1.5) rotate(-15deg);
+      transform: rotate(-15deg);
     }
   }
   @keyframes hourglass {
     0% {
-      transform: scale(1.5) rotate(0);
+      transform: rotate(0);
     }
     35% {
-      transform: scale(1.5) rotate(180deg);
+      transform: rotate(180deg);
     }
     65% {
-      transform: scale(1.5) rotate(180deg);
+      transform: rotate(180deg);
     }
     100% {
-      transform: scale(1.5) rotate(0);
+      transform: rotate(0);
     }
   }
   @keyframes eraser {
     0% {
-      transform: scale(1.5) translate(0, 0);
+      transform: translate(0, 0);
     }
     15% {
-      transform: scale(1.5) translate(-10px, -5px);
+      transform: translate(-10px, -5px);
     }
     30% {
-      transform: scale(1.5) translate(-10px, 5px);
+      transform: translate(-10px, 5px);
     }
     45% {
-      transform: scale(1.5) translate(-5px, -5px);
+      transform: translate(-5px, -5px);
     }
     60% {
-      transform: scale(1.5) translate(-5px, 5px);
+      transform: translate(-5px, 5px);
     }
     75% {
-      transform: scale(1.5) translate(0, 0);
+      transform: translate(0, 0);
     }
     100% {
-      transform: scale(1.5) translate(10px, 0);
+      transform: translate(10px, 0);
     }
   }
   @keyframes rocket {
     0% {
-      transform: scale(1.5) translate(0, 0);
+      transform: translate(0, 0);
       opacity: 1;
     }
     5% {
-      transform: scale(1.5) translate(2px, 0);
+      transform: translate(2px, 0);
       opacity: 1;
     }
     10% {
-      transform: scale(1.5) translate(1px, -2px);
+      transform: translate(1px, -2px);
       opacity: 1;
     }
     15% {
-      transform: scale(1.5) translate(3px, -1px);
+      transform: translate(3px, -1px);
       opacity: 1;
     }
     20% {
-      transform: scale(1.5) translate(2px, -3px);
+      transform: translate(2px, -3px);
       opacity: 1;
     }
     25% {
-      transform: scale(1.5) translate(4px, -2px);
+      transform: translate(4px, -2px);
       opacity: 1;
     }
     50% {
-      transform: scale(1.5) translate(10px, -10px);
+      transform: translate(10px, -10px);
       opacity: 0;
     }
     51% {
-      transform: scale(1.5) translate(-10px, 10px);
+      transform: translate(-10px, 10px);
       opacity: 0;
     }
     100% {
-      transform: scale(1.5) translate(0, 0);
+      transform: translate(0, 0);
       opacity: 1;
     }
   }
   @keyframes times {
     0% {
-      transform: scale(1.5) translateX(0);
+      transform: translateX(0);
     }
     15% {
-      transform: scale(1.5) translateX(5px);
+      transform: translateX(5px);
     }
     30% {
-      transform: scale(1.5) translateX(-5px);
+      transform: translateX(-5px);
     }
     45% {
-      transform: scale(1.5) translateX(3px);
+      transform: translateX(3px);
     }
     60% {
-      transform: scale(1.5) translateX(-3px);
+      transform: translateX(-3px);
     }
     75% {
-      transform: scale(1.5) translateX(0);
+      transform: translateX(0);
     }
     100% {
-      transform: scale(1.5) translateX(0);
+      transform: translateX(0);
     }
   }
 }
