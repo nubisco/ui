@@ -1,6 +1,7 @@
 @forward 'config';
 @forward 'variables';
 @forward 'reset';
+@use 'focus';
 @forward 'transitions';
 @use 'directives';
 @use 'grid';
