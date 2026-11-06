@@ -1911,39 +1911,6 @@ defineExpose({
   }
 }
 
-// ── Route transition (routeTransition) ────────────────────────────────────────
-//
-// The wrapper stands in for main as the content's flex column, so a view that
-// fills main still fills it. The outgoing view leaves at once: the router
-// outlet inside it would otherwise re-render the incoming route while it
-// faded, and the person would see the new page fade out before fading in.
-// The incoming view arrives on the short step and the enter curve, opacity
-// only, and under reduced motion it is a cut.
-.nb-shell__route {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.nb-shell-route-enter-active {
-  transition: opacity var(--nb-motion-short) var(--nb-ease-enter);
-}
-
-.nb-shell-route-enter-from {
-  opacity: 0;
-}
-
-.nb-shell-route-leave-active {
-  display: none;
-}
-
-@include motion.reduced {
-  .nb-shell-route-enter-active {
-    transition: none;
-  }
-}
-
 // ── Bottom panel ──────────────────────────────────────────────────────────────
 
 .nb-shell__bottom {
@@ -2719,6 +2686,39 @@ defineExpose({
         display: none;
       }
     }
+  }
+}
+
+// ── Route transition (routeTransition) ────────────────────────────────────────
+//
+// The wrapper stands in for main as the content's flex column, so a view that
+// fills main still fills it. The outgoing view leaves at once: the router
+// outlet inside it would otherwise re-render the incoming route while it
+// faded, and the person would see the new page fade out before fading in.
+// The incoming view arrives on the short step and the enter curve, opacity
+// only, and under reduced motion it is a cut.
+.nb-shell__route {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.nb-shell-route-enter-active {
+  transition: opacity var(--nb-motion-short) var(--nb-ease-enter);
+}
+
+.nb-shell-route-enter-from {
+  opacity: 0;
+}
+
+.nb-shell-route-leave-active {
+  display: none;
+}
+
+@include motion.reduced {
+  .nb-shell-route-enter-active {
+    transition: none;
   }
 }
 </style>
