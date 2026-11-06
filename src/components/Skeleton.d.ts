@@ -23,15 +23,20 @@ enum ESkeletonVariant {
  * arrive asynchronously.
  */
 type TSkeletonTypeSet =
+  | 'label'
   | 'label-sm'
   | 'label-md'
   | 'label-lg'
+  | 'helper-text'
+  | 'overline'
   | 'body-sm'
+  | 'body-compact'
   | 'body-md'
   | 'body-lg'
   | 'code-sm'
   | 'code-md'
   | 'code-lg'
+  | 'heading-compact'
   | 'heading-01'
   | 'heading-02'
   | 'heading-03'
