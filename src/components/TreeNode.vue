@@ -1,7 +1,8 @@
 <template>
   <li
     role="treeitem"
-    tabindex="-1"
+    :tabindex="tree?.tabStopId === id ? 0 : -1"
+    :data-nb-tree-id="id"
     :draggable="isDraggable || undefined"
     :aria-expanded="isBranch() ? isExpanded : undefined"
     :aria-selected="isSelected"
@@ -91,6 +92,7 @@ import {
   inject,
   onBeforeMount,
   onBeforeUpdate,
+  onBeforeUnmount,
   provide,
   useSlots,
   type VNode,
@@ -197,6 +199,8 @@ function isBranch(): boolean {
 function acceptsInside(): boolean {
   return props.droppable ?? true
 }
+onBeforeUnmount(() => tree?.unregisterNode(props.id))
+
 const isExpanded = computed(() => tree?.expandedIds.has(props.id) ?? false)
 const isSelected = computed(() => tree?.selectedId === props.id)
 const isCompact = computed(() => tree?.compact ?? false)
@@ -310,7 +314,10 @@ function onDragEnd() {
 }
 
 function onKeydown(e: KeyboardEvent) {
-  if (!tree) return
+  // Rows nest, so a key on a child row bubbles through every ancestor row.
+  // Only the row that has focus answers it, or Enter on a child would select
+  // the child and then each of its ancestors.
+  if (!tree || e.target !== e.currentTarget) return
   if (e.key === 'Enter') {
     e.preventDefault()
     handleClick()

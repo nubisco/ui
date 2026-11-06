@@ -66,6 +66,8 @@ export interface ITreeDragState {
 
 export interface ITreeContext {
   selectedId: string | null
+  /** The one row in the tab order (roving tabindex). */
+  tabStopId: string | null
   select: (id: string) => void
   toggle: (id: string) => void
   expandedIds: Set<string>
