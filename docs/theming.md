@@ -147,15 +147,15 @@ Square compatibility won.
 
 These do not follow the setting, and that is deliberate:
 
-- **Circular by nature** — avatars, `NbRadio`, `NbUserMenu`, status dots on
+- **Circular by nature**: avatars, `NbRadio`, `NbUserMenu`, status dots on
   `NbBadge` and `NbNotificationCenterItem`. A square radio is a checkbox.
-- **Pills** — `NbBadge`'s pill shape, `NbSwitch`'s track, `NbSkeleton`. A
+- **Pills**: `NbBadge`'s pill shape, `NbSwitch`'s track, `NbSkeleton`. A
   switch track is a track at any appearance.
-- **`NbToast` and `NbBanner`** — square by design. Both carry a straight status
+- **`NbToast` and `NbBanner`**: square by design. Both carry a straight status
   accent bar on one edge, and a corner fights it.
-- **Blueprint canvas** — graphical primitives, not chrome. The minimap _frame_
+- **Blueprint canvas**: graphical primitives, not chrome. The minimap _frame_
   participates because it is chrome around the canvas; the canvas does not.
-- **Attached surfaces** — a table's toolbar, sticky header and footer run to
+- **Attached surfaces**: a table's toolbar, sticky header and footer run to
   the shell's edges and are clipped by its corner rather than taking one of
   their own. Two rounded boxes meeting at a shared edge leave a visible notch.
 
@@ -1150,11 +1150,11 @@ See the [Layers tab](#layers) for usage details.
 
 ### Grid
 
-| Token                 | Default  | Description            |
-| --------------------- | -------- | ---------------------- |
-| `--nb-grid-max-width` | `1440px` | Maximum content width  |
-| `--nb-grid-columns`   | `16`     | Number of grid columns |
-| `--nb-grid-gutter`    | `16px`   | Grid gutter size       |
+| Token                 | Default  | Description                                                         |
+| --------------------- | -------- | ------------------------------------------------------------------- |
+| `--nb-grid-max-width` | `1440px` | Maximum content width                                               |
+| `--nb-grid-columns`   | `16`     | Number of grid columns                                              |
+| `--nb-grid-gutter`    | `16px`   | Page margin of an `NbGrid` `container`: 0 on a phone, 24px at `xxl` |
 
 ### Gap scale
 

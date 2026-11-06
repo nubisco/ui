@@ -65,7 +65,8 @@ Four things that trip people up:
 | `--nb-c-<ramp>-<100…900>` and `-a11y`                           |  ~400 | The raw palette. 11 named ramps, 17 tints each.                                        | `variables/_colors.scss`      |
 | `--nb-c-<role>` (`primary`, `danger`, `text`, `surface`…)       |   ~90 | What is this element _for_? The semantic layer.                                        | `_theme.scss`                 |
 | `--nb-c-chart-<1…8>`, `-sequential-from` / `-to`                |    10 | Which series is this? Categorical and sequential ramps.                                | `_theme.scss`                 |
-| `--nb-spacing-<px>`                                             |    25 | How far apart are these two things?                                                    | `variables/_type.scss`        |
+| `--nb-spacing-<px>`                                             |    26 | How far apart are these two things?                                                    | `variables/_spacing.scss`     |
+| `--nb-fluid-spacing-0N`                                         |     4 | Space that breathes with the window, public pages only.                                | `variables/_spacing.scss`     |
 | `--nb-radius-<none…pill>`                                       |     6 | Is this a control the user manipulates, or a container?                                | `_theme.scss`                 |
 | `--nb-font-size-<px>`                                           |    22 | The raw type ramp. Rarely used directly.                                               | `variables/_type.scss`        |
 | `--nb-font-weight-<light…bold>`                                 |     4 | Raw weights.                                                                           | `variables/_type.scss`        |
@@ -139,7 +140,7 @@ Nine decisions, no literals, and the whole thing retints, rethemes and re-densif
 
 One caveat on that fifth row: a token being available does not make it conformant in context. `--nb-field-height-xs` is 28px and clears the 24px WCAG 2.5.8 target minimum; `NbButton`'s `xxs` size is 16px and does not, except by the spacing exception. Density choices carry accessibility consequences that no token can express. See [Accessibility](/principles/spacing#accessibility) on the spacing page before you commit to a dense surface.
 
-A second caveat on spacing specifically: the `.ph-*`, `.pl-*`, `.pr-*` and `.mh-*` utility classes generated from the scale emit physical `padding-left` / `padding-right`, so they do not mirror under right-to-left. Component styles should use `padding-inline` and `margin-inline`, as `Button.vue` and `DataTable.vue` already do. See [Logical properties](/principles/spacing#logical-properties-and-why-the-utilities-are-ltr-only).
+A second caveat on spacing specifically: the `.ph-*`, `.pl-*`, `.pr-*` and `.mh-*` utility classes generated from the scale emit physical `padding-left` / `padding-right`, so they do not mirror under right-to-left. Use the logical `.pis-*`, `.pie-*`, `.mis-*` and `.mie-*` beside them, and `padding-inline` and `margin-inline` in component styles, as `Button.vue` and `DataTable.vue` already do. See [Logical properties](/principles/spacing#logical-properties-and-the-logical-utilities).
 
 ### The question to ask before every value
 
@@ -215,7 +216,7 @@ Legal, and occasionally correct, but each has a blast radius you should know bef
 | `--nb-grid-*`          | Page frame. Harmless, but the 16-column grid classes are compiled from Sass and will not follow.                                         |
 
 ::: danger `--nb-base-unit` is a trap
-It looks like the master dial and it is not. Field heights, radii and shell dimensions are `calc(var(--nb-base-unit) * n)` and will scale. The entire `--nb-spacing-*` scale is emitted as literal `rem` values and will **not**. Changing it produces a UI stretched in one dimension and untouched in the other. Leave it at `8px` unless you are also re-declaring all 25 spacing tokens in the same block.
+It looks like the master dial and it is not. Field heights, radii and shell dimensions are `calc(var(--nb-base-unit) * n)` and will scale. The entire `--nb-spacing-*` scale is emitted as literal `rem` values and will **not**. Changing it produces a UI stretched in one dimension and untouched in the other. Leave it at `8px` unless you are also re-declaring all 26 spacing tokens in the same block.
 :::
 
 ### Tier 3: internal
@@ -286,7 +287,7 @@ Roles, not raw sizes. See [Typography](/principles/typography) for which set to 
 
 ### Spacing
 
-Twenty-five steps, but only eight of them form the working rhythm. [Spacing and rhythm](/principles/spacing) explains which eight and why the others exist.
+Twenty-six steps, ten of them deprecated, and only eight form the working rhythm. [Spacing and rhythm](/principles/spacing) explains which eight and why the others exist.
 
 <ClientOnly>
   <tokens-viewer section="spacing" />

@@ -9,7 +9,7 @@ Space is the only property in this library that two people can both get "right" 
 That is why the audit of twelve consuming applications found one app with **462 hardcoded pixel values and zero uses of the spacing scale**, and another with **287 and zero**. Neither team was careless. Both read [Design Tokens](/design-tokens), saw a rendered strip of bars, concluded the scale was an internal implementation detail of the library, and wrote `padding: 14px`. This page exists so that conclusion is no longer available.
 
 ::: warning The library is not innocent either
-Across `src/components/*.vue` there are **166** `padding` / `margin` / `gap` declarations written with raw pixel literals against **48** written with `var(--nb-spacing-*)`. Some of those literals are legitimate (see [Where the scale genuinely runs out](#where-the-scale-genuinely-runs-out)). Most are not. Do not take the library's own source as a licence.
+Counted on 2026-11-06 across `src/components/*.vue`: of 688 `padding` / `margin` / `gap` declarations, **281** are written with raw `px` / `rem` / `em` literals, **97** with `var(--nb-spacing-*)` and **87** with `calc(var(--nb-base-unit) * n)`. The ratio moves with every release, so treat the numbers as dated. Some of those literals are legitimate (see [Where the scale genuinely runs out](#where-the-scale-genuinely-runs-out)). Most are not. Do not take the library's own source as a licence.
 :::
 
 ## The words this page uses
@@ -44,32 +44,33 @@ Treat `--nb-base-unit` as read-only unless you are prepared to re-declare the sp
 
 ## The scale
 
-Twenty-five steps, named by their pixel value at a 16px root font size. The token is `--nb-spacing-<px>`.
+Twenty-six steps, named by their pixel value at a 16px root font size. The token is `--nb-spacing-<px>`. Ten of them are deprecated (see below). The scale lives in `src/styles/variables/_spacing.scss`, its own map, no longer a copy of the type ramp.
 
 | Token             |    rem | px  | Uses in `src/components` | Typical role                                          |
 | ----------------- | -----: | --- | -----------------------: | ----------------------------------------------------- |
 | `--nb-spacing-0`  |      0 | 0   |                        0 | Explicit reset, so the intent reads as deliberate.    |
-| `--nb-spacing-2`  |  0.125 | 2   |                        4 | Hairline. Icon to its own label, badge inner padding. |
-| `--nb-spacing-4`  |   0.25 | 4   |                       11 | Tight pair. Glyph and text inside one control.        |
-| `--nb-spacing-8`  |    0.5 | 8   |                       17 | The workhorse. Related controls in a row.             |
-| `--nb-spacing-9`  | 0.5625 | 9   |                        0 | Off-grid. See the note below.                         |
-| `--nb-spacing-10` |  0.625 | 10  |                        3 | Off-grid.                                             |
-| `--nb-spacing-11` | 0.6875 | 11  |                        0 | Off-grid.                                             |
-| `--nb-spacing-12` |   0.75 | 12  |                       14 | Inside a small container. Label column gutter.        |
-| `--nb-spacing-13` | 0.8125 | 13  |                        0 | Off-grid.                                             |
-| `--nb-spacing-14` |  0.875 | 14  |                        1 | Off-grid.                                             |
-| `--nb-spacing-16` |      1 | 16  |                       12 | Container padding. Distinct fields in a form.         |
-| `--nb-spacing-18` |  1.125 | 18  |                        0 | Off-grid.                                             |
+| `--nb-spacing-2`  |  0.125 | 2   |                        9 | Hairline. Icon to its own label, badge inner padding. |
+| `--nb-spacing-4`  |   0.25 | 4   |                       28 | Tight pair. Glyph and text inside one control.        |
+| `--nb-spacing-8`  |    0.5 | 8   |                       30 | The workhorse. Related controls in a row.             |
+| `--nb-spacing-9`  | 0.5625 | 9   |                        0 | Deprecated.                                           |
+| `--nb-spacing-10` |  0.625 | 10  |                        4 | Deprecated.                                           |
+| `--nb-spacing-11` | 0.6875 | 11  |                        0 | Deprecated.                                           |
+| `--nb-spacing-12` |   0.75 | 12  |                       28 | Inside a small container. Label column gutter.        |
+| `--nb-spacing-13` | 0.8125 | 13  |                        0 | Deprecated.                                           |
+| `--nb-spacing-14` |  0.875 | 14  |                        2 | Deprecated.                                           |
+| `--nb-spacing-16` |      1 | 16  |                       27 | Container padding. Distinct fields in a form.         |
+| `--nb-spacing-18` |  1.125 | 18  |                        0 | Deprecated.                                           |
 | `--nb-spacing-20` |   1.25 | 20  |                        0 |                                                       |
-| `--nb-spacing-24` |    1.5 | 24  |                        5 | Between groups inside one section.                    |
+| `--nb-spacing-24` |    1.5 | 24  |                       12 | Between groups inside one section.                    |
 | `--nb-spacing-28` |   1.75 | 28  |                        0 |                                                       |
 | `--nb-spacing-32` |      2 | 32  |                        1 | Between sections of a page.                           |
 | `--nb-spacing-36` |   2.25 | 36  |                        0 |                                                       |
-| `--nb-spacing-42` |  2.625 | 42  |                        0 | Off-grid.                                             |
-| `--nb-spacing-46` |  2.875 | 46  |                        0 | Off-grid.                                             |
+| `--nb-spacing-40` |    2.5 | 40  |                        0 | New. Carbon's `spacing-08`, a 40px control or row.    |
+| `--nb-spacing-42` |  2.625 | 42  |                        0 | Deprecated.                                           |
+| `--nb-spacing-46` |  2.875 | 46  |                        0 | Deprecated.                                           |
 | `--nb-spacing-48` |      3 | 48  |                        0 | Major break. Above and below a page header.           |
-| `--nb-spacing-50` |  3.125 | 50  |                        0 | Off-grid.                                             |
-| `--nb-spacing-54` |  3.375 | 54  |                        0 | Off-grid.                                             |
+| `--nb-spacing-50` |  3.125 | 50  |                        0 | Deprecated.                                           |
+| `--nb-spacing-54` |  3.375 | 54  |                        0 | Deprecated.                                           |
 | `--nb-spacing-60` |   3.75 | 60  |                        0 |                                                       |
 | `--nb-spacing-68` |   4.25 | 68  |                        0 |                                                       |
 | `--nb-spacing-76` |   4.75 | 76  |                        0 |                                                       |
@@ -78,7 +79,11 @@ Rendered live, with the bars to scale, on [Design Tokens](/design-tokens#spacing
 
 ### Read that table honestly
 
-There is no elegant ratio here. Ten steps sit off the 4px grid entirely (9, 10, 11, 13, 14, 18, 42, 46, 50, 54), and the large end of the scale (36, 42, 46, 50, 54, 60, 68, 76) has never been used by a single component. They exist because `$spacingSizes` in `src/styles/variables/_type.scss` was seeded from `$fontSizes`, the type ramp, and every font size came along for the ride. `--nb-spacing-13` is 13px because 13px is a font size, not because anything needed 13px of padding.
+There is no elegant ratio here. Ten steps sit off the 4px grid entirely (9, 10, 11, 13, 14, 18, 42, 46, 50, 54), and the large end of the scale has never been used by a single component. They exist because `$spacingSizes` was seeded from `$fontSizes`, the type ramp, and every font size came along for the ride. `--nb-spacing-13` is 13px because 13px is a font size, not because anything needed 13px of padding.
+
+::: warning The ten off-grid steps are deprecated
+9, 10, 11, 13, 14, 18, 42, 46, 50 and 54 are listed in `$spacingDeprecated`. Their custom properties are still emitted for one minor, so nothing that reads one breaks today, but no utility class (`.p-14`, `.mt-10`) is generated for them any more, and they will be removed in the next minor. Move each use to the nearest step of the working rhythm: 8 or 12 for 9 to 11, 12 or 16 for 13 and 14, 16 or 20 for 18, 40 or 48 for 42 to 54.
+:::
 
 The consequence for you is simple and worth stating flatly: **the presence of a step is not an endorsement of it.** The rhythm you should actually work in is eight steps wide:
 
@@ -86,7 +91,7 @@ The consequence for you is simple and worth stating flatly: **the presence of a 
 2 · 4 · 8 · 12 · 16 · 24 · 32 · 48
 ```
 
-Eight steps. That is the scale you should be able to recite. The other seventeen are available, and almost every use of one is a design decision that has not been made yet.
+Eight steps. That is the scale you should be able to recite. 40 joins them where a gap has to match a 40px control. Of the rest, ten are deprecated and the others are available, and almost every use of one is a design decision that has not been made yet.
 
 ## Choosing a step
 
@@ -110,10 +115,8 @@ Two rules keep this honest.
 
 **Space is the cheapest divider.** Before adding a rule, a border or a background tint to separate two blocks, try one step up. If 24 instead of 16 makes the grouping legible, the border was decoration.
 
-::: danger Two pages currently rule on 24 and 32. This one wins.
-[Layout](/principles/layout#gutters-and-gaps) publishes a second table against the `NbGrid` `gap` prop that reads `lg` (24px) as "between sections of a page" and `xl` (32px) as "between major regions". The table above reads 24 as _groups inside one section_ and 32 as _sections_. Both files ship today, so a reader following the wrong one puts 24 where this page puts 32 and the two surfaces disagree by exactly one step, which is the failure this page exists to prevent.
-
-**This page owns what a step means.** Layout owns the `NbGrid` API: which props exist, how responsive maps cascade, what the 16-column grid does. Where the two disagree on meaning, use the choosing table above and read `gap="lg"` as 24 and `gap="xl"` as 32 with this page's semantics. The Layout table is a known documentation defect, recorded here rather than quietly corrected, because the same honesty applies to us: verify against the choosing table, not against whichever page you opened first.
+::: tip This page owns what a step means
+[Layout](/principles/layout#gutters-and-gaps) owns the `NbGrid` API: which props exist, how responsive maps cascade, what the 16-column grid does. Its gap table used to read 24 as "between sections" and 32 as "between major regions", one step off this table. It now reads `gap="lg"` (24) as groups inside one section and `gap="xl"` (32) as sections, the meanings above. If the two ever disagree again, this table wins.
 :::
 
 ## Inside versus between
@@ -155,7 +158,7 @@ The second version survives being dropped into a denser context, being reordered
 
 `gap` applies only between children, never at the edges, and it disappears when a child is `v-if`'d away. `margin-bottom` on every child plus a `:last-child` reset is the same idea with three more failure modes.
 
-`NbGrid` is the intended vehicle. Its `gap` prop accepts `xxs` `xs` `sm` `md` `lg` `xl` `xxl` and is responsive:
+In a template, `NbGrid` is the shortest way to write it. Its `gap` prop accepts `xxs` `xs` `sm` `md` `lg` `xl` `xxl` and is responsive. In a style block, `gap: var(--nb-spacing-16)` is the same thing:
 
 ```vue
 <NbGrid dir="col" :gap="{ sm: 'sm', lg: 'md' }">
@@ -170,39 +173,39 @@ A vertical stack is `dir="col"`. There is no `col` prop: `IGridProps` in `src/co
 Write `<NbGrid col>` and Vue does not warn. `col` is not a declared prop, so it falls through `$attrs` onto the root element as an inert HTML attribute, `dir` keeps its default, and your stack renders as a **row**. The failure mode is a horizontal strip of cards, and nothing in the console says why. The same applies to any misspelt prop on any Vue component with `inheritAttrs` left on: the cost of guessing an API here is a wrong layout, not an error.
 :::
 
-The gap ratios are defined in `src/styles/variables/_grid.scss` as multiples of the base unit, and compile to literal pixels:
+The gap ratios are defined in `src/styles/variables/_grid.scss` and read the spacing tokens:
 
-| `gap` value | Computed | Base units | Equivalent spacing token |
-| ----------- | -------- | ---------- | ------------------------ |
-| `xxs`       | `2px`    | 1/4        | `--nb-spacing-2`         |
-| `xs`        | `4px`    | 1/2        | `--nb-spacing-4`         |
-| `sm`        | `8px`    | 1          | `--nb-spacing-8`         |
-| `md`        | `16px`   | 2          | `--nb-spacing-16`        |
-| `lg`        | `24px`   | 3          | `--nb-spacing-24`        |
-| `xl`        | `32px`   | 4          | `--nb-spacing-32`        |
-| `xxl`       | `48px`   | 6          | `--nb-spacing-48`        |
+| `gap` value | Computed | Spacing token     |
+| ----------- | -------- | ----------------- |
+| `xxs`       | `2px`    | `--nb-spacing-2`  |
+| `xs`        | `4px`    | `--nb-spacing-4`  |
+| `sm`        | `8px`    | `--nb-spacing-8`  |
+| `md`        | `16px`   | `--nb-spacing-16` |
+| `lg`        | `24px`   | `--nb-spacing-24` |
+| `xl`        | `32px`   | `--nb-spacing-32` |
+| `xxl`       | `48px`   | `--nb-spacing-48` |
 
 Note what that table is: `NbGrid` uses the eight-step rhythm and nothing else. If the gap you want is not in that column, the layout is probably telling you the relationship is unclear rather than that the scale is short.
 
-::: warning `gap-md` is not a token reference
-Those class rules compile to `gap: 16px`, a literal baked in at build time, not `gap: var(--nb-spacing-16)`. `NbGrid` gaps therefore cannot be retuned from a consumer stylesheet by overriding a custom property. Set the gap through the prop.
-:::
+`gap-md` compiles to `gap: var(--nb-spacing-16)`, so a product that overrides `--nb-spacing-16` moves its grid gaps with its padding. `NbCardGrid` reads the same scale.
 
 ### The utility classes nobody knows about
 
-`theme.classes` emits a padding and margin utility for **every** step of the scale, in every direction. They are real, they are in the shipped stylesheet, and no page has ever mentioned them.
+`theme.classes` emits a padding and margin utility for every step of the scale that is not deprecated, in every direction.
 
 ```
 .p-16   padding: var(--nb-spacing-16)
 .ph-16  padding-left + padding-right
 .pv-16  padding-top + padding-bottom
 .pt-16 .pb-16 .pl-16 .pr-16
+.pis-16 .pie-16   padding-inline-start, padding-inline-end
 .m-16 .mh-16 .mv-16 .mt-16 .mb-16 .ml-16 .mr-16
+.mis-16 .mie-16   margin-inline-start, margin-inline-end
 ```
 
-Substitute any step from the table for `16`. These are useful for one-off scaffolding in a view. They are not a substitute for a component's own `<style scoped>` block, and per the house rule, CSS lives in an SFC style block, never anywhere else in the file.
+Substitute any step from the table for `16`, except a deprecated one. These are useful for one-off scaffolding in a view. They are not a substitute for a component's own `<style scoped>` block, and per the house rule, CSS lives in an SFC style block, never anywhere else in the file.
 
-## Logical properties, and why the utilities are LTR only
+## Logical properties, and the logical utilities
 
 Space has a direction, and half of the ways to write it in CSS assume the reader starts on the left.
 
@@ -220,7 +223,7 @@ Space has a direction, and half of the ways to write it in CSS assume the reader
 This is already the majority position in the library rather than an aspiration: `src/components/*.vue` carries 32 `*-inline`/`*-block` declarations against 17 physical `padding-left`/`padding-right`/`margin-left`/`margin-right` ones. `Button.vue` sets every one of its seven size ramps with `padding-inline: calc(var(--nb-base-unit) * n)`. `DataTable.vue` insets every cell with `padding-inline`, `Pagination.vue` uses `padding-inline-end`, `TreeNode.vue` uses `padding-inline-end` and `inset-inline-start` for its indent guide, and `Toaster.vue` positions all four corner stacks with `inset-inline-start` / `inset-inline-end` so a toast anchors to the trailing edge rather than to the right. New code should not add to the seventeen.
 
 ::: warning The `-h`, `-l` and `-r` utilities are LTR scaffolding
-`theme.classes` generates them from `$spacingTypes` (`p`, `m`) and `$spacingDir` (`r`, `l`, `t`, `b`) in `src/styles/variables/_type.scss`, and the emitted rules are physical:
+`theme.classes` generates them from `$spacingTypes` (`p`, `m`) and `$spacingDir` (`r`, `l`, `t`, `b`) in `src/styles/variables/_spacing.scss`, and the emitted rules are physical:
 
 ```css
 .ph-16 {
@@ -232,7 +235,7 @@ This is already the majority position in the library rather than an aspiration: 
 }
 ```
 
-`.pv-*`, `.pt-*` and `.pb-*` are vertical and therefore safe anywhere. `.ph-*`, `.mh-*`, `.pl-*`, `.pr-*`, `.ml-*` and `.mr-*` are not: they pin space to a physical side and will sit on the wrong edge in a right-to-left locale. There is no logical variant of these classes today and adding one would change the shipped class surface, so treat them as scaffolding for a known-LTR surface and reach for a scoped `padding-inline` the moment the value matters.
+`.pv-*`, `.pt-*` and `.pb-*` are vertical and therefore safe anywhere. `.ph-*`, `.mh-*`, `.pl-*`, `.pr-*`, `.ml-*` and `.mr-*` are not: they pin space to a physical side and will sit on the wrong edge in a right-to-left locale. Use the logical variants beside them instead: `.pis-*` and `.pie-*` for padding on the inline start and end, `.mis-*` and `.mie-*` for margin. The physical classes stay, so nothing that uses them breaks.
 :::
 
 The library ships no `[dir="rtl"]` rules at all, which is the honest state of things: RTL is unproven here rather than broken. Writing logical properties in your own components is what keeps that a small job rather than a rewrite.
@@ -326,7 +329,11 @@ In an `xs` field row, use `size="sm"` on the button and accept 32 against 28, or
 
 Two questions, answered flatly, because a breakpoint map in a template implies an answer to both and gets read either way.
 
-**Do the spacing tokens themselves change at a breakpoint? No.** `--nb-spacing-*` is declared exactly once, at `src/styles/_theme.scss:103`, inside no media query. `--nb-spacing-16` is `1rem` at 320px and `1rem` at 2560px. There is no responsive spacing layer in this library and none is planned: a token that silently means two things at two widths cannot be reasoned about from the markup.
+**Do the spacing tokens themselves change at a breakpoint? No.** `--nb-spacing-*` is declared exactly once, in the `base` mixin of `src/styles/_theme.scss`, inside no media query. `--nb-spacing-16` is `1rem` at 320px and `1rem` at 2560px. There is no responsive spacing layer in this library: a token that silently means two things at two widths cannot be reasoned about from the markup.
+
+::: warning Fluid spacing is for full-bleed public surfaces only
+`--nb-fluid-spacing-01` to `-04` are 0, 2vw, 5vw and 10vw, Carbon's fluid steps. They are for a hero, a marketing band or a public page that bleeds to the window edge, where space should breathe with the viewport. Never use them inside `NbShell`: there the viewport is not the content width, and a `vw` value ignores the sidebar and the inspector entirely.
+:::
 
 **May I jump a step at a breakpoint? Yes, and often you must.** What changes responsively is not the value of a step, it is _which step you choose_. A 32px section break is a comfortable pause on a 1280px page and a tenth of the visible height on a 360px phone. Change the choice, in the template, where it is visible.
 
@@ -401,7 +408,7 @@ document.documentElement.style.cssText +=
 
 **WCAG 1.4.10 Reflow and 1.4.4 Resize Text, level AA.** Content must work at 320 CSS px wide with no horizontal scrolling, and text must survive being enlarged to 200%.
 
-Page zoom scales pixel literals and `rem` values alike, so a literal is not automatically a reflow failure. The difference shows up in the case zoom does not cover: a user who raises the **default font size** in their browser. Every `--nb-spacing-*` token is emitted in `rem`, so it grows with that preference and the padding around larger text grows with the text. A `padding: 14px` literal does not. Text gets bigger, its container does not, and the inset that looked generous becomes a collision. That is one more thing the 166 literals in this library get wrong and the 48 token uses get right.
+Page zoom scales pixel literals and `rem` values alike, so a literal is not automatically a reflow failure. The difference shows up in the case zoom does not cover: a user who raises the **default font size** in their browser. Every `--nb-spacing-*` token is emitted in `rem`, so it grows with that preference and the padding around larger text grows with the text. A `padding: 14px` literal does not. Text gets bigger, its container does not, and the inset that looked generous becomes a collision. That is one more thing the literals in this library get wrong and the token uses get right.
 
 For the width side: use the breakpoint maps above to drop a step at `sm` rather than letting a 32px inset eat a tenth of a 320px viewport, and see [Layout](/principles/layout) for the reflow rules that govern columns and hiding.
 
@@ -423,7 +430,7 @@ Two rules for your own components:
 
 Some of the pixel literals in this codebase are not laziness. The scale has holes, and pretending otherwise would send you looking for tokens that do not exist.
 
-**There is no `--nb-spacing-40`, `-56`, `-64`, `-72` or `-80`.** The scale jumps 36, 42, 46, 48, 50. So the height of a menu row (`--nb-menu-item-h`, 40px) and the width of the shell rail (`--nb-shell-sidebar-width`, 56px) are expressed as `calc(var(--nb-base-unit) * n)` rather than as spacing tokens. That is correct for those two, because they are geometry rather than spacing, but it means you will not find a spacing token for a 40px gap. If you need one, use `calc(var(--nb-base-unit) * 5)` and put a comment on it.
+**There is no `--nb-spacing-56`, `-64`, `-72` or `-80`.** The height of a menu row (`--nb-menu-item-h`, 40px) and the width of the shell rail (`--nb-shell-sidebar-width`, 56px) are expressed as `calc(var(--nb-base-unit) * n)` rather than as spacing tokens, which is correct, because they are geometry rather than spacing. A 40px gap that matches a 40px control has a step now, `--nb-spacing-40`.
 
 **There is no `--nb-spacing-6`.** The scale goes 4, 8. Six pixels shows up repeatedly in real interfaces, which is exactly why `--nb-field-label-gap` had to be minted as its own token. If you find yourself wanting 6, check whether you actually want the label gap token first.
 
@@ -434,9 +441,9 @@ Some of the pixel literals in this codebase are not laziness. The scale has hole
 When you do write a literal, write down why:
 
 ```scss
-// 40px: --nb-menu-item-h, matched so the trigger aligns with the rows below it.
-// No --nb-spacing-40 exists; the scale skips from 36 to 42.
-height: calc(var(--nb-base-unit) * 5);
+// 56px: --nb-shell-sidebar-width, matched so the toolbar lines up with the rail.
+// No spacing step exists for 56, and this is geometry, not spacing.
+width: calc(var(--nb-base-unit) * 7);
 ```
 
 A literal with a reason is a decision. A literal without one is the 462.
@@ -479,6 +486,6 @@ If the first number is large and the second is zero, you are one of the two appl
 ## See also
 
 - [Design Tokens](/design-tokens) for the token grammar, the other families, and which tokens are safe to override.
-- [Layout](/principles/layout) for the `NbGrid` API this page prescribes: every responsive prop, the 16-column grid, breakpoints, and the shell. That page owns the API; this page owns what a step means. See [the note on 24 and 32](#choosing-a-step).
+- [Layout](/principles/layout) for the `NbGrid` API this page prescribes: every responsive prop, the 16-column grid, breakpoints, and the shell. That page owns the API; this page owns what a step means. See [Choosing a step](#choosing-a-step).
 - [Typography](/principles/typography) for type sets and line height, which set the vertical rhythm this page assumes.
 - [Theming](/theming) for layers, surfaces and the shell chrome tokens.
