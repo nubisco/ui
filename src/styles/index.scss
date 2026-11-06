@@ -10,6 +10,7 @@
 @use 'patterns/inspector';
 @use 'presets/classic-fields';
 @use 'appearance';
+@use 'ai';
 
 @include theme.base;
 @include theme.classes;
