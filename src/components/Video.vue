@@ -42,6 +42,7 @@ import * as iconPlay from '@nubisco/ui/icons/play'
 import * as iconPause from '@nubisco/ui/icons/pause'
 import NbButton from './Button.vue'
 import type { IVideoProps } from './Video.d'
+import { prefersReducedMotion } from '@/composables/useReducedMotion.composable'
 
 const props = withDefaults(defineProps<IVideoProps>(), {
   mobileSrc: undefined,
@@ -70,7 +71,7 @@ const ratio = computed(() =>
  * play control to start it on request.
  */
 function mayAutoplay(): boolean {
-  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  const reduce = prefersReducedMotion()
   const saveData = (
     navigator as Navigator & { connection?: { saveData?: boolean } }
   ).connection?.saveData

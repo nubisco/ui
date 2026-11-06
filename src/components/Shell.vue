@@ -343,6 +343,7 @@ import {
 } from '@/composables/useShellSlot.composable'
 import { NB_SHELL_LAYOUT_KEY } from '@/composables/useShellLayout.composable'
 import SurfaceLayerScope from './SurfaceLayerScope.vue'
+import { prefersReducedMotion } from '@/composables/useReducedMotion.composable'
 
 const slots = useSlots()
 
@@ -1008,10 +1009,12 @@ const railWidthVariant = computed(() =>
 const railMotion = ref<'collapsing' | 'expanding' | null>(null)
 let railTimer: ReturnType<typeof setTimeout> | undefined
 
+// Missing matchMedia (a test) counts as reduced here, so the switch is
+// immediate there; the query itself is the shared one.
 const reducedMotion = () =>
   typeof window === 'undefined' ||
   typeof window.matchMedia !== 'function' ||
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  prefersReducedMotion()
 
 watch(
   () => props.sidebarVariant,

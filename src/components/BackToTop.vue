@@ -20,6 +20,7 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import * as iconArrowUp from '@nubisco/ui/icons/arrow-up'
 import NbButton from './Button.vue'
 import type { IBackToTopProps } from './BackToTop.d'
+import { prefersReducedMotion } from '@/composables/useReducedMotion.composable'
 
 const props = withDefaults(defineProps<IBackToTopProps>(), {
   threshold: undefined,
@@ -48,7 +49,7 @@ function onScroll(): void {
  * bottom of the page. A mouse click leaves focus alone.
  */
 function toTop(event: MouseEvent): void {
-  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  const reduce = prefersReducedMotion()
   window.scrollTo({ top: 0, behavior: reduce ? 'instant' : 'smooth' })
   if (event.detail !== 0) return
   const first = document.querySelector<HTMLElement>(
