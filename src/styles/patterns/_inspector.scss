@@ -133,8 +133,8 @@
   }
   .nb-text-input .nb-label,
   .nb-select .nb-label {
-    font-size: var(--nb-font-size-11, 11px);
-    line-height: 1.2;
+    font-size: var(--nb-type-label-size);
+    line-height: var(--nb-type-label-line-height);
     color: var(--nb-c-text-muted);
     text-transform: none;
     letter-spacing: 0;
@@ -146,8 +146,8 @@
     column-gap: 10px;
 
     .nb-slider__label {
-      font-size: var(--nb-font-size-11, 11px);
-      line-height: 1.2;
+      font-size: var(--nb-type-label-size);
+      line-height: var(--nb-type-label-line-height);
       color: var(--nb-c-text-muted);
     }
     .nb-slider__field-box {

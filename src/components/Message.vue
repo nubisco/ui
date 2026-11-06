@@ -52,8 +52,8 @@ const iconMap = {
   align-items: center;
   gap: calc(var(--nb-base-unit) / 2);
   font-family: var(--nb-font-family-sans);
-  font-size: var(--nb-font-size-12);
-  line-height: 1.4;
+  font-size: var(--nb-type-body-sm-size);
+  line-height: var(--nb-type-body-sm-line-height);
 
   &--error {
     color: var(--nb-c-danger);
@@ -102,7 +102,7 @@ const iconMap = {
     color: var(--nb-c-surface);
     padding: 6px 10px;
     @include radius.surface(popover);
-    font-size: 11px;
+    font-size: var(--nb-type-body-sm-size);
     font-weight: 400;
     white-space: nowrap;
     max-width: 220px;

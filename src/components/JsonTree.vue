@@ -132,7 +132,7 @@ const asIndexable = (v: TJsonValue): Record<string | number, TJsonValue> =>
   display: flex;
   font-family: var(--nb-font-family-sans);
   font-weight: var(--nb-font-weight-regular);
-  font-size: var(--nb-font-size-14);
+  font-size: var(--nb-type-code-md-size);
   text-align: left;
   line-height: 24px;
   background: var(--nb-json-tree-sprite);
@@ -171,7 +171,7 @@ const asIndexable = (v: TJsonValue): Record<string | number, TJsonValue> =>
     padding: 1px 5px;
     width: 100%;
     .title {
-      font-weight: 500;
+      font-weight: var(--nb-font-weight-semibold, 600);
     }
   }
 
@@ -233,7 +233,7 @@ const asIndexable = (v: TJsonValue): Record<string | number, TJsonValue> =>
           border: 0;
           outline: 0;
           padding: 0;
-          font-size: 14px;
+          font-size: var(--nb-type-body-compact-size);
           width: 100%;
           background: transparent;
         }

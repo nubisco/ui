@@ -460,7 +460,7 @@ onBeforeUnmount(cleanupPointer)
 .nb-reorder-list__content {
   flex: 1 1 auto;
   min-width: 0;
-  font-size: var(--nb-font-size-14);
+  font-size: var(--nb-type-body-compact-size);
   color: var(--nb-c-text);
 }
 

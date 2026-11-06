@@ -54,7 +54,7 @@ defineProps<{
   border-radius: 4px;
   padding: calc(var(--nb-base-unit) * 0.75) calc(var(--nb-base-unit) * 1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  font-size: var(--nb-font-size-12);
+  font-size: var(--nb-type-body-sm-size);
   color: var(--nb-c-text);
   min-width: 80px;
   z-index: 2;
@@ -94,7 +94,7 @@ defineProps<{
 
   &-value {
     font-variant-numeric: tabular-nums;
-    font-weight: 500;
+    font-weight: var(--nb-font-weight-semibold, 600);
   }
 }
 

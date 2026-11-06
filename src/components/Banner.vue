@@ -117,8 +117,9 @@ const iconMap = {
   background: var(--nb-banner-bg);
   color: var(--nb-banner-fg);
   font-family: var(--nb-font-family-sans);
-  font-size: var(--nb-font-size-13, 13px);
-  line-height: 1.5;
+  font-size: var(--nb-type-body-compact-size);
+  line-height: var(--nb-type-body-compact-line-height);
+  letter-spacing: var(--nb-type-body-compact-letter-spacing);
 
   // Three custom properties, set once per status, so every rule below reads
   // from the same place and a consumer can retint a single banner without

@@ -394,12 +394,12 @@ defineExpose({
 
 .nb-toc__title {
   color: var(--nb-c-text-subtle);
-  font-family: var(--nb-type-label-sm-family);
-  font-size: var(--nb-type-label-sm-size);
-  font-weight: var(--nb-type-label-sm-weight);
-  line-height: var(--nb-type-label-sm-line-height);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-family: var(--nb-type-overline-family);
+  font-size: var(--nb-type-overline-size);
+  font-weight: var(--nb-type-overline-weight);
+  line-height: var(--nb-type-overline-line-height);
+  text-transform: var(--nb-type-overline-text-transform);
+  letter-spacing: var(--nb-type-overline-letter-spacing);
 }
 
 .nb-toc__nav {

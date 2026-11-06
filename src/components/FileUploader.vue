@@ -262,17 +262,17 @@ defineExpose({ files, setFileStatus })
   &__heading {
     margin: 0;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: var(--nb-type-heading-01-size);
     color: var(--nb-c-text);
   }
 
   &__description {
     margin: 0;
-    font-size: 0.875rem;
+    font-size: var(--nb-type-body-compact-size);
     color: var(--nb-c-text-muted);
     border-left: 3px solid var(--nb-c-border);
     padding-left: 0.75rem;
-    line-height: 1.5;
+    line-height: var(--nb-type-body-compact-line-height);
   }
 
   &__input {
@@ -335,8 +335,8 @@ defineExpose({ files, setFileStatus })
   }
 
   &__drop-label {
-    font-size: 0.9rem;
-    line-height: 1.6;
+    font-size: var(--nb-type-body-compact-size);
+    line-height: var(--nb-type-body-compact-line-height);
     pointer-events: none;
   }
 
@@ -358,7 +358,7 @@ defineExpose({ files, setFileStatus })
     border: 1px solid transparent;
     border-radius: 4px;
     padding: 0.6rem 0.875rem;
-    font-size: 0.9rem;
+    font-size: var(--nb-type-body-compact-size);
     color: var(--nb-c-text);
     transition: border-color var(--nb-motion-short);
 
@@ -387,7 +387,7 @@ defineExpose({ files, setFileStatus })
   &__error {
     grid-column: 1 / -1;
     grid-row: 2;
-    font-size: 0.8125rem;
+    font-size: var(--nb-type-body-compact-size);
     color: var(--nb-c-danger);
     padding-top: 0.35rem;
     border-top: 1px solid var(--nb-c-border);

@@ -190,15 +190,15 @@ defineExpose({ expandIds, collapseAll })
   list-style: none;
   padding: 0;
   margin: 0;
-  font-size: 0.875rem; // 14px, Carbon body-compact-01
-  line-height: 1.2;
+  font-size: var(--nb-type-body-compact-size);
+  line-height: var(--nb-type-body-compact-line-height);
   user-select: none;
   overflow: hidden;
   color: var(--nb-c-text-muted);
 
   // xs size variant: 24px row height
   &--compact {
-    font-size: 0.75rem; // 12px
+    font-size: var(--nb-type-body-sm-size);
 
     :deep(.nb-tree-node__label) {
       min-block-size: 1.5rem; // 24px

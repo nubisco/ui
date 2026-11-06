@@ -383,7 +383,7 @@ const tooltipRows = computed(() => {
 
 .nb-chart__axis {
   font-family: var(--nb-font-family-sans);
-  font-size: 11px;
+  font-size: var(--nb-type-body-sm-size);
   fill: var(--nb-c-text-muted);
 }
 

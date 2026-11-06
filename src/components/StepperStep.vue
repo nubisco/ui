@@ -250,8 +250,8 @@ function onSelect() {
 
 .nb-stepper__description {
   color: var(--nb-c-text-subtle);
-  font-size: var(--nb-font-size-12);
-  line-height: 1.3;
+  font-size: var(--nb-type-body-sm-size);
+  line-height: var(--nb-type-body-sm-line-height);
   overflow-wrap: anywhere;
 }
 

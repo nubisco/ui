@@ -2381,7 +2381,7 @@ defineExpose({
   background: transparent;
   border: none;
   padding: 6px 10px;
-  font-size: 12px;
+  font-size: var(--nb-type-body-sm-size);
   color: var(--nb-c-text);
   border-radius: 4px;
   cursor: pointer;

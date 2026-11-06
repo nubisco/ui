@@ -136,7 +136,7 @@ function onPageSizeChange(value: unknown) {
   border-top: 1px solid var(--nb-c-border);
   background: var(--nb-c-surface);
   color: var(--nb-c-text);
-  font-size: var(--nb-font-size-13);
+  font-size: var(--nb-type-body-compact-size);
   // No trailing inset: the nav controls run flush to the bar's end edge.
   padding-inline: calc(var(--nb-base-unit) * 2) 0;
   min-height: var(--nb-pg-bar-h);
@@ -240,7 +240,7 @@ function onPageSizeChange(value: unknown) {
   &--sm {
     --nb-pg-bar-h: calc(var(--nb-base-unit) * 4);
 
-    font-size: var(--nb-font-size-13);
+    font-size: var(--nb-type-body-compact-size);
   }
   &--lg {
     --nb-pg-bar-h: calc(var(--nb-base-unit) * 8);

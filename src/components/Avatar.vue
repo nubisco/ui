@@ -90,7 +90,7 @@ const accessibleName = computed(
   // foreground, so initials stay legible in any theme.
   background: var(--nb-c-primary, #6b46c1);
   color: var(--nb-c-primary-a11y, #fff);
-  font-weight: 700;
+  font-weight: var(--nb-font-weight-semibold, 600);
   letter-spacing: 0.02em;
   line-height: 1;
   user-select: none;
@@ -98,22 +98,22 @@ const accessibleName = computed(
   &--xs {
     width: 20px;
     height: 20px;
-    font-size: 0.5rem;
+    font-size: var(--nb-type-body-sm-size);
   }
   &--sm {
     width: 24px;
     height: 24px;
-    font-size: 0.5625rem;
+    font-size: var(--nb-type-body-sm-size);
   }
   &--md {
     width: 28px;
     height: 28px;
-    font-size: 0.64rem;
+    font-size: var(--nb-type-body-sm-size);
   }
   &--lg {
     width: 40px;
     height: 40px;
-    font-size: 0.875rem;
+    font-size: var(--nb-type-body-compact-size);
   }
 }
 

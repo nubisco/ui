@@ -792,10 +792,10 @@ const legendItems = computed(() => {
     display: flex;
     align-items: flex-end;
     padding: 0 10px 6px;
-    font-size: var(--nb-font-size-11, 11px);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    font-size: var(--nb-type-overline-size);
+    font-weight: var(--nb-type-overline-weight);
+    text-transform: var(--nb-type-overline-text-transform);
+    letter-spacing: var(--nb-type-overline-letter-spacing);
     color: var(--nb-c-text-muted);
     border-bottom: 1px solid var(--nb-c-border);
     background: var(--nb-c-surface);
@@ -810,7 +810,7 @@ const legendItems = computed(() => {
     align-items: center;
     gap: 4px;
     padding: 0 10px;
-    font-size: var(--nb-font-size-12);
+    font-size: var(--nb-type-body-sm-size);
     font-weight: 600;
     color: var(--nb-c-text);
     cursor: pointer;
@@ -823,7 +823,7 @@ const legendItems = computed(() => {
   }
 
   &__list-caret {
-    font-size: 10px;
+    font-size: var(--nb-type-body-sm-size);
     transition: transform 120ms ease;
     color: var(--nb-c-text-muted);
 
@@ -840,7 +840,7 @@ const legendItems = computed(() => {
     display: flex;
     align-items: center;
     padding: 0 10px;
-    font-size: var(--nb-font-size-12);
+    font-size: var(--nb-type-body-sm-size);
     color: var(--nb-c-text);
     transition: background 80ms ease;
 
@@ -874,7 +874,7 @@ const legendItems = computed(() => {
   }
 
   &__time-label {
-    font-size: 11px;
+    font-size: var(--nb-type-body-sm-size);
     fill: var(--nb-c-text-muted);
     font-family: var(--nb-font-family-sans);
   }

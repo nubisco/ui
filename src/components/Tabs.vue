@@ -466,7 +466,7 @@ function onKeydown(event: KeyboardEvent): void {
     color: var(--nb-c-text-muted);
     font-family: inherit;
     font-size: var(--nb-tabs-font-size);
-    font-weight: 500;
+    font-weight: var(--nb-font-weight-semibold, 600);
     line-height: 1;
     white-space: nowrap;
     cursor: pointer;
@@ -502,19 +502,19 @@ function onKeydown(event: KeyboardEvent): void {
   &--sm {
     --nb-tabs-height: calc(var(--nb-base-unit) * 4); // 32px
     --nb-tabs-padding-h: calc(var(--nb-base-unit) * 1.5); // 12px
-    --nb-tabs-font-size: var(--nb-font-size-12);
+    --nb-tabs-font-size: var(--nb-type-body-sm-size);
   }
 
   &--md {
     --nb-tabs-height: calc(var(--nb-base-unit) * 5); // 40px
     --nb-tabs-padding-h: calc(var(--nb-base-unit) * 2); // 16px
-    --nb-tabs-font-size: var(--nb-font-size-14);
+    --nb-tabs-font-size: var(--nb-type-body-compact-size);
   }
 
   &--lg {
     --nb-tabs-height: calc(var(--nb-base-unit) * 6); // 48px
     --nb-tabs-padding-h: calc(var(--nb-base-unit) * 2.5); // 20px
-    --nb-tabs-font-size: var(--nb-font-size-16);
+    --nb-tabs-font-size: var(--nb-type-body-lg-size);
   }
 
   // ── Line variant: text tabs riding a rule, active underlined in primary ──────

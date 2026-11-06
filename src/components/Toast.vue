@@ -312,7 +312,7 @@ watch(
 
 .nb-toast__title {
   margin: 0;
-  font-size: var(--nb-font-size-13);
+  font-size: var(--nb-type-heading-compact-size);
   font-weight: var(--nb-font-weight-semibold);
   color: var(--nb-c-text);
   line-height: var(--nb-line-height-normal);
@@ -323,7 +323,7 @@ watch(
 
 .nb-toast__message {
   margin: 0;
-  font-size: var(--nb-font-size-13);
+  font-size: var(--nb-type-body-compact-size);
   color: var(--nb-c-text-muted);
   line-height: var(--nb-line-height-normal);
   overflow-wrap: anywhere;
@@ -335,7 +335,7 @@ watch(
   border: none;
   background: none;
   font-family: inherit;
-  font-size: var(--nb-font-size-12);
+  font-size: var(--nb-type-body-sm-size);
   font-weight: var(--nb-font-weight-semibold);
   color: var(--nb-c-primary);
   cursor: pointer;

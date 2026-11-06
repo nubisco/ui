@@ -110,21 +110,21 @@ const resolvedIcon = computed(() =>
 
 .nb-empty-state__title {
   margin: 0;
-  font-size: var(--nb-font-size-14);
+  font-size: var(--nb-type-heading-compact-size);
   font-weight: var(--nb-font-weight-semibold, 600);
-  line-height: 1.4;
+  line-height: var(--nb-type-heading-compact-line-height);
   color: var(--nb-c-text);
 }
 
 .nb-empty-state--md .nb-empty-state__title {
-  font-size: var(--nb-font-size-16);
+  font-size: var(--nb-type-body-lg-size);
 }
 
 .nb-empty-state__description {
   margin: 0;
   max-width: var(--nb-empty-state-measure);
-  font-size: var(--nb-font-size-14);
-  line-height: 1.5;
+  font-size: var(--nb-type-body-compact-size);
+  line-height: var(--nb-type-body-compact-line-height);
   color: var(--nb-c-text-subtle);
 }
 

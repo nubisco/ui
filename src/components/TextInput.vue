@@ -334,7 +334,7 @@ const wrapperClasses = computed(() => ({
 
   &--xs {
     --field-h: var(--nb-field-height-xs);
-    --nb-field-font-size: var(--nb-font-size-13);
+    --nb-field-font-size: var(--nb-type-body-compact-size);
   }
   &--sm {
     --field-h: var(--nb-field-height-sm);
@@ -597,7 +597,7 @@ const wrapperClasses = computed(() => ({
 
   // ─── Bottom message ───────────────────────────────────────
   &__message {
-    font-size: var(--nb-font-size-12);
+    font-size: var(--nb-type-body-sm-size);
   }
 
   // ─── DEFAULT variant ──────────────────────────────────────
@@ -632,10 +632,10 @@ const wrapperClasses = computed(() => ({
       gap: 4px;
       flex: 1;
       min-width: 0;
-      font-size: var(--nb-font-size-12);
-      font-weight: 500;
+      font-size: var(--nb-type-body-sm-size);
+      font-weight: var(--nb-font-weight-semibold, 600);
       color: var(--nb-c-text-muted);
-      letter-spacing: 0.02em;
+      letter-spacing: var(--nb-type-body-sm-letter-spacing);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -651,7 +651,7 @@ const wrapperClasses = computed(() => ({
       height: auto;
       flex: 1;
       padding: 0 var(--nb-field-padding-h) 10px;
-      font-size: var(--nb-font-size-14);
+      font-size: var(--nb-type-body-compact-size);
       @include touch.touch-field-text;
     }
   }

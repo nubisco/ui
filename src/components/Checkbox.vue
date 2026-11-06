@@ -127,9 +127,9 @@ function handleChange(e: Event) {
   }
 
   &__label {
-    font-size: var(--nb-font-size-14);
+    font-size: var(--nb-type-body-compact-size);
     color: var(--nb-c-text);
-    line-height: 1.4;
+    line-height: var(--nb-type-body-compact-line-height);
   }
 
   /* Checked / indeterminate state */

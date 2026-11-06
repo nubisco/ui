@@ -86,7 +86,7 @@ const rootClasses = computed(() => [
 
   // ── Message ───────────────────────────────────────────────────────────────────
   &__message {
-    font-size: var(--nb-font-size-12);
+    font-size: var(--nb-type-body-sm-size);
   }
 
   // ── Error state: danger borders and fills on child checkboxes ────────────────

@@ -277,7 +277,7 @@ function getEventsForDate(dateStr: string): ICalendarEvent[] {
 }
 
 .nb-calendar__title {
-  font-size: 0.875rem;
+  font-size: var(--nb-type-heading-compact-size);
   font-weight: 600;
   color: var(--nb-c-text);
 }
@@ -288,7 +288,7 @@ function getEventsForDate(dateStr: string): ICalendarEvent[] {
   color: var(--nb-c-primary);
   cursor: pointer;
   padding: 0;
-  font-size: 0.875rem;
+  font-size: var(--nb-type-heading-compact-size);
   font-weight: 600;
   transition: color var(--nb-motion-short);
 
@@ -307,10 +307,10 @@ function getEventsForDate(dateStr: string): ICalendarEvent[] {
 .nb-calendar__weekday {
   padding: 0.5rem 0.75rem;
   text-align: left;
-  font-size: 0.75rem;
+  font-size: var(--nb-type-body-sm-size);
   font-weight: 600;
   color: var(--nb-c-text);
-  letter-spacing: 0.02em;
+  letter-spacing: var(--nb-type-body-sm-letter-spacing);
 }
 
 .nb-calendar__grid {
@@ -358,8 +358,9 @@ function getEventsForDate(dateStr: string): ICalendarEvent[] {
 }
 
 .nb-calendar__day-num {
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: var(--nb-type-body-sm-size);
+  font-weight: var(--nb-font-weight-regular, 400);
+  font-variant-numeric: tabular-nums;
   color: var(--nb-c-text);
   display: block;
   margin-bottom: 0.25rem;
@@ -378,8 +379,8 @@ function getEventsForDate(dateStr: string): ICalendarEvent[] {
 }
 
 .nb-calendar__event-label {
-  font-size: 0.625rem;
-  font-weight: 500;
+  font-size: var(--nb-type-body-sm-size);
+  font-weight: var(--nb-font-weight-semibold, 600);
   color: #fff;
   white-space: nowrap;
   overflow: hidden;

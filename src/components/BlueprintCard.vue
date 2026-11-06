@@ -1023,7 +1023,7 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
 // 13.5 / 11.5 / 10.5 / 9.5px it used to mix. Half-pixel type rasterises
 // differently at each zoom level, and a canvas is a zooming surface.
 .nb-blueprint-card__name {
-  font-size: 14px;
+  font-size: var(--nb-type-heading-compact-size);
   line-height: 18px;
   font-weight: 600;
   color: var(--nb-c-text);
@@ -1040,11 +1040,11 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
 // to be painted in the node colour, which was also the top bar, also every
 // wired pin, and also the toggle: one hue meaning four things at once.
 .nb-blueprint-card__tag {
-  font-size: 12px;
+  font-size: var(--nb-type-overline-size);
   line-height: 16px;
-  letter-spacing: 0.32px;
+  letter-spacing: var(--nb-type-overline-letter-spacing);
   color: var(--nb-c-text-subtle);
-  text-transform: uppercase;
+  text-transform: var(--nb-type-overline-text-transform);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1144,7 +1144,7 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   background: transparent;
   color: var(--nb-c-text-subtle);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--nb-type-body-compact-size);
   line-height: 1;
   padding: 0 2px;
   border-radius: var(--nb-radius-xs);
@@ -1171,7 +1171,7 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
 
 .nb-blueprint-card__preview {
   display: block;
-  font-size: 12px;
+  font-size: var(--nb-type-code-sm-size);
   line-height: 16px;
   color: var(--nb-c-text-subtle);
   font-family: 'Geist Mono', 'IBM Plex Mono', monospace;
@@ -1201,14 +1201,14 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
 }
 
 .nb-blueprint-card__row-label {
-  font-size: 12px;
+  font-size: var(--nb-type-body-sm-size);
   line-height: 16px;
   color: var(--nb-c-text-subtle);
 }
 
 .nb-blueprint-card__row-value {
   font-family: 'Geist Mono', 'IBM Plex Mono', monospace;
-  font-size: 12px;
+  font-size: var(--nb-type-code-sm-size);
   line-height: 16px;
   color: var(--nb-c-text);
   text-align: right;
@@ -1623,7 +1623,7 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
 // inside the pin's box: the wire layer measures that box, so a label sharing
 // it moved every endpoint on the card by half a label's width.
 .nb-blueprint-card__port-label {
-  font-size: 12px;
+  font-size: var(--nb-type-body-sm-size);
   line-height: 16px;
   color: var(--nb-c-text-subtle);
   white-space: nowrap;
@@ -1652,7 +1652,7 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   }
 
   .nb-blueprint-card__name {
-    font-size: 12px;
+    font-size: var(--nb-type-body-sm-size);
     line-height: 16px;
   }
 

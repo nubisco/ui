@@ -392,8 +392,10 @@ $modal-sizes: (
 
 .nb-modal--title {
   padding: 16px 20px;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: var(--nb-type-heading-01-size);
+  font-weight: var(--nb-type-heading-01-weight);
+  line-height: var(--nb-type-heading-01-line-height);
+  letter-spacing: var(--nb-type-heading-01-letter-spacing);
   color: var(--nb-c-text);
 }
 
@@ -423,7 +425,7 @@ $modal-sizes: (
    * corner, less the inset the header holds it at.
    */
   @include radius.inset(var(--nb-overlay-inset, 0px));
-  font-size: 20px;
+  font-size: var(--nb-type-heading-02-size);
   line-height: 1;
   color: var(--nb-c-text-muted);
   cursor: pointer;

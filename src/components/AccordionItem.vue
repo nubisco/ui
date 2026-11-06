@@ -191,9 +191,9 @@ function onKeydown(event: KeyboardEvent) {
   border: 0;
   background: transparent;
   color: var(--nb-c-text);
-  font-size: var(--nb-font-size-14);
+  font-size: var(--nb-type-heading-compact-size);
   font-weight: var(--nb-font-weight-semibold, 600);
-  line-height: 1.4;
+  line-height: var(--nb-type-heading-compact-line-height);
   text-align: left;
   cursor: pointer;
   transition: background var(--nb-motion-micro) linear;
@@ -302,8 +302,8 @@ function onKeydown(event: KeyboardEvent) {
   // the heading. The padding goes with the track, on the same step.
   transition: padding-bottom var(--nb-motion-medium) var(--nb-ease-standard);
   color: var(--nb-c-text);
-  font-size: var(--nb-font-size-14);
-  line-height: 1.5;
+  font-size: var(--nb-type-body-compact-size);
+  line-height: var(--nb-type-body-compact-line-height);
 
   // Room for the chevron's column, so body copy lines up with the title rather
   // than with the icon that opens it.

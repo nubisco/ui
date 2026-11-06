@@ -330,8 +330,8 @@ defineExpose({
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  font-size: var(--nb-font-size-13);
-  line-height: 1.4;
+  font-size: var(--nb-type-body-compact-size);
+  line-height: var(--nb-type-body-compact-line-height);
   color: var(--nb-c-text);
   cursor: pointer;
   // Concentric with the list: its corner, less the 4px padding and 1px border.
@@ -350,7 +350,7 @@ defineExpose({
 .nb-suggestion-list__empty,
 .nb-suggestion-list__loading {
   padding: 8px 10px;
-  font-size: var(--nb-font-size-13);
+  font-size: var(--nb-type-body-compact-size);
   color: var(--nb-c-text-subtle);
 }
 </style>

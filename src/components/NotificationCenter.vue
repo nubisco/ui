@@ -1279,8 +1279,9 @@ defineExpose({ show, close, toggle, isOpen, unreadCount })
   border-radius: 999px;
   background: var(--nb-c-danger);
   color: var(--nb-c-danger-a11y);
-  font-size: var(--nb-font-size-9);
-  font-weight: var(--nb-font-weight-bold);
+  font-size: var(--nb-type-body-sm-size);
+  font-weight: var(--nb-font-weight-semibold, 600);
+  font-variant-numeric: tabular-nums;
   line-height: 15px;
   text-align: center;
 }
@@ -1337,7 +1338,7 @@ defineExpose({ show, close, toggle, isOpen, unreadCount })
   .nb-notification-center__title {
     flex: 1 1 auto;
     min-width: 0;
-    font-size: var(--nb-font-size-16);
+    font-size: var(--nb-type-body-lg-size);
   }
 
   .nb-notification-center__mark-all {
@@ -1381,7 +1382,7 @@ defineExpose({ show, close, toggle, isOpen, unreadCount })
 
 .nb-notification-center__title {
   margin: 0;
-  font-size: var(--nb-font-size-13);
+  font-size: var(--nb-type-heading-compact-size);
   font-weight: var(--nb-font-weight-semibold);
   color: var(--nb-c-text);
 }
@@ -1394,7 +1395,7 @@ defineExpose({ show, close, toggle, isOpen, unreadCount })
   background: none;
   padding: 2px 4px;
   font-family: inherit;
-  font-size: var(--nb-font-size-12);
+  font-size: var(--nb-type-body-sm-size);
   color: var(--nb-c-primary);
   cursor: pointer;
 
@@ -1437,7 +1438,7 @@ defineExpose({ show, close, toggle, isOpen, unreadCount })
   padding: var(--nb-spacing-4) var(--nb-spacing-12);
   background: color-mix(in srgb, var(--nb-c-warning) 12%, transparent);
   color: var(--nb-c-text);
-  font-size: var(--nb-font-size-12);
+  font-size: var(--nb-type-body-sm-size);
   border-bottom: 1px solid var(--nb-c-layer-border-3);
 }
 
@@ -1452,7 +1453,7 @@ defineExpose({ show, close, toggle, isOpen, unreadCount })
   background: none;
   padding: 2px 4px;
   font-family: inherit;
-  font-size: var(--nb-font-size-12);
+  font-size: var(--nb-type-body-sm-size);
   color: var(--nb-c-primary);
   cursor: pointer;
 

@@ -825,7 +825,7 @@ defineExpose({
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  font-size: 14px;
+  font-size: var(--nb-type-body-compact-size);
   font-weight: 400;
   color: var(--nb-c-text);
   cursor: pointer;
@@ -863,7 +863,7 @@ defineExpose({
   &--selected {
     background: var(--nb-c-primary);
     color: var(--nb-c-surface);
-    font-weight: 500;
+    font-weight: var(--nb-font-weight-semibold, 600);
 
     .nb-select__option-check {
       color: var(--nb-c-surface);
@@ -897,10 +897,10 @@ defineExpose({
   // reads to a screen reader as an option you may not choose and eats a
   // keystroke on the way past.
   padding: 8px 12px 4px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: var(--nb-type-overline-size);
+  font-weight: var(--nb-type-overline-weight);
+  letter-spacing: var(--nb-type-overline-letter-spacing);
+  text-transform: var(--nb-type-overline-text-transform);
   // A real token rather than opacity on the option colour: the faked version
   // measured 2.65:1 against the list, under the 4.5:1 this has to clear.
   color: var(--nb-c-text-subtle);
@@ -947,7 +947,7 @@ defineExpose({
 
 .nb-select__empty {
   padding: 12px 16px;
-  font-size: 14px;
+  font-size: var(--nb-type-body-compact-size);
   color: var(--nb-c-text-subtle);
   text-align: center;
 }
@@ -971,7 +971,7 @@ defineExpose({
   border-radius: 4px;
   padding: 6px 10px;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--nb-type-body-compact-size);
   color: var(--nb-c-text);
   outline: none;
   box-sizing: border-box;
@@ -1000,7 +1000,7 @@ defineExpose({
   border-radius: 4px;
   padding: 6px 10px;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--nb-type-body-compact-size);
   color: var(--nb-c-text);
   outline: none;
   box-sizing: border-box;
@@ -1059,7 +1059,7 @@ defineExpose({
 
   &--xs {
     --field-h: var(--nb-field-height-xs);
-    --nb-field-font-size: var(--nb-font-size-13);
+    --nb-field-font-size: var(--nb-type-body-compact-size);
   }
   &--sm {
     --field-h: var(--nb-field-height-sm);
@@ -1266,7 +1266,7 @@ defineExpose({
 
   &__message,
   &__fluid-message {
-    font-size: var(--nb-font-size-12);
+    font-size: var(--nb-type-body-sm-size);
   }
 
   &--fluid {
@@ -1289,10 +1289,10 @@ defineExpose({
     .nb-select__inner-label {
       flex: 1;
       min-width: 0;
-      font-size: var(--nb-font-size-12);
-      font-weight: 500;
+      font-size: var(--nb-type-body-sm-size);
+      font-weight: var(--nb-font-weight-semibold, 600);
       color: var(--nb-c-text-muted);
-      letter-spacing: 0.02em;
+      letter-spacing: var(--nb-type-body-sm-letter-spacing);
       cursor: default;
       user-select: none;
       white-space: nowrap;
@@ -1315,7 +1315,7 @@ defineExpose({
     .nb-select__value {
       flex: 1;
       padding: 0 var(--nb-field-padding-h);
-      font-size: var(--nb-font-size-14);
+      font-size: var(--nb-type-body-compact-size);
     }
 
     .nb-select__caret {

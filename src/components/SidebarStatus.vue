@@ -51,7 +51,7 @@ const isCompact = computed(() => variant.value === 'compact')
   width: 100%;
   min-height: 32px;
   padding: 0.25rem 0.75rem;
-  font-size: 0.75rem;
+  font-size: var(--nb-type-body-sm-size);
   color: var(--nb-shell-sidebar-link-color);
 
   &--compact {

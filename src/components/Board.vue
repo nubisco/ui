@@ -1078,20 +1078,21 @@ function onColumnDragEnd() {
 }
 
 .nb-board__col-title {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: var(--nb-type-overline-size);
+  font-weight: var(--nb-type-overline-weight);
+  text-transform: var(--nb-type-overline-text-transform);
+  letter-spacing: var(--nb-type-overline-letter-spacing);
   color: var(--nb-c-text);
 }
 
 .nb-board__col-count {
-  font-size: 0.7rem;
+  font-size: var(--nb-type-body-sm-size);
   background: var(--nb-c-bg-soft);
   color: var(--nb-c-text-muted);
   padding: 0.1rem 0.4rem;
   border-radius: 999px;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .nb-board__lane-header {
@@ -1114,7 +1115,7 @@ function onColumnDragEnd() {
 .nb-board__collapse-btn {
   background: none;
   border: none;
-  font-size: 0.6rem;
+  font-size: var(--nb-type-body-sm-size);
   color: var(--nb-c-text-subtle);
   cursor: pointer;
   padding: 0;
@@ -1123,14 +1124,14 @@ function onColumnDragEnd() {
 }
 
 .nb-board__lane-label {
-  font-size: 0.85rem;
+  font-size: var(--nb-type-heading-compact-size);
   font-weight: 600;
   color: var(--nb-c-text);
   flex: 1;
 }
 
 .nb-board__lane-count {
-  font-size: 0.68rem;
+  font-size: var(--nb-type-body-sm-size);
   background: var(--nb-c-discrete);
   color: var(--nb-c-text-muted);
   padding: 0.05rem 0.35rem;
