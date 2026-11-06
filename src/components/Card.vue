@@ -8,6 +8,7 @@
       'nb-card--interactive': isInteractive,
       'nb-card--selected': selected,
       'nb-card--disabled': disabled,
+      'nb-card--decorated': !!$slots.decorator,
     }"
     v-bind="{ ...attrs, ...layerProps }"
     @click="onClick"
@@ -51,6 +52,16 @@
       <slot name="icon">
         <NbIcon :name="icon!" :size="20" aria-hidden="true" />
       </slot>
+    </div>
+
+    <!-- An NbAiLabel when AI made the card's content: upper right. -->
+    <div
+      v-if="$slots.decorator"
+      class="nb-card__decorator"
+      @click.stop
+      @keydown.stop
+    >
+      <slot name="decorator" />
     </div>
 
     <div class="nb-card__head">
@@ -177,6 +188,24 @@ const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
   // Cards in a grid are stretched to the row's height by default; this is what
   // lets the footer sit on the bottom edge rather than under the description.
   height: 100%;
+}
+
+// The AI label sits in the upper right corner, inside the padding, and the
+// head leaves room for it so a long title does not run under it.
+.nb-card--decorated {
+  position: relative;
+
+  .nb-card__head {
+    padding-inline-end: calc(var(--nb-base-unit) * 4);
+  }
+}
+
+.nb-card__decorator {
+  position: absolute;
+  top: var(--nb-spacing-8);
+  right: var(--nb-spacing-8);
+  z-index: 1;
+  display: flex;
 }
 
 .nb-card--sm {

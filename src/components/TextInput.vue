@@ -118,6 +118,12 @@
 
         <slot name="trailing" />
 
+        <!-- An NbAiLabel when AI filled the field: right and vertically
+             centred, at the far left of any actions. -->
+        <div v-if="$slots.decorator" class="nb-text-input__decorator">
+          <slot name="decorator" />
+        </div>
+
         <!-- Actions: buttons rendered inside the field at the trailing edge
              (AI suggest, password toggle, clear, etc.) -->
         <div v-if="$slots.actions" class="nb-text-input__actions">
@@ -576,6 +582,15 @@ const wrapperClasses = computed(() => ({
     align-items: center;
     padding: 0 8px;
     gap: 4px;
+    flex-shrink: 0;
+    z-index: 2; // above the transparent overlay input
+  }
+
+  // The AI label slot, beside the trailing actions.
+  &__decorator {
+    display: flex;
+    align-items: center;
+    padding-inline-start: 8px;
     flex-shrink: 0;
     z-index: 2; // above the transparent overlay input
   }
