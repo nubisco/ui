@@ -56,6 +56,8 @@ export interface INbStrings {
   selectionCount: (count: number) => string
   // NbModal
   modalClose: string
+  // NbTextInput `showCount`
+  textInputCount: (length: number, max: number) => string
   // NbNumberInput
   numberInputDecrease: string
   numberInputIncrease: string
@@ -137,6 +139,7 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   dataTableError: 'Could not load the data',
   selectionCount: (count: number) => `${count} selected`,
   modalClose: 'Close',
+  textInputCount: (length: number, max: number) => `${length}/${max}`,
   numberInputDecrease: 'Decrease',
   numberInputIncrease: 'Increase',
   boardSelectionActions: 'Actions for the selected cards',

@@ -139,6 +139,13 @@
         {{ messageText }}
       </NbMessage>
 
+      <!-- The count is a reading aid, not a live region: the native maxlength
+           already stops input at the limit, and announcing every keystroke
+           would drown out the field. -->
+      <span v-if="countVisible" class="nb-text-input__count">{{
+        countText
+      }}</span>
+
       <!-- Dropdowns / popovers anchored to the component root -->
       <slot name="dropdown" />
     </template>
@@ -171,6 +178,9 @@
           >
             {{ messageText }}
           </NbMessage>
+          <span v-if="countVisible" class="nb-text-input__count">{{
+            countText
+          }}</span>
         </div>
 
         <input
@@ -206,6 +216,7 @@ import type { IReadableFieldComponent } from '@/types/Props.d'
 import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
 import { NB_TEXT_INPUT_CONTEXT } from './TextInput.context'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 
 // Ensure $attrs (class, style, event listeners, native attrs) flow to the native element
 defineOptions({ inheritAttrs: false })
@@ -217,6 +228,11 @@ export interface ITextInputProps extends IReadableFieldComponent {
   max?: string | number
   step?: string | number
   maxlength?: number
+  /**
+   * Shows how many characters are used out of `maxlength` (`12/200`). Has no
+   * effect without `maxlength`.
+   */
+  showCount?: boolean
   /** Render a <textarea> instead of <input> */
   multiline?: boolean
   /** Initial row count (multiline only, without highlight) */
@@ -250,12 +266,25 @@ const props = withDefaults(defineProps<ITextInputProps>(), {
   max: undefined,
   step: undefined,
   maxlength: undefined,
+  showCount: false,
   multiline: false,
   rows: 3,
   highlight: undefined,
 })
 
 const model = defineModel<string>({ default: '' })
+
+const nbStrings = useNbStrings()
+const countVisible = computed(
+  () => props.showCount && typeof props.maxlength === 'number',
+)
+// String length, not code points: it is the unit the native maxlength counts.
+const countText = computed(() =>
+  nbStrings.value.textInputCount(
+    (model.value ?? '').length,
+    props.maxlength ?? 0,
+  ),
+)
 
 const nativeRef = ref<HTMLInputElement | HTMLTextAreaElement | null>(null)
 const mirrorRef = ref<HTMLDivElement | null>(null)
@@ -599,6 +628,14 @@ const wrapperClasses = computed(() => ({
   // ─── Bottom message ───────────────────────────────────────
   &__message {
     font-size: var(--nb-type-body-sm-size);
+  }
+
+  &__count {
+    align-self: flex-end;
+    flex-shrink: 0;
+    font-size: var(--nb-font-size-12);
+    color: var(--nb-c-text-muted);
+    font-variant-numeric: tabular-nums;
   }
 
   // ─── DEFAULT variant ──────────────────────────────────────
