@@ -177,7 +177,7 @@ const rootStyle = computed(() => {
   const style: Record<string, string> = {}
 
   if (isTextual.value) {
-    // The line box, not the ink: height is font-size x line-height, exactly
+    // The line box, not the ink: height is the set's line height, exactly
     // what the real text will occupy, and the grey bar sits centred inside it.
     // This is why swapping content in does not move anything below.
     style['--nb-skeleton-font-size'] = `var(--nb-type-${typeSet.value}-size)`
@@ -275,7 +275,7 @@ const rootStyle = computed(() => {
   &--text &__line,
   &--heading &__line {
     font-size: var(--nb-skeleton-font-size);
-    height: calc(var(--nb-skeleton-font-size) * var(--nb-skeleton-line-height));
+    height: var(--nb-skeleton-line-height);
   }
 
   &--block &__line,

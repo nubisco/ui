@@ -130,11 +130,12 @@
   }
 
   /**
-  * Add the correct font weight in Chrome, Edge, and Safari.
+  * Emphasis is semibold, the weight the system uses for emphasis. `bolder`
+  * on a regular body resolves to 700, which is not loaded.
   */
 
   :where(b, strong) {
-    font-weight: bolder;
+    font-weight: var(--nb-font-weight-semibold, 600);
   }
 
   /**
