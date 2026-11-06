@@ -62,7 +62,17 @@ interface IIconProps {
   animationMode?: `${EAnimationMode}`
   color?: string
   weight?: `${EWeight}`
+  /**
+   * A native tooltip. It also names the icon for assistive technology, the
+   * same as `label`, so an icon with a `title` is announced.
+   */
   title?: string
+  /**
+   * The accessible name. Give one only when the icon carries meaning that no
+   * adjacent text repeats; the icon then renders `role="img"` with this name.
+   * Without `label` or `title` the icon is decorative and `aria-hidden`.
+   */
+  label?: string
   clickable?: boolean
   hoverable?: boolean
 }
