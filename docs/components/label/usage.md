@@ -18,7 +18,7 @@ pageTabs: ['usage', 'code', 'accessibility']
 
 <preview>
   <NbLabel size="md">Medium (default): 12px</NbLabel>
-  <NbLabel size="sm">Small: 11px, uppercase</NbLabel>
+  <NbLabel size="sm">Small</NbLabel>
 </preview>
 
 ## Disabled

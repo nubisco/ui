@@ -993,7 +993,7 @@ Apply a type set in one utility class:
 
 ```html
 <p class="type-body-md">Readable paragraph text</p>
-<span class="type-label-md">Form label</span>
+<span class="type-label">Form label</span>
 <h2 class="type-heading-03">Section title</h2>
 <code class="type-code-md">const x = 1</code>
 ```

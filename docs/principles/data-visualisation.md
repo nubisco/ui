@@ -31,7 +31,7 @@ Three cases where a chart is actively worse than the thing it replaced, all of t
 
 **A ranked list of more than about ten things.** A bar chart of twenty categories is a table that cannot be sorted, cannot be searched, and truncates its own labels. `NbDataTable` with a `sortable` column does the job, and it already has `loading`, `error` and `emptyMessage` props that no chart in this library has.
 
-**A number the user is going to act on.** Invoice totals, quota remaining, seats used. Put the number in text at `.type-heading-04` or larger with a `.type-label-sm` caption, and if trend matters put a sparkline beside it.
+**A number the user is going to act on.** Invoice totals, quota remaining, seats used. Put the number in text at `.type-heading-04` or larger with a `.type-label` caption, and if trend matters put a sparkline beside it.
 
 **A comparison the reader is not being asked to make.** Four panels each showing one metric over time, side by side, is four charts. If nobody compares panel two to panel three, they are four numbers and a lot of chrome.
 

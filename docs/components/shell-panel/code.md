@@ -351,7 +351,7 @@ Replacing the `controls` slot replaces all of it. If you put your own buttons th
 
 The collapsed-header dim and the size buttons' hover tint are transitions, and both are removed under `prefers-reduced-motion: reduce`. The panel still reaches the same states, instantly.
 
-The panel does not render a heading element for `title`: it is an 11px chrome label, not a document heading, and turning it into an `<h2>` would put a heading into every inspector column. If a panel's content is a section of the page, put the heading in the content.
+The panel does not render a heading element for `title`: it is a chrome label in the `overline` type set, not a document heading, and turning it into an `<h2>` would put a heading into every inspector column. If a panel's content is a section of the page, put the heading in the content.
 
 ## Visual design
 
@@ -374,6 +374,7 @@ This means panels adapt automatically to the layer context they sit in. No extra
 | `--nb-shell-panel-border`        | unset: `1px solid` the panel's own layer border | Panel border, as a full `border` shorthand            |
 | `--nb-shell-panel-header-bg`     | `transparent`                                   | Header background. Set it to tint the header bar      |
 | `--nb-shell-panel-header-border` | unset: `1px solid` the panel's own layer border | Border under the header, as a full `border` shorthand |
+| Typography                       | `overline` (title)                              | The title reads the `--nb-type-overline-*` variables  |
 
 Override them on `:root` rather than competing with the component's scoped styles. The three colour tokens have no `:root` default: their default is the panel's own layer, which only resolves on the panel element (declared at `:root`, they froze to layer 1 and every shell panel painted layer 1 wherever it sat). Setting one on `:root` still overrides it. The defaults resolve to semantic tokens, which means they follow the `.dark` theme on their own; a literal colour opts out of that and owes both themes a value.
 
