@@ -684,6 +684,8 @@ export {
   useReducedMotion,
   prefersReducedMotion,
 } from './composables/useReducedMotion.composable'
+export { motion, easing } from './tokens/motion'
+export type { TMotionStep, TEasingRole } from './tokens/motion'
 export {
   usePhoneLayout,
   NB_PHONE_QUERY,

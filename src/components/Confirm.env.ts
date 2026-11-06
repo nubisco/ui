@@ -5,6 +5,8 @@
  * be duplicated in the two files with nothing keeping them in step.
  */
 
+import { motion } from '@/tokens/motion'
+
 /**
  * How long the dialog takes to leave, in milliseconds.
  *
@@ -19,9 +21,10 @@
  * `applyConfirmMotion` puts this duration on the overlay and the dialog box
  * as an inline `transition-duration`, which wins over the stylesheet, so the
  * animation the user sees and the delay the queue waits are the same value by
- * construction. Change it here and both move together.
+ * construction. It is the `short` step from the motion tokens, so it moves
+ * with the scale.
  */
-export const CONFIRM_LEAVE_MS = 150
+export const CONFIRM_LEAVE_MS: number = motion.short
 
 /**
  * Popups our own components teleport to `<body>`. They are visually inside
