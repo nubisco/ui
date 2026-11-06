@@ -770,6 +770,8 @@ const legendItems = computed(() => {
 </script>
 
 <style lang="scss" scoped>
+@use '../../styles/logic/motion' as motion;
+
 .nb-gantt {
   display: flex;
   position: relative;
@@ -824,7 +826,7 @@ const legendItems = computed(() => {
 
   &__list-caret {
     font-size: var(--nb-type-body-sm-size);
-    transition: transform 120ms ease;
+    transition: transform var(--nb-motion-quick) var(--nb-ease-standard);
     color: var(--nb-c-text-muted);
 
     &.is-collapsed {
@@ -842,7 +844,7 @@ const legendItems = computed(() => {
     padding: 0 10px;
     font-size: var(--nb-type-body-sm-size);
     color: var(--nb-c-text);
-    transition: background 80ms ease;
+    transition: background var(--nb-motion-micro) ease;
 
     &.is-hovered {
       background: var(--nb-c-surface-hover);
@@ -921,7 +923,7 @@ const legendItems = computed(() => {
 
   // ── Task bars ─────────────────────────────────────────────────────────
   &__bar {
-    transition: opacity 120ms ease;
+    transition: opacity var(--nb-motion-quick) ease;
     opacity: 0.85;
     cursor: pointer;
 
@@ -951,7 +953,7 @@ const legendItems = computed(() => {
 
   // ── Milestones ────────────────────────────────────────────────────────
   &__milestone {
-    transition: opacity 120ms ease;
+    transition: opacity var(--nb-motion-quick) ease;
     cursor: pointer;
 
     &.is-hovered {
@@ -973,6 +975,14 @@ const legendItems = computed(() => {
   &__dependency-arrow {
     fill: var(--nb-c-text-muted);
     opacity: 0.5;
+  }
+}
+
+// The caret is travel: under reduced motion it snaps, like the accordion
+// chevron.
+@include motion.reduced {
+  .nb-gantt__list-caret {
+    transition: none;
   }
 }
 </style>

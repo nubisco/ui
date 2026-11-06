@@ -519,7 +519,7 @@ const formatNum = (n: number) => {
 }
 
 .nb-interpolation-chart__point {
-  transition: r 120ms ease;
+  transition: r var(--nb-motion-quick) var(--nb-ease-standard);
 
   &--editable {
     cursor: grab;
