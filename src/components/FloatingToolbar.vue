@@ -319,7 +319,7 @@ defineExpose({ reposition, focus, el: toolbarRef })
     var(--nb-c-scrim);
   white-space: nowrap;
 
-  animation: nb-floating-toolbar-in var(--nb-motion-medium) ease-out;
+  animation: nb-floating-toolbar-in var(--nb-motion-medium) var(--nb-ease-enter);
 }
 
 .nb-floating-toolbar--vertical {
@@ -377,9 +377,17 @@ defineExpose({ reposition, focus, el: toolbarRef })
   }
 }
 
+// Reduced motion drops the scale and keeps the fade: the toolbar still
+// arrives, it just does not grow.
 @include motion.reduced {
   .nb-floating-toolbar {
-    animation: none;
+    animation-name: nb-floating-toolbar-fade;
+  }
+}
+
+@keyframes nb-floating-toolbar-fade {
+  from {
+    opacity: 0;
   }
 }
 </style>

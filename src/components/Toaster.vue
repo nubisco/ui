@@ -907,13 +907,28 @@ defineExpose({ queue })
  * so a toast always arrives from the edge it is anchored to. `translate` is
  * used rather than `transform` so the countdown bar's scaleX inside the toast
  * and the centred placements can keep their own transforms.
+ *
+ * Two rules, not one: a toast arrives on the enter curve over medium and
+ * leaves on the exit curve over short, because an exit gets out of the way.
+ * The survivors closing the gap (`-move`) are on screen before and after, so
+ * they move on the standard curve over medium.
  */
-.nb-toaster-enter-active,
-.nb-toaster-leave-active,
-.nb-toaster-move {
+.nb-toaster-enter-active {
   transition:
-    opacity var(--nb-motion-medium) ease,
-    translate var(--nb-motion-medium) ease;
+    opacity var(--nb-motion-medium) var(--nb-ease-enter),
+    translate var(--nb-motion-medium) var(--nb-ease-enter);
+}
+
+.nb-toaster-leave-active {
+  transition:
+    opacity var(--nb-motion-short) var(--nb-ease-exit),
+    translate var(--nb-motion-short) var(--nb-ease-exit);
+}
+
+// Vue moves the survivors with an inline `transform`, and only animates the
+// move when the transition names `transform`.
+.nb-toaster-move {
+  transition: transform var(--nb-motion-medium) var(--nb-ease-standard);
 }
 
 .nb-toaster-enter-from,
@@ -966,9 +981,12 @@ defineExpose({ queue })
     --nb-toaster-shift: 0 0;
   }
 
-  .nb-toaster-enter-active,
+  .nb-toaster-enter-active {
+    transition: opacity var(--nb-motion-medium) var(--nb-ease-enter);
+  }
+
   .nb-toaster-leave-active {
-    transition: opacity var(--nb-motion-medium) ease;
+    transition: opacity var(--nb-motion-short) var(--nb-ease-exit);
   }
 
   .nb-toaster-move {
