@@ -306,34 +306,37 @@ const styles = computed(() => {
   // Animations.
   //
   // Every keyframe starts and ends at the icon's own size: an animated icon is
-  // the same size as its static neighbour, and only the gesture moves. The
-  // timing reads the motion tokens, so a product that retunes
-  // `--nb-motion-loop` retunes these with it. A continuous spin is linear
-  // (constant speed is what "still working" looks like); the gestures ease on
-  // the standard curve.
+  // the same size as its static neighbour, and only the gesture moves. Like
+  // every loop in the library the cycle is a literal tuned to the indicator
+  // (`$loop`, one second), not a motion step: the motion scale has no loop
+  // token, and a `var()` that resolves to nothing turns the whole `animation`
+  // shorthand into `none`. A continuous spin is linear (constant speed is what
+  // "still working" looks like); the gestures ease on the standard curve.
   //
   // `loading` marks the ones that say "working" (a spin, a turn, a timer).
   // Under reduced motion they keep looping as an opacity breath, and the rest,
   // which are pure travel, stop. See docs/principles/motion/accessibility.md.
+  $loop: 1s;
+
   $animations: (
     swing-right: (
-      duration: calc(var(--nb-motion-loop) / 2),
+      duration: $loop * 0.5,
     ),
     wobble: (),
     expand: (
-      duration: calc(var(--nb-motion-loop) / 2),
+      duration: $loop * 0.5,
     ),
     refresh: (
       easing: linear,
       loading: true,
     ),
     heart: (
-      duration: calc(var(--nb-motion-loop) / 2),
+      duration: $loop * 0.5,
     ),
     undo: (),
     italic: (),
     cog: (
-      duration: calc(var(--nb-motion-loop) * 5),
+      duration: $loop * 5,
       loading: true,
     ),
     wrench: (
@@ -354,7 +357,7 @@ const styles = computed(() => {
   );
 
   $defaults: (
-    duration: var(--nb-motion-loop),
+    duration: $loop,
     easing: var(--nb-ease-standard),
   );
 
@@ -377,7 +380,8 @@ const styles = computed(() => {
       &-animation-always-#{$name} {
         @if map.get($spec, loading) {
           animation: nb-icon-breathe
-            calc(var(--nb-motion-loop) * 1.6)
+            $loop *
+            1.6
             var(--nb-ease-standard)
             infinite;
         } @else {
