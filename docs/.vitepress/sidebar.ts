@@ -127,6 +127,8 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
         link: '/components/notification-center/usage',
       },
       { text: 'Number Input', link: '/components/number-input/usage' },
+      { text: 'Page Header', link: '/components/page-header/usage' },
+      { text: 'Page Layout', link: '/components/page-layout/usage' },
       { text: 'Pagination', link: '/components/pagination/usage' },
       { text: 'Panel', link: '/components/panel/usage' },
       { text: 'Progress Bar', link: '/components/progress-bar/usage' },

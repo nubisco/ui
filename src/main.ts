@@ -106,6 +106,11 @@ export type {
   IDefinitionListItem,
   TDefinitionListLayout,
 } from './components/DefinitionList.d'
+export { default as NbPageLayout } from './components/PageLayout.vue'
+export type {
+  IPageLayoutProps,
+  TPageLayoutStack,
+} from './components/PageLayout.d'
 export { default as NbPageHeader } from './components/PageHeader.vue'
 export type { IPageHeaderProps } from './components/PageHeader.d'
 export { default as NbStructuredList } from './components/StructuredList.vue'
