@@ -9,10 +9,10 @@ pageTabs: ['usage', 'code', 'accessibility']
 
 It is one of exactly two dialogs the library ships. The other is [`NbConfirm`](/components/confirm/usage), and it is the only shape a destructive confirmation may take. If you are about to build a confirmation out of `NbModal`, stop and read [When not to use](#when-not-to-use).
 
-::: danger This page taught the wrong confirmation, and shipped it
-Until this release the section below this one demonstrated a destructive confirmation assembled by hand: `variant="primary"` on a Confirm button, a title-case "Confirm Action" heading, the body "Are you sure you want to continue?", and an `NbPanel` with inline padding inside `#footer` fighting the right-aligned grid `Modal.vue` already puts there. One audited application's markup is a near copy of it, primary-styled destructive button included.
+::: danger Do not assemble a destructive confirmation from NbModal
+A hand-built confirmation tends to look like this: `variant="primary"` on a Confirm button, a title-case "Confirm Action" heading, the body "Are you sure you want to continue?", and an `NbPanel` with inline padding inside `#footer` fighting the right-aligned grid `Modal.vue` already puts there. Every part of that is wrong.
 
-The correction is not a corrected footer. It is [`useConfirm()`](/composables/use-confirm). What is left here is the footer contract, which that example also got wrong, and which every dialog on this page needs.
+The fix is not a better footer. It is [`useConfirm()`](/composables/use-confirm). What this page covers is the footer contract, which every other dialog needs.
 :::
 
 <preview>
@@ -116,7 +116,7 @@ The words in a dialog carry more weight than anywhere else in the product, becau
 - **The buttons say the verb.** The commit repeats the title's verb, the exit is "Cancel". `OK`, `Yes`, `Done` and `Dismiss` say nothing about what is about to happen, so none of them belong on a commit button.
 - **Do not use a dialog to apologise.** "Something went wrong" in a dialog is a failure the user must dismiss before they can look at the thing that failed. Put it in place, in an inline banner.
 
-Tone, capitalisation and sentence shape are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+Tone, capitalisation and sentence shape are set library-wide, not by this component: [Writing style](/content/writing-style) is the source.
 
 ## Related
 

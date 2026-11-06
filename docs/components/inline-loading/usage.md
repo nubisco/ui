@@ -55,9 +55,9 @@ save does not shove the buttons beside it.
 ## Labels
 
 Write the three labels as one sentence in three tenses about the same object:
-"Saving contact", "Contact saved", "Could not save contact". The fleet currently
-uses Save, Done, Apply and Create interchangeably for the same commit, which is
-how a user learns to distrust the words.
+"Saving contact", "Contact saved", "Could not save contact". Save, Done, Apply
+and Create used interchangeably for the same commit teach a user to distrust
+the words.
 
 - **Do** name the object. "Contact saved" tells the user which of the four
   things on screen was stored.

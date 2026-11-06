@@ -39,4 +39,4 @@ Inside a `.nb-inspector` container, `NbField` picks up the inspector treatment a
 - **Mark required, not optional**, and never both in one form.
 - **The error replaces the hint and names the fix**, in two lines at most.
 
-Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+Casing, punctuation and tone are set library-wide, not by this component: [Writing style](/content/writing-style) is the source.

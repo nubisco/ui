@@ -45,6 +45,6 @@ pageTabs: ['usage', 'code', 'accessibility']
 - **The placeholder for an empty select is optional.** When used, it says what is missing (`No role`), never `Please select...`.
 - **The search box says `Search`**, with no ellipsis. Override `searchPlaceholder` only to name what is searched (`Search members`).
 
-Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+Casing, punctuation and tone are set library-wide, not by this component: [Writing style](/content/writing-style) is the source.
 
 <!--@include: ./_shared.md-->

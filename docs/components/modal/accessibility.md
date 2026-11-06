@@ -73,11 +73,10 @@ Three rules it does not decide for you:
    not pull against each other.
 
 ::: tip Upgrading from a hand-rolled trap
-Earlier versions of this page shipped a `useDialogFocus` composable to copy
-into your application, because `NbModal` did not do any of the above. If you
-copied it, delete it: the library now does this. If you would rather keep your
-own for a dialog with unusual requirements, set `:trap-focus="false"` on that
-dialog and `NbModal` will keep its hands off focus entirely, exactly as before.
+If your application has its own focus trap for dialogs (a copied
+`useDialogFocus` composable, for example), delete it: `NbModal` does all of the
+above. For a dialog with unusual requirements, set `:trap-focus="false"` on
+that dialog and `NbModal` keeps its hands off focus entirely.
 :::
 
 The demo below is a plain `NbModal` with no focus code of its own. Open it from

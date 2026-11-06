@@ -28,14 +28,14 @@ There is no way to render a button that does nothing, on purpose.
 
 ## What the explanation says
 
-The fleet rule for AI features is that code decides the facts and the model only writes the words. The explanation is where that becomes visible to the person reading, so build it from what the product computed, never from what the model says about itself:
+The rule for AI features is that code decides the facts and the model only writes the words. The explanation is where that becomes visible to the person reading, so build it from what the product computed, never from what the model says about itself:
 
 1. **Inputs.** The facts the product gave the model: which items, which people, which numbers, over which period.
 2. **Provider and model.** Which provider and which model phrased it.
 3. **The fallback.** Whether the plain rendering was used instead, and why (`fallbackReason`: no key configured, the provider failed, the check rejected the output).
 4. **Actions.** Open the underlying records, show the plain version, change the settings.
 
-**Never show a model-reported confidence.** A model's estimate of its own accuracy is more model output, and it is not checked against anything. Under the fleet rule the only confidence that means something is binary and decided by code: the output passed the check against the facts, or the plain version was used. Say that instead.
+**Never show a model-reported confidence.** A model's estimate of its own accuracy is more model output, and it is not checked against anything. Under that rule the only confidence that means something is binary and decided by code: the output passed the check against the facts, or the plain version was used. Say that instead.
 
 <preview>
   <NbGrid dir="row" gap="sm" align="center">

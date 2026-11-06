@@ -7,11 +7,7 @@ tab: usage
 pageTabs: ['usage', 'code', 'accessibility']
 ---
 
-It is a **container**, not a feed. It holds no store, fetches nothing, polls nothing, marks nothing as read and knows nothing about your domain. Three Nubisco consoles each wrote this bell independently, and the parts that differed were the parts that should differ: what a notification is, where it came from, and what tapping it does. Everything the three agreed on, the trigger, the count, the dropdown, the dismissal rules, the focus order, the read/unread distinction, is here. One of those three files carries a comment saying it copied another console's placement so the two products would not disagree; that is the coordination this component makes unnecessary.
-
-::: info Where the evidence on this page comes from
-Claims about "the audit" refer to a review of the twelve applications that consume this library (cms, keystone, verba, openbridge, platform, analytics, tally, openbridge-marketplace, stagewright, planetcraft, stratos, and one white-label client product). That review is a report about **those** repositories and is not checked into this one, so do not go looking for it here. What it found in this repository is checkable here, and is linked wherever it is used.
-:::
+It is a **container**, not a feed. It holds no store, fetches nothing, polls nothing, marks nothing as read and knows nothing about your domain. What differs between products stays with the host: what a notification is, where it came from, and what tapping it does. What should not differ is here: the trigger, the count, the dropdown, the dismissal rules, the focus order and the read/unread distinction. Two products that mount it cannot disagree about placement.
 
 <preview dir="col">
   <!-- Trailing edge, matching the shell topbar this belongs in; the panel
@@ -63,7 +59,7 @@ The dot is one shape in every variant. `variant` colours the leading icon (`info
 
 The behaviour is the one `NbMenu` and `NbUserMenu` already ship, on purpose: the panel is teleported to `<body>` and positioned from the trigger's viewport rect, because every shell that hosts a bell clips its topbar; a press outside closes it; <kbd>Escape</kbd> closes it.
 
-Being honest about the placement code, since the audit's whole complaint is duplication: this is a **fourth** implementation of anchored positioning in the library, after `NbMenu`, `NbUserMenu` and `utils/anchorPosition.helper.ts`. It does not call that helper because the helper centres a surface on its anchor's cross axis, and a 360px panel centred on a 32px bell hangs half off the right edge of every topbar in the fleet: this panel aligns to a trigger **edge**. What it does borrow is the helper's actual argument, that placement is easy to get subtly wrong and impossible to eyeball, so the arithmetic is an exported pure function (`placeNotificationPanel`) with tests over the edge alignment, the viewport clamp, the flip and the list-height floor. If `placeAnchored` grows an `align` option, this function should collapse into a call to it.
+A note on the placement code: this is a **fourth** implementation of anchored positioning in the library, after `NbMenu`, `NbUserMenu` and `utils/anchorPosition.helper.ts`. It does not call that helper because the helper centres a surface on its anchor's cross axis, and a 360px panel centred on a 32px bell hangs half off the right edge of a topbar: this panel aligns to a trigger **edge**. What it does borrow is the helper's actual argument, that placement is easy to get subtly wrong and impossible to eyeball, so the arithmetic is an exported pure function (`placeNotificationPanel`) with tests over the edge alignment, the viewport clamp, the flip and the list-height floor. If `placeAnchored` grows an `align` option, this function should collapse into a call to it.
 
 | Key                                 | Result                                                                                                                                                                                                                          |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -153,4 +149,4 @@ The unread row is the one that mattered. Its three cues are a tint, a dot and a 
 
 ## What this component will never do
 
-Fetch, poll, subscribe, cache, mark read, deduplicate or decide what deserves a notification. Those are product decisions and they were correctly different in all three consoles. If a future version grows a store, it will be a separate composable that this component still knows nothing about.
+Fetch, poll, subscribe, cache, mark read, deduplicate or decide what deserves a notification. Those are product decisions and they rightly differ from one product to the next. If a future version grows a store, it will be a separate composable that this component still knows nothing about.

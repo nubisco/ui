@@ -9,11 +9,11 @@ pageTabs: ['usage', 'code', 'accessibility']
 
 ## When not to use
 
-Every row here is something the fleet actually built as a modal. The right-hand column is the reason it hurt, not a matter of taste.
+Each row is a common misuse of a modal. The right-hand column is the reason it hurts, not a matter of taste.
 
 | What you have                                                 | Use instead                                                                          | Because                                                                                                                     |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| A destructive confirmation                                    | [`useConfirm()`](/composables/use-confirm)                                           | Every hand-built one in the fleet lost the same five things. See below                                                      |
+| A destructive confirmation                                    | [`useConfirm()`](/composables/use-confirm)                                           | A hand-built one loses the same five things. See below                                                                      |
 | More than four inputs, or a form that scrolls                 | A route ([Forms](/patterns/forms))                                                   | A form scrolling inside a scrim is a page wearing a costume, with worse focus and no URL                                    |
 | The result of something that just finished                    | [`useToast()`](/composables/use-toast)                                               | A result is news, not a question. Nobody has to answer it, so nobody should have to dismiss it                              |
 | A condition that stays true while the page is open            | [`NbBanner`](/components/banner/usage) `variant="callout"`                           | A standing fact that interrupts once and vanishes has been told to the user exactly once, at random                         |
@@ -26,9 +26,7 @@ Every row here is something the fleet actually built as a modal. The right-hand 
 
 ### Never assemble a confirmation out of `NbModal`
 
-The audit read twelve applications and found seven different confirmation mechanics, plus sixteen or more destructive actions with no confirmation at all: an environment and every entry, release and key inside it deleted behind a `window.confirm`; an OAuth client secret regenerated on one unguarded click; a `localStorage.clear()` in a command palette; another user's comment deleted with nothing asked.
-
-The hand-built ones all lost the same five things, and none of them are decorations:
+A confirmation built by hand at each call site varies at each call site, and it loses the same five things. None of them are decorations:
 
 1. Initial focus on cancel, so a stray <kbd>Space</kbd> does not commit.
 2. `role="alertdialog"`, so the consequence is read on entry rather than on request.
@@ -67,7 +65,7 @@ The whole decision (when to confirm, when confirming is itself the bug, what the
 
 ## The footer is already an action bar
 
-This is the part of the old example that was wrong in a way you can see, and the reason a screenshot of one audited product has a single half-width button floating in the middle of its dialog.
+Wrapping the footer buttons breaks this in a way you can see: a single half-width button floating in the middle of the dialog.
 
 `Modal.vue` renders the `#footer` slot inside a grid that is already a right-aligned, distributed action bar:
 
@@ -105,7 +103,7 @@ So the buttons go in bare. Cancel first, commit second, both `size="lg"`.
 
 **A dialog is opened by the user, from a control they pressed.** A button, a menu item, a row action, a command palette entry, activated by click, by <kbd>Enter</kbd> or by <kbd>Space</kbd>. That control is also where focus returns when the dialog closes, which is the practical reason the rule exists: a dialog with no trigger has nowhere to give focus back to, and a keyboard user lands at the top of the document.
 
-Three things are therefore not triggers, and all three appeared in the audit:
+Three things are therefore not triggers:
 
 - **A timer or a route entering.** A dialog nobody opened is an interruption. If the page has something to say on arrival, it is an [`NbBanner`](/components/banner/usage) `variant="callout"`, which stays true for as long as the page does.
 - **A background event finishing.** A sync completing while the user is typing somewhere else is a toast, not a dialog. It stole the caret otherwise.
@@ -129,7 +127,7 @@ Every open instance listens on `document`, so before this was fixed a stack of t
 
 ### The page behind does not scroll
 
-Opening takes a counted share of a single page-scroll lock shared with `NbCommandPalette` and `NbSpinner`'s page overlay. The count matters: three components writing `body.style.overflow` independently used to leave the page permanently unscrollable with nothing on screen. The original value is read once when the first owner arrives and put back once when the last one leaves, so an application that sets `overflow: hidden` on the body for its own layout keeps it.
+Opening takes a counted share of a single page-scroll lock shared with `NbCommandPalette` and `NbSpinner`'s page overlay. The count matters: three components writing `body.style.overflow` independently can leave the page permanently unscrollable with nothing on screen. The original value is read once when the first owner arrives and put back once when the last one leaves, so an application that sets `overflow: hidden` on the body for its own layout keeps it.
 
 ### A scrollable body is reachable from the keyboard
 
@@ -187,7 +185,7 @@ function submit() {
 </NbModal>
 ```
 
-**A body that is still fetching opens anyway.** Delaying the open so the content can arrive gives the user a button that appears not to have worked, which is how a fleet application ended up with a double-click on every row action. Open immediately and put [`NbSkeleton`](/components/skeleton/usage) where the content will be, at the shape the content will have, so nothing jumps when it lands:
+**A body that is still fetching opens anyway.** Delaying the open so the content can arrive gives the user a button that appears not to have worked, and they click it again. Open immediately and put [`NbSkeleton`](/components/skeleton/usage) where the content will be, at the shape the content will have, so nothing jumps when it lands:
 
 ```vue
 <NbModal :open="open" title="Run log" @close="open = false">
@@ -196,7 +194,7 @@ function submit() {
 </NbModal>
 ```
 
-If the fetch comes back with nothing, say so with [`NbEmptyState`](/components/empty-state/usage) inside the body. A blank dialog and a loading dialog must not look the same: one audited application renders a single `.empty-text` for both, so a failed fetch reads as "no contacts yet".
+If the fetch comes back with nothing, say so with [`NbEmptyState`](/components/empty-state/usage) inside the body. A blank dialog and a loading dialog must not look the same: a single `.empty-text` for both makes a failed fetch read as "no contacts yet".
 
 ### Work in flight
 

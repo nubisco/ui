@@ -49,7 +49,7 @@ Every form control puts the same vertical gap between its label and its field, s
 
 <preview>
   <div id="mixed-row-demo" style="display:flex; gap:12px; align-items:flex-start; width:100%;">
-    <NbTextInput label="Policy ref" placeholder="ABC-123" style="flex:1" />
+    <NbTextInput label="Reference" placeholder="ABC-123" style="flex:1" />
     <NbDatePicker label="From" type="simple" placeholder="dd/mm/yyyy" style="flex:1" />
     <NbSelect label="Status" model-value="1" :options="[{label:'Open', value:'1'},{label:'Closed', value:'2'}]" style="flex:1" />
     <NbNumberInput label="Amount" :model-value="100" style="flex:1" />
@@ -60,7 +60,7 @@ With a helper or error line under one of them, the field tops still align. The m
 
 <preview>
   <div id="mixed-row-helper-demo" style="display:flex; gap:12px; align-items:flex-start; width:100%;">
-    <NbTextInput label="Policy ref" placeholder="ABC-123" error="Required" style="flex:1" />
+    <NbTextInput label="Reference" placeholder="ABC-123" error="Required" style="flex:1" />
     <NbDatePicker label="From" type="simple" placeholder="dd/mm/yyyy" helper="Case-sensitive" style="flex:1" />
     <NbSelect label="Status" model-value="1" :options="[{label:'Open', value:'1'},{label:'Closed', value:'2'}]" style="flex:1" />
   </div>

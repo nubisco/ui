@@ -128,8 +128,8 @@ table of forty placeholders announces itself once rather than forty times.
 A skeleton is not an empty state and not an error state. Swap it for
 [`NbEmptyState`](/components/empty-state/usage) when the response is legitimately
 empty, and for a [message or banner](/components/banner/usage) when the request
-failed. One product in the audit renders a single "no contacts yet" element for
-loading, empty and failed alike, so a broken API reads as a user with no data.
+failed. A single "no contacts yet" element for loading, empty and failed alike
+makes a broken API read as a user with no data.
 
 **If you set `completeLabel`, the failure path has one more line to write.**
 The skeleton announces that message when it is unmounted, and a failed fetch

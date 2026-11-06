@@ -57,6 +57,6 @@ All three sizes align to the 8px base-unit grid.
 - **`error` names the fix, not the failure**: `Enter a work email address`, not `Invalid input`. Two lines at most.
 - **State a limit the user can hit.** With `maxlength`, add `show-count` so the limit is visible before it stops them.
 
-Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+Casing, punctuation and tone are set library-wide, not by this component: [Writing style](/content/writing-style) is the source.
 
 <!--@include: ./_shared.md-->

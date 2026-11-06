@@ -9,7 +9,7 @@ pageTabs: ['usage', 'code', 'accessibility']
 
 ## Two ways to supply rows
 
-**The `items` array** is the short path. A row is a title, an optional body, an optional time and a read flag, which covers the majority of what the three consoles were rendering.
+**The `items` array** is the short path. A row is a title, an optional body, an optional time and a read flag, which covers most of what a product's bell renders.
 
 **The default slot** is the escape hatch, for rows that carry an avatar, a diff, a pair of buttons or anything else the array cannot describe. Compose them from `NbNotificationCenterItem`, which is the same row the array path renders, so a product that outgrows `items` keeps its geometry, its read/unread treatment and its place in the keyboard order.
 
@@ -111,7 +111,7 @@ A row is a control or it is text. There is no third thing, and the difference is
 </template>
 ```
 
-This component shipped once with the opposite behaviour, and it is worth being explicit about why it was wrong. `interactive: false` used to render a `<div>` that still carried a `tabindex`, still took focus from the roving index, and still emitted `select` on click, <kbd>Enter</kbd> and <kbd>Space</kbd>. That is a focusable, activatable widget with no role, no name and no value: [WCAG 4.1.2 Name, Role, Value](/accessibility/overview) fails outright, a screen reader announces a blank stop in the middle of a list, and the prop meant the opposite of what it said. An inert row is now inert in the accessibility tree, in the keyboard order and in the event contract, all three, or it is not inert at all.
+An inert row is inert in the accessibility tree, in the keyboard order and in the event contract, all three, or it is not inert at all. A `<div>` that keeps a `tabindex`, takes focus from the roving index and emits `select` on click, <kbd>Enter</kbd> and <kbd>Space</kbd> is a focusable, activatable widget with no role, no name and no value: [WCAG 4.1.2 Name, Role, Value](/accessibility/overview) fails outright, and a screen reader announces a blank stop in the middle of a list.
 
 ### An inert list is still a list you can reach
 
@@ -170,7 +170,7 @@ The centre emits `mark-all-read` and does nothing else. It never mutates `items`
 
 The control disables itself at zero unread rather than disappearing, so the panel does not change shape as you use it.
 
-A mark-all that hits the network is not instant, so say so with `markAllPending`. While it is true the control shows a spinner and `markAllPendingLabel`, swallows further clicks, and announces itself once from a `role="status"` region. It is `aria-disabled`, not `disabled`, on purpose: the user pressed that button, so it has focus, and adding a `disabled` attribute to a focused button drops focus to `<body>` for the length of the request. Without this prop, the audit's pattern repeats: a slow server, no feedback, and four identical requests.
+A mark-all that hits the network is not instant, so say so with `markAllPending`. While it is true the control shows a spinner and `markAllPendingLabel`, swallows further clicks, and announces itself once from a `role="status"` region. It is `aria-disabled`, not `disabled`, on purpose: the user pressed that button, so it has focus, and adding a `disabled` attribute to a focused button drops focus to `<body>` for the length of the request. Without this prop, a slow server gives no feedback and the user sends four identical requests.
 
 ```vue
 <template>
@@ -197,13 +197,13 @@ async function markAll() {
 </script>
 ```
 
-An optimistic update is the other legitimate answer: push the read flags into `items` at once, leave `markAllPending` false, and put them back if the request fails. What is not an answer is doing neither, which is what "the control is only disabled at zero unread" used to mean.
+An optimistic update is the other legitimate answer: push the read flags into `items` at once, leave `markAllPending` false, and put them back if the request fails. What is not an answer is doing neither.
 
-The label is **Mark all as read**. Across the fleet the same commit intent is currently written as Save, Done, Apply and Create in different products; this one is fixed because a bell in two consoles that disagree on the wording is exactly the drift this component exists to end.
+The label is **Mark all as read**, and it is fixed rather than a prop, because a bell in two products that disagree on the wording is exactly the drift this component exists to end.
 
 ## The four answers: loading, failed, empty, and a list
 
-A panel that has been asked for notifications can be in exactly one of four states, and they must never share an element. One audited app rendered a single `.empty-text` for both loading and empty, so a failed fetch read as "no contacts yet". All four are props here, none is an override of another's slot, and the component picks between them in one place so no future edit can make two of them true at once.
+A panel that has been asked for notifications can be in exactly one of four states, and they must never share an element. A single `.empty-text` for both loading and empty makes a failed fetch read as "no contacts yet". All four are props here, none is an override of another's slot, and the component picks between them in one place so no future edit can make two of them true at once.
 
 | State       | You set              | The panel renders                                                                     |
 | ----------- | -------------------- | ------------------------------------------------------------------------------------- |
@@ -511,7 +511,7 @@ watch(
 
 One row. Usable on its own inside the default slot, and what the `items` array renders.
 
-`variant` takes the library's status words: `neutral`, `info`, `success`, `warning`, `error`. `error`, not `danger`, because that is what [`NbToast`](/components/toast/usage), [`NbMessage`](/components/message/usage) and [`NbBanner`](/components/banner/usage) say, and the whole point of raising a toast and letting the same event land here is that you do not translate a status word at the boundary. `danger` is accepted and treated as `error` so the fleet's existing habit does not render an unstyled row, but it is deprecated and will not be documented anywhere else. The colour behind `error` is `--nb-c-danger`, which is what this library calls that token; the API word and the token name disagree on purpose, and neither is renamed to please the other.
+`variant` takes the library's status words: `neutral`, `info`, `success`, `warning`, `error`. `error`, not `danger`, because that is what [`NbToast`](/components/toast/usage), [`NbMessage`](/components/message/usage) and [`NbBanner`](/components/banner/usage) say, and the whole point of raising a toast and letting the same event land here is that you do not translate a status word at the boundary. `danger` is accepted and treated as `error` so an existing `danger` call does not render an unstyled row, but it is deprecated and will not be documented anywhere else. The colour behind `error` is `--nb-c-danger`, which is what this library calls that token. The API word and the token name disagree on purpose, and neither is renamed to please the other.
 
 ### Props
 

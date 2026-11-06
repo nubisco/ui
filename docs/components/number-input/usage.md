@@ -41,6 +41,6 @@ const quantity = ref(1)
 - **An error names the constraint with its number**: `Enter a number from 1 to 100.` Not `Invalid value`.
 - **The stepper buttons are named `Decrease` and `Increase`** by default. Translate them through the strings catalogue, not per field.
 
-Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+Casing, punctuation and tone are set library-wide, not by this component: [Writing style](/content/writing-style) is the source.
 
 <!--@include: ./_shared.md-->
