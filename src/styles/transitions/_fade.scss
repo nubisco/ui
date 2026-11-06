@@ -1,13 +1,36 @@
-@mixin transition-fade {
-  .fade-enter-active,
-  .fade-leave-active,
-  .fade-appear-active {
-    transition: opacity 0.3s;
+/// A plain fade for a Vue `<Transition name="nb-fade">`, on the motion
+/// tokens: in on `short` and the enter curve, out on `quick` and the exit
+/// curve, because an exit is shorter than its entrance. A fade carries no
+/// travel, so it stays under reduced motion.
+///
+/// ```scss
+/// @use '@nubisco/ui/styles' as ui;
+/// @include ui.nb-fade;
+/// ```
+///
+/// @group @nubisco/motion
+@mixin nb-fade($name: nb-fade) {
+  .#{$name}-enter-active,
+  .#{$name}-appear-active {
+    transition: opacity var(--nb-motion-short) var(--nb-ease-enter);
   }
 
-  .fade-enter-from,
-  .fade-leave-to,
-  .fade-appear-from {
+  .#{$name}-leave-active {
+    transition: opacity var(--nb-motion-quick) var(--nb-ease-exit);
+  }
+
+  .#{$name}-enter-from,
+  .#{$name}-leave-to,
+  .#{$name}-appear-from {
     opacity: 0;
   }
+}
+
+/// Deprecated: include `nb-fade` and use `<Transition name="nb-fade">`.
+/// Emits the old unprefixed `fade-*` classes, now on the motion tokens, and
+/// goes in the next minor release.
+/// @deprecated
+/// @group @nubisco/motion
+@mixin transition-fade {
+  @include nb-fade(fade);
 }
