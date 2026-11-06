@@ -246,11 +246,11 @@ pnpm build && grep -ohE -- "--nb-[a-z0-9-]+:" dist/ui.css | sort -u
 
 Three wrong names that are live right now, as a calibration of how easy this is:
 
-| Written                                                             | Real token               | Effect                                                                                                                                      |
-| ------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `var(--nb-z-toast)` (a consuming app's toast host)                  | `--nb-zindex-toast`      | Toasts rendered on the fallback, below modals.                                                                                              |
-| `var(--nb-border-radius-sm, 6px)` (`ImageCropper.vue:831`)          | `--nb-radius-sm` (`4px`) | Always paints the 6px fallback. Off the radius scale entirely.                                                                              |
-| `--nb-gap-xxs` … `--nb-gap-xxl` (documented in [Theming](/theming)) | No such tokens exist     | The gap scale is a Sass map compiled to `.gap-*` classes, never emitted as custom properties. Anything binding to those names gets nothing. |
+| Written                                                      | Real token               | Effect                                                                                                                                      |
+| ------------------------------------------------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `var(--nb-z-toast)` (a consuming app's toast host)           | `--nb-zindex-toast`      | Toasts rendered on the fallback, below modals.                                                                                              |
+| `var(--nb-border-radius-sm, 6px)` (`ImageCropper.vue:831`)   | `--nb-radius-sm` (`4px`) | Always paints the 6px fallback. Off the radius scale entirely.                                                                              |
+| `--nb-gap-xxs` … `--nb-gap-xxl` (once documented in Theming) | No such tokens exist     | The gap scale is a Sass map compiled to `.gap-*` classes, never emitted as custom properties. Anything binding to those names gets nothing. |
 
 The third is the worst kind, because the wrong names were _published in our own documentation_. Verify against the stylesheet, not against prose, this page included.
 

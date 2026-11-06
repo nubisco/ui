@@ -58,13 +58,15 @@ The trap is that the semantic colour tokens are **fills**, sized to sit behind w
 | `--nb-c-status-warning` | amber 700 | **5.20**        | Yes. Use this.        |
 | `--nb-c-status-valid`   | green 700 | **5.19**        | Yes. Use this.        |
 | `--nb-c-status-error`   | red 600   | **6.64**        | Yes. Use this.        |
+| `--nb-c-status-info`    | blue 500  | 5.25            | Yes. Use this.        |
+| `--nb-c-status-neutral` | grey 600  | 4.23 worst      | Yes. Use this.        |
 
 `--nb-c-warning` as a warning triangle drawn on a card is 2.06:1. It is the single most attractive wrong token in the theme, because its name is exactly what you were looking for.
 
 ::: tip The rule
 **Filling a shape:** `--nb-c-warning`, `--nb-c-danger`, `--nb-c-success`, `--nb-c-info`, paired with the matching `-a11y` ink (below).
 
-**Drawing a glyph, a 1px line or a word directly on a surface:** `--nb-c-status-warning`, `--nb-c-status-error`, `--nb-c-status-valid`.
+**Drawing a glyph, a 1px line or a word directly on a surface:** `--nb-c-status-warning`, `--nb-c-status-error`, `--nb-c-status-valid`, `--nb-c-status-info`, `--nb-c-status-neutral`. For error **text** (a message under a field), `--nb-c-text-error`, held to 4.5:1 on every layer and hover.
 :::
 
 ## Borders
@@ -73,21 +75,11 @@ Borders divide into two kinds and the library has a token for each.
 
 `--nb-c-border` is **decorative**. It measures 2.60:1 against its own surface in the light theme and 1.98:1 in the dark. That is deliberate: a card's edge does not need to be findable, it needs to read as a seam. Under 1.4.11 it is exempt because removing it costs no information.
 
-`--nb-c-field-border` is **structural**. It is the boundary of a control you have to locate in order to type in it, so it is measured: 5.03:1 against layer 0 in the light theme.
+`--nb-c-field-border` is **structural**. It is the boundary of a control you have to locate in order to type in it, so it is measured, per plane: `.nb-layer-N` points it at the rule for that plane, and it clears 3:1 against both the field's fill and the plane under it in both themes. In dark that is `#818283` on planes 0 and 1 (3.53 on the plane-1 fill) and `#939495` on planes 2 and 3 (3.53 on layer 3). It used to be one value for every plane and fell to 2.78 inside a dialog.
 
-::: danger Field borders fall below 3:1 in the dark theme
-`--nb-c-field-border` measures 3.16 / 2.74 / 2.26 / 1.78 against layers 0 to 3 in the dark theme. Only layer 0 clears the 3:1 that 1.4.11 requires for a control boundary. A form on a panel (layer 1) is at 2.74, and a form inside a dialog (layer 3) is at 1.78.
+`--nb-c-border-strong` is the same kind of edge for a control that is not a field, 3:1 on its own plane (3.31 to 3.35).
 
-This is a known gap in the theme, not a property of your markup. Until it is fixed, an application that puts dense forms on dark deep surfaces should raise it in one place:
-
-```css
-.dark {
-  --nb-c-field-border: var(--nb-c-nouveau-gray-400);
-}
-```
-
-Do not work around it per component. One override, measured once.
-:::
+Under `prefers-contrast: more`, or `data-nb-contrast="more"`, the decorative borders take the strong values too, so every edge clears 3:1. See [Theming](/theming#the-per-plane-set).
 
 The same distinction applies to anything you draw yourself. Ask whether removing the line removes information. A table's zebra striping: no. The outline that tells you where a text field ends: yes.
 
@@ -95,25 +87,11 @@ The same distinction applies to anything you draw yourself. Ask whether removing
 
 The focus ring is the only indicator a keyboard user has, and 1.4.11 holds it to 3:1 against everything adjacent to it.
 
-`--nb-c-focus-ring` aliases `--nb-c-primary`. In the light theme it measures **6.55 / 7.28 / 6.20 / 6.91** against layers 0 to 3: comfortable everywhere.
+`--nb-c-focus-ring` is the accent itself in the light theme, where it measures **6.55 / 7.28 / 6.20 / 6.91** against layers 0 to 3.
 
-::: danger The dark-theme focus ring fails on deep surfaces
-The same token in the dark theme measures **4.04 / 3.50 / 2.89 / 2.27** against layers 0 to 3.
+In the dark theme it is 70% of the accent mixed with white, the same lift the selected edge takes, and measures **6.88 / 5.96 / 4.92 / 3.87**. The bare dark primary measured 2.89 on layer 2 and 2.27 on layer 3, which is where dialogs and menus live. `tests/focusRingContrast.test.ts` holds the ring at 3:1 on every layer, every hover and every per-plane state surface, in both themes, and a named theme re-emits it in its own dark scope.
 
-Layer 2 (nested panels, inspector sections) is at 2.89. Layer 3 (modals, menus, popovers, anything `useSurfaceLayer({ overlay: true })` returns) is at **2.27**. Both are below 3:1, so on the two surfaces where a dialog's buttons live, a dark-theme keyboard user gets a focus ring they may not be able to see.
-
-The focus ring is one token, so the fix is one line:
-
-```css
-.dark {
-  /* 400 is the brand tint the dark theme already uses for --nb-c-primary;
-     a lighter step clears 3:1 on every layer without changing the hue. */
-  --nb-c-focus-ring: var(--nb-c-grape-hyacinth-300);
-}
-```
-
-Overriding `--nb-c-focus-ring` rather than `--nb-c-primary` keeps buttons and links exactly as they are and moves only the indicator. Re-measure with `node scripts/audit-contrast.mjs` after any change.
-:::
+On an inverted chip (`--nb-c-bg-inverse`) use `--nb-c-focus-inverse`, 3:1 or better there for the default accent and every category.
 
 Two further rules for rings you draw yourself, both of which come from the fleet:
 
@@ -126,42 +104,12 @@ WCAG 1.4.1: colour must never be the sole carrier of information. A red dot mean
 
 The library's own `NbBadge` is the clearest illustration, because its API makes the mistake structural.
 
-::: danger `NbBadge` names colours, and four of its variants are unreadable
-`EBadgeVariant` is `Grey | Blue | Orange | Green | Red | Purple | Primary`. The source carries a `// FIXME replace the variant with the existing variants`, so this is a known debt.
+::: tip `NbBadge` used to name colours, and four of its variants were unreadable
+`EBadgeVariant` was `Grey | Blue | Orange | Green | Red | Purple | Primary`, each a 12% wash of its colour with the text in the same colour. At the badge's 10px and 11px, against layer 1 in light: orange 1.88, green 2.79, red 3.84, blue 4.45.
 
-Two separate problems, and the second one is measurable. Badge text renders at 10px (`sm`) and 11px (`md`), which is small text needing 4.5:1. Each variant paints a 12% wash of its colour and then sets the text in the same colour. Against `--nb-c-layer-1`:
+The variants now name intents: `neutral`, `info`, `success`, `warning`, `danger`, `primary`. Each status intent paints the theme's status surface pair, 8.04 to 10.87 in light and 4.84 or better in dark on every plane (`tests/badgeContrast.test.ts`). The colour names are deprecated aliases that render as their intent and warn once in development, so an application that has not moved yet already gets the measured pair.
 
-| Variant  | Light theme | Dark theme |
-| -------- | ----------- | ---------- |
-| `grey`   | 8.86        | 8.21       |
-| `purple` | 6.01        | **3.11**   |
-| `blue`   | **4.45**    | **3.81**   |
-| `red`    | **3.84**    | **3.81**   |
-| `green`  | **2.79**    | 6.20       |
-| `orange` | **1.88**    | 6.96       |
-
-Four fail in the light theme. Three fail in the dark. `orange` at 1.88:1 is not a low-contrast label, it is an invisible one.
-
-**The fix, both halves.** Put the meaning in a word, and override the ink with a status token. The same washes carry `--nb-c-status-*` at 4.58 to 5.53 in light and 5.28 to 6.96 in dark, so this is a colour change with no layout consequence:
-
-```vue
-<NbBadge class="badge--intent-warning" variant="orange">Degraded</NbBadge>
-```
-
-```scss
-// A wrapper class, because the variant prop cannot express an intent yet.
-.badge--intent-warning {
-  color: var(--nb-c-status-warning);
-}
-.badge--intent-error {
-  color: var(--nb-c-status-error);
-}
-.badge--intent-success {
-  color: var(--nb-c-status-valid);
-}
-```
-
-The word is not optional decoration on top of the colour fix. "Degraded" is what makes the badge readable in greyscale, and it is what a screen reader announces.
+The word is still not optional. "Degraded" is what makes the badge readable in greyscale, and it is what a screen reader announces.
 :::
 
 The general rule, applied to the shapes that keep recurring:
@@ -221,23 +169,10 @@ It guarantees **the better of black and white**. It does not guarantee 4.5:1, be
 | `--nb-c-primary` + its `-a11y` | 7.60        | 4.71       |
 | `--nb-c-warning` + its `-a11y` | 8.86        | 10.25      |
 | `--nb-c-success` + its `-a11y` | 5.76        | 8.86       |
-| `--nb-c-info` + its `-a11y`    | 5.48        | **3.74**   |
-| `--nb-c-danger` + its `-a11y`  | 4.83        | **3.82**   |
+| `--nb-c-info` + its `-a11y`    | 5.48        | 5.09       |
+| `--nb-c-danger` + its `-a11y`  | 4.83        | 4.98       |
 
-::: warning Filled danger and info buttons fail AA in the dark theme
-The dark theme lightens `--nb-c-danger` and `--nb-c-info` to their 400 tints so they read against a dark ground. That makes both too light to carry white text: 3.82:1 and 3.74:1, against the 4.5:1 that normal text requires. Both pass 3:1, so a large or bold label clears AA; a default-sized "Delete" does not.
-
-Until the tints are re-tuned, a product that relies on filled danger buttons in the dark theme can pull them back:
-
-```css
-.dark {
-  --nb-c-danger: var(--nb-c-chicken-comb-500);
-  --nb-c-info: var(--nb-c-the-blues-brothers-500);
-}
-```
-
-Both then carry white text at 4.83:1 and 5.48:1. The cost is separation from the ground: the 500 tints measure 2.22:1 and 1.95:1 against layer 3, so a filled danger button inside a dark dialog reads as a slightly warmer rectangle. If the button's own edge matters, give it a border rather than reverting the fill.
-:::
+The dark theme lightens `--nb-c-danger` and `--nb-c-info` to their 400 tints so they read against a dark ground, and computes their `-a11y` from those tints, so both carry near-black text there: 4.98:1 and 5.09:1. They carried white at 3.82 and 3.74 until the inks were re-computed. `tests/inkContrast.test.ts` holds every filled pair, base, hover and active, at 4.5:1 in both themes.
 
 The other thing `-a11y` does not do is derive a _tinted_ accessible colour. `_a11y.scss` also exports `a11y-color($fg, $bg, $level, $size, $bold)`, which walks a colour's lightness in 1% steps until it clears the ratio, preserving the hue. It is available to Sass in the library and it is **not** exposed as a custom property, because it has to run at compile time against a known background. If you need a hue-preserving accessible ink, use it in your own SCSS; if you need black or white on a fill, use the `-a11y` token.
 
@@ -280,8 +215,8 @@ The consequences for this library, concretely:
 - **Scrims flatten.** `--nb-c-scrim` is a `color-mix` to transparent. In forced colours, a dialog can end up visually continuous with the page behind it, so give overlay surfaces an explicit `border`.
 - **Layer depth disappears entirely.** The whole four-level surface system is `background-color`. Structure that only exists as a lightness difference is gone.
 
-::: warning The library ships no forced-colours handling today
-There are zero `@media (forced-colors: active)` blocks anywhere in `src/`. Stated plainly so you do not assume otherwise. The base survival above is a consequence of using outlines and inline SVG, not of a deliberate forced-colours pass.
+::: warning Forced-colours handling is partial
+Six components carry a `@media (forced-colors: active)` block: `NbToast`, `NbToaster`, `NbSpinner`, `NbSkeleton`, `NbNotificationCenter` and `NbNotificationCenterItem`. Everything else survives only by construction (outlines and inline SVG). Selected rows in `NbDataTable` and `NbTree`, the modal scrim and dialog edge, and the `NbSelect` highlight still vanish.
 
 Where you need a state to survive, restore it with a system colour:
 
