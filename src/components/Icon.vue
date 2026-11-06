@@ -14,9 +14,23 @@
   </i>
 </template>
 
+<script lang="ts">
+const warnedSizes = new Set<string>()
+
+/** Every name `size` accepts, the deprecated ones included. */
+const ICON_SIZE_NAMES: readonly string[] = [
+  'xxs',
+  'xs',
+  'sm',
+  'md',
+  'lg',
+  'xl',
+  'xxl',
+]
+</script>
+
 <script setup lang="ts">
-import { computed, useAttrs } from 'vue'
-import { ESize } from '@/types/Size.d'
+import { computed, useAttrs, watch } from 'vue'
 import { EAnimationMode, EWeight, EIconSize, IIconProps } from './Icon.d'
 import { useStableId } from '@/composables/useStableId.composable'
 import {
@@ -32,7 +46,7 @@ import {
 const props = withDefaults(defineProps<IIconProps>(), {
   name: undefined,
   icon: undefined,
-  size: ESize.Medium,
+  size: 'sm',
   animation: null,
   animationMode: EAnimationMode.Always,
   color: undefined,
@@ -44,6 +58,28 @@ const props = withDefaults(defineProps<IIconProps>(), {
 })
 
 const emit = defineEmits(['click'])
+
+/*
+ * The size scale is 16, 20, 24 and 32 (`sm`, `md`, `lg`, `xl`). Below 16 a
+ * Phosphor stroke drops under a pixel and the glyph turns to a grey smudge, so
+ * `xs`, `xxs` and any number under 16 still render, and say so once in
+ * development. One warning per offending value, not per icon, so a table of
+ * small icons does not flood the console.
+ */
+function checkSize(size: IIconProps['size']) {
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production')
+    return
+  const tooSmall =
+    size === 'xs' || size === 'xxs' || (typeof size === 'number' && size < 16)
+  if (!tooSmall || warnedSizes.has(String(size))) return
+  warnedSizes.add(String(size))
+  console.warn(
+    `[NbIcon] size ${JSON.stringify(size)} is deprecated: icons are drawn ` +
+      'for 16px and up, and below that the stroke is under a pixel. Use the ' +
+      'scale: sm (16), md (20), lg (24) or xl (32).',
+  )
+}
+watch(() => props.size, checkSize, { immediate: true })
 
 const source = computed(() => props.icon ?? props.name)
 
@@ -92,7 +128,7 @@ const attributes = computed(() => {
       ? props.size
       : (EIconSize as unknown as Record<string, number>)[
           String(props.size).toUpperCase()
-        ] || EIconSize.MD
+        ] || EIconSize.SM
 
   return {
     ...{ id: componentInternalId },
@@ -108,7 +144,7 @@ const attributes = computed(() => {
       ? { role: 'button', 'aria-label': accessibleName.value }
       : isInformative.value
         ? { role: 'img', 'aria-label': accessibleName.value }
-        : { 'aria-hidden': 'true' }),
+        : { 'aria-hidden': 'true' as const }),
   }
 })
 
@@ -150,15 +186,7 @@ const classes = computed(() => {
   return {
     'nb-icon': true,
     ...(iconName.value && { [iconName.value]: true }),
-    [`nb-icon-${props.size}`]: [
-      'xxs',
-      'xs',
-      'sm',
-      'md',
-      'lg',
-      'xl',
-      'xxl',
-    ].includes(String(props.size)),
+    [`nb-icon-${props.size}`]: ICON_SIZE_NAMES.includes(String(props.size)),
     [`nb-icon-animation-${props.animationMode}-${props.animation}`]:
       props.animation,
     hoverable:
@@ -177,7 +205,7 @@ const styles = computed(() => {
       width: `${props.size}px`,
     }),
     ...(typeof props.size === 'string' &&
-      !['xxs', 'xs', 'sm', 'md', 'lg', 'xl', 'xxl'].includes(props.size) && {
+      !ICON_SIZE_NAMES.includes(props.size) && {
         maxWidth: props.size,
         maxHeight: props.size,
         height: props.size,
@@ -205,47 +233,19 @@ const styles = computed(() => {
     display: block;
   }
 
-  &-xxl {
-    max-width: var(--nb-font-size-92);
-    max-height: var(--nb-font-size-92);
-    height: var(--nb-font-size-92);
-    width: var(--nb-font-size-92);
-  }
-  &-xl {
-    max-width: var(--nb-font-size-60);
-    max-height: var(--nb-font-size-60);
-    height: var(--nb-font-size-60);
-    width: var(--nb-font-size-60);
-  }
-  &-lg {
-    max-width: var(--nb-font-size-20);
-    max-height: var(--nb-font-size-20);
-    height: var(--nb-font-size-20);
-    width: var(--nb-font-size-20);
-  }
-  &-md {
-    max-width: var(--nb-font-size-16);
-    max-height: var(--nb-font-size-16);
-    height: var(--nb-font-size-16);
-    width: var(--nb-font-size-16);
-  }
-  &-sm {
-    max-width: var(--nb-font-size-14);
-    max-height: var(--nb-font-size-14);
-    height: var(--nb-font-size-14);
-    width: var(--nb-font-size-14);
-  }
-  &-xs {
-    max-width: var(--nb-font-size-12);
-    max-height: var(--nb-font-size-12);
-    height: var(--nb-font-size-12);
-    width: var(--nb-font-size-12);
-  }
-  &-xxs {
-    max-width: var(--nb-font-size-8);
-    max-height: var(--nb-font-size-8);
-    height: var(--nb-font-size-8);
-    width: var(--nb-font-size-8);
+  // The scale is 16, 20, 24 and 32, the sizes Phosphor's regular stroke
+  // holds up at. `xs`, `xxs` and `xxl` stay for compatibility; the first two
+  // warn in development (see checkSize).
+  @each $name,
+    $px
+      in (xxl: 92px, xl: 32px, lg: 24px, md: 20px, sm: 16px, xs: 12px, xxs: 8px)
+  {
+    &-#{$name} {
+      max-width: $px;
+      max-height: $px;
+      height: $px;
+      width: $px;
+    }
   }
 
   // Animations.

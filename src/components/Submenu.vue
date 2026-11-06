@@ -22,7 +22,7 @@
   >
     <NbIcon v-if="icon" :name="icon" :size="16" class="nb-menu-item__icon" />
     <span class="nb-menu-item__label">{{ label }}</span>
-    <NbIcon name="caret-right" :size="14" class="nb-submenu-trigger__caret" />
+    <NbIcon name="caret-right" size="sm" class="nb-submenu-trigger__caret" />
   </li>
 
   <Teleport to="body">

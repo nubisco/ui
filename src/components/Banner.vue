@@ -34,7 +34,7 @@
       :aria-label="props.closeLabel"
       @click="dismiss"
     >
-      <NbIcon name="x" :size="14" />
+      <NbIcon name="x" size="sm" />
     </button>
   </div>
 </template>

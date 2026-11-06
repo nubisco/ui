@@ -67,7 +67,7 @@ const props = withDefaults(defineProps<IInfoHintProps>(), {
   title: undefined,
   term: undefined,
   placement: 'top',
-  size: 14,
+  size: 16,
   icon: undefined,
   label: undefined,
   openDelay: 120,

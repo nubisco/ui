@@ -41,10 +41,10 @@ describe('NbInfoHint', () => {
     ).toBe('question')
   })
 
-  it('defaults to a 14px icon', () => {
+  it('defaults to a 16px icon, the floor of the icon scale', () => {
     expect(
       createWrapper().findComponent({ name: 'NbIcon' }).props('size'),
-    ).toBe(14)
+    ).toBe(16)
   })
 
   it('does not render the popover until it is opened', () => {

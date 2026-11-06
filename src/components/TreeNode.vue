@@ -40,7 +40,7 @@
       >
         <NbIcon
           name="caret-right"
-          size="xs"
+          size="sm"
           class="nb-tree-node__toggle-icon"
           :class="{ 'nb-tree-node__toggle-icon--expanded': isExpanded }"
         />

@@ -131,7 +131,7 @@
             class="nb-notification-center__stale"
             role="status"
           >
-            <NbIcon name="warning-circle" :size="14" aria-hidden="true" />
+            <NbIcon name="warning-circle" size="sm" aria-hidden="true" />
             <span class="nb-notification-center__stale-text">{{
               errorStaleLabel
             }}</span>

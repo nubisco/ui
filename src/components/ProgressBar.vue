@@ -5,7 +5,7 @@
       <NbIcon
         v-if="statusIcon"
         :name="statusIcon"
-        :size="14"
+        size="sm"
         class="nb-progress-bar__status-icon"
       />
     </div>

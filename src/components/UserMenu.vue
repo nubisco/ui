@@ -79,7 +79,7 @@
           <p class="nb-user-menu__label">{{ t('userMenu.SIGNED_IN_AS') }}</p>
           <p class="nb-user-menu__email">{{ props.user.email }}</p>
           <p v-if="props.roleBadge" class="nb-user-menu__role">
-            <NbIcon name="shield-star" :size="13" />
+            <NbIcon name="shield-star" size="sm" />
             {{ props.roleBadge }}
           </p>
 
@@ -110,13 +110,13 @@
                 <NbIcon
                   v-if="account.current"
                   name="check"
-                  :size="14"
+                  size="sm"
                   class="nb-user-menu__check"
                 />
                 <NbIcon
                   v-else-if="account.removable !== false"
                   name="x"
-                  :size="13"
+                  size="sm"
                   class="nb-user-menu__remove"
                   :title="t('userMenu.REMOVE_ACCOUNT')"
                   @click.stop="onRemove(account)"
@@ -130,7 +130,7 @@
               class="nb-user-menu__action"
               @click="onSwitchAccount"
             >
-              <NbIcon name="users" :size="15" />
+              <NbIcon name="users" size="sm" />
               {{ t('userMenu.SWITCH_ACCOUNT') }}
             </button>
 
@@ -140,7 +140,7 @@
               class="nb-user-menu__action"
               @click="onAddAccount"
             >
-              <NbIcon name="plus" :size="15" />
+              <NbIcon name="plus" size="sm" />
               {{ t('userMenu.USE_ANOTHER_ACCOUNT') }}
             </button>
           </template>
@@ -182,7 +182,7 @@
             class="nb-user-menu__action"
             @click="onProfile"
           >
-            <NbIcon name="user" :size="15" />
+            <NbIcon name="user" size="sm" />
             {{ t('userMenu.PROFILE') }}
           </button>
           <button
@@ -191,7 +191,7 @@
             class="nb-user-menu__action nb-user-menu__action--danger"
             @click="onSignOut"
           >
-            <NbIcon name="sign-out" :size="15" />
+            <NbIcon name="sign-out" size="sm" />
             {{ t('userMenu.SIGN_OUT') }}
           </button>
 

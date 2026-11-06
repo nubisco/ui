@@ -8,11 +8,7 @@
     role="status"
     :aria-live="props.variant === 'error' ? 'assertive' : 'polite'"
   >
-    <NbIcon
-      :name="iconMap[props.variant]"
-      :size="14"
-      class="nb-message__icon"
-    />
+    <NbIcon :name="iconMap[props.variant]" size="sm" class="nb-message__icon" />
     <span v-if="!props.iconOnly" class="nb-message__text"><slot /></span>
     <!-- CSS-powered tooltip shown on hover in icon-only mode. It wraps rather
          than truncating, and the visually hidden copy is what the live region

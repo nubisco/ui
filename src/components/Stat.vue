@@ -40,7 +40,7 @@
         <NbIcon
           v-if="trendIcon"
           :name="trendIcon"
-          :size="12"
+          size="sm"
           class="nb-stat__trend"
           aria-hidden="true"
         />

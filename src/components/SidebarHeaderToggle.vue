@@ -8,7 +8,7 @@
     :aria-expanded="!isCompact"
     @click="emit('toggle')"
   >
-    <NbIcon :name="glyph" :size="isEdge ? 14 : 18" />
+    <NbIcon :name="glyph" :size="isEdge ? 16 : 18" />
   </button>
 </template>
 

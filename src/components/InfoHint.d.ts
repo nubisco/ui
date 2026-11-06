@@ -25,7 +25,7 @@ interface IInfoHintProps {
   term?: string
   /** Preferred popover side. Flipped automatically when it does not fit. */
   placement?: TInfoHintPlacement
-  /** Icon size in pixels, matching NbIcon's numeric `size`. */
+  /** Icon size in pixels, matching NbIcon's numeric `size`. 16 and up. */
   size?: number
   /** Any icon name NbIcon accepts. Defaults to the Phosphor `info` glyph. */
   icon?: TIconSource
