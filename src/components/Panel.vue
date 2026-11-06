@@ -19,7 +19,9 @@
         </p>
       </div>
       <div v-if="$slots.actions" class="nb-panel__actions">
-        <slot name="actions" />
+        <PrimaryActionScope owner="NbPanel">
+          <slot name="actions" />
+        </PrimaryActionScope>
       </div>
     </div>
     <slot />
@@ -34,6 +36,7 @@ import {
   useSurfaceLayer,
 } from '@/composables/useSurfaceLayer.composable'
 import type { IPanelProps } from './Panel.d'
+import PrimaryActionScope from './PrimaryActionScope.vue'
 
 const props = withDefaults(defineProps<IPanelProps>(), {
   layer: undefined,
