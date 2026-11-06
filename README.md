@@ -154,7 +154,7 @@ decision someone wrote down.
 
 ### Vite Configuration
 
-Add the `fonts` plugin to load the bundled typefaces (Plus Jakarta Sans + Fira Code), and configure SCSS so design tokens are available across all your stylesheets:
+Add the `fonts` plugin to load the bundled typefaces (IBM Plex Sans + IBM Plex Mono), and configure SCSS so design tokens are available across all your stylesheets:
 
 ```ts
 import { defineConfig } from 'vite'

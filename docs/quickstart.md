@@ -37,7 +37,7 @@ export default defineConfig({
 })
 ```
 
-The `fonts` plugin loads the bundled typefaces (Plus Jakarta Sans + Fira Code);
+The `fonts` plugin loads the bundled typefaces (IBM Plex Sans + IBM Plex Mono);
 the SCSS block makes the design tokens available across your stylesheets.
 
 > **Note:** Import build plugins from `@nubisco/ui/vite` and
