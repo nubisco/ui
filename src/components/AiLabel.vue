@@ -449,14 +449,14 @@ defineExpose({ open, close, isOpen })
     height: auto;
     padding: calc(var(--nb-base-unit) / 4);
     border: none;
-    font-size: var(--nb-font-size-14);
+    font-size: var(--nb-type-body-md-size);
 
     &.nb-ai-label__sm {
-      font-size: var(--nb-font-size-12);
+      font-size: var(--nb-type-body-sm-size);
     }
 
     &.nb-ai-label__lg {
-      font-size: var(--nb-font-size-16);
+      font-size: var(--nb-type-body-lg-size);
     }
 
     .nb-ai-label--glyph {
