@@ -19,6 +19,12 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
       '@nubisco/ui/icons': resolve(__dirname, 'generated/icons'),
       '@nubisco/ui/flags': resolve(__dirname, 'generated/flags'),
+      // Tests compile the theme through the pure-JS compiler. With the whole
+      // suite in parallel, several embedded-Sass child processes at once
+      // corrupted their message channel ("size is out of range") in a
+      // different contrast file on each run. Same version, same API, no child
+      // process. The build and the docs keep the embedded compiler.
+      'sass-embedded': 'sass',
     },
   },
   test: {
