@@ -11,10 +11,11 @@ feels. That is the whole rule, and it is the rule the fleet does not have.
 Twelve applications built on this library were read end to end. Status came out
 as a vocabulary problem rather than a component problem:
 
-- **`NbBadge`'s variants are literal colour names.** `grey`, `blue`, `orange`,
-  `green`, `red`, `purple`, `primary`. Line 1 of `src/components/Badge.d.ts` is
-  a `FIXME` saying so. A colour name cannot be wrong, which is why nobody ever
-  thought they were choosing wrong.
+- **`NbBadge`'s variants were literal colour names.** `grey`, `blue`, `orange`,
+  `green`, `red`, `purple`, `primary`. A colour name cannot be wrong, which is
+  why nobody ever thought they were choosing wrong. They are now intents
+  (`neutral`, `info`, `success`, `warning`, `danger`, `primary`), and the colour
+  names are deprecated aliases that render as the intent and warn.
 - **One application mapped "medium confidence" to `orange` because the library
   has no yellow.** Documented in that application's own source comment. In the
   same product, `orange` also meant "paused". Two unrelated meanings, one
@@ -53,7 +54,7 @@ sizes, and the size difference is the argument:
   <div class="sx-carriers">
     <div class="sx-carrier">
       <p class="sx-label">NbBadge: the object</p>
-      <NbBadge variant="orange" dot>Suspended</NbBadge>
+      <NbBadge variant="warning" dot>Suspended</NbBadge>
       <p class="sx-note">A property of the project. It fits in a table row, a card and a page title, and it states the value and nothing else.</p>
     </div>
     <div class="sx-carrier">
@@ -97,7 +98,7 @@ about the object, and both are on screen at once. The split:
 > The **badge states the value**. The **banner explains a value the user cannot
 > act on from the badge alone.**
 
-A project page shows `<NbBadge variant="orange" dot>Suspended</NbBadge>` beside
+A project page shows `<NbBadge variant="warning" dot>Suspended</NbBadge>` beside
 the title. _Why_ it is suspended, and what to do about it, is a
 `<NbBanner status="warning" variant="callout">`. The badge never grows a
 sentence, and the banner never appears just to repeat the badge.
@@ -109,13 +110,13 @@ right-hand banner is carrying anything the badge could not:
   <div class="sx-pair">
     <div class="sx-half sx-half--wrong">
       <p class="sx-label">Wrong: the banner repeats the badge</p>
-      <div class="sx-page-header"><span class="sx-page-title">Checkout redesign</span><NbBadge variant="orange" dot>Suspended</NbBadge></div>
+      <div class="sx-page-header"><span class="sx-page-title">Checkout redesign</span><NbBadge variant="warning" dot>Suspended</NbBadge></div>
       <NbBanner status="warning" variant="callout" title="This project is suspended">This project is suspended.</NbBanner>
       <p class="sx-note">Forty-four pixels of page spent on the word already sitting beside the title, and no route out of the state.</p>
     </div>
     <div class="sx-half sx-half--right">
       <p class="sx-label">Right: the badge states, the banner explains</p>
-      <div class="sx-page-header"><span class="sx-page-title">Checkout redesign</span><NbBadge variant="orange" dot>Suspended</NbBadge></div>
+      <div class="sx-page-header"><span class="sx-page-title">Checkout redesign</span><NbBadge variant="warning" dot>Suspended</NbBadge></div>
       <NbBanner status="warning" variant="callout" title="Suspended on 12 March">Billing failed three times. Update the card to resume deployments.<template #action><NbButton size="sm" variant="secondary">Update billing</NbButton></template></NbBanner>
       <p class="sx-note">The badge never grows the sentence, and the sentence carries the date, the cause and the next step.</p>
     </div>
@@ -132,15 +133,15 @@ duplicate.
 
 | State         | Means                                                       | `variant` | `dot` | Icon (when used) |
 | ------------- | ----------------------------------------------------------- | --------- | ----- | ---------------- |
-| **Draft**     | Exists, not yet submitted to anything                       | `grey`    | no    | `pencil-simple`  |
-| **Pending**   | Handed off, waiting on a queue or a person, nothing running | `grey`    | yes   | `clock`          |
-| **Running**   | Work is happening right now                                 | `blue`    | yes   | `circle-notch`   |
-| **Active**    | The good steady state: live, published, healthy, succeeded  | `green`   | yes   | `check-circle`   |
-| **Attention** | Working, but degraded or expiring: still yours to fix       | `orange`  | yes   | `warning`        |
-| **Paused**    | Deliberately stopped by someone, resumable                  | `orange`  | no    | `pause`          |
-| **Failed**    | Ended badly and will not recover on its own                 | `red`     | yes   | `x-circle`       |
-| **Inactive**  | Terminal and unremarkable: archived, cancelled, revoked     | `grey`    | no    | `prohibit`       |
-| **Unknown**   | We asked and did not get an answer                          | `grey`    | no    | `circle-dashed`  |
+| **Draft**     | Exists, not yet submitted to anything                       | `neutral` | no    | `pencil-simple`  |
+| **Pending**   | Handed off, waiting on a queue or a person, nothing running | `neutral` | yes   | `clock`          |
+| **Running**   | Work is happening right now                                 | `info`    | yes   | `circle-notch`   |
+| **Active**    | The good steady state: live, published, healthy, succeeded  | `success` | yes   | `check-circle`   |
+| **Attention** | Working, but degraded or expiring: still yours to fix       | `warning` | yes   | `warning`        |
+| **Paused**    | Deliberately stopped by someone, resumable                  | `warning` | no    | `pause`          |
+| **Failed**    | Ended badly and will not recover on its own                 | `danger`  | yes   | `x-circle`       |
+| **Inactive**  | Terminal and unremarkable: archived, cancelled, revoked     | `neutral` | no    | `prohibit`       |
+| **Unknown**   | We asked and did not get an answer                          | `neutral` | no    | `circle-dashed`  |
 
 Every icon name above exists in the Phosphor set `NbIcon` resolves. Every
 `variant` above is a real `NbBadge` variant.
@@ -175,32 +176,33 @@ Your domain words stay in the label. Only the _state_ is fixed.
 
 ```vue
 <!-- The label is the product's word. The variant comes from the table. -->
-<NbBadge variant="blue" dot>Deploying</NbBadge>
-<NbBadge variant="green" dot>Published</NbBadge>
-<NbBadge variant="grey">Archived</NbBadge>
+<NbBadge variant="info" dot>Deploying</NbBadge>
+<NbBadge variant="success" dot>Published</NbBadge>
+<NbBadge variant="neutral">Archived</NbBadge>
 ```
 
-### The two variants that are never a status
+### The variant that is never a status
 
-`purple` and `primary` both resolve to `--nb-c-primary`, the brand colour. Brand
-is not a state. A `primary` badge is a solid brand chip with
-`--nb-c-primary-a11y` ink and it out-shouts every real status on the screen.
+`primary` resolves to `--nb-c-primary`, the brand colour (the deprecated
+`purple` now renders as it). Brand is not a state. A `primary` badge is a solid
+brand chip with `--nb-c-primary-a11y` ink and it out-shouts every real status on
+the screen.
 
-**`variant="purple"` and `variant="primary"` are reserved for non-status badges**
+**`variant="primary"` is reserved for non-status badges**
 (a plan name, a count, a "New" marker on a nav item). If you catch a lifecycle
 word inside one, it is a bug.
 
-Nothing in the component enforces any of that. `variant` is a colour name, so
-every pairing the controls below can make is legal, including the two this
-section has just banned. Put a lifecycle word in `primary` and the library
+Nothing in the component enforces any of that. `variant` names an intent, not a
+lifecycle state, so every pairing the controls below can make is legal,
+including the one this section has just banned. Put a lifecycle word in `primary` and the library
 renders it without complaint, as a solid brand chip that out-shouts every real
 status beside it:
 
 <preview :props="badgeProps" v-slot="{ resultingProps }">
   <div class="sx-stack">
     <div class="sx-states">
-      <NbBadge variant="grey">Draft</NbBadge>
-      <NbBadge variant="green" dot>Published</NbBadge>
+      <NbBadge variant="neutral">Draft</NbBadge>
+      <NbBadge variant="success" dot>Published</NbBadge>
       <NbBadge :variant="resultingProps.variant" :dot="resultingProps.dot" :size="resultingProps.size">{{ resultingProps.label }}</NbBadge>
     </div>
     <p class="sx-note">The third badge is yours. The two beside it are there so the brand fill can be compared with the real statuses it would sit next to. <code>Label</code> is a control, not a prop: it is rendered into the slot, because the accessible name of a badge is its text content and <code>NbBadge</code> has no <code>label</code> prop to invent.</p>
@@ -211,10 +213,10 @@ There is no yellow in that list, and no `variant` in it means anything. The
 mapping table above is the only place intent exists until the `FIXME` on
 `Badge.d.ts` is resolved.
 
-### Pending is grey, not orange
+### Pending is neutral, not warning
 
-The single most common mistake in the audit. `orange` resolves to
-`--nb-c-warning`. A queued job is not a warning, nobody needs to do anything,
+The single most common mistake in the audit. `warning` (once `orange`) paints
+the warning pair. A queued job is not a warning, nobody needs to do anything,
 and colouring it orange means the one row that genuinely needs attention no
 longer stands out. Waiting is grey. Waiting-too-long is `Attention`.
 
@@ -259,8 +261,8 @@ status and goes back to being a number:
     <div class="sx-half sx-half--wrong">
       <p class="sx-label">Wrong: an ordinal borrowed the lifecycle colours</p>
       <div class="sx-rows">
-        <div class="sx-row"><span>Invoice 4471</span><NbBadge variant="orange" size="sm" dot>Medium</NbBadge></div>
-        <div class="sx-row"><span>Invoice 4472</span><NbBadge variant="orange" size="sm">Paused</NbBadge></div>
+        <div class="sx-row"><span>Invoice 4471</span><NbBadge variant="warning" size="sm" dot>Medium</NbBadge></div>
+        <div class="sx-row"><span>Invoice 4472</span><NbBadge variant="warning" size="sm">Paused</NbBadge></div>
       </div>
       <p class="sx-note">Same colour, two unrelated meanings, one screen. The only thing separating them is a 6px dot that the reader has no reason to know is load-bearing.</p>
     </div>
@@ -268,7 +270,7 @@ status and goes back to being a number:
       <p class="sx-label">Right: the number is the measurement</p>
       <div class="sx-rows">
         <div class="sx-row"><span>Invoice 4471</span><span class="sx-figure">64% confident</span></div>
-        <div class="sx-row"><span>Invoice 4472</span><NbBadge variant="orange" size="sm">Paused</NbBadge></div>
+        <div class="sx-row"><span>Invoice 4472</span><NbBadge variant="warning" size="sm">Paused</NbBadge></div>
       </div>
       <NbProgressBar label="Match confidence, invoice 4471" :value="64" :max="100" size="sm" helper="64 of 100" />
       <p class="sx-note">The figure sorts, needs no legend, and leaves orange meaning exactly one thing in the view. The bar is the second option from the list above, for when the proportion is what the reader compares.</p>
@@ -296,7 +298,7 @@ different systems and must not be mixed in one view.
 No `role`, no `aria-label`, no `title`. **The accessible name of a badge is its
 text content.** Therefore:
 
-- **A badge always has text.** `<NbBadge variant="green" dot />` with an empty
+- **A badge always has text.** `<NbBadge variant="success" dot />` with an empty
   slot is an empty `<span>`. It is invisible to assistive technology and
   meaningless to anyone who cannot separate green from orange (roughly 1 in 12
   men).
@@ -317,18 +319,18 @@ three states with text:
     <div class="sx-half sx-half--wrong">
       <p class="sx-label">Wrong: colour is the only encoding</p>
       <div class="sx-rows">
-        <div class="sx-row"><span>api-gateway</span><NbBadge variant="green" size="sm" dot /></div>
-        <div class="sx-row"><span>billing-worker</span><NbBadge variant="orange" size="sm" dot /></div>
-        <div class="sx-row"><span>search-indexer</span><NbBadge variant="red" size="sm" dot /></div>
+        <div class="sx-row"><span>api-gateway</span><NbBadge variant="success" size="sm" dot /></div>
+        <div class="sx-row"><span>billing-worker</span><NbBadge variant="warning" size="sm" dot /></div>
+        <div class="sx-row"><span>search-indexer</span><NbBadge variant="danger" size="sm" dot /></div>
       </div>
       <p class="sx-note">In greyscale these are three identical dots. To a screen reader they are three empty spans, so they are three identical dots there too, with the colour removed as well.</p>
     </div>
     <div class="sx-half sx-half--right">
       <p class="sx-label">Right: the text is the status</p>
       <div class="sx-rows">
-        <div class="sx-row"><span>api-gateway</span><NbBadge variant="green" size="sm" dot>Active</NbBadge></div>
-        <div class="sx-row"><span>billing-worker</span><NbBadge variant="orange" size="sm" dot>Attention</NbBadge></div>
-        <div class="sx-row"><span>search-indexer</span><NbBadge variant="red" size="sm" dot>Failed</NbBadge></div>
+        <div class="sx-row"><span>api-gateway</span><NbBadge variant="success" size="sm" dot>Active</NbBadge></div>
+        <div class="sx-row"><span>billing-worker</span><NbBadge variant="warning" size="sm" dot>Attention</NbBadge></div>
+        <div class="sx-row"><span>search-indexer</span><NbBadge variant="danger" size="sm" dot>Failed</NbBadge></div>
       </div>
       <p class="sx-note">Colour is still doing work: it is what makes the failed row findable at a glance. It is just no longer the only thing doing it, so nothing is lost when it goes.</p>
     </div>
@@ -406,7 +408,7 @@ two views of the same object look like two different products.
 ```vue
 <header class="page-header">
   <h1>Checkout redesign</h1>
-  <NbBadge variant="orange" dot>Suspended</NbBadge>
+  <NbBadge variant="warning" dot>Suspended</NbBadge>
 </header>
 
 <NbBanner status="warning" variant="callout" title="Suspended on 12 March">
@@ -424,12 +426,12 @@ non-statuses moved to where facts live:
   <div class="sx-pair sx-pair--stack">
     <div class="sx-half sx-half--wrong">
       <p class="sx-label">Wrong: four badges, one status</p>
-      <div class="sx-page-header"><span class="sx-page-title">Checkout redesign</span><NbBadge variant="orange" dot>Suspended</NbBadge><NbBadge variant="purple">Enterprise</NbBadge><NbBadge variant="blue">Production</NbBadge><NbBadge variant="grey">eu-west-1</NbBadge></div>
+      <div class="sx-page-header"><span class="sx-page-title">Checkout redesign</span><NbBadge variant="warning" dot>Suspended</NbBadge><NbBadge variant="purple">Enterprise</NbBadge><NbBadge variant="info">Production</NbBadge><NbBadge variant="neutral">eu-west-1</NbBadge></div>
       <p class="sx-note">Plan, environment and region are facts about the project, not states of it. Beside the real status they read as four statuses, and the one the user can act on is the third-loudest thing in the row.</p>
     </div>
     <div class="sx-half sx-half--right">
       <p class="sx-label">Right: one badge, and the facts in the facts list</p>
-      <div class="sx-page-header"><span class="sx-page-title">Checkout redesign</span><NbBadge variant="orange" dot>Suspended</NbBadge></div>
+      <div class="sx-page-header"><span class="sx-page-title">Checkout redesign</span><NbBadge variant="warning" dot>Suspended</NbBadge></div>
       <NbDefinitionList class="sx-dl" :items="[{ term: 'Plan', value: 'Enterprise' }, { term: 'Environment', value: 'Production' }, { term: 'Region', value: 'eu-west-1' }]" />
       <p class="sx-note">Same four pieces of information, one of them a status. The plan is still allowed to be a badge somewhere, just not in the row that answers "what is true about this project right now".</p>
     </div>
@@ -508,20 +510,20 @@ and the two entries differ only by their state, both of which shipped:
     <div class="sx-half sx-half--wrong">
       <p class="sx-label">Wrong: the badge is a footer item</p>
       <NbCard title="Checkout redesign" subtitle="Updated 12 March">
-        <template #footer><NbBadge variant="green" dot>Active</NbBadge></template>
+        <template #footer><NbBadge variant="success" dot>Active</NbBadge></template>
       </NbCard>
       <NbCard title="Checkout redesign" subtitle="Updated 12 March">
-        <template #footer><NbBadge variant="grey">Archived</NbBadge></template>
+        <template #footer><NbBadge variant="neutral">Archived</NbBadge></template>
       </NbCard>
       <p class="sx-note">The state is stranded at the bottom, and the two cards are the same card until you get there. Which one is the live project is a question the reader has to answer twice.</p>
     </div>
     <div class="sx-half sx-half--right">
       <p class="sx-label">Right: the badge trails the title, and the rows differ</p>
       <NbCard subtitle="Updated 12 March">
-        <template #title>Checkout redesign <NbBadge variant="green" dot>Active</NbBadge></template>
+        <template #title>Checkout redesign <NbBadge variant="success" dot>Active</NbBadge></template>
       </NbCard>
       <NbCard subtitle="Archived 4 January, v2">
-        <template #title>Checkout redesign <NbBadge variant="grey">Archived</NbBadge></template>
+        <template #title>Checkout redesign <NbBadge variant="neutral">Archived</NbBadge></template>
       </NbCard>
       <p class="sx-note">The badge is read with the name because it is on the same line as the name, and the subtitle carries the fact that distinguishes the two entries.</p>
     </div>
@@ -580,12 +582,12 @@ describe the same deploy at the same instant:
   <div class="sx-pair">
     <div class="sx-half sx-half--wrong">
       <p class="sx-label">Wrong: a spinner next to a Running badge</p>
-      <div class="sx-row sx-row--tight"><NbBadge variant="blue" dot>Deploying</NbBadge><NbSpinner size="sm" decorative /></div>
+      <div class="sx-row sx-row--tight"><NbBadge variant="info" dot>Deploying</NbBadge><NbSpinner size="sm" decorative /></div>
       <p class="sx-note">The badge already says work is happening. The spinner says it again, in motion, and now two things have to be kept in sync with one fact.</p>
     </div>
     <div class="sx-half sx-half--right">
       <p class="sx-label">Right: the badge, plus the progress it has</p>
-      <div class="sx-row sx-row--tight"><NbBadge variant="blue" dot>Deploying</NbBadge></div>
+      <div class="sx-row sx-row--tight"><NbBadge variant="info" dot>Deploying</NbBadge></div>
       <NbProgressBar label="Deploying checkout-redesign" :value="62" :max="100" size="sm" helper="Step 3 of 5, building assets" />
       <p class="sx-note">The badge is the state and the bar is the movement, so they are not the same fact twice. If the deploy fails, <code>status="error"</code> on the bar and the red Failed badge change together.</p>
     </div>
