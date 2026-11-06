@@ -38,6 +38,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'App theming', link: '/app-theming' },
       { text: 'Colors', link: '/principles/color' },
       { text: 'Typography', link: '/principles/typography' },
+      { text: 'Icons', link: '/principles/icons' },
       { text: 'Design Tokens', link: '/design-tokens' },
       { text: 'Layout and breakpoints', link: '/principles/layout' },
       { text: 'Spacing and rhythm', link: '/principles/spacing' },
