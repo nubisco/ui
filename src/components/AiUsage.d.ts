@@ -24,4 +24,6 @@ export interface IAiUsageProps {
   unpricedModels?: string[]
   /** The date the price table was last checked, as YYYY-MM-DD. */
   pricingVerifiedOn?: string
+  /** BCP 47 locale for the counts. Defaults to `navigator.language`, then `en`. */
+  locale?: string
 }

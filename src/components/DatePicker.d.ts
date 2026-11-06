@@ -21,7 +21,7 @@ interface IDatePickerProps extends IReadableFieldComponent {
   max?: string
   /** First day of the week: 0 = Sunday, 1 = Monday. Defaults to 1. */
   weekStart?: 0 | 1
-  /** BCP 47 locale tag for month and weekday labels. Defaults to browser locale. */
+  /** BCP 47 locale tag for month and weekday labels. Defaults to `navigator.language`, then `en`. */
   locale?: string
   /** Placeholder for the end date input (range type only). */
   endPlaceholder?: string

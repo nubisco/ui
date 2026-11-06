@@ -291,7 +291,15 @@ const props = withDefaults(defineProps<IGanttChartProps>(), {
   today: undefined,
   showProgress: true,
   statusColors: undefined,
+  locale: undefined,
 })
+
+const resolvedLocale = computed(
+  () =>
+    props.locale ||
+    (typeof navigator !== 'undefined' ? navigator.language : '') ||
+    'en',
+)
 
 // ── Status color map ────────────────────────────────────────────────────────
 
@@ -526,7 +534,7 @@ const resolveTaskColor = (task: IGanttTask, index: number): string => {
 
 const formatDate = (d: string | Date): string => {
   const date = typeof d === 'string' ? new Date(d) : d
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(resolvedLocale.value, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',

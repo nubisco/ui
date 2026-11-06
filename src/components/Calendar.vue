@@ -133,7 +133,10 @@ function goToday() {
 }
 
 const resolvedLocale = computed(
-  () => props.locale || navigator.language || 'pt-PT',
+  () =>
+    props.locale ||
+    (typeof navigator !== 'undefined' ? navigator.language : '') ||
+    'en',
 )
 
 const monthLabel = computed(() => {
