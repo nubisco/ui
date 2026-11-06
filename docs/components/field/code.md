@@ -1,10 +1,10 @@
 ---
 layout: nubisco
 title: Field
-intro: '`NbField` is a labeled row: a label and a control sharing one grid. A stack of `NbField`s lines up on a single spine automatically — no per-field CSS — which makes it the building block of an inspector or a settings panel. Wrap any control and it falls into place.'
+intro: '`NbField` is a labeled row: a label and a control sharing one grid. A stack of `NbField`s lines up on a single spine automatically, with no per-field CSS, which makes it the building block of an inspector or a settings panel. Wrap any control and it falls into place.'
 source: src/components/Field.vue
 tab: code
-pageTabs: ['usage', 'code']
+pageTabs: ['usage', 'code', 'accessibility']
 ---
 
 ## Basic
@@ -87,8 +87,8 @@ To tighten or loosen every control at once, override the token on a container:
 
 ## Slots
 
-| Slot      | Description                                                                       |
-| --------- | --------------------------------------------------------------------------------- |
-| `default` | The control. Receives `{ id }` — bind it to your control for a label association. |
-| `label`   | Custom label content, replacing the `label` prop.                                 |
-| `hint`    | Custom hint content, replacing the `hint` prop.                                   |
+| Slot      | Description                                                                                        |
+| --------- | -------------------------------------------------------------------------------------------------- |
+| `default` | The control. Receives `{ id, describedby }`: bind them to your control for the label and the hint. |
+| `label`   | Custom label content, replacing the `label` prop.                                                  |
+| `hint`    | Custom hint content, replacing the `hint` prop.                                                    |

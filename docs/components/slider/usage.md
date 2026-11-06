@@ -4,7 +4,7 @@ title: Slider
 intro: '`NbSlider` is a draggable range input with an optional `NbNumberInput` companion. It supports single-value and two-handle range modes.'
 source: src/components/Slider.vue
 tab: usage
-pageTabs: ['usage', 'code']
+pageTabs: ['usage', 'code', 'accessibility']
 ---
 
 <preview :props="availableProps" v-slot="{ resultingProps }">

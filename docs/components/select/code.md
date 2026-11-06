@@ -4,7 +4,7 @@ title: Select
 intro: '`NbSelect` is a custom dropdown that replaces the native `<select>`. It shares the same design language as `NbTextInput`: two variants (default / fluid), error/warning states, multi-select support, and full keyboard navigation.'
 source: src/components/Select.vue
 tab: code
-pageTabs: ['usage', 'code']
+pageTabs: ['usage', 'code', 'accessibility']
 ---
 
 ## Variants
@@ -308,22 +308,6 @@ selectRef.value?.open() // programmatically open the dropdown
 selectRef.value?.close() // programmatically close the dropdown
 ```
 
-## Keyboard navigation
-
-| Key               | Action                         |
-| ----------------- | ------------------------------ |
-| `Enter` / `Space` | Open dropdown / select item    |
-| `↑` / `↓`         | Move highlight through options |
-| `Escape` / `Tab`  | Close dropdown                 |
-
-With `searchable`, typing narrows the list, <kbd>Enter</kbd> picks the highlighted match, and <kbd>Space</kbd> is part of the search, not a choice.
-
-## Accessibility
-
-- The trigger button announces `aria-expanded`, `aria-haspopup="listbox"`, and `aria-controls` pointing at the dropdown.
-- Each option has `role="option"` with `aria-selected` and `aria-disabled`.
-- The `for`/`id` association is handled automatically.
-- With `searchable`, the search box is named by `search-placeholder` and points at the highlighted option with `aria-activedescendant`, so a screen reader follows the highlight while focus stays in the box.
-- With `clearable`, the clear button is a separate `<button>` next to the trigger, reached with <kbd>Tab</kbd> after it. Pressing it never opens the list.
+Keys, roles, validation announcements and what you own are on the [Accessibility](/components/select/accessibility) tab.
 
 <!--@include: ./_shared.md-->

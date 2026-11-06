@@ -4,7 +4,7 @@ title: Text Input
 intro: '`NbTextInput` is the primary text entry component. It wraps a native `<input>` or `<textarea>` with a label, validation messages, two layout variants, and three sizes. It is designed to sit flush on the same grid line as buttons and other form controls.'
 source: src/components/TextInput.vue
 tab: code
-pageTabs: ['usage', 'code']
+pageTabs: ['usage', 'code', 'accessibility']
 ---
 
 ## Variants

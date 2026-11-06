@@ -4,7 +4,7 @@ title: Tabs
 intro: '`NbTabs` switches between sections of the same page. Give it an `items` array and bind `v-model` to the id of the section on screen. It renders the tab bar and, when you fill the matching slot, the panel below it.'
 source: src/components/Tabs.vue
 tab: code
-pageTabs: ['usage', 'code']
+pageTabs: ['usage', 'code', 'accessibility']
 ---
 
 ## Panels are optional
@@ -130,26 +130,6 @@ Neither event fires when the already active tab is clicked.
 | ----------- | ---------------- | ---------------------------------------------------- |
 | `[item.id]` | `item: ITabItem` | Panel for that tab, rendered only while it is active |
 
-## Keyboard
-
-| Key                       | Action                                        |
-| ------------------------- | --------------------------------------------- |
-| <kbd>Tab</kbd>            | Moves into the bar, landing on the active tab |
-| <kbd>←</kbd> <kbd>→</kbd> | Selects the previous or next tab, wrapping    |
-| <kbd>Home</kbd>           | Selects the first tab                         |
-| <kbd>End</kbd>            | Selects the last tab                          |
-
-Arrow keys select as they move (automatic activation), which the WAI-ARIA tabs
-pattern recommends when showing a panel is cheap.
-
-## Accessibility
-
-- The bar is a `role="tablist"`, each tab a `role="tab"`, each rendered panel a
-  `role="tabpanel"` labelled by its tab.
-- Only the active tab is in the tab order (roving `tabindex`), so the bar is a
-  single stop rather than one per tab.
-- `aria-controls` is set only when a panel is actually rendered, so it never
-  points at a missing element.
-- Name the bar with `ariaLabel` when a page carries more than one set of tabs.
+Keys, roles and what you own are on the [Accessibility](/components/tabs/accessibility) tab.
 
 <!--@include: ./_shared.md-->

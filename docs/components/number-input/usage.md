@@ -4,7 +4,7 @@ title: Number Input
 intro: '`NbNumberInput` is a numeric field with built-in stepper buttons (`−` and `+`). It shares the same design language as `NbTextInput` and `NbSelect`, with default and fluid variants.'
 source: src/components/NumberInput.vue
 tab: usage
-pageTabs: ['usage', 'code']
+pageTabs: ['usage', 'code', 'accessibility']
 ---
 
 <preview :props="availableProps" v-slot="{ resultingProps }">

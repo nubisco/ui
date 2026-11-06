@@ -4,7 +4,7 @@ title: Tabs
 intro: '`NbTabs` switches between sections of the same page. Give it an `items` array and bind `v-model` to the id of the section on screen. It renders the tab bar and, when you fill the matching slot, the panel below it.'
 source: src/components/Tabs.vue
 tab: usage
-pageTabs: ['usage', 'code']
+pageTabs: ['usage', 'code', 'accessibility']
 ---
 
 Reach for tabs when the sections are peers and only one is relevant at a time.

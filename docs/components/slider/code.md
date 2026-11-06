@@ -4,7 +4,7 @@ title: Slider
 intro: '`NbSlider` is a draggable range input with an optional `NbNumberInput` companion. It supports single-value and two-handle range modes.'
 source: src/components/Slider.vue
 tab: code
-pageTabs: ['usage', 'code']
+pageTabs: ['usage', 'code', 'accessibility']
 ---
 
 ## Range mode
@@ -35,19 +35,19 @@ const range = ref<[number, number]>([200, 800])
 
 ## Props
 
-| Prop         | Type                         | Default | Description                                        |
-| ------------ | ---------------------------- | ------- | -------------------------------------------------- |
-| `modelValue` | `number \| [number, number]` | -       | Current value or `[low, high]` for range mode      |
-| `label`      | `string`                     | -       | Label above the slider                             |
-| `helper`     | `string`                     | -       | Helper text                                        |
-| `error`      | `string`                     | -       | Error message — shows colored underline on track   |
-| `warning`    | `string`                     | -       | Warning message — shows colored underline on track |
-| `min`        | `number`                     | `0`     | Minimum value                                      |
-| `max`        | `number`                     | `100`   | Maximum value                                      |
-| `step`       | `number`                     | `1`     | Snap interval                                      |
-| `range`      | `boolean`                    | `false` | Enables two-handle range mode                      |
-| `disabled`   | `boolean`                    | `false` | Disables dragging and input editing                |
-| `showInput`  | `boolean`                    | `true`  | Show `NbNumberInput` alongside the track           |
+| Prop         | Type                         | Default | Description                                       |
+| ------------ | ---------------------------- | ------- | ------------------------------------------------- |
+| `modelValue` | `number \| [number, number]` | -       | Current value or `[low, high]` for range mode     |
+| `label`      | `string`                     | -       | Label above the slider                            |
+| `helper`     | `string`                     | -       | Helper text                                       |
+| `error`      | `string`                     | -       | Error message: shows colored underline on track   |
+| `warning`    | `string`                     | -       | Warning message: shows colored underline on track |
+| `min`        | `number`                     | `0`     | Minimum value                                     |
+| `max`        | `number`                     | `100`   | Maximum value                                     |
+| `step`       | `number`                     | `1`     | Snap interval                                     |
+| `range`      | `boolean`                    | `false` | Enables two-handle range mode                     |
+| `disabled`   | `boolean`                    | `false` | Disables dragging and input editing               |
+| `showInput`  | `boolean`                    | `true`  | Show `NbNumberInput` alongside the track          |
 
 ## Events
 

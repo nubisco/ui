@@ -4,7 +4,7 @@ title: Radio
 intro: '`NbRadio` renders a group of radio button inputs for single-choice selection. Radio buttons in the same group share a `name` attribute, ensuring only one can be active at a time.'
 source: src/components/Radio.vue
 tab: code
-pageTabs: ['usage', 'code']
+pageTabs: ['usage', 'code', 'accessibility']
 ---
 
 ## Multiple groups
