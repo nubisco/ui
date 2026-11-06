@@ -5,8 +5,9 @@
 // surface, at its strongest point, and measured there. Primary text is held
 // to AAA everywhere and muted text to AAA in light, the bar the layer ramp
 // itself is held to (layerContrast.test.ts). Dark muted text measures 7.01 on
-// the deepest hover surface with no wash at all, so no tint can keep it at
-// AAA: there it is held within half a point of AAA.
+// the deepest hover surface with no wash at all, so inside a dark presence
+// container it is lifted toward primary text, and the lifted colour is what
+// is measured.
 //
 // It also guards the promise the treatment was agreed on: every value is
 // derived from the primary and the border, never a fixed hue, and it is
@@ -24,11 +25,6 @@ import {
 } from '../scripts/lib/layerTokens.mjs'
 
 const AAA = 7.0
-/**
- * Dark muted text, with the wash. It cannot be AAA (see above), so it is held
- * within half a point of it, which is also comfortably over AA.
- */
-const DARK_MUTED_FLOOR = 6.5
 const LEVELS = [0, 1, 2, 3] as const
 type Theme = 'light' | 'dark'
 
@@ -53,6 +49,32 @@ function auraWeight(theme: Theme): number {
   )
   expect(m, `${theme}: unexpected form ${raw}`).toBeTruthy()
   return Number(m![1]) / 100
+}
+
+/** How much of its muted colour dark presence keeps, read from the CSS. */
+function darkMutedKeep(): number {
+  const raw = propsFrom(
+    css,
+    /^\.dark \.nb-ai-presence>\*,\.dark\.nb-ai-presence>\*$/,
+  )['--nb-c-text-muted']
+  expect(raw, 'dark presence lifts --nb-c-text-muted').toBeTruthy()
+  const m = raw.match(
+    /color-mix\(\s*in srgb\s*,\s*var\(--nb-ai-muted-base\)\s*([\d.]+)%\s*,\s*var\(--nb-c-text\)\s*\)/,
+  )
+  expect(m, `unexpected form ${raw}`).toBeTruthy()
+  return Number(m![1]) / 100
+}
+
+/** The text colour that lands on the wash in this theme. */
+function inkFor(theme: Theme, text: string): string {
+  const get = resolvers[theme]
+  if (theme === 'light' || text !== '--nb-c-text-muted')
+    return get(text) as string
+  const keep = darkMutedKeep()
+  const m = parseColor(get('--nb-c-text-muted'))
+  const t = parseColor(get('--nb-c-text'))
+  expect(m && t).toBeTruthy()
+  return `rgb(${m!.map((v, i) => v * keep + t![i] * (1 - keep)).join(',')})`
 }
 
 /** The aura painted over a surface, the way a browser composites it. */
@@ -83,14 +105,9 @@ describe.each(['light', 'dark'] as Theme[])('%s AI presence', (theme) => {
       ]) {
         const washed = over(surface, theme)
         for (const text of ['--nb-c-text', '--nb-c-text-muted']) {
-          const ink = get(text) as string
-          const bar =
-            theme === 'dark' && text === '--nb-c-text-muted'
-              ? DARK_MUTED_FLOOR
-              : AAA
-          const measured = ratio(ink, washed) as number
+          const measured = ratio(inkFor(theme, text), washed) as number
           expect(measured, `${text} on layer ${level}`).toBeGreaterThanOrEqual(
-            bar,
+            AAA,
           )
         }
       }

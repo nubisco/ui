@@ -17,13 +17,14 @@
 ///
 /// ## Contrast
 ///
-/// The wash is 8% of the accent at the strongest point of the gradient, in
-/// both modes. `tests/aiPresenceContrast.test.ts` composites it over every
-/// layer and hover surface: primary text stays at AAA everywhere, and muted
-/// text stays at AAA in light. Dark has no room for more: its muted text
-/// measures 7.01 on the deepest hover surface with no wash at all, so any
-/// tint takes it under AAA. At 8% the worst case is 6.60, and the test holds
-/// it at 6.5 or better, so the wash cannot quietly grow into a problem.
+/// The wash is 8% of the accent in light and 5% in dark, at the strongest
+/// point of the gradient. `tests/aiPresenceContrast.test.ts` composites it
+/// over every layer and hover surface and holds all text to AAA. Dark muted
+/// text measures 7.01 on the deepest hover surface with no wash at all, so any
+/// tint takes it under AAA. Inside a dark presence container, muted text
+/// therefore keeps 80% of its colour and moves 20% toward primary text: 7.11
+/// at worst. The lift starts from the muted colour the container inherits,
+/// so a theme that re-points `--nb-c-text-muted` keeps its own hue.
 ///
 /// @group @nubisco/ai
 
@@ -40,11 +41,14 @@
   --nb-c-ai-border-end: var(--nb-c-border);
 }
 
-// One weight today. The dark half is still emitted on its own, because the
-// dark primary is a different colour and a token declared at :root would
-// freeze to the light one.
+// The dark half is emitted on its own, because the dark primary is a
+// different colour and a token declared at :root would freeze to the light
+// one. Dark is lighter: see the contrast note above.
 $light-aura: 8%;
-$dark-aura: 8%;
+$dark-aura: 5%;
+// How much of the inherited muted colour dark presence keeps (the rest is
+// primary text).
+$dark-muted-keep: 80%;
 
 :root,
 [data-nb-theme] {
@@ -103,6 +107,18 @@ $dark-aura: 8%;
 .dark .nb-ai-presence,
 .dark.nb-ai-presence {
   @include tokens($dark-aura);
+  // The muted colour this container inherits, so its children can lift from
+  // it. A property cannot read its own value, hence the second name.
+  --nb-ai-muted-base: var(--nb-c-text-muted);
+}
+
+.dark .nb-ai-presence > *,
+.dark.nb-ai-presence > * {
+  --nb-c-text-muted: color-mix(
+    in srgb,
+    var(--nb-ai-muted-base) #{$dark-muted-keep},
+    var(--nb-c-text)
+  );
 }
 
 // Low specificity on purpose: a container that is already positioned keeps
