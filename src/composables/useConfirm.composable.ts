@@ -102,10 +102,20 @@ function clearSuccessTimer() {
   successTimer = null
 }
 
+/**
+ * What the dialog says when `onConfirm` rejects and the caller passed no
+ * `formatError`. Never the exception's own text: `error.message` is written
+ * for a developer, may leak internals, and is often in the wrong language.
+ * The error goes to the console instead, where the developer will look.
+ * Pass `formatError` to map known failures to the three-part sentence the
+ * writing style describes.
+ */
+export const NB_CONFIRM_DEFAULT_ERROR =
+  'Could not complete the request. Try again.'
+
 function defaultFormatError(error: unknown): string {
-  if (error instanceof Error && error.message) return error.message
-  const text = String(error)
-  return text === '[object Object]' ? 'Something went wrong.' : text
+  console.error('[nubisco-ui] useConfirm: onConfirm failed', error)
+  return NB_CONFIRM_DEFAULT_ERROR
 }
 
 function advance() {

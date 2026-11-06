@@ -113,8 +113,12 @@ export interface IDataTableProps<T = Record<string, unknown>> {
   loading?: boolean
   /** Number of skeleton rows shown while `loading`. Default 5. */
   skeletonRows?: number
-  /** Error message shown in place of the body. Overrides `empty`. */
-  error?: string
+  /**
+   * Error message shown in place of the body. Overrides `empty`. `true` shows
+   * the catalogue's `dataTableError` ("Could not load the data"), which is
+   * distinct from the empty copy so a failed load never reads as "no rows".
+   */
+  error?: string | boolean
   /** Message shown when there are no rows and not loading. */
   emptyMessage?: string
   /** Pins the header while the body scrolls vertically. Default true. */

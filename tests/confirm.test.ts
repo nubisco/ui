@@ -749,6 +749,7 @@ describe('useConfirm', () => {
   it('keeps the dialog open on failure and resolves false only if the user then cancels', async () => {
     const confirm = useConfirm()
     const action = vi.fn(() => Promise.reject(new Error('Environment locked')))
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     const answer = confirm({ title: 'Delete environment', onConfirm: action })
     await nextTick()
@@ -756,7 +757,12 @@ describe('useConfirm', () => {
     await flushPromises()
 
     expect(dialogEl()).not.toBeNull()
-    expect(text()).toContain('Environment locked')
+    // The raw exception text is for the developer: it goes to the console,
+    // and the dialog shows a sentence a user can act on.
+    expect(text()).not.toContain('Environment locked')
+    expect(text()).toContain('Could not complete the request. Try again.')
+    expect(logged).toHaveBeenCalled()
+    logged.mockRestore()
 
     cancelEl().click()
     expect(await answer).toBe(false)

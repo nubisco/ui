@@ -225,7 +225,7 @@ function onCreate(value: string) {
 | `clearable`         | `boolean`                                           | `false`             | Show a button that clears the selection         |
 | `clearLabel`        | `string`                                            | `'Clear selection'` | Accessible name of the clear button             |
 | `searchable`        | `boolean`                                           | `false`             | Show a search box at the top of the list        |
-| `searchPlaceholder` | `string`                                            | `'Search…'`         | Placeholder and accessible name of the box      |
+| `searchPlaceholder` | `string`                                            | `'Search'`          | Placeholder and accessible name of the box      |
 | `noResultsLabel`    | `string`                                            | `'No results'`      | Shown when nothing matches the search           |
 | `selectedMark`      | `'fill' \| 'check'`                                 | `'fill'`            | How the chosen option is marked in the list     |
 | `anchor`            | `HTMLElement \| (() => HTMLElement)`                | -                   | What the open list hangs under (with `trigger`) |

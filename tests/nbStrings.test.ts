@@ -10,8 +10,19 @@ import {
 import { createToastQueue } from '../src/composables/useToast.composable'
 import Pagination from '../src/components/Pagination.vue'
 import NumberInput from '../src/components/NumberInput.vue'
+import DataTable from '../src/components/DataTable.vue'
 
 afterEach(() => resetNbStrings())
+
+describe('NbDataTable error copy', () => {
+  it('shows distinct copy for error: true', () => {
+    const wrapper = mount(DataTable, {
+      props: { columns: [{ key: 'a', label: 'A' }], rows: [], error: true },
+    })
+    expect(wrapper.text()).toContain('Could not load the data')
+    expect(wrapper.text()).not.toContain('No data to display')
+  })
+})
 
 function withStrings(
   overrides: Parameters<typeof provideNbStrings>[0],

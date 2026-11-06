@@ -28,7 +28,7 @@
         v-if="showLabel && !isDecorative"
         class="nb-spinner__label"
         aria-hidden="true"
-        >{{ label }}</span
+        >{{ resolvedLabel }}</span
       >
 
       <span v-if="announces" class="nb-spinner__announcement">{{
@@ -52,6 +52,12 @@
   </Teleport>
 </template>
 
+<script lang="ts">
+// Once per page, not once per spinner: a list of loading rows would flood the
+// console with the same sentence.
+let warnedUnnamed = false
+</script>
+
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useStableId } from '@/composables/useStableId.composable'
@@ -69,6 +75,7 @@ import {
   releasePageOverlay,
 } from './Spinner.overlay'
 import { announceLoadingComplete } from '@/composables/useLoadingAnnouncer.composable'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 
 // The root is a <Teleport>, so Vue has no single element to fall attributes
 // through to. Binding $attrs on the ring's own wrapper keeps `class`, `style`
@@ -79,7 +86,7 @@ defineOptions({ inheritAttrs: false })
 const props = withDefaults(defineProps<ISpinnerProps>(), {
   id: undefined,
   size: ESpinnerSize.Medium,
-  label: 'Loading',
+  label: undefined,
   showLabel: false,
   overlay: ESpinnerOverlay.None,
   tone: ESpinnerTone.Primary,
@@ -89,6 +96,16 @@ const props = withDefaults(defineProps<ISpinnerProps>(), {
 })
 
 const elementId = useStableId(props)
+const nbStrings = useNbStrings()
+
+/**
+ * The name falls back to the catalogue's `spinnerLabel` ("Loading content"),
+ * never to a bare "Loading": that says something is happening, not what. The
+ * library cannot know the noun, so outside production it asks for one.
+ */
+const resolvedLabel = computed(
+  () => props.label ?? nbStrings.value.spinnerLabel,
+)
 // Identity for the page-overlay stack. Not the DOM id: two app instances on one
 // page can generate the same id, and two claims must never collapse into one.
 const overlayKey = Symbol('nb-spinner-page-overlay')
@@ -171,7 +188,7 @@ function clearAnnounce() {
 }
 
 watch(
-  [visible, announces, () => props.label],
+  [visible, announces, resolvedLabel],
   ([isVisible, isLive, label]) => {
     clearAnnounce()
     if (!isVisible || !isLive) {
@@ -191,6 +208,19 @@ watch(
   },
   { immediate: true },
 )
+
+function warnUnnamed() {
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production')
+    return
+  if (warnedUnnamed || props.label !== undefined || isDecorative.value) return
+  warnedUnnamed = true
+  console.warn(
+    '[nubisco-ui] NbSpinner has no `label`, so it announces "' +
+      resolvedLabel.value +
+      '". Name what is loading ("Loading invoices"), or mark the spinner ' +
+      '`decorative` when something else already announces the load.',
+  )
+}
 
 // ── Blocking ─────────────────────────────────────────────────────────────────
 // `position: fixed` resolves against the nearest transformed, filtered or
@@ -246,6 +276,7 @@ function syncClaim() {
 // Post flush, so the node is in the document before focus is moved into it.
 watch([visible, () => props.overlay], syncClaim, { flush: 'post' })
 onMounted(syncClaim)
+onMounted(warnUnnamed)
 
 // ── Completion ───────────────────────────────────────────────────────────────
 // The spinner is removed the instant the work is done, which is exactly when a

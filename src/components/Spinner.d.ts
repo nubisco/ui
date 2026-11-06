@@ -42,7 +42,9 @@ interface ISpinnerProps extends IDefaultProps {
   size?: `${ESpinnerSize}`
   /**
    * Accessible name announced by the live region. Say what is loading
-   * ("Loading invoices"), not that something is loading.
+   * ("Loading invoices"), not that something is loading. Without it the
+   * spinner announces the catalogue's `spinnerLabel` ("Loading content") and
+   * warns outside production.
    */
   label?: string
   /** Renders `label` as visible text beside the ring as well as announcing it. */

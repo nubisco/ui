@@ -539,7 +539,7 @@ describe('Select', () => {
       expect(focusTargets).toContain('nb-select__search-input')
       const input = wrapper.find('.nb-select__search-input')
       expect(input.exists()).toBe(true)
-      expect(input.attributes('aria-label')).toBe('Search…')
+      expect(input.attributes('aria-label')).toBe('Search')
       wrapper.unmount()
     })
 
