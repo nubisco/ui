@@ -3,8 +3,10 @@
 /// The durations and curves themselves are custom properties
 /// (`--nb-motion-*`, `--nb-ease-*`, declared in `variables/_animations.scss`
 /// and emitted by `_theme.scss`), because a product retunes them on `:root`
-/// the way it retunes a colour. What lives here is the one piece of motion
-/// that is structural rather than a value: the reduced-motion rule.
+/// the way it retunes a colour. What lives here is the motion that is
+/// structural rather than a value: the reduced-motion rule, and the three
+/// surfaces (`popover`, `dialog`, `disclosure`) that package a step, a curve
+/// and a shape into one include.
 ///
 /// ## The rule
 ///
@@ -28,5 +30,247 @@
 @mixin reduced {
   @media (prefers-reduced-motion: reduce) {
     @content;
+  }
+}
+
+/// The motion surfaces: the three shapes every product needs, as code. Each
+/// emits the Vue `<Transition>` rules for `$name` (`-enter-active`,
+/// `-leave-active`, `-enter-from`, `-leave-to`) and its reduced-motion block,
+/// on the step and curve the catalogue on the motion Code tab gives that
+/// family. `$name` is the transition's name, because Vue builds the classes
+/// from it.
+///
+/// Include at the top level of a stylesheet. A component that needs a
+/// variant (a direction, a phone layout) overrides `-enter-from` after the
+/// include, and writes its own reduced block for that override if it carries
+/// travel.
+
+/// A popover: a menu, a select list, a small panel that opens from a
+/// trigger. Arrives on `quick` and the enter curve with a short travel from
+/// its trigger, and fades out on `micro` and the exit curve with no travel,
+/// so the eye is not pulled away from what the person does next. Reduced
+/// motion keeps the fade and drops the travel.
+///
+/// ```scss
+/// @include motion.popover(my-menu);
+/// // <Transition name="my-menu">
+/// ```
+///
+/// @param {String} $name - The `<Transition>` name.
+/// @param {*} $from [translateY(-4px)] - The travel it arrives from: toward
+///   its trigger, so down from a button above it, sideways from a rail.
+@mixin popover($name, $from: translateY(-4px)) {
+  .#{$name}-enter-active {
+    transition:
+      opacity var(--nb-motion-quick) var(--nb-ease-enter),
+      transform var(--nb-motion-quick) var(--nb-ease-enter);
+  }
+
+  .#{$name}-leave-active {
+    transition: opacity var(--nb-motion-micro) var(--nb-ease-exit);
+  }
+
+  .#{$name}-enter-from {
+    opacity: 0;
+    transform: $from;
+  }
+
+  .#{$name}-leave-to {
+    opacity: 0;
+  }
+
+  @include reduced {
+    .#{$name}-enter-from {
+      transform: none;
+    }
+  }
+}
+
+/// The same popover arrival for a surface that is mounted and unmounted
+/// outright, with no `<Transition>` around it (a teleported flyout, a hint):
+/// a keyframe on `quick` and the enter curve. Include it inside the
+/// surface's own rule. Reduced motion swaps to a fade-only keyframe, so the
+/// arrival is still seen.
+///
+/// ```scss
+/// .my-flyout {
+///   @include motion.popover-in(my-flyout-in, translateX(-4px));
+/// }
+/// ```
+///
+/// @param {String} $keyframes - A name for the generated keyframes.
+/// @param {*} $from [translateY(-4px)] - The travel it arrives from.
+@mixin popover-in($keyframes, $from: translateY(-4px)) {
+  animation: #{$keyframes} var(--nb-motion-quick) var(--nb-ease-enter);
+
+  @include reduced {
+    animation-name: #{$keyframes}-reduced;
+  }
+
+  @at-root {
+    @keyframes #{$keyframes} {
+      from {
+        opacity: 0;
+        transform: $from;
+      }
+    }
+
+    @keyframes #{$keyframes}-reduced {
+      from {
+        opacity: 0;
+      }
+    }
+  }
+}
+
+/// A dialog: a modal, a confirmation, a palette over a scrim. Arrives on
+/// `medium` and the enter curve, leaves on `short` and the exit curve, and
+/// the scrim and the content share that timing in each direction, so the
+/// whole thing reads as one surface. Reduced motion keeps the fades and
+/// drops the travel.
+///
+/// With `$content`, the transitioned element is the scrim and `$content` is
+/// the selector of the dialog inside it. Without it, one element does both.
+///
+/// ```scss
+/// @include motion.dialog(my-dialog, '.my-dialog__content');
+/// ```
+///
+/// @param {String} $name - The `<Transition>` name.
+/// @param {String} $content [null] - The dialog inside the scrim, if any.
+/// @param {*} $enter-from [scale(0.96) translateY(-8px)] - Where it arrives from.
+/// @param {*} $leave-to [scale(0.98) translateY(4px)] - Where it leaves to.
+@mixin dialog(
+  $name,
+  $content: null,
+  $enter-from: scale(0.96) translateY(-8px),
+  $leave-to: scale(0.98) translateY(4px)
+) {
+  @if $content {
+    .#{$name}-enter-active {
+      transition: opacity var(--nb-motion-medium) var(--nb-ease-enter);
+
+      #{$content} {
+        transition:
+          opacity var(--nb-motion-medium) var(--nb-ease-enter),
+          transform var(--nb-motion-medium) var(--nb-ease-enter);
+      }
+    }
+
+    .#{$name}-leave-active {
+      transition: opacity var(--nb-motion-short) var(--nb-ease-exit);
+
+      #{$content} {
+        transition:
+          opacity var(--nb-motion-short) var(--nb-ease-exit),
+          transform var(--nb-motion-short) var(--nb-ease-exit);
+      }
+    }
+
+    .#{$name}-enter-from {
+      opacity: 0;
+
+      #{$content} {
+        opacity: 0;
+        transform: $enter-from;
+      }
+    }
+
+    .#{$name}-leave-to {
+      opacity: 0;
+
+      #{$content} {
+        opacity: 0;
+        transform: $leave-to;
+      }
+    }
+
+    @include reduced {
+      .#{$name}-enter-from,
+      .#{$name}-leave-to {
+        #{$content} {
+          transform: none;
+        }
+      }
+    }
+  } @else {
+    .#{$name}-enter-active {
+      transition:
+        opacity var(--nb-motion-medium) var(--nb-ease-enter),
+        transform var(--nb-motion-medium) var(--nb-ease-enter);
+    }
+
+    .#{$name}-leave-active {
+      transition:
+        opacity var(--nb-motion-short) var(--nb-ease-exit),
+        transform var(--nb-motion-short) var(--nb-ease-exit);
+    }
+
+    .#{$name}-enter-from {
+      opacity: 0;
+      transform: $enter-from;
+    }
+
+    .#{$name}-leave-to {
+      opacity: 0;
+      transform: $leave-to;
+    }
+
+    @include reduced {
+      .#{$name}-enter-from,
+      .#{$name}-leave-to {
+        transform: none;
+      }
+    }
+  }
+}
+
+/// A disclosure: a section that opens in place below its header (an
+/// accordion body, an expanded row). The height grows as grid tracks, 0fr to
+/// 1fr, so nothing has to be measured, on `medium` and the standard curve in
+/// both directions: the header stays, so the section is on screen before and
+/// after rather than leaving. Reduced motion drops the height change and
+/// keeps the fade.
+///
+/// The transitioned element becomes a one-track grid, and its single child
+/// is the content, clipped while it grows:
+///
+/// ```html
+/// <Transition name="my-section">
+///   <div v-if="open"><div>...content...</div></div>
+/// </Transition>
+/// ```
+///
+/// @param {String} $name - The `<Transition>` name.
+@mixin disclosure($name) {
+  .#{$name}-enter-active,
+  .#{$name}-leave-active {
+    display: grid;
+    transition:
+      grid-template-rows var(--nb-motion-medium) var(--nb-ease-standard),
+      opacity var(--nb-motion-medium) var(--nb-ease-standard);
+
+    > * {
+      min-height: 0;
+      overflow: hidden;
+    }
+  }
+
+  .#{$name}-enter-from,
+  .#{$name}-leave-to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+
+  .#{$name}-enter-to,
+  .#{$name}-leave-from {
+    grid-template-rows: 1fr;
+  }
+
+  @include reduced {
+    .#{$name}-enter-active,
+    .#{$name}-leave-active {
+      transition: opacity var(--nb-motion-medium) var(--nb-ease-standard);
+    }
   }
 }

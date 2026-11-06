@@ -1493,24 +1493,7 @@ defineExpose({ show, close, toggle, isOpen, unreadCount })
 
 // Arrives from its bell (enter curve, quick) and fades away (exit curve,
 // micro). The direction of the rise follows the placement.
-.nb-notification-center-pop-enter-active {
-  transition:
-    opacity var(--nb-motion-quick) var(--nb-ease-enter),
-    transform var(--nb-motion-quick) var(--nb-ease-enter);
-}
-
-.nb-notification-center-pop-leave-active {
-  transition: opacity var(--nb-motion-micro) var(--nb-ease-exit);
-}
-
-.nb-notification-center-pop-enter-from {
-  opacity: 0;
-  transform: translateY(-4px);
-}
-
-.nb-notification-center-pop-leave-to {
-  opacity: 0;
-}
+@include motion.popover(nb-notification-center-pop);
 
 .nb-notification-center__panel--above.nb-notification-center-pop-enter-from {
   transform: translateY(4px);
@@ -1521,8 +1504,13 @@ defineExpose({ show, close, toggle, isOpen, unreadCount })
   transform: translateX(-4px);
 }
 
+// The placement variants above, and the phone sheet's rise, out-rank the
+// mixin's own reduced rule, so they are cancelled here by name.
 @include motion.reduced {
-  .nb-notification-center-pop-enter-from {
+  .nb-notification-center__panel--above.nb-notification-center-pop-enter-from,
+  .nb-notification-center__panel--beside.nb-notification-center-pop-enter-from,
+  .nb-notification-center__panel--sheet.nb-notification-center-pop-enter-from,
+  .nb-notification-center__panel--sheet.nb-notification-center-pop-leave-to {
     transform: none;
   }
 }
