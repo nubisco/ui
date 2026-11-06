@@ -135,5 +135,5 @@ import '@nubisco/ui/css'
 
 - [Showcase](/showcase): see all components in action
 - [Theming](/theming): customise colors, spacing, and type for your brand
-- [Grid](/components/grid/overview): understand the layout system
+- [Grid](/components/grid/usage): understand the layout system
 - [Components](/components/button/usage): browse the full component library

@@ -54,7 +54,7 @@ and the decisions behind it, are in
   </NbGrid>
 </preview>
 
-[Full Grid documentation →](/components/grid/overview)
+[Full Grid documentation →](/components/grid/usage)
 
 ---
 
