@@ -27,14 +27,14 @@
               size="sm"
               variant="ghost"
               icon="x"
-              aria-label="Close"
+              :aria-label="nbStrings.modalClose"
               :disabled="closeDisabled"
               @click="emit('close')"
             />
             <button
               v-else
               class="nb-modal--close"
-              aria-label="Close"
+              :aria-label="nbStrings.modalClose"
               :disabled="closeDisabled"
               :aria-disabled="closeDisabled ? 'true' : undefined"
               @click="emit('close')"
@@ -71,6 +71,7 @@
 </template>
 
 <script setup lang="ts">
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import NbIcon from './Icon.vue'
 import NbButton from './Button.vue'
 import NbGrid from './Grid.vue'
@@ -94,6 +95,8 @@ import { useFocusTrap } from '@/composables/useFocusTrap.composable'
 import { useVisualViewportVar } from '@/composables/useVisualViewportVar.composable'
 import { floatingSelector } from './Confirm.env'
 import type { IModalProps } from './Modal.d'
+
+const nbStrings = useNbStrings()
 
 const props = withDefaults(defineProps<IModalProps>(), {
   title: undefined,

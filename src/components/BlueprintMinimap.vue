@@ -6,7 +6,7 @@
     :height="height"
     :viewBox="`0 0 ${width} ${height}`"
     role="img"
-    aria-label="Blueprint minimap"
+    :aria-label="nbStrings.blueprintMinimap"
     @pointerdown="onPointerDown"
     @pointermove="onPointerMove"
     @pointerup="onPointerUp"
@@ -45,10 +45,13 @@
 </template>
 
 <script setup lang="ts">
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { computed, ref } from 'vue'
 import type { IBlueprintCard } from './Blueprint.types'
 import type { IBlueprintMinimapProps } from './BlueprintMinimap.d'
 import { useBlueprint } from '../composables/useBlueprint.composable'
+
+const nbStrings = useNbStrings()
 
 const DEFAULT_W = 220
 const DEFAULT_H = 120

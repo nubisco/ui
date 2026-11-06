@@ -12,7 +12,7 @@
         class="nb-chart__svg"
         :class="{ 'nb-chart__svg--selectable': isSelectable() }"
         :role="isSelectable() ? 'group' : 'img'"
-        :aria-label="title || 'Bar chart'"
+        :aria-label="title || nbStrings.chartBar"
         @mouseleave="hoverIndex = null"
       >
         <!-- Gridlines follow the value axis, so they run across the plot in
@@ -146,6 +146,7 @@
 </template>
 
 <script setup lang="ts">
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { computed, getCurrentInstance, ref } from 'vue'
 import ChartFrame from './shared/ChartFrame.vue'
 import ChartLegend from './shared/ChartLegend.vue'
@@ -155,6 +156,8 @@ import { colorAt, DEFAULT_PALETTE } from './shared/palette'
 import { useChartSize } from './shared/useChartSize'
 import type { IBarChartProps } from './BarChart.d'
 import type { IChartMargins, IChartSeriesSelection } from './shared/types.d'
+
+const nbStrings = useNbStrings()
 
 const props = withDefaults(defineProps<IBarChartProps>(), {
   title: undefined,

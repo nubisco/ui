@@ -19,14 +19,14 @@ describe('NbPagination', () => {
     const wrapper = mountPagination({ page: 2, pageSize: 10, total: 95 })
     expect(
       wrapper.find('.nb-data-table__range, .nb-pagination__range').text(),
-    ).toContain('11–20 of 95 items')
+    ).toContain('11-20 of 95 items')
     expect(wrapper.find('.nb-pagination__page-of').text()).toBe('Page 2 of 10')
   })
 
   it('shows 0 range when total is zero', () => {
     const wrapper = mountPagination({ total: 0 })
     expect(wrapper.find('.nb-pagination__range').text()).toContain(
-      '0–0 of 0 items',
+      '0-0 of 0 items',
     )
   })
 

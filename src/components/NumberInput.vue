@@ -49,7 +49,7 @@
             class="nb-number-input__stepper"
             :class="{ 'nb-number-input__stepper--at-limit': isAtMin }"
             :disabled="disabled"
-            aria-label="Decrease"
+            :aria-label="nbStrings.numberInputDecrease"
             @mousedown.prevent
             @click="decrement"
           >
@@ -60,7 +60,7 @@
             class="nb-number-input__stepper"
             :class="{ 'nb-number-input__stepper--at-limit': isAtMax }"
             :disabled="disabled"
-            aria-label="Increase"
+            :aria-label="nbStrings.numberInputIncrease"
             @mousedown.prevent
             @click="increment"
           >
@@ -150,7 +150,7 @@
               class="nb-number-input__stepper"
               :class="{ 'nb-number-input__stepper--at-limit': isAtMin }"
               :disabled="disabled"
-              aria-label="Decrease"
+              :aria-label="nbStrings.numberInputDecrease"
               @mousedown.prevent
               @click="decrement"
             >
@@ -161,7 +161,7 @@
               class="nb-number-input__stepper"
               :class="{ 'nb-number-input__stepper--at-limit': isAtMax }"
               :disabled="disabled"
-              aria-label="Increase"
+              :aria-label="nbStrings.numberInputIncrease"
               @mousedown.prevent
               @click="increment"
             >
@@ -188,11 +188,14 @@
 </template>
 
 <script setup lang="ts">
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { computed, onMounted, ref, useId, watch } from 'vue'
 import type { IFieldComponent } from '@/types/Props.d'
 import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
 import NbIcon from './Icon.vue'
+
+const nbStrings = useNbStrings()
 
 export interface INumberInputProps extends IFieldComponent {
   modelValue?: number | null

@@ -11,7 +11,7 @@
         :height="size.height"
         class="nb-chart__svg"
         role="img"
-        :aria-label="title || 'Line chart'"
+        :aria-label="title || nbStrings.chartLine"
         @mouseleave="hoverIndex = null"
         @mousemove="onMove"
       >
@@ -118,6 +118,7 @@
 </template>
 
 <script setup lang="ts">
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import {
   computed,
   onBeforeUnmount,
@@ -135,6 +136,8 @@ import { useChartSize } from './shared/useChartSize'
 import { layoutXLabels } from './shared/xLabels'
 import type { ILineChartProps } from './LineChart.d'
 import type { IChartPoint } from './shared/types.d'
+
+const nbStrings = useNbStrings()
 
 const props = withDefaults(defineProps<ILineChartProps>(), {
   title: undefined,

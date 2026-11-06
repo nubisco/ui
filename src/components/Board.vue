@@ -141,10 +141,10 @@
         v-if="showBatch"
         class="nb-board__batch"
         role="region"
-        aria-label="Actions for the selected cards"
+        :aria-label="nbStrings.boardSelectionActions"
       >
         <span class="nb-board__batch-count">
-          {{ selectedIds.length }} selected
+          {{ nbStrings.selectionCount(selectedIds.length) }}
         </span>
         <div class="nb-board__batch-actions">
           <slot
@@ -162,7 +162,7 @@
           variant="ghost"
           size="sm"
           icon="x"
-          aria-label="Clear selection"
+          :aria-label="nbStrings.boardClearSelection"
           @click="clearSelection"
         />
         <NbButton
@@ -198,6 +198,7 @@
 </template>
 
 <script setup lang="ts">
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { computed, nextTick, ref, useSlots } from 'vue'
 import NbButton from './Button.vue'
 import type {
@@ -213,6 +214,8 @@ import type {
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import { useStableId } from '@/composables/useStableId.composable'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
+
+const nbStrings = useNbStrings()
 
 const props = withDefaults(defineProps<IBoardProps>(), {
   lanes: undefined,
@@ -264,8 +267,8 @@ function setSelection(ids: string[]): void {
   emit('update:selected', ids)
   announcement.value =
     ids.length === 0
-      ? 'Selection cleared'
-      : `${ids.length} ${ids.length === 1 ? 'card' : 'cards'} selected`
+      ? nbStrings.value.boardSelectionCleared
+      : nbStrings.value.boardCardsSelected(ids.length)
 }
 
 function clearSelection(): void {

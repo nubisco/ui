@@ -56,7 +56,7 @@
           'nb-blueprint-card__port-combined--connected': anyInputConnected,
           'nb-blueprint-card__port-combined--active': anyInputActive,
         }"
-        :title="`${inputPins.length} input${inputPins.length === 1 ? '' : 's'}`"
+        :title="nbStrings.blueprintInputs(inputPins.length)"
       />
       <div
         v-for="pin in inputPins"
@@ -240,7 +240,7 @@
             v-if="removable"
             type="button"
             class="nb-blueprint-card__remove"
-            title="Remove"
+            :title="nbStrings.blueprintRemoveCard"
             :aria-label="`Remove ${title}`"
             @mousedown.stop
             @click.stop="$emit('remove', id)"
@@ -297,7 +297,7 @@
           'nb-blueprint-card__port-combined--connected': anyOutputConnected,
           'nb-blueprint-card__port-combined--active': anyOutputActive,
         }"
-        :title="`${outputPins.length} output${outputPins.length === 1 ? '' : 's'}`"
+        :title="nbStrings.blueprintOutputs(outputPins.length)"
       />
       <div
         v-for="pin in outputPins"
@@ -365,6 +365,7 @@
 </template>
 
 <script setup lang="ts">
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { computed, inject, onScopeDispose, ref, watch } from 'vue'
 import type {
   IBlueprintCardProps,
@@ -379,6 +380,8 @@ import type {
 import type { IBlueprintCardPortEvent } from './Blueprint.types'
 import { NB_BLUEPRINT_CONTEXT } from './Blueprint.context'
 import { useReducedMotion } from '../composables/useReducedMotion.composable'
+
+const nbStrings = useNbStrings()
 
 const props = withDefaults(defineProps<IBlueprintCardProps>(), {
   color: undefined,

@@ -1,7 +1,7 @@
 <template>
   <nav
     :class="['nb-pagination', `nb-pagination--${size}`]"
-    :aria-label="'Pagination'"
+    :aria-label="nbStrings.paginationLabel"
   >
     <div class="nb-pagination__left">
       <!-- <label> wrapping the control: NbSelect's trigger is a <button>,
@@ -18,13 +18,13 @@
         />
       </label>
       <span class="nb-pagination__range" aria-live="polite">
-        {{ rangeStart }}–{{ rangeEnd }} of {{ total }} {{ itemLabel }}
+        {{ nbStrings.paginationRange(rangeStart, rangeEnd, total, itemLabel) }}
       </span>
     </div>
 
     <div class="nb-pagination__right">
       <span class="nb-pagination__page-of">
-        Page {{ currentPage }} of {{ totalPages }}
+        {{ nbStrings.paginationPageOf(currentPage, totalPages) }}
       </span>
       <NbButton
         class="nb-pagination__nav"
@@ -32,7 +32,7 @@
         :size="controlSize"
         icon="caret-left"
         :disabled="disabled || currentPage <= 1"
-        aria-label="Previous page"
+        :aria-label="nbStrings.paginationPrevious"
         @click="goTo(currentPage - 1)"
       />
       <NbButton
@@ -41,7 +41,7 @@
         :size="controlSize"
         icon="caret-right"
         :disabled="disabled || currentPage >= totalPages"
-        aria-label="Next page"
+        :aria-label="nbStrings.paginationNext"
         @click="goTo(currentPage + 1)"
       />
     </div>
@@ -49,12 +49,15 @@
 </template>
 
 <script setup lang="ts">
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { computed } from 'vue'
 import { ESizeShort } from '@/types/Size.d'
 import { IPaginationProps } from './Pagination.d'
 import type { ISelectOption } from './Select.d'
 import NbButton from './Button.vue'
 import NbSelect from './Select.vue'
+
+const nbStrings = useNbStrings()
 
 const props = withDefaults(defineProps<IPaginationProps>(), {
   pageSizeOptions: () => [10, 20, 30, 40, 50],

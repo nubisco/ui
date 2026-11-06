@@ -693,6 +693,23 @@ export {
   NB_PHONE_TOUCH_QUERY,
 } from './composables/usePhoneLayout.composable'
 export { useContextMenu } from './composables/useContextMenu.composable'
+// The catalogue of strings the library renders without a prop (accessible
+// names, icon-button titles, chart fallbacks, toast status words), with en-US
+// defaults. Props that already carry a label still win over it.
+export {
+  provideNbStrings,
+  useNbStrings,
+  resetNbStrings,
+  NB_DEFAULT_STRINGS,
+  NB_STRINGS_KEY,
+} from './composables/useNbStrings.composable'
+export type {
+  INbStrings,
+  TNbStringsOverrides,
+} from './composables/useNbStrings.composable'
+// Plural forms through Intl.PluralRules, never a ternary on `count === 1`.
+export { pluralize } from './utils/pluralize.helper'
+export type { IPluralForms } from './utils/pluralize.helper'
 export { useInlineLoading } from './composables/useInlineLoading.composable'
 export type {
   TInlineLoadingStatus,

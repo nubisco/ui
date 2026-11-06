@@ -46,10 +46,10 @@
           v-if="showBatchBar"
           class="nb-data-table__batch"
           role="region"
-          aria-label="Table batch actions"
+          :aria-label="nbStrings.dataTableBatchActions"
         >
           <span class="nb-data-table__batch-count">
-            {{ selectedCount }} selected
+            {{ nbStrings.selectionCount(selectedCount) }}
           </span>
           <div class="nb-data-table__batch-actions">
             <slot
@@ -110,7 +110,7 @@
                 v-if="selectable === 'multiple'"
                 :model-value="allSelected"
                 :indeterminate="someSelected"
-                aria-label="Select all rows"
+                :aria-label="nbStrings.dataTableSelectAll"
                 @update:model-value="toggleAll"
               />
             </th>
@@ -226,7 +226,7 @@
               class="nb-data-table__state nb-data-table__state--empty"
             >
               <slot name="empty">
-                <span>{{ emptyMessage || 'No data to display' }}</span>
+                <span>{{ emptyMessage || nbStrings.dataTableEmpty }}</span>
               </slot>
             </td>
           </tr>
@@ -286,7 +286,7 @@
                   <NbCheckbox
                     v-if="selectable === 'multiple'"
                     :model-value="isSelected(row)"
-                    :aria-label="`Select row ${rowIndex + 1}`"
+                    :aria-label="nbStrings.dataTableSelectRow(rowIndex + 1)"
                     @update:model-value="toggleRow(row, rowIndex)"
                   />
                   <input
@@ -295,7 +295,7 @@
                     class="nb-data-table__radio"
                     :name="radioName"
                     :checked="isSelected(row)"
-                    :aria-label="`Select row ${rowIndex + 1}`"
+                    :aria-label="nbStrings.dataTableSelectRow(rowIndex + 1)"
                     @change="selectSingle(row)"
                   />
                 </td>
@@ -380,6 +380,7 @@
   lang="ts"
   generic="T extends Record<string, unknown> = Record<string, unknown>"
 >
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import type { TIconSource } from '@/types/Glyph.d'
 import * as iconArrowsDownUp from '@nubisco/ui/icons/arrows-down-up'
 import * as iconArrowUp from '@nubisco/ui/icons/arrow-up'
@@ -406,6 +407,8 @@ import NbButton from './Button.vue'
 import NbGrid from './Grid.vue'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
+
+const nbStrings = useNbStrings()
 
 const props = withDefaults(defineProps<IDataTableProps<T>>(), {
   size: 'lg',
