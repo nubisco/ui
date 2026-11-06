@@ -37,6 +37,7 @@ import DataTable from './components/DataTable.vue'
 import DatePicker from './components/DatePicker.vue'
 import DefinitionList from './components/DefinitionList.vue'
 import DefinitionListItem from './components/DefinitionListItem.vue'
+import PageHeader from './components/PageHeader.vue'
 import StructuredList from './components/StructuredList.vue'
 import ContainedList from './components/ContainedList.vue'
 import ContainedListItem from './components/ContainedListItem.vue'
@@ -153,6 +154,7 @@ declare module 'vue' {
     NbDatePicker: typeof DatePicker
     NbDefinitionList: typeof DefinitionList
     NbDefinitionListItem: typeof DefinitionListItem
+    NbPageHeader: typeof PageHeader
     NbStructuredList: typeof StructuredList
     NbContainedList: typeof ContainedList
     NbContainedListItem: typeof ContainedListItem

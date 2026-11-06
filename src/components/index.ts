@@ -26,6 +26,7 @@ import NbColorStrip from './ColorStrip.vue'
 import NbDataTable from './DataTable.vue'
 import NbDefinitionList from './DefinitionList.vue'
 import NbDefinitionListItem from './DefinitionListItem.vue'
+import NbPageHeader from './PageHeader.vue'
 import NbStructuredList from './StructuredList.vue'
 import NbContainedList from './ContainedList.vue'
 import NbContainedListItem from './ContainedListItem.vue'
@@ -134,6 +135,7 @@ const components = {
   NbCheckboxGroup,
   NbDefinitionList,
   NbDefinitionListItem,
+  NbPageHeader,
   NbStructuredList,
   NbContainedList,
   NbContainedListItem,
