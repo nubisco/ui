@@ -37,6 +37,8 @@ import DataTable from './components/DataTable.vue'
 import DatePicker from './components/DatePicker.vue'
 import DefinitionList from './components/DefinitionList.vue'
 import DefinitionListItem from './components/DefinitionListItem.vue'
+import ContainedList from './components/ContainedList.vue'
+import ContainedListItem from './components/ContainedListItem.vue'
 import DragHandle from './components/DragHandle.vue'
 import EmptyState from './components/EmptyState.vue'
 import Field from './components/Field.vue'
@@ -150,6 +152,8 @@ declare module 'vue' {
     NbDatePicker: typeof DatePicker
     NbDefinitionList: typeof DefinitionList
     NbDefinitionListItem: typeof DefinitionListItem
+    NbContainedList: typeof ContainedList
+    NbContainedListItem: typeof ContainedListItem
     NbDragHandle: typeof DragHandle
     NbEmptyState: typeof EmptyState
     NbField: typeof Field

@@ -26,6 +26,8 @@ import NbColorStrip from './ColorStrip.vue'
 import NbDataTable from './DataTable.vue'
 import NbDefinitionList from './DefinitionList.vue'
 import NbDefinitionListItem from './DefinitionListItem.vue'
+import NbContainedList from './ContainedList.vue'
+import NbContainedListItem from './ContainedListItem.vue'
 import NbDragHandle from './DragHandle.vue'
 import NbEmptyState from './EmptyState.vue'
 import NbPagination from './Pagination.vue'
@@ -131,6 +133,8 @@ const components = {
   NbCheckboxGroup,
   NbDefinitionList,
   NbDefinitionListItem,
+  NbContainedList,
+  NbContainedListItem,
   NbDragHandle,
   NbEmptyState,
   NbReorderList,
