@@ -238,7 +238,7 @@ onMounted(() => {
   // visibly wider than the buttons beside it.
   box-sizing: border-box;
   font-family: inherit;
-  font-weight: var(--nb-font-weight-semibold, 600);
+  font-weight: var(--nb-font-weight-regular, 400);
   cursor: pointer;
   transition:
     background var(--nb-motion-short),
