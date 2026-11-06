@@ -194,6 +194,9 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
     text: 'Patterns',
     items: [
       { text: 'The app frame', link: '/patterns/app-frame' },
+      { text: 'Dashboard', link: '/patterns/dashboard' },
+      { text: 'Settings', link: '/patterns/settings' },
+      { text: 'Record', link: '/patterns/record' },
       { text: 'Building a form', link: '/patterns/forms' },
       { text: 'Building an inspector', link: '/patterns/inspectors' },
       { text: 'Dialogs and confirmation', link: '/patterns/dialogs' },
