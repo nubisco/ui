@@ -46,9 +46,10 @@
       min-width: $span;
     }
   }
-  @each $column in common.$var-columns-bottom {
+  // Logical, so a shift mirrors under right-to-left. Identical in LTR.
+  @each $column in common.$var-columns-shift {
     &.#{$prefix}shift-#{$column} {
-      margin-left: calc((100% * #{$column}) / #{grid.$grid-columns});
+      margin-inline-start: calc((100% * #{$column}) / #{grid.$grid-columns});
     }
   }
 
