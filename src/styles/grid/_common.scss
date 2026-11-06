@@ -44,3 +44,6 @@ $var-columns-bottom: remove-nth(
   $var-columns-top,
   list.length($var-columns-top)
 );
+// 0 to 15: a shift of 0 is a real rule, so a breakpoint map can take a shift
+// back off (`{ sm: 4, lg: 0 }`) instead of leaving a class nothing defines.
+$var-columns-shift: remove-nth($var-columns, list.length($var-columns));

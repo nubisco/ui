@@ -84,3 +84,29 @@ describe('NbGrid fractions', () => {
     expect(validator(8)).toBe(true)
   })
 })
+
+const gridCss = compileString('@use "grid"; @include grid.grid;', {
+  loadPaths: [resolve(__dirname, '../src/styles')],
+}).css
+
+function gridRule(selector: string): string {
+  const at = gridCss.indexOf(`${selector} {`)
+  expect(at, selector).toBeGreaterThanOrEqual(0)
+  return gridCss.slice(at, gridCss.indexOf('}', at))
+}
+
+describe('NbGrid shift', () => {
+  // Grid.d.ts allows 0 and the docs demo it, but no rule was generated, so
+  // `{ sm: 4, lg: 0 }` left the 4-column shift in place at lg.
+  it('generates shift-0, at the base and at a breakpoint', () => {
+    expect(gridRule('.nb-grid.shift-0')).toContain('margin-inline-start')
+    expect(gridRule('.nb-grid.lg-shift-0')).toContain('margin-inline-start')
+    expect(gridCss).toContain('.nb-grid.shift-15 {')
+    expect(gridCss).not.toContain('.nb-grid.shift-16 {')
+  })
+
+  it('shifts on the logical start edge so it mirrors under RTL', () => {
+    expect(gridRule('.nb-grid.shift-4')).toContain('margin-inline-start')
+    expect(gridRule('.nb-grid.shift-4')).not.toContain('margin-left')
+  })
+})
