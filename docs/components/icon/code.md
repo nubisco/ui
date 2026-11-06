@@ -148,6 +148,20 @@ Named sizes map to fixed pixel values:
 
 You can also pass any number: `:size="32"` sets both width and height to 32px. String values other than the named sizes are passed directly as CSS (`size="1.5rem"` works too).
 
+## Animations
+
+`animation` takes one of seventeen gestures (`refresh`, `cog`, `hourglass`,
+`wobble`, `heart` and the rest; the gallery plays them all), and
+`animation-mode` plays it `always` or only on `hover`. An animated icon stays
+the size of a static one: only the gesture moves. The timing reads
+`--nb-motion-loop` and `--nb-ease-standard`, so a product that retunes its
+motion tokens retunes these too.
+
+Under `prefers-reduced-motion: reduce` the travel stops. The three that say
+"working" (`refresh`, `cog`, `hourglass`) keep looping as an opacity breath
+instead, because a frozen loading glyph reads as a hung page. The rest stand
+still. See [Motion accessibility](/principles/motion/accessibility).
+
 ## Events
 
 | Event   | Payload      | Description                           |
