@@ -341,6 +341,7 @@ $_max-step: 900;
     @include accent.subtle(39%);
     @include accent.selected-edge(100%);
     @include accent.focus-ring;
+    @include accent.focus-inverse(light);
     @include accent.link;
     @include accent.shell;
   }
@@ -350,6 +351,7 @@ $_max-step: 900;
     @include accent.subtle(50%);
     @include accent.selected-edge(70%);
     @include accent.focus-ring(70%);
+    @include accent.focus-inverse(dark);
     @include accent.link;
   }
 }
