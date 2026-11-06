@@ -106,6 +106,13 @@ export type {
   IDefinitionListItem,
   TDefinitionListLayout,
 } from './components/DefinitionList.d'
+export { default as NbContainedList } from './components/ContainedList.vue'
+export type {
+  IContainedListProps,
+  IContainedListItemProps,
+  TContainedListSize,
+} from './components/ContainedList.d'
+export { default as NbContainedListItem } from './components/ContainedListItem.vue'
 export { default as NbEmptyState } from './components/EmptyState.vue'
 export type {
   IEmptyStateProps,

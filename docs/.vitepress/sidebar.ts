@@ -98,6 +98,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Color Strip', link: '/components/color-strip/usage' },
       { text: 'Command Palette', link: '/components/command-palette/usage' },
       { text: 'Confirm', link: '/components/confirm/usage' },
+      { text: 'Contained List', link: '/components/contained-list/usage' },
       { text: 'Copy Button', link: '/components/copy-button/usage' },
       { text: 'Data Table', link: '/components/data-table/usage' },
       { text: 'Date Picker', link: '/components/date-picker/usage' },
