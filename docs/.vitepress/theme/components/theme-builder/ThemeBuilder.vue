@@ -355,8 +355,9 @@
  * file disagree with the preview.
  */
 import { computed, ref } from 'vue'
-import ContentTabs from '@nubisco/docs-sdk/plugins/tabs/components/ContentTabs.vue'
-import ContentTab from '@nubisco/docs-sdk/plugins/tabs/components/ContentTab.vue'
+// ContentTabs and ContentTab are the globally registered copies from the
+// docs-sdk tabs plugin. Importing them here by path loads a second copy, and
+// ContentTabs finds its tabs by component identity, so it would find none.
 import {
   GROUPS,
   SAMPLE_THEMES,
