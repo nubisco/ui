@@ -123,7 +123,6 @@ const iconMap = {
     }
   }
 
-
   &__tooltip {
     position: absolute;
     bottom: calc(100% + 8px);

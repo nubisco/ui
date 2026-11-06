@@ -77,13 +77,15 @@ describe('the two halves', () => {
 })
 
 describe('a named theme', () => {
-  const { css } = sass.compileString(
-    `@use 'theme-api' as nb;
-     @include nb.app-theme('probe', $category: 'engineers');`,
-    { loadPaths: [resolve(__dirname, '../src/styles')], style: 'expanded' },
-  )
-
   it('re-emits the lifted ring in its dark scope', () => {
+    // Compiled inside the test, not while the file is collected: a second
+    // embedded-Sass compile during collection crashed the compiler's message
+    // channel in some checkouts.
+    const { css } = sass.compileString(
+      `@use 'theme-api' as nb;
+       @include nb.app-theme('probe', $category: 'engineers');`,
+      { loadPaths: [resolve(__dirname, '../src/styles')], style: 'expanded' },
+    )
     // A `:root` declaration freezes to the root primary (see _accent.scss),
     // so the themed dark scope has to carry its own.
     const darkBlocks = [

@@ -61,6 +61,7 @@ const PRIVATE_COMPONENTS = new Set<string>([
   'NbBlueprintPixiRenderer',
   'NbSidebarVariantScope',
   'NbSurfaceLayerScope',
+  'NbPrimaryActionScope',
   'NbNotificationCenterItem',
   'NbStepperStep',
   'NbTableOfContentsList',
