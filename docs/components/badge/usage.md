@@ -76,4 +76,13 @@ The old washes measured 1.88:1 (orange) to 4.45:1 (blue) at this size in light. 
   <NbBadge variant="danger" size="sm" icon="calendar-blank">2 days late</NbBadge>
 </preview>
 
+## Content
+
+- **A status badge uses one of the nine states** in [Status indicators](/patterns/status-indicators): `Draft`, `Pending`, `Running`, `Active`, `Attention`, `Paused`, `Failed`, `Inactive`, `Unknown`. Map your product's words onto them.
+- **One word, sentence case, no period.** Type `Active`, never `ACTIVE`: the styling can set the case, the text cannot take it back.
+- **Colour is never the only signal.** The word carries the state, so two badges that differ only in colour are a bug.
+- **A placeholder badge says what is missing** (`No labels`), and an interactive one is named for what pressing it does.
+
+Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+
 <!--@include: ./_shared.md-->

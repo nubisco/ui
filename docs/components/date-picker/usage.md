@@ -18,4 +18,13 @@ pageTabs: ['usage', 'code', 'accessibility']
   />
 </preview>
 
+## Content
+
+- **The label names the date, not the widget**: `Start date`, `Due`, never `Date picker`.
+- **Never type a date format into copy.** The field formats for its `locale` (then `navigator.language`, then `en`). A placeholder, if any, is the shape of the value for that locale.
+- **A range has two labels that read as a pair**: `Start date` and `End date`.
+- **An error names the allowed range** with real dates: `Choose a date after March 1, 2026.`
+
+Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+
 <!--@include: ./_shared.md-->

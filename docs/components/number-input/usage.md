@@ -35,4 +35,12 @@ const quantity = ref(1)
   <NbNumberInput v-model="value" label="Editors" disabled />
 </preview>
 
+## Content
+
+- **The label carries the unit** when the field does not show one: `Timeout (seconds)`, `Width (px)`.
+- **An error names the constraint with its number**: `Enter a number from 1 to 100.` Not `Invalid value`.
+- **The stepper buttons are named `Decrease` and `Increase`** by default. Translate them through the strings catalogue, not per field.
+
+Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
+
 <!--@include: ./_shared.md-->

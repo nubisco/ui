@@ -31,3 +31,12 @@ For a small control such as a switch, `control="fit"` lets the label run wide an
 ## In an inspector
 
 Inside a `.nb-inspector` container, `NbField` picks up the inspector treatment automatically — a compact spine, sliders that stack with full-width tracks, compact numeric steppers, and section highlighting. See [Building an inspector](/patterns/inspectors).
+
+## Content
+
+- **The label is one to three words.** It ellipsizes at the label column width, and the full text survives only in `title`, which touch users never see.
+- **`hint` is guidance before the answer**, a sentence with a period, or a fragment without one. It is where steady requirements live, not in a placeholder.
+- **Mark required, not optional**, and never both in one form.
+- **The error replaces the hint and names the fix**, in two lines at most.
+
+Casing, punctuation and tone are the fleet's, not this component's: [Writing style](/content/writing-style) is the source.
