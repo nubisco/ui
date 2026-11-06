@@ -60,6 +60,44 @@ function measureOurs(get, label) {
     primary: r2(ratio(text, surface[i])),
     muted: r2(ratio(textMuted, surface[i])),
   }))
+  // The per-plane set `.nb-layer-N` re-points (see `variables/_layers.scss`).
+  const planes = LAYERS.map((i) => {
+    const at = (role) => get(`--nb-c-layer-${role}-${i}`)
+    const fieldFill = at('field')
+    const fieldRule = at('field-border')
+    const strong = at('border-strong')
+    const states = {}
+    for (const role of [
+      'accent',
+      'accent-hover',
+      'selected',
+      'selected-hover',
+      'active',
+    ]) {
+      const c = at(role)
+      states[role] = {
+        color: c,
+        deltaL: r2(dL(c, surface[i])),
+        vsHoverDL: r2(dL(c, hover[i])),
+        muted: r2(ratio(textMuted, c)),
+      }
+    }
+    return {
+      layer: i,
+      field: {
+        color: fieldFill,
+        vsPlane: r2(ratio(fieldFill, surface[i])),
+        deltaL: r2(dL(fieldFill, surface[i])),
+      },
+      fieldBorder: {
+        color: fieldRule,
+        vsFill: r2(ratio(fieldRule, fieldFill)),
+        vsPlane: r2(ratio(fieldRule, surface[i])),
+      },
+      borderStrong: { color: strong, vsOwn: r2(ratio(strong, surface[i])) },
+      states,
+    }
+  })
   return {
     label,
     surface,
@@ -67,6 +105,7 @@ function measureOurs(get, label) {
     borders,
     hovers,
     texts,
+    planes,
     field: { color: field, vsLayer1: r2(ratio(field, surface[1])) },
   }
 }
@@ -173,6 +212,19 @@ function print(m) {
   for (const t of m.texts)
     console.log(`    L${t.layer}   primary ${t.primary}   secondary ${t.muted}`)
   console.log(`  field-01 ${m.field.color}   vs layer-1 ${m.field.vsLayer1}`)
+  if (!m.planes) return
+  console.log('  per plane (what .nb-layer-N re-points):')
+  for (const p of m.planes) {
+    console.log(
+      `    L${p.layer} field ${p.field.color} vs plane ${p.field.vsPlane} dL* ${p.field.deltaL}` +
+        `   rule ${p.fieldBorder.color} vs fill ${p.fieldBorder.vsFill} vs plane ${p.fieldBorder.vsPlane}` +
+        `   border-strong ${p.borderStrong.color} ${p.borderStrong.vsOwn}`,
+    )
+    for (const [role, st] of Object.entries(p.states))
+      console.log(
+        `       ${role.padEnd(15)} ${st.color}   dL* ${st.deltaL}   vs hover dL* ${st.vsHoverDL}   muted ${st.muted}`,
+      )
+  }
 }
 
 for (const k of ['light', 'dark']) print(report.ours[k])

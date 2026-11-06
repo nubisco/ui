@@ -273,6 +273,101 @@ describe.each(themes)('%s layer ramp', (theme) => {
     expect(t.fieldBg).not.toBe(t.surface[0])
   })
 
+  // ── the per-plane set ─────────────────────────────────────────────────────
+  //
+  // `.nb-layer-N` re-points a full set, not three tokens. Every role is
+  // measured on the plane it belongs to, in both themes.
+
+  const at = (role: string, level: number) => {
+    const value = resolvers[theme](`--nb-c-layer-${role}-${level}`)
+    expect(value, `${theme}: --nb-c-layer-${role}-${level}`).toBeTruthy()
+    return value as string
+  }
+  const STATES = [
+    'accent',
+    'accent-hover',
+    'selected',
+    'selected-hover',
+    'active',
+  ] as const
+
+  describe.each(LEVELS)('plane %i', (level) => {
+    it.each(STATES)('carries both text tiers at AAA on %s', (role) => {
+      const c = at(role, level)
+      expect(ratio(t.text, c)).toBeGreaterThanOrEqual(AAA)
+      expect(ratio(t.textMuted, c)).toBeGreaterThanOrEqual(AAA)
+      expect(ratio(t.textSubtle, c)).toBeGreaterThanOrEqual(AA)
+    })
+
+    it.each(STATES)('separates %s from its plane and its hover', (role) => {
+      const c = at(role, level)
+      expect(dL(c, t.surface[level])).toBeGreaterThanOrEqual(HOVER_MIN_DL)
+      // A selected row must never read as a hovered one.
+      expect(dL(c, t.hover[level])).toBeGreaterThanOrEqual(HOVER_MIN_SURFACE_DL)
+    })
+
+    it('keeps a selected row apart from a zebra stripe', () => {
+      expect(
+        dL(at('selected', level), at('accent', level)),
+      ).toBeGreaterThanOrEqual(HOVER_MIN_SURFACE_DL)
+    })
+
+    it('holds border-strong at 3:1 on its own plane', () => {
+      expect(
+        ratio(at('border-strong', level), t.surface[level]),
+      ).toBeGreaterThanOrEqual(STRONG_BORDER_MIN)
+    })
+
+    it('gives a field a fill boundary on its plane', () => {
+      // The defect: the dark field equalled layer-1, 1.00:1 in a layer-1 panel.
+      expect(dL(at('field', level), t.surface[level])).toBeGreaterThanOrEqual(
+        SURFACE_MIN_PAIR_DL,
+      )
+    })
+
+    it('carries text on the field: AAA for both tiers, AA for subtle', () => {
+      const f = at('field', level)
+      expect(ratio(t.text, f)).toBeGreaterThanOrEqual(AAA)
+      expect(ratio(t.textMuted, f)).toBeGreaterThanOrEqual(AAA)
+      expect(ratio(t.textSubtle, f)).toBeGreaterThanOrEqual(AA)
+    })
+
+    it('holds the field rule at 3:1 on the fill and on the plane', () => {
+      const rule = at('field-border', level)
+      expect(ratio(rule, at('field', level))).toBeGreaterThanOrEqual(
+        STRONG_BORDER_MIN,
+      )
+      expect(ratio(rule, t.surface[level])).toBeGreaterThanOrEqual(
+        STRONG_BORDER_MIN,
+      )
+    })
+
+    it('emits neutral integer hex for every per-plane value', () => {
+      for (const role of [
+        ...STATES,
+        'border-strong',
+        'field',
+        'field-border',
+      ]) {
+        const value = at(role, level)
+        expect(value, value).toMatch(/^#[0-9a-f]{6}$/i)
+        const [r, g, b] = parseColor(value) as number[]
+        expect(Math.max(r, g, b) - Math.min(r, g, b)).toBeLessThanOrEqual(
+          MAX_CHANNEL_SPREAD,
+        )
+      }
+    })
+  })
+
+  it('points the contextual tokens at plane 1 at the root', () => {
+    const get = resolvers[theme]
+    expect(get('--nb-c-field-bg')).toBe(at('field', 1))
+    expect(get('--nb-c-field-border')).toBe(at('field-border', 1))
+    expect(get('--nb-c-surface-selected')).toBe(at('selected', 1))
+    expect(get('--nb-c-surface-accent')).toBe(at('accent', 1))
+    expect(get('--nb-c-border-strong')).toBe(at('border-strong', 1))
+  })
+
   // ── emitted values ────────────────────────────────────────────────────────
 
   it('emits integer-channel hex for every layer token', () => {
