@@ -14,10 +14,13 @@
       class="nb-message__icon"
     />
     <span v-if="!props.iconOnly" class="nb-message__text"><slot /></span>
-    <!-- CSS-powered tooltip shown on hover in icon-only mode -->
+    <!-- CSS-powered tooltip shown on hover in icon-only mode. It wraps rather
+         than truncating, and the visually hidden copy is what the live region
+         reads, because the tooltip is hidden from assistive tech. -->
     <span v-if="props.iconOnly" class="nb-message__tooltip" aria-hidden="true"
       ><slot
     /></span>
+    <span v-if="props.iconOnly" class="nb-message__sr-text"><slot /></span>
   </div>
 </template>
 
@@ -93,6 +96,15 @@ const iconMap = {
     }
   }
 
+  &__sr-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
   &__tooltip {
     position: absolute;
     bottom: calc(100% + 8px);
@@ -104,10 +116,10 @@ const iconMap = {
     @include radius.surface(popover);
     font-size: var(--nb-type-body-sm-size);
     font-weight: 400;
-    white-space: nowrap;
+    width: max-content;
     max-width: 220px;
-    text-overflow: ellipsis;
-    overflow: hidden;
+    white-space: normal;
+    overflow-wrap: anywhere;
     opacity: 0;
     visibility: hidden;
     transform: translateX(-50%) translateY(4px);

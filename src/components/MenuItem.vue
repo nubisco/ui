@@ -39,7 +39,9 @@
       />
     </slot>
 
-    <span class="nb-menu-item__label">{{ label }}</span>
+    <span class="nb-menu-item__label" :title="label || undefined">{{
+      label
+    }}</span>
 
     <kbd v-if="shortcut" class="nb-menu-item__shortcut">{{ shortcut }}</kbd>
 

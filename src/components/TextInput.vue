@@ -153,6 +153,7 @@
             :for="inputId"
             class="nb-text-input__inner-label"
             :class="{ 'nb-text-input__inner-label--required': required }"
+            :title="label || undefined"
           >
             {{ label }}
             <span
