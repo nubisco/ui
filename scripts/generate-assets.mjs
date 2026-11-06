@@ -13,6 +13,8 @@
  * Output (git-ignored, copied into `dist/` by the build):
  *
  *   generated/icons/<name>.mjs     six weight exports, `regular` as default
+ *                                  (Phosphor, plus the house icons drawn in
+ *                                  src/assets/icons, see generateCustomIcons)
  *   generated/icons/all.mjs        lazy catalogue, registers itself globally
  *   generated/icons/catalog.mjs    name/tags/categories metadata, no artwork
  *   generated/flags/…              same shape, one weight per flag
@@ -124,6 +126,13 @@ function generateIcons() {
     )
   }
 
+  const custom = generateCustomIcons(
+    dir,
+    new Set(icons.map((icon) => icon.name)),
+    catalogEntries,
+    loaderEntries,
+  )
+
   writeModule(
     dir,
     'catalog',
@@ -132,11 +141,83 @@ function generateIcons() {
   writeModule(dir, 'all', catalogueModule('icon', loaderEntries))
   writeFileSync(
     path.join(dir, 'names.json'),
-    JSON.stringify(icons.map((icon) => icon.name)),
+    JSON.stringify([...icons.map((icon) => icon.name), ...custom]),
   )
   writeTypes(dir, 'icon')
 
-  return icons.length
+  return icons.length + custom.length
+}
+
+/**
+ * The house icons: glyphs Phosphor does not have, drawn to its spec (a 256
+ * viewBox, the regular weight's stroke, no fill of their own so they take
+ * `currentColor`) and kept in `src/assets/icons/<name>.svg`. Each becomes a
+ * module of the same shape as a Phosphor one, so `name="ai"` resolves, links
+ * and is listed in the gallery exactly like `name="check"`.
+ *
+ * A house icon has one drawing. All six weight exports point at it, so a
+ * literal `weight` on the call site (which the glyph plugin imports by name)
+ * still finds an export.
+ *
+ * Two checks, because each failure is otherwise silent: a name that collides
+ * with a Phosphor icon would quietly replace it, and a hard-coded fill would
+ * ignore the theme (the reason this folder exists rather than a loose SVG).
+ */
+function generateCustomIcons(
+  dir,
+  phosphorNames,
+  catalogEntries,
+  loaderEntries,
+) {
+  const assets = path.join(root, 'src/assets/icons')
+  let files = []
+  try {
+    files = readdirSync(assets).filter((file) => file.endsWith('.svg'))
+  } catch {
+    return []
+  }
+  const names = []
+  for (const file of files) {
+    const name = file.replace(/\.svg$/, '')
+    if (phosphorNames.has(name))
+      throw new Error(
+        `src/assets/icons/${file}: "${name}" is already a Phosphor icon. Rename the house icon.`,
+      )
+    const source = readFileSync(path.join(assets, file), 'utf8')
+    if (/fill\s*[:=]\s*["']?(?!none|currentColor)[#a-z(]/i.test(source))
+      throw new Error(
+        `src/assets/icons/${file}: hard-coded fill. House icons take currentColor; remove the fill.`,
+      )
+    const { viewBox, body } = splitSvg(source)
+    if (viewBox !== '0 0 256 256')
+      throw new Error(
+        `src/assets/icons/${file}: viewBox is "${viewBox}", house icons are drawn on 0 0 256 256.`,
+      )
+    writeModule(
+      dir,
+      name,
+      [
+        PRELUDE,
+        `export const regular = /*#__PURE__*/ g(${JSON.stringify(name)}, ${JSON.stringify(viewBox)}, ${JSON.stringify(body)})`,
+        ...WEIGHTS.filter((w) => w !== 'regular').map(
+          (w) => `export const ${w} = regular`,
+        ),
+        '',
+        `export const glyphName = ${JSON.stringify(name)}`,
+        '',
+        'export default regular',
+        '',
+      ].join('\n'),
+    )
+    catalogEntries.push(
+      `  ${JSON.stringify(name)}: { name: ${JSON.stringify(name)}, tags: ${JSON.stringify([name, 'nubisco'])}, categories: ["nubisco"] }`,
+    )
+    loaderEntries.push(
+      `  ${JSON.stringify(name)}: () => import('./${name}.mjs')`,
+    )
+    names.push(name)
+  }
+  return names
 }
 
 /* ------------------------------------------------------------------ flags */
