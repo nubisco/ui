@@ -130,7 +130,8 @@ const messageVariant = computed(() =>
     overflow: hidden;
     width: 100%;
     height: var(--nb-base-unit);
-    background: var(--nb-c-discrete);
+    // The plane's supporting ground, so the track follows the layer it sits on.
+    background: var(--nb-c-surface-accent);
   }
 
   &--sm &__track {

@@ -775,10 +775,14 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
    *
    *   $layer                 --nb-c-surface (the layer this table paints)
    *   $layer-hover           --nb-c-surface-hover
-   *   $layer-accent          --nb-dt-accent: the surface one step toward
-   *                          --nb-c-contrast, darker in light, lighter in dark
-   *   $layer-accent-hover    --nb-dt-accent-hover, one step further
-   *   $layer-selected        --nb-dt-accent, as Carbon's own themes have it
+   *   $layer-accent          --nb-dt-accent, which reads --nb-c-surface-accent
+   *   $layer-accent-hover    --nb-dt-accent-hover (--nb-c-surface-accent-hover)
+   *   $layer-selected        --nb-c-surface-selected
+   *   $layer-selected-hover  --nb-c-surface-selected-hover
+   *
+   * All four are per-plane tokens re-pointed by `.nb-layer-N`, measured in
+   * `variables/_layers.scss` (text and muted at AAA on every one, selected
+   * at least 1.5 dL* from both hover and the zebra stripe).
    *   $border-subtle         --nb-c-border (the layer ramp's border is the
    *                          one scripts/audit-contrast.mjs measures against
    *                          Carbon's border-subtle)
@@ -789,16 +793,8 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
    * heading-compact-01 (the header, 14px semibold) is label-lg, and
    * body-compact-01 (description and cells, 14px regular) is body-md.
    */
-  --nb-dt-accent: color-mix(
-    in srgb,
-    var(--nb-c-contrast) 10%,
-    var(--nb-c-surface)
-  );
-  --nb-dt-accent-hover: color-mix(
-    in srgb,
-    var(--nb-c-contrast) 16%,
-    var(--nb-c-surface)
-  );
+  --nb-dt-accent: var(--nb-c-surface-accent);
+  --nb-dt-accent-hover: var(--nb-c-surface-accent-hover);
   // Carbon's sizes. Every one keeps the same 16px cell padding and 14px type:
   // only the row height changes.
   --nb-dt-row-height: calc(var(--nb-base-unit) * 6);
@@ -1108,15 +1104,15 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
 
     // Neutral, not a brand tint. A 10% --nb-c-primary wash read as an
     // unexplained violet. Selection is already signalled by the checkbox and
-    // the batch bar. Carbon's $layer-selected is its $layer-accent, and
-    // selected+hover goes one step further, so both stay hue-free.
+    // the batch bar. The selected surface is the plane's own, so it stays
+    // hue-free and still differs from a zebra stripe.
     &--selected .nb-data-table__td {
-      background: var(--nb-dt-accent);
+      background: var(--nb-c-surface-selected);
       color: var(--nb-c-text);
     }
 
     &--selected:hover .nb-data-table__td {
-      background: var(--nb-dt-accent-hover);
+      background: var(--nb-c-surface-selected-hover);
     }
   }
 
@@ -1134,7 +1130,7 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
     background: var(--nb-c-surface-hover);
   }
   &--zebra &__row--selected &__td {
-    background: var(--nb-dt-accent-hover);
+    background: var(--nb-c-surface-selected);
   }
 
   // Extra large rows hold two lines: the content starts 16px down.
