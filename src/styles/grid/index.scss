@@ -103,14 +103,9 @@
     }
   }
 
-  // The page margin. 16px from md to xl, 24px at xxl, and none on a phone,
-  // where the margin would cost a tenth of the width. Declared once on :root
-  // in the theme, moved here only at the edges of the scale.
-  @include breakpoints.phone {
-    :root {
-      --nb-grid-gutter: 0px;
-    }
-  }
+  // The page margin. 16px up to xl, the same gutter the shell keeps on a
+  // phone so text never sits against the glass, and 24px at xxl. Declared once
+  // on :root in the theme, moved here only at the top of the scale.
   @include breakpoints.mq('xxl') {
     :root {
       --nb-grid-gutter: #{vars.$grid-gutter-max}px;

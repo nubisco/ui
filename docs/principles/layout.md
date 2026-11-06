@@ -394,8 +394,8 @@ container width: cap the paragraph, and let the panel around it fill.
 ## Page and region widths
 
 `--nb-grid-max-width` (1440px) is the maximum content width, and
-`--nb-grid-gutter` is the page margin: 0 on a phone, 16px from `md` to `xl`,
-24px at `xxl`. `NbGrid`'s `container` prop applies both, centred. On a
+`--nb-grid-gutter` is the page margin: 16px up to `xl`, phones included,
+and 24px at `xxl`. `NbGrid`'s `container` prop applies both, centred. On a
 full-bleed marketing or settings page outside the shell, put it on the content
 wrapper, not on the page background, so the background still bleeds.
 

@@ -179,14 +179,10 @@ describe('NbGrid page container', () => {
     expect(c).toContain('padding-inline: var(--nb-grid-gutter)')
   })
 
-  // 0 on a phone through the phone signal, 24px at xxl, and the 16px the
-  // theme declares everywhere in between.
-  it('moves the margin only at the edges of the scale', () => {
-    const phone = gridCss.indexOf('@media (max-width: 671.98px)')
-    expect(phone).toBeGreaterThanOrEqual(0)
-    expect(gridCss.slice(phone, gridCss.indexOf('}', phone))).toContain(
-      '--nb-grid-gutter: 0px',
-    )
+  // 16px everywhere, phones included, and 24px at xxl. A phone keeps the
+  // margin so text never sits against the glass.
+  it('moves the margin only at the top of the scale', () => {
+    expect(gridCss).not.toContain('--nb-grid-gutter: 0px')
     const xxl = gridCss.lastIndexOf('(min-width: 1584px)')
     expect(gridCss.slice(xxl, gridCss.indexOf('}', xxl) + 40)).toContain(
       '--nb-grid-gutter: 24px',

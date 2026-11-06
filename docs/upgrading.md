@@ -49,7 +49,7 @@ alter how every product looks, so check a few real screens before you ship.
 - **Spacing.** Gap classes now read `var(--nb-spacing-N)`, so overriding a
   spacing token also moves grid gaps. Utilities for steps 9, 10, 11, 13, 14,
   18, 42, 46, 50 and 54 are no longer generated (their custom properties stay
-  for one minor). `--nb-grid-gutter` is 0 on a phone and 24px at `xxl`.
+  for one minor). `--nb-grid-gutter` is 24px at `xxl`.
 - **`--nb-motion-loop`.** It is removed: no component read it. Write a loop's
   duration as a literal.
 - **`transition-fade` and the `fade-*` classes.** They are deprecated. Use
