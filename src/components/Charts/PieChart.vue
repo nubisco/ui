@@ -275,7 +275,7 @@ const tooltipRows = computed(() => {
 }
 
 .nb-chart__slice {
-  transition: opacity 120ms ease;
+  transition: opacity var(--nb-motion-quick) ease;
   &.is-dim {
     opacity: 0.35;
   }

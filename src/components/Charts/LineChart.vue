@@ -398,7 +398,7 @@ const tooltipRows = computed(() => {
 
 .nb-chart__point {
   pointer-events: none;
-  transition: r 120ms ease;
+  transition: r var(--nb-motion-quick) var(--nb-ease-standard);
 }
 
 .nb-chart__hover-line {

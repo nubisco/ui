@@ -100,7 +100,7 @@ defineProps<{
 
 .nb-chart-tooltip-enter-active,
 .nb-chart-tooltip-leave-active {
-  transition: opacity 120ms ease;
+  transition: opacity var(--nb-motion-quick) ease;
 }
 .nb-chart-tooltip-enter-from,
 .nb-chart-tooltip-leave-to {
