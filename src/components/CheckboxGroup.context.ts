@@ -2,6 +2,10 @@ import type { InjectionKey, Ref } from 'vue'
 
 interface ICheckboxGroupContext {
   disabled: Ref<boolean>
+  /** `'true'` while the group shows an error, for each checkbox's aria-invalid. */
+  invalid?: Ref<'true' | undefined>
+  /** Id of the group's visible message, for each checkbox's aria-describedby. */
+  describedBy?: Ref<string | undefined>
 }
 
 /**

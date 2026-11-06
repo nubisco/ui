@@ -5,18 +5,18 @@
       `nb-message--${props.variant}`,
       { 'nb-message--icon-only': props.iconOnly },
     ]"
-    role="status"
-    :aria-live="props.variant === 'error' ? 'assertive' : 'polite'"
+    :role="liveRole"
+    :aria-live="liveMode"
   >
     <NbIcon :name="iconMap[props.variant]" size="sm" class="nb-message__icon" />
-    <span v-if="!props.iconOnly" class="nb-message__text"><slot /></span>
+    <span class="nb-message__text"><slot /></span>
     <!-- CSS-powered tooltip shown on hover in icon-only mode. It wraps rather
-         than truncating, and the visually hidden copy is what the live region
-         reads, because the tooltip is hidden from assistive tech. -->
+         than truncating. In icon-only mode the text above is visually hidden,
+         not removed, so the live region and a field's aria-describedby still
+         read it; the tooltip itself is hidden from assistive tech. -->
     <span v-if="props.iconOnly" class="nb-message__tooltip" aria-hidden="true"
       ><slot
     /></span>
-    <span v-if="props.iconOnly" class="nb-message__sr-text"><slot /></span>
   </div>
 </template>
 
@@ -25,12 +25,32 @@ import * as iconWarningCircle from '@nubisco/ui/icons/warning-circle'
 import * as iconWarning from '@nubisco/ui/icons/warning'
 import * as iconCheckCircle from '@nubisco/ui/icons/check-circle'
 import * as iconInfo from '@nubisco/ui/icons/info'
+import { computed } from 'vue'
 import NbIcon from './Icon.vue'
 import { EMessageVariant, IMessageProps } from './Message.d'
 
 const props = withDefaults(defineProps<IMessageProps>(), {
   variant: EMessageVariant.Helper,
   iconOnly: false,
+  live: 'auto',
+})
+
+/*
+ * `live="auto"` (the default) is a standalone message: a status region,
+ * assertive for an error. A form field passes `off` while its message is the
+ * one rendered with the page (read through aria-describedby on focus, never
+ * shouted on load), then `alert` or `status` once the message changes.
+ */
+const liveRole = computed(() => {
+  if (props.live === 'off') return undefined
+  if (props.live === 'alert') return 'alert'
+  return 'status'
+})
+const liveMode = computed(() => {
+  if (props.live === 'off') return undefined
+  if (props.live === 'alert') return 'assertive'
+  if (props.live === 'status') return 'polite'
+  return props.variant === 'error' ? 'assertive' : 'polite'
 })
 
 const iconMap = {
@@ -80,8 +100,19 @@ const iconMap = {
     position: relative;
     cursor: default;
 
+    // Visually hidden rather than display:none, so a field's
+    // aria-describedby still reads the text. Nothing moves on screen.
     .nb-message__text {
-      display: none;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
     }
 
     &:hover .nb-message__tooltip,
@@ -92,14 +123,6 @@ const iconMap = {
     }
   }
 
-  &__sr-text {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
 
   &__tooltip {
     position: absolute;

@@ -26,7 +26,7 @@ describe('clipped text keeps a route to the full string', () => {
       props: { iconOnly: true },
       slots: { default: long },
     })
-    const sr = w.find('.nb-message__sr-text')
+    const sr = w.find('.nb-message__text')
     expect(sr.exists()).toBe(true)
     expect(sr.text()).toBe(long)
     expect(sr.attributes('aria-hidden')).toBeUndefined()

@@ -11,22 +11,15 @@
       <slot />
     </div>
 
-    <NbMessage v-if="error" variant="error" class="nb-checkbox-group__message">
-      {{ error }}
-    </NbMessage>
     <NbMessage
-      v-else-if="warning"
-      variant="warning"
+      v-if="messageVariant"
+      :id="messageId"
+      :key="messageKey"
+      :variant="messageVariant"
+      :live="messageLive"
       class="nb-checkbox-group__message"
     >
-      {{ warning }}
-    </NbMessage>
-    <NbMessage
-      v-else-if="helper"
-      variant="helper"
-      class="nb-checkbox-group__message"
-    >
-      {{ helper }}
+      {{ messageText }}
     </NbMessage>
   </div>
 </template>
@@ -37,6 +30,8 @@ import NbMessage from './Message.vue'
 import { computed, provide } from 'vue'
 import { ECheckboxGroupDirection, ICheckboxGroupProps } from './CheckboxGroup.d'
 import { NB_CHECKBOX_GROUP_CONTEXT } from './CheckboxGroup.context'
+import { useStableId } from '@/composables/useStableId.composable'
+import { useFieldMessage } from '@/composables/useFieldMessage.composable'
 
 const props = withDefaults(defineProps<ICheckboxGroupProps>(), {
   id: 'checkbox-group',
@@ -47,8 +42,27 @@ const props = withDefaults(defineProps<ICheckboxGroupProps>(), {
   helper: undefined,
 })
 
+// `id` defaults to 'checkbox-group', shared by every instance, so the
+// generated base is used unless a consumer set one.
+const autoId = useStableId({})
+const baseId = computed(() =>
+  props.id && props.id !== 'checkbox-group' ? props.id : autoId,
+)
+const {
+  variant: messageVariant,
+  text: messageText,
+  messageId,
+  invalid,
+  live: messageLive,
+  key: messageKey,
+} = useFieldMessage(props, baseId)
+
 provide(NB_CHECKBOX_GROUP_CONTEXT, {
   disabled: computed(() => props.disabled),
+  // Each checkbox carries the group's validation state: aria-invalid is not
+  // valid on role="group", so it goes on the controls themselves.
+  invalid,
+  describedBy: messageId,
 })
 
 const rootClasses = computed(() => [

@@ -14,6 +14,8 @@
         <input
           :id="inputId"
           ref="inputRef"
+          :aria-invalid="invalid"
+          :aria-describedby="messageId"
           type="number"
           class="nb-number-input__field"
           :placeholder="placeholder"
@@ -32,6 +34,8 @@
           v-if="error"
           variant="error"
           :icon-only="true"
+          live="off"
+          aria-hidden="true"
           class="nb-number-input__status"
           >{{ error }}</NbMessage
         >
@@ -39,6 +43,8 @@
           v-else-if="warning"
           variant="warning"
           :icon-only="true"
+          live="off"
+          aria-hidden="true"
           class="nb-number-input__status"
           >{{ warning }}</NbMessage
         >
@@ -71,19 +77,28 @@
 
       <NbMessage
         v-if="error"
+        :id="ids.error"
+        :key="messageKey"
         variant="error"
+        :live="messageLive"
         class="nb-number-input__message"
         >{{ error }}</NbMessage
       >
       <NbMessage
         v-else-if="warning"
+        :id="ids.warning"
+        :key="messageKey"
         variant="warning"
+        :live="messageLive"
         class="nb-number-input__message"
         >{{ warning }}</NbMessage
       >
       <NbMessage
         v-else-if="helper"
+        :id="ids.helper"
+        :key="messageKey"
         variant="helper"
+        :live="messageLive"
         class="nb-number-input__message"
         >{{ helper }}</NbMessage
       >
@@ -104,7 +119,9 @@
           </label>
           <NbMessage
             v-if="helper && !error && !warning"
+            :id="ids.helper"
             variant="helper"
+            live="off"
             :icon-only="true"
             class="nb-number-input__inner-message"
             >{{ helper }}</NbMessage
@@ -115,6 +132,8 @@
           <input
             :id="inputId"
             ref="inputRef"
+            :aria-invalid="invalid"
+            :aria-describedby="messageId"
             type="number"
             class="nb-number-input__field"
             :placeholder="placeholder"
@@ -133,6 +152,8 @@
             v-if="error"
             variant="error"
             :icon-only="true"
+            live="off"
+            aria-hidden="true"
             class="nb-number-input__status"
             >{{ error }}</NbMessage
           >
@@ -140,6 +161,8 @@
             v-else-if="warning"
             variant="warning"
             :icon-only="true"
+            live="off"
+            aria-hidden="true"
             class="nb-number-input__status"
             >{{ warning }}</NbMessage
           >
@@ -173,13 +196,19 @@
 
       <NbMessage
         v-if="error"
+        :id="ids.error"
+        :key="messageKey"
         variant="error"
+        :live="messageLive"
         class="nb-number-input__fluid-message"
         >{{ error }}</NbMessage
       >
       <NbMessage
         v-else-if="warning"
+        :id="ids.warning"
+        :key="messageKey"
         variant="warning"
+        :live="messageLive"
         class="nb-number-input__fluid-message"
         >{{ warning }}</NbMessage
       >
@@ -189,11 +218,13 @@
 
 <script setup lang="ts">
 import { useNbStrings } from '@/composables/useNbStrings.composable'
-import { computed, onMounted, ref, useId, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import type { IFieldComponent } from '@/types/Props.d'
 import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
 import NbIcon from './Icon.vue'
+import { useStableId } from '@/composables/useStableId.composable'
+import { useFieldMessage } from '@/composables/useFieldMessage.composable'
 
 const nbStrings = useNbStrings()
 
@@ -229,8 +260,16 @@ const emit = defineEmits<{
 const inputRef = ref<HTMLInputElement | null>(null)
 const focused = ref(false)
 
-const autoId = `nb-number-input-${useId()}`
+// Positional, so two fields never share an id.
+const autoId = useStableId({})
 const inputId = computed(() => props.id ?? autoId)
+const {
+  ids,
+  messageId,
+  invalid,
+  live: messageLive,
+  key: messageKey,
+} = useFieldMessage(props, inputId)
 
 const isAtMin = computed(
   () =>

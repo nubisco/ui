@@ -13,6 +13,12 @@ interface IMessageProps {
    * Used in the TextInput `fluid` variant.
    */
   iconOnly?: boolean
+  /**
+   * How the message is announced. `auto` (default) is a status region,
+   * assertive for an error. Form fields pass `off` for a message rendered
+   * with the page and `alert` or `status` once it changes.
+   */
+  live?: 'auto' | 'off' | 'alert' | 'status'
 }
 
 export { EMessageVariant, IMessageProps }

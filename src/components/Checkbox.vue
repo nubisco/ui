@@ -6,6 +6,8 @@
         :checked="modelValue"
         :disabled="isDisabled"
         :indeterminate="indeterminate"
+        :aria-invalid="group?.invalid?.value"
+        :aria-describedby="group?.describedBy?.value"
         class="nb-checkbox__input"
         @change="handleChange"
       />
