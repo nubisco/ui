@@ -404,7 +404,7 @@ defineExpose({ open, close, isOpen })
 
   :deep(code) {
     font-family: var(--nb-font-family-mono);
-    font-size: var(--nb-font-size-11);
+    font-size: var(--nb-type-code-sm-size);
   }
 }
 

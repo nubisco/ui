@@ -61,9 +61,9 @@ const variant = computed(() => variantRef.value)
 }
 
 .nb-sidebar-brand__title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-size: var(--nb-type-heading-compact-size);
+  font-weight: var(--nb-font-weight-semibold, 600);
+  letter-spacing: var(--nb-type-heading-compact-letter-spacing);
   color: var(--nb-shell-sidebar-link-active-color);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -71,10 +71,10 @@ const variant = computed(() => variantRef.value)
 }
 
 .nb-sidebar-brand__subtitle {
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: var(--nb-type-overline-size);
+  font-weight: var(--nb-type-overline-weight);
+  letter-spacing: var(--nb-type-overline-letter-spacing);
+  text-transform: var(--nb-type-overline-text-transform);
   color: var(--nb-shell-sidebar-link-color);
   overflow: hidden;
   text-overflow: ellipsis;

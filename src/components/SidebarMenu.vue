@@ -27,6 +27,6 @@ withDefaults(defineProps<ISidebarMenuProps>(), {
   gap: var(--nb-shell-sidebar-row-gap, 1px);
   width: 100%;
   color: var(--nb-shell-sidebar-link-color);
-  font-size: 0.8125rem;
+  font-size: var(--nb-type-body-compact-size);
 }
 </style>

@@ -300,24 +300,27 @@ const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
 }
 
 .nb-card__title {
-  font-size: var(--nb-font-size-14);
-  font-weight: var(--nb-font-weight-semibold, 600);
-  line-height: 1.3;
+  font-size: var(--nb-type-heading-compact-size);
+  font-weight: var(--nb-type-heading-compact-weight);
+  line-height: var(--nb-type-heading-compact-line-height);
+  letter-spacing: var(--nb-type-heading-compact-letter-spacing);
   color: var(--nb-c-text);
   overflow-wrap: anywhere;
 }
 
 .nb-card__subtitle {
-  font-size: var(--nb-font-size-12);
-  line-height: 1.4;
+  font-size: var(--nb-type-body-sm-size);
+  line-height: var(--nb-type-body-sm-line-height);
+  letter-spacing: var(--nb-type-body-sm-letter-spacing);
   color: var(--nb-c-text-subtle);
 }
 
 .nb-card__body {
   flex: 1 1 auto;
   margin-top: var(--nb-spacing-8);
-  font-size: var(--nb-font-size-12);
-  line-height: 1.5;
+  font-size: var(--nb-type-body-sm-size);
+  line-height: var(--nb-type-body-sm-line-height);
+  letter-spacing: var(--nb-type-body-sm-letter-spacing);
   color: var(--nb-c-text-muted);
 }
 

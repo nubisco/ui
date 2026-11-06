@@ -442,10 +442,10 @@ const trackAreaClasses = computed(() => ({
       flex: 1;
       min-width: 0;
       font-family: var(--nb-font-family-sans);
-      font-size: var(--nb-font-size-12);
-      font-weight: 500;
+      font-size: var(--nb-type-body-sm-size);
+      font-weight: var(--nb-font-weight-semibold, 600);
       color: var(--nb-c-text-muted);
-      letter-spacing: 0.02em;
+      letter-spacing: var(--nb-type-body-sm-letter-spacing);
       cursor: default;
       user-select: none;
       white-space: nowrap;
@@ -589,14 +589,14 @@ const trackAreaClasses = computed(() => ({
     flex-shrink: 0;
     // Tabular figures so the track does not shift as the bounds change width.
     font-variant-numeric: tabular-nums;
-    font-size: 11px;
+    font-size: var(--nb-type-body-sm-size);
     color: var(--nb-c-field-border);
     line-height: 1;
     user-select: none;
   }
 
   &__message {
-    font-size: 11px;
+    font-size: var(--nb-type-body-sm-size);
   }
 }
 </style>

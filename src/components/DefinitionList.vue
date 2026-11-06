@@ -119,16 +119,16 @@ function isEmpty(value: unknown): boolean {
 // written into the slot.
 :deep(.nb-definition-list__term) {
   margin: 0;
-  font-size: var(--nb-font-size-12);
-  line-height: 1.4;
+  font-size: var(--nb-type-body-sm-size);
+  line-height: var(--nb-type-body-sm-line-height);
   color: var(--nb-c-text-subtle);
   overflow-wrap: anywhere;
 }
 
 :deep(.nb-definition-list__value) {
   margin: 0;
-  font-size: var(--nb-font-size-14);
-  line-height: 1.4;
+  font-size: var(--nb-type-body-compact-size);
+  line-height: var(--nb-type-body-compact-line-height);
   color: var(--nb-c-text);
   min-width: 0;
   overflow-wrap: anywhere;

@@ -988,15 +988,16 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
   }
 
   // ── Header ───────────────────────────────────────────────
-  // Carbon's column header: $layer-accent, heading-compact-01, no rule under
+  // Carbon's column header: $layer-accent, heading-compact, no rule under
   // it (the change of fill is the edge).
   &__th {
     height: var(--nb-dt-row-height);
     padding-inline: var(--nb-dt-cell-pad-x);
     text-align: left;
-    font-size: var(--nb-type-label-lg-size);
-    font-weight: var(--nb-type-label-lg-weight);
-    line-height: var(--nb-type-label-lg-line-height);
+    font-size: var(--nb-type-heading-compact-size);
+    font-weight: var(--nb-type-heading-compact-weight);
+    line-height: var(--nb-type-heading-compact-line-height);
+    letter-spacing: var(--nb-type-heading-compact-letter-spacing);
     color: var(--nb-c-text);
     background: var(--nb-dt-accent);
     white-space: nowrap;
@@ -1048,7 +1049,7 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
 
   &__sort-icon {
     flex-shrink: 0;
-    font-size: var(--nb-font-size-14);
+    font-size: var(--nb-type-body-compact-size);
     color: var(--nb-c-text-subtle);
     opacity: 0;
     transition: opacity var(--nb-motion-short);
@@ -1076,8 +1077,11 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
     &--center {
       text-align: center;
     }
+    // A right-aligned column is a column of figures: digits of one width,
+    // so the places line up.
     &--right {
       text-align: right;
+      font-variant-numeric: tabular-nums;
     }
   }
 
@@ -1219,7 +1223,7 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
   }
 
   &__expand-icon {
-    font-size: var(--nb-font-size-14);
+    font-size: var(--nb-type-body-compact-size);
     transition: transform var(--nb-motion-short);
   }
 
@@ -1431,7 +1435,7 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
       order: 3;
       flex: 0 1 auto;
       margin-top: var(--nb-spacing-2);
-      font-size: var(--nb-font-size-13);
+      font-size: var(--nb-type-body-compact-size);
       color: var(--nb-c-text-muted);
     }
 
@@ -1447,7 +1451,7 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
       &[data-label]:not([data-label=''])::before {
         content: attr(data-label);
         flex: 0 0 min(40%, 8rem);
-        font-size: var(--nb-font-size-13);
+        font-size: var(--nb-type-body-compact-size);
         color: var(--nb-c-text-muted);
       }
     }
@@ -1521,7 +1525,7 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
       padding-inline: var(--nb-spacing-12);
       border: 1px solid var(--nb-c-border);
       @include radius.standalone(control);
-      font-weight: 500;
+      font-weight: var(--nb-font-weight-regular, 400);
     }
 
     // There is no hover on a phone, so the arrows are always shown, or a

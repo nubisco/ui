@@ -872,9 +872,9 @@ $background-color: var(--nb-c-surface);
       min-width: calc(var(--nb-base-unit, 8px) * 9);
       background: var(--nb-c-contrast);
       color: var(--nb-c-surface);
-      font-size: var(--nb-font-size-10, 10px);
+      font-size: var(--nb-type-body-sm-size);
       padding: calc(var(--nb-base-unit, 8px) / 2);
-      line-height: var(--nb-font-size-14, 14px);
+      line-height: var(--nb-type-body-sm-line-height);
     }
     img {
       width: 100%;

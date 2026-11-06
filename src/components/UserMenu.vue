@@ -552,9 +552,9 @@ defineExpose({ open, toggle, close })
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.64rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-size: var(--nb-type-body-sm-size);
+  font-weight: var(--nb-font-weight-semibold, 600);
+  letter-spacing: var(--nb-type-body-sm-letter-spacing);
   cursor: pointer;
   padding: 0;
 
@@ -591,7 +591,7 @@ defineExpose({ open, toggle, close })
   font: inherit;
   // The nav rows' size. `font: inherit` alone picks up the shell's 16px, which
   // made the account label visibly larger than the items above it.
-  font-size: 0.8125rem;
+  font-size: var(--nb-type-body-compact-size);
   cursor: pointer;
   transition: background var(--nb-motion-quick) ease;
 
@@ -632,7 +632,8 @@ defineExpose({ open, toggle, close })
 }
 
 .nb-user-menu__identity-email {
-  font-size: 0.75em;
+  font-size: var(--nb-type-body-sm-size);
+  letter-spacing: var(--nb-type-body-sm-letter-spacing);
   color: var(--nb-shell-sidebar-link-color);
 }
 
@@ -682,16 +683,16 @@ defineExpose({ open, toggle, close })
 
 .nb-user-menu__label {
   margin: 0.15rem 1rem 0;
-  font-size: 0.64rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
+  font-size: var(--nb-type-overline-size);
+  font-weight: var(--nb-type-overline-weight);
+  text-transform: var(--nb-type-overline-text-transform);
+  letter-spacing: var(--nb-type-overline-letter-spacing);
   color: var(--nb-c-text-subtle);
 }
 
 .nb-user-menu__email {
   margin: 0.1rem 1rem 0.35rem;
-  font-size: 0.84rem;
+  font-size: var(--nb-type-heading-compact-size);
   font-weight: 600;
   color: var(--nb-c-text);
   overflow: hidden;
@@ -713,7 +714,7 @@ defineExpose({ open, toggle, close })
   margin: 0 1rem 0.35rem;
   padding: 0.1rem 0.45rem;
   border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: var(--nb-type-body-sm-size);
   font-weight: 600;
   color: var(--nb-c-text);
   background: color-mix(in srgb, var(--nb-c-warning, #f59e0b) 16%, transparent);
@@ -739,10 +740,10 @@ defineExpose({ open, toggle, close })
 
 .nb-user-menu__appearance-title {
   margin: 0 0 0.4rem;
-  font-size: 0.64rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
+  font-size: var(--nb-type-overline-size);
+  font-weight: var(--nb-type-overline-weight);
+  text-transform: var(--nb-type-overline-text-transform);
+  letter-spacing: var(--nb-type-overline-letter-spacing);
   color: var(--nb-c-text-subtle);
 }
 
@@ -761,7 +762,7 @@ defineExpose({ open, toggle, close })
   border: 0;
   background: none;
   padding: 0.45rem 0.75rem;
-  font-size: 0.82rem;
+  font-size: var(--nb-type-body-compact-size);
   // 4px of padding plus the container's 1px border.
   @include radius.inset(5px);
   font-family: inherit;
@@ -797,7 +798,7 @@ defineExpose({ open, toggle, close })
 }
 
 .nb-user-menu__account-name {
-  font-size: 0.72rem;
+  font-size: var(--nb-type-body-sm-size);
   color: var(--nb-c-text-subtle);
 }
 
@@ -820,8 +821,8 @@ defineExpose({ open, toggle, close })
   gap: 0.35rem;
   margin: 0;
   padding: 0.3rem 1rem 0.15rem;
-  font-size: 0.68rem;
-  line-height: 1.2;
+  font-size: var(--nb-type-body-sm-size);
+  line-height: var(--nb-type-body-sm-line-height);
   color: var(--nb-c-text-muted);
   user-select: none;
 }

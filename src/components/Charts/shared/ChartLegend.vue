@@ -27,7 +27,7 @@ defineProps<{ items: ILegendItem[] }>()
   margin: calc(var(--nb-base-unit) * 1) 0 0;
   padding: 0;
   list-style: none;
-  font-size: var(--nb-font-size-12);
+  font-size: var(--nb-type-body-sm-size);
   color: var(--nb-c-text-muted);
 
   &-item {

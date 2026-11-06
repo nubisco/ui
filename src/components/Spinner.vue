@@ -354,8 +354,8 @@ const rootClasses = computed(() => [
 
   // ── Label ───────────────────────────────────────────────────────────────────
   &__label {
-    font-size: var(--nb-font-size-12);
-    line-height: 1.4;
+    font-size: var(--nb-type-body-sm-size);
+    line-height: var(--nb-type-body-sm-line-height);
     color: var(--nb-c-text-muted);
   }
 

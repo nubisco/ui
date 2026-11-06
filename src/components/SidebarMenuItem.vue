@@ -529,9 +529,9 @@ onBeforeUnmount(() => {
 
 .nb-sidebar-menu-item__badge {
   flex-shrink: 0;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-size: var(--nb-type-body-sm-size);
+  font-weight: var(--nb-font-weight-semibold, 600);
+  letter-spacing: var(--nb-type-body-sm-letter-spacing);
   padding: 1px 8px;
   border-radius: 999px;
   background: var(--nb-shell-sidebar-link-hover-bg);
@@ -580,8 +580,8 @@ onBeforeUnmount(() => {
   padding: 0 4px;
   box-sizing: border-box;
   border-radius: 999px;
-  font-size: 0.625rem;
-  font-weight: 700;
+  font-size: var(--nb-type-body-sm-size);
+  font-weight: var(--nb-font-weight-semibold, 600);
   line-height: 16px;
   text-align: center;
   font-variant-numeric: tabular-nums;
@@ -689,7 +689,7 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
   color: var(--nb-shell-sidebar-link-color);
-  font-size: 0.8125rem;
+  font-size: var(--nb-type-body-compact-size);
 }
 
 .nb-sidebar-menu-item__flyout-header {

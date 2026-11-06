@@ -192,8 +192,8 @@ defineExpose({ setSize })
 }
 
 .nb-bottom-panel__title {
-  font-size: 11px;
-  font-weight: 500;
+  font-size: var(--nb-type-body-sm-size);
+  font-weight: var(--nb-font-weight-semibold, 600);
   color: var(--nb-c-text-muted);
   white-space: nowrap;
 }

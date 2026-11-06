@@ -272,7 +272,7 @@ function onActivate(event: Event) {
   border: 0;
   background: none;
   font-family: inherit;
-  font-size: var(--nb-font-size-13);
+  font-size: var(--nb-type-body-compact-size);
   color: var(--nb-c-text);
   text-align: left;
   text-decoration: none;
@@ -369,14 +369,14 @@ a.nb-notification-item__row {
 
 .nb-notification-item__time {
   flex: none;
-  font-size: var(--nb-font-size-11);
+  font-size: var(--nb-type-body-sm-size);
   color: var(--nb-c-text-subtle);
   white-space: nowrap;
 }
 
 .nb-notification-item__body {
   color: var(--nb-c-text-muted);
-  font-size: var(--nb-font-size-12);
+  font-size: var(--nb-type-body-sm-size);
   line-height: var(--nb-line-height-normal);
   display: -webkit-box;
   -webkit-line-clamp: 3;

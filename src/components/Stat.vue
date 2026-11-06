@@ -159,8 +159,9 @@ const tone = computed<'positive' | 'negative' | 'neutral'>(() => {
 }
 
 .nb-stat__label {
-  font-size: var(--nb-font-size-12);
-  line-height: 1.4;
+  font-size: var(--nb-type-label-size);
+  line-height: var(--nb-type-label-line-height);
+  letter-spacing: var(--nb-type-label-letter-spacing);
   color: var(--nb-c-text-subtle);
   overflow-wrap: anywhere;
 
@@ -173,9 +174,12 @@ const tone = computed<'positive' | 'negative' | 'neutral'>(() => {
   display: flex;
   align-items: center;
   min-height: 1em;
-  font-size: var(--nb-font-size-28);
-  font-weight: var(--nb-font-weight-semibold, 600);
-  line-height: 1.1;
+  // heading-04's size at regular weight: the size carries the figure, so it
+  // does not need the ink.
+  font-size: var(--nb-type-heading-04-size);
+  font-weight: var(--nb-font-weight-regular, 400);
+  line-height: var(--nb-type-heading-04-line-height);
+  letter-spacing: var(--nb-type-heading-04-letter-spacing);
   color: var(--nb-c-text);
   // Columns of figures line up, and a number that ticks does not jitter.
   font-variant-numeric: tabular-nums;
@@ -186,11 +190,13 @@ const tone = computed<'positive' | 'negative' | 'neutral'>(() => {
   }
 
   .nb-stat--lg & {
-    font-size: var(--nb-font-size-36);
+    font-size: var(--nb-type-heading-05-size);
+    line-height: var(--nb-type-heading-05-line-height);
   }
 
   .nb-stat--sm & {
-    font-size: var(--nb-font-size-20);
+    font-size: var(--nb-type-heading-02-size);
+    line-height: var(--nb-type-heading-02-line-height);
   }
 }
 
@@ -208,9 +214,10 @@ const tone = computed<'positive' | 'negative' | 'neutral'>(() => {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--nb-spacing-4);
-  font-size: var(--nb-font-size-12);
-  font-weight: var(--nb-font-weight-semibold, 600);
-  line-height: 1.4;
+  font-size: var(--nb-type-body-sm-size);
+  font-weight: var(--nb-type-body-sm-weight);
+  line-height: var(--nb-type-body-sm-line-height);
+  letter-spacing: var(--nb-type-body-sm-letter-spacing);
   font-variant-numeric: tabular-nums;
 
   &--positive {

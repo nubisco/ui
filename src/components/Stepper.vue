@@ -408,8 +408,8 @@ function onKeydown(event: KeyboardEvent) {
 
   --nb-stepper-marker: 24px;
   --nb-stepper-gap: var(--nb-spacing-8);
-  --nb-stepper-label-size: var(--nb-font-size-14);
-  --nb-stepper-marker-size: var(--nb-font-size-12);
+  --nb-stepper-label-size: var(--nb-type-body-compact-size);
+  --nb-stepper-marker-size: var(--nb-type-body-sm-size);
   --nb-stepper-line: 2px;
   // The narrow-viewport contract. Steps never compress past this; the list
   // scrolls instead. Five steps at 8rem need 40rem, so a 360px phone scrolls
@@ -421,8 +421,8 @@ function onKeydown(event: KeyboardEvent) {
   &--sm {
     --nb-stepper-marker: 20px;
     --nb-stepper-gap: var(--nb-spacing-8);
-    --nb-stepper-label-size: var(--nb-font-size-12);
-    --nb-stepper-marker-size: var(--nb-font-size-11);
+    --nb-stepper-label-size: var(--nb-type-body-sm-size);
+    --nb-stepper-marker-size: var(--nb-type-body-sm-size);
     --nb-stepper-step-min: 6.5rem;
   }
 }

@@ -1262,6 +1262,7 @@ defineExpose({
   font-weight: 400;
   color: var(--nb-c-text);
   line-height: var(--nb-field-line-height);
+  font-variant-numeric: tabular-nums;
 
   &::placeholder {
     color: var(--nb-c-text-subtle);
@@ -1282,7 +1283,7 @@ defineExpose({
     height: auto;
     flex: 1;
     padding: 0 var(--nb-field-padding-h) 10px;
-    font-size: var(--nb-font-size-14);
+    font-size: var(--nb-type-body-compact-size);
     @include touch.touch-field-text;
   }
 }
@@ -1326,10 +1327,10 @@ defineExpose({
 .nb-date-picker__inner-label {
   flex: 1;
   min-width: 0;
-  font-size: var(--nb-font-size-12);
-  font-weight: 500;
+  font-size: var(--nb-type-body-sm-size);
+  font-weight: var(--nb-font-weight-semibold, 600);
   color: var(--nb-c-text-muted);
-  letter-spacing: 0.02em;
+  letter-spacing: var(--nb-type-body-sm-letter-spacing);
   cursor: default;
   user-select: none;
 }
@@ -1345,7 +1346,7 @@ defineExpose({
 }
 
 .nb-date-picker__message {
-  font-size: var(--nb-font-size-12);
+  font-size: var(--nb-type-body-sm-size);
 }
 
 // ── Calendar dialog ────────────────────────────────────────
@@ -1392,7 +1393,7 @@ defineExpose({
 .nb-date-picker__cal-title {
   flex: 1;
   text-align: center;
-  font-size: 0.875rem;
+  font-size: var(--nb-type-heading-compact-size);
   font-weight: 600;
   color: var(--nb-c-text);
 }
@@ -1416,10 +1417,10 @@ defineExpose({
 
 .nb-date-picker__cal-weekday {
   height: 32px;
-  font-size: 0.6875rem;
+  font-size: var(--nb-type-body-sm-size);
   font-weight: 600;
   color: var(--nb-c-text-muted);
-  letter-spacing: 0.02em;
+  letter-spacing: var(--nb-type-body-sm-letter-spacing);
   text-align: center;
   vertical-align: middle;
 }
@@ -1431,8 +1432,9 @@ defineExpose({
   width: 40px;
   height: 40px;
   margin: 0 auto;
-  font-size: 0.875rem;
+  font-size: var(--nb-type-body-compact-size);
   font-weight: 400;
+  font-variant-numeric: tabular-nums;
   color: var(--nb-c-text);
   background: none;
   border: 2px solid transparent;

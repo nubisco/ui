@@ -276,8 +276,8 @@ defineExpose({ open: openFilePicker })
     gap: 6px;
     padding: 8px;
     text-align: center;
-    font-size: 13px;
-    line-height: 1.3;
+    font-size: var(--nb-type-body-compact-size);
+    line-height: var(--nb-type-body-compact-line-height);
   }
 
   &__drop {
@@ -288,8 +288,8 @@ defineExpose({ open: openFilePicker })
     justify-content: center;
     padding: 8px;
     text-align: center;
-    font-size: 13px;
-    font-weight: 500;
+    font-size: var(--nb-type-heading-compact-size);
+    font-weight: var(--nb-font-weight-semibold, 600);
     color: var(--nb-c-text);
     background: color-mix(
       in srgb,

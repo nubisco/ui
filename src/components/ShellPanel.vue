@@ -292,8 +292,11 @@ defineExpose({ setSize })
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 11px;
-  font-weight: 500;
+  font-size: var(--nb-type-overline-size);
+  font-weight: var(--nb-type-overline-weight);
+  line-height: var(--nb-type-overline-line-height);
+  letter-spacing: var(--nb-type-overline-letter-spacing);
+  text-transform: var(--nb-type-overline-text-transform);
   color: var(--nb-c-text-muted);
   white-space: nowrap;
 }

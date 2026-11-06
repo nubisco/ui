@@ -142,7 +142,7 @@ onBeforeUnmount(() => {
   align-items: center;
   height: 100%;
   padding: 0 12px;
-  font-size: 14px;
+  font-size: var(--nb-type-body-compact-size);
   font-weight: 400;
   color: var(--nb-c-text);
   background: transparent;

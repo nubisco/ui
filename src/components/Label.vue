@@ -30,19 +30,14 @@ withDefaults(defineProps<ILabelProps>(), {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-family: var(--nb-font-family-sans);
-  font-weight: 500;
+  font-family: var(--nb-type-label-family);
+  font-size: var(--nb-type-label-size);
+  font-weight: var(--nb-type-label-weight);
+  line-height: var(--nb-type-label-line-height);
+  letter-spacing: var(--nb-type-label-letter-spacing);
   color: var(--nb-c-text-muted);
   cursor: default;
   user-select: none;
-
-  &--sm {
-    font-size: var(--nb-font-size-12);
-    letter-spacing: 0.02em;
-  }
-  &--md {
-    font-size: var(--nb-font-size-12);
-  }
 
   &--disabled {
     opacity: 0.45;

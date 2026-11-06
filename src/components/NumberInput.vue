@@ -344,7 +344,7 @@ defineExpose({ focus: () => inputRef.value?.focus() })
 
   &--xs {
     --field-h: var(--nb-field-height-xs);
-    --nb-field-font-size: var(--nb-font-size-13);
+    --nb-field-font-size: var(--nb-type-body-compact-size);
   }
   &--sm {
     --field-h: var(--nb-field-height-sm);
@@ -434,6 +434,7 @@ defineExpose({ focus: () => inputRef.value?.focus() })
     // Below 16px iOS zooms the page in when the field takes focus.
     @include touch.touch-field-text;
     font-weight: 400;
+    font-variant-numeric: tabular-nums;
     color: var(--nb-c-text);
 
     // Hide native number spinners
@@ -505,7 +506,7 @@ defineExpose({ focus: () => inputRef.value?.focus() })
 
   &__message,
   &__fluid-message {
-    font-size: var(--nb-font-size-12);
+    font-size: var(--nb-type-body-sm-size);
   }
 
   // FLUID variant
@@ -534,11 +535,11 @@ defineExpose({ focus: () => inputRef.value?.focus() })
     .nb-number-input__inner-label {
       flex: 1;
       min-width: 0;
-      font-size: var(--nb-font-size-12);
-      font-weight: 500;
+      font-size: var(--nb-type-overline-size);
+      font-weight: var(--nb-type-overline-weight);
       color: var(--nb-c-text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
+      text-transform: var(--nb-type-overline-text-transform);
+      letter-spacing: var(--nb-type-overline-letter-spacing);
       cursor: default;
       user-select: none;
       white-space: nowrap;
@@ -560,7 +561,7 @@ defineExpose({ focus: () => inputRef.value?.focus() })
       height: auto;
       flex: 1;
       padding: 6px var(--nb-field-padding-h) 10px;
-      font-size: 15px;
+      font-size: var(--nb-type-body-compact-size);
       @include touch.touch-field-text;
     }
 

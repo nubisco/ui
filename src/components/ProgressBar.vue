@@ -186,7 +186,7 @@ const messageVariant = computed(() =>
 
   // ── Message ───────────────────────────────────────────────────────────────────
   &__message {
-    font-size: var(--nb-font-size-12);
+    font-size: var(--nb-type-body-sm-size);
   }
 
   @keyframes nb-progress-bar-indeterminate {

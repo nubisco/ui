@@ -190,9 +190,9 @@ const wrapperClasses = computed(() => ({
             position: absolute;
             top: calc(var(--nb-base-unit) / 2);
             right: calc(var(--nb-base-unit) - 2px);
-            font-weight: var(--nb-font-weight-bold);
-            font-size: var(--nb-font-size-10);
-            letter-spacing: 0.4px;
+            font-weight: var(--nb-font-weight-semibold, 600);
+            font-size: var(--nb-type-body-sm-size);
+            letter-spacing: var(--nb-type-body-sm-letter-spacing);
             color: var(--nb-c-white);
             line-height: calc(var(--nb-base-unit) * 1);
           }
@@ -227,8 +227,8 @@ const wrapperClasses = computed(() => ({
             position: absolute;
             top: calc(var(--nb-base-unit) / 2);
             right: calc(var(--nb-base-unit) * 1);
-            font-weight: var(--nb-font-weight-bold);
-            font-size: var(--nb-font-size-12);
+            font-weight: var(--nb-font-weight-semibold, 600);
+            font-size: var(--nb-type-body-sm-size);
             color: var(--nb-c-white);
             line-height: calc(var(--nb-base-unit) * 2);
           }
@@ -263,8 +263,8 @@ const wrapperClasses = computed(() => ({
             position: absolute;
             top: calc(var(--nb-base-unit) / 2);
             right: calc(var(--nb-base-unit) * 1);
-            font-weight: var(--nb-font-weight-bold);
-            font-size: var(--nb-font-size-12);
+            font-weight: var(--nb-font-weight-semibold, 600);
+            font-size: var(--nb-type-body-sm-size);
             color: var(--nb-c-white);
             line-height: calc(var(--nb-base-unit) * 3);
           }

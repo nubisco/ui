@@ -148,8 +148,8 @@ const rootStyle = computed(() => {
   align-items: center;
   min-height: var(--nb-field-height-sm);
   font-family: var(--nb-font-family-sans);
-  font-size: var(--nb-font-size-12);
-  line-height: 1.4;
+  font-size: var(--nb-type-body-sm-size);
+  line-height: var(--nb-type-body-sm-line-height);
   color: var(--nb-c-text-muted);
 
   &__spinner,

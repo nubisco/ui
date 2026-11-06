@@ -103,10 +103,10 @@ const collapsed = ref(props.collapsible && props.defaultCollapsed)
 }
 
 .nb-sidebar-menu-group__label {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: var(--nb-type-overline-size);
+  font-weight: var(--nb-type-overline-weight);
+  letter-spacing: var(--nb-type-overline-letter-spacing);
+  text-transform: var(--nb-type-overline-text-transform);
   color: var(--nb-shell-sidebar-link-color);
   opacity: 0.75;
 }

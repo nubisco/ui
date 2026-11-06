@@ -42,18 +42,20 @@ withDefaults(defineProps<IBadgeProps>(), {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-weight: 500;
+  font-weight: var(--nb-font-weight-semibold, 600);
+  // Counts sit in badges: digits of one width, so 9 to 10 does not jump.
+  font-variant-numeric: tabular-nums;
   border-radius: 999px;
   white-space: nowrap;
   line-height: 1;
 
   &--sm {
     padding: 2px 7px;
-    font-size: 10px;
+    font-size: var(--nb-type-body-sm-size);
   }
   &--md {
     padding: 3px 9px;
-    font-size: 11px;
+    font-size: var(--nb-type-body-sm-size);
   }
 
   /* Variants */

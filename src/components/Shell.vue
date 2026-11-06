@@ -1388,7 +1388,7 @@ defineExpose({
   color: var(--nb-shell-chrome-color);
   border: var(--nb-shell-chrome-border);
   border-radius: 2px;
-  font-size: 0.875rem;
+  font-size: var(--nb-type-body-compact-size);
   text-decoration: none;
   transition: transform var(--nb-motion-quick) ease;
 
@@ -1830,10 +1830,10 @@ defineExpose({
   background: var(--nb-shell-main-bg, var(--nb-c-surface));
   color: var(--nb-c-text);
   font: inherit;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: var(--nb-type-overline-size);
+  font-weight: var(--nb-type-overline-weight);
+  text-transform: var(--nb-type-overline-text-transform);
+  letter-spacing: var(--nb-type-overline-letter-spacing);
   cursor: pointer;
 
   &:focus-visible {
@@ -2119,7 +2119,7 @@ defineExpose({
 }
 
 .nb-shell__inspector-dismiss-glyph {
-  font-size: 1.25rem;
+  font-size: var(--nb-type-heading-02-size);
   line-height: 1;
 }
 

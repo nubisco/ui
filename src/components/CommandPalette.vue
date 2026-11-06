@@ -513,12 +513,12 @@ onBeforeUnmount(() => {
   flex: 1;
   border: none;
   background: transparent;
-  font-size: 18px;
+  font-size: var(--nb-type-body-lg-size);
   font-weight: 400;
   color: var(--nb-c-text);
   font-family: var(--nb-font-family-sans, sans-serif);
   outline: none;
-  line-height: 1.4;
+  line-height: var(--nb-type-body-lg-line-height);
 
   &::placeholder {
     color: var(--nb-c-text-subtle);
@@ -533,10 +533,10 @@ onBeforeUnmount(() => {
 }
 
 .nb-command-palette__group-header {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: var(--nb-type-overline-size);
+  font-weight: var(--nb-type-overline-weight);
+  text-transform: var(--nb-type-overline-text-transform);
+  letter-spacing: var(--nb-type-overline-letter-spacing);
   color: var(--nb-c-text-muted);
   padding: 8px 16px 4px;
 }
@@ -567,7 +567,7 @@ onBeforeUnmount(() => {
 .nb-command-palette__item-label {
   flex: 1;
   min-width: 0;
-  font-size: 14px;
+  font-size: var(--nb-type-body-compact-size);
   font-weight: 400;
   color: var(--nb-c-text);
   overflow: hidden;
@@ -589,8 +589,8 @@ onBeforeUnmount(() => {
   min-width: 22px;
   height: 22px;
   padding: 0 5px;
-  font-size: 11px;
-  font-weight: 500;
+  font-size: var(--nb-type-body-sm-size);
+  font-weight: var(--nb-font-weight-semibold, 600);
   font-family: var(--nb-font-family-sans, sans-serif);
   color: var(--nb-c-text-muted);
   background: var(--nb-c-layer-hover-3);
@@ -603,7 +603,7 @@ onBeforeUnmount(() => {
 .nb-command-palette__empty {
   padding: 24px 16px;
   text-align: center;
-  font-size: 14px;
+  font-size: var(--nb-type-body-compact-size);
   color: var(--nb-c-text-subtle);
 }
 

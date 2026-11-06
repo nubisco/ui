@@ -1064,8 +1064,8 @@ defineExpose({
   color: var(--nb-c-text);
   overflow: hidden;
   font-family: var(--nb-font-family-sans, system-ui);
-  font-size: 0.8125rem;
-  line-height: 1.25;
+  font-size: var(--nb-type-body-compact-size);
+  line-height: var(--nb-type-body-compact-line-height);
 }
 
 .nb-spreadsheet__toolbar {
@@ -1123,10 +1123,10 @@ defineExpose({
   background: var(--nb-c-surface);
   border-right: 1px solid var(--nb-c-border);
   border-bottom: 1px solid var(--nb-c-border);
-  font-weight: 600;
-  font-size: 0.75rem;
-  letter-spacing: 0.16px;
-  text-transform: uppercase;
+  font-weight: var(--nb-type-overline-weight);
+  font-size: var(--nb-type-overline-size);
+  letter-spacing: var(--nb-type-overline-letter-spacing);
+  text-transform: var(--nb-type-overline-text-transform);
   color: var(--nb-c-text);
   user-select: none;
 }
@@ -1146,7 +1146,7 @@ defineExpose({
 
 .nb-spreadsheet__sort {
   margin-left: 0.25rem;
-  font-size: 0.625rem;
+  font-size: var(--nb-type-body-sm-size);
   color: var(--nb-c-text-muted);
 }
 
@@ -1187,7 +1187,7 @@ defineExpose({
   align-items: center;
   justify-content: center;
   padding: 0 0.375rem;
-  font-size: 0.6875rem;
+  font-size: var(--nb-type-body-sm-size);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   overflow: hidden;
@@ -1285,7 +1285,7 @@ defineExpose({
 // iOS zooms into any field whose text is under 16px.
 @include bp.phone-touch {
   .nb-spreadsheet__editor {
-    font-size: 16px;
+    font-size: var(--nb-type-body-lg-size);
   }
 }
 </style>

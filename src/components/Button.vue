@@ -204,7 +204,7 @@ onMounted(() => {
   // visibly wider than the buttons beside it.
   box-sizing: border-box;
   font-family: inherit;
-  font-weight: 500;
+  font-weight: var(--nb-font-weight-semibold, 600);
   cursor: pointer;
   transition:
     background var(--nb-motion-short),
@@ -227,19 +227,19 @@ onMounted(() => {
     height: calc(var(--nb-base-unit) * 2);
     padding-block: 0;
     padding-inline: calc(var(--nb-base-unit) * 1);
-    font-size: var(--nb-font-size-12);
+    font-size: var(--nb-type-body-sm-size);
     --nb-button-icon-size: var(--nb-font-size-12);
   }
   &--xs {
     height: calc(var(--nb-base-unit) * 3);
     padding-inline: calc(var(--nb-base-unit) * 1.5);
-    font-size: var(--nb-font-size-12);
+    font-size: var(--nb-type-body-sm-size);
     --nb-button-icon-size: var(--nb-font-size-12);
   }
   &--sm {
     height: calc(var(--nb-base-unit) * 4);
     padding-inline: calc(var(--nb-base-unit) * 1.5);
-    font-size: var(--nb-font-size-12);
+    font-size: var(--nb-type-body-sm-size);
     --nb-button-icon-size: var(--nb-font-size-12);
   }
   // The small and medium sizes are 16 to 40px tall, under a fingertip's 44.
@@ -263,20 +263,20 @@ onMounted(() => {
   }
   &--md {
     height: calc(var(--nb-base-unit) * 5);
-    font-size: var(--nb-font-size-14);
+    font-size: var(--nb-type-body-compact-size);
     --nb-button-icon-size: var(--nb-font-size-14);
   }
   &--lg {
     height: calc(var(--nb-base-unit) * 6);
     padding-inline: calc(var(--nb-base-unit) * 2.5);
-    font-size: var(--nb-font-size-14);
+    font-size: var(--nb-type-body-compact-size);
     --nb-button-icon-size: var(--nb-font-size-14);
   }
   &--xl {
     height: calc(var(--nb-base-unit) * 8);
     padding-block: 14px;
     padding-inline: calc(var(--nb-base-unit) * 3);
-    font-size: var(--nb-font-size-16);
+    font-size: var(--nb-type-body-lg-size);
     align-items: center;
     --nb-button-icon-size: var(--nb-font-size-16);
   }
@@ -284,7 +284,7 @@ onMounted(() => {
     height: calc(var(--nb-base-unit) * 16);
     padding-block: 14px;
     padding-inline: calc(var(--nb-base-unit) * 4);
-    font-size: var(--nb-font-size-32);
+    font-size: var(--nb-type-heading-04-size);
     align-items: center;
     --nb-button-icon-size: var(--nb-font-size-32);
   }

@@ -494,7 +494,7 @@ const formatNum = (n: number) => {
 
 .nb-chart__axis {
   font-family: var(--nb-font-family-sans);
-  font-size: 11px;
+  font-size: var(--nb-type-body-sm-size);
   fill: var(--nb-c-text-muted);
 }
 
@@ -505,9 +505,9 @@ const formatNum = (n: number) => {
 
 .nb-chart__axis-label {
   font-family: var(--nb-font-family-sans);
-  font-size: 10px;
+  font-size: var(--nb-type-body-sm-size);
   fill: var(--nb-c-text-muted);
-  letter-spacing: 0.02em;
+  letter-spacing: var(--nb-type-body-sm-letter-spacing);
 }
 
 .nb-interpolation-chart__line {

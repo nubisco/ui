@@ -124,7 +124,7 @@ defineExpose({ el: itemRef })
   // so an item's corner is the menu's less that inset.
   // 4px of padding plus the container's 1px border.
   @include radius.inset(5px);
-  font-size: 14px;
+  font-size: var(--nb-type-body-compact-size);
   font-weight: 400;
   color: var(--nb-c-text);
   cursor: pointer;
@@ -171,7 +171,7 @@ defineExpose({ el: itemRef })
   }
 
   &--selected {
-    font-weight: 500;
+    font-weight: var(--nb-font-weight-semibold, 600);
   }
 
   &__check {
@@ -205,7 +205,7 @@ defineExpose({ el: itemRef })
 
   &__shortcut {
     flex-shrink: 0;
-    font-size: 12px;
+    font-size: var(--nb-type-body-sm-size);
     color: var(--nb-c-text-muted);
     font-family: var(--nb-font-family-sans, sans-serif);
   }
@@ -224,13 +224,13 @@ defineExpose({ el: itemRef })
 .nb-menu--xs .nb-menu-item {
   --nb-menu-item-h: 24px;
   padding: 0 12px;
-  font-size: 12px;
+  font-size: var(--nb-type-body-sm-size);
   gap: 6px;
 }
 .nb-menu--sm .nb-menu-item {
   --nb-menu-item-h: 32px;
   padding: 0 12px;
-  font-size: 13px;
+  font-size: var(--nb-type-body-compact-size);
 }
 .nb-menu--md .nb-menu-item {
   --nb-menu-item-h: 40px;

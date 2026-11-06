@@ -60,17 +60,17 @@ defineExpose({ viewport })
 
   &__title {
     margin: 0;
-    font-size: var(--nb-font-size-16);
+    font-size: var(--nb-type-heading-01-size);
     font-weight: 600;
-    line-height: 1.3;
+    line-height: var(--nb-type-heading-01-line-height);
     color: var(--nb-c-text);
   }
 
   &__subtitle {
     margin: 2px 0 0;
-    font-size: var(--nb-font-size-12);
+    font-size: var(--nb-type-body-sm-size);
     color: var(--nb-c-text-muted);
-    line-height: 1.4;
+    line-height: var(--nb-type-body-sm-line-height);
   }
 
   &__viewport {

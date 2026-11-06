@@ -302,7 +302,7 @@ const collapsed = computed(
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.9rem;
+  font-size: var(--nb-type-body-compact-size);
   line-height: 1;
 }
 
@@ -318,7 +318,7 @@ const collapsed = computed(
 }
 
 .nb-breadcrumbs__subtitle {
-  font-weight: 700;
+  font-weight: var(--nb-font-weight-semibold, 600);
   color: var(--nb-c-text);
 }
 
@@ -331,7 +331,7 @@ const collapsed = computed(
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-weight: 700;
+  font-weight: var(--nb-font-weight-semibold, 600);
   color: var(--nb-c-text);
 }
 

@@ -189,14 +189,14 @@ function optionClasses(option: IRadioOption) {
 
   // ── Option label text ─────────────────────────────────────────────────────────
   &__text {
-    font-size: var(--nb-font-size-14);
+    font-size: var(--nb-type-body-compact-size);
     color: var(--nb-c-text);
-    line-height: 1.4;
+    line-height: var(--nb-type-body-compact-line-height);
   }
 
   // ── Message ───────────────────────────────────────────────────────────────────
   &__message {
-    font-size: var(--nb-font-size-12);
+    font-size: var(--nb-type-body-sm-size);
   }
 
   // ── Hover ─────────────────────────────────────────────────────────────────────

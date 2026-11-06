@@ -97,7 +97,7 @@ const anchorAttrs = computed(() =>
     color: var(--nb-c-surface);
     padding: 0.3rem 0.65rem;
     border-radius: 5px;
-    font-size: 0.76rem;
+    font-size: var(--nb-type-body-sm-size);
     white-space: nowrap;
     pointer-events: none;
     opacity: 0;

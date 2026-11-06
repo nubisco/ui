@@ -646,8 +646,8 @@ defineExpose({
 .nb-confirm__message {
   margin: 0;
   color: var(--nb-c-text);
-  font-size: var(--nb-font-size-14);
-  line-height: 1.5;
+  font-size: var(--nb-type-body-compact-size);
+  line-height: var(--nb-type-body-compact-line-height);
 }
 
 // The record being acted on gets its own strip so it cannot be skimmed past
@@ -672,9 +672,10 @@ defineExpose({
 }
 
 .nb-confirm__subject-kind {
-  font-size: var(--nb-font-size-11);
-  text-transform: uppercase;
-  letter-spacing: var(--nb-letter-spacing-wide);
+  font-size: var(--nb-type-overline-size);
+  font-weight: var(--nb-type-overline-weight);
+  text-transform: var(--nb-type-overline-text-transform);
+  letter-spacing: var(--nb-type-overline-letter-spacing);
   color: var(--nb-confirm-subject-kind-color, var(--nb-c-text-muted));
 
   .nb-confirm__subject--danger & {
@@ -684,7 +685,7 @@ defineExpose({
 
 .nb-confirm__subject-name {
   font-family: var(--nb-confirm-subject-font, var(--nb-font-family-mono));
-  font-size: var(--nb-font-size-13);
+  font-size: var(--nb-type-code-md-size);
   color: var(--nb-confirm-subject-color, var(--nb-c-text));
   word-break: break-word;
 
@@ -698,7 +699,7 @@ defineExpose({
   align-items: center;
   gap: var(--nb-spacing-4);
   margin: 0;
-  font-size: var(--nb-font-size-12);
+  font-size: var(--nb-type-body-sm-size);
   color: var(--nb-confirm-status-color, var(--nb-c-text-muted));
 
   &--success {

@@ -86,16 +86,17 @@ const controlId = computed(() => props.labelFor ?? autoId)
 }
 
 // Plain <label> (not NbLabel) so it can ellipsize cleanly; styled to match
-// NbLabel's muted, medium-weight look.
+// NbLabel: the label type set, muted.
 .nb-field__label {
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-family: var(--nb-font-family-sans);
-  font-weight: 500;
-  font-size: var(--nb-font-size-12, 12px);
-  line-height: 1.3;
+  font-family: var(--nb-type-label-family);
+  font-size: var(--nb-type-label-size);
+  font-weight: var(--nb-type-label-weight);
+  line-height: var(--nb-type-label-line-height);
+  letter-spacing: var(--nb-type-label-letter-spacing);
   color: var(--nb-c-text-muted);
   cursor: default;
   user-select: none;
@@ -109,8 +110,9 @@ const controlId = computed(() => props.labelFor ?? autoId)
 
 .nb-field__hint {
   grid-column: 2;
-  font-size: var(--nb-font-size-11, 11px);
-  line-height: 1.3;
+  font-size: var(--nb-type-helper-text-size);
+  line-height: var(--nb-type-helper-text-line-height);
+  letter-spacing: var(--nb-type-helper-text-letter-spacing);
   color: var(--nb-c-text-subtle, var(--nb-c-text-muted));
 }
 .nb-field--stack .nb-field__hint {
