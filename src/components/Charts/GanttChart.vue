@@ -87,7 +87,7 @@
           :width="timelineWidth"
           :height="bodyHeight"
           role="img"
-          :aria-label="title || 'Gantt chart'"
+          :aria-label="title || nbStrings.chartGantt"
           @mouseleave="hoveredTask = null"
         >
           <!-- Vertical grid lines -->
@@ -257,6 +257,7 @@
 </template>
 
 <script setup lang="ts">
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { computed, ref, reactive } from 'vue'
 import ChartFrame from './shared/ChartFrame.vue'
 import ChartLegend from './shared/ChartLegend.vue'
@@ -269,6 +270,8 @@ import type {
   TGanttTimeScale,
   TGanttTaskStatus,
 } from './GanttChart.d'
+
+const nbStrings = useNbStrings()
 
 const props = withDefaults(defineProps<IGanttChartProps>(), {
   title: undefined,

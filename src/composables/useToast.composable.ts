@@ -9,6 +9,7 @@ import {
 } from 'vue'
 import type { TToastVariant, IToastCta } from '../components/Toast.vue'
 import { sharedSingleton } from '../utils/sharedState.helper'
+import { useNbStrings } from './useNbStrings.composable'
 
 /**
  * The toast queue: the clock, the cap and the ordering that `NbToaster`
@@ -193,7 +194,9 @@ export interface IToastQueueOptions {
   durations?: Partial<Record<TToastVariant, number>>
   /**
    * The visually hidden severity word each variant is announced with, for
-   * applications that are not in English. Merged over `NB_TOAST_STATUS_LABELS`.
+   * applications that are not in English. Merged over the `toastSuccess`,
+   * `toastError`, `toastWarning` and `toastInfo` strings of the catalogue
+   * (`provideNbStrings()`), whose defaults are `NB_TOAST_STATUS_LABELS`.
    * An empty string suppresses the word for that variant.
    */
   statusLabels?: Partial<Record<TToastVariant, string>>
@@ -328,8 +331,29 @@ export function createToastQueue(
     ...NB_TOAST_DURATIONS,
     ...options.durations,
   }
+  // Read lazily, so a catalogue provided after the queue was built, or
+  // switched at runtime, still reaches the announced severity word.
+  const strings = useNbStrings()
+  const statusOverrides = options.statusLabels ?? {}
+  const statusLabel = (
+    variant: TToastVariant,
+    key: 'toastSuccess' | 'toastError' | 'toastWarning' | 'toastInfo',
+  ): string => statusOverrides[variant] ?? strings.value[key]
   const labels: IToastLabels = {
-    status: { ...NB_TOAST_STATUS_LABELS, ...options.statusLabels },
+    status: {
+      get success() {
+        return statusLabel('success', 'toastSuccess')
+      },
+      get error() {
+        return statusLabel('error', 'toastError')
+      },
+      get warning() {
+        return statusLabel('warning', 'toastWarning')
+      },
+      get info() {
+        return statusLabel('info', 'toastInfo')
+      },
+    },
     close: options.closeLabel ?? 'Close',
   }
 

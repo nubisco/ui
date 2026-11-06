@@ -11,7 +11,7 @@
         :height="size.height"
         class="nb-chart__svg"
         role="img"
-        :aria-label="title || 'Interpolation chart'"
+        :aria-label="title || nbStrings.chartInterpolation"
         @mousemove="onMove"
         @mouseleave="onLeave"
         @mouseup="onUp"
@@ -163,6 +163,7 @@
 </template>
 
 <script setup lang="ts">
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { computed, ref, onBeforeUnmount } from 'vue'
 import ChartFrame from './shared/ChartFrame.vue'
 import ChartTooltip from './shared/ChartTooltip.vue'
@@ -173,6 +174,8 @@ import type {
   IInterpolationChartProps,
   IInterpolationPoint,
 } from './InterpolationChart.d'
+
+const nbStrings = useNbStrings()
 
 const props = withDefaults(defineProps<IInterpolationChartProps>(), {
   title: undefined,
@@ -456,12 +459,12 @@ const tooltipRows = computed(() => {
   const pt = sortedPoints.value[idx]
   return [
     {
-      label: props.inputLabel || 'Input',
+      label: props.inputLabel || nbStrings.value.chartInput,
       value: formatNum(pt.input),
       color: lineColor.value,
     },
     {
-      label: props.outputLabel || 'Output',
+      label: props.outputLabel || nbStrings.value.chartOutput,
       value: formatNum(pt.output),
       color: lineColor.value,
     },

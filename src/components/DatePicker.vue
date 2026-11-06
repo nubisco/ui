@@ -58,8 +58,8 @@
               tabindex="-1"
               :aria-label="
                 modelValue
-                  ? `Change date, ${formatForDisplay(modelValue)}`
-                  : 'Choose date'
+                  ? nbStrings.datePickerChangeDate(formatForDisplay(modelValue))
+                  : nbStrings.datePickerChooseDate
               "
               @click="toggleCalendar"
             >
@@ -103,8 +103,10 @@
               tabindex="-1"
               :aria-label="
                 endValue
-                  ? `Change end date, ${formatForDisplay(endValue)}`
-                  : 'Choose end date'
+                  ? nbStrings.datePickerChangeEndDate(
+                      formatForDisplay(endValue),
+                    )
+                  : nbStrings.datePickerChooseEndDate
               "
               @click="toggleCalendar"
             >
@@ -198,8 +200,8 @@
               tabindex="-1"
               :aria-label="
                 modelValue
-                  ? `Change date, ${formatForDisplay(modelValue)}`
-                  : 'Choose date'
+                  ? nbStrings.datePickerChangeDate(formatForDisplay(modelValue))
+                  : nbStrings.datePickerChooseDate
               "
               @click="toggleCalendar"
             >
@@ -259,8 +261,10 @@
               tabindex="-1"
               :aria-label="
                 endValue
-                  ? `Change end date, ${formatForDisplay(endValue)}`
-                  : 'Choose end date'
+                  ? nbStrings.datePickerChangeEndDate(
+                      formatForDisplay(endValue),
+                    )
+                  : nbStrings.datePickerChooseEndDate
               "
               @click="toggleCalendar"
             >
@@ -288,7 +292,11 @@
       ref="calendarRef"
       role="dialog"
       aria-modal="true"
-      :aria-label="label ? `${label} calendar` : 'Date picker'"
+      :aria-label="
+        label
+          ? nbStrings.datePickerDialogFor(label)
+          : nbStrings.datePickerDialog
+      "
       :class="[
         'nb-date-picker__calendar',
         { 'nb-date-picker__calendar--sheet': phone },
@@ -303,7 +311,7 @@
         <button
           type="button"
           class="nb-date-picker__cal-nav"
-          aria-label="Previous year"
+          :aria-label="nbStrings.datePickerPreviousYear"
           @click="prevYear"
         >
           <NbIcon name="caret-double-left" :size="16" />
@@ -311,7 +319,7 @@
         <button
           type="button"
           class="nb-date-picker__cal-nav"
-          aria-label="Previous month"
+          :aria-label="nbStrings.datePickerPreviousMonth"
           @click="prevMonth"
         >
           <NbIcon name="caret-left" :size="16" />
@@ -326,7 +334,7 @@
         <button
           type="button"
           class="nb-date-picker__cal-nav"
-          aria-label="Next month"
+          :aria-label="nbStrings.datePickerNextMonth"
           @click="nextMonth"
         >
           <NbIcon name="caret-right" :size="16" />
@@ -334,7 +342,7 @@
         <button
           type="button"
           class="nb-date-picker__cal-nav"
-          aria-label="Next year"
+          :aria-label="nbStrings.datePickerNextYear"
           @click="nextYear"
         >
           <NbIcon name="caret-double-right" :size="16" />
@@ -399,6 +407,7 @@
 </template>
 
 <script setup lang="ts">
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { ref, computed, watch, nextTick, onBeforeUnmount, useId } from 'vue'
 import type { IDatePickerProps } from './DatePicker.d'
 import NbLabel from './Label.vue'
@@ -409,6 +418,8 @@ import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import { useMenuSurface } from '@/composables/useMenuSurface.composable'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 import { useVisualViewportVar } from '@/composables/useVisualViewportVar.composable'
+
+const nbStrings = useNbStrings()
 
 defineOptions({ inheritAttrs: false })
 

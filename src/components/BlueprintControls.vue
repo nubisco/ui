@@ -4,39 +4,39 @@
     class="nb-blueprint-controls"
     :class="[`nb-blueprint-controls--${position}`, `is-${orientation}`]"
     role="toolbar"
-    aria-label="Blueprint controls"
+    :aria-label="nbStrings.blueprintControls"
   >
     <div class="nb-blueprint-controls__group">
       <NbButton
         variant="ghost"
         :size="sm"
         icon="magnifying-glass-plus"
-        title="Zoom in"
-        aria-label="Zoom in"
+        :title="nbStrings.blueprintZoomIn"
+        :aria-label="nbStrings.blueprintZoomIn"
         @click="bp.zoomIn()"
       />
       <NbButton
         variant="ghost"
         :size="sm"
         icon="magnifying-glass-minus"
-        title="Zoom out"
-        aria-label="Zoom out"
+        :title="nbStrings.blueprintZoomOut"
+        :aria-label="nbStrings.blueprintZoomOut"
         @click="bp.zoomOut()"
       />
       <NbButton
         variant="ghost"
         :size="sm"
         icon="frame-corners"
-        title="Fit to view"
-        aria-label="Fit to view"
+        :title="nbStrings.blueprintFitToView"
+        :aria-label="nbStrings.blueprintFitToView"
         @click="bp.fitToView()"
       />
       <NbButton
         variant="ghost"
         :size="sm"
         icon="crosshair"
-        title="Center"
-        aria-label="Center"
+        :title="nbStrings.blueprintCenter"
+        :aria-label="nbStrings.blueprintCenter"
         @click="bp.centerView()"
       />
       <NbButton
@@ -44,8 +44,8 @@
         variant="ghost"
         :size="sm"
         icon="tree-structure"
-        title="Auto layout"
-        aria-label="Auto layout"
+        :title="nbStrings.blueprintAutoLayout"
+        :aria-label="nbStrings.blueprintAutoLayout"
         @click="bp.autoLayout()"
       />
     </div>
@@ -57,64 +57,64 @@
         variant="ghost"
         :size="sm"
         icon="align-left"
-        title="Align left"
-        aria-label="Align left"
+        :title="nbStrings.blueprintAlignLeft"
+        :aria-label="nbStrings.blueprintAlignLeft"
         @click="bp.alignLeft()"
       />
       <NbButton
         variant="ghost"
         :size="sm"
         icon="align-center-horizontal"
-        title="Align horizontal center"
-        aria-label="Align horizontal center"
+        :title="nbStrings.blueprintAlignHorizontalCenter"
+        :aria-label="nbStrings.blueprintAlignHorizontalCenter"
         @click="bp.alignCenter()"
       />
       <NbButton
         variant="ghost"
         :size="sm"
         icon="align-right"
-        title="Align right"
-        aria-label="Align right"
+        :title="nbStrings.blueprintAlignRight"
+        :aria-label="nbStrings.blueprintAlignRight"
         @click="bp.alignRight()"
       />
       <NbButton
         variant="ghost"
         :size="sm"
         icon="align-top"
-        title="Align top"
-        aria-label="Align top"
+        :title="nbStrings.blueprintAlignTop"
+        :aria-label="nbStrings.blueprintAlignTop"
         @click="bp.alignTop()"
       />
       <NbButton
         variant="ghost"
         :size="sm"
         icon="align-center-vertical"
-        title="Align vertical center"
-        aria-label="Align vertical center"
+        :title="nbStrings.blueprintAlignVerticalCenter"
+        :aria-label="nbStrings.blueprintAlignVerticalCenter"
         @click="bp.alignMiddle()"
       />
       <NbButton
         variant="ghost"
         :size="sm"
         icon="align-bottom"
-        title="Align bottom"
-        aria-label="Align bottom"
+        :title="nbStrings.blueprintAlignBottom"
+        :aria-label="nbStrings.blueprintAlignBottom"
         @click="bp.alignBottom()"
       />
       <NbButton
         variant="ghost"
         :size="sm"
         icon="arrows-out-line-horizontal"
-        title="Distribute horizontally"
-        aria-label="Distribute horizontally"
+        :title="nbStrings.blueprintDistributeHorizontally"
+        :aria-label="nbStrings.blueprintDistributeHorizontally"
         @click="bp.distributeHorizontally()"
       />
       <NbButton
         variant="ghost"
         :size="sm"
         icon="arrows-out-line-vertical"
-        title="Distribute vertically"
-        aria-label="Distribute vertically"
+        :title="nbStrings.blueprintDistributeVertically"
+        :aria-label="nbStrings.blueprintDistributeVertically"
         @click="bp.distributeVertically()"
       />
     </div>
@@ -122,11 +122,14 @@
 </template>
 
 <script setup lang="ts">
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { computed } from 'vue'
 import NbButton from './Button.vue'
 import { ESizeShort } from '@/types/Size.d'
 import { useBlueprint } from '../composables/useBlueprint.composable'
 import type { IBlueprintControlsProps } from './BlueprintControls.d'
+
+const nbStrings = useNbStrings()
 
 const sm = ESizeShort.Small
 

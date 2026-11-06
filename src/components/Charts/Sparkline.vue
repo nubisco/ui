@@ -5,7 +5,7 @@
     :viewBox="viewBox"
     preserveAspectRatio="none"
     role="img"
-    aria-label="Sparkline"
+    :aria-label="nbStrings.chartSparkline"
     xmlns="http://www.w3.org/2000/svg"
   >
     <defs>
@@ -34,8 +34,11 @@
 </template>
 
 <script setup lang="ts">
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { computed, useId } from 'vue'
 import type { ISparklineProps } from './Sparkline.d'
+
+const nbStrings = useNbStrings()
 
 const props = withDefaults(defineProps<ISparklineProps>(), {
   color: 'var(--nb-c-primary)',

@@ -19,7 +19,7 @@
         <button
           class="nb-bottom-panel__size-btn"
           :class="{ active: currentSize === 'collapsed' }"
-          title="Minimize"
+          :title="nbStrings.bottomPanelMinimize"
           @click="setSize('collapsed')"
         >
           <svg width="12" height="12" viewBox="0 0 12 12">
@@ -36,7 +36,7 @@
         <button
           class="nb-bottom-panel__size-btn"
           :class="{ active: currentSize === 'default' }"
-          title="Default"
+          :title="nbStrings.bottomPanelDefault"
           @click="setSize('default')"
         >
           <svg width="12" height="12" viewBox="0 0 12 12">
@@ -55,7 +55,7 @@
         <button
           class="nb-bottom-panel__size-btn"
           :class="{ active: currentSize === 'half' }"
-          title="Half"
+          :title="nbStrings.bottomPanelHalf"
           @click="setSize('half')"
         >
           <svg width="12" height="12" viewBox="0 0 12 12">
@@ -74,7 +74,7 @@
         <button
           class="nb-bottom-panel__size-btn"
           :class="{ active: currentSize === 'full' }"
-          title="Maximize"
+          :title="nbStrings.bottomPanelMaximize"
           @click="setSize('full')"
         >
           <svg width="12" height="12" viewBox="0 0 12 12">
@@ -109,8 +109,11 @@
 </template>
 
 <script setup lang="ts">
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { computed } from 'vue'
 import type { TBottomPanelSize, IBottomPanelProps } from './BottomPanel.d'
+
+const nbStrings = useNbStrings()
 
 const props = withDefaults(defineProps<IBottomPanelProps>(), {
   size: 'default',
