@@ -11,8 +11,10 @@ import { EAnimation } from '../src/components/Icon.d'
  * jsdom evaluates neither keyframes nor media queries.
  *
  * Three promises: an animated icon is the size of a static one (no keyframe
- * scales the glyph up as its resting state), the timing comes from the motion
- * tokens, and reduced motion stops the travel while the loading glyphs keep
+ * scales the glyph up as its resting state), every animation is timed by a
+ * duration that resolves (a loop is a literal, like every library loop; the
+ * motion scale has no loop step) and eased on the standard token, and reduced
+ * motion stops the travel while the loading glyphs keep
  * breathing, per docs/principles/motion/accessibility.md.
  */
 
@@ -69,10 +71,13 @@ describe('NbIcon animations', () => {
     expect(css).not.toMatch(/scale\(2\)/)
   })
 
-  it('times every animation with the motion tokens', () => {
+  it('times every animation with a duration that resolves', () => {
     for (const name of ALL) {
       const body = rule(css, `.nb-icon-animation-always-${name}`)
-      expect(body, name).toContain('var(--nb-motion-loop)')
+      // A var() of an undeclared token would drop the whole shorthand, so
+      // the duration is a literal loop length.
+      expect(body, name).toMatch(/animation: \S+ \d*\.?\d+m?s /)
+      expect(body, name).toContain('infinite')
       expect(body, name).toMatch(/var\(--nb-ease-standard\)|linear/)
       expect(body, name).not.toMatch(/cubic-bezier/)
     }

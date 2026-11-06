@@ -141,4 +141,35 @@ describe('motion conformance', () => {
     }
     expect(stale, stale.join('\n')).toEqual([])
   })
+
+  // A `var()` naming a token the theme does not declare resolves to nothing,
+  // and an `animation` or `transition` shorthand holding it is then dropped
+  // whole. Every icon animation computed to `none` that way when the loop
+  // token was removed while NbIcon still read it.
+  it('reads only motion tokens the theme declares', () => {
+    const scale = readFileSync(
+      join(root, 'src/styles/variables/_animations.scss'),
+      'utf8',
+    )
+    const keysOf = (map: string): string[] => {
+      const body = scale.match(
+        new RegExp(`\\$${map}:\\s*\\(([\\s\\S]*?)\\)\\s*!default`),
+      )
+      expect(body, `$${map} in _animations.scss`).not.toBeNull()
+      return [...stripComments(body![1]).matchAll(/^\s*([\w-]+)\s*:/gm)].map(
+        (k) => k[1],
+      )
+    }
+    const declared = new Set([
+      ...keysOf('motion').map((k) => `--nb-motion-${k}`),
+      ...keysOf('easing').map((k) => `--nb-ease-${k}`),
+      ...keysOf('timings').map((k) => `--nb-animation-${k}`),
+    ])
+    const offenders = files.flatMap(({ rel, src }) =>
+      [...src.matchAll(/var\(\s*(--nb-(?:motion|ease|animation)-[\w-]+)/g)]
+        .filter((m) => !declared.has(m[1]))
+        .map((m) => `${rel}:${lineOf(src, m.index ?? 0)}  ${m[1]}`),
+    )
+    expect(offenders, offenders.join('\n')).toEqual([])
+  })
 })
