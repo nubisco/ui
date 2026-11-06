@@ -37,6 +37,7 @@
       ref="inputRef"
       type="file"
       class="nb-file-uploader__input"
+      hidden
       :accept="accept"
       :multiple="multiple"
       :disabled="disabled"

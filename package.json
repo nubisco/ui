@@ -199,6 +199,7 @@
     "@vitest/coverage-v8": "^4.1.1",
     "@vitest/ui": "^4.1.1",
     "@vue/test-utils": "^2.4.6",
+    "axe-core": "4.10.3",
     "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^10.8.0",
