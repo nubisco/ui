@@ -21,7 +21,6 @@ Press play. Every dot travels the same distance, and only the step differs. The 
 | `--nb-motion-short`  | 150ms | The de facto control-state step. A dialog or a drawer leaving.                                                       |
 | `--nb-motion-medium` | 240ms | The rail changing width. The inspector opening. An accordion section. A dialog arriving. A toast entering.           |
 | `--nb-motion-long`   | 400ms | The ceiling for anything the user is waiting on. Reserved for the largest surfaces; nothing in the library needs it. |
-| `--nb-motion-loop`   | 1s    | Loops only. Never a transition: a second of waiting to see a menu is a bug, a one-second spinner cycle is a loop.    |
 
 ## Choosing a step
 

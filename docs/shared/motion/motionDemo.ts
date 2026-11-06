@@ -77,7 +77,9 @@ export const slowTokens = computed<Record<string, string>>(() => {
   const out: Record<string, string> = {}
   for (const { token, ms } of STEPS)
     out[`--nb-motion-${token}`] = `${ms * SLOW_FACTOR}ms`
-  out['--nb-motion-loop'] = `${1000 * SLOW_FACTOR}ms`
+  // Loops have no token: each is a literal tuned to its indicator. The demo's
+  // spinner reads this local property so it slows with the stage.
+  out['--durations-loop'] = `${900 * SLOW_FACTOR}ms`
   return out
 })
 
