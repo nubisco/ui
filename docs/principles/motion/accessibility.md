@@ -51,7 +51,7 @@ Flip the switch. Every reduced-motion handler in this library is one of the four
 
 ## Writing it
 
-Every component writes the preference the same way, through one mixin, and so does a product:
+Every component writes the preference the same way, through one mixin, and so does a product. `tests/motion-conformance.test.ts` fails the build on a raw `@media (prefers-reduced-motion)` anywhere in the library, so a grep for `motion.reduced` finds every handler. The [surface mixins](/principles/motion/code#the-surfaces-popover-dialog-disclosure) write this block for you.
 
 ```scss
 @use '@nubisco/ui/styles/logic/motion' as motion;
@@ -70,7 +70,7 @@ Every component writes the preference the same way, through one mixin, and so do
 
 ## A preference that flips mid-session
 
-The media query reacts live, so a transition that is purely CSS follows the setting the moment it changes. The one piece of motion the library times in script, the rail's label switch, reads the preference on every collapse, so it is immediate from the next click.
+The media query reacts live, so a transition that is purely CSS follows the setting the moment it changes. Script that has to decide (a scroll behaviour, a timer) reads `prefersReducedMotion()` at the moment it decides, or `useReducedMotion()` when it needs to react. The rail's label switch, `NbBackToTop`'s scroll and `NbVideo`'s autoplay all read it that way, so each is right from the next click.
 
 ## See also
 
