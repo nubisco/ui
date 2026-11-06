@@ -426,7 +426,7 @@ non-statuses moved to where facts live:
   <div class="sx-pair sx-pair--stack">
     <div class="sx-half sx-half--wrong">
       <p class="sx-label">Wrong: four badges, one status</p>
-      <div class="sx-page-header"><span class="sx-page-title">Checkout redesign</span><NbBadge variant="warning" dot>Suspended</NbBadge><NbBadge variant="purple">Enterprise</NbBadge><NbBadge variant="info">Production</NbBadge><NbBadge variant="neutral">eu-west-1</NbBadge></div>
+      <div class="sx-page-header"><span class="sx-page-title">Checkout redesign</span><NbBadge variant="warning" dot>Suspended</NbBadge><NbBadge variant="primary">Enterprise</NbBadge><NbBadge variant="info">Production</NbBadge><NbBadge variant="neutral">eu-west-1</NbBadge></div>
       <p class="sx-note">Plan, environment and region are facts about the project, not states of it. Beside the real status they read as four statuses, and the one the user can act on is the third-loudest thing in the row.</p>
     </div>
     <div class="sx-half sx-half--right">

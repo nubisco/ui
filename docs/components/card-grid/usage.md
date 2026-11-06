@@ -16,18 +16,18 @@ That distinction is why a catalogue of plugins and a catalogue of content types 
   <NbCardGrid style="width: 100%">
     <NbCard title="Compressor" subtitle="dynamics" icon="tray">
       Evens out the loud and quiet parts of a signal.
-      <template #footer><NbBadge variant="green" size="sm">audio</NbBadge></template>
+      <template #footer><NbBadge variant="success" size="sm">audio</NbBadge></template>
     </NbCard>
     <NbCard title="Arpeggiator" subtitle="midi" icon="tray">
       Turns a held chord into a pattern of notes.
       <template #footer>
-        <NbBadge variant="purple" size="sm">midi</NbBadge>
-        <NbBadge variant="grey" size="sm">beta</NbBadge>
+        <NbBadge variant="primary" size="sm">midi</NbBadge>
+        <NbBadge variant="neutral" size="sm">beta</NbBadge>
       </template>
     </NbCard>
     <NbCard title="Reverb" subtitle="effect" icon="tray">
       Places a dry signal in a room.
-      <template #footer><NbBadge variant="green" size="sm">audio</NbBadge></template>
+      <template #footer><NbBadge variant="success" size="sm">audio</NbBadge></template>
     </NbCard>
   </NbCardGrid>
 </preview>

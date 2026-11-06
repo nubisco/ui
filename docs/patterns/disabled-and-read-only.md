@@ -325,7 +325,7 @@ copies of them.
       <div class="dro-mcell"><NbDefinitionList :items="droChannelFacts" layout="stacked" compact /></div>
       <div class="dro-mcell"><NbSwitch v-model="droMatrixRenew" label="Auto-renew" name="dro-m-sw-1" /></div>
       <div class="dro-mcell"><NbSwitch :model-value="droMatrixRenew" label="Auto-renew" name="dro-m-sw-2" disabled /></div>
-      <div class="dro-mcell"><NbDefinitionList compact><NbDefinitionListItem term="Auto-renew"><NbBadge variant="green">On</NbBadge></NbDefinitionListItem></NbDefinitionList></div>
+      <div class="dro-mcell"><NbDefinitionList compact><NbDefinitionListItem term="Auto-renew"><NbBadge variant="success">On</NbBadge></NbDefinitionListItem></NbDefinitionList></div>
       <div class="dro-mcell"><NbSlider v-model="droMatrixRetention" label="Retention (days)" name="dro-m-sld-1" :min="0" :max="90" /></div>
       <div class="dro-mcell"><NbSlider :model-value="droMatrixRetention" label="Retention (days)" name="dro-m-sld-2" :min="0" :max="90" disabled /></div>
       <div class="dro-mcell"><NbProgressBar label="Retention (days)" :value="droMatrixRetention" :max="90" size="sm" :helper="droRetentionHelper" /></div>

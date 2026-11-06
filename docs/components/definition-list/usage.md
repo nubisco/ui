@@ -68,7 +68,7 @@ Use the default slot with `NbDefinitionListItem` when a value needs a link, a ba
         <a href="#definition-list">nubisco/ui</a>
       </NbDefinitionListItem>
       <NbDefinitionListItem term="Status">
-        <NbBadge variant="green" size="sm">deployed</NbBadge>
+        <NbBadge variant="success" size="sm">deployed</NbBadge>
       </NbDefinitionListItem>
       <NbDefinitionListItem term="Workflow">release.yml</NbDefinitionListItem>
     </NbDefinitionList>

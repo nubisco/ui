@@ -36,7 +36,7 @@ Put a hint next to a label whose meaning a new user cannot guess. Do not use it 
       <NbInfoHint text="Counted at the last nightly sync, not in real time." />
     </NbGrid>
     <NbGrid dir="row" gap="xs" align="center">
-      <NbBadge variant="red" dot>Archived</NbBadge>
+      <NbBadge variant="danger" dot>Archived</NbBadge>
       <NbInfoHint icon="question" text="Moved out of the active list more than 30 days ago." />
     </NbGrid>
   </NbGrid>

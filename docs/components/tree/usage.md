@@ -61,11 +61,11 @@ Use the `meta` slot for what a row **is** rather than what you can do with it: a
   <NbTree>
     <NbTreeNode id="m1" label="Home" icon="file">
       <template #meta>
-        <NbBadge variant="green" size="sm">Live</NbBadge>
+        <NbBadge variant="success" size="sm">Live</NbBadge>
       </template>
       <NbTreeNode id="m2" label="pricing" icon="file">
         <template #meta>
-          <NbBadge variant="orange" size="sm">In review</NbBadge>
+          <NbBadge variant="warning" size="sm">In review</NbBadge>
         </template>
       </NbTreeNode>
     </NbTreeNode>
