@@ -9,6 +9,7 @@
       'nb-card--selected': selected,
       'nb-card--disabled': disabled,
       'nb-card--decorated': !!$slots.decorator,
+      'nb-card--flat': flat,
     }"
     v-bind="{ ...attrs, ...layerProps }"
     @click="onClick"
@@ -64,12 +65,21 @@
       <slot name="decorator" />
     </div>
 
-    <div class="nb-card__head">
-      <span class="nb-card__title">
+    <div
+      class="nb-card__head"
+      :class="{ 'nb-card__head--bar': $slots.meta || $slots.actions }"
+    >
+      <component :is="titleTag" class="nb-card__title">
         <slot name="title">{{ title }}</slot>
+      </component>
+      <span v-if="$slots.meta" class="nb-card__meta">
+        <slot name="meta" />
       </span>
-      <span v-if="subtitle || $slots.subtitle" class="nb-card__subtitle">
-        <slot name="subtitle">{{ subtitle }}</slot>
+      <div v-if="$slots.actions" class="nb-card__actions">
+        <slot name="actions" />
+      </div>
+      <span v-if="supportText || $slots.subtitle" class="nb-card__subtitle">
+        <slot name="subtitle">{{ supportText }}</slot>
       </span>
     </div>
 
@@ -87,13 +97,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useSlots, watch } from 'vue'
+import { computed, provide, ref, useSlots, watch } from 'vue'
 import * as iconImage from '@nubisco/ui/icons/image'
 import type { ICardProps } from './CardGrid.d'
 import NbIcon from './Icon.vue'
 import {
   clampLayer,
   layerClassFor,
+  NB_LAYER_INJECTION_KEY,
   useSurfaceLayer,
 } from '@/composables/useSurfaceLayer.composable'
 import { useSurfaceLink } from './Card.link'
@@ -101,6 +112,9 @@ import { useSurfaceLink } from './Card.link'
 const props = withDefaults(defineProps<ICardProps>(), {
   title: '',
   subtitle: '',
+  description: undefined,
+  headingLevel: 'h3',
+  flat: false,
   icon: undefined,
   orientation: 'vertical',
   size: 'md',
@@ -150,7 +164,33 @@ const mediaStyle = computed(() => ({
 // inherited, which is the surface of its CONTAINER, so a card straight on a
 // page was the page's own colour (or, under the old shell ground, darker than
 // it) instead of a card on it.
-const { level, layerProps } = useSurfaceLayer()
+//
+// A flat card paints nothing and does not deepen its contents, exactly like a
+// flat NbPanel: no layer class, no surface marker, and the level it publishes
+// is the one a sibling of the card would paint.
+const { level, layerProps: surfaceLayerProps } = useSurfaceLayer({
+  provideContext: false,
+})
+const layerProps = computed(() => (props.flat ? {} : surfaceLayerProps.value))
+provide(
+  NB_LAYER_INJECTION_KEY,
+  computed(() => (props.flat ? level.value : clampLayer(level.value + 1))),
+)
+
+// The line under the title. `description` is the same line under the name
+// NbPanel uses, so a card and a panel take the same two props.
+const supportText = computed(() => props.description || props.subtitle)
+
+// The title is a real heading, so a grid of cards is a list of headings a
+// screen reader can jump between. Not inside an element that is itself a
+// button (a clickable card): a heading there is flattened into the button's
+// name anyway. And not when there is no title: an empty heading is worse
+// than none.
+const titleTag = computed(() => {
+  if (!props.title && !slots.title) return 'span'
+  if (props.clickable && !props.href && !props.to) return 'span'
+  return props.headingLevel
+})
 
 // The media box sits one layer below the card, so an empty box (and the
 // letterbox of a `contain` image) reads as a well in the card in both modes.
@@ -307,6 +347,62 @@ const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
   letter-spacing: var(--nb-type-heading-compact-letter-spacing);
   color: var(--nb-c-text);
   overflow-wrap: anywhere;
+}
+
+// Under the head, not bare: the title is a heading, and a prose stylesheet
+// around the card (a docs page, a CMS body) styles every heading it contains.
+.nb-card__head .nb-card__title {
+  margin: 0;
+}
+
+// A title with a count or a control beside it: the title and its meta on one
+// line, the actions at the far end, the support line underneath.
+.nb-card__head--bar {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--nb-spacing-8);
+
+  > .nb-card__title {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  > .nb-card__meta {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  > .nb-card__actions {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  > .nb-card__subtitle {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+.nb-card__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nb-spacing-4);
+  font-size: var(--nb-type-label-sm-size);
+  line-height: var(--nb-type-label-sm-line-height);
+  color: var(--nb-c-text-muted);
+}
+
+.nb-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--nb-spacing-4);
+}
+
+// See NbPanel's `flat`: the border and padding stay, the plane shows through.
+.nb-card--flat {
+  background: transparent;
 }
 
 .nb-card__subtitle {

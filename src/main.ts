@@ -360,7 +360,7 @@ export {
 export { default as NbLayer } from './components/Layer.vue'
 export type { ILayerProps } from './components/Layer.d'
 export { default as NbPanel } from './components/Panel.vue'
-export type { IPanelProps } from './components/Panel.d'
+export type { IPanelProps, THeadingLevel } from './components/Panel.d'
 export { default as NbPieChart } from './components/Charts/PieChart.vue'
 export type { IPieChartProps } from './components/Charts/PieChart.d'
 export { default as NbShell } from './components/Shell.vue'
