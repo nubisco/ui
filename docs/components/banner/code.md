@@ -99,12 +99,12 @@ Put the way to resolve the banner in the `action` slot. Keep it to one or two co
 | ------------- | ---------------------------------------------------------- | ----------- | -------------------------------------------------------- |
 | `status`      | `'info' \| 'success' \| 'warning' \| 'error' \| 'neutral'` | `'info'`    | The tone. Picks the ground, the ink and the icon.        |
 | `variant`     | `'inline' \| 'callout'`                                    | `'inline'`  | Reports an outcome, or states a standing fact.           |
-| `title`       | `string`                                                   | —           | Short and declarative, no full stop.                     |
+| `title`       | `string`                                                   | `undefined` | Short and declarative, no full stop.                     |
 | `dismissible` | `boolean`                                                  | `false`     | Shows a close button. Ignored when `variant="callout"`.  |
-| `icon`        | `string`                                                   | —           | Overrides the icon that `status` would pick.             |
+| `icon`        | `string`                                                   | `undefined` | Overrides the icon that `status` would pick.             |
 | `hideIcon`    | `boolean`                                                  | `false`     | Removes the icon. Colour must then not be the only cue.  |
 | `flush`       | `boolean`                                                  | `false`     | Drops the radius and side borders, for edge-to-edge use. |
-| `closeLabel`  | `string`                                                   | `'Dismiss'` | Accessible label for the close button.                   |
+| `closeLabel`  | `string`                                                   | `'Close'`   | Accessible label for the close button.                   |
 
 ## Slots
 

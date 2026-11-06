@@ -246,7 +246,8 @@ async function remove() {
     await api.deleteComment(pending.value.id)
     pending.value = null
   } catch (error) {
-    failure.value = error.message
+    console.error(error)
+    failure.value = 'Could not delete the comment. Try again.'
   } finally {
     deleting.value = false
   }
@@ -272,7 +273,7 @@ You then own the `busy` and `error` props, which is the whole difference: `useCo
 | `typeToConfirmLabel`  | `string`                | `Type <phrase> to confirm` | Overrides the gate field's label, for localisation.                                                                                 |
 | `typeToConfirmHelper` | `string`                | none                       | Helper text under the gate field.                                                                                                   |
 | `busy`                | `boolean`               | `false`                    | Pending state: buttons and gate lock, confirm spins, dismissal is refused.                                                          |
-| `busyLabel`           | `string`                | `'Working...'`             | Live-region text announced while `busy`.                                                                                            |
+| `busyLabel`           | `string`                | `'Working'`                | Live-region text announced while `busy`. No ellipsis: the spinner already says the work is ongoing.                                 |
 | `succeeded`           | `boolean`               | `false`                    | The finished beat: work is done, everything stays locked, the dialog is about to close.                                             |
 | `successLabel`        | `string`                | none                       | The line shown while `succeeded`. Unset means no beat: the dialog closes straight away.                                             |
 | `error`               | `string`                | none                       | Failure text from the last attempt, shown in the body without closing the dialog.                                                   |
@@ -317,14 +318,14 @@ The promise resolves `true` only if the user confirmed and (when `onConfirm` is 
 
 `IConfirmOptions` is every prop above except `open`, `busy`, `succeeded` and `error` (the composable owns those four), plus:
 
-| Option           | Type                                | Description                                                                                                                                                                  |
-| ---------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `onConfirm`      | `() => unknown \| Promise<unknown>` | The work to run on confirm. The dialog locks while it is pending, and resolves `true` only after it settles. On rejection the dialog stays open with the failure shown.      |
-| `body`           | `() => VNodeChild`                  | Body content as a render function, filling the default slot, for a consequence a sentence cannot carry. It renders in the dialog's own app: no router, no i18n, no provides. |
-| `formatError`    | `(error: unknown) => string`        | Turns a rejection into the text shown in the dialog. Defaults to the error's `message`, then `String(error)`.                                                                |
-| `timeout`        | `number`                            | Milliseconds `onConfirm` is given to settle before the dialog declares a failure and unlocks. It does not abort the work. Unset by default.                                  |
-| `timeoutMessage` | `string`                            | The failure text used when `timeout` elapses. Defaults to a sentence saying the work may still be running.                                                                   |
-| `successLabel`   | `string`                            | Shows a finished beat for a moment before the dialog closes itself.                                                                                                          |
+| Option           | Type                                | Description                                                                                                                                                                        |
+| ---------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `onConfirm`      | `() => unknown \| Promise<unknown>` | The work to run on confirm. The dialog locks while it is pending, and resolves `true` only after it settles. On rejection the dialog stays open with the failure shown.            |
+| `body`           | `() => VNodeChild`                  | Body content as a render function, filling the default slot, for a consequence a sentence cannot carry. It renders in the dialog's own app: no router, no i18n, no provides.       |
+| `formatError`    | `(error: unknown) => string`        | Turns a rejection into the text shown in the dialog. Defaults to `Could not complete the request. Try again.` and logs the error to the console. The raw `message` is never shown. |
+| `timeout`        | `number`                            | Milliseconds `onConfirm` is given to settle before the dialog declares a failure and unlocks. It does not abort the work. Unset by default.                                        |
+| `timeoutMessage` | `string`                            | The failure text used when `timeout` elapses. Defaults to a sentence saying the work may still be running.                                                                         |
+| `successLabel`   | `string`                            | Shows a finished beat for a moment before the dialog closes itself.                                                                                                                |
 
 ### `dismissConfirms()`
 

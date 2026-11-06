@@ -655,27 +655,27 @@ Only one row open at a time is a matter of what you pass back:
 
 ## Props
 
-| Prop           | Type                                      | Default     | Description                                                               |
-| -------------- | ----------------------------------------- | ----------- | ------------------------------------------------------------------------- |
-| `columns`      | `IDataTableColumn<T>[]`                   | required    | Column definitions, left to right                                         |
-| `rows`         | `T[]`                                     | required    | Row data (order is respected as-is)                                       |
-| `rowKey`       | `keyof T \| (row: T) => string \| number` | required    | Row identity for selection, keys and reconciliation                       |
-| `size`         | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'`    | `'lg'`      | Row height: 24, 32, 40, 48 or 64px                                        |
-| `sortState`    | `IDataTableSortState \| null`             | `null`      | Controlled sort state, reflected in `aria-sort`                           |
-| `selectable`   | `'none' \| 'single' \| 'multiple'`        | `'none'`    | Row selection mode                                                        |
-| `selected`     | `(string \| number)[]`                    | `[]`        | Controlled selected keys (`v-model:selected`)                             |
-| `loading`      | `boolean`                                 | `false`     | Renders skeleton placeholder rows                                         |
-| `skeletonRows` | `number`                                  | `5`         | Number of skeleton rows while loading                                     |
-| `error`        | `string`                                  | `undefined` | Error message shown in place of the body                                  |
-| `emptyMessage` | `string`                                  | `undefined` | Message shown when there are no rows                                      |
-| `stickyHeader` | `boolean`                                 | `true`      | Pins the header while the body scrolls                                    |
-| `zebra`        | `boolean`                                 | `false`     | Alternating row backgrounds                                               |
-| `fill`         | `boolean`                                 | `false`     | Fill the parent's height and scroll internally                            |
-| `title`        | `string`                                  | `undefined` | Toolbar title                                                             |
-| `description`  | `string`                                  | `undefined` | Toolbar sub-text                                                          |
-| `ariaLabel`    | `string`                                  | `undefined` | Accessible name for the `<table>`                                         |
-| `stackOnPhone` | `boolean`                                 | `false`     | On a phone, render each row as a stacked card                             |
-| `expanded`     | `(string \| number)[]`                    | `[]`        | Open detail row keys (`v-model:expanded`), read with a `#row-detail` slot |
+| Prop           | Type                                      | Default     | Description                                                                                                             |
+| -------------- | ----------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `columns`      | `IDataTableColumn<T>[]`                   | required    | Column definitions, left to right                                                                                       |
+| `rows`         | `T[]`                                     | required    | Row data (order is respected as-is)                                                                                     |
+| `rowKey`       | `keyof T \| (row: T) => string \| number` | required    | Row identity for selection, keys and reconciliation                                                                     |
+| `size`         | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'`    | `'lg'`      | Row height: 24, 32, 40, 48 or 64px                                                                                      |
+| `sortState`    | `IDataTableSortState \| null`             | `null`      | Controlled sort state, reflected in `aria-sort`                                                                         |
+| `selectable`   | `'none' \| 'single' \| 'multiple'`        | `'none'`    | Row selection mode                                                                                                      |
+| `selected`     | `(string \| number)[]`                    | `[]`        | Controlled selected keys (`v-model:selected`)                                                                           |
+| `loading`      | `boolean`                                 | `false`     | Renders skeleton placeholder rows                                                                                       |
+| `skeletonRows` | `number`                                  | `5`         | Number of skeleton rows while loading                                                                                   |
+| `error`        | `string \| boolean`                       | `undefined` | Error message shown in place of the body. `true` shows the default `Could not load the data` from the strings catalogue |
+| `emptyMessage` | `string`                                  | `undefined` | Message shown when there are no rows                                                                                    |
+| `stickyHeader` | `boolean`                                 | `true`      | Pins the header while the body scrolls                                                                                  |
+| `zebra`        | `boolean`                                 | `false`     | Alternating row backgrounds                                                                                             |
+| `fill`         | `boolean`                                 | `false`     | Fill the parent's height and scroll internally                                                                          |
+| `title`        | `string`                                  | `undefined` | Toolbar title                                                                                                           |
+| `description`  | `string`                                  | `undefined` | Toolbar sub-text                                                                                                        |
+| `ariaLabel`    | `string`                                  | `undefined` | Accessible name for the `<table>`                                                                                       |
+| `stackOnPhone` | `boolean`                                 | `false`     | On a phone, render each row as a stacked card                                                                           |
+| `expanded`     | `(string \| number)[]`                    | `[]`        | Open detail row keys (`v-model:expanded`), read with a `#row-detail` slot                                               |
 
 ## Interfaces
 

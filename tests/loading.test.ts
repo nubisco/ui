@@ -83,6 +83,21 @@ describe('NbSpinner', () => {
     )
   })
 
+  it('falls back to a named default and asks for a label once', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const first = mount(Spinner)
+    mount(Spinner)
+    await settle()
+    expect(first.find('.nb-spinner__announcement').text()).toBe(
+      'Loading content',
+    )
+    const asked = warn.mock.calls.filter((call) =>
+      String(call[0]).includes('NbSpinner has no `label`'),
+    )
+    expect(asked.length).toBeLessThanOrEqual(1)
+    warn.mockRestore()
+  })
+
   it('keeps the visible label out of the accessibility tree', async () => {
     // The visible text and the announced text are separate nodes. If the
     // visible one were also exposed, the label would be read twice.

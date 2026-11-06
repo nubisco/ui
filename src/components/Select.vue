@@ -360,7 +360,7 @@ const props = withDefaults(defineProps<ISelectProps>(), {
   searchable: false,
   anchor: null,
   selectedMark: 'fill',
-  searchPlaceholder: 'Search…',
+  searchPlaceholder: 'Search',
   noResultsLabel: 'No results',
   variant: 'default',
   size: 'md',

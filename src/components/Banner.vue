@@ -57,7 +57,7 @@ const props = withDefaults(
     dismissible: false,
     hideIcon: false,
     flush: false,
-    closeLabel: 'Dismiss',
+    closeLabel: 'Close',
   },
 )
 

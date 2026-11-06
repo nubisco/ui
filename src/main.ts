@@ -678,6 +678,7 @@ export type {
 export {
   useConfirm,
   dismissConfirms,
+  NB_CONFIRM_DEFAULT_ERROR,
 } from './composables/useConfirm.composable'
 export type { TConfirmFn } from './composables/useConfirm.composable'
 export { useWalkthrough } from './composables/useWalkthrough.composable'

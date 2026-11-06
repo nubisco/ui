@@ -167,7 +167,7 @@ const props = withDefaults(defineProps<IConfirmProps>(), {
   typeToConfirmLabel: undefined,
   typeToConfirmHelper: undefined,
   busy: false,
-  busyLabel: 'Working...',
+  busyLabel: 'Working',
   succeeded: false,
   successLabel: undefined,
   error: undefined,

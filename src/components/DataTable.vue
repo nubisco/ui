@@ -213,7 +213,9 @@
                   class="nb-data-table__state-inner"
                 >
                   <NbIcon name="warning-circle-fill" aria-hidden="true" />
-                  <span>{{ error }}</span>
+                  <span>{{
+                    error === true ? nbStrings.dataTableError : error
+                  }}</span>
                 </NbGrid>
               </slot>
             </td>
