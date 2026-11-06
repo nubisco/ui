@@ -1437,7 +1437,7 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
       bottom: 0;
       height: var(--pin-level, 0%);
       background: var(--pin-color, var(--nb-card-color));
-      transition: height 90ms linear;
+      transition: height var(--nb-motion-quick) linear;
     }
   }
 
@@ -1521,7 +1521,7 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
     inset: -3px;
     border: 1.5px solid var(--pin-color, var(--nb-card-color));
     border-radius: var(--nb-radius-xs);
-    animation: nb-port-ping 320ms var(--nb-ease-enter) 1;
+    animation: nb-port-ping var(--nb-motion-medium) var(--nb-ease-enter) 1;
     pointer-events: none;
   }
 

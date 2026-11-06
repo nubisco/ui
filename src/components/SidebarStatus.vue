@@ -68,7 +68,7 @@ const isCompact = computed(() => variant.value === 'compact')
   margin: 0 4px;
   border-radius: 50%;
   background: var(--nb-c-component-inactive, currentColor);
-  transition: background 0.3s ease;
+  transition: background var(--nb-motion-short) ease;
 
   .nb-sidebar-status--success & {
     background: var(--nb-c-success, #22c55e);

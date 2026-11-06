@@ -1170,7 +1170,7 @@ defineExpose({
     width: 2px;
     height: 50%;
     background: transparent;
-    transition: background 0.12s ease;
+    transition: background var(--nb-motion-quick) ease;
   }
   &:hover::after {
     background: var(--nb-c-primary, #6a40d0);
@@ -1216,7 +1216,7 @@ defineExpose({
   text-overflow: ellipsis;
   cursor: cell;
   font-variant-numeric: tabular-nums;
-  transition: background-color 0.08s linear;
+  transition: background-color var(--nb-motion-micro) linear;
 }
 
 .nb-spreadsheet__cell--left {

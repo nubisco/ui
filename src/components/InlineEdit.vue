@@ -174,7 +174,7 @@ defineExpose({ start })
     align-self: center;
     color: var(--nb-c-text-subtle);
     opacity: 0;
-    transition: opacity 120ms ease;
+    transition: opacity var(--nb-motion-quick) ease;
   }
 
   &:hover:not(.is-disabled) {
