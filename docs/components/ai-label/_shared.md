@@ -14,10 +14,37 @@ const availableProps: PreviewPropDef[] = [
     ],
   },
   {
-    label: 'Static',
-    name: 'static',
+    name: 'size',
+    type: 'single',
+    label: 'Size',
+    placeholder: 'Size of the label',
+    default: 'md',
+    options: [
+      { value: 'sm', label: 'sm' },
+      { value: 'md', label: 'md' },
+      { value: 'lg', label: 'lg' },
+    ],
+  },
+  {
+    label: 'Explain',
+    name: 'explain',
+    type: 'string',
+    placeholder: 'Plain-text explanation. Empty renders the static mark.',
+    default:
+      'Written by a model from 14 tasks and 3 goals the product selected. Every task it names was checked against that list.',
+  },
+  {
+    label: 'Plain available',
+    name: 'plainAvailable',
     type: 'boolean',
-    placeholder: 'Render a mark instead of a button',
+    placeholder: 'Offer the plain version in the explanation',
+    default: false,
+  },
+  {
+    label: 'Revertable',
+    name: 'revertable',
+    type: 'boolean',
+    placeholder: 'A person edited the AI value: render the undo button',
     default: false,
   },
 ]
