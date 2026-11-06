@@ -754,6 +754,7 @@ defineExpose({ queue })
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/variables/breakpoints' as bp;
 
 /*
@@ -960,7 +961,7 @@ defineExpose({ queue })
  * Reduced motion removes the travel, not the message: toasts cross-fade in
  * place and the stack reflows immediately.
  */
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-toaster {
     --nb-toaster-shift: 0 0;
   }

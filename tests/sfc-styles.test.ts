@@ -109,6 +109,7 @@ describe('BlueprintCard port label', () => {
     descriptor.styles.map((s) => s.content).join('\n'),
     {
       syntax: 'scss',
+      url: pathToFileURL(join(dir, 'BlueprintCard.vue')),
     },
   ).css
 

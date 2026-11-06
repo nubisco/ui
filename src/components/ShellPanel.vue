@@ -159,6 +159,7 @@ defineExpose({ setSize })
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 
 .nb-shell-panel {
@@ -358,7 +359,7 @@ defineExpose({ setSize })
 // transitions on states the panel reaches either way, so the preference can
 // remove them outright. The library asks consumers to gate their animations;
 // it does not get to exempt its own.
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-shell-panel.collapsed .nb-shell-panel__header,
   .nb-shell-panel__size-btn {
     transition: none;
@@ -371,6 +372,7 @@ defineExpose({ setSize })
      that are NOT .full collapse to header-only. This works regardless of
      what the parent container is: any flex parent will do. -->
 <style lang="scss">
+@use '../styles/logic/motion' as motion;
 // First in the inspector sheet, the panel's size buttons sat under the sheet's
 // own dismiss button, top right. The frame publishes how much room that button
 // takes (`--nb-shell-inspector-dismiss-inset`, only while the inspector is an
@@ -401,7 +403,7 @@ defineExpose({ setSize })
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   :has(> .nb-shell-panel.full) > .nb-shell-panel:not(.full) {
     > .nb-shell-panel__header {
       transition: none;

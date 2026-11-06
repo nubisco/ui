@@ -539,6 +539,7 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 
 .nb-walkthrough {
@@ -676,7 +677,7 @@ defineExpose({
   animation: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-walkthrough--popover {
     animation: none;
   }

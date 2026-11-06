@@ -390,6 +390,7 @@ function onKeydown(event: KeyboardEvent) {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 // The stepper is a row of markers joined by a rule, and the rule is the whole
 // point: it is what makes four labels read as one sequence rather than as four
 // links. Markers are squared (--nb-radius-sm) because everything else in this
@@ -469,7 +470,7 @@ function onKeydown(event: KeyboardEvent) {
   clip-path: inset(50%);
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-stepper__list {
     scroll-behavior: auto;
   }

@@ -298,6 +298,7 @@ defineExpose({ reposition, focus, el: toolbarRef })
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/variables/breakpoints' as bp;
 
@@ -376,7 +377,7 @@ defineExpose({ reposition, focus, el: toolbarRef })
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-floating-toolbar {
     animation: none;
   }

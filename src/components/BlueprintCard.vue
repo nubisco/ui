@@ -828,6 +828,7 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 // ── Geometry ──────────────────────────────────────────────────────────
 //
 // Port geometry is declared once, here, as custom properties, because three
@@ -1682,7 +1683,7 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
 // The card schedules no ping when the preference is set (see the watcher in
 // the script); this is the belt to that braces, and it also stills the
 // collapse chevron and the toggle thumb.
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-blueprint-card,
   .nb-blueprint-card__collapse,
   .nb-blueprint-card__toggle-track,

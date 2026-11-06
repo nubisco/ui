@@ -464,7 +464,7 @@ defineExpose({ open, close, isOpen })
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-info-hint--popover {
     animation: none;
   }

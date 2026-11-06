@@ -178,6 +178,7 @@ function onSelect() {
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 
 .nb-stepper__step {
@@ -411,7 +412,7 @@ function onSelect() {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include motion.reduced {
   .nb-stepper__marker,
   .nb-stepper__label,
   .nb-stepper__line {

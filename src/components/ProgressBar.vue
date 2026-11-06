@@ -96,6 +96,7 @@ const messageVariant = computed(() =>
 </script>
 
 <style scoped lang="scss">
+@use '../styles/logic/motion' as motion;
 .nb-progress-bar {
   display: flex;
   flex-direction: column;
@@ -204,7 +205,7 @@ const messageVariant = computed(() =>
   // asks us to drop, but simply cancelling the animation leaves a static
   // eighth-width stub that reads as 12% complete, which is a lie. Fill the
   // track and pulse it in place instead: no travel, still unmistakably busy.
-  @media (prefers-reduced-motion: reduce) {
+  @include motion.reduced {
     &--indeterminate &__track::after {
       background-image: none;
       background-color: var(--nb-c-primary);
