@@ -39,7 +39,33 @@ pageTabs: ['usage', 'code']
 | `size`      | `string \| number` | `'md'`      | Named size or pixel value (see sizes table)                     |
 | `weight`    | `string`           | `'regular'` | Icon weight variant (see weights table)                         |
 | `color`     | `string`           | -           | Any valid CSS color value                                       |
+| `label`     | `string`           | -           | Accessible name; makes the icon informative (`role="img"`)      |
+| `title`     | `string`           | -           | Native tooltip, and also the accessible name when no `label`    |
 | `clickable` | `boolean`          | `false`     | Adds pointer cursor and `role="button"`                         |
+
+## Decorative or informative
+
+Almost every icon is **decorative**: it sits beside words that already say what
+it means ("Delete" next to a bin, a caret beside a menu label), and announcing it
+too would only make a screen reader say the same thing twice. That is the
+default. With no `label` and no `title`, `NbIcon` renders `aria-hidden="true"`
+and the SVG inside is `focusable="false"`, so assistive technology skips it.
+
+An icon is **informative** when it carries meaning that nothing next to it
+repeats: a warning triangle alone in a table cell, a lock on a row, a status dot
+with no caption. Name it, and it renders `role="img"` with that accessible name:
+
+```vue
+<NbIcon name="lock-simple" label="Locked" />
+<NbIcon name="warning" title="Sync failed" />
+```
+
+`label` names the icon for assistive technology only. `title` also shows a native
+tooltip on hover, and names the icon the same way when there is no `label`.
+Neither makes the icon interactive: an icon that does something on a click is a
+button, and is written `NbButton variant="ghost"` with `icon`, named with
+`v-nb-tooltip`. If you find yourself naming most of the icons on a page, the
+words are missing from the page, not from the icons.
 
 ## How a name is resolved
 

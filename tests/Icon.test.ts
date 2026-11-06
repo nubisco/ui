@@ -115,3 +115,51 @@ describe('Icon: how the glyph is resolved', () => {
     expect(wrapper.find('svg').exists()).toBe(true)
   })
 })
+
+// The NbNubiscoMark contract, carried over: decorative unless named, and a
+// named icon is an image with that name rather than a tooltip on an <i>.
+describe('Icon: decorative and informative', () => {
+  it('is decorative by default: hidden, no role, the svg not focusable', () => {
+    const wrapper = mount(Icon, { props: { name: house } })
+    expect(wrapper.attributes('aria-hidden')).toBe('true')
+    expect(wrapper.attributes('role')).toBeUndefined()
+    expect(wrapper.attributes('aria-label')).toBeUndefined()
+    const svg = wrapper.find('svg')
+    expect(svg.attributes('aria-hidden')).toBe('true')
+    expect(svg.attributes('focusable')).toBe('false')
+  })
+
+  it('with a label, renders role="img" named by it and is not hidden', () => {
+    const wrapper = mount(Icon, { props: { name: house, label: 'Home' } })
+    expect(wrapper.attributes('role')).toBe('img')
+    expect(wrapper.attributes('aria-label')).toBe('Home')
+    expect(wrapper.attributes('aria-hidden')).toBeUndefined()
+    // No tooltip unless one was asked for.
+    expect(wrapper.attributes('title')).toBeUndefined()
+  })
+
+  it('with a title, is named by it as well as showing it as a tooltip', () => {
+    const wrapper = mount(Icon, { props: { name: house, title: 'Go home' } })
+    expect(wrapper.attributes('role')).toBe('img')
+    expect(wrapper.attributes('aria-label')).toBe('Go home')
+    expect(wrapper.attributes('title')).toBe('Go home')
+  })
+
+  it('prefers label over title for the name', () => {
+    const wrapper = mount(Icon, {
+      props: { name: house, label: 'Home', title: 'Go to the home page' },
+    })
+    expect(wrapper.attributes('aria-label')).toBe('Home')
+    expect(wrapper.attributes('title')).toBe('Go to the home page')
+  })
+
+  it('is never hidden while a fallthrough aria-label names it', () => {
+    const wrapper = mount(Icon, {
+      props: { name: house },
+      attrs: { 'aria-label': 'Home' },
+    })
+    expect(wrapper.attributes('aria-hidden')).toBeUndefined()
+    expect(wrapper.attributes('role')).toBe('img')
+    expect(wrapper.attributes('aria-label')).toBe('Home')
+  })
+})

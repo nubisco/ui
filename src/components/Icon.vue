@@ -3,15 +3,19 @@
     :class="classes"
     :style="styles"
     v-bind="attributes"
-    :title="title"
     @click="!clickable ? undefined : emit('click', $event)"
   >
-    <component :is="iconComponent" v-if="iconComponent" aria-hidden="true" />
+    <component
+      :is="iconComponent"
+      v-if="iconComponent"
+      aria-hidden="true"
+      focusable="false"
+    />
   </i>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useAttrs } from 'vue'
 import { ESize } from '@/types/Size.d'
 import { EAnimationMode, EWeight, EIconSize, IIconProps } from './Icon.d'
 import { useStableId } from '@/composables/useStableId.composable'
@@ -34,6 +38,7 @@ const props = withDefaults(defineProps<IIconProps>(), {
   color: undefined,
   weight: EWeight.Regular,
   title: undefined,
+  label: undefined,
   clickable: false,
   hoverable: false,
 })
@@ -58,6 +63,29 @@ const iconModule = computed(() =>
 
 const componentInternalId = useStableId({ name: iconName.value })
 
+const attrs = useAttrs()
+
+/**
+ * The accessible name, when the icon has one. An icon is decorative unless it
+ * carries meaning that no adjacent text repeats (a status glyph alone in a
+ * table cell, a lock on a row), and the call site says so by naming it:
+ * `label` is the name, and `title` doubles as one because a native tooltip
+ * that names the icon for a mouse user should name it for everyone else too.
+ */
+const accessibleName = computed(() => props.label || props.title || undefined)
+
+/**
+ * Whether the icon is announced. A name given straight through the fallthrough
+ * attributes (`aria-label`, `aria-labelledby`) counts as well, so the icon is
+ * never hidden from assistive technology while also carrying a name.
+ */
+const isInformative = computed(
+  () =>
+    !!accessibleName.value ||
+    !!attrs['aria-label'] ||
+    !!attrs['aria-labelledby'],
+)
+
 const attributes = computed(() => {
   const iconSize =
     typeof props.size === 'number'
@@ -72,7 +100,15 @@ const attributes = computed(() => {
       width: `${iconSize}px`,
       height: `${iconSize}px`,
     }),
-    ...(props.clickable && { role: 'button' }),
+    ...(props.title && { title: props.title }),
+    // The same contract as NbNubiscoMark: named, the icon is an image with
+    // that name; unnamed, it is hidden from assistive technology, and the SVG
+    // inside is never a tab stop in the browsers that still make it one.
+    ...(props.clickable
+      ? { role: 'button', 'aria-label': accessibleName.value }
+      : isInformative.value
+        ? { role: 'img', 'aria-label': accessibleName.value }
+        : { 'aria-hidden': 'true' }),
   }
 })
 
