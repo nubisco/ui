@@ -505,7 +505,10 @@ const calendarStyle = ref({
 const rangeTarget = ref<'start' | 'end'>('start')
 
 const resolvedLocale = computed(
-  () => props.locale || navigator.language || 'pt-PT',
+  () =>
+    props.locale ||
+    (typeof navigator !== 'undefined' ? navigator.language : '') ||
+    'en',
 )
 
 const dateFormatHint = computed(() => {

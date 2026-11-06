@@ -38,7 +38,17 @@ const props = withDefaults(defineProps<IAiUsageProps>(), {
   estimatedCostUsd: null,
   unpricedModels: () => [],
   pricingVerifiedOn: '',
+  locale: undefined,
 })
+
+const numberFormat = computed(
+  () =>
+    new Intl.NumberFormat(
+      props.locale ||
+        (typeof navigator !== 'undefined' ? navigator.language : '') ||
+        'en',
+    ),
+)
 
 /** 1.2k, 3.4M: the same rounding in every product. */
 function formatTokens(n: number): string {
@@ -59,14 +69,14 @@ function formatUsd(n: number): string {
 const items = computed(() => [
   {
     term: props.requestsLabel,
-    value: `${props.requests.toLocaleString()} (requests that reached your provider)`,
+    value: `${numberFormat.value.format(props.requests)} (requests that reached your provider)`,
   },
   ...(props.cacheHits === null
     ? []
     : [
         {
           term: 'Served from cache',
-          value: `${props.cacheHits.toLocaleString()} (free: a question already answered)`,
+          value: `${numberFormat.value.format(props.cacheHits)} (free: a question already answered)`,
         },
       ]),
   {

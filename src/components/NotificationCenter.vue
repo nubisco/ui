@@ -460,8 +460,7 @@ const props = withDefaults(defineProps<INotificationCenterProps>(), {
   locale: undefined,
   unreadLabel: 'Unread',
   readLabel: 'Read',
-  formatUnread: (count: number) =>
-    count === 1 ? '1 unread' : `${count} unread`,
+  formatUnread: (count: number) => `${count} unread`,
 })
 
 // The module, not the name: a glyph named in a prop default is invisible to

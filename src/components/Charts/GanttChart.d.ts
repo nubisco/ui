@@ -56,6 +56,8 @@ interface IGanttChartProps extends IChartCommonProps {
   groups?: IGanttGroup[]
   // Time granularity for the header and grid.
   timeScale?: TGanttTimeScale
+  /** BCP 47 locale for the dates in the tooltip. Defaults to `navigator.language`, then `en`. */
+  locale?: string
   // Height of each task row in pixels.
   rowHeight?: number
   // Width of the task list panel on the left.

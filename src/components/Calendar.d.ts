@@ -20,7 +20,7 @@ interface ICalendarProps {
   month?: string | Date
   /** First day of the week: 0 = Sunday, 1 = Monday. Defaults to 1 (Monday). */
   weekStart?: 0 | 1
-  /** Locale for month/day names. Defaults to browser locale. */
+  /** Locale for month/day names. Defaults to `navigator.language`, then `en`. */
   locale?: string
 }
 
