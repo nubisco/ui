@@ -35,15 +35,23 @@ enum EWeight {
   Duotone = 'duotone',
 }
 
+/**
+ * Pixel values of the named sizes. The scale is `sm` 16, `md` 20, `lg` 24 and
+ * `xl` 32. `xs` and `xxs` are below what the icons are drawn for and warn in
+ * development; `xxl` is kept for compatibility.
+ */
 enum EIconSize {
   XXL = 92,
-  XL = 60,
-  LG = 20,
-  MD = 16,
-  SM = 14,
+  XL = 32,
+  LG = 24,
+  MD = 20,
+  SM = 16,
   XS = 12,
   XXS = 8,
 }
+
+/** The icon size scale. */
+type TIconSize = 'sm' | 'md' | 'lg' | 'xl'
 
 interface IIconProps {
   /**
@@ -57,7 +65,12 @@ interface IIconProps {
    * Takes precedence over `name`.
    */
   icon?: TIconSource
-  size?: ESize | string | number
+  /**
+   * `sm` (16, the default), `md` (20), `lg` (24) or `xl` (32). A number is
+   * pixels and any other string is a CSS length. `xs`, `xxs` and numbers
+   * under 16 are deprecated and warn once in development.
+   */
+  size?: TIconSize | `${ESize}` | ESize | (string & {}) | number
   animation?: `${EAnimation}` | null
   animationMode?: `${EAnimationMode}`
   color?: string
@@ -78,4 +91,4 @@ interface IIconProps {
 }
 
 export { EAnimation, EAnimationMode, EWeight, EIconSize, IIconProps }
-export type { TIconSource }
+export type { TIconSource, TIconSize }

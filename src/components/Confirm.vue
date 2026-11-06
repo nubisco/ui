@@ -83,7 +83,7 @@
           class="nb-confirm__status nb-confirm__status--success"
           role="status"
         >
-          <NbIcon name="check" :size="14" aria-hidden="true" />
+          <NbIcon name="check" size="sm" aria-hidden="true" />
           <span>{{ successLabel }}</span>
         </p>
 

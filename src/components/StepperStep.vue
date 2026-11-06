@@ -36,7 +36,7 @@
       @click="onSelect"
     >
       <span class="nb-stepper__marker" aria-hidden="true">
-        <NbIcon v-if="markerIcon" :name="markerIcon" :size="markerIconSize" />
+        <NbIcon v-if="markerIcon" :name="markerIcon" size="sm" />
         <template v-else>{{ position }}</template>
       </span>
 
@@ -158,8 +158,6 @@ const markerIcon = computed(() => {
   if (status.value === EStepStatus.Invalid) return iconWarning
   return null
 })
-
-const markerIconSize = computed(() => (group?.size.value === 'sm' ? 12 : 14))
 
 // Orientation is stamped onto the <li> rather than read off an ancestor
 // class. A scoped stylesheet cannot reach an ancestor it does not own:

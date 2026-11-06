@@ -111,14 +111,18 @@ const anchorAttrs = computed(() =>
     : {},
 )
 
+/*
+ * Both maps stay on the icon scale (16, 20, 24, 32): below 16 a Phosphor
+ * stroke drops under a pixel, which is why NbIcon warns on it.
+ */
 const iconSizeMap: Record<string, number> = {
-  xxs: 10,
-  xs: 12,
-  sm: 12,
-  md: 14,
+  xxs: 16,
+  xs: 16,
+  sm: 16,
+  md: 16,
   lg: 16,
-  xl: 16,
-  xxl: 20,
+  xl: 20,
+  xxl: 32,
 }
 /*
  * Icon-only buttons size their icon differently, and the stylesheet already
@@ -128,18 +132,18 @@ const iconSizeMap: Record<string, number> = {
  * when it started loading.
  */
 const iconOnlySizeMap: Record<string, number> = {
-  xxs: 12,
-  xs: 14,
+  xxs: 16,
+  xs: 16,
   sm: 16,
-  md: 18,
+  md: 20,
   lg: 20,
-  xl: 20,
-  xxl: 26,
+  xl: 24,
+  xxl: 32,
 }
 
 const iconSize = computed(() => {
   const map = isIconOnly.value ? iconOnlySizeMap : iconSizeMap
-  return map[props.size ?? 'md'] ?? (isIconOnly.value ? 18 : 14)
+  return map[props.size ?? 'md'] ?? (isIconOnly.value ? 20 : 16)
 })
 
 /*
@@ -229,19 +233,19 @@ onMounted(() => {
     padding-block: 0;
     padding-inline: calc(var(--nb-base-unit) * 1);
     font-size: var(--nb-type-body-sm-size);
-    --nb-button-icon-size: var(--nb-font-size-12);
+    --nb-button-icon-size: 16px;
   }
   &--xs {
     height: calc(var(--nb-base-unit) * 3);
     padding-inline: calc(var(--nb-base-unit) * 1.5);
     font-size: var(--nb-type-body-sm-size);
-    --nb-button-icon-size: var(--nb-font-size-12);
+    --nb-button-icon-size: 16px;
   }
   &--sm {
     height: calc(var(--nb-base-unit) * 4);
     padding-inline: calc(var(--nb-base-unit) * 1.5);
     font-size: var(--nb-type-body-sm-size);
-    --nb-button-icon-size: var(--nb-font-size-12);
+    --nb-button-icon-size: 16px;
   }
   // The small and medium sizes are 16 to 40px tall, under a fingertip's 44.
   // On a phone touch screen an invisible box takes the taps around them, and
@@ -265,13 +269,13 @@ onMounted(() => {
   &--md {
     height: calc(var(--nb-base-unit) * 5);
     font-size: var(--nb-type-body-compact-size);
-    --nb-button-icon-size: var(--nb-font-size-14);
+    --nb-button-icon-size: 16px;
   }
   &--lg {
     height: calc(var(--nb-base-unit) * 6);
     padding-inline: calc(var(--nb-base-unit) * 2.5);
     font-size: var(--nb-type-body-compact-size);
-    --nb-button-icon-size: var(--nb-font-size-14);
+    --nb-button-icon-size: 16px;
   }
   &--xl {
     height: calc(var(--nb-base-unit) * 8);
@@ -279,7 +283,7 @@ onMounted(() => {
     padding-inline: calc(var(--nb-base-unit) * 3);
     font-size: var(--nb-type-body-lg-size);
     align-items: center;
-    --nb-button-icon-size: var(--nb-font-size-16);
+    --nb-button-icon-size: 20px;
   }
   &--xxl {
     height: calc(var(--nb-base-unit) * 16);
@@ -287,7 +291,7 @@ onMounted(() => {
     padding-inline: calc(var(--nb-base-unit) * 4);
     font-size: var(--nb-type-heading-04-size);
     align-items: center;
-    --nb-button-icon-size: var(--nb-font-size-32);
+    --nb-button-icon-size: 32px;
   }
 
   // Icon-only: no slot content → square button, icon centered and slightly larger
@@ -298,11 +302,11 @@ onMounted(() => {
 
     &.nb-button--xxs {
       width: 16px;
-      --nb-button-icon-size: 12px;
+      --nb-button-icon-size: 16px;
     }
     &.nb-button--xs {
       width: 24px;
-      --nb-button-icon-size: 14px;
+      --nb-button-icon-size: 16px;
     }
     &.nb-button--sm {
       width: 32px;
@@ -310,7 +314,7 @@ onMounted(() => {
     }
     &.nb-button--md {
       width: 40px;
-      --nb-button-icon-size: 18px;
+      --nb-button-icon-size: 20px;
     }
     &.nb-button--lg {
       width: 48px;
@@ -318,11 +322,11 @@ onMounted(() => {
     }
     &.nb-button--xl {
       width: 48px;
-      --nb-button-icon-size: 20px;
+      --nb-button-icon-size: 24px;
     }
     &.nb-button--xxl {
       width: 64px;
-      --nb-button-icon-size: 26px;
+      --nb-button-icon-size: 32px;
     }
 
     .nb-button__decorations {
@@ -583,8 +587,8 @@ onMounted(() => {
   }
 
   &__spinner {
-    width: var(--nb-button-icon-size, 14px);
-    height: var(--nb-button-icon-size, 14px);
+    width: var(--nb-button-icon-size, 16px);
+    height: var(--nb-button-icon-size, 16px);
     border: 2px solid currentColor;
     border-top-color: transparent;
     border-radius: 50%;

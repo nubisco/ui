@@ -47,7 +47,7 @@
           v-if="info"
           class="nb-accordion-item__info"
           :text="info"
-          :size="14"
+          :size="16"
           :label="`About ${title || 'this section'}`"
         />
         <span class="nb-accordion-item__spacer" aria-hidden="true" />

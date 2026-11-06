@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import Icon from '../src/components/Icon.vue'
 import * as house from '@nubisco/ui/icons/house'
@@ -161,5 +161,65 @@ describe('Icon: decorative and informative', () => {
     expect(wrapper.attributes('aria-hidden')).toBeUndefined()
     expect(wrapper.attributes('role')).toBe('img')
     expect(wrapper.attributes('aria-label')).toBe('Home')
+  })
+})
+
+describe('Icon: the size scale', () => {
+  it.each([
+    ['sm', '16px'],
+    ['md', '20px'],
+    ['lg', '24px'],
+    ['xl', '32px'],
+  ])('maps %s to %s', (size, px) => {
+    const wrapper = mount(Icon, { props: { name: house, size } })
+    expect(wrapper.attributes('width')).toBe(px)
+    expect(wrapper.classes()).toContain(`nb-icon-${size}`)
+  })
+
+  it('defaults to 16px, the size it always rendered at', () => {
+    const wrapper = mount(Icon, { props: { name: house } })
+    expect(wrapper.attributes('width')).toBe('16px')
+    expect(wrapper.classes()).toContain('nb-icon-sm')
+  })
+
+  it('keeps the number and CSS length escape hatches', () => {
+    expect(
+      mount(Icon, { props: { name: house, size: 48 } }).attributes('style'),
+    ).toContain('width: 48px')
+    expect(
+      mount(Icon, { props: { name: house, size: '1.5rem' } }).attributes(
+        'style',
+      ),
+    ).toContain('width: 1.5rem')
+  })
+
+  it('warns once per deprecated size: xs, xxs and numbers under 16', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      mount(Icon, { props: { name: house, size: 'xs' } })
+      mount(Icon, { props: { name: house, size: 'xs' } })
+      mount(Icon, { props: { name: house, size: 'xxs' } })
+      mount(Icon, { props: { name: house, size: 13 } })
+      mount(Icon, { props: { name: house, size: 13 } })
+      const messages = warn.mock.calls.map((c) => String(c[0]))
+      expect(messages.filter((m) => m.includes('"xs"'))).toHaveLength(1)
+      expect(messages.filter((m) => m.includes('"xxs"'))).toHaveLength(1)
+      expect(messages.filter((m) => m.includes(' 13 '))).toHaveLength(1)
+      expect(messages.every((m) => m.startsWith('[NbIcon]'))).toBe(true)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('does not warn on the scale, on 16 and up, or on a CSS length', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      for (const size of ['sm', 'md', 'lg', 'xl', 16, 18, 64, '1.2em']) {
+        mount(Icon, { props: { name: house, size } })
+      }
+      expect(warn).not.toHaveBeenCalled()
+    } finally {
+      warn.mockRestore()
+    }
   })
 })

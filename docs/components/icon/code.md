@@ -36,7 +36,7 @@ pageTabs: ['usage', 'code']
 | ----------- | ------------------ | ----------- | --------------------------------------------------------------- |
 | `name`      | `string \| module` | required    | Icon name in kebab-case (e.g. `arrow-right`), or an icon module |
 | `icon`      | `module`           | -           | An imported icon module; wins over `name`                       |
-| `size`      | `string \| number` | `'md'`      | Named size or pixel value (see sizes table)                     |
+| `size`      | `string \| number` | `'sm'`      | `sm`, `md`, `lg`, `xl` (16 to 32px), or pixels (see Sizes)      |
 | `weight`    | `string`           | `'regular'` | Icon weight variant (see weights table)                         |
 | `color`     | `string`           | -           | Any valid CSS color value                                       |
 | `label`     | `string`           | -           | Accessible name; makes the icon informative (`role="img"`)      |
@@ -134,19 +134,26 @@ Not every icon has all weights. If a requested weight is not available, the comp
 
 ## Sizes
 
-Named sizes map to fixed pixel values:
+Four sizes, the ones the icons are drawn to hold up at:
 
-| Name  | Pixels |
-| ----- | ------ |
-| `xxs` | 8      |
-| `xs`  | 12     |
-| `sm`  | 14     |
-| `md`  | 16     |
-| `lg`  | 20     |
-| `xl`  | 60     |
-| `xxl` | 92     |
+| Name | Pixels | Use it for                                                   |
+| ---- | ------ | ------------------------------------------------------------ |
+| `sm` | 16     | The default. Beside 12 to 16px text, in rows, inputs, menus  |
+| `md` | 20     | Beside 16 to 20px text, toolbars, a roomier row              |
+| `lg` | 24     | Headings, empty states, a card's leading glyph               |
+| `xl` | 32     | Empty states and pictograms (see Icons beyond the catalogue) |
 
-You can also pass any number: `:size="32"` sets both width and height to 32px. String values other than the named sizes are passed directly as CSS (`size="1.5rem"` works too).
+Pick one size per context and keep it: the icons in a row, a menu or a toolbar
+are all the same size. Centre an icon on the text beside it (a flex row with
+`align-items: center`), never on the baseline.
+
+A number still sets pixels (`:size="48"`) and any other string is a CSS length
+(`size="1.2em"`, for an icon that has to follow its text), for the rare case the
+scale does not cover.
+
+`xs` (12), `xxs` (8) and numbers under 16 still render but are deprecated, and
+warn once in development: below 16px the stroke is thinner than a pixel and the
+glyph turns to a grey smudge. `xxl` (92) is kept for compatibility.
 
 ## Animations
 

@@ -13,12 +13,7 @@
     ]"
   >
     <span v-if="dot" class="nb-badge__dot" />
-    <NbIcon
-      v-if="icon"
-      :name="icon"
-      :size="size === 'sm' ? 11 : 12"
-      class="nb-badge__icon"
-    />
+    <NbIcon v-if="icon" :name="icon" size="1.2em" class="nb-badge__icon" />
     <slot />
   </component>
 </template>

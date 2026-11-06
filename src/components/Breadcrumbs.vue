@@ -107,7 +107,7 @@
                 v-bind="attrs"
                 :aria-label="item.switchLabel ?? `Switch ${item.label}`"
               >
-                <NbIcon :name="iconUpDown" :size="14" aria-hidden="true" />
+                <NbIcon :name="iconUpDown" size="sm" aria-hidden="true" />
               </button>
             </template>
           </NbSelect>

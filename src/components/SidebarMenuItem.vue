@@ -67,7 +67,7 @@
           class="nb-sidebar-menu-item__caret"
           :class="{ 'nb-sidebar-menu-item__caret--expanded': expanded }"
           name="caret-right"
-          :size="12"
+          size="sm"
         />
       </template>
       <!-- Collapsed, a count sits on the icon's top-right corner, the way a

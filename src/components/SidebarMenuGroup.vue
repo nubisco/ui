@@ -29,7 +29,7 @@
           class="nb-sidebar-menu-group__caret"
           :class="{ 'nb-sidebar-menu-group__caret--collapsed': collapsed }"
           name="caret-down"
-          :size="12"
+          size="sm"
         />
       </component>
       <ul v-show="!collapsed" class="nb-sidebar-menu-group__items" role="group">

@@ -81,7 +81,7 @@ const input = ref<HTMLInputElement | HTMLTextAreaElement | null>(null)
 let original = ''
 
 const pencilSize = computed(
-  () => ({ md: 14, lg: 16, xl: 18 })[props.size ?? 'md'],
+  () => ({ md: 16, lg: 16, xl: 20 })[props.size ?? 'md'],
 )
 
 function start(): void {

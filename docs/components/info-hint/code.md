@@ -78,7 +78,7 @@ A component like this is the usual reason a codebase ends up with literal greys 
 | `title`      | `string`                                 | —                    | Optional bold heading above the body.                                                                        |
 | `term`       | `string`                                 | —                    | Glossary / doc identifier. Mirrored to `data-term` and emitted on `activate`. Never resolved by the library. |
 | `placement`  | `'top' \| 'bottom' \| 'left' \| 'right'` | `'top'`              | Preferred side. Flipped and clamped to stay in the viewport.                                                 |
-| `size`       | `number`                                 | `14`                 | Icon size in pixels.                                                                                         |
+| `size`       | `number`                                 | `16`                 | Icon size in pixels.                                                                                         |
 | `icon`       | `string`                                 | `'info'`             | Any icon name `NbIcon` accepts, e.g. `'question'`.                                                           |
 | `label`      | `string`                                 | `'More information'` | Accessible name for the trigger button.                                                                      |
 | `openDelay`  | `number`                                 | `120`                | Milliseconds before a hover opens the popover.                                                               |

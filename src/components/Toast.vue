@@ -45,7 +45,7 @@
       :aria-label="closeLabel"
       @click="emit('close')"
     >
-      <NbIcon name="x" :size="14" />
+      <NbIcon name="x" size="sm" />
     </button>
     <div
       v-if="duration"
