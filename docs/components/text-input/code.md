@@ -79,25 +79,26 @@ The `#dropdown` slot holds a popup anchored to the field. For autocomplete (an @
 
 ## Props
 
-| Prop          | Type                   | Default     | Description                                         |
-| ------------- | ---------------------- | ----------- | --------------------------------------------------- |
-| `modelValue`  | `string \| number`     | `''`        | Bound value (`v-model`)                             |
-| `variant`     | `'default' \| 'fluid'` | `'default'` | Layout variant                                      |
-| `size`        | `'sm' \| 'md' \| 'lg'` | `'md'`      | Field height — aligns with buttons and other inputs |
-| `type`        | `string`               | `'text'`    | Native input type                                   |
-| `label`       | `string`               | -           | Label text                                          |
-| `placeholder` | `string`               | -           | Input placeholder                                   |
-| `helper`      | `string`               | -           | Helper message (shown when no error or warning)     |
-| `error`       | `string`               | -           | Error message: highest priority                     |
-| `warning`     | `string`               | -           | Warning message: priority over helper               |
-| `required`    | `boolean`              | `false`     | Marks field as required (adds asterisk)             |
-| `disabled`    | `boolean`              | `false`     | Disables the input                                  |
-| `readonly`    | `boolean`              | `false`     | Makes the input read-only                           |
-| `multiline`   | `boolean`              | `false`     | Render a `<textarea>` instead of `<input>`          |
-| `rows`        | `number`               | -           | Initial textarea row count (multiline only)         |
-| `id`          | `string`               | auto        | Explicit input ID                                   |
-| `name`        | `string`               | -           | Native `name` attribute                             |
-| `maxlength`   | `number`               | -           | Maximum character length                            |
+| Prop          | Type                   | Default     | Description                                            |
+| ------------- | ---------------------- | ----------- | ------------------------------------------------------ |
+| `modelValue`  | `string \| number`     | `''`        | Bound value (`v-model`)                                |
+| `variant`     | `'default' \| 'fluid'` | `'default'` | Layout variant                                         |
+| `size`        | `'sm' \| 'md' \| 'lg'` | `'md'`      | Field height, aligned with buttons and other inputs    |
+| `type`        | `string`               | `'text'`    | Native input type                                      |
+| `label`       | `string`               | -           | Label text                                             |
+| `placeholder` | `string`               | -           | Input placeholder                                      |
+| `helper`      | `string`               | -           | Helper message (shown when no error or warning)        |
+| `error`       | `string`               | -           | Error message: highest priority                        |
+| `warning`     | `string`               | -           | Warning message: priority over helper                  |
+| `required`    | `boolean`              | `false`     | Marks field as required (adds asterisk)                |
+| `disabled`    | `boolean`              | `false`     | Disables the input                                     |
+| `readonly`    | `boolean`              | `false`     | Makes the input read-only                              |
+| `multiline`   | `boolean`              | `false`     | Render a `<textarea>` instead of `<input>`             |
+| `rows`        | `number`               | -           | Initial textarea row count (multiline only)            |
+| `id`          | `string`               | auto        | Explicit input ID                                      |
+| `name`        | `string`               | -           | Native `name` attribute                                |
+| `maxlength`   | `number`               | -           | Maximum character length                               |
+| `showCount`   | `boolean`              | `false`     | Shows `12/200` under the field when `maxlength` is set |
 
 ## Events
 
