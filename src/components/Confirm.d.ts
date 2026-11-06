@@ -4,10 +4,9 @@ import type { TModalSize } from './Modal.d'
 /**
  * How hard the dialog leans on the user.
  *
- * `danger` is the default because the audited fleet's confirmations are
- * overwhelmingly destructive: deleting an environment and its content,
- * regenerating a client secret, clearing local storage, deleting someone
- * else's comment. Making the safe tone the default would mean every
+ * `danger` is the default because confirmations are overwhelmingly
+ * destructive: deleting an environment and its content, regenerating a
+ * secret, clearing local storage, deleting someone else's comment. Making the safe tone the default would mean every
  * destructive call site has to remember to opt in, which is exactly the
  * decision this component exists to remove.
  *
@@ -46,8 +45,7 @@ interface IConfirmProps {
   subjectLabel?: string
   /**
    * The confirm verb. Name the action ("Delete environment", "Regenerate
-   * secret"), never "OK" or "Yes": the fleet uses Save, Done, Apply and
-   * Create interchangeably, and a naked "Yes" makes the user re-read the
+   * secret"), never "OK" or "Yes". A naked "Yes" makes the user re-read the
    * title to find out what they are agreeing to.
    */
   confirmLabel?: string

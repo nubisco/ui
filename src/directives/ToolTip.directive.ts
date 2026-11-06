@@ -120,7 +120,7 @@ export interface ITooltipOptions {
    *  what a labelling tooltip should stay on: a coloured chip on a plain icon
    *  button reads as a state the control does not have. Reach for `danger` or
    *  `warning` only when the tooltip is explaining a blocked or destructive
-   *  action, which is the case the fleet actually has. */
+   *  action. */
   status?: TTooltipStatus
   /** @deprecated Use `status`. Kept because it is the name every existing
    *  binding uses and removing it would break them silently. `status` wins

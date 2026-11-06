@@ -756,7 +756,7 @@ export {
   useScrollLock,
 } from './composables/useScrollLock.composable'
 // The supported way for a view to put controls into the surrounding NbShell.
-// Replaces the eight hand-rolled DOM ids the audit found across the fleet.
+// Replaces hand-rolled DOM ids used as teleport targets.
 export { useShellSlot } from './composables/useShellSlot.composable'
 export type {
   TShellSlotName,

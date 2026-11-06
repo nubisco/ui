@@ -10,9 +10,8 @@
 // Why this indirection exists: the previous version of this file listed
 // `--nb-c-grape-hyacinth-500` and friends with a comment claiming that brand
 // overrides propagated automatically. They did not. Those are ramp names, not
-// roles, and a product that rebrands does not own them, so a rebranded
-// white-label product hardcoded hex per chart and shipped a violet placeholder
-// series. Ramp names are also why `--nb-c-chart-*` steps up its tints under
+// roles, and a product that rebrands does not own them, so the only escape was
+// to hardcode hex per chart, which no library release can recolour. Ramp names are also why `--nb-c-chart-*` steps up its tints under
 // `.dark` (three of the eight light values fail WCAG 1.4.11 on a dark surface)
 // while the call sites here stay theme-agnostic.
 //

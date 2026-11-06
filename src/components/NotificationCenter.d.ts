@@ -112,9 +112,8 @@ export interface INotificationCenterProps {
   loading?: boolean
   /**
    * The fetch failed. This is a state of its own and not a flavour of empty:
-   * the audit that motivated this component found an app whose single
-   * `.empty-text` rendered both, so a failed request read as "no contacts
-   * yet". With no rows to show, the panel renders the error state; with rows
+   * one element that renders both makes a failed request read as "nothing
+   * here yet". With no rows to show, the panel renders the error state; with rows
    * already on screen it keeps them and says the refresh failed, because
    * stale notifications beat no notifications.
    */

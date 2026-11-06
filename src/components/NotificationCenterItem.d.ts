@@ -1,12 +1,10 @@
 import type { TIconSource } from '@/types/Glyph.d'
 /**
- * The fleet's status vocabulary, the same five words NbToast, NbMessage and
+ * The library's status vocabulary, the same five words NbToast, NbMessage and
  * NbBanner use. `error`, not `danger`: `danger` is the word for a destructive
- * ACTION (NbButton, NbConfirm), and the audit found an app passing
- * variant="danger" to NbMessage, which does not accept it, precisely because
- * the two vocabularies had drifted. `danger` is accepted here and treated as
- * `error` so that app's habit does not silently render an unstyled row, but it
- * is deprecated and not the documented value.
+ * ACTION (NbButton, NbConfirm), and the two are easy to confuse. `danger` is
+ * accepted here and treated as `error` so a confused call does not silently
+ * render an unstyled row, but it is deprecated and not the documented value.
  */
 export type TNotificationStatus =
   | 'neutral'
