@@ -1,3 +1,7 @@
+// The spacing maps used to live here, seeded from $fontSizes. They have their
+// own module now and are forwarded so `type.$spacingSizes` keeps resolving.
+@forward 'spacing';
+
 // Initial map of font family values
 /// @type Map
 /// @access public
@@ -299,56 +303,4 @@ $fontWeight: (
   regular: 400,
   semibold: 600,
   bold: 700,
-) !default;
-
-// Initial map of layout types
-/// @type Map
-/// @access public
-/// @group @nubisco/type
-$spacingTypes: (
-  p: 'padding',
-  m: 'margin',
-) !default;
-
-// Initial map of layout types
-/// @type Map
-/// @access public
-/// @group @nubisco/type
-$spacingDir: (
-  r: 'right',
-  l: 'left',
-  t: 'top',
-  b: 'bottom',
-) !default;
-
-// Initial map of layout sizes in rem
-/// @type Map
-/// @access public
-/// @group @nubisco/type
-$spacingSizes: (
-  0: 0,
-  2: 0.125rem,
-  4: 0.25rem,
-  8: 0.5rem,
-  9: 0.5625rem,
-  10: 0.625rem,
-  11: 0.6875rem,
-  12: 0.75rem,
-  13: 0.8125rem,
-  14: 0.875rem,
-  16: 1rem,
-  18: 1.125rem,
-  20: 1.25rem,
-  24: 1.5rem,
-  28: 1.75rem,
-  32: 2rem,
-  36: 2.25rem,
-  42: 2.625rem,
-  46: 2.875rem,
-  48: 3rem,
-  50: 3.125rem,
-  54: 3.375rem,
-  60: 3.75rem,
-  68: 4.25rem,
-  76: 4.75rem,
 ) !default;

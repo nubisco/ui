@@ -1,0 +1,87 @@
+// The spacing scale, independent of the type ramp. It was once a copy of
+// $fontSizes, which is how 9, 10, 11, 13, 14, 18, 42, 46, 50 and 54 got in.
+// It is its own map now: a font size and a gap are different decisions.
+
+// Spacing utility property prefixes
+/// @type Map
+/// @access public
+/// @group @nubisco/spacing
+$spacingTypes: (
+  p: 'padding',
+  m: 'margin',
+) !default;
+
+// Physical sides of the spacing utilities (`.pl-16`, `.mr-8`). LTR only.
+/// @type Map
+/// @access public
+/// @group @nubisco/spacing
+$spacingDir: (
+  r: 'right',
+  l: 'left',
+  t: 'top',
+  b: 'bottom',
+) !default;
+
+// Logical sides of the spacing utilities (`.pis-16`, `.mie-8`), which follow
+// the writing direction and mirror under right-to-left.
+/// @type Map
+/// @access public
+/// @group @nubisco/spacing
+$spacingLogicalDir: (
+  is: 'inline-start',
+  ie: 'inline-end',
+) !default;
+
+// The spacing scale in rem, named by its pixel value at a 16px root.
+/// @type Map
+/// @access public
+/// @group @nubisco/spacing
+$spacingSizes: (
+  0: 0,
+  2: 0.125rem,
+  4: 0.25rem,
+  8: 0.5rem,
+  9: 0.5625rem,
+  10: 0.625rem,
+  11: 0.6875rem,
+  12: 0.75rem,
+  13: 0.8125rem,
+  14: 0.875rem,
+  16: 1rem,
+  18: 1.125rem,
+  20: 1.25rem,
+  24: 1.5rem,
+  28: 1.75rem,
+  32: 2rem,
+  36: 2.25rem,
+  40: 2.5rem,
+  42: 2.625rem,
+  46: 2.875rem,
+  48: 3rem,
+  50: 3.125rem,
+  54: 3.375rem,
+  60: 3.75rem,
+  68: 4.25rem,
+  76: 4.75rem,
+) !default;
+
+// Deprecated steps: off the 4px grid, inherited from the type ramp. Their
+// custom properties are still emitted for one minor so nothing breaks, but no
+// utility class is generated for them. Removed in the next minor.
+/// @type List
+/// @access public
+/// @group @nubisco/spacing
+$spacingDeprecated: (9, 10, 11, 13, 14, 18, 42, 46, 50, 54) !default;
+
+// Fluid spacing in viewport width, Carbon's fluid-spacing-01 to 04. For
+// full-bleed public surfaces only (a hero, a marketing band): inside NbShell
+// the viewport is not the content width, and `vw` ignores the inspector.
+/// @type Map
+/// @access public
+/// @group @nubisco/spacing
+$fluidSpacing: (
+  '01': 0,
+  '02': 2vw,
+  '03': 5vw,
+  '04': 10vw,
+) !default;

@@ -1,4 +1,5 @@
 @use 'sass:color';
+@use 'sass:list';
 @use 'sass:map';
 @use 'accent';
 @use 'logic/ink';
@@ -8,6 +9,7 @@
 @use 'variables/layers';
 @use 'variables/type';
 @use 'variables/breakpoints' as bp;
+@use 'variables/spacing';
 @use 'variables/grid';
 @use 'variables/animations';
 
@@ -110,8 +112,15 @@
     /*
     * Spacing sizes
     */
-    @each $key, $value in type.$spacingSizes {
+    // Deprecated steps (spacing.$spacingDeprecated) are still emitted here
+    // for one minor, so a product reading one keeps working until it moves.
+    @each $key, $value in spacing.$spacingSizes {
       --nb-spacing-#{$key}: #{$value};
+    }
+    // Viewport-relative, for full-bleed public surfaces only. Never inside
+    // the shell, where the viewport is not the content width.
+    @each $key, $value in spacing.$fluidSpacing {
+      --nb-fluid-spacing-#{$key}: #{$value};
     }
 
     // Absolute color utilities — always pure white/black regardless of theme
@@ -598,23 +607,35 @@
   /*
   * Sizing
   */
-  @each $size_key, $size_value in type.$spacingSizes {
-    @each $type_key, $type_value in type.$spacingTypes {
-      .#{$type_key}-#{$size_key} {
-        #{$type_value}: var(--nb-spacing-#{$size_key});
-      }
-      .#{$type_key}h-#{$size_key} {
-        #{$type_value}-left: var(--nb-spacing-#{$size_key});
-        #{$type_value}-right: var(--nb-spacing-#{$size_key});
-      }
-      .#{$type_key}v-#{$size_key} {
-        #{$type_value}-top: var(--nb-spacing-#{$size_key});
-        #{$type_value}-bottom: var(--nb-spacing-#{$size_key});
-      }
+  // No class for a deprecated step: its custom property still resolves, but
+  // nothing new should be written against it.
+  @each $size_key, $size_value in spacing.$spacingSizes {
+    @if not list.index(spacing.$spacingDeprecated, $size_key) {
+      @each $type_key, $type_value in spacing.$spacingTypes {
+        .#{$type_key}-#{$size_key} {
+          #{$type_value}: var(--nb-spacing-#{$size_key});
+        }
+        .#{$type_key}h-#{$size_key} {
+          #{$type_value}-left: var(--nb-spacing-#{$size_key});
+          #{$type_value}-right: var(--nb-spacing-#{$size_key});
+        }
+        .#{$type_key}v-#{$size_key} {
+          #{$type_value}-top: var(--nb-spacing-#{$size_key});
+          #{$type_value}-bottom: var(--nb-spacing-#{$size_key});
+        }
 
-      @each $dir_key, $dir_value in type.$spacingDir {
-        .#{$type_key}#{$dir_key}-#{$size_key} {
-          #{$type_value}-#{$dir_value}: var(--nb-spacing-#{$size_key});
+        @each $dir_key, $dir_value in spacing.$spacingDir {
+          .#{$type_key}#{$dir_key}-#{$size_key} {
+            #{$type_value}-#{$dir_value}: var(--nb-spacing-#{$size_key});
+          }
+        }
+
+        // Logical beside the physical: `.pis-16` is padding-inline-start,
+        // which mirrors under right-to-left where `.pl-16` does not.
+        @each $dir_key, $dir_value in spacing.$spacingLogicalDir {
+          .#{$type_key}#{$dir_key}-#{$size_key} {
+            #{$type_value}-#{$dir_value}: var(--nb-spacing-#{$size_key});
+          }
         }
       }
     }
