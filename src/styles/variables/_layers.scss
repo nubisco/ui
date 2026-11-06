@@ -58,11 +58,65 @@ $light: (
     2: #d7d8d9,
     3: #e1e2e3,
   ),
+  // The per-plane set. Every map below is keyed by the plane a thing SITS
+  // ON, so `.nb-layer-2` points `--nb-c-field-bg` at `field.2`: the fill a
+  // field takes when it is drawn on a layer-2 surface. See the header of
+  // `plane-tokens` below for what each role is and how it was measured.
+  accent: (
+      0: #d4d5d6,
+      1: #dcddde,
+      2: #d2d3d4,
+      3: #dbdcdd,
+    ),
+  accent-hover: (
+    0: #c9cacb,
+    1: #d1d2d3,
+    2: #c9cacb,
+    3: #cfd0d1,
+  ),
+  selected: (
+    0: #cfd0d1,
+    1: #d6d7d8,
+    2: #cdcecf,
+    3: #d5d6d7,
+  ),
+  selected-hover: (
+    0: #c9cacb,
+    1: #d1d2d3,
+    2: #c9cacb,
+    3: #cfd0d1,
+  ),
+  active: (
+    0: #d3d4d5,
+    1: #d9dadb,
+    2: #cecfd0,
+    3: #d8d9da,
+  ),
+  border-strong: (
+    0: #818283,
+    1: #898a8b,
+    2: #7d7e7f,
+    3: #858687,
+  ),
+  field: (
+    0: #f9fafb,
+    1: #f1f2f3,
+    2: #f3f4f5,
+    3: #e9eaeb,
+  ),
+  field-border: (
+    0: #646566,
+    1: #646566,
+    2: #646566,
+    3: #646566,
+  ),
   text: #242526,
   text-muted: #38393a,
   text-subtle: #545556,
-  field-bg: #cacbcc,
-  field-border: #646566,
+  // The pre-5.0 field treatment, kept for `[data-nb-preset='classic-fields']`
+  // and for the disabled fill, which inherited the old enabled grey.
+  classic-field-bg: #cacbcc,
+  classic-field-border: #646566,
 );
 
 /// Dark ramp.
@@ -105,13 +159,107 @@ $dark: (
     2: #38393a,
     3: #313233,
   ),
+  accent: (
+    0: #222324,
+    1: #313233,
+    2: #232425,
+    3: #2a2b2c,
+  ),
+  accent-hover: (
+    0: #2b2c2d,
+    1: #3a3b3c,
+    2: #1b1c1d,
+    3: #212223,
+  ),
+  selected: (
+    0: #272829,
+    1: #363738,
+    2: #1f2021,
+    3: #262728,
+  ),
+  selected-hover: (
+    0: #2b2c2d,
+    1: #3a3b3c,
+    2: #1b1c1d,
+    3: #212223,
+  ),
+  active: (
+    0: #212223,
+    1: #303132,
+    2: #3c3d3e,
+    3: #2a2b2c,
+  ),
+  border-strong: (
+    0: #656667,
+    1: #6f7071,
+    2: #7d7e7f,
+    3: #8e8f90,
+  ),
+  field: (
+    0: #1e1f20,
+    1: #2d2e2f,
+    2: #3d3e3f,
+    3: #2d2e2f,
+  ),
+  field-border: (
+    0: #818283,
+    1: #818283,
+    2: #939495,
+    3: #939495,
+  ),
   text: #eaebec,
   text-muted: #d0d1d2,
   text-subtle: #a7a8aa,
-  field-bg: #141516,
-  field-border: #626364,
+  classic-field-bg: #141516,
+  classic-field-border: #626364,
 );
 
+/// The per-plane set.
+///
+/// `.nb-layer-N` used to re-point three tokens (surface, border, hover). It now
+/// re-points a full set, the way Carbon's layer sets do, so a component asks
+/// for "the selected surface" or "a field's fill" and gets the value for the
+/// plane it is sitting on. The keys, and the contextual token each one feeds:
+///
+/// ```text
+/// accent          --nb-c-surface-accent           Carbon $layer-accent
+/// accent-hover    --nb-c-surface-accent-hover     $layer-accent-hover
+/// selected        --nb-c-surface-selected         $layer-selected
+/// selected-hover  --nb-c-surface-selected-hover   $layer-selected-hover
+/// active          --nb-c-surface-active           $layer-active (pressed)
+/// border-strong   --nb-c-border-strong            $border-strong
+/// field           --nb-c-field-bg                 $field
+/// field-border    --nb-c-field-border             the field's bottom rule
+/// ```
+///
+/// What every value is held to, in both themes (`tests/layerContrast.test.ts`):
+///
+/// - `text` and `text-muted` at AAA (7:1) on every state surface, and
+///   `text-subtle` at AA. The tightest: light muted on `selected-hover.2`
+///   at 7.05, dark muted on `active.2` at 7.12.
+/// - Every state surface at least 3 dL* from its own plane and 1.5 dL* from
+///   that plane's hover, so a selected row never reads as a hovered one.
+///   `selected` sits 1.5 to 2.4 dL* past `accent`, so a selected zebra row
+///   still differs from its stripe.
+/// - `border-strong` at 3:1 against its own plane (3.31 to 3.35).
+/// - `field-border` at 3:1 against both the field fill and the plane under it.
+///   Dark planes 2 and 3 take a lighter rule (#939495, 3.53 on #3d3e3f) because
+///   the old single value (#818283) measured 2.78 there.
+///
+/// A field on plane N takes the next plane's fill where one exists, Carbon's
+/// "a field on layer-02 uses field-03" rule, so a field always has a fill
+/// boundary. Light plane 1 keeps its tuned #f1f2f3 (it is where most fields
+/// live, and the step to layer-2 would read heavier than the fix needs), and
+/// plane 3 has no plane above it, so it steps the other way. In dark, plane 3
+/// steps down to #2d2e2f for the same reason hover reverses there: anything
+/// lighter than #3d3e3f drops muted text under 7:1. The defect this closes:
+/// the dark field used to equal layer-1, 1.00:1 inside a layer-1 panel.
+///
+/// The dark ramp has no room ABOVE planes 2 and 3 (muted text is at 7.01 on
+/// layer-3 already), so their accent and selected surfaces step DOWN, the same
+/// reversal hover makes at layer 3. Direction is not the requirement,
+/// magnitude is.
+///
 /// The third text tier, `text-subtle`, is held to WCAG AA (4.5:1) rather than
 /// AAA, on every one of the nine painted surfaces in its theme. AAA is not
 /// reachable for a third tier: muted already sits at 9.43:1 on the darkest light
@@ -123,7 +271,9 @@ $dark: (
 /// Returns one value from a ramp.
 ///
 /// @param {Map} $ramp - `$light` or `$dark`
-/// @param {String} $role - surface, border or hover
+/// @param {String} $role - surface, border, hover, or a per-plane key
+///   (accent, accent-hover, selected, selected-hover, active, border-strong,
+///   field, field-border)
 /// @param {Number} $level - 0 through 3
 /// @access public
 /// @group @nubisco/layers
@@ -134,9 +284,29 @@ $dark: (
 /// Returns a scalar token from a ramp.
 ///
 /// @param {Map} $ramp - `$light` or `$dark`
-/// @param {String} $key - text, text-muted, field-bg or field-border
+/// @param {String} $key - text, text-muted, text-subtle, classic-field-bg or
+///   classic-field-border
 /// @access public
 /// @group @nubisco/layers
 @function token($ramp, $key) {
   @return map.get($ramp, $key);
 }
+
+/// The per-plane roles, and the contextual token each one re-points.
+///
+/// `_theme.scss` emits `--nb-c-layer-<key>-N` for every key and level, and the
+/// `.nb-layer-N` classes point the contextual token at the level's value.
+///
+/// @type Map
+/// @access public
+/// @group @nubisco/layers
+$plane-roles: (
+  accent: surface-accent,
+  accent-hover: surface-accent-hover,
+  selected: surface-selected,
+  selected-hover: surface-selected-hover,
+  active: surface-active,
+  border-strong: border-strong,
+  field: field-bg,
+  field-border: field-border,
+);

@@ -28,15 +28,36 @@
 
 @use '../variables/layers';
 
+/// The field fill and rule are per plane now (`.nb-layer-N` re-points them
+/// from `--nb-c-layer-field-N`), so the preset sets the per-plane values as
+/// well as the contextual ones: setting only `--nb-c-field-bg` here would be
+/// undone by the first `.nb-layer-N` inside the scope.
+@mixin _fields($ramp) {
+  --nb-c-field-bg: #{layers.token($ramp, classic-field-bg)};
+  --nb-c-field-border: #{layers.token($ramp, classic-field-border)};
+  @for $i from 0 through 3 {
+    --nb-c-layer-field-#{$i}: #{layers.token($ramp, classic-field-bg)};
+    --nb-c-layer-field-border-#{$i}: #{layers.token(
+        $ramp,
+        classic-field-border
+      )};
+  }
+}
+
 @mixin classic-fields {
   [data-nb-preset='classic-fields'] {
-    --nb-c-field-bg: #{layers.token(layers.$light, field-bg)};
-    --nb-c-field-border: #{layers.token(layers.$light, field-border)};
+    @include _fields(layers.$light);
     // The old treatment had no separate disabled or read-only values: both
     // fell back to the enabled ones and leaned on opacity alone.
-    --nb-c-field-bg-disabled: #{layers.token(layers.$light, field-bg)};
-    --nb-c-field-border-disabled: #{layers.token(layers.$light, field-border)};
-    --nb-c-field-border-readonly: #{layers.token(layers.$light, field-border)};
+    --nb-c-field-bg-disabled: #{layers.token(layers.$light, classic-field-bg)};
+    --nb-c-field-border-disabled: #{layers.token(
+        layers.$light,
+        classic-field-border
+      )};
+    --nb-c-field-border-readonly: #{layers.token(
+        layers.$light,
+        classic-field-border
+      )};
   }
 
   /*
@@ -46,10 +67,15 @@
    */
   .dark[data-nb-preset='classic-fields'],
   .dark [data-nb-preset='classic-fields'] {
-    --nb-c-field-bg: #{layers.token(layers.$dark, field-bg)};
-    --nb-c-field-border: #{layers.token(layers.$dark, field-border)};
-    --nb-c-field-bg-disabled: #{layers.token(layers.$dark, field-bg)};
-    --nb-c-field-border-disabled: #{layers.token(layers.$dark, field-border)};
-    --nb-c-field-border-readonly: #{layers.token(layers.$dark, field-border)};
+    @include _fields(layers.$dark);
+    --nb-c-field-bg-disabled: #{layers.token(layers.$dark, classic-field-bg)};
+    --nb-c-field-border-disabled: #{layers.token(
+        layers.$dark,
+        classic-field-border
+      )};
+    --nb-c-field-border-readonly: #{layers.token(
+        layers.$dark,
+        classic-field-border
+      )};
   }
 }

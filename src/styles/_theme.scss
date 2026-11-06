@@ -13,6 +13,22 @@
 @use 'variables/grid';
 @use 'variables/animations';
 
+/// Emits `--nb-c-layer-<role>-N` for every per-plane role and level of a ramp.
+@mixin plane-values($ramp) {
+  @each $role, $token in layers.$plane-roles {
+    @for $i from 0 through 3 {
+      --nb-c-layer-#{$role}-#{$i}: #{layers.level($ramp, $role, $i)};
+    }
+  }
+}
+
+/// Points every contextual per-plane token at one level's values.
+@mixin plane-aliases($level) {
+  @each $role, $token in layers.$plane-roles {
+    --nb-c-#{$token}: var(--nb-c-layer-#{$role}-#{$level});
+  }
+}
+
 @mixin base {
   :root {
     --nb-base-unit: #{layout.$base-unit}px;
@@ -123,7 +139,7 @@
       --nb-fluid-spacing-#{$key}: #{$value};
     }
 
-    // Absolute color utilities — always pure white/black regardless of theme
+    // Absolute color utilities: always pure white/black regardless of theme
     --nb-c-white: #{colors.get-color('plain-white', 100)};
     --nb-c-black: #{colors.get-color('plain-black', 900)};
 
@@ -151,11 +167,16 @@
     --nb-c-layer-hover-2: #{layers.level(layers.$light, hover, 2)};
     --nb-c-layer-hover-3: #{layers.level(layers.$light, hover, 3)};
 
-    // Semantic surface tokens — default to layer-1 (most components sit on layer-0)
+    // The rest of the per-plane set: --nb-c-layer-<role>-N, measured in
+    // `variables/_layers.scss`, re-pointed by `.nb-layer-N` below.
+    @include plane-values(layers.$light);
+
+    // Semantic surface tokens, defaulting to layer-1 (most components sit on layer-0)
     --nb-c-surface: var(--nb-c-layer-1);
     --nb-c-surface-raised: var(--nb-c-layer-0);
     --nb-c-border: var(--nb-c-layer-border-1);
     --nb-c-surface-hover: var(--nb-c-layer-hover-1);
+    @include plane-aliases(1);
     --nb-c-contrast: #{colors.get-color('plain-black', 900)}; // maximum contrast on surface
     --nb-c-document: #{colors.get-color('plain-white', 50)}; // document background
 
@@ -289,10 +310,12 @@
      * rule, still square. Only the fills and the boundary contrast moved.
      * `[data-nb-preset='classic-fields']` restores the old values.
      */
-    --nb-c-field-bg: #f1f2f3;
-    --nb-c-field-border: #{layers.token(layers.$light, field-border)};
+    //
+    // The fill and the rule are per plane (`field` and `field-border` in
+    // `variables/_layers.scss`): `plane-aliases(1)` above points them at the
+    // plane-1 values, #f1f2f3 and #646566, and `.nb-layer-N` re-points them.
     // The historic enabled fill, now carrying the disabled state.
-    --nb-c-field-bg-disabled: #{layers.token(layers.$light, field-bg)};
+    --nb-c-field-bg-disabled: #{layers.token(layers.$light, classic-field-bg)};
     // Disabled loses boundary contrast as well as gaining the darker fill,
     // so the two states differ in kind. Deliberately under the 3:1 that WCAG
     // 1.4.11 asks of an *operable* control boundary: this one is not operable.
@@ -398,7 +421,7 @@
     --nb-c-discrete-a11y: var(--nb-c-nouveau-gray-200-a11y);
     --nb-c-component-discrete-text: var(--nb-c-nouveau-gray-700);
 
-    // Focus ring — used by all interactive controls via :focus-visible
+    // Focus ring: used by all interactive controls via :focus-visible
     @include accent.focus-ring;
 
     // ── Scrim / overlay ───────────────────────────────────────────────────
@@ -515,15 +538,17 @@
 
 @mixin classes {
   /*
-  * Layer utilities — set surface context for child components.
-  * Applying .nb-layer-N overrides --nb-c-surface and --nb-c-border
-  * so all children (Panel, Shell, etc.) automatically adapt.
+  * Layer utilities: set the surface context for child components.
+  * Applying .nb-layer-N re-points the whole per-plane set (surface, border,
+  * hover, and every role in `layers.$plane-roles`), so all children (Panel,
+  * Shell, a field, a selected row) automatically adapt.
   */
   @for $i from 0 through 3 {
     .nb-layer-#{$i} {
       --nb-c-surface: var(--nb-c-layer-#{$i});
       --nb-c-border: var(--nb-c-layer-border-#{$i});
       --nb-c-surface-hover: var(--nb-c-layer-hover-#{$i});
+      @include plane-aliases($i);
     }
   }
 
@@ -652,7 +677,7 @@
     --nb-c-danger: #{colors.get-color('chicken-comb', 500)};
     --nb-c-component-plain: #{colors.get-color('nouveau-gray', 500)};
 
-    // Shell — emitted at :root so consumer apps can override on :root
+    // Shell: emitted at :root so consumer apps can override on :root
     // without fighting Shell.vue's scoped-style specificity.
     // Dark chrome derived from the brand: a near-black tint of --nb-c-primary so
     // rebranding the primary colour re-tints the sidebar too (semantic, not a
@@ -752,7 +777,7 @@
       0 1px 2px color-mix(in srgb, var(--nb-c-black) 6%, transparent),
       0 8px 24px -12px color-mix(in srgb, var(--nb-c-black) 18%, transparent);
 
-    // Panels — emitted at :root so consumer apps can override on :root without
+    // Panels: emitted at :root so consumer apps can override on :root without
     // fighting the components' scoped-style specificity.
     --nb-shell-panel-header-height: calc(var(--nb-base-unit) * 3.5); // 28px
     --nb-shell-panel-gap: 1px; // hairline separator, not a spacing step
@@ -773,7 +798,7 @@
     --nb-bottom-panel-bg: var(--nb-c-layer-0, var(--nb-c-bg));
     --nb-bottom-panel-border: var(--nb-c-border);
 
-    // Menu — base item height. The .nb-menu--xs/sm/md/lg size variants override
+    // Menu: base item height. The .nb-menu--xs/sm/md/lg size variants override
     // this on top (state-scoped, kept in MenuItem.vue).
     --nb-menu-item-h: calc(var(--nb-base-unit) * 5); // 40px
   }
@@ -781,7 +806,7 @@
 
 @mixin dark {
   .dark {
-    // Status colors — lighter tints for dark backgrounds
+    // Status colors: lighter tints for dark backgrounds
     --nb-c-primary: #{colors.get-color('grape-hyacinth', 400)};
     // Same wash, re-mixed: the dark --nb-c-primary is a 400, so it takes less
     // white than the light 500 does to reach the tint this token used to alias.
@@ -880,11 +905,14 @@
     --nb-c-layer-hover-2: #{layers.level(layers.$dark, hover, 2)};
     --nb-c-layer-hover-3: #{layers.level(layers.$dark, hover, 3)};
 
-    // Surface tokens — override to dark values
+    @include plane-values(layers.$dark);
+
+    // Surface tokens, re-declared so a nested .dark region resolves its own
     --nb-c-surface: var(--nb-c-layer-1);
     --nb-c-surface-raised: var(--nb-c-layer-0);
     --nb-c-border: var(--nb-c-layer-border-1);
     --nb-c-surface-hover: var(--nb-c-layer-hover-1);
+    @include plane-aliases(1);
     --nb-c-contrast: #{colors.get-color('plain-white', 150)};
     --nb-c-document: #{colors.get-color('plain-white', 50)};
 
@@ -897,7 +925,7 @@
       )};
     --nb-c-text-subtle: #{layers.token(layers.$dark, text-subtle)};
 
-    // Background tiers — deepest layer for page background
+    // Background tiers: deepest layer for page background
     --nb-c-bg: var(--nb-c-layer-0);
     --nb-c-bg-soft: var(--nb-c-layer-1);
 
@@ -910,12 +938,12 @@
      * The dark ramp cannot separate enabled from disabled by fill at all
      * (every surface in it sits within 1.21:1 of every other), so in this
      * theme the bottom rule is the whole signal.
+     *
+     * The fill and the rule are per plane (`plane-aliases(1)` above). A field
+     * on plane N takes the next plane's fill, so a field inside a layer-1
+     * panel is #2d2e2f on #1e1f20 rather than the 1.00:1 it used to be, and
+     * planes 2 and 3 take a lighter rule (#939495) that clears 3:1 there.
      */
-    --nb-c-field-bg: #{layers.level(layers.$dark, surface, 1)};
-    // Picked against that fill directly rather than taken from the layer
-    // border ramp, whose brightest step (#696a6b) measures 3.05:1 here and
-    // clears 1.4.11 by four hundredths. This is 4.29:1.
-    --nb-c-field-border: #818283;
     // Flush with the page ground: enabled is raised, disabled is not.
     --nb-c-field-bg-disabled: #{layers.level(layers.$dark, surface, 0)};
     --nb-c-field-border-disabled: #{layers.level(layers.$dark, border, 0)};
@@ -970,7 +998,7 @@
     --nb-c-discrete: #{colors.get-color('nouveau-gray', 700)};
     --nb-c-component-discrete-text: #{colors.get-color('nouveau-gray', 300)};
 
-    // Secondary button — mid-grey in dark mode
+    // Secondary button: mid-grey in dark mode
     --nb-c-secondary: #{colors.get-color('nouveau-gray', 700)};
     --nb-c-secondary-a11y: #{colors.color-contrast(
         colors.get-color('nouveau-gray', 700)
@@ -1013,7 +1041,7 @@
     --nb-c-component-disabled: #{colors.get-color('nouveau-gray', 700)};
     --nb-c-component-plain-border: #{colors.get-color('nouveau-gray', 600)};
 
-    // Scrim — a dark page needs a heavier dim to read as "the page behind
+    // Scrim: a dark page needs a heavier dim to read as "the page behind
     // this is out of play"; 45% over an already-dark background barely
     // registers. Only the scrim tokens change; the radius scale is
     // theme-independent and stays on the base.
