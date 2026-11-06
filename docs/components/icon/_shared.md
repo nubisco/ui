@@ -11,6 +11,30 @@ function copyName(name: string) {
     copiedIcon.value = null
   }, 1500)
 }
+/**
+ * Saves the tile's drawing as a file. The tile already renders the icon in
+ * the chosen weight, so its own <svg> is the artwork: no second lookup, and
+ * what downloads is exactly what is on screen (minus any colour picked in the
+ * gallery, since the file keeps currentColor).
+ */
+function downloadSvg(event: MouseEvent, name: string, weight = 'regular') {
+  event.stopPropagation()
+  const svg = (event.target as Element | null)
+    ?.closest('li')
+    ?.querySelector('svg')
+  if (!svg) return
+  const copy = svg.cloneNode(true) as SVGElement
+  copy.removeAttribute('aria-hidden')
+  copy.removeAttribute('focusable')
+  copy.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+  const blob = new Blob([copy.outerHTML], { type: 'image/svg+xml' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = weight === 'regular' ? `${name}.svg` : `${name}-${weight}.svg`
+  link.click()
+  URL.revokeObjectURL(url)
+}
 import type { PreviewPropDef } from '../../.vitepress/components/Preview.d'
 
 const isDialogOpen = ref(false)

@@ -9,6 +9,9 @@ pageTabs: ['usage', 'code']
 
 ## Icons
 
+Click a tile to copy the icon's name. Hover it for its tags, and for **SVG**, which
+downloads the drawing in the weight you picked, painted `currentColor`.
+
 <preview :props="availableProps" v-slot="{ resultingProps }" propsPosition="top">
   <ul class="icon-demo">
     <li
@@ -38,6 +41,13 @@ pageTabs: ['usage', 'code']
           <span v-for="(category, categoryIndex) in icon.categories" :key="categoryIndex">{{ category }}</span>
         </NbGrid>
         <p v-if="icon.tags.length" class="icon-overlay-tags">{{ icon.tags.map(tag => `#${tag}`).join(', ') }}</p>
+        <NbButton
+          size="xs"
+          variant="ghost"
+          icon="download-simple"
+          :aria-label="`Download ${icon.name} as SVG`"
+          @click="(event) => downloadSvg(event, icon.name, resultingProps.weight)"
+        >SVG</NbButton>
       </div>
     </li>
   </ul>
