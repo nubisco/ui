@@ -39,25 +39,27 @@ contradiction is named in place.
 
 ## The rulings, in one screen
 
-| Question                                      | Ruling                                                                                                                                                                                         |
-| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Capitalisation                                | Sentence case, always, everywhere. Never title case. Never typed uppercase.                                                                                                                    |
-| Person                                        | Second person (`you`, `your`) when ownership matters, otherwise none. Never `we`, never `I`, never `my`.                                                                                       |
-| Tense                                         | Imperative for actions, past for outcomes, present for state.                                                                                                                                  |
-| Period                                        | Full sentences take one. Labels, titles, headings, button text and single-fragment toasts do not.                                                                                              |
-| Exclamation marks                             | Never.                                                                                                                                                                                         |
-| Ellipsis                                      | Only on a control that needs more input from you before it can act, written as three ASCII periods. A confirmation is a guard, not more input, so a `Delete` that raises a confirm takes none. |
-| Numbers                                       | Numerals, always, including zero through nine.                                                                                                                                                 |
-| Dates                                         | Formatted by the browser from a `Date`, never typed as a literal string.                                                                                                                       |
-| Errors                                        | Three parts, in order: what happened, why, what to do next.                                                                                                                                    |
-| `alert()`                                     | Never.                                                                                                                                                                                         |
-| Raw exception text                            | Never shown to a user. Logged, and summarised for the user.                                                                                                                                    |
-| Em dashes                                     | Never, anywhere, including in strings. Use a comma, a period, parentheses or a colon.                                                                                                          |
-| Gendered third person                         | Never. Rewrite to second person, then to plural, then drop the pronoun. Singular `they` only when none of those work.                                                                          |
-| Disability as a metaphor                      | Never. No `sanity check`, `blind spot`, `crippled`, `insane`, `dumb`, `lame`.                                                                                                                  |
-| `master` / `slave`, `whitelist` / `blacklist` | Never. `primary` / `replica`, `allowlist` / `blocklist`.                                                                                                                                       |
-| Sentences built by concatenation              | Never. One string, one sentence, named placeholders.                                                                                                                                           |
-| Plurals                                       | `Intl.PluralRules`. Never a ternary, never `(s)`.                                                                                                                                              |
+| Question                                      | Ruling                                                                                                                                                                                                                                                                   |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Capitalisation                                | Sentence case, always, everywhere. Never title case. Never typed uppercase.                                                                                                                                                                                              |
+| Person                                        | Second person (`you`, `your`) when ownership matters, otherwise none. Never `we`, never `I`, never `my`.                                                                                                                                                                 |
+| Tense                                         | Imperative for actions, past for outcomes, present for state.                                                                                                                                                                                                            |
+| Period                                        | Full sentences take one. Labels, titles, headings, button text and single-fragment toasts do not.                                                                                                                                                                        |
+| Exclamation marks                             | Never.                                                                                                                                                                                                                                                                   |
+| Ellipsis                                      | Only on a control that opens a dialog asking for more before it can act (`Export...`), written as three ASCII periods. Never on a progress label (`Saving`, not `Saving...`). A confirmation is a guard, not more input, so a `Delete` that raises a confirm takes none. |
+| Spelling                                      | User-facing strings are en-US: `Minimize`, `Center`, `Customize`, `Color`. This covers the library's own defaults and every product's UI. Documentation prose may stay en-GB.                                                                                            |
+| Retry                                         | `Try again`, never `Retry`. The full verb register is [Action labels](./action-labels.md).                                                                                                                                                                               |
+| Numbers                                       | Numerals, always, including zero through nine.                                                                                                                                                                                                                           |
+| Dates                                         | Formatted by the browser from a `Date`, never typed as a literal string.                                                                                                                                                                                                 |
+| Errors                                        | Three parts, in order: what happened, why, what to do next.                                                                                                                                                                                                              |
+| `alert()`                                     | Never.                                                                                                                                                                                                                                                                   |
+| Raw exception text                            | Never shown to a user. Logged, and summarised for the user.                                                                                                                                                                                                              |
+| Em dashes                                     | Never, anywhere, including in strings. Use a comma, a period, parentheses or a colon.                                                                                                                                                                                    |
+| Gendered third person                         | Never. Rewrite to second person, then to plural, then drop the pronoun. Singular `they` only when none of those work.                                                                                                                                                    |
+| Disability as a metaphor                      | Never. No `sanity check`, `blind spot`, `crippled`, `insane`, `dumb`, `lame`.                                                                                                                                                                                            |
+| `master` / `slave`, `whitelist` / `blacklist` | Never. `primary` / `replica`, `allowlist` / `blocklist`.                                                                                                                                                                                                                 |
+| Sentences built by concatenation              | Never. One string, one sentence, named placeholders.                                                                                                                                                                                                                     |
+| Plurals                                       | `Intl.PluralRules`. Never a ternary, never `(s)`.                                                                                                                                                                                                                        |
 
 Action verbs (`Save` against `Done`, `Close` against `Cancel`, `Delete` against
 `Remove`, `Try again` against `Retry`) follow one rule: the button says the verb
@@ -106,17 +108,18 @@ Tone is not a free choice per string. The component you picked has already
 declared the stakes; the string matches it. Every row below is a real prop of a
 real component in this library.
 
-| Surface                                                | Stakes                                                       | Tone                                          | Length                                            |
-| ------------------------------------------------------ | ------------------------------------------------------------ | --------------------------------------------- | ------------------------------------------------- |
-| `NbToast` `variant="success"` (4s)                     | Routine, already done                                        | Flat, past tense                              | One fragment, no period                           |
-| `NbToast` `variant="error"` (persistent, `duration` 0) | Something failed                                             | Direct, actionable                            | One or two sentences, periods                     |
-| `NbBanner` `variant="inline"`                          | Outcome of a page-level action                               | Declarative                                   | Title plus one sentence                           |
-| `NbBanner` `variant="callout"`                         | A standing fact (trial expiring, non-production environment) | Neutral, no urgency                           | One sentence                                      |
-| `NbConfirm` `tone="danger"`                            | Irreversible                                                 | Blunt, names the loss                         | Title is the verb phrase, message is one sentence |
-| `NbConfirm` `tone="neutral"`                           | Consequential, reversible                                    | Matter of fact                                | Same shape, softer message                        |
-| `NbEmptyState` `kind="empty"`                          | Nothing has gone wrong                                       | Forward-looking                               | Title plus one or two sentences                   |
-| `NbEmptyState` `kind="error"`                          | Something has gone wrong                                     | Same three-part error rule as everywhere else | Title plus one sentence                           |
-| `NbMessage` `variant="error"` under a field            | One field is wrong                                           | Corrective, no blame                          | One fragment                                      |
+| Surface                                                   | Stakes                                                       | Tone                                          | Length                                            | At most                            |
+| --------------------------------------------------------- | ------------------------------------------------------------ | --------------------------------------------- | ------------------------------------------------- | ---------------------------------- |
+| `NbToast` `variant="success"` (4s)                        | Routine, already done                                        | Flat, past tense                              | One fragment, no period                           | One line                           |
+| `NbToast` `variant="error"` (persistent, `duration` 0)    | Something failed                                             | Direct, actionable                            | One or two sentences, periods                     | Under three lines                  |
+| `NbBanner` `variant="inline"`                             | Outcome of a page-level action                               | Declarative                                   | Title plus one sentence                           | Two lines                          |
+| `NbBanner` `variant="callout"`                            | A standing fact (trial expiring, non-production environment) | Neutral, no urgency                           | One sentence                                      | Two lines                          |
+| `NbConfirm` `tone="danger"`                               | Irreversible                                                 | Blunt, names the loss                         | Title is the verb phrase, message is one sentence | Three lines of message             |
+| `NbConfirm` `tone="neutral"`                              | Consequential, reversible                                    | Matter of fact                                | Same shape, softer message                        | Three lines of message             |
+| `NbEmptyState` `kind="empty"`                             | Nothing has gone wrong                                       | Forward-looking                               | Title plus one or two sentences                   | Three lines                        |
+| `NbEmptyState` `kind="error"`                             | Something has gone wrong                                     | Same three-part error rule as everywhere else | Title plus one sentence                           | Three lines (a page error)         |
+| `NbMessage` `variant="error"` under a field               | One field is wrong                                           | Corrective, no blame                          | One fragment                                      | Two lines (a form or inline error) |
+| Any action label (`NbButton`, a menu item, a toast `cta`) | Whatever the action carries                                  | Imperative verb                               | The verb, plus a noun when it needs one           | One or two words                   |
 
 The four toast durations are declared in
 `src/composables/useToast.composable.ts` as `NB_TOAST_DURATIONS`: `success`
@@ -125,6 +128,12 @@ Four seconds is roughly one short line read once. If a success message needs
 two sentences, it is not a success message, it is a banner. An error is 0,
 meaning it stays until dismissed, so an error is the one variant where a second
 sentence is affordable.
+
+The line counts are measured at the component's default width, and they are
+ceilings, not targets. The more urgent the surface, the shorter its ceiling:
+an `assertive` live region (an error toast, a field error) is read out over
+whatever the user was doing, so every extra line is spoken at them. If the
+copy will not fit, it belongs on a bigger surface, not in a longer string.
 
 ## Sentence case, everywhere
 
@@ -256,20 +265,20 @@ one item in a list of six with a stray period.
 
 ### Everything else
 
-| Mark                                | Ruling                                                                                                                                                                                                                                                                                                                                                                          |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Em dash                             | Banned. Comma, period, parentheses or colon.                                                                                                                                                                                                                                                                                                                                    |
-| En dash                             | **Banned**, exactly like the em dash, in prose and in ranges. A numeric range is written with an ASCII hyphen and no spaces: `10-50`. Known violation in this library: `NbPagination` interpolates a real U+2013 between `rangeStart` and `rangeEnd` in its range string (`Pagination.vue` line 21). That is drift to be fixed in the component, not a carve-out for your view. |
-| Colon                               | Only on an inline label that introduces a value or a control on the same line, as `NbPagination` does with `Items per page:`. Never at the end of a standalone heading or a field label above a control.                                                                                                                                                                        |
-| Ellipsis                            | Three ASCII periods (`...`), never the single `…` character, matching `NbConfirm`'s `busyLabel: 'Working...'`. Allowed in exactly two places: a control that will collect more input before acting (`Export...`), and a progress string (`Deleting...`). A control that raises a confirmation takes none, and neither does any static label.                                    |
-| Exclamation mark                    | Banned in product strings.                                                                                                                                                                                                                                                                                                                                                      |
-| Question mark                       | Only in a genuine question put to the user. `NbConfirm` titles are not questions: the title is the action, so it takes no question mark.                                                                                                                                                                                                                                        |
-| Quotation marks                     | Do not wrap user data in quotes to distinguish it. Use `NbConfirm`'s `subject` prop, or `<code>`, which is what the dialog does with a monospaced subject strip. Quotes around a name that itself contains quotes is unreadable.                                                                                                                                                |
-| Ampersand                           | Only inside a name that contains one. Write `and`.                                                                                                                                                                                                                                                                                                                              |
-| Slashes                             | Avoid. `Save/Apply` means the writer did not decide. Decide.                                                                                                                                                                                                                                                                                                                    |
-| Contractions                        | Allowed and preferred where natural: `can't`, `won't`, `doesn't`. They shorten the string and read as speech. Do not mix within one surface.                                                                                                                                                                                                                                    |
-| Parentheses                         | For a genuine aside, at most one per string. Not for optionality: mark optional fields on the field, not in the label.                                                                                                                                                                                                                                                          |
-| Trailing whitespace inside a string | Never. Spacing is CSS.                                                                                                                                                                                                                                                                                                                                                          |
+| Mark                                | Ruling                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Em dash                             | Banned. Comma, period, parentheses or colon.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| En dash                             | **Banned**, exactly like the em dash, in prose and in ranges. A numeric range is written with an ASCII hyphen and no spaces: `10-50`. `NbPagination` writes its range this way (`11-20 of 95 items`).                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Colon                               | Only on an inline label that introduces a value or a control on the same line, as `NbPagination` does with `Items per page:`. Never at the end of a standalone heading or a field label above a control.                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Ellipsis                            | Three ASCII periods (`...`), never the single `…` character. Allowed in exactly one place: a control that opens a dialog asking for more before it can act (`Export...`, `Rename...`). Never on a progress label: `Deleting`, not `Deleting...`, because the spinner already says the work is ongoing, and `NbConfirm`'s `busyLabel` default is `Working` for that reason. Never on a placeholder (`NbSelect` searches with `Search`). A control that raises a confirmation takes none, and neither does any static label. The worked cases are in [Action labels](./action-labels.md#the-ellipsis-rule). |
+| Exclamation mark                    | Banned in product strings.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Question mark                       | Only in a genuine question put to the user. `NbConfirm` titles are not questions: the title is the action, so it takes no question mark.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Quotation marks                     | Do not wrap user data in quotes to distinguish it. Use `NbConfirm`'s `subject` prop, or `<code>`, which is what the dialog does with a monospaced subject strip. Quotes around a name that itself contains quotes is unreadable.                                                                                                                                                                                                                                                                                                                                                                          |
+| Ampersand                           | Only inside a name that contains one. Write `and`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Slashes                             | Avoid. `Save/Apply` means the writer did not decide. Decide.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Contractions                        | Allowed and preferred where natural: `can't`, `won't`, `doesn't`. They shorten the string and read as speech. Do not mix within one surface.                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Parentheses                         | For a genuine aside, at most one per string. Not for optionality: mark optional fields on the field, not in the label.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Trailing whitespace inside a string | Never. Spacing is CSS.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 
 Do not use `&nbsp;`, manual line breaks or `<br>` to shape a string. If the
 wrap is wrong, the container is wrong.
@@ -440,29 +449,30 @@ The user reading it is one of those, and being told so is not information.
 ## Writing for translation
 
 Nothing in this library translates itself, and nothing in it blocks
-translation. Every user-facing string in every component is a prop or a slot
-with an English default: `NbPagination` ships `pageSizeLabel: 'Items per page:'`
-and `itemLabel: 'items'`, `NbConfirm` ships `busyLabel: 'Working...'`,
-`NbSpinner` ships `label: 'Loading'`, `NbToast` ships `closeLabel: 'Close'`, and
-a toast queue takes `statusLabels` and `closeLabel` for the whole queue at once
-(`IToastQueueOptions`, whose own docblock says the map is there "for
-applications that are not in English"). There is no locale prop on the library
-as a whole and no bundled catalogue. The rulings below are what makes a string
-translatable later without rewriting the view.
+translation. Every user-facing string in every component is a prop, a slot, or
+an entry in the strings catalogue, each with an en-US default. The visible
+labels are props: `NbPagination` ships `pageSizeLabel: 'Items per page:'` and
+`itemLabel: 'items'`, `NbConfirm` ships `busyLabel: 'Working'`, `NbToast` ships
+`closeLabel: 'Close'`. The strings with no prop of their own (accessible names
+such as `Previous page` and a modal's `Close`, icon-button titles, chart
+fallbacks, the toast status words) come from the catalogue, which
+[Localising the library](#localising-the-library) describes. There is no
+bundled translation. The rulings below are what makes a string translatable
+later without rewriting the view.
 
-| Rule                                                           | Ruling                                                                                                                                                                                  |
-| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| One string is one sentence                                     | Never build a sentence by concatenating fragments in code. `t('deleted') + ' ' + count + ' ' + t('entries')` is untranslatable: word order, gender and agreement all differ by language |
-| Interpolate with named placeholders                            | `Could not upload {file}. The limit is {limit}.` The placeholder keeps its name across languages; positional `%s` does not survive reordering                                           |
-| Never split a string across markup                             | One string per sentence, with the markup applied to the whole. Do not emit `<b>3</b> entries selected` as three nodes a translator sees separately                                      |
-| Plurals go through `Intl.PluralRules`, never through a ternary | English has two plural forms. Polish has four, Arabic six. `count === 1 ? 'entry' : 'entries'` is correct for exactly one language family                                               |
-| Never build a plural with `(s)`                                | Ruled already under [Numbers](#numbers), and it is worse in translation: many languages have no suffix that works                                                                       |
-| Never reuse one string in two grammatical roles                | `Filter` as a button and `Filter` as a column heading are one noun and one verb, and most languages spell them differently. Two keys                                                    |
-| Do not embed a number's formatting                             | Pass the number, format it with `Intl.NumberFormat` at render. Ruled under [Numbers](#numbers) for the same reason                                                                      |
-| Do not embed a date's formatting                               | Ruled under [Dates and times](#dates-and-times). The library already resolves `props.locale \|\| navigator.language \|\| 'pt-PT'` in `NbDatePicker` and `NbCalendar`                    |
-| Do not use word order to carry meaning                         | `Sort by: name` survives translation. `Name: sort by` does not, and neither does a label whose meaning depends on sitting to the left of its control                                    |
-| Do not translate our product names                             | Nubisco, Stagewright, Verba, Keystone, OpenBridge stay as written, in every locale                                                                                                      |
-| Do not put a string in an image                                | It cannot be translated and it cannot be read aloud                                                                                                                                     |
+| Rule                                                           | Ruling                                                                                                                                                                                        |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| One string is one sentence                                     | Never build a sentence by concatenating fragments in code. `t('deleted') + ' ' + count + ' ' + t('entries')` is untranslatable: word order, gender and agreement all differ by language       |
+| Interpolate with named placeholders                            | `Could not upload {file}. The limit is {limit}.` The placeholder keeps its name across languages; positional `%s` does not survive reordering                                                 |
+| Never split a string across markup                             | One string per sentence, with the markup applied to the whole. Do not emit `<b>3</b> entries selected` as three nodes a translator sees separately                                            |
+| Plurals go through `Intl.PluralRules`, never through a ternary | English has two plural forms. Polish has four, Arabic six. `count === 1 ? 'entry' : 'entries'` is correct for exactly one language family. `pluralize()` from the package does it in one call |
+| Never build a plural with `(s)`                                | Ruled already under [Numbers](#numbers), and it is worse in translation: many languages have no suffix that works                                                                             |
+| Never reuse one string in two grammatical roles                | `Filter` as a button and `Filter` as a column heading are one noun and one verb, and most languages spell them differently. Two keys                                                          |
+| Do not embed a number's formatting                             | Pass the number, format it with `Intl.NumberFormat` at render. Ruled under [Numbers](#numbers) for the same reason                                                                            |
+| Do not embed a date's formatting                               | Ruled under [Dates and times](#dates-and-times). The library already resolves `props.locale \|\| navigator.language \|\| 'pt-PT'` in `NbDatePicker` and `NbCalendar`                          |
+| Do not use word order to carry meaning                         | `Sort by: name` survives translation. `Name: sort by` does not, and neither does a label whose meaning depends on sitting to the left of its control                                          |
+| Do not translate our product names                             | Nubisco, Stagewright, Verba, Keystone, OpenBridge stay as written, in every locale                                                                                                            |
+| Do not put a string in an image                                | It cannot be translated and it cannot be read aloud                                                                                                                                           |
 
 ### Layout must survive text expansion
 
@@ -492,6 +502,61 @@ Every rule on this page that cuts words (`please`, `simply`, `successfully`,
 reason for those rules, but it is the reason not to relax them for a product
 that is currently English-only. Every product in this fleet is one contract
 away from not being.
+
+## Localising the library
+
+The library's own strings are en-US: `Minimize`, `Center`, `Color`. That is the
+ruling for every user-facing string in the fleet, so a product in English needs
+nothing. A product in another language passes its strings once.
+
+**Visible labels are props.** Pass them where the component is used:
+`page-size-label`, `item-label`, `confirm-label`, `close-label`. A prop always
+wins over the catalogue.
+
+**Everything else is the catalogue.** `provideNbStrings()` takes any subset of
+`INbStrings` and merges it over the defaults (`NB_DEFAULT_STRINGS`). A string
+that carries a value is a function, so the translation decides where the value
+goes:
+
+```ts
+import { createApp, ref } from 'vue'
+import { provideNbStrings, pluralize } from '@nubisco/ui'
+
+const strings = ref({
+  paginationPrevious: 'Vorherige Seite',
+  paginationNext: 'Nächste Seite',
+  paginationPageOf: (page: number, total: number) =>
+    `Seite ${page} von ${total}`,
+  modalClose: 'Schließen',
+  boardCardsSelected: (count: number) =>
+    pluralize(
+      count,
+      { one: '{count} Karte ausgewählt', other: '{count} Karten ausgewählt' },
+      'de',
+    ),
+})
+
+const app = createApp(App)
+provideNbStrings(strings, app)
+```
+
+| Called                         | Reaches                                                                                       |
+| ------------------------------ | --------------------------------------------------------------------------------------------- |
+| With an `app`                  | The whole application                                                                         |
+| Inside a component's `setup()` | That component's subtree, merged over whatever an ancestor provided                           |
+| Anywhere else                  | The global fallback, which is also what hosts the library mounts itself (`useConfirm()`) read |
+
+The argument may be a ref, so switching language is one assignment. Read the
+current strings in your own components with `useNbStrings()`.
+
+**Plurals** go through `pluralize(count, { one, other }, locale)`, which picks
+the form with `Intl.PluralRules` and formats `{count}` with
+`Intl.NumberFormat`. Give it every form the language has (`few` and `many` for
+Polish); a missing one falls back to `other`.
+
+**Dates** in `NbDatePicker`, `NbCalendar` and `NbGanttChart` follow their
+`locale` prop, then `navigator.language`, then `en`. Set the prop when the
+product's language is not the browser's.
 
 ## Errors
 
@@ -574,19 +639,19 @@ Every row uses the same skeleton, so a rewrite is substitution, not authorship.
 
 ## Loading and progress
 
-One audited application renders the literal string `Loading` under eight
-different class names. The ruling:
+A product left to itself renders the literal string `Loading` under a
+different class name on every screen. The ruling:
 
-| Situation                                  | Component                           | Copy                                                                                                                                                                                   |
-| ------------------------------------------ | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A whole region loading for the first time  | `NbSkeleton`                        | No copy at all. A skeleton says it better than a word                                                                                                                                  |
-| A blocking wait with no layout to preserve | `NbSpinner` with `label`            | `Loading invoices`, naming the noun. The `label` prop is the accessible name, `showLabel` decides whether it is visible too. Pass it: the shipped default is the banned bare `Loading` |
-| A control the user just pressed            | `NbInlineLoading`                   | Its defaults are already correct: `Saving`, `Saved`, `Could not save`. Override the nouns, not the tenses                                                                              |
-| Determinate work                           | `NbProgressBar`                     | `Uploading 3 of 8`, with the counts                                                                                                                                                    |
-| A dialog acting on confirm                 | `NbConfirm` `busy` plus `busyLabel` | Default `Working...`. Override with the verb: `Deleting...`                                                                                                                            |
+| Situation                                  | Component                           | Copy                                                                                                                                                                                                                  |
+| ------------------------------------------ | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A whole region loading for the first time  | `NbSkeleton`                        | No copy at all. A skeleton says it better than a word                                                                                                                                                                 |
+| A blocking wait with no layout to preserve | `NbSpinner` with `label`            | `Loading invoices`, naming the noun. The `label` prop is the accessible name, `showLabel` decides whether it is visible too. Pass it: without it the spinner falls back to `Loading content` and warns in development |
+| A control the user just pressed            | `NbInlineLoading`                   | Its defaults are already correct: `Saving`, `Saved`, `Could not save`. Override the nouns, not the tenses                                                                                                             |
+| Determinate work                           | `NbProgressBar`                     | `Uploading 3 of 8`, with the counts                                                                                                                                                                                   |
+| A dialog acting on confirm                 | `NbConfirm` `busy` plus `busyLabel` | Default `Working`. Override with the verb: `Deleting`. No ellipsis                                                                                                                                                    |
 
 Never write `Please wait`, never write `Loading, please wait...`, and never
-leave a save with no visible state at all, which four audited apps do.
+leave a save with no visible state at all.
 
 ## Accessibility
 
@@ -725,12 +790,22 @@ it. Every known divergence is listed here rather than quietly tolerated, so
 that a reader who finds one in the source knows whether it is a carve-out (none
 of them are) or a defect (all of them are).
 
-| Where                    | What it does                                                                                            | Ruling                                                                         | What to do today                                                                                                                                                                                                                                                                |
-| ------------------------ | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Pagination.vue` line 21 | Interpolates a real U+2013 en dash between `rangeStart` and `rangeEnd`                                  | En dashes are banned, see [Everything else](#everything-else)                  | Nothing you can do from a view: the string is not a prop. Fix the component. Do not copy the character into your own ranges                                                                                                                                                     |
-| `Spinner.vue` line 64    | Defaults `label` to `'Loading'`                                                                         | Loading copy names the noun, see [Loading and progress](#loading-and-progress) | Always pass `label`. The default should become required in the component                                                                                                                                                                                                        |
-| `Banner.vue` line 55     | Defaults `closeLabel` to `'Dismiss'`                                                                    | `Dismiss` is banned as a visible label                                         | Pass `close-label="Close"` on every `NbBanner`                                                                                                                                                                                                                                  |
-| `NbFileUploader`         | Not exported from the package entry, so `import { NbFileUploader } from '@nubisco/ui'` does not resolve | Every component this page rules on has to be reachable                         | It is quoted here only as evidence that the library's own defaults are sentence case (`buttonLabel: 'Add file'`, `FileUploader.vue` line 104). No ruling on this page depends on you being able to import it. Fixing the export is tracked with the library, not with your view |
+| Where                      | What it does                                                                                         | Ruling                                                                         | What to do today                                                                  |
+| -------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| `NbConfirm` `confirmLabel` | Defaults to `Confirm`, a word [Action labels](./action-labels.md#ban-list) bans on a confirm button  | The confirm button says the verb                                               | Always pass the verb phrase. The default exists only so the button is never empty |
+| `NbSpinner` `label`        | Falls back to `Loading content`, which names no noun                                                 | Loading copy names the noun, see [Loading and progress](#loading-and-progress) | Always pass `label`. The spinner warns in development when you do not             |
+| `NbToaster` `hotkeyHint`   | Defaults to `Press Alt plus T to reach it.`, naming a key the operating system may label differently | Name what the user sees                                                        | Override it on macOS-first products (`Option plus T`)                             |
+
+These were fixed in 5.48.0 and are listed so a reader of older code knows what
+changed: `NbBanner` closes with `Close`, not `Dismiss`. `NbPagination` writes
+its range with a hyphen, not an en dash. `NbSelect` searches with `Search`, not
+`Search…`. `NbConfirm` shows `Working`, not `Working...`. `useConfirm()` no
+longer shows `error.message` or `Something went wrong.` when `formatError` is
+missing. `NbModal`, `NbPagination`, `NbDatePicker`, `NbDataTable`,
+`NbNumberInput`, `NbBoard`, `NbBottomPanel`, the Blueprint controls and the
+charts take their unprompted strings from the [catalogue](#localising-the-library).
+`NbDatePicker` and `NbCalendar` no longer fall back to a fixed non-English
+locale.
 
 If you find a divergence that is not in this table, add it. A page that rules on
 a library is only credible while its list of known failures is complete.

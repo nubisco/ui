@@ -1036,8 +1036,8 @@ Loading copy is copy. Full rules in [Writing style](/content/writing-style) and
 - **Present participle while running, past tense when done.** `Saving` then
   `Saved`. `Publishing` then `Published`.
 - **Name the noun.** `Loading invoices`, not `Loading`, and not `Please wait`.
-- **No ellipsis.** `Saving`, not `Saving…` and never `Saving...`. One product
-  ships both spellings in two files. The animation already says it is ongoing.
+- **No ellipsis.** `Saving`, not `Saving…` and never `Saving...`. The animation
+  already says it is ongoing.
 - **An error label says what failed.** `Could not save changes`, not `Error`.
 - **Never apologise and never chat.** `Hang tight!` is not information.
 
