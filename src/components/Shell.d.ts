@@ -78,6 +78,26 @@ interface IShellProps {
    */
   mainPadding?: boolean
   /**
+   * Fade the routed view in when the route changes. Off by default: a cut is
+   * the right answer for most productivity screens, where the person wants
+   * the next page now.
+   *
+   * On, the outgoing view is removed at once and the incoming one fades in
+   * over `--nb-motion-short` on the enter curve. There is no travel and no
+   * moment where both views are half visible, and under reduced motion it is
+   * a cut again. The main region's content is keyed by `routeKey`.
+   * @default false
+   */
+  routeTransition?: boolean
+  /**
+   * What identifies the routed view for `routeTransition`: the view fades in
+   * whenever this changes. Defaults to the current route's path when Vue
+   * Router is installed, so `/items/1` to `/items/2` fades as well. Pass
+   * `$route.name` to fade only between different screens, or anything else
+   * to drive it without a router.
+   */
+  routeKey?: string | number
+  /**
    * Sidebar presentation mode.
    * - 'compact': narrow icon-only rail (56px). Use with NbSidebarLink. This is
    *   the default and matches the legacy behaviour.

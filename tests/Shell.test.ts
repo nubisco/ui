@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from 'vitest'
-import { nextTick } from 'vue'
+import { nextTick, ref, type App } from 'vue'
 import { mount } from '@vue/test-utils'
 import Shell from '../src/components/Shell.vue'
 
@@ -295,5 +295,55 @@ describe('Shell', () => {
     expect(wrapper.find('.nb-shell__inspector .detail-panel').exists()).toBe(
       true,
     )
+  })
+
+  describe('routeTransition', () => {
+    it('leaves the main content unwrapped when off', () => {
+      const wrapper = createWrapper({}, { default: '<p class="page">A</p>' })
+      expect(wrapper.find('.nb-shell__route').exists()).toBe(false)
+      expect(wrapper.find('.nb-shell__main > .page').exists()).toBe(true)
+    })
+
+    it('keys the routed view, so a new key mounts a new view', async () => {
+      const wrapper = mount(Shell, {
+        props: { routeTransition: true, routeKey: '/a' },
+        slots: { default: '<p class="page">page</p>' },
+        global: { stubs: { transition: false } },
+      })
+      const first = wrapper.find('.nb-shell__route').element
+      expect(first).toBeTruthy()
+      await wrapper.setProps({ routeKey: '/b' })
+      await nextTick()
+      const routes = wrapper.findAll('.nb-shell__route')
+      expect(routes.at(-1)?.element).not.toBe(first)
+    })
+
+    it('follows the router path when no key is given', async () => {
+      const route = ref({ path: '/a' })
+      const wrapper = mount(Shell, {
+        props: { routeTransition: true },
+        slots: { default: '<p class="page">page</p>' },
+        global: {
+          // What Vue Router's install does: a reactive `$route` getter.
+          plugins: [
+            {
+              install(app: App) {
+                Object.defineProperty(app.config.globalProperties, '$route', {
+                  enumerable: true,
+                  get: () => route.value,
+                })
+              },
+            },
+          ],
+        },
+      })
+      const first = wrapper.find('.nb-shell__route').element
+      route.value = { path: '/b' }
+      await nextTick()
+      await nextTick()
+      expect(wrapper.findAll('.nb-shell__route').at(-1)?.element).not.toBe(
+        first,
+      )
+    })
   })
 })
