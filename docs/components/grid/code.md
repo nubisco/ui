@@ -408,8 +408,8 @@ The text sits as far from the gutter's centre line as it would in a wide grid.
 ## Page container
 
 `container` makes a grid the page frame: `--nb-grid-max-width` (1440px),
-centred, with `--nb-grid-gutter` as its inline margin. The margin is 0 on a
-phone (the phone signal), 16px from `md` to `xl` and 24px at `xxl`. It is
+centred, with `--nb-grid-gutter` as its inline margin. The margin is 16px up to
+`xl`, phones included, and 24px at `xxl`. It is
 opt-in and meant for a page outside `NbShell`. Inside the shell, `main`
 already supplies the margin from `--nb-shell-chrome-padding-x`, so a container
 there would add a second one.

@@ -1259,11 +1259,11 @@ See the [Layers tab](#layers) for usage details.
 
 ### Grid
 
-| Token                 | Default  | Description                                                         |
-| --------------------- | -------- | ------------------------------------------------------------------- |
-| `--nb-grid-max-width` | `1440px` | Maximum content width                                               |
-| `--nb-grid-columns`   | `16`     | Number of grid columns                                              |
-| `--nb-grid-gutter`    | `16px`   | Page margin of an `NbGrid` `container`: 0 on a phone, 24px at `xxl` |
+| Token                 | Default  | Description                                           |
+| --------------------- | -------- | ----------------------------------------------------- |
+| `--nb-grid-max-width` | `1440px` | Maximum content width                                 |
+| `--nb-grid-columns`   | `16`     | Number of grid columns                                |
+| `--nb-grid-gutter`    | `16px`   | Page margin of an `NbGrid` `container`: 24px at `xxl` |
 
 ### Gap scale
 

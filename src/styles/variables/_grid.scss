@@ -2,8 +2,8 @@
 
 $grid-max-width: 1440 !default;
 $grid-columns: 16 !default;
-// The page margin a container applies: 16px from md to xl, 24px at xxl and
-// none on a phone (see grid/index.scss).
+// The page margin a container applies: 16px up to xl, phones included, and
+// 24px at xxl (see grid/index.scss).
 $grid-gutter: layout.$base-unit * 2 !default;
 $grid-gutter-max: layout.$base-unit * 3 !default;
 
