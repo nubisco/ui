@@ -229,8 +229,8 @@ watch(
   position: relative;
   display: flex;
   align-items: flex-start;
-  gap: var(--nb-spacing-10);
-  padding: var(--nb-spacing-12) var(--nb-spacing-14);
+  gap: var(--nb-spacing-12);
+  padding: var(--nb-spacing-12) var(--nb-spacing-16);
   background: var(--nb-c-bg);
   border: 1px solid var(--nb-c-border);
   // Follows NbBanner: the status bar on the edge and the corner coexist.

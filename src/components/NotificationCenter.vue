@@ -1375,7 +1375,7 @@ defineExpose({ show, close, toggle, isOpen, unreadCount })
   align-items: center;
   justify-content: space-between;
   gap: var(--nb-spacing-8);
-  padding: var(--nb-spacing-10) var(--nb-spacing-12);
+  padding: var(--nb-spacing-12) var(--nb-spacing-12);
   border-bottom: 1px solid var(--nb-c-layer-border-3);
 }
 

@@ -112,7 +112,7 @@ provide(NB_ACCORDION_CONTEXT, {
 // whatever surface it is already on.
 .nb-accordion {
   --nb-accordion-pad-x: var(--nb-spacing-16);
-  --nb-accordion-pad-y: var(--nb-spacing-10);
+  --nb-accordion-pad-y: var(--nb-spacing-12);
   --nb-accordion-row-h: 40px;
 
   display: flex;
@@ -128,7 +128,7 @@ provide(NB_ACCORDION_CONTEXT, {
   }
 
   &--lg {
-    --nb-accordion-pad-y: var(--nb-spacing-14);
+    --nb-accordion-pad-y: var(--nb-spacing-16);
     --nb-accordion-row-h: 48px;
   }
 

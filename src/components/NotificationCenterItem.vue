@@ -266,7 +266,7 @@ function onActivate(event: Event) {
   min-width: 0;
   width: 100%;
   margin: 0;
-  padding: var(--nb-spacing-10) var(--nb-spacing-12);
+  padding: var(--nb-spacing-12) var(--nb-spacing-12);
   // Concentric with the panel that lists it.
   // 4px of padding plus the container's 1px border.
   @include radius.inset(5px);
