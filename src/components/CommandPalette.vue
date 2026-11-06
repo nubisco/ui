@@ -6,7 +6,17 @@
         class="nb-command-palette__overlay"
         @click.self="state.close()"
       >
-        <div class="nb-command-palette" @keydown="onKeydown">
+        <!-- A modal dialog: it takes the page's focus (useFocusTrap) and
+             hands it back to whatever opened it. -->
+        <div
+          ref="paletteRef"
+          class="nb-command-palette"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="label"
+          tabindex="-1"
+          @keydown="onKeydown"
+        >
           <!-- Search input -->
           <div class="nb-command-palette__input-row">
             <NbIcon
@@ -19,6 +29,14 @@
               v-model="query"
               type="text"
               class="nb-command-palette__input"
+              role="combobox"
+              aria-autocomplete="list"
+              :aria-label="label"
+              :aria-expanded="flatResults.length > 0"
+              :aria-controls="flatResults.length > 0 ? listboxId : undefined"
+              :aria-activedescendant="
+                highlightedId !== null ? optionId(highlightedId) : undefined
+              "
               :placeholder="placeholder"
               autocomplete="off"
               spellcheck="false"
@@ -26,20 +44,37 @@
           </div>
 
           <!-- Results -->
+          <!-- Focus stays in the search box; the highlighted row is announced
+               through aria-activedescendant, as in NbSelect. -->
           <div
             v-if="groupedResults.length > 0"
+            :id="listboxId"
             class="nb-command-palette__results"
+            role="listbox"
+            :aria-label="label"
           >
-            <template v-for="group in groupedResults" :key="group.namespace">
+            <div
+              v-for="(group, gi) in groupedResults"
+              :key="group.namespace"
+              :role="group.namespace ? 'group' : 'presentation'"
+              :aria-labelledby="
+                group.namespace ? `${listboxId}-group-${gi}` : undefined
+              "
+            >
               <div
                 v-if="group.namespace"
+                :id="`${listboxId}-group-${gi}`"
                 class="nb-command-palette__group-header"
+                role="presentation"
               >
                 {{ group.namespace }}
               </div>
               <div
                 v-for="item in group.commands"
+                :id="optionId(item.id)"
                 :key="item.id"
+                role="option"
+                :aria-selected="item.id === highlightedId"
                 :class="[
                   'nb-command-palette__item',
                   {
@@ -73,14 +108,22 @@
                   >
                 </span>
               </div>
-            </template>
+            </div>
           </div>
 
           <!-- Empty state -->
-          <div v-else-if="suggesting" class="nb-command-palette__empty">
+          <div
+            v-else-if="suggesting"
+            class="nb-command-palette__empty"
+            role="status"
+          >
             Searching...
           </div>
-          <div v-else-if="query" class="nb-command-palette__empty">
+          <div
+            v-else-if="query"
+            class="nb-command-palette__empty"
+            role="status"
+          >
             No matches
           </div>
           <div v-else class="nb-command-palette__empty">
@@ -102,6 +145,7 @@ import {
   onBeforeUnmount,
   nextTick,
   inject,
+  useId,
 } from 'vue'
 import type {
   ICommandPaletteProps,
@@ -110,6 +154,7 @@ import type {
 } from './CommandPalette.d'
 import { NB_COMMAND_PALETTE_KEY } from '@/composables/useCommandPalette.composable'
 import { useScrollLock } from '@/composables/useScrollLock.composable'
+import { useFocusTrap } from '@/composables/useFocusTrap.composable'
 
 // The palette takes the page's scrollbar while it is open. It holds a share of
 // the same counted lock NbModal and NbSpinner's page overlay use, so a palette
@@ -122,11 +167,34 @@ const props = withDefaults(defineProps<ICommandPaletteProps>(), {
   maxResults: 50,
   suggest: undefined,
   suggestDebounce: 150,
+  label: 'Command palette',
 })
 
 const state = inject<ICommandPaletteState>(NB_COMMAND_PALETTE_KEY)!
 
 const inputRef = ref<HTMLInputElement | null>(null)
+const paletteRef = ref<HTMLElement | null>(null)
+
+const listboxId = `nb-command-palette-${useId()}`
+// Command ids are the host's and may hold anything; the DOM id is derived
+// from the row's position in a map so it is always a valid token.
+const optionIds = new Map<string, string>()
+function optionId(commandId: string): string {
+  let id = optionIds.get(commandId)
+  if (!id) {
+    id = `${listboxId}-option-${optionIds.size}`
+    optionIds.set(commandId, id)
+  }
+  return id
+}
+
+// Focus goes into the search box on open, Tab stays inside the palette, and
+// whatever opened it gets focus back on close.
+useFocusTrap({
+  container: () => paletteRef.value,
+  active: () => state.isOpen,
+  initialFocus: () => inputRef.value,
+})
 const query = ref('')
 const highlightedId = ref<string | null>(null)
 
@@ -357,7 +425,6 @@ watch(
       query.value = state.searchFilter ?? ''
       highlightedId.value = null
       nextTick(() => {
-        inputRef.value?.focus()
         // Highlight first result after query settles
         nextTick(() => {
           if (flatResults.value.length > 0) {
