@@ -405,10 +405,11 @@ onMounted(() => {
    * <button>, <a> or <RouterLink>, so it keeps the keyboard, the disabled
    * state and the focus ring every other variant has.
    *
-   * The colour is primary drawn as ink, the same `ink.ink(primary)` an
-   * outlined primary button uses, which `tests/inkContrast.test.ts` holds at
+   * The colour is `--nb-c-link`: primary drawn as ink, the same lift an
+   * outlined primary button uses, which `tests/textRoles.test.ts` holds at
    * WCAG AA on every layer of both themes. Hover and focus add an underline
-   * rather than a wash, so the colour it is measured on never changes.
+   * and step to `--nb-c-link-hover` rather than painting a wash, so the
+   * ground it is measured on never changes.
    * `--nb-button-link-color` re-points it. Set it to `currentColor` to take
    * the colour of the surrounding text (not `inherit`, which on a custom
    * property inherits the property, not the colour).
@@ -418,7 +419,7 @@ onMounted(() => {
     padding: 0;
     gap: 0.35em;
     background: transparent;
-    color: var(--nb-button-link-color, #{ink.ink(primary)});
+    color: var(--nb-button-link-color, var(--nb-c-link));
     font-size: inherit;
     font-weight: inherit;
     line-height: inherit;
@@ -432,6 +433,7 @@ onMounted(() => {
 
     &:hover:not(:disabled),
     &:focus-visible {
+      color: var(--nb-button-link-color, var(--nb-c-link-hover));
       text-decoration: underline;
     }
     &:active:not(:disabled) {

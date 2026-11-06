@@ -63,6 +63,33 @@
   --nb-c-focus-ring: var(--nb-c-primary);
 }
 
+/// Links: the primary drawn as ink, with hover and visited states.
+///
+/// A link is text on a layer, so it takes the same lift an outlined primary
+/// button takes (`logic/_ink.scss`): AA on every layer of both themes.
+/// Hover is the primary's hover step drawn the same way, further from the
+/// surface. Visited mixes 70% of the link with the muted text tier, so it
+/// loses some hue but none of its contrast: both ends clear AA on every
+/// layer and the mix sits between them. Re-emitted wherever the primary or
+/// its lift changes, for the reason at the top of this file.
+@mixin link {
+  --nb-c-link: color-mix(
+    in srgb,
+    var(--nb-c-primary),
+    var(--nb-c-ink-toward, var(--nb-c-white)) var(--nb-c-primary-ink-lift, 0%)
+  );
+  --nb-c-link-hover: color-mix(
+    in srgb,
+    var(--nb-c-primary-hover),
+    var(--nb-c-ink-toward, var(--nb-c-white)) var(--nb-c-primary-ink-lift, 0%)
+  );
+  --nb-c-link-visited: color-mix(
+    in srgb,
+    var(--nb-c-link) 70%,
+    var(--nb-c-text-muted)
+  );
+}
+
 /// The shell chrome that carries the accent.
 ///
 /// The sidebar is a near-black tint of the accent rather than a raw palette

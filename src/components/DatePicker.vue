@@ -1265,7 +1265,7 @@ defineExpose({
   font-variant-numeric: tabular-nums;
 
   &::placeholder {
-    color: var(--nb-c-text-subtle);
+    color: var(--nb-c-text-placeholder);
   }
 
   &:disabled {
