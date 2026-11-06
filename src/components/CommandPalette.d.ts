@@ -53,6 +53,11 @@ export interface ICommandPaletteProps {
    * milliseconds. Default 150.
    */
   suggestDebounce?: number
+  /**
+   * Accessible name of the dialog and its search box. Default
+   * 'Command palette'.
+   */
+  label?: string
 }
 
 export interface ICommandPaletteState {
