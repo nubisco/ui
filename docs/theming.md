@@ -213,23 +213,18 @@ Fields are a filled box with a single bottom rule. That idiom is deliberate:
 of it. Corner geometry is a separate, global concern, covered in
 [Appearance](#appearance).
 
-What did change is the fill. The enabled fill used to be `#cacbcc`
-in the light theme: a mid grey, darker than every surface it sat on. A grey box
-with no outline is what most interfaces use to mean "unavailable", so the
-enabled state was wearing the disabled state's clothes, and `disabled` on top
-of it was only a `0.45` opacity. The two differed in brightness rather than in
-kind, and the enabled field read as the heavier of the two.
+The fill is what tells the states apart. A mid grey box with no outline is what
+most interfaces use to mean "unavailable", so the enabled fill is light and the
+grey belongs to the disabled state. Disabled and read-only also get their own
+boundary contrast, so the states differ in kind rather than only in brightness:
 
-The default now lightens the enabled fill and gives disabled and read-only
-their own boundary contrast:
+| State         | Fill       | Rule         |
+| ------------- | ---------- | ------------ |
+| **Enabled**   | Light fill | Bottom rule  |
+| **Disabled**  | Grey fill  | Dimmed rule  |
+| **Read-only** | No fill    | Quieter rule |
 
-| State         | Before                     | Now                                     |
-| ------------- | -------------------------- | --------------------------------------- |
-| **Enabled**   | Mid grey fill, bottom rule | Lighter fill, same bottom rule          |
-| **Disabled**  | Same fill, 0.45 opacity    | Keeps the historic grey fill, rule dims |
-| **Read-only** | No fill, bottom rule       | No fill, quieter rule                   |
-
-Geometry is identical in every column: filled box, one bottom rule, square
+Geometry is identical in every state: filled box, one bottom rule, square
 corners, same height, padding and alignment.
 
 The measured numbers, because a control boundary is held to 3:1 by WCAG 1.4.11:
@@ -721,8 +716,8 @@ What each value is held to, in both themes, by `tests/layerContrast.test.ts`:
 A field on plane N takes the next plane's fill where there is one, so it
 always has a fill boundary. Light plane 1 keeps its tuned `#f1f2f3`, where most
 fields live. The top plane has nothing above it, so it steps the other way.
-The dark field used to equal layer 1, which made a field inside a dark panel
-1.00:1 against the panel; it is now `#2d2e2f` on `#1e1f20`.
+In dark, a field inside a panel on layer 1 is `#2d2e2f` on `#1e1f20`, so it
+never matches the panel it sits on.
 
 In dark, planes 2 and 3 have no room above them (muted text is at 7.01:1 on
 layer 3 already), so their accent and selected surfaces step down, the same

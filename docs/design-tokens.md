@@ -5,7 +5,7 @@ description: What a token is in NubiscoUI, how to read the --nb-* naming grammar
 
 # Design Tokens
 
-This is the first page most people open. For a long time it was five rendered strips of values and nothing else, and an audit of twelve consuming applications showed what that cost: two teams looked at a wall of spacing bars, concluded the scale was an internal implementation detail of the library, and shipped **462** and **287** hardcoded pixel values respectively, with zero uses of the scale between them.
+Tokens are public API. Every colour, space, type size and layer in your application should name one, because a literal does not move when the theme, the density or the brand does.
 
 The viewers are still here, at the bottom, because seeing the values matters. But a list of tokens is a dictionary, not a language. This page is the grammar.
 
@@ -33,7 +33,7 @@ That choice has three consequences you can rely on:
 
 **You can override any of them from your own stylesheet without recompiling.** There is no build step, no Sass import, no fork. One `:root` block in your app changes the library. Whether you _should_ is the subject of [Overriding](#which-tokens-you-may-override).
 
-**A misspelled token is silent.** `var(--nb-z-toast)` is not an error. The browser resolves it to nothing, the declaration is dropped, and the element renders on whatever it inherited. One application in the audit shipped a toast host on the wrong z-index for months for exactly this reason: the real token is `--nb-zindex-toast`. See [Checking that a name is real](#checking-that-a-name-is-real) before you type any token you have not copied from this page.
+**A misspelled token is silent.** `var(--nb-z-toast)` is not an error. The browser resolves it to nothing, the declaration is dropped, and the element renders on whatever it inherited. `--nb-z-toast` looks right and is not a token: the real one is `--nb-zindex-toast`. See [Checking that a name is real](#checking-that-a-name-is-real) before you type any token you have not copied from this page.
 
 ## Reading a token name
 
@@ -99,7 +99,7 @@ semantic     --nb-c-primary                 "the brand's main action colour"
 
 The raw layer describes a pigment. The semantic layer describes a job. A white-label deployment retints the semantic layer and everything that spoke semantically follows; everything that named a pigment stays purple.
 
-This is not hypothetical. `NbButton`'s ghost hover border used to name `--nb-c-grape-hyacinth-200`, a raw Nubisco brand ramp, and a white-label client had to write the vendor's purple into their own stylesheet to stop it leaking onto that edge. The comment explaining the fix is still in `Button.vue`. The same class of mistake in a chart palette put a purple placeholder into a rebranded white-label product, where no upgrade could remove it, because the hex had been copied into the consuming app.
+The library follows the same rule. `NbButton`'s ghost hover fills with `--nb-c-primary-hover`, not a tint of the brand ramp, so a retinted primary reaches it too. A chart series is `--nb-c-chart-1` to `-8`, not a ramp name, so a rebrand recolours every chart without a hex copied into the application, where no upgrade could reach it.
 
 **Rule: never name a raw token in application code.** Raw tokens exist so the theme layer can be built out of them. If the semantic token you need does not exist, that is a gap in this library worth reporting, not a licence to reach past it.
 

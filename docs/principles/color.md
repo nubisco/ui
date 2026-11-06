@@ -6,14 +6,14 @@ description: The difference between a brand ramp and a semantic role, what every
 
 There are two colour vocabularies in this library and only one of them is yours.
 
-A **ramp** is a named hue with seventeen tints: `--nb-c-grape-hyacinth-500` is a specific violet, and it is still that violet in a product owned by a product whose brand colour is green. A **role** is a job: `--nb-c-primary` is "the colour this product acts in". Roles point at ramps, and the pointing is the theme's business, not the application's.
+A **ramp** is a named hue with seventeen tints: `--nb-c-grape-hyacinth-500` is a specific violet, and it is still that violet in a product whose brand colour is green. A **role** is a job: `--nb-c-primary` is "the colour this product acts in". Roles point at ramps, and the pointing is the theme's business, not the application's.
 
 Application code and component code name roles. Only `src/styles/_theme.scss` names ramps.
 
-::: danger This is the rule the audit found broken
-A white-label product inherited a violet placeholder series in its charts, because `Charts/shared/palette.ts` listed eight ramp names and a comment claiming brand overrides propagated. They did not: the product did not own those ramps, so it hardcoded hex per chart and now no library upgrade can recolour it. Separately, the ghost button bound its hover border to `--nb-c-grape-hyacinth-200`, so a rebranded product had to name the vendor's brand colour in its own stylesheet to stop purple leaking on hover.
+::: danger Name a role, never a ramp
+A rebrand or a theme switch re-points roles. It never changes a ramp. Anything that names a ramp directly keeps the vendor's colour after a rebrand, and keeps the same tint after a switch to dark, and the only way for the product to escape it is to hardcode its own hex, which no later library release can reach.
 
-Both now go through roles (`--nb-c-chart-1` through `-8`, and `--nb-c-primary-subtle`). The rule exists so the next one does not happen.
+So every colour the library paints goes through a role: chart series through `--nb-c-chart-1` to `-8`, the ghost button's hover through `--nb-c-primary-hover`. Your code follows the same rule.
 :::
 
 ## The ramps
@@ -94,12 +94,12 @@ These are **fills**: colours you set a background to, with the matching `-a11y` 
 ::: danger A fill is not an ink
 `--nb-c-warning` measures **2.06 : 1** against layer 1 in the light theme. As a background under `--nb-c-warning-a11y` it is fine. As a text colour it is illegible, and as a 1px outline it fails WCAG 1.4.11.
 
-This is not hypothetical. `NbBadge`'s old `orange` variant painted `color: var(--nb-c-warning)` on a 12% tint of the same colour, which measured **1.88 : 1** in light. `green` measured 2.79, `red` 3.84, `blue` 4.45. The fix was the rule above: the badge now takes intents (`neutral`, `info`, `success`, `warning`, `danger`, `primary`) that paint the status surface pairs, 8.04 : 1 or better in light, and the colour names are deprecated aliases of them. For coloured text on a surface use `--nb-c-status-*` or `--nb-c-text-error`, and for a filled block use a status surface pair.
+The same fill as text on its own 12% tint measures **1.88 : 1** in light. That is why `NbBadge` takes intents (`neutral`, `info`, `success`, `warning`, `danger`, `primary`) that paint the status surface pairs, 8.04 : 1 or better in light, and the colour names are deprecated aliases of them. For coloured text on a surface use `--nb-c-status-*` or `--nb-c-text-error`, and for a filled block use a status surface pair.
 :::
 
 ### Status: grounds, inks and glyphs
 
-Three different jobs, three different sets. Picking the wrong set is the most common colour mistake in the fleet.
+Three different jobs, three different sets. Picking the wrong set is the most common colour mistake.
 
 | Job                                  | Tokens                                                                                                           | Measured                                                                                                                       |
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -286,9 +286,9 @@ Every state you paint needs at least two of: a colour, a glyph, and a word.
 - `NbBanner` ships an icon per status and takes a `title`. Its `hideIcon` prop exists for the case where the surrounding layout already carries the glyph, and its own prop documentation says so. Setting `hideIcon` on a status-coloured block with no other cue is a bug.
 - A destructive action needs the word. `danger` styling on a button that says "Done" is a colour-only signal.
 - A chart caps colour-only encoding at five series, and that number comes from measurement, not taste. See [Charts, Colour](/components/charts/color/usage).
-- A loading state and an empty state are not the same state. One consuming app renders both through a single `.empty-text` element, so a failed fetch reads as "no contacts yet". Colour cannot fix that and neither can a spinner: the words have to differ.
+- A loading state and an empty state are not the same state. Rendered through one element, a failed fetch reads as "no contacts yet". Colour cannot fix that and neither can a spinner: the words have to differ.
 
-The audit's sharpest finding on this is not about colour at all. Across twelve apps the commit action is labelled Save, Done, Apply or Create interchangeably, and the exit action Close, Cancel, Dismiss or Back. If the words are inconsistent, colour is the only thing left carrying meaning, and it is the one channel that does not survive a colour-blind user, a monochrome print, or a bright afternoon.
+Consistent words matter as much as colour. Label the commit action and the exit action the same way everywhere (see [Action labels](/content/action-labels)), not Save, Done, Apply or Create interchangeably. If the words are inconsistent, colour is the only thing left carrying meaning, and it is the one channel that does not survive a colour-blind user, a monochrome print, or a bright afternoon.
 
 ## Dark theme: roles flip, ramps do not
 
@@ -351,7 +351,7 @@ You may also override a role on any ancestor rather than on `:root`. `var()` and
 
 ### The rebrand checklist
 
-A rebrand that only sets `--nb-c-primary` leaves vendor colour in five places. Each of these is a real miss the audit found or a direct consequence of the token graph:
+A rebrand that only sets `--nb-c-primary` leaves vendor colour in five places, each a direct consequence of the token graph:
 
 1. **The `-a11y` inks.** They are computed against the default fills. Change the fill, and the ink may need to flip. Check both themes with `node scripts/audit-contrast.mjs`.
 2. **`--nb-c-primary-subtle`, `--nb-c-focus-ring`, `--nb-c-selected-edge`, `--nb-c-link`, `--nb-c-focus-inverse`.** All derive from `--nb-c-primary` with `color-mix()`, so they follow it, but only where they are re-declared: on `:root`, in `.dark`, and in a named theme's own scopes. Set the primary on some other ancestor and re-declare these there too (`_accent.scss` explains why a `:root` alias freezes).
@@ -370,7 +370,7 @@ Nothing in that list requires touching the library. If you find something that d
 
 ## Anti-patterns
 
-Each of these was found in a shipped application.
+Each row is a common mistake and its fix.
 
 | Instead of                                            | Do                                                               |
 | ----------------------------------------------------- | ---------------------------------------------------------------- |

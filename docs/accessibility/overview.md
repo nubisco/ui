@@ -4,15 +4,11 @@ title: Accessibility
 description: What NubiscoUI guarantees, what your application still owns, and how to read a component page that says nothing about accessibility.
 ---
 
-An audit of twelve applications built on this library found two consoles with clickable table rows that no keyboard can reach, one with card rows built as bare `<div>`s, and one where reordering a form's fields required a mouse. In every case the team had looked at the component page, found nothing about accessibility, and drawn the reasonable conclusion that the library had it covered.
-
-It had not. And the library had never said either way.
-
-That ambiguity is what this section exists to end. A component page that says nothing is not a page that says "handled". From here on it means exactly one thing, defined below, and the burden of saying so falls on us rather than on you.
+A component page that says nothing about accessibility is not a page that says "handled". Silence means exactly one thing, defined below, and the burden of saying so falls on us rather than on you. Clickable table rows no keyboard can reach, card rows built as bare `<div>`s, and a reorder that needs a mouse are all built from components that are accessible on their own.
 
 ## The contract
 
-There are two halves and a seam. Most of the fleet's defects live in the seam.
+There are two halves and a seam. Most defects live in the seam.
 
 ::: tip What the library guarantees
 For every component the library ships:
@@ -42,7 +38,7 @@ And the seam: **a library component reached through your data**. `NbDataTable`'s
 
 **WCAG 2.2 Level AA.** Not because a regulation names it, but because AA is the level at which the success criteria are testable claims rather than opinions, and because the parts of AAA that matter to an application UI (contrast on body text, mostly) we already clear by a wide margin: primary text measures between 8.98:1 and 15.96:1 against every layer in both themes, and never below 8.9:1.
 
-Three criteria account for nearly all of the fleet's real failures, so know them by name:
+Three criteria account for nearly all real failures in applications built on this library, so know them by name:
 
 | Criterion                    | In practice                                                                                                                                                       |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -70,28 +66,22 @@ A page **with** an Accessibility heading is a commitment. Everything it claims i
 
 Stated here rather than buried, because a consumer who finds these on their own after shipping has been failed twice.
 
-::: tip Resolved: `NbModal` now traps focus
-This entry used to read "`NbModal` does not trap focus", and it was the oldest
-gap on this page. It is fixed. `NbModal` moves focus into the dialog on open,
+::: tip `NbModal` traps focus
+`NbModal` moves focus into the dialog on open,
 cycles <kbd>Tab</kbd> and <kbd>Shift</kbd>+<kbd>Tab</kbd> inside it, recovers
 focus that leaves by a route no keystroke explains, and returns focus to the
 trigger on every route out. The mechanism is shared with `NbConfirm` rather
 than reimplemented, and `initialFocus` directs the landing for a form dialog.
 
-See [Focus is handled](/components/modal/accessibility#focus-is-handled). If you copied the
-`useDialogFocus` composable this page used to recommend, delete it, or keep it
-and set `:trap-focus="false"` on that dialog so the two do not pull against
-each other.
-
-Three claims that stood in this entry alongside the focus ones were already
-wrong when it was written, and are recorded here so the correction is not
-silent: `NbModal` does set `aria-labelledby` from its own title, it does lock
-body scroll when it mounts already `open` (the watcher is `immediate`), and the
-`// Trap focus / prevent body scroll` comment it quoted is not in the source.
+It also sets `aria-labelledby` from its own title and locks body scroll,
+including when it mounts already `open`. See
+[Focus is handled](/components/modal/accessibility#focus-is-handled). A focus
+trap of your own on an `NbModal` pulls against the built-in one: remove it, or
+set `:trap-focus="false"` on that dialog.
 :::
 
-::: tip Resolved: `NbDataTable`'s `row-click` reaches the keyboard
-This entry used to say `row-click` was pointer-only. It is not: a row with a
+::: tip `NbDataTable`'s `row-click` reaches the keyboard
+A row with a
 `row-click` listener has `tabindex="0"`, activates on <kbd>Enter</kbd> and
 <kbd>Space</kbd>, and leaves keys typed into its own controls alone
 (`tests/DataTable.keyboard.test.ts`). What remains is the name: a focused row
@@ -100,7 +90,7 @@ the better interaction. See
 [Making a whole row activatable](/accessibility/keyboard#making-a-whole-row-activatable).
 :::
 
-::: tip Resolved: form fields carry validation ARIA
+::: tip Form fields carry validation ARIA
 `NbTextInput`, `NbNumberInput`, `NbSelect`, `NbRadio`, `NbSlider` and
 `NbCheckboxGroup` mark the control `aria-invalid` while an error shows, link
 the visible message by id with `aria-describedby`, and announce an error with
@@ -108,7 +98,7 @@ the visible message by id with `aria-describedby`, and announce an error with
 form control's Accessibility tab has the detail.
 :::
 
-::: tip Resolved: Tree, Menu and the command palette
+::: tip Tree, Menu and the command palette
 `NbTree` has a roving tab stop, <kbd>←</kbd>/<kbd>→</kbd> to close, open and
 step through branches, and first-letter typeahead. `NbMenu` returns focus to
 its opener and takes <kbd>Home</kbd>, <kbd>End</kbd>, wrapping and typeahead.
@@ -116,13 +106,13 @@ its opener and takes <kbd>Home</kbd>, <kbd>End</kbd>, wrapping and typeahead.
 [Arrow-key composites](/accessibility/keyboard#arrow-key-composites).
 :::
 
-::: tip Fixed: `NbBadge` variants name intents, and the dark focus ring clears 3:1
-`NbBadge` takes `neutral`, `info`, `success`, `warning`, `danger` and `primary`, each painting a measured status surface pair (4.84:1 or better on every plane in both themes). The old colour names are deprecated aliases. The dark `--nb-c-focus-ring` is lifted toward white and measures 6.88 / 5.96 / 4.92 / 3.87 on layers 0 to 3, where it was 2.27 on layer 3. See [Colour and contrast](/accessibility/color-contrast).
+::: tip `NbBadge` variants name intents, and the dark focus ring clears 3:1
+`NbBadge` takes `neutral`, `info`, `success`, `warning`, `danger` and `primary`, each painting a measured status surface pair (4.84:1 or better on every plane in both themes). The old colour names are deprecated aliases. The dark `--nb-c-focus-ring` is lifted toward white and measures 6.88 / 5.96 / 4.92 / 3.87 on layers 0 to 3. See [Colour and contrast](/accessibility/color-contrast).
 :::
 
 ## How to test
 
-Four passes. They take about ten minutes on a screen and they catch nearly everything the twelve-app audit found. Do them on the real thing, in your product, not on a docs example.
+Four passes. They take about ten minutes on a screen and they catch most of the keyboard, focus and naming defects described on this page. Do them on the real thing, in your product, not on a docs example.
 
 ### 1. Unplug the mouse
 
@@ -140,7 +130,7 @@ Check, in order:
 
 Run a screen reader with your eyes closed, or with the monitor genuinely off. VoiceOver (<kbd>Cmd</kbd>+<kbd>F5</kbd> on macOS) and NVDA on Windows are both free; test with at least one of each engine family before you claim support.
 
-- **Names.** Move to every control and listen. "Button" with no name, "graphic", or a filename is a defect. Every icon-only button in the fleet that failed this was one `aria-label` away from passing.
+- **Names.** Move to every control and listen. "Button" with no name, "graphic", or a filename is a defect. An icon-only button that fails this is usually one `aria-label` away from passing.
 - **Roles.** A `<div>` you made clickable announces as nothing. A `<div role="button" tabindex="0">` announces as a button.
 - **State.** Sorted, selected, expanded, current page, invalid: all of these must be spoken, not just drawn.
 - **Async.** Start a save and listen. Silence during a two-second request, followed by the list quietly changing, is a defect. Render `NbMessage` or `NbInlineLoading` so there is something to announce.

@@ -4,9 +4,9 @@ title: Data visualisation
 description: Choosing a chart, or choosing not to draw one. Axis rules, legends, empty and loading states, density, and what a chart owes a reader who cannot see colour.
 ---
 
-`src/components/Charts/` holds six chart components (`NbBarChart`, `NbLineChart`, `NbPieChart`, `NbSparkline`, `NbGanttChart`, `NbInterpolationChart`) and three shared parts they all render through (`ChartFrame`, `ChartLegend`, `ChartTooltip`). Until now the documentation told you what each one accepts and nothing at all about when to reach for it, what its axis is allowed to do, or what it shows a user while the fetch is still in flight.
+`src/components/Charts/` holds six chart components (`NbBarChart`, `NbLineChart`, `NbPieChart`, `NbSparkline`, `NbGanttChart`, `NbInterpolationChart`) and three shared parts they all render through (`ChartFrame`, `ChartLegend`, `ChartTooltip`). The component pages say what each one accepts. This page says when to reach for it, what its axis is allowed to do, and what it shows a user while the fetch is still in flight.
 
-The result is visible in the fleet. A white-label white-label product passes six hardcoded hex values into every chart because it could not see how else to escape a violet first series. Another product asks `NbBarChart` for `orientation="horizontal"`, does not get it, and works around the collided axis labels by shipping a second set of abbreviated category names in its translation files. A device dashboard draws four sparklines from arrays that start empty, so every metric card shows a blank box until the second poll lands, while a desktop app avoids the same blank box only because someone happened to pre-fill its history array with zeros. None of those are careless. All of them are decisions this page should have made for them.
+Getting these wrong is never loud. A chart with hardcoded colours ignores the theme, a chart drawn from an array that starts empty shows a blank box until the second poll lands, and a long category name collides with its neighbours on a vertical axis. This page makes those decisions so each product does not have to.
 
 ::: tip Colour has its own page
 Which of the three scales your data needs, in what order the eight roles are assigned, the measured separations under colour-vision deficiency, and the full white-label override recipe are on [Charts, Colour](/components/charts/color/usage). This page decides everything except which colours; where the two touch, this page states the rule and links.
@@ -27,7 +27,7 @@ A chart is a claim that the **shape** of the data carries the meaning. If the me
 | Scheduled work with duration and dependency                    | `NbGanttChart`                                                    | Two encodings at once, position for when and length for how long                                      |
 | A state: healthy, expiring, blocked                            | Not a chart. See [Status indicators](/patterns/status-indicators) | A one-value chart of a categorical state is a badge with extra pixels                                 |
 
-Three cases where a chart is actively worse than the thing it replaced, all of them in the fleet:
+Three cases where a chart is actively worse than the thing it replaced:
 
 **A ranked list of more than about ten things.** A bar chart of twenty categories is a table that cannot be sorted, cannot be searched, and truncates its own labels. `NbDataTable` with a `sortable` column does the job, and it already has `loading`, `error` and `emptyMessage` props that no chart in this library has.
 
@@ -46,9 +46,9 @@ Comparing one measure across named, unordered categories. Reach for it whenever 
 ```vue
 <template>
   <NbBarChart
-    title="Policies by branch"
+    title="Orders by region"
     subtitle="Count, current quarter"
-    :series="[{ name: 'Policies', data: byBranch }]"
+    :series="[{ name: 'Orders', data: byRegion }]"
     :show-legend="false"
     :height="220"
   />
@@ -57,7 +57,8 @@ Comparing one measure across named, unordered categories. Reach for it whenever 
 
 - **Categories come from the first series only.** `categories` is `props.series[0].data.map(d => d.x)`. Every series after the first is read positionally, by index. A second series with different `x` values is plotted under the first series' labels with no warning.
 - **A missing point is drawn as zero.** Bars read `s.data[ci]?.y ?? 0`, so a series that is short by one category renders a zero-height bar there and a `0` in the tooltip. "No data for March" and "zero in March" become the same picture. Fill your gaps explicitly before you pass them, or split the chart.
-- **`orientation` and `stacked` do nothing.** Both props are declared on `IBarChartProps` and defaulted in `withDefaults`, and neither is referenced by the render. `orientation="horizontal"` gets you a vertical chart. This is why the white-label dashboard ships shortened branch names: it asked for a horizontal chart, got vertical ticks that collided, and fixed the collision in its translation files.
+- **Long category names want `orientation="horizontal"`.** Horizontal bars put the categories on the vertical axis with their labels beside the plot, where a long name has room. On a vertical chart the same names collide under the bars. Do not shorten the names to fit.
+- **`stacked` stacks by sign.** Each segment starts where the same-signed segments before it finished, so a category with positive and negative values grows in both directions from the baseline instead of cancelling itself out.
 
 ### `NbLineChart`
 
@@ -152,7 +153,7 @@ Keep it on for every multi-series chart, and keep the series order stable across
 
 ## Empty, loading and single-point
 
-This is the section the fleet fails. `NbDataTable` has `loading`, `skeletonRows`, `error` and `emptyMessage`. **No chart in this library has any of them.** What a chart does when it has nothing is therefore entirely your responsibility, and the defaults are actively misleading:
+This is the section most often left undone. `NbDataTable` has `loading`, `skeletonRows`, `error` and `emptyMessage`. **No chart in this library has any of them.** What a chart does when it has nothing is therefore entirely your responsibility, and the defaults are actively misleading:
 
 | State                         | What the chart renders today                                                                                  | Why that is wrong                                      |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
@@ -266,7 +267,7 @@ For a chart, accessible means two things beyond the usual: **there is a text alt
 
 Charts paint through eight semantic roles, `--nb-c-chart-1` to `--nb-c-chart-8`, plus five ramp anchors, all declared in `src/styles/_theme.scss` for both themes. A product that is not violet redefines those eight once and every chart in the application follows, including the ones nobody has written yet.
 
-The white-label product predates the roles. It found a palette module that named brand ramps directly, could not override them, and did this:
+Do not pass colours per chart:
 
 ```ts
 // Do not copy this. It is the shape of the problem.
@@ -281,21 +282,21 @@ const chartColors = [
 const statusColors = ['#16a34a', '#d97706', '#dc2626']
 ```
 
-Six literals, passed as `:colors` into each chart, one of them a violet inherited from a placeholder that had nothing to do with the brand. They do not follow the dark theme, they do not follow a rebrand, and no library upgrade can reach them.
+Literals passed as `:colors` into each chart do not follow the dark theme, they do not follow a rebrand, and no library upgrade can reach them.
 
 The replacement is a stylesheet, not a prop:
 
 ```css
 :root {
-  --nb-c-chart-1: #0f6b3d;
+  --nb-c-chart-1: #b4530a;
   --nb-c-chart-2: #1d4ed8;
   /* ...through --nb-c-chart-8 */
-  --nb-c-chart-sequential-from: #d9ece2;
-  --nb-c-chart-sequential-to: #0f6b3d;
+  --nb-c-chart-sequential-from: #fbe7d4;
+  --nb-c-chart-sequential-to: #b4530a;
 }
 
 .dark {
-  --nb-c-chart-1: #4ac489;
+  --nb-c-chart-1: #f0a058;
   --nb-c-chart-2: #7aa2f7;
   /* ... */
 }
@@ -311,7 +312,6 @@ Full recipe, contrast measurements and the sequential and diverging ramps: [Char
 
 Honest list, all verified in the current source. Do not design around behaviour that is not there.
 
-- `orientation` and `stacked` on `NbBarChart` are accepted and ignored.
 - `NbLineChart` pins its value axis to zero and cannot crop.
 - No axis-label props on the cartesian charts. The unit lives in `subtitle`.
 - X positions are index-based, so irregular time spacing is drawn as regular.

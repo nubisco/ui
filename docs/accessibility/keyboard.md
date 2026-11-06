@@ -4,7 +4,7 @@ title: Keyboard interaction
 description: Tab order, Escape and Enter conventions, focus visibility, focus management across dialogs and routes, arrow-key composites, skip links, and how to make a whole row activatable.
 ---
 
-Everything a pointer can do, a keyboard must be able to do. That is WCAG 2.2 SC 2.1.1 and it is the criterion the fleet fails most often, always the same way: an interaction gets attached to an element that cannot receive focus, and nobody notices because everybody testing it has a mouse.
+Everything a pointer can do, a keyboard must be able to do. That is WCAG 2.2 SC 2.1.1 and it is the criterion applications fail most often, always the same way: an interaction gets attached to an element that cannot receive focus, and nobody notices because everybody testing it has a mouse.
 
 This page is the model. It says which keys mean what, where focus goes when the page changes underneath it, and how to add an interaction to something that is not already a control.
 
@@ -81,7 +81,7 @@ A single-character shortcut with no modifier and no scope fires while a screen r
 
 A focus indicator is only useful if there is something under it. Every time the page changes structurally, something has to decide where focus lands, and the browser's default decision is almost always "nowhere", which means `<body>`, which means the next <kbd>Tab</kbd> restarts from the top of the document.
 
-This is the finding the fleet audit produced most often, and it is invisible unless you specifically press <kbd>Tab</kbd> after an action.
+This is the most common focus defect, and it is invisible unless you specifically press <kbd>Tab</kbd> after an action.
 
 ### After a dialog closes
 
@@ -173,7 +173,7 @@ Reach for `NbSpreadsheet` when cells are genuinely editable in place. That is a 
 
 ## Making a whole row activatable
 
-The most common request in the fleet, and the source of two of its accessibility defects. It comes in two forms, one of which is easy.
+A common request, and a common source of accessibility defects. It comes in two forms, one of which is easy.
 
 ### Card rows: solved
 
@@ -190,7 +190,7 @@ Use `NbCard`. `clickable` gives you `role="button"`, `tabindex="0"` and an <kbd>
 />
 ```
 
-The two apps that hand-rolled clickable card `<div>`s got inert cards. This component existed.
+A hand-rolled clickable card `<div>` is inert to the keyboard. Do not build one.
 
 ### Table rows: needs a pattern
 
