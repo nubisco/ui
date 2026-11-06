@@ -345,7 +345,7 @@ $linear-channel-values: 0 0.0003035269835488375 0.000607053967097675
     @while contrast-ratio($fg, $bg) < $ratio {
       $sat-step: 0%;
       @if $step < 100% {
-        @if color.saturation($fg) > 10 {
+        @if color.channel($fg, 'saturation', $space: hsl) > 10 {
           $sat-step: $step;
         }
         $fg: color.scale($fg, $lightness: $step, $saturation: $sat-step);
