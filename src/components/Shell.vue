@@ -241,7 +241,12 @@
                   v-bind="mainLayerProps"
                 >
                   <SurfaceLayerScope :level="1">
-                    <slot />
+                    <Transition v-if="routeTransition" name="nb-shell-route">
+                      <div :key="resolvedRouteKey" class="nb-shell__route">
+                        <slot />
+                      </div>
+                    </Transition>
+                    <slot v-else />
                   </SurfaceLayerScope>
                 </main>
               </div>
@@ -443,6 +448,22 @@ const props = withDefaults(defineProps<IShellProps>(), {
   sidebarLabel: 'Primary',
   inspectorLabel: 'Inspector',
   contextbarLabel: 'Browse',
+  routeTransition: false,
+})
+
+/**
+ * The key the routed view fades on. Without an explicit `routeKey` it is the
+ * path of Vue Router's current route, read through the `$route` global the
+ * router installs, which is reactive. No router and no key: nothing changes,
+ * so nothing fades.
+ */
+const appGlobals = getCurrentInstance()?.appContext.config.globalProperties
+const resolvedRouteKey = computed<string | number>(() => {
+  if (props.routeKey !== undefined) return props.routeKey
+  const route = (appGlobals as Record<string, unknown> | undefined)?.$route as
+    | { path?: string }
+    | undefined
+  return route?.path ?? ''
 })
 
 /**
@@ -1887,6 +1908,39 @@ defineExpose({
   &--no-padding {
     padding: 0;
     overflow: hidden;
+  }
+}
+
+// ── Route transition (routeTransition) ────────────────────────────────────────
+//
+// The wrapper stands in for main as the content's flex column, so a view that
+// fills main still fills it. The outgoing view leaves at once: the router
+// outlet inside it would otherwise re-render the incoming route while it
+// faded, and the person would see the new page fade out before fading in.
+// The incoming view arrives on the short step and the enter curve, opacity
+// only, and under reduced motion it is a cut.
+.nb-shell__route {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.nb-shell-route-enter-active {
+  transition: opacity var(--nb-motion-short) var(--nb-ease-enter);
+}
+
+.nb-shell-route-enter-from {
+  opacity: 0;
+}
+
+.nb-shell-route-leave-active {
+  display: none;
+}
+
+@include motion.reduced {
+  .nb-shell-route-enter-active {
+    transition: none;
   }
 }
 
