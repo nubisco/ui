@@ -115,6 +115,11 @@ $light: (
   text-subtle: #545556,
   // The pre-5.0 field treatment, kept for `[data-nb-preset='classic-fields']`
   // and for the disabled fill, which inherited the old enabled grey.
+  // The inverse family: a dark chip on a light page (a tooltip, a toast that
+  // must not blend in). Text 14.69:1 on the ground, the edge 3.2:1 on it.
+  bg-inverse: #242526,
+  text-inverse: #f9fafb,
+  border-inverse: #727374,
   classic-field-bg: #cacbcc,
   classic-field-border: #646566,
 );
@@ -210,6 +215,10 @@ $dark: (
   text: #eaebec,
   text-muted: #d0d1d2,
   text-subtle: #a7a8aa,
+  // Inverted for a dark page: a light chip. Text 13.83:1, edge 3.2:1.
+  bg-inverse: #eaebec,
+  text-inverse: #1e1f20,
+  border-inverse: #818283,
   classic-field-bg: #141516,
   classic-field-border: #626364,
 );

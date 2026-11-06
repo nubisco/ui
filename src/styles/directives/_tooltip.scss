@@ -40,10 +40,12 @@
     // pair only flips its background between themes (its -a11y foreground
     // stays the light-theme value, so a dark-theme chip was dark text on a
     // dark chip), and every hand-rolled tooltip in the fleet, including the
-    // two inside this library, independently chose an inverted chip. The two
-    // vars let a consumer retint one chip without touching the theme.
-    background: var(--nb-tooltip-bg, var(--nb-c-contrast));
-    color: var(--nb-tooltip-fg, var(--nb-c-surface));
+    // two inside this library, independently chose an inverted chip. It reads
+    // the inverse family, measured as a pair (14.69 light, 13.83 dark), not
+    // `--nb-c-contrast` over whatever surface happened to be in scope. The
+    // two vars let a consumer retint one chip without touching the theme.
+    background: var(--nb-tooltip-bg, var(--nb-c-bg-inverse));
+    color: var(--nb-tooltip-fg, var(--nb-c-text-inverse));
     z-index: var(--nb-zindex-tooltip);
     text-transform: none;
     font-size: var(--nb-type-body-compact-size);
@@ -97,7 +99,7 @@
     // are indistinguishable, and a wrapped chip is far easier to read ragged
     // right than centred.
     text-align: start;
-    --tooltip-arrow-border-color: var(--nb-tooltip-bg, var(--nb-c-contrast));
+    --tooltip-arrow-border-color: var(--nb-tooltip-bg, var(--nb-c-bg-inverse));
     &:before,
     &:after {
       position: absolute;

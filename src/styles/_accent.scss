@@ -77,6 +77,23 @@
   );
 }
 
+/// The focus ring drawn on an inverse surface (`--nb-c-bg-inverse`).
+///
+/// The inverse ground is dark in light mode and light in dark mode, so the
+/// ring moves the other way from the normal one: half the accent and half
+/// white on the dark chip, half the accent and half black on the light chip.
+/// Measured against the inverse ground for the default accent and all six
+/// category accents: 6.23 to 7.23 in light, 5.04 to 9.63 in dark.
+///
+/// @param {String} $mode - light or dark
+@mixin focus-inverse($mode) {
+  $toward: var(--nb-c-white);
+  @if $mode == dark {
+    $toward: var(--nb-c-black);
+  }
+  --nb-c-focus-inverse: color-mix(in srgb, var(--nb-c-primary) 50%, #{$toward});
+}
+
 /// Links: the primary drawn as ink, with hover and visited states.
 ///
 /// A link is text on a layer, so it takes the same lift an outlined primary
