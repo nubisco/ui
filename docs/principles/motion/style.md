@@ -6,7 +6,7 @@ tab: style
 pageTabs: ['usage', 'style', 'code', 'accessibility']
 ---
 
-Six steps and three curves. Everything in the library moves on them, and a product retunes them on `:root` the way it retunes a colour. This tab is the scale and the curves themselves, side by side, so the difference between `quick` and `short` is something you have seen rather than something you have read.
+Five steps and three curves. Everything in the library moves on them, and a product retunes them on `:root` the way it retunes a colour. One more step and three more curves are held back for two moments, [below](#expressive-two-moments-never-a-control). This tab is the scale and the curves themselves, side by side, so the difference between `quick` and `short` is something you have seen rather than something you have read.
 
 ## The scale
 
@@ -61,6 +61,26 @@ Three rules on top of the table:
 **An element that leaves but stays nearby uses the standard curve, not the exit curve.** The inspector closes to zero width beside the page, ready to come back, so it moves on `standard`. A dialog is gone when it closes, so it leaves on `exit`. This is Carbon's one exception to its exit rule and it is the right one.
 
 **Loops are linear.** A loop with easing pulses, and a pulsing progress indicator reads as stuttering work. The stepped timing function under reduced motion is the one deliberate exception, on the [Accessibility](/principles/motion/accessibility) tab.
+
+## Expressive: two moments, never a control
+
+Carbon pairs its productive curves with an expressive set, for movement that is meant to be noticed. This library carries the same expressive curves and Carbon's 700ms step, and gates them hard: they are for **the arrival of a page** and for **a critical alert**, and for nothing else.
+
+| Token                           | Value                             | Use                                                                               |
+| ------------------------------- | --------------------------------- | --------------------------------------------------------------------------------- |
+| `--nb-ease-standard-expressive` | `cubic-bezier(0.4, 0.14, 0.3, 1)` | A page-level surface changing in place, such as a hero area resizing.             |
+| `--nb-ease-enter-expressive`    | `cubic-bezier(0, 0, 0.3, 1)`      | A page, or a critical alert, arriving.                                            |
+| `--nb-ease-exit-expressive`     | `cubic-bezier(0.4, 0.14, 1, 1)`   | The same alert leaving.                                                           |
+| `--nb-motion-slow`              | 700ms                             | Dimming the background behind a critical alert. Never anything a person waits on. |
+
+The rules that keep them rare:
+
+- **Never on a control.** A button, a field, a menu, a tab, a row, a chevron: always productive. A control that moves expressively is a control that feels slow, used all day.
+- **Never on something the person is waiting on.** `--nb-motion-long` stays the ceiling for that. `slow` is for a background dimming behind an alert the person has to read anyway, the one place Carbon uses it.
+- **One per screen.** If two things on a screen are expressive, neither is. The page arrives expressively once, and everything after that is productive.
+- **Not "the nicer curve".** If the reason is that it looks better, it is decoration, and the [three jobs](/principles/motion/usage#the-three-jobs) apply.
+
+Nothing in the library uses them by default. A product that wants a more visible arrival for an error banner or a first-run page reaches for these instead of writing its own `cubic-bezier`.
 
 ## Vocabulary
 

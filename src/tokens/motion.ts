@@ -23,6 +23,8 @@ export const motion = Object.freeze({
   short: 150,
   medium: 240,
   long: 400,
+  /** Expressive only: a page arriving or a critical alert, never a control. */
+  slow: 700,
 } as const)
 
 /** Easing curves, as CSS `cubic-bezier()` strings, by role. */
@@ -30,6 +32,10 @@ export const easing = Object.freeze({
   standard: 'cubic-bezier(0.2, 0, 0.38, 0.9)',
   enter: 'cubic-bezier(0, 0, 0.38, 0.9)',
   exit: 'cubic-bezier(0.2, 0, 1, 0.9)',
+  /** Expressive: a page arriving or a critical alert, never a control. */
+  'standard-expressive': 'cubic-bezier(0.4, 0.14, 0.3, 1)',
+  'enter-expressive': 'cubic-bezier(0, 0, 0.3, 1)',
+  'exit-expressive': 'cubic-bezier(0.4, 0.14, 1, 1)',
 } as const)
 
 /** A step of the duration scale. */
