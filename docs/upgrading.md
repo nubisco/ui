@@ -18,7 +18,7 @@ alter how every product looks, so check a few real screens before you ship.
   are whole pixels on a 4px rhythm. `heading-02` and above are regular or
   light, label sets are 12/16 regular, `label-sm` and `code-sm` are 12px and
   `code-md` is 14/20. Unclassed `h1` to `h6` are now 24, 20, 16, 14, 14 and
-  12px. `strong` is semibold. New sets: `label`, `body-compact`,
+  12px. `strong` is semibold, and `NbButton` labels are regular weight, as in Carbon. New sets: `label`, `body-compact`,
   `heading-compact`, `helper-text`, `overline`. See
   [Typography](/principles/typography).
 - **Every surface layer carries a full token set.** Selected, active, accent,
