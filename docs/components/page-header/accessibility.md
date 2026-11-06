@@ -5,6 +5,10 @@ intro: "`NbPageHeader` is the top of a page: where it sits, what it is called, t
 source: src/components/PageHeader.vue
 tab: accessibility
 pageTabs: ['usage', 'code', 'accessibility']
+a11y:
+  automated: not recorded
+  keyboard: native
+  screenReader: not recorded
 ---
 
 - The header is a `<header>` element and the title is the page's `<h1>`. A

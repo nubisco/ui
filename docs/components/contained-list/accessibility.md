@@ -5,6 +5,10 @@ intro: '`NbContainedList` is a list for a small space: a panel, a tile, an aside
 source: src/components/ContainedList.vue
 tab: accessibility
 pageTabs: ['usage', 'style', 'code', 'accessibility']
+a11y:
+  automated: not recorded
+  keyboard: tested
+  screenReader: not recorded
 ---
 
 ## Semantics

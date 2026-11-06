@@ -101,7 +101,7 @@ const headingId = useStableId({})
 .nb-contained-list__header .nb-contained-list__title {
   margin: 0;
   min-inline-size: 0;
-  font-size: var(--nb-type-heading-compact-size, var(--nb-font-size-14));
+  font-size: var(--nb-type-heading-compact-size);
   font-weight: var(
     --nb-type-heading-compact-weight,
     var(--nb-font-weight-semibold)
