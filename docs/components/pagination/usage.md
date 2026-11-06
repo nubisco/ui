@@ -4,7 +4,7 @@ title: Pagination
 intro: '`NbPagination` is the footer companion for [`NbDataTable`](/components/data-table/usage), usable standalone. It is fully controlled: it emits `update:page` / `update:pageSize` and renders whatever `page`, `pageSize` and `total` you pass back, so the same wiring drives client-side slicing or server-side paging.'
 source: src/components/Pagination.vue
 tab: usage
-pageTabs: ['usage', 'code']
+pageTabs: ['usage', 'code', 'accessibility']
 ---
 
 ## Density

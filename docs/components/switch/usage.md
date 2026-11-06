@@ -4,7 +4,7 @@ title: Switch
 intro: '`NbSwitch` is a toggle control that represents an on/off binary state. It supports labels, sizes, variants, and a verbose mode that shows the current state as text.'
 source: src/components/Switch.vue
 tab: usage
-pageTabs: ['usage', 'code']
+pageTabs: ['usage', 'code', 'accessibility']
 ---
 
 <preview :props="availableProps" v-slot="{ resultingProps }">

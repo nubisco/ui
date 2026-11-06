@@ -1,15 +1,15 @@
 ---
 layout: nubisco
 title: Field
-intro: '`NbField` is a labeled row: a label and a control sharing one grid. A stack of `NbField`s lines up on a single spine automatically — no per-field CSS — which makes it the building block of an inspector or a settings panel. Wrap any control and it falls into place.'
+intro: '`NbField` is a labeled row: a label and a control sharing one grid. A stack of `NbField`s lines up on a single spine automatically, with no per-field CSS, which makes it the building block of an inspector or a settings panel. Wrap any control and it falls into place.'
 source: src/components/Field.vue
 tab: usage
-pageTabs: ['usage', 'code']
+pageTabs: ['usage', 'code', 'accessibility']
 ---
 
 ## Stack a control
 
-`orientation="stack"` puts the label on its own line above a full-width control — for a control that wants the whole width (a tall text area, a prominent slider), or a label too long to sit beside it.
+`orientation="stack"` puts the label on its own line above a full-width control, for a control that wants the whole width (a tall text area, a prominent slider), or a label too long to sit beside it.
 
 <preview>
   <div style="width:320px;">
@@ -30,7 +30,7 @@ For a small control such as a switch, `control="fit"` lets the label run wide an
 
 ## In an inspector
 
-Inside a `.nb-inspector` container, `NbField` picks up the inspector treatment automatically — a compact spine, sliders that stack with full-width tracks, compact numeric steppers, and section highlighting. See [Building an inspector](/patterns/inspectors).
+Inside a `.nb-inspector` container, `NbField` picks up the inspector treatment automatically: a compact spine, sliders that stack with full-width tracks, compact numeric steppers, and section highlighting. See [Building an inspector](/patterns/inspectors).
 
 ## Content
 

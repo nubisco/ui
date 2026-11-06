@@ -4,7 +4,7 @@ title: Checkbox
 intro: '`NbCheckbox` provides a clean, accessible checkbox input with optional label support and two-way binding via `v-model`.'
 source: src/components/Checkbox.vue
 tab: usage
-pageTabs: ['usage', 'code']
+pageTabs: ['usage', 'code', 'accessibility']
 ---
 
 <preview :props="availableProps" v-slot="{ resultingProps }">
