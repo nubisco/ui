@@ -19,16 +19,9 @@ Nubisco UI has exactly five breakpoints. They have existed since the grid was
 written, they are compiled into every `.nb-grid` class, and they are the only
 widths the library itself knows about.
 
-An audit of twelve applications built on this library found five of them
-carrying hand-written breakpoint sets: 14 values in one, then 5, 2, 2 and 1.
-No two of those five apps shared a single value. Twenty-four distinct widths
-across a fleet that ships one design system, and none of them were 320, 672,
-1056, 1312 or 1584.
-
-That is not twelve teams disagreeing about design. It is a discovery failure.
-The scale was only ever written down on the `NbGrid` component page, so you
-could only find it after you had already decided to use `NbGrid`. Everyone who
-reached for a plain `@media` query invented a number instead.
+They apply to every width you write, not only to `NbGrid`. A plain `@media`
+query with a hand-picked number is a breakpoint no other screen shares, so the
+layout changes at a width where nothing else does.
 
 This page is the answer to "what width do I write". It is authoritative for
 the whole library, not only for the grid.
@@ -72,10 +65,9 @@ that the cheapest and least breakable option comes first.
 | 4    | Does the change genuinely depend on the window?          | Use `sm` / `md` / `lg` / `xl` / `xxl`. Never a number.                                     |
 | 5    | None of the five fit.                                    | The layout is wrong, or the value belongs in the library. Raise it, do not inline it.      |
 
-Steps 1 and 2 cover more real cases than teams expect. Of the twenty-four
-invented breakpoints in the audit, most were guarding a card row that a single
-`auto-fit` track would have handled at every width including the ones nobody
-tested.
+Steps 1 and 2 cover more real cases than teams expect. A hand-written
+breakpoint guarding a card row is usually doing what a single `auto-fit` track
+does at every width, including the ones nobody tested.
 
 </doc-tab>
 
@@ -181,8 +173,7 @@ a hand-written `class="md-row"` can go.
 
 ## Rules
 
-- **Never invent a width.** Twenty-four invented values across five apps is
-  what this page exists to stop. If none of the five fit, the layout is telling
+- **Never invent a width.** If none of the five fit, the layout is telling
   you something.
 - **Never write a `max-width` query.** The scale is mobile first and
   exclusively `min-width`. Mixing directions produces the one-pixel gaps and
@@ -258,9 +249,8 @@ a nested grid take its parent's gap, so its spans land on the parent's column
 lines. `ratio` holds a span at an aspect ratio. All four are on the
 [Grid code tab](/components/grid/code#modes).
 
-Reach for `gap` before you reach for margins. Two apps in the audit accumulated
-462 and 287 hardcoded pixel values respectively, against zero spacing tokens;
-a large share of those were margins doing a gap's job.
+Reach for `gap` before you reach for margins. A margin on each child is a
+hardcoded value per element, and a gap is one token on the container.
 
 ## Responsive input forms
 
@@ -301,8 +291,8 @@ its element just because it is also a layout container.
 
 <doc-tab name="Choosing a tool">
 
-`NbGrid` is not always the answer, and the audit's hand-rolled layouts were not
-all wrong. Three tools, three jobs.
+`NbGrid` is not always the answer, and a hand-written layout is not always
+wrong. Three tools, three jobs.
 
 ## Use `NbGrid` when
 
@@ -555,9 +545,8 @@ gives you two scrollbars and a header that scrolls away in one of them.
 
 **To make something fill its column and scroll inside itself, use the prop
 that exists.** `NbShellPanel` has `fill` (`flex: 1 1 auto; min-height: 0`, with
-the scrollbar in its content region) and so does `NbDataTable`. Two apps in the
-audit re-declared exactly that pair of properties on `.nb-shell-panel` across
-six stylesheets before the prop existed. Like the table, `fill` claims a height,
+the scrollbar in its content region) and so does `NbDataTable`. Do not
+re-declare that pair of properties on `.nb-shell-panel`. Like the table, `fill` claims a height,
 it cannot create one: the ancestor must be a bounded flex column, which the
 shell's inspector and `bottom` regions already are.
 
@@ -568,16 +557,15 @@ its siblings to headers. `fill` wins over `fluid` when both are set.
 
 ## Contributing controls to the chrome
 
-Eight of the twelve audited applications invented a DOM id (`#cms-topbar`,
-`#verba-topbar`, `#ob-topbar-left` and five more) so that a view could put
-buttons in the shell's topbar. Eight incompatible contracts and one live
-mount-order bug. This is a layout question because it is how a view gets
+A view that needs buttons in the shell's topbar must not invent a DOM id to
+teleport into. Each id is its own contract, and two views mounting at once
+race for it. This is a layout question because it is how a view gets
 something into a region it does not own.
 
 Use `useShellSlot`. The shell registers each region's host element, counts the
 contributions, and renders the region on demand. The topbar's own presence is
 decided from the slots, so a topbar with nothing in it does not render at all,
-which is what four applications were fighting from the outside.
+with no CSS from you to hide an empty strip.
 
 </doc-tab>
 

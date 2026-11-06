@@ -1,7 +1,7 @@
 ---
 layout: nubisco
 title: Icons beyond the catalogue
-intro: 'The icon set is Phosphor, about 1,500 glyphs in six weights, and almost everything a product needs is in it. This page is for the rest: the size, weight and vocabulary rules that keep a fleet of products drawing with one hand, the pictogram, and the icon Phosphor does not have.'
+intro: 'The icon set is Phosphor, about 1,500 glyphs in six weights, and almost everything a product needs is in it. This page is for the rest: the size, weight and vocabulary rules that keep many products drawing with one hand, the pictogram, and the icon Phosphor does not have.'
 ---
 
 ## The rules for every icon
@@ -25,8 +25,8 @@ differ, it differs by role, through a token: `var(--nb-c-warning)`, never a hex.
 **Vocabulary.** One concept, one glyph. Phosphor ships near-twins (`trash` and
 `trash-simple`, `pencil` and `pencil-simple`, `gear` and `gear-six`, `x` and
 `x-circle`), and a product that uses both halves of a pair for the same action is
-already drifting. Pick the name the rest of the fleet uses (see the fleet vocabulary
-in the workspace standards) and use it every time: delete is `trash`, everywhere.
+already drifting. Pick one name per concept and use it every time: delete is
+`trash`, everywhere.
 
 **Meaning.** An icon is decorative unless it carries meaning no text next to it
 repeats; then it is named with `label`. An icon that does something is a button:
@@ -36,8 +36,8 @@ repeats; then it is named with `label`. An icon that does something is a button:
 
 A pictogram is a bigger, softer glyph that sets a scene rather than labelling a
 control: the three cards of a first-run screen, the features of a pricing page, the
-entry cards of a docs home. There is no separate pictogram set. The fleet's
-pictogram is a Phosphor icon drawn this way:
+entry cards of a docs home. There is no separate pictogram set. A pictogram is a
+Phosphor icon drawn this way:
 
 - the `duotone` weight, the one place it is used,
 - 32 to 48px (`size="xl"`, or `:size="48"`),
@@ -113,7 +113,7 @@ registerIcons({ ledger: Ledger })
 <NbIcon name="ledger" />
 ```
 
-**For the whole fleet,** add it to the library: an SVG in `src/assets/icons/<name>.svg`
+**For every product,** add it to the library: an SVG in `src/assets/icons/<name>.svg`
 becomes `@nubisco/ui/icons/<name>` the next time the assets are generated, with a
 catalogue entry, a gallery tile and compile-time linking, exactly like a Phosphor
 icon. `ai` is the first one there. The generator refuses a name Phosphor already

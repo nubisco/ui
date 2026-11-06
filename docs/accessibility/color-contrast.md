@@ -40,7 +40,7 @@ Three tokens, in decreasing weight:
 `--nb-c-text-subtle` is the one with no headroom. At 4.50:1 against layer 3 it passes AA for normal text by two hundredths, and it fails immediately if you also shrink the type. **Do not put `--nb-c-text-subtle` below 14px on a deep dark surface.** If you need both small and quiet, take the small and give up the quiet.
 
 ::: danger Do not build text colours by hand
-`color: color-mix(in srgb, var(--nb-c-text) 60%, transparent)` looks like a reasonable way to get a quieter grey and it is how three of the fleet's stylesheets ended up with unmeasurable text. A translucent ink over a surface that changes with the layer produces a different ratio in every context it renders in, and no tool will tell you which one broke. Use the three tokens.
+`color: color-mix(in srgb, var(--nb-c-text) 60%, transparent)` looks like a reasonable way to get a quieter grey, and it produces text nobody can measure. A translucent ink over a surface that changes with the layer produces a different ratio in every context it renders in, and no tool will tell you which one broke. Use the three tokens.
 :::
 
 ## Icons, glyphs and status marks
@@ -93,7 +93,7 @@ In the dark theme it is 70% of the accent mixed with white, the same lift the se
 
 On an inverted chip (`--nb-c-bg-inverse`) use `--nb-c-focus-inverse`, 3:1 or better there for the default accent and every category.
 
-Two further rules for rings you draw yourself, both of which come from the fleet:
+Two further rules for rings you draw yourself:
 
 - **Draw it with `outline`, not `box-shadow`.** Forced-colours mode discards box shadows and preserves outlines. A ring built from `box-shadow` is invisible in exactly the mode used by the people most likely to need it.
 - **Give it an offset.** `outline-offset: 2px` outside a control that has room, `-2px` for a control flush against its neighbours (menu rows, table cells, sidebar links). A zero-offset ring on a same-coloured control is a ring that touches nothing.
@@ -102,12 +102,12 @@ Two further rules for rings you draw yourself, both of which come from the fleet
 
 WCAG 1.4.1: colour must never be the sole carrier of information. A red dot means "failed" to you and means "a dot" to the roughly one man in twelve with a colour vision deficiency, to anyone on a projector, and to anyone in sunlight.
 
-The library's own `NbBadge` is the clearest illustration, because its API makes the mistake structural.
+`NbBadge` shows why a component should name an intent rather than a colour.
 
-::: tip `NbBadge` used to name colours, and four of its variants were unreadable
-`EBadgeVariant` was `Grey | Blue | Orange | Green | Red | Purple | Primary`, each a 12% wash of its colour with the text in the same colour. At the badge's 10px and 11px, against layer 1 in light: orange 1.88, green 2.79, red 3.84, blue 4.45.
+::: tip `NbBadge` names intents, not colours
+A 12% wash of a colour with the text in the same colour is unreadable at a badge's 10px and 11px. Against layer 1 in light it measures 1.88 for the warning orange, 2.79 for green, 3.84 for red and 4.45 for blue.
 
-The variants now name intents: `neutral`, `info`, `success`, `warning`, `danger`, `primary`. Each status intent paints the theme's status surface pair, 8.04 to 10.87 in light and 4.84 or better in dark on every plane (`tests/badgeContrast.test.ts`). The colour names are deprecated aliases that render as their intent and warn once in development, so an application that has not moved yet already gets the measured pair.
+So the variants name intents: `neutral`, `info`, `success`, `warning`, `danger`, `primary`. Each status intent paints the theme's status surface pair, 8.04 to 10.87 in light and 4.84 or better in dark on every plane (`tests/badgeContrast.test.ts`). The colour names are deprecated aliases that render as their intent and warn once in development, so an application that has not moved yet already gets the measured pair.
 
 The word is still not optional. "Degraded" is what makes the badge readable in greyscale, and it is what a screen reader announces.
 :::
@@ -115,7 +115,7 @@ The word is still not optional. "Degraded" is what makes the badge readable in g
 The general rule, applied to the shapes that keep recurring:
 
 - **A status dot needs a word.** If space is genuinely tight, the word goes in the accessible name: `<span class="dot" role="img" aria-label="Degraded" />`.
-- **A red form field needs a message.** `NbTextInput` accepts `error` and `warning` text and renders it under the field; across 58 field instances in one audited application, both props were bound **zero** times. A red border alone is a colour, and nothing announces it.
+- **A red form field needs a message.** `NbTextInput` accepts `error` and `warning` text and renders it under the field. Bind one whenever the field is in that state. A red border alone is a colour, and nothing announces it.
 - **A chart needs more than hue.** The library ships eight `--nb-c-chart-*` roles. Minimum perceptual separation across the first five is CIEDE2000 16.0 under normal vision and **5.3 under simulated deuteranopia**; across all eight it drops to 0.8, because roles 1 and 7 are both violet-blues. Cap colour-only encoding at five series and add a second channel (direct labels, dash patterns, markers) beyond that.
 - **A selected row needs more than a tint.** Background washes are among the first things forced-colours mode discards. Add a left bar, a check, or `aria-selected`, which `NbDataTable` already sets.
 
@@ -143,7 +143,7 @@ So the token has exactly one correct shape, and it is a pair:
 }
 ```
 
-This is what makes it worth using. Write that pair and the label stays legible when a white-label client repaints `--nb-c-danger`, when the dark theme swaps the tint, and when the ramp step changes under you. Hardcode `color: white` and it is correct exactly until one of those happens.
+This is what makes it worth using. Write that pair and the label stays legible when a white-label theme repaints `--nb-c-danger`, when the dark theme swaps the tint, and when the ramp step changes under you. Hardcode `color: white` and it is correct exactly until one of those happens.
 
 `Button.vue` uses it consistently, and that is why every button variant carries readable text in both themes without a per-variant text colour:
 

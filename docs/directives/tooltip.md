@@ -49,7 +49,7 @@ All three text parts are optional and a chip with none of them never opens, whic
 
 | The situation                                                               | Reach for                                                                                   |
 | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| An icon-only control needs a name                                           | This directive, in **label** mode. The single most common case in the fleet.                |
+| An icon-only control needs a name                                           | This directive, in **label** mode. The most common case.                                    |
 | A named control needs one extra clause of context                           | This directive, in **description** mode                                                     |
 | A truncated cell must expose its full value                                 | This directive, with `overflowOnly: true` and `focusable: true`                             |
 | A disabled control must explain why it is disabled                          | This directive. It works on natively-disabled controls, which is not free (see below)       |
@@ -62,7 +62,7 @@ The last three matter more than they read. A tooltip is invisible until you go l
 
 ## Label or description: pick one, on purpose
 
-This is the decision that every hand-rolled tooltip in the fleet got wrong, and it is invisible until someone uses a screen reader.
+This is the decision a hand-rolled tooltip usually gets wrong, and it is invisible until someone uses a screen reader.
 
 | The anchor                                        | The tooltip is its | Wiring                                       |
 | ------------------------------------------------- | ------------------ | -------------------------------------------- |
@@ -129,7 +129,7 @@ Three details that are easy to get wrong and are handled here:
 
 - **Focus that came from a click does not open the tooltip.** Otherwise every icon button in a toolbar leaves a chip parked over the menu the click just opened. A focus arriving within 500ms of a pointerdown is treated as a click, not a <kbd>Tab</kbd>.
 - **Keyboard and touch skip the hover-intent delay.** The delay exists to stop chips flashing as the cursor crosses a toolbar. A user who moved focus or tapped has already committed.
-- **A pointer that arrives with a button held is dragging, not hovering.** Dragging a slider thumb, a reorder handle or a text selection across a toolbar used to pop a chip under the moving cursor for every control it crossed. An anchor entered with a button down stays quiet.
+- **A pointer that arrives with a button held is dragging, not hovering.** An anchor entered with a button down stays quiet, so dragging a slider thumb, a reorder handle or a text selection across a toolbar does not pop a chip under the moving cursor for every control it crosses.
 - **The synthetic mouse events a tap replays are ignored.** Touchscreen browsers fire a full mouse sequence after `touchstart`; honouring it would reopen the chip with no `mouseleave` ever coming to close it.
 
 <kbd>Escape</kbd> closes the tooltip and never consumes the key, so the dialog or menu underneath still receives it. Every closer in that last row is the user saying "I am done reading this", and they all report the same reason, `dismiss`. The one exception is a route change, which is your application talking rather than the user, and reports `program`. The distinction only becomes visible in controlled mode, below, and it is the whole of it.
@@ -197,7 +197,7 @@ A programmatic open never waits out the hover-intent delay, for the same reason 
 
 ## Disabled controls
 
-"Why is this greyed out?" is one of the two things people reach for a tooltip to answer, and until 3.3 it was the one thing this directive could not do. A natively-disabled `<button>`, `<input>`, `<select>` or `<textarea>` fires **no mouse events at all**, so listeners on the anchor itself are dead: the binding was accepted, the `aria-label` was written, and nothing ever opened.
+"Why is this greyed out?" is one of the two things people reach for a tooltip to answer. A natively-disabled `<button>`, `<input>`, `<select>` or `<textarea>` fires **no mouse events at all**, so listeners on the anchor itself are dead: the binding was accepted, the `aria-label` was written, and nothing ever opened.
 
 It works now, with no wrapper element and nothing to pass:
 
@@ -285,7 +285,7 @@ The default, `cursor`, tracks where the pointer entered. It has no meaning for a
 
 A string body is text with light emphasis. Eleven bare inline tags survive (`<b>`, `<strong>`, `<em>`, `<i>`, `<u>`, `<s>`, `<small>`, `<code>`, `<kbd>`, `<br>`, `<p>`), newlines become line breaks, and **no attributes are parsed at all**: `<p class="lead">` is shown as the characters you typed, not applied as markup. Anything that needs an attribute goes through the structured form below, where the value itself is checked.
 
-That is narrower than it used to be, deliberately. Until 3.2 a string went through the library's shared escape helper, which lets `<p style="…" class="…">` through with its attribute **values** untouched. That is fine for a helper whose input is a literal you wrote. It is not fine here, because a string body is exactly the surface a CMS field, an API payload and a user-defined column formatter reach, and this payload contains not one character that escaping alters:
+That is narrower than the library's shared escape helper, deliberately. That helper lets `<p style="…" class="…">` through with its attribute **values** untouched. That is fine for a helper whose input is a literal you wrote. It is not fine here, because a string body is exactly the surface a CMS field, an API payload and a user-defined column formatter reach, and this payload contains not one character that escaping alters:
 
 ```
 <p style="background-image:url(https://example.invalid/?leak=1);position:fixed;inset:0">…</p>
@@ -334,7 +334,7 @@ The chip wraps at `--nb-tooltip-max-width` (34 base units, about 55 characters a
 
 ### Writing the text
 
-The chip is about 55 characters wide and disappears when attention moves, so the text has to be readable in one glance. These are the rules the fleet's own tooltips break most often.
+The chip is about 55 characters wide and disappears when attention moves, so the text has to be readable in one glance. These are the rules tooltips break most often.
 
 | Do                                                                          | Do not                                                                 | Why                                                                                                     |
 | --------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
@@ -353,7 +353,7 @@ There are no illustrations on this page. Every row above is a code example inste
 
 The pointer can move onto the chip, and doing so cancels the pending hide; leaving it starts the hide again. Text in the chip can be selected, so an error code or a full path can be copied.
 
-This is not a nicety. WCAG 2.1 AA **1.4.13 Content on Hover or Focus** requires that content revealed by hover can itself be hovered without disappearing, and a chip that is `pointer-events: none` fails it by construction: nothing the user does with the mouse can ever land on it. The concrete victim is anyone at 200% zoom, who has to pan onto a clamped or wrapped chip to read the end of the sentence and watches it vanish on the way. Until 3.2 this library failed that clause, and the docs presented it as a feature.
+This is not a nicety. WCAG 2.1 AA **1.4.13 Content on Hover or Focus** requires that content revealed by hover can itself be hovered without disappearing, and a chip that is `pointer-events: none` fails it by construction: nothing the user does with the mouse can ever land on it. The concrete victim is anyone at 200% zoom, who has to pan onto a clamped or wrapped chip to read the end of the sentence and watches it vanish on the way.
 
 **A tooltip is still not a container.** The chip takes no focus, is never in the tab order, closes on <kbd>Escape</kbd> and on the next pointerdown outside it, and holds nothing operable: no links, no buttons, no scroll. Hoverable is about _reading_, not about _operating_. If the content has to be clicked or scrolled, it is not a tooltip: use [`NbInfoHint`](/components/info-hint/usage) for a pinnable popover, or a [modal](/components/modal/usage) for anything larger.
 
@@ -370,11 +370,11 @@ This is not a nicety. WCAG 2.1 AA **1.4.13 Content on Hover or Focus** requires 
 
 `status` is the same word, with the same values, that `NbBanner` and `NbInlineLoading` use. It replaces `flavor`, which was typed `string` and therefore accepted anything: `flavor: 'warning'` compiled and produced a chip with no styles, because there was no `warning` rule to match it. Both the option and the two missing tones are fixed together. `flavor` still works and is not scheduled for removal.
 
-The default chip is the inverted surface: `--nb-c-contrast` on `--nb-c-surface`, which flips with the theme. **A labelling tooltip stays on `default`.** A coloured chip on a plain icon button reads as a state the control does not have, and the colour is doing nothing the words are not. Reach for `danger` or `warning` only when the chip is explaining a failure or a blocked action, which is the case the fleet actually has: "why is this disabled".
+The default chip is the inverted surface: `--nb-c-contrast` on `--nb-c-surface`, which flips with the theme. **A labelling tooltip stays on `default`.** A coloured chip on a plain icon button reads as a state the control does not have, and the colour is doing nothing the words are not. Reach for `danger` or `warning` only when the chip is explaining a failure or a blocked action: "why is this disabled".
 
 ## Replacing a hand-rolled tooltip in a shell slot
 
-Three apps rebuilt this affordance to label icon-only controls in a shell topbar, because the only tooltip they could find was the one welded into `NbSidebarLink`. Each got a different geometry and one froze a colour:
+A private CSS tooltip on an icon-only control in a shell topbar is the shape to replace. It has its own geometry, often a frozen colour, and nothing for the keyboard or a screen reader:
 
 ```vue
 <!-- Before: a private CSS tooltip. Hover only, so keyboard users get nothing;
@@ -438,7 +438,7 @@ Every re-placement starts again from the side you **asked** for, not the side th
 
 The rectangle check is adaptive rather than per-frame. `getBoundingClientRect` forces a layout, and a chip is stationary most of the time, so the loop reads at 10 Hz while the page is quiet and at full frame rate for a third of a second after anything moves, which covers a scroll, a resize, a drag and an ancestor transition, because each of those keeps re-arming the burst. Style writes still only happen when the geometry actually changed.
 
-Capture phase is the load-bearing detail: `scroll` does not bubble, so a listener on `window` hears nothing from a `NbShellPanel`, an inspector body or a scrolled table. That is why a tooltip inside a scrolled panel used to stay pinned at the coordinates it was born at.
+Capture phase is the load-bearing detail: `scroll` does not bubble, so a listener on `window` hears nothing from a `NbShellPanel`, an inspector body or a scrolled table. Without it, a tooltip inside a scrolled panel would stay pinned at the coordinates it was born at.
 
 "Out of view" means out of its **clipping ancestors**, not only out of the viewport. A row scrolled out of a table body, a field scrolled out of an inspector and a card scrolled out of a panel are all still inside the viewport and completely invisible, and a viewport-only test leaves the chip glued to an anchor nobody can see, floating over the panel's own chrome. When a chip opens, the directive walks the anchor's ancestors once and remembers those that clip (`overflow` other than `visible`); the chip goes down as soon as the anchor leaves any of them. The walk is done once per chip rather than per frame, because reading `overflow` forces a style recalculation and the frame loop must stay free of those.
 

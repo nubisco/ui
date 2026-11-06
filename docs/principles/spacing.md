@@ -6,7 +6,7 @@ description: The Nubisco spacing scale, how to pick a step, and where space belo
 
 Space is the only property in this library that two people can both get "right" and still produce two different screens. Colour has semantic roles that refuse to be misread. Type has named sets. Space has a number, and a number always looks reasonable in isolation.
 
-That is why the audit of twelve consuming applications found one app with **462 hardcoded pixel values and zero uses of the spacing scale**, and another with **287 and zero**. Neither team was careless. Both read [Design Tokens](/design-tokens), saw a rendered strip of bars, concluded the scale was an internal implementation detail of the library, and wrote `padding: 14px`. This page exists so that conclusion is no longer available.
+The spacing scale is public API, not an internal detail of the library. Every padding, margin and gap in your application should name a step of it, and `padding: 14px` is a value no other screen will ever match. This page says what each step means and when to reach for it.
 
 ::: warning The library is not innocent either
 Counted on 2026-11-06 across `src/components/*.vue`: of 688 `padding` / `margin` / `gap` declarations, **281** are written with raw `px` / `rem` / `em` literals, **97** with `var(--nb-spacing-*)` and **87** with `calc(var(--nb-base-unit) * n)`. The ratio moves with every release, so treat the numbers as dated. Some of those literals are legitimate (see [Where the scale genuinely runs out](#where-the-scale-genuinely-runs-out)). Most are not. Do not take the library's own source as a licence.
@@ -116,7 +116,7 @@ Two rules keep this honest.
 **Space is the cheapest divider.** Before adding a rule, a border or a background tint to separate two blocks, try one step up. If 24 instead of 16 makes the grouping legible, the border was decoration.
 
 ::: tip This page owns what a step means
-[Layout](/principles/layout#gutters-and-gaps) owns the `NbGrid` API: which props exist, how responsive maps cascade, what the 16-column grid does. Its gap table used to read 24 as "between sections" and 32 as "between major regions", one step off this table. It now reads `gap="lg"` (24) as groups inside one section and `gap="xl"` (32) as sections, the meanings above. If the two ever disagree again, this table wins.
+[Layout](/principles/layout#gutters-and-gaps) owns the `NbGrid` API: which props exist, how responsive maps cascade, what the 16-column grid does. Its gap table reads `gap="lg"` (24) as groups inside one section and `gap="xl"` (32) as sections, the meanings above. If the two ever disagree, this table wins.
 :::
 
 ## Inside versus between
@@ -250,7 +250,7 @@ Horizontal space is mostly bounded by the container. Vertical space accumulates 
 
 **Never let a heading float.** A heading belongs to what follows it. Give it more space above than below, always. `heading-02` above a paragraph wants something like 32 above and 8 below. Equal space on both sides makes the heading look like it belongs to the section it just ended.
 
-**Do not let empty containers collapse.** When a list is loading or empty, the surrounding rhythm should not change. Reserve the height. The audit found an app whose single `.empty-text` element rendered both the loading and the empty state, so a failed fetch read as "no contacts yet". Use `NbEmptyState` or `NbSkeleton`, both of which occupy space deliberately.
+**Do not let empty containers collapse.** When a list is loading or empty, the surrounding rhythm should not change. Reserve the height, and keep the loading and the empty state apart: rendered through one element, a failed fetch reads as "no contacts yet". Use `NbEmptyState` or `NbSkeleton`, both of which occupy space deliberately.
 
 ## Density
 
@@ -273,7 +273,7 @@ Two supporting tokens travel with them and are the reason a mixed row of control
 ### A table and its pager are one density
 
 `NbDataTable` and `NbPagination` take the same three-step `sm | md | lg` scale
-and now resolve to the same heights, because a pager is almost always the
+and resolve to the same heights, because a pager is almost always the
 footer of a table:
 
 | `size` | Table row | Pager bar | Base units |
@@ -282,11 +282,8 @@ footer of a table:
 | `md`   | `48px`    | `48px`    | 6          |
 | `lg`   | `64px`    | `64px`    | 8          |
 
-They used to disagree at both ends: `sm` was 40px on the pager against 32px on
-the table, and `lg` was 56px against 64px, so a compact table sat above a
-footer eight pixels taller than its own rows, and the two dense modes also
-disagreed by a pixel of type. If your application pinned either component to a
-size to work around that, the workaround can go.
+Give both the same `size`. Do not pin one of them to a pixel height to match
+the other.
 
 Neither takes `xs`. Fields and `NbButton` do, so `sm` is the floor for a row
 that mixes a table with its controls.
@@ -481,7 +478,7 @@ grep -rhoE "(padding|margin|gap|row-gap|column-gap)[a-z-]*: *[^;]*" src \
   | grep -c "nb-spacing"
 ```
 
-If the first number is large and the second is zero, you are one of the two applications in the audit, and the fix is not a refactor. Start with the containers: replace the padding on your panels and cards with `--nb-spacing-16`, replace each stack with an `NbGrid dir="col"` carrying a `gap`, and most of the rest falls out.
+If the first number is large and the second is zero, the fix is not a refactor. Start with the containers: replace the padding on your panels and cards with `--nb-spacing-16`, replace each stack with an `NbGrid dir="col"` carrying a `gap`, and most of the rest falls out.
 
 ## See also
 
