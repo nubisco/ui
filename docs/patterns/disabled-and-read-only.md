@@ -14,15 +14,15 @@ Two states, one test:
 > No: **disabled**. There is nothing here yet, or nothing here for you, and
 > something else on the screen has to say what is missing.
 
-Almost every misuse in the fleet is the same misuse in both directions: a real
+Almost every misuse is the same misuse in both directions: a real
 value dimmed to 45% opacity and pulled out of the tab order because `disabled`
 was the prop that came to hand, or a control disabled with no clue anywhere on
 the screen about how to enable it.
 
-The worst single instance found in the audit: **a submit button disabled with no
-message saying why.** The user's only route forward was to guess which of eleven
-fields the form disliked. There was no error text, no summary, and no tooltip.
-The button was the whole conversation, and the button said nothing.
+The worst single instance: **a submit button disabled with no message saying
+why.** The user's only route forward is to guess which field the form dislikes.
+There is no error text, no summary, and no tooltip. The button is the whole
+conversation, and the button says nothing.
 
 Before any of the rules, the difference itself. This is one component,
 `NbTextInput`, rendered three times with one prop changed. Tab through them, and
@@ -103,9 +103,10 @@ Not negotiable because of how disabling actually works in this library:
   button, and its style block sets `pointer-events: none`, `cursor: not-allowed`
   and `outline-color: transparent` on `:focus-visible`. A native disabled button
   is **not focusable, not hoverable and not announced**.
-- Therefore **a `v-nb-tooltip` on a disabled `NbButton` can never fire.** No
-  pointer events means no hover. No focusability means no focus trigger. The
-  tooltip is dead code. This has shipped more than once.
+- Therefore **a `v-nb-tooltip` on a disabled `NbButton` reaches mouse users
+  only.** The directive listens on the parent and opens on hover, but the
+  button is out of the tab order, so a keyboard or screen reader user never
+  reaches it, and a touch user has no hover at all.
 
 Where the reason is allowed to live, in order of preference:
 
@@ -126,7 +127,7 @@ Where the reason is allowed to live, in order of preference:
    perfectly good and always works.
 
 ```vue
-<!-- Wrong: the tooltip cannot fire, so the reason does not exist -->
+<!-- Wrong: the reason exists only for someone hovering with a mouse -->
 <NbButton
   v-nb-tooltip="{ body: 'Select at least one row' }"
   disabled
@@ -146,7 +147,7 @@ Tab:
     <div class="dro-half dro-half--wrong">
       <p class="dro-label">Wrong: the reason lives in a tooltip on the disabled button</p>
       <NbButton variant="danger" disabled v-nb-tooltip="{ body: 'Select at least one row' }">Delete</NbButton>
-      <p class="dro-note">The directive is bound and the sentence is in the template. It cannot open: the disabled style sets pointer-events: none, so there is no hover, and the native disabled attribute takes the button out of the tab order, so there is no focus. The explanation has shipped, and no user has ever seen it.</p>
+      <p class="dro-note">The directive is bound and the sentence is in the template. A mouse hover opens it, because the directive listens on the parent. The native disabled attribute takes the button out of the tab order, so a keyboard user never reaches it, and a touch user never hovers. The reason exists for one kind of user only.</p>
     </div>
     <div class="dro-half dro-half--right">
       <p class="dro-label">Right: the reason is adjacent text, and it is live</p>
@@ -160,8 +161,8 @@ Tab:
 
 ### The submit button
 
-A special case of the same rule, called out because it is the most common defect
-in the fleet.
+A special case of the same rule, called out because it is the most common
+defect.
 
 ::: danger Do not disable submit to express "the form is invalid"
 A disabled Save gives the user nothing to press and nothing to learn. Keep it
@@ -182,7 +183,7 @@ value. On the left, work out why Save is dead. On the right, press Save:
       <NbTextInput v-model="droWrongName" label="Workspace name" name="dro-wrong-name" />
       <NbTextInput v-model="droWrongSlug" label="Slug" name="dro-wrong-slug" />
       <NbButton type="submit" variant="primary" :disabled="!droWrongValid">Save changes</NbButton>
-      <p class="dro-note">The rule is that a workspace name cannot contain a slash. Nothing on this surface says so. With two fields it is a puzzle; the audited form had eleven, and users solved it by deleting characters until the button lit up.</p>
+      <p class="dro-note">The rule is that a workspace name cannot contain a slash. Nothing on this surface says so. With two fields it is a puzzle. With eleven, users solve it by deleting characters until the button lights up.</p>
     </div>
     <div class="dro-half dro-half--right">
       <p class="dro-label">Right: Save stays enabled and answers when pressed</p>
@@ -239,7 +240,7 @@ these, and then read them both at arm's length:
     <div class="dro-half dro-half--wrong">
       <p class="dro-label">Wrong: a real value in a disabled field</p>
       <NbTextInput :model-value="droApiKey" label="Live API key" name="dro-key-disabled" disabled />
-      <p class="dro-note">45% opacity, no tab stop, no selection. This shipped on a page whose only purpose was copying this string. The state says "there is nothing for you here" about the one thing the user came for.</p>
+      <p class="dro-note">45% opacity, no tab stop, no selection. On a page whose only purpose is copying this string, that is the worst state to pick. The state says "there is nothing for you here" about the one thing the user came for.</p>
     </div>
     <div class="dro-half dro-half--right">
       <p class="dro-label">Right: a real value, read-only</p>
@@ -267,18 +268,18 @@ The prop comes from `IReadableFieldComponent` in `src/types/Props.d.ts`, which
 extends `IFieldComponent` with exactly one member. If a component does not
 extend it, it has no read-only mode.
 
-| Control           | `disabled`                     | `readonly` | What read-only actually does, or what to do instead                                                                                                      |
-| ----------------- | ------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | ------------------------------------ |
-| `NbTextInput`     | yes                            | **yes**    | `readonly` on the native input, wrapper background goes `transparent`, cursor `default`. Focusable, selectable, copyable. The correct read-only field    |
-| `NbDatePicker`    | yes                            | **yes**    | `readonly` on the text input, and the calendar trigger button gets `:disabled="disabled                                                                  |     | readonly"` so the picker cannot open |
-| `NbRadio`         | yes                            | **yes**    | Guarded: the `@change` handler drops the update and the option label gets `pointer-events: none`. See the caveat below                                   |
-| `NbNumberInput`   | yes                            | no         | Render the number as text (`NbDefinitionList`), or use `NbTextInput` with `readonly` if it must stay in the field grid                                   |
-| `NbSelect`        | yes                            | no         | Render the selected option's label as text. Never a disabled select showing the chosen value                                                             |
-| `NbCheckbox`      | yes                            | no         | Render "Yes" / "No", or the thing being enabled with a `NbBadge`. A ticked disabled checkbox reads as broken                                             |
-| `NbCheckboxGroup` | yes                            | no         | Render the checked labels as a list. `disabled` on the group cascades to every child through the group context                                           |
-| `NbSwitch`        | yes                            | no         | Render `On` / `Off` as text or a badge. A disabled switch uses `--nb-c-component-disabled` and looks like a bug                                          |
-| `NbSlider`        | yes                            | no         | Render the value as text, or as a `NbProgressBar` if the position on the scale is the point                                                              |
-| `NbFileUploader`  | **declared but unimplemented** | no         | `disabled` is on `IFileUploaderProps` and `FileUploader.vue` never reads it. Do not rely on it. A read-only file set is a list of names, not an uploader |
+| Control           | `disabled` | `readonly` | What read-only actually does, or what to do instead                                                                                                   |
+| ----------------- | ---------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --- | ------------------------------------ |
+| `NbTextInput`     | yes        | **yes**    | `readonly` on the native input, wrapper background goes `transparent`, cursor `default`. Focusable, selectable, copyable. The correct read-only field |
+| `NbDatePicker`    | yes        | **yes**    | `readonly` on the text input, and the calendar trigger button gets `:disabled="disabled                                                               |     | readonly"` so the picker cannot open |
+| `NbRadio`         | yes        | **yes**    | Guarded: the `@change` handler drops the update and the option label gets `pointer-events: none`. See the caveat below                                |
+| `NbNumberInput`   | yes        | no         | Render the number as text (`NbDefinitionList`), or use `NbTextInput` with `readonly` if it must stay in the field grid                                |
+| `NbSelect`        | yes        | no         | Render the selected option's label as text. Never a disabled select showing the chosen value                                                          |
+| `NbCheckbox`      | yes        | no         | Render "Yes" / "No", or the thing being enabled with a `NbBadge`. A ticked disabled checkbox reads as broken                                          |
+| `NbCheckboxGroup` | yes        | no         | Render the checked labels as a list. `disabled` on the group cascades to every child through the group context                                        |
+| `NbSwitch`        | yes        | no         | Render `On` / `Off` as text or a badge. A disabled switch uses `--nb-c-component-disabled` and looks like a bug                                       |
+| `NbSlider`        | yes        | no         | Render the value as text, or as a `NbProgressBar` if the position on the scale is the point                                                           |
+| `NbFileUploader`  | yes        | no         | `disabled` stops the trigger, the file input, a drop and the remove buttons. A read-only file set is a list of names, not an uploader                 |
 
 ::: warning `readonly` on `NbRadio` is a convention, not a browser guarantee
 HTML ignores `readonly` on `<input type="radio">`. `NbRadio` enforces it in the
@@ -347,10 +348,10 @@ taste:
 - **The read-only column is not a treatment at all.** Three of the rows are the
   same control with a border removed. The other six are a different component,
   because the value is a fact and a fact is not a field.
-- **The last row is a live bug.** Those two uploaders are identical, and the
-  second one is passed `disabled`. Click either button and the file picker
-  opens, because `FileUploader.vue` never reads the prop that
-  `IFileUploaderProps` declares.
+- **The last row is the uploader.** The second one is passed `disabled`: its
+  trigger, file input and remove buttons are natively disabled and a drop is
+  ignored, so the file picker cannot open. It still is not a read-only
+  rendering, which is a list of names.
 
 ### A whole form in read-only mode is not a form
 
@@ -373,8 +374,8 @@ keep trying to type into.
 <NbButton variant="secondary" @click="edit">Edit details</NbButton>
 ```
 
-The same six facts, twice. The left is what the audit found, down to the
-disabled Save underneath it:
+The same six facts, twice. The left is the inert form, down to the disabled
+Save underneath it:
 
 <preview dir="col">
   <div class="dro-pair">
@@ -542,27 +543,25 @@ Requirements on you:
   while remaining clickable. If it is disabled, use the attribute; if it should
   stay activatable so it can explain itself, do not mark it disabled at all.
 - **Both themes.** Opacity dimming works in both by construction. A hardcoded
-  grey does not, and it is how a disabled control ended up brighter than its
-  enabled neighbours on a dark surface.
+  grey does not, and on a dark surface it can leave a disabled control brighter
+  than its enabled neighbours.
 
 ---
 
-## Things we have shipped and should not ship again
+## Anti-patterns
 
 - A submit button disabled by a validity computed, with no field errors and no
   summary anywhere on the page.
-- A `v-nb-tooltip` on a disabled `NbButton`, which could never fire because the
-  disabled style sets `pointer-events: none`.
+- The only reason for a disabled `NbButton` placed in a `v-nb-tooltip`, which
+  a keyboard or touch user never reaches.
 - An API key rendered in a disabled `NbTextInput`, at 45% opacity, unselectable,
-  on a page whose only purpose was copying that key.
-- A read-only detail view built as eleven disabled inputs, complete with a
-  disabled Save button beneath them.
-- A disabled `NbCheckbox` left ticked to show a setting was on, which every
-  reviewer read as a broken control.
+  on a page whose only purpose is copying that key.
+- A read-only detail view built as disabled inputs, complete with a disabled
+  Save button beneath them.
+- A disabled `NbCheckbox` left ticked to show a setting is on, which reads as a
+  broken control.
 - `:disabled="true"` looped over an entire panel to express "this environment is
   frozen", with the word "frozen" appearing nowhere in the interface.
-- `NbFileUploader` passed `disabled`, which the component does not implement, so
-  the uploader stayed fully live.
 
 ---
 
@@ -694,7 +693,7 @@ const droAttachmentFacts = [
 ]
 
 /* Rule 4: the read-only surface that is a facts list, and the same six facts
-   rendered as the inert form the audit found. One source, two renderings. */
+   rendered as an inert form. One source, two renderings. */
 const droRecordFields = [
   { name: 'name', label: 'Workspace name', value: 'Marketing site' },
   { name: 'id', label: 'Workspace ID', value: 'ws_3f9a2b7c' },

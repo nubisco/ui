@@ -10,29 +10,26 @@ defect on this page comes from making that claim at the wrong moment, in the
 wrong shape, or not making it at all.
 
 There are five possible answers, and one of them is to show nothing. Choosing
-badly between them is cheap to do and expensive to live with. Before 3.3.0 the
-library shipped no spinner at all, and the twelve applications built on it
-answered the question twelve ways:
+badly between them is cheap to do and expensive to live with. Left undecided, a
+product drifts into the familiar failures:
 
-- **One product ships two different spinners**, only one of which respects
+- **Two different spinners**, only one of which respects
   `prefers-reduced-motion`.
-- **One renders the literal string `Loading` under eight different class
-  names**, because nobody had written down what a second and a third wait are
-  supposed to look like.
-- **One spells it `Loading…` in one file and `Loading...` in another.**
-- **Three products hand-built skeletons, in five different shapes**, none of
-  which measure the text they stand in for.
-- **One product has no loading state anywhere.** Import and update are silent:
-  the user presses the button and the screen does nothing until it is over.
-- **One product renders a single `.empty-text` element for both loading and
-  empty**, so a failed fetch reads as `No contacts yet` to a user who has
-  contacts.
+- **The literal string `Loading` under several class names**, because nobody
+  wrote down what a second and a third wait are supposed to look like.
+- **`Loading…` in one file and `Loading...` in another.**
+- **Hand-built skeletons in several shapes**, none of which measure the text
+  they stand in for.
+- **No loading state at all.** The user presses the button and the screen does
+  nothing until it is over.
+- **One element for both loading and empty**, so a failed fetch reads as
+  `No contacts yet` to a user who has contacts.
 
 That last one is the whole point of this page in one line. A loading state that
 is not distinguished from an empty state is not a styling problem. It is the
 interface stating something false about the user's data.
 
-The components exist now: [`NbSkeleton`](/components/skeleton/usage),
+The components for every case are in the library: [`NbSkeleton`](/components/skeleton/usage),
 [`NbSpinner`](/components/spinner/usage),
 [`NbInlineLoading`](/components/inline-loading/usage) and
 [`NbProgressBar`](/components/progress-bar/usage), plus
@@ -43,9 +40,8 @@ none of them.
 
 ::: danger Never hand-roll
 No app-local spinner SVG, no `.skeleton` class, no `<div v-if="loading">Loading…</div>`,
-no CSS keyframe that moves a bar you invented. Every one of those exists in the
-fleet today, and every one of them lost the reduced-motion fallback, the
-announcement, or both.
+no CSS keyframe that moves a bar you invented. Each of those loses the
+reduced-motion fallback, the announcement, or both.
 :::
 
 The five answers at their real sizes, in one frame. Everything below is the
@@ -189,8 +185,8 @@ Around a second, the user stops attributing the pause to their own click and
 starts wondering about the system. From here on the indicator has to name its
 subject: `Loading invoices`, not `Loading`. A generic ring says only that
 something, somewhere, is busy, which is the least useful true statement an
-interface can make. It is also the exact string a screen reader user hears from
-every indicator in the fleet today.
+interface can make, and it is all a screen reader user hears from an
+indicator with no subject.
 
 ### Why 10 s
 
@@ -308,8 +304,8 @@ well as the type: a single wrapped paragraph has no gap between its lines, so
 it is the one text shape a multi-line skeleton reserves slightly more room than.
 
 The left card is not a styling mistake. It is a placeholder that was never
-measured against anything, which is the state all three hand-built skeleton
-implementations in the fleet are in.
+measured against anything, which is the state every hand-built skeleton is
+in.
 
 `NbSkeleton` is built so the promise can be kept:
 
@@ -406,10 +402,10 @@ inside the real column structure, which is why they cannot be the wrong width.
 ## Rule 4: an action the user took reports its own outcome, in place
 
 A load the user is watching and a load the user _started_ are different events.
-The second one has two halves, and the fleet consistently ships only the first:
-**platform, tally, planetcraft, stagewright and the white-label product confirm a successful save
-with nothing at all.** The spinner stops, the button comes back, and the user is
-left to infer from the absence of an error that their work was kept.
+The second one has two halves, and the second half is the one that gets
+skipped: **a successful save confirmed with nothing at all.** The spinner stops,
+the button comes back, and the user is left to infer from the absence of an
+error that their work was kept.
 
 Silence is not confirmation. [`NbInlineLoading`](/components/inline-loading/usage)
 is the confirmation, and it lives next to the control that fired, because that
@@ -466,7 +462,7 @@ is on by default.
 `finished` stays on screen for `dwell` milliseconds (default `1600`) and then
 emits `success`. Handle it by returning to `inactive` or by navigating away.
 
-Both failure modes are real and both have shipped: a confirmation that vanishes
+Both failure modes are real: a confirmation that vanishes
 in 200 ms was never read, and one that never leaves becomes furniture the user
 stops seeing. Below roughly 1000 ms the reader does not finish the word, which
 is why the default sits where it does. The dwell is also disarmed by leaving
@@ -483,7 +479,7 @@ tell you what happened:
       <NbGrid dir="row" gap="sm" align="center">
         <NbButton size="sm" :loading="silentSaving" @click="runSilent">Save changes</NbButton>
       </NbGrid>
-      <p class="lfx-note">The spinner stops and the row returns to exactly how it looked before the click. This is what platform, tally, planetcraft, stagewright and the white-label product ship, and it is indistinguishable from a request that was dropped, which is why people press Save twice.</p>
+      <p class="lfx-note">The spinner stops and the row returns to exactly how it looked before the click. It is indistinguishable from a request that was dropped, which is why people press Save twice.</p>
     </div>
     <div class="lfx-half lfx-half--right">
       <p class="lfx-label">Right: useInlineLoading drives all four states</p>
@@ -506,8 +502,8 @@ second and report the wrong outcome. That is the behaviour a hand-written
 
 ### Why the composable rather than your own try/catch
 
-Every app that lost its success state wrote the same `try/catch/finally` by
-hand, and the `finally` reset the flag before anything could be shown.
+A hand-written `try/catch/finally` loses the success state, because the
+`finally` resets the flag before anything can be shown.
 `useInlineLoading().run()` owns the sequence: it drives all four states, keeps
 the rejection reason in `error` rather than rethrowing it into an unhandled
 promise, lets only the newest of two overlapping runs write the status, and
@@ -641,10 +637,10 @@ not a progress bar at all: that is [`NbStepper`](/components/stepper/usage).
 
 ## Rule 6: loading, empty and error are three states, not two branches
 
-This is the most expensive defect in the audit and it is two lines long:
+This is the most expensive defect on this page and it is two lines long:
 
 ```vue
-<!-- Wrong. Shipped today. -->
+<!-- Wrong. -->
 <div v-if="contacts.length">…</div>
 <p v-else class="empty-text">No contacts yet</p>
 ```
@@ -731,11 +727,8 @@ response lands, and it hands over to exactly one successor.**
 One more boundary, on the error side. A failed load is a page-level condition,
 so it goes in [`NbBanner`](/components/banner/usage) with `variant="inline"`, not
 in [`NbMessage`](/components/message/usage), which is a 12px inline helper sized
-for a form field. The fleet gets this wrong at scale: one product uses
-`NbMessage` for 30 page-level errors, and cms renders a failed media upload as
-an inline `NbMessage` in an application that already uses `NbBanner` in the
-shell notification rail in 18 other places. And never `alert()`, which one
-product throws 21 times for exceptions: see [Dialogs](/patterns/dialogs).
+for a form field. And never `alert()` for an exception: see
+[Dialogs](/patterns/dialogs).
 
 ---
 

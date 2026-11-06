@@ -6,21 +6,18 @@ description: The four reasons a view has nothing to show, why they must never sh
 
 An empty state answers one question: **why is there nothing here, and what do I
 do about it?** There are exactly four answers, and the whole cost of this pattern
-comes from products that ship one message for all four.
+comes from shipping one message for all four.
 
 `NbEmptyState` already exists, already types the four cases, and already has a
-[component page](/components/empty-state/usage). Across the twelve applications
-built on this library it is used **zero times**. Not misused. Not used. Every
-product wrote its own muted paragraph instead, and each one lost something
-different in the process:
+[component page](/components/empty-state/usage). A hand-written muted paragraph
+in its place loses something different every time:
 
-- **One application renders a single `.empty-text` element for both the loading
-  state and the empty state.** A request that fails leaves the list empty, so the
-  view says `No contacts yet`. The user has contacts. The interface told them
+- **A single element for both the loading state and the empty state.** A
+  request that fails leaves the list empty, so the view says `No contacts yet`. The user has contacts. The interface told them
   they do not. That is not a styling defect, it is the UI stating something false
   about the user's own data.
-- **One application renders a table with its header row and an empty `<tbody>`,
-  and no message at all.** Column headings over a void. Nothing tells the reader
+- **A table with its header row, an empty `<tbody>`, and no message at
+  all.** Column headings over a void. Nothing tells the reader
   whether the filter is too narrow, the fetch failed, or they are the first
   person here.
 - **`NbDataTable`'s own fallback string is `No data to display`.** It is a
@@ -29,7 +26,7 @@ different in the process:
   table that ships that string in production has not written its empty state.
 
 This page is therefore about placement and honesty, not styling. The component
-does the layout. What products keep getting wrong is _which_ of the four states
+does the layout. What goes wrong is _which_ of the four states
 they are in, _when_ they are entitled to claim it, and _what stays on screen
 around it_.
 
@@ -93,7 +90,7 @@ Both of the states below are `kind="no-results"`, on the same filtered set of
       <NbEmptyState size="sm" kind="no-results" title="No invoices match “acme”" description="You have 400 invoices. This filter matched none of them.">
         <template #actions><NbButton size="sm" icon="plus" @click="duplicates++">New invoice</NbButton></template>
       </NbEmptyState>
-      <p class="esx-note">Pressed {{ duplicates }} times here, which in the audited product is {{ duplicates }} new invoice{{ duplicates === 1 ? '' : 's' }} duplicating records the filter is hiding.</p>
+      <p class="esx-note">Pressed {{ duplicates }} times here, which in a real product is {{ duplicates }} new invoice{{ duplicates === 1 ? '' : 's' }} duplicating records the filter is hiding.</p>
     </div>
     <div class="esx-half esx-half--right">
       <p class="esx-label">Right: the way out is the control that caused it</p>
@@ -135,8 +132,8 @@ with a retry button that will never succeed. Keep the status code.
 
 ## Rule 2: never render an empty state while you do not yet know
 
-This is the rule the fleet breaks most expensively, and it is worth stating
-plainly: **an empty state is a claim about reality.** `No contacts yet` asserts
+This is the most expensive rule to break, and it is worth stating plainly:
+**an empty state is a claim about reality.** `No contacts yet` asserts
 that the user has no contacts. You are only allowed to assert it after the server
 has told you so.
 
@@ -144,7 +141,7 @@ Absence of data is not the same as knowledge of absence. Before the response
 lands, you have absence of data and nothing else.
 
 ```vue
-<!-- Wrong. This is the audited defect, reduced to its two lines. -->
+<!-- Wrong. The defect, reduced to its two lines. -->
 <div v-if="contacts.length">…</div>
 <p v-else class="empty-text">No contacts yet</p>
 ```
@@ -234,7 +231,7 @@ the three is a fact.
         <NbEmptyState v-if="!contacts.length" size="sm" title="No contacts yet" description="Add your first contact to start a campaign.">
           <template #actions><NbButton size="sm" icon="plus">Add contact</NbButton></template>
         </NbEmptyState>
-        <p class="esx-note">Rendered on the row count alone, so it is on screen before the request returns and still on screen after it fails. The audited product says this in a bare paragraph; the component states the same false thing more legibly, which is the only difference.</p>
+        <p class="esx-note">Rendered on the row count alone, so it is on screen before the request returns and still on screen after it fails. A bare paragraph says the same thing. The component states the same false thing more legibly, which is the only difference.</p>
       </div>
       <div class="esx-half esx-half--right">
         <p class="esx-label">Right: precedence order, empty state last</p>
@@ -293,9 +290,9 @@ and the pagination summary if it is reporting a real zero.
 
 The reason is mechanical. A `no-results` state is caused by a control. If the
 empty state unmounts the control that caused it, the user is stuck in a state
-they can see and cannot leave, and the only exit is a page reload. One audited
-table does exactly this: the toolbar is inside the `v-if` that tests the row
-count, so filtering to zero removes the filter field.
+they can see and cannot leave, and the only exit is a page reload. That is
+what happens when the toolbar sits inside the `v-if` that tests the row count:
+filtering to zero removes the filter field.
 
 Both tables below hold the same four invoices and run the same filter. Type
 `zzz` into each search field, and then try to get back.
@@ -310,7 +307,7 @@ Both tables below hold the same four invoices and run the same filter. Type
         </NbDataTable>
       </div>
       <NbEmptyState v-else size="sm" kind="no-results" title="No invoices match your filters" description="Try a broader search, or clear the filters to see everything." />
-      <p class="esx-note">The search field was inside the branch that tested the row count, so filtering to zero unmounted it. Nothing on screen can widen the filter now. <NbButton size="sm" variant="ghost" @click="wrongQuery = ''">Reset the demo</NbButton> stands in for the page reload, which is the only exit the audited product leaves.</p>
+      <p class="esx-note">The search field was inside the branch that tested the row count, so filtering to zero unmounted it. Nothing on screen can widen the filter now. <NbButton size="sm" variant="ghost" @click="wrongQuery = ''">Reset the demo</NbButton> stands in for the page reload, which is the only exit this layout leaves.</p>
     </div>
     <div class="esx-half esx-half--right">
       <p class="esx-label">Right: the empty state replaces the rows only</p>
@@ -344,9 +341,9 @@ still stay.
 | Pagination                     | hide                     | hide         | hide           | hide        |
 
 The table header stays even on first use, because the columns are the clearest
-statement of what will be here when the space fills. This is the fix for the
-audited "headered table, empty body, no message" case: that product had the
-right chrome and no message. Keep the chrome, add the message.
+statement of what will be here when the space fills. A headered table with an
+empty body and no message has the right chrome and nothing else. Keep the
+chrome, add the message.
 
 ---
 
@@ -611,8 +608,8 @@ rather than simply not existing yet.
 
 We do not ship spot illustrations, and the reason is not taste:
 
-- There is no illustration set. Twelve products would each commission their own,
-  and a fleet with twelve illustration styles has none.
+- There is no illustration set. Each product would commission its own, and a
+  family of products with as many illustration styles has none.
 - Every one of them would need a dark-theme variant, and flat art with baked-in
   light backgrounds is the most common dark-theme regression there is.
 - Illustration eats the vertical space that the copy and the action need, and
@@ -719,7 +716,7 @@ problem. When several tiles are empty at once, say it once at the page level.
 
 ## Migrations
 
-Three conversions, one per audited defect.
+Three conversions, one per defect at the top of this page.
 
 ### The conflated message
 
@@ -820,7 +817,7 @@ does not fit, the container is wrong, not the component.
 
 ---
 
-## Things we have shipped and should not ship again
+## Anti-patterns
 
 - One element rendering both "loading" and "empty", so a failed request reports
   the user's data as absent.
@@ -831,8 +828,7 @@ does not fit, the container is wrong, not the component.
 - A filter control unmounted by the empty state it caused.
 - A 403 rendered as a retry button that can never succeed.
 - An empty state centred in `100vh`, with its call to action below the fold.
-- Twelve products, twelve hand-written empty paragraphs, and zero uses of the
-  component that solves it.
+- A hand-written empty paragraph in place of the component that solves it.
 
 ---
 

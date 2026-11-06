@@ -6,20 +6,18 @@ description: Which component expresses which kind of status, the fixed vocabular
 
 A status answers one question: **what is true about this thing right now?** The
 component you use is decided by _what the thing is_, not by how the status
-feels. That is the whole rule, and it is the rule the fleet does not have.
+feels. That is the whole rule.
 
-Twelve applications built on this library were read end to end. Status came out
-as a vocabulary problem rather than a component problem:
+Status is a vocabulary problem rather than a component problem:
 
-- **`NbBadge`'s variants were literal colour names.** `grey`, `blue`, `orange`,
-  `green`, `red`, `purple`, `primary`. A colour name cannot be wrong, which is
-  why nobody ever thought they were choosing wrong. They are now intents
-  (`neutral`, `info`, `success`, `warning`, `danger`, `primary`), and the colour
-  names are deprecated aliases that render as the intent and warn.
-- **One application mapped "medium confidence" to `orange` because the library
-  has no yellow.** Documented in that application's own source comment. In the
-  same product, `orange` also meant "paused". Two unrelated meanings, one
-  colour, no legend.
+- **`NbBadge`'s variants are intents** (`neutral`, `info`, `success`,
+  `warning`, `danger`, `primary`), not colours. The old colour names (`grey`,
+  `blue`, `orange`, `green`, `red`, `purple`) are deprecated aliases that render
+  as the intent and warn, because a colour name cannot be wrong, so nobody
+  notices choosing wrong.
+- **There is no yellow, so an ordinal middle value lands on `warning`.**
+  "Medium confidence" painted `warning` next to "paused" painted `warning` is two
+  unrelated meanings, one colour, no legend.
 - **`NbBadge` renders a bare `<span>`.** No `role`, no `aria-*`, no live region.
   A badge in `dot` mode with no text content is, to a screen reader, an empty
   element. It says nothing at all.
@@ -27,9 +25,9 @@ as a vocabulary problem rather than a component problem:
   renders a country flag. Anything named "flag" in your status code is either a
   misuse of `NbFlag` or a hand-rolled component that should be a badge.
 
-This page fixes all of that. Section 2 is the fleet's shared vocabulary. Until
-the `FIXME` on `Badge.d.ts` is resolved, **the mapping table in section 2 is the
-intent layer.** Never pick a badge variant by looking at a colour.
+This page fixes all of that. Section 2 is the shared vocabulary, and **its
+mapping table is what turns a product's word into a state and an intent.** Never
+pick a badge variant by looking at a colour.
 
 ---
 
@@ -76,7 +74,7 @@ sizes, and the size difference is the argument:
   </div>
 </preview>
 
-Two consequences worth stating outright, because both have been shipped:
+Two consequences worth stating outright:
 
 ::: danger Never these
 
@@ -127,9 +125,8 @@ right-hand banner is carrying anything the badge could not:
 
 ## Rule 2: nine states, and every product state maps to one of them
 
-This is the fixed vocabulary. It is nine states because nine covers every
-lifecycle we found across twelve products, and ten would have started to
-duplicate.
+This is the fixed vocabulary. Nine states cover the common lifecycles, and a
+tenth would start to duplicate one of them.
 
 | State         | Means                                                       | `variant` | `dot` | Icon (when used) |
 | ------------- | ----------------------------------------------------------- | --------- | ----- | ---------------- |
@@ -209,13 +206,12 @@ status beside it:
   </div>
 </preview>
 
-There is no yellow in that list, and no `variant` in it means anything. The
-mapping table above is the only place intent exists until the `FIXME` on
-`Badge.d.ts` is resolved.
+There is no yellow in that list, and no `variant` names a lifecycle state. The
+mapping table above is the only place a product word becomes a state.
 
 ### Pending is neutral, not warning
 
-The single most common mistake in the audit. `warning` (once `orange`) paints
+The single most common mistake. `warning` (once `orange`) paints
 the warning pair. A queued job is not a warning, nobody needs to do anything,
 and colouring it orange means the one row that genuinely needs attention no
 longer stands out. Waiting is grey. Waiting-too-long is `Attention`.
@@ -224,8 +220,8 @@ longer stands out. Waiting is grey. Waiting-too-long is `Attention`.
 
 ## Rule 3: an ordinal measurement is not a status
 
-The application that mapped medium confidence to `orange` was not choosing the
-wrong colour. It was using the wrong component.
+Mapping medium confidence to `warning` is not choosing the wrong colour. It is
+using the wrong component.
 
 Confidence, risk, severity, health score, match quality and priority are
 **ordinal measurements**. They differ from lifecycle states in three ways that
@@ -251,7 +247,7 @@ Use, in order of preference:
    scale has three steps or fewer, and only if no lifecycle badge appears in the
    same view. This is the last resort and it is nearly always avoidable.
 
-The audited view is on the left, reproduced exactly: two orange badges in one
+The wrong view is on the left: two orange badges in one
 table, one meaning "paused" and one meaning "medium confidence", with no legend
 in the view to tell them apart. On the right the measurement stops being a
 status and goes back to being a number:
@@ -311,7 +307,7 @@ text content.** Therefore:
 
 Turn the control on and the view renders in greyscale, which is the test in the
 last bullet. The left column is three `<NbBadge variant="..." dot />` with an
-empty slot, which is a real thing that shipped. The right column is the same
+empty slot. The right column is the same
 three states with text:
 
 <preview :props="greyProps" v-slot="{ resultingProps }">
@@ -419,7 +415,7 @@ two views of the same object look like two different products.
 </NbBanner>
 ```
 
-The four-badge header from the audit, and the same page with the three
+A four-badge header, and the same page with the three
 non-statuses moved to where facts live:
 
 <preview dir="col">
@@ -503,7 +499,7 @@ rows it makes the table unreadable. The badge is the signal.
   distinguishing fact (the date, the version, the environment) to the row.
 
 Two `NbCard`s, twice. On the left the badge is in the footer with the actions
-and the two entries differ only by their state, both of which shipped:
+and the two entries differ only by their state:
 
 <preview dir="col">
   <div class="sx-pair">
@@ -541,8 +537,8 @@ and the two entries differ only by their state, both of which shipped:
 ## Rule 6: pending and transitional states
 
 A badge states the **last known value**. A spinner states that **we are watching
-it change**. Confusing the two is why one product's badge said "Deploying" for
-eleven minutes after the deploy had finished.
+it change**. Confusing the two leaves a badge saying "Deploying" long after the
+deploy has finished.
 
 ### The four cases
 
@@ -637,8 +633,8 @@ Additional requirements on you:
 - **Both themes.** Badge grounds are
   `color-mix(in srgb, <semantic> 12%, var(--nb-c-surface))` with the semantic
   colour as ink, and every semantic token is redefined under `.dark`. That holds
-  as long as you use the variants. A hardcoded hex does not, and it is how one
-  product ended up with a light-mode chip on a dark surface.
+  as long as you use the variants. A hardcoded hex does not, and leaves a
+  light-mode chip on a dark surface.
 
 ---
 
@@ -661,25 +657,25 @@ for a **solid** fill of that colour. You need them only if you are building a
 solid chip, which is not something a status should be.
 
 Never: a brand ramp (`--nb-c-grape-hyacinth-500`, `--nb-c-phoenix-flames-400`),
-a chart colour, or a hex. A white-label product renders the brand ramps in the
-client's colours, and a status that moves with the brand is not a status.
+a chart colour, or a hex. A rebrand changes the brand ramps, and a status that
+moves with the brand is not a status.
 
 ---
 
-## Things we have shipped and should not ship again
+## Anti-patterns
 
-- A dot-only badge column, so the table's status was invisible to a screen
+- A dot-only badge column, so the table's status is invisible to a screen
   reader and unreadable to anyone with a colour vision deficiency.
-- `orange` meaning "medium confidence" in one view and "paused" in another, in
-  one product, with no legend in either.
-- A page header with four badges, of which one was a status, one was a plan
-  name, one was an environment and one was a region.
-- A whole table row tinted red on failure, which stopped selection and hover
+- `warning` meaning "medium confidence" in one view and "paused" in another,
+  with no legend in either.
+- A page header with four badges, of which one is a status, one is a plan
+  name, one is an environment and one is a region.
+- A whole table row tinted red on failure, which stops selection and hover
   from being visible.
-- A "Deploying" badge that never cleared because the poll had died, showing a
-  state that had been false for eleven minutes.
-- A hand-rolled `<span class="status status--ok">` set in one product, with
-  hardcoded hex, invisible in dark mode.
+- A "Deploying" badge that never clears because the poll has died, showing a
+  state that stopped being true long ago.
+- A hand-rolled `<span class="status status--ok">` set, with hardcoded hex,
+  invisible in dark mode.
 
 ---
 

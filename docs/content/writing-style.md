@@ -10,8 +10,7 @@ appears in a Nubisco UI surface: labels, titles, helper text, toasts, banners,
 confirmations, empty states, errors, accessible names.
 
 It is written to be applied mechanically. Where two options are defensible, one
-of them is chosen here so that twelve applications do not each choose
-separately. If you disagree with a ruling, change this page; do not fork it in
+of them is chosen here so that every product does not choose separately. If you disagree with a ruling, change this page. Do not fork it in
 your view.
 
 ::: tip What this page is for
@@ -20,21 +19,10 @@ rewrite every string in that view without asking anyone a question. If a
 question comes up that this page cannot answer, that is a bug in this page.
 :::
 
-::: info Where the numbers on this page come from
-Every count quoted here comes from one source: a manual audit, in September
-2026, of the twelve applications that consume this library (cms, keystone,
-verba, openbridge, platform, analytics, tally, openbridge-marketplace,
-stagewright, planetcraft, stratos, and one white-label client product), read at their then
-current default branches. The method was a grep for literal strings in
-templates and scripts plus a read of every dialog, so the counts are a floor
-rather than a total, and they are observations of one moment. Re-run it and
-edit the numbers here; do not quietly drop them, because the numbers are the
-only reason this page rules rather than suggests.
-
-Claims about this library's own props, defaults and behaviour are a different
-kind of statement: those are read out of `src/` and are true of the version you
-have checked out. Where the library contradicts a ruling on this page, the
-contradiction is named in place.
+::: info Claims about the library
+Claims about this library's own props, defaults and behaviour are read out of
+`src/` and are true of the version you have checked out. Where the library
+contradicts a ruling on this page, the contradiction is named in place.
 :::
 
 ## The rulings, in one screen
@@ -155,11 +143,11 @@ Delete environment  not   Delete Environment
 Those four are not invented examples. They are the shipped default values of
 `NbFileUploader`'s `buttonLabel`, `NbPagination`'s `pageSizeLabel`,
 `NbNotificationCenter`'s `markAllLabel`, and the canonical confirm label. The
-library is already in sentence case; the applications are the drift.
+library is already in sentence case, and so is every string you write.
 
-Title case is banned because it cannot be applied consistently by twelve teams:
-it requires a shared judgement about which words are "important", and the audit
-shows that judgement is not shared. Sentence case needs no judgement at all,
+Title case is banned because it cannot be applied consistently by several teams:
+it requires a shared judgement about which words are "important", and that
+judgement is never shared. Sentence case needs no judgement at all,
 which is exactly why it is the ruling.
 
 ### Uppercase is styling, never authoring
@@ -205,9 +193,9 @@ owner writes it: `GitHub`, `JavaScript`, `npm`, `pnpm`, `macOS`, `iPhone`.
 | First person singular       | Never. No `My account`, no `My projects`. Write `Account`, `Projects`.                                                                                     |
 | Addressing the user by role | Never in UI strings. No `Admins can...` inside a control the user is holding. Say what this user can do.                                                   |
 
-`My` is common in shipped apps and it is banned here for a concrete reason: a
-sidebar containing `My projects`, `Projects` and `All projects` has three labels
-and two meanings, and the audit found exactly that kind of triple. If a view
+`My` is common and it is banned here for a concrete reason: a sidebar
+containing `My projects`, `Projects` and `All projects` has three labels and two
+meanings. If a view
 shows only the user's own records, the plain noun is correct and the scope
 belongs in the page description, not the label.
 
@@ -236,8 +224,7 @@ where the actor matters (`The comment was deleted` when you deleted it: write
 
 ### When a period belongs
 
-This is the single most-drifted rule in the fleet, so it is a table, not a
-principle.
+This is the rule that drifts most, so it is a table, not a principle.
 
 | String                                                               | Period?                                                                          |
 | -------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
@@ -307,9 +294,9 @@ Write both forms and pick, or reword to a form that does not inflect
 ## Dates and times
 
 **Never type a date format into a string.** `NbDatePicker` and `NbCalendar` both
-resolve their locale as `props.locale || navigator.language || 'pt-PT'` and hand
+resolve their locale as `props.locale || navigator.language || 'en'` and hand
 the value to `toLocaleDateString`. A hardcoded `dd/mm/yyyy` in your view is wrong
-for half the fleet and wrong for every user in the other half.
+for every user whose locale writes dates another way.
 
 | Situation                                                            | Ruling                                                                                                                                                     |
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -328,27 +315,27 @@ centre sitting next to it.
 
 ## Terminology
 
-One word per concept, product-wide. These are the terms the audit found split
+One word per concept, product-wide. These are the terms that most often split
 across synonyms. The left column is the word to use; the right column is what it
 means and what it replaces.
 
-| Term                    | Ruling                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| sign in / sign out      | The user's session. Never `log in`, `login` (as a verb), `logout`. `Login` as a noun is banned entirely. The reason is collision, not taste: `log` is already a noun in half these products (audit logs, request logs, delivery logs), so `Log in` and `View logs` end up in one menu spelled the same way, and `Login` as a noun is indistinguishable from the verb in a label. The usual argument for `Log in` is that `Sign in` sits too close to `Sign up`; we answer that by banning `Sign up` outright, see the next row. |
-| create account          | Registration. Never `Sign up`, `Register` or `Join`. It is a `Create <noun>` like every other, it removes the `Sign in` / `Sign up` collision, and it does not read as a mailing list.                                                                                                                                                                                                                                                                                                                                          |
-| delete                  | Destroys the record permanently.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| remove                  | Detaches a record from this context while it continues to exist elsewhere. Removing a member from a project does not delete the person.                                                                                                                                                                                                                                                                                                                                                                                         |
-| entry                   | A single content record. Never `item` when a specific noun exists.                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| environment             | A named deployment target holding its own content.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| API key / client secret | Distinct things. Do not call either one a `token` in a label.                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| release                 | A published set of changes. Never `deploy` in user-facing copy unless the product's own domain is deployment.                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| draft                   | Unpublished, editable. Never `unsaved` for the same idea.                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| user / member           | `user` is a person with an account. `member` is a user inside a specific organisation or project. Pick per context and stay with it.                                                                                                                                                                                                                                                                                                                                                                                            |
-| folder                  | A container in a tree. Never `directory` in UI copy.                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| settings                | The place you configure something. Never `preferences`, `options` or `config` in a label.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| notification            | An item in the notification centre. A `toast` is a transient message and is never called a notification in user-facing copy.                                                                                                                                                                                                                                                                                                                                                                                                    |
-| upload / download       | Transfer verbs. `import` and `export` mean transformation between formats, not transfer.                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| filter                  | Narrows a visible set. `search` matches text. They are not synonyms and should not share a label.                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Term                    | Ruling                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| sign in / sign out      | The user's session. Never `log in`, `login` (as a verb), `logout`. `Login` as a noun is banned entirely. The reason is collision, not taste: `log` is already a noun in many products (audit logs, request logs, delivery logs), so `Log in` and `View logs` end up in one menu spelled the same way, and `Login` as a noun is indistinguishable from the verb in a label. The usual argument for `Log in` is that `Sign in` sits too close to `Sign up`. This page answers that by banning `Sign up` outright, see the next row. |
+| create account          | Registration. Never `Sign up`, `Register` or `Join`. It is a `Create <noun>` like every other, it removes the `Sign in` / `Sign up` collision, and it does not read as a mailing list.                                                                                                                                                                                                                                                                                                                                            |
+| delete                  | Destroys the record permanently.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| remove                  | Detaches a record from this context while it continues to exist elsewhere. Removing a member from a project does not delete the person.                                                                                                                                                                                                                                                                                                                                                                                           |
+| entry                   | A single content record. Never `item` when a specific noun exists.                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| environment             | A named deployment target holding its own content.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| API key / client secret | Distinct things. Do not call either one a `token` in a label.                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| release                 | A published set of changes. Never `deploy` in user-facing copy unless the product's own domain is deployment.                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| draft                   | Unpublished, editable. Never `unsaved` for the same idea.                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| user / member           | `user` is a person with an account. `member` is a user inside a specific organisation or project. Pick per context and stay with it.                                                                                                                                                                                                                                                                                                                                                                                              |
+| folder                  | A container in a tree. Never `directory` in UI copy.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| settings                | The place you configure something. Never `preferences`, `options` or `config` in a label.                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| notification            | An item in the notification centre. A `toast` is a transient message and is never called a notification in user-facing copy.                                                                                                                                                                                                                                                                                                                                                                                                      |
+| upload / download       | Transfer verbs. `import` and `export` mean transformation between formats, not transfer.                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| filter                  | Narrows a visible set. `search` matches text. They are not synonyms and should not share a label.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 When a product needs a term not in this table, add it here rather than deciding
 locally. That is the entire mechanism that stops the next six-phrasing drift.
@@ -365,7 +352,7 @@ are also a translation or a search problem.
 
 ### Never write a gendered third person
 
-You cannot know a user's gender, and half the fleet's data has no field for it.
+You cannot know a user's gender, and most data has no field for it.
 Do not guess, do not write `he/she`, and do not write `(s)he`.
 
 | Do not write                               | Write                                     | Why                                        |
@@ -500,13 +487,13 @@ for the writer:
 Every rule on this page that cuts words (`please`, `simply`, `successfully`,
 `in order to`) also cuts translation cost and expansion risk. That is not the
 reason for those rules, but it is the reason not to relax them for a product
-that is currently English-only. Every product in this fleet is one contract
-away from not being.
+that is currently English-only. Any product is one contract away from not
+being.
 
 ## Localising the library
 
 The library's own strings are en-US: `Minimize`, `Center`, `Color`. That is the
-ruling for every user-facing string in the fleet, so a product in English needs
+ruling for every user-facing string, so a product in English needs
 nothing. A product in another language passes its strings once.
 
 **Visible labels are props.** Pass them where the component is used:
@@ -560,8 +547,8 @@ product's language is not the browser's.
 
 ## Errors
 
-One application in the audit throws 21 `alert()` calls carrying raw exception
-text. That is the worst content defect in the fleet: it is unstyled, unthemed,
+An `alert()` carrying raw exception text is the worst content defect there is:
+it is unstyled, unthemed,
 modal, uncloseable by keyboard convention, invisible to the toast queue, and it
 shows the user a stack of implementation detail they cannot act on.
 
@@ -594,10 +581,10 @@ Could not load invoices. The request timed out. Try again.
 
 | Scope of the failure                          | Surface                                                                                 | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | --------------------------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| One field                                     | `NbTextInput` `error` prop, or `NbMessage` `variant="error"`                            | Anchored to the control. `NbTextInput` already ships `error` and `warning`; the audit found them bound zero times across 58 call sites in one app, which is why errors ended up in alerts                                                                                                                                                                                                                                                                                              |
+| One field                                     | `NbTextInput` `error` prop, or `NbMessage` `variant="error"`                            | Anchored to the control. `NbTextInput` already ships `error` and `warning`. Bind them, or errors end up in alerts                                                                                                                                                                                                                                                                                                                                                                      |
 | One action the user just fired                | `NbToast` `variant="error"`                                                             | `duration` resolves to 0 from `NB_TOAST_DURATIONS`, so it stays until dismissed. Give it a `cta` for the retry                                                                                                                                                                                                                                                                                                                                                                         |
 | An action fired from inside a dialog          | `NbConfirm` `error` prop, or `formatError` if you raised the dialog with `useConfirm()` | The dialog stays open with the failure visible so the user can retry or cancel. Which of the two you write is decided for you: `IConfirmOptions` omits `open`, `busy` and `error` from `IConfirmProps`, because the composable owns all three. A `useConfirm()` caller therefore never sets `error`. It rejects from `onConfirm` and maps the rejection with `formatError`, which lands in the same place on screen. Setting `error` yourself is only for a hand-mounted `<NbConfirm>` |
-| The whole page failed to load                 | `NbEmptyState` `kind="error"`                                                           | Never `kind="empty"`: one audited app renders one `.empty-text` for both loading and empty, so a failed fetch reads as `No contacts yet`                                                                                                                                                                                                                                                                                                                                               |
+| The whole page failed to load                 | `NbEmptyState` `kind="error"`                                                           | Never `kind="empty"`: one element for both loading and empty makes a failed fetch read as `No contacts yet`                                                                                                                                                                                                                                                                                                                                                                            |
 | A standing problem the page must keep showing | `NbBanner` `status="error"` `variant="callout"`                                         | Not dismissible, because dismissing it would not make it untrue                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | Anything                                      | `alert()`                                                                               | Banned                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 

@@ -7,7 +7,7 @@ An inspector is the tall, narrow panel that edits the currently-selected
 thing: a node, a control, a layer. It is **scanned and operated**, not
 read top to bottom, so it lives or dies on information design, not
 typography. This guide is the correct way to build one from NubiscoUI,
-and the mistakes to avoid (all of which we have shipped at least once).
+and the mistakes to avoid.
 
 The one principle everything else follows: **an inspector is dense and
 quiet, so the values are the only loud thing.** A label tells you what a
@@ -248,7 +248,7 @@ it looks aligned until a label runs long, and then only half the column moves.
 
 ### The same inspector, hand-rolled
 
-Every mistake this page argues against has shipped. Here they are together, on
+Every mistake this page argues against, together, on
 the left, next to the container on the right. Both columns are made of the same
 real components with the same values: the left one is what a call site writes
 when it builds a bespoke aside instead of reaching for the pattern.
@@ -383,9 +383,7 @@ side, in the place an inspector actually lives: `NbShell`'s `inspector` column.
 Each frame is the real shell inside `DemoFrame`, the shared fixed-height,
 clipped box this docs site uses whenever a component sized to its parent has to
 appear in a prose column. The frame is the one thing on this page that is not a
-library component, which is why it is imported rather than pasted: the sentence
-and the stylesheet used to be copied per page with the class prefix swapped.
-Nothing about the shell is changed; it is given a viewport.
+library component, which is why it is imported rather than pasted. Nothing about the shell is changed. It is given a viewport.
 
 <preview dir="col">
   <div class="nix-pair">

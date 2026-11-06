@@ -5,9 +5,7 @@ description: The seven surfaces that can carry a message, the six questions that
 ---
 
 This library ships **five surfaces that carry a message** and **two that
-interrupt**. Nothing in it ever said which one to reach for, so twelve
-applications answered the question twelve times, and every one of them answered
-it differently. This page is the answer.
+interrupt**. This page says which one to reach for.
 
 The rule everything below follows:
 
@@ -18,60 +16,6 @@ The rule everything below follows:
 the whole account are both errors, they are both red, and they belong on
 different surfaces because the user does different things with them. Severity
 picks the `status` or the `variant`. It never picks the component.
-
-::: info Where the evidence on this page comes from
-Claims about "the audit" refer to a review of the twelve applications that
-consume this library (cms, keystone, verba, openbridge, platform, analytics,
-tally, openbridge-marketplace, stagewright, planetcraft, stratos, and one
-white-label client product). That review is a report about **those** repositories and is not
-checked into this one, so do not go looking for it here. Everything it found in
-_this_ repository is checkable here, and is linked where it is used.
-:::
-
----
-
-## What the fleet does today
-
-Notifications were the widest defect in the audit, because every product has
-them and no product had a rule.
-
-- **Three applications hand-built a toast host and queue**, because
-  [`docs/components/toast.md`](/components/toast/usage) used to state as policy
-  that the library shipped no container. Each lost something different: one had
-  no auto-dismiss at all, so success toasts accumulated for the life of the
-  route; one dropped `role="alert"`, the variant icon, the action and
-  pause-on-hover, and hardcoded a border radius; one wrote `var(--nb-z-toast)`,
-  a token that has never existed, and silently ran on the CSS fallback instead
-  of `--nb-zindex-toast`.
-- **Three applications hand-built a notification bell**, at 312, 343 and 308
-  lines. One of those files carries a layout comment saying it put the bell
-  beside the user menu "where Verba puts it, so the two consoles do not disagree
-  about where the bell is". Convergence maintained by prose is not convergence.
-- **The fleet disagrees about where an error goes.** cms leans on `NbBanner`,
-  openbridge-marketplace leans on `NbMessage`. One product renders 30
-  page-level errors through `NbMessage`, which is a 12px inline-flex helper
-  built to sit under a form control. A live example: cms reports a failed media
-  upload as an inline `NbMessage` (`src/components/MediaLibrary.vue:57`) in an
-  application that already renders `NbBanner` in the shell notification region
-  in eighteen other places.
-- **One product throws 21 `alert()` calls** for exceptions. Another has a global
-  error handler that only calls `console.error`, so a failed request is
-  invisible to the person it failed for.
-- **Success feedback is absent or bespoke in nine applications.** platform,
-  tally, planetcraft, stagewright and the white-label product confirm a successful save with
-  nothing at all.
-- **Loading was in the same state**: two different spinners in one product (one
-  of them ignoring `prefers-reduced-motion`), the literal string `Loading` under
-  eight different class names in another, `Loading…` and `Loading...` in two
-  files of a third, and one application where import and update are entirely
-  silent. Three applications hand-built skeletons in five shapes, and in one of
-  them a single `.empty-text` renders both the loading state and the empty
-  state, so a failed fetch reads as "no contacts yet".
-
-None of that was careless. It is what these surfaces cost when the decision is
-left to each call site.
-
----
 
 ## The seven surfaces
 
@@ -86,10 +30,10 @@ left to each call site.
 | [`useConfirm()`](/composables/use-confirm) / `NbModal`          | A dialog over an inert page                                      | Until answered                             | **One decision**                   | **Yes** | Only while open                   |
 
 Two of those seven are not really "notifications" and are on the list because
-products keep using them as one: a dialog is a **question**, and the notification
+they are easy to use as one: a dialog is a **question**, and the notification
 centre is a **log**. Both are covered below, because putting a message on either
-by mistake is one of the two most common failures in the fleet (the other is
-putting it on a toast).
+by mistake is one of the two most common failures (the other is putting it on a
+toast).
 
 The three that render in place, at their real sizes, in one frame. Everything
 below is the live component, not a picture of one:
@@ -157,7 +101,7 @@ row in the notification centre, or both.
 
 ### 5. What is its scope?
 
-This is the question the fleet gets wrong most often. Find the smallest thing
+This is the question most often answered wrong. Find the smallest thing
 the message is true about, and the surface follows from it. See the table below.
 
 ### 6. Is it still true after the message disappears?
@@ -167,8 +111,7 @@ with a lifetime has been told to the user exactly once, at random. Conditions
 are `variant="callout"` banners, which cannot be dismissed because dismissing
 one would not make it untrue.
 
-That single question resolves most of the mis-shelved `warning` toasts in the
-fleet. "Your trial ends in three days" is true for as long as the page is.
+That single question resolves most mis-shelved `warning` toasts. "Your trial ends in three days" is true for as long as the page is.
 "Three of ten rows were skipped" is finished and imperfect, and is a toast (or a
 banner, if the user has to go and fix those three rows, because then question 2
 already answered).
@@ -224,9 +167,9 @@ announced where it is. When the control is an `NbTextInput`, prefer the
 control's own `error` prop over a loose `NbMessage`, so the description is wired
 to the input for you: see [Building a form](/patterns/forms).
 
-This is the live example from the audit, both ways round. On the left is a
-failed media upload reported the way one application ships it today; on the
-right is the same failure on the surface this page rules for it:
+Both ways round: on the left is a failed media upload reported in a field
+helper, and on the right is the same failure on the surface this page rules for
+it:
 
 <preview dir="col">
   <div class="nfx-pair">
@@ -309,8 +252,8 @@ page is open: a draft awaiting approval, a trial expiring, an environment that
 is not production, a record someone else has locked.
 
 **Do not use it** for an outcome. A callout that says "Saved" is a lie the
-moment the next edit happens, and one audited product wrapped its own six-second
-timer around exactly that to make it go away.
+moment the next edit happens, and a timer wrapped around it to make it go away
+is a toast built by hand.
 
 **It must contain** the fact, and the route out of it if there is one. It is not
 dismissible: passing `dismissible` to a callout does nothing, deliberately,
@@ -325,7 +268,7 @@ an outcome permanent:
     <div class="nfx-half nfx-half--wrong">
       <p class="nfx-label">Wrong: an outcome frozen into a condition</p>
       <NbBanner status="success" variant="callout" title="Saved" dismissible>Your changes have been saved.</NbBanner>
-      <p class="nfx-note">Still says "Saved" after the next edit, and cannot be dismissed. This is the banner one audited product wrapped a hand-written six-second timer around.</p>
+      <p class="nfx-note">Still says "Saved" after the next edit, and cannot be dismissed.</p>
     </div>
     <div class="nfx-half nfx-half--right">
       <p class="nfx-label">Right: an outcome is an inline banner</p>
@@ -374,8 +317,7 @@ borders so it spans the strip edge to edge:
 
 A view that has to raise one of these from inside the page contributes to the
 region with [`useShellSlot('notification')`](/composables/use-shell-slot)
-rather than reaching for a DOM id. Eight of the twelve applications had
-hand-rolled ids for this class of problem. Placement inside the frame, and the
+rather than reaching for a DOM id. Placement inside the frame, and the
 rest of the region rules, are in [The app frame](/patterns/app-frame).
 
 The region is part of `NbShell`, so demonstrating it means running a shell. Both
@@ -396,7 +338,7 @@ itself. Nothing about the region is faked, only the viewport it sits in:
           <p style="margin: 0">The save finished on this route. The strip will follow the user to every other one.</p>
         </NbShell>
       </div>
-      <p class="nfx-note">Two faults at once, and both are visible: the radius and side borders float inside a strip that spans the frame, and the sentence stops being true the moment the route changes. This is the banner one product added a six-second timer to.</p>
+      <p class="nfx-note">Two faults at once, and both are visible: the radius and side borders float inside a strip that spans the frame, and the sentence stops being true the moment the route changes.</p>
     </div>
     <div class="nfx-half nfx-half--right">
       <p class="nfx-label">Right: a fact about the account, flush</p>
@@ -605,8 +547,7 @@ threshold, focus return and the undo-instead-of-asking alternative, is in
 [Dialogs and destructive confirmation](/patterns/dialogs).
 
 Open both. The left one is a real `NbModal` assembled into a confirmation by
-hand, which is what one audited application ships, primary-styled destructive
-button included. The right one is `useConfirm()`:
+hand, primary-styled destructive button included. The right one is `useConfirm()`:
 
 <preview dir="col">
   <div class="nfx-pair">
@@ -661,10 +602,8 @@ the same sentence without stopping anybody:
 
 ## A successful save must say so
 
-This is the single most common absence in the fleet: platform, tally,
-planetcraft, stagewright and the white-label product confirm a successful save
-with **nothing at all**.
-The user presses Save, nothing changes, and they press it again to find out
+A save confirmed with **nothing at all** is the most common absence in this
+area. The user presses Save, nothing changes, and they press it again to find out
 whether it worked.
 
 **Rule: every commit reports three moments, and no commit reports fewer.**
@@ -690,8 +629,8 @@ same element for all three moments: `active` shows `label` ("Saving"),
 `finished` shows `finishedLabel` ("Saved") for `dwell` milliseconds and then
 emits `success`, and `error` shows `errorLabel`. It reserves the width of the
 longest of the three so the row does not jump. Drive it with `useInlineLoading()`
-rather than a hand-written `try/catch/finally`, which is what the audit found
-resetting the flag before anything could be shown:
+rather than a hand-written `try/catch/finally`, which tends to reset the flag
+before anything can be shown:
 
 ```vue
 <script setup lang="ts">
@@ -723,7 +662,7 @@ worked:
       <NbGrid dir="row" gap="sm" align="center">
         <NbButton size="sm" :loading="silentSaving" @click="runSilentSave">Save</NbButton>
       </NbGrid>
-      <p class="nfx-note">The spinner stops and the row returns to how it looked before. This is what five products ship, and it is indistinguishable from a request that was dropped, which is why people press Save twice.</p>
+      <p class="nfx-note">The spinner stops and the row returns to how it looked before. It is indistinguishable from a request that was dropped, which is why people press Save twice.</p>
     </div>
     <div class="nfx-half nfx-half--right">
       <p class="nfx-label">Right: started, worked, failed</p>
@@ -764,10 +703,9 @@ A toast carrying a `cta` also resolves to `0` unless you pass a `duration`
 yourself: an action that removes itself while it is being reached for is not an
 action.
 
-The audit found a product where success messages accumulated forever because its
-hand-built host had no timer, and failures vanished after four seconds because
-that host used one duration for everything. That is exactly backwards, and it is
-what this table exists to prevent.
+A host with no timer lets success messages accumulate forever, and a host with
+one duration for everything makes failures vanish after four seconds. That is
+exactly backwards, and it is what this table exists to prevent.
 
 The same logic applies off the toast surface. A banner reporting a failure is
 not on a timer at all, and must not be wrapped in one. A banner reporting a
@@ -778,9 +716,8 @@ to remove itself unasked is a non-error toast.
 
 ## An exception the user cannot act on is not a notification
 
-One product raises 21 `alert()` calls carrying raw exception text. Another has a
-global handler that only calls `console.error`, so the same class of failure is
-invisible. Both are the same mistake, made in opposite directions: an unhandled
+An `alert()` carrying raw exception text and a global handler that only calls
+`console.error` (so the failure is invisible) are the same mistake, made in opposite directions: an unhandled
 exception is **a bug report**, and a bug report has two audiences.
 
 **Split them.**
@@ -907,55 +844,54 @@ Three things are peculiar to a message that removes itself:
 
 ## Never hand-roll any of this
 
-Every surface on this page is library code, and every one of them was
-hand-rolled by at least one product before it was.
+Every surface on this page is library code. A hand-built copy loses part of
+what the component does.
 
 | Do not build           | Use                                                                          | What the hand-built ones lost                                                   |
 | ---------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | A toast host or queue  | `<NbToaster />` + [`useToast()`](/composables/use-toast)                     | Auto-dismiss, `role="alert"`, the icon, the action, pause-on-hover, the z-index |
-| A notification bell    | [`NbNotificationCenter`](/components/notification-center/usage)              | 963 lines across three products, and a placement agreed by comment              |
+| A notification bell    | [`NbNotificationCenter`](/components/notification-center/usage)              | The four feed states, and one placement in the topbar                           |
 | A spinner              | [`NbSpinner`](/components/spinner/usage)                                     | `prefers-reduced-motion`, one accessible name, one spelling of "Loading"        |
 | A skeleton             | [`NbSkeleton`](/components/skeleton/usage)                                   | Five shapes, and one that shares its element with the empty state               |
 | A save-state indicator | [`NbInlineLoading`](/components/inline-loading/usage) + `useInlineLoading()` | The confirmation, every time the `finally` cleared the flag first               |
-| A confirmation dialog  | [`useConfirm()`](/composables/use-confirm)                                   | Seven mechanics across twelve products, including `window.confirm`              |
-| A field error style    | `NbMessage`, or the control's `error` prop                                   | Bound zero times across 58 call sites in one product                            |
+| A confirmation dialog  | [`useConfirm()`](/composables/use-confirm)                                   | One mechanic for every confirmation, instead of `window.confirm` and variants   |
+| A field error style    | `NbMessage`, or the control's `error` prop                                   | The `aria-describedby` wiring from the field to its message                     |
 
 If you have a local `Toaster.vue`, the replacement is four steps:
 [Replacing a hand-built host](/components/toaster/usage#replacing-a-hand-built-host).
 
 **Tokens.** A notification surface touches the tokens its component already
-uses. It does not invent one. `--nb-z-toast` does not exist and never has; the
-real token is `--nb-zindex-toast`, and a product that guessed ran on the CSS
-fallback for months without a single visible symptom. The layer order is in
+uses. It does not invent one. `--nb-z-toast` does not exist. The real token is
+`--nb-zindex-toast`, and a guessed name runs on the CSS fallback without a
+single visible symptom. The layer order is in
 [Z-index](/principles/z-index), spacing in
 [Spacing](/principles/spacing), and the transition rules for a stack that
 animates in [Motion](/principles/motion/code).
 
 ---
 
-## Things we have shipped and should not ship again
+## Never these
 
-- 21 `alert()` calls carrying raw exception text.
+- `alert()` carrying raw exception text.
 - A global error handler whose entire user-facing behaviour is `console.error`.
-- Five products that confirm a successful save with nothing at all.
-- A hand-built toast host with no auto-dismiss, so successes accumulated for the
+- A successful save confirmed with nothing at all.
+- A hand-built toast host with no auto-dismiss, so successes accumulate for the
   life of the route.
-- A hand-built toast host that dropped `role="alert"`, the variant icon, the
-  action and pause-on-hover, and hardcoded a border radius.
+- A hand-built toast host without `role="alert"`, the variant icon, the action
+  or pause-on-hover, with a hardcoded border radius.
 - `var(--nb-z-toast)`, a token that does not exist, silently running on its
   fallback.
-- Three notification bells, 963 lines, converged by a code comment.
-- 30 page-level errors rendered through `NbMessage`, a 12px field helper.
-- A failed media upload reported as an inline `NbMessage` in an application that
-  already renders `NbBanner` in the shell notification region eighteen times.
+- A hand-built notification bell, placed by a code comment.
+- A page-level error rendered through `NbMessage`, a 12px field helper.
 - A `NbBanner` in the shell notification region saying "Saved", with a
-  hand-written six-second timer added to make it go away.
+  hand-written timer added to make it go away.
 - One `.empty-text` element rendering both "loading" and "empty", so a failed
-  fetch read as "no contacts yet".
-- Two spinners in one product, one of them ignoring `prefers-reduced-motion`.
+  fetch reads as "no contacts yet".
+- Two different spinners in one product, or one that ignores
+  `prefers-reduced-motion`.
 - `Loading…` and `Loading...` in two files of the same application.
 - A toast raised from behind an open modal, landing on top of the dialog the
-  user was reading.
+  user is reading.
 
 ---
 
