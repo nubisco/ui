@@ -124,13 +124,30 @@ The card picks its element from its behaviour, so each case gets the right keybo
 />
 ```
 
+## Tiles at a ratio
+
+`ratio` holds every tile at `'1:1'`, `'2:1'`, `'2:3'`, `'3:2'`, `'4:3'` or
+`'16:9'`, so a wall of thumbnails lines up before any content loads. A tile
+whose content is taller grows rather than clipping. On a phone, where the
+container is narrower than `min`, the column becomes the container's width
+and each tile keeps its shape at that width instead of overflowing.
+
+```vue
+<template>
+  <nb-card-grid min="12rem" ratio="4:3">
+    <nb-card v-for="t in templates" :key="t.id" :title="t.name" clickable />
+  </nb-card-grid>
+</template>
+```
+
 ## NbCardGrid props
 
-| Prop   | Type                        | Default       | Description                                                                                 |
-| ------ | --------------------------- | ------------- | ------------------------------------------------------------------------------------------- |
-| `min`  | `string`                    | `'260px'`     | Narrowest a column may be. Clamped to the container, so it shrinks rather than overflowing. |
-| `gap`  | `TGapSize`                  | `'md'`        | Space between cards, on `NbGrid`'s scale: `xxs` 2px to `xxl` 48px.                          |
-| `fill` | `'auto-fill' \| 'auto-fit'` | `'auto-fill'` | Whether empty columns are kept or collapsed.                                                |
+| Prop    | Type                                                  | Default       | Description                                                                                 |
+| ------- | ----------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------- |
+| `min`   | `string`                                              | `'260px'`     | Narrowest a column may be. Clamped to the container, so it shrinks rather than overflowing. |
+| `gap`   | `TGapSize`                                            | `'md'`        | Space between cards, on `NbGrid`'s scale: `xxs` 2px to `xxl` 48px.                          |
+| `fill`  | `'auto-fill' \| 'auto-fit'`                           | `'auto-fill'` | Whether empty columns are kept or collapsed.                                                |
+| `ratio` | `'1:1' \| '2:1' \| '2:3' \| '3:2' \| '4:3' \| '16:9'` | -             | Holds every tile at an aspect ratio. Taller content grows the tile.                         |
 
 ## NbCard props
 
@@ -138,16 +155,16 @@ The card picks its element from its behaviour, so each case gets the right keybo
 | ------------- | ---------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------- |
 | `title`       | `string`                     | `''`         | Card title.                                                                                                         |
 | `subtitle`    | `string`                     | `''`         | One line under the title: a type, an owner, a version.                                                              |
-| `icon`        | `string`                     | —            | Icon name for the card's header.                                                                                    |
+| `icon`        | `string`                     | -            | Icon name for the card's header.                                                                                    |
 | `orientation` | `'vertical' \| 'horizontal'` | `'vertical'` | Media or icon above the title, or in a column beside it.                                                            |
 | `size`        | `'sm' \| 'md'`               | `'md'`       | `sm` halves the padding, for a dense grid of small tiles.                                                           |
 | `image`       | `string \| null`             | `undefined`  | Image for the media box. Empty or `null` (or an image that fails to load) draws a placeholder in the same box.      |
 | `imageAlt`    | `string`                     | `''`         | Alternative text for the image. Empty marks it decorative.                                                          |
 | `imageRatio`  | `string`                     | `'16 / 9'`   | Shape of the media box, as a CSS `aspect-ratio`.                                                                    |
 | `imageFit`    | `'cover' \| 'contain'`       | `'cover'`    | Crop the image to fill the box, or show it whole.                                                                   |
-| `to`          | `string \| object`           | —            | Target route. A `<RouterLink>` with vue-router, a plain link for a string without it. Takes precedence over `href`. |
-| `href`        | `string`                     | —            | Renders the card as a link.                                                                                         |
-| `target`      | `string`                     | —            | Link target. `_blank` also sets `rel="noopener"`.                                                                   |
+| `to`          | `string \| object`           | -            | Target route. A `<RouterLink>` with vue-router, a plain link for a string without it. Takes precedence over `href`. |
+| `href`        | `string`                     | -            | Renders the card as a link.                                                                                         |
+| `target`      | `string`                     | -            | Link target. `_blank` also sets `rel="noopener"`.                                                                   |
 | `clickable`   | `boolean`                    | `false`      | Renders as a button and emits `select`. Ignored when `href` or `to` is set.                                         |
 | `selected`    | `boolean`                    | `false`      | Draws the card as chosen.                                                                                           |
 | `disabled`    | `boolean`                    | `false`      | Inert and muted.                                                                                                    |
