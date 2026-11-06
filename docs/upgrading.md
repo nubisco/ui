@@ -1,5 +1,112 @@
 # Upgrading
 
+## To 5.48.0 from 5.47.x
+
+This release aligns the foundations with the IBM Carbon design system: type,
+colour, grid and spacing, accessibility, content, icons, motion, the AI label,
+and a set of page-hierarchy components. Most of it is additive. Five changes
+alter how every product looks, so check a few real screens before you ship.
+
+**What every product will see:**
+
+- **IBM Plex replaces Plus Jakarta Sans and Fira Code.** Swap
+  `@fontsource/plus-jakarta-sans` and `@fontsource/fira-code` for
+  `@fontsource/ibm-plex-sans` and `@fontsource/ibm-plex-mono`. `fonts()`
+  loads Plex Sans 300, 400 and 600 and Plex Mono 400 and 600, with no 500 or 700. A product that brings its own faces through `--nb-font-family-sans`
+  and `--nb-font-family-mono` is unaffected.
+- **One type size per role, and weight falls as size rises.** Line heights
+  are whole pixels on a 4px rhythm. `heading-02` and above are regular or
+  light, label sets are 12/16 regular, `label-sm` and `code-sm` are 12px and
+  `code-md` is 14/20. Unclassed `h1` to `h6` are now 24, 20, 16, 14, 14 and
+  12px. `strong` is semibold. New sets: `label`, `body-compact`,
+  `heading-compact`, `helper-text`, `overline`. See
+  [Typography](/principles/typography).
+- **Every surface layer carries a full token set.** Selected, active, accent,
+  strong border, field fill and field rule now follow the layer a control sits
+  on. A dark field inside a layer-1 panel had no visible boundary and now
+  does. `NbDataTable` and `NbCalendar` selection read the new selected token.
+- **The dark focus ring is lighter.** It was the bare primary and fell to
+  2.27:1 on layer 3. It now lifts toward white and clears 3:1 on every layer
+  and state surface.
+- **Icons sit on four sizes.** `sm`, `md`, `lg` and `xl` are 16, 20, 24 and
+  32px. Icons inside `NbButton` moved onto the scale, so most button icons are
+  a step larger.
+
+**Check this if you relied on:**
+
+- **`.text-8` to `.text-11`.** They are no longer generated, and
+  `--nb-font-size-8`, `-9`, `-10`, `-11` and `-13` are deprecated.
+- **`calc()` on a type set's line height.** It is now a length, not a ratio.
+- **Weight 500 or 700 being loaded.** Neither is.
+- **`NbBadge` colour variants.** `grey`, `blue`, `orange`, `green`, `red` and
+  `purple` are deprecated aliases. They render as `neutral`, `info`,
+  `warning`, `success`, `danger` and `primary`, which paint the measured status
+  surface pairs, and warn once in development.
+- **`NbGrid` `mode`.** It now does something: `wide`, `narrow` and
+  `condensed` set a default gap of 32, 16 or 1px, and `gap` still wins. It no
+  longer defaults to `'wide'`, and the bare `.wide`, `.narrow` and `.condensed`
+  classes are now `nb-grid--*`.
+- **Spacing.** Gap classes now read `var(--nb-spacing-N)`, so overriding a
+  spacing token also moves grid gaps. Utilities for steps 9, 10, 11, 13, 14,
+  18, 42, 46, 50 and 54 are no longer generated (their custom properties stay
+  for one minor). `--nb-grid-gutter` is 0 on a phone and 24px at `xxl`.
+- **`--nb-motion-loop`.** It is removed: no component read it. Write a loop's
+  duration as a literal.
+- **`transition-fade` and the `fade-*` classes.** They are deprecated. Use
+  `@include nb-fade` and `<Transition name="nb-fade">`.
+- **Default strings.** `NbBanner`'s close button is named Close, not Dismiss.
+  `NbSpinner` without a `label` announces "Loading content" and warns once in
+  development. `NbConfirm`'s `busyLabel` is "Working". `useConfirm`'s default
+  error never shows `error.message`: it logs the error and shows "Could not
+  complete the request. Try again."
+- **Locale fallback.** `NbDatePicker` and `NbCalendar` use the `locale` prop,
+  then the browser's language, then `en`. They no longer fall back to a fixed
+  non-English locale.
+- **`NbAiLabel` with nothing to open.** It now renders a static mark, not an
+  empty button. `size="sm"` is really 24px and `lg` 40px (every size used to
+  be 32px). The inline variant shows the word `text` (default "AI").
+- **A plain link or button outside a component.** It now gets the house focus
+  ring. The reset used to remove every ring.
+
+**New, and nothing changes unless you use it:**
+
+- **Hierarchy components.** `NbPageHeader` (the page's one `h1`, one status,
+  facts, actions), `NbPageLayout` (main and aside by container width),
+  `NbContainedList` and `NbContainedListItem`, `NbStructuredList`.
+  `NbPanel` and `NbCard` take `title`, `description`, `#meta`, `#actions` and
+  `flat`. `NbButton` takes `variant="tertiary"` and warns when two primaries
+  share one header. See [Information hierarchy](/principles/hierarchy) and the
+  dashboard, settings and record patterns.
+- **Colour.** Placeholder, link, icon, error and status-glyph text roles, an
+  inverse family, `[data-nb-contrast='more']` for `prefers-contrast: more`, and
+  `app-theme()` repairing an accent that fails 4.5:1 instead of only refusing
+  it (the build warns with both values).
+- **Grid and spacing.** `hang`, `container`, `subgrid` and `ratio` on
+  `NbGrid`, `ratio` on `NbCardGrid`, `shift="0"`, `--nb-spacing-40`,
+  `--nb-fluid-spacing-01` to `-04`, and logical utilities `.pis-*`, `.pie-*`,
+  `.mis-*`, `.mie-*`.
+- **Accessibility.** Form fields set `aria-invalid`, describe their message by
+  id and announce an error only when it changes. `NbCommandPalette` is a modal
+  dialog with a combobox. `NbTree` has a tab stop, arrow keys and typeahead.
+  `NbMenu` returns focus to its opener. Checkbox, radio, tab, menu item and
+  table controls get a 44px touch target on phones.
+- **Content.** `provideNbStrings()` and `useNbStrings()` localise every name
+  the library renders without a prop. `pluralize()`, `truncateMiddle()`, and
+  `showCount` on `NbTextInput`.
+- **Icons.** `label` makes an icon informative (`role="img"` with a name).
+  `NbButton` forwards `iconWeight`, so a literal icon links one weight. House
+  icons live in `src/assets/icons`, and `ai` is the first. `clickable` is
+  deprecated in favour of an icon-only ghost `NbButton`, and until it goes it
+  is reachable by keyboard and touch.
+- **Motion.** `motion.popover`, `popover-in`, `dialog` and `disclosure`
+  mixins, `motion` and `easing` exports for script, expressive curves,
+  `--nb-motion-slow`, and `routeTransition` on `NbShell`.
+- **AI label.** `explain` and the `#explain` and `#actions` slots open an
+  explanation. `revertable` and `plain-available` offer a way back. A
+  `decorator` slot on `NbTextInput` and `NbCard` places the label.
+  `.nb-ai-presence` and the `--nb-c-ai-*` tokens mark a container, derived
+  from your primary.
+
 ## To 5.47.0 from 5.46.x
 
 New, and nothing changes unless you use it:
