@@ -343,6 +343,7 @@ import {
 } from '@/composables/useShellSlot.composable'
 import { NB_SHELL_LAYOUT_KEY } from '@/composables/useShellLayout.composable'
 import SurfaceLayerScope from './SurfaceLayerScope.vue'
+import { motion } from '@/tokens/motion'
 import { prefersReducedMotion } from '@/composables/useReducedMotion.composable'
 
 const slots = useSlots()
@@ -984,14 +985,14 @@ const { layerProps: mainLayerProps } = useSurfaceLayer({
  * wide, and the icons would visibly jump before sliding back.
  *
  * `railVariant` is therefore the variant the children see, which lags the
- * prop by the width's duration on the way down. The duration is the token's
- * value, written here as a number because the timer needs one; the two are
- * kept equal by hand, and a product that retunes the token on :root gets a
- * label switch that is early or late by the difference, never a broken rail.
+ * prop by the width's duration on the way down. The duration is the medium
+ * step from the motion tokens, the number the CSS token is checked against,
+ * and a product that retunes the token on :root gets a label switch that is
+ * early or late by the difference, never a broken rail.
  * Under reduced motion, or anywhere `matchMedia` is missing (a test), the
  * switch is immediate and the classes are never set.
  */
-const RAIL_MOTION_MS = 240
+const RAIL_MOTION_MS = motion.medium
 const railVariant = ref(props.sidebarVariant)
 
 /**

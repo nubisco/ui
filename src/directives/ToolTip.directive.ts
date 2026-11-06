@@ -1,5 +1,6 @@
 import type { App, DirectiveBinding, ObjectDirective } from 'vue'
 import { prefersReducedMotion } from '@/composables/useReducedMotion.composable'
+import { motion } from '@/tokens/motion'
 import type { IComponentContent } from '@/types/ContentRenderer'
 import { renderTooltipContent, devWarn } from '@/directives/ToolTip.content'
 
@@ -316,10 +317,10 @@ const installDocumentDismiss = () => {
   document.addEventListener('mouseleave', dismiss)
 }
 
-// How long the exit animation runs before the node is detached. Must
-// match the tooltipDisappear duration below so the chip is not ripped
-// out mid-animation.
-const HIDE_ANIMATION_MS = 70
+// How long the exit animation runs before the node is detached: the micro
+// step, which the tooltipDisappear animation below runs on, so the chip is
+// not ripped out mid-animation.
+const HIDE_ANIMATION_MS = motion.micro
 
 // Self-life for a shown chip. Every tick re-verifies that the anchor is
 // still in the document and still hovered; N consecutive misses reap
