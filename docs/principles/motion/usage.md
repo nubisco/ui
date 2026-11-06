@@ -8,7 +8,7 @@ pageTabs: ['usage', 'style', 'code', 'accessibility']
 
 A colour is read instantly, a spacing step is read instantly, and a 300ms slide is 300ms the user spends waiting to find out what happened. That is the whole economics of motion: it earns its place only by answering a question the still frame cannot answer. Where did this come from. What did my click do. Is anything still happening. Three questions, three jobs, nothing else on the list.
 
-The library moves on one scale and one family of curves ([Style](/principles/motion/style)), declared once and read everywhere ([Code](/principles/motion/code)). The reduced-motion preference is honoured in every component without the product doing anything ([Accessibility](/principles/motion/accessibility)).
+The library moves on one scale and one family of curves ([Style](/principles/motion/style)), declared once and read everywhere ([Code](/principles/motion/code)), with a test that fails on a duration written any other way. The reduced-motion preference is honoured in every component without the product doing anything ([Accessibility](/principles/motion/accessibility)).
 
 ## The three jobs
 
@@ -153,9 +153,36 @@ Small things move on small steps. A control's motion is there to confirm the cli
 
 The tab bar's active mark is one element that slides to the chosen tab, so the eye follows the selection rather than seeing one mark vanish and another appear. The accordion's section grows on the medium step. Each is in the [catalogue](/principles/motion/code#the-catalogue) with its step and curve.
 
+## When a page arrives
+
+Carbon gives page load an order, so the eye is led rather than flooded: the shell first, then the static body content, then the dynamic content, then the primary action, and the animated content (charts, visualisations) last, all inside about 500ms. In a Nubisco application most of that order is already structural. `NbShell` is on screen before any route renders and never moves when the route changes. Static content renders with the view. Dynamic content shows its shape at once with `NbSkeleton` and swaps in without animating. Charts draw when their data arrives. Nothing has to be choreographed to get Carbon's order, and nothing should be: the order is about what appears first, never about animating the rows of what appears.
+
+What changes on navigation is the main region, and by default it cuts. That is the right answer for most screens: the person asked for the next page and wants it now. Where a product wants the arrival seen (a first-run page, a switch between unrelated areas), `NbShell` has it built in:
+
+```vue
+<NbShell route-transition>
+  <RouterView />
+</NbShell>
+```
+
+The outgoing view is removed at once and the incoming one fades in over `--nb-motion-short` on the enter curve. There is no travel, no moment where two pages are half visible, and under reduced motion it is a cut again. It follows Vue Router's path by itself, `route-key` changes what counts as a new page (`$route.name` fades only between screens), and it never staggers what is inside the page.
+
 ## We do not stagger lists
 
 Staggered list entrances are the most-cited technique in motion writing and this library ships none of them, on purpose. Our lists are data tables, log rows, tree nodes and query results. A staggered table is a table you cannot read until it finishes, and the user opened it to read it. When content arrives progressively, show its structure immediately with `NbSkeleton`, and do not animate the swap: a cross-fade between a placeholder and real content produces a moment where both are half-visible and neither is legible.
+
+## Designing the motion of a product
+
+Carbon's motion strategy is six steps, and they are worth doing in order when a product is new or a flow is redesigned, before anyone writes a transition:
+
+1. **Set the goals.** What should motion do in this product? For task software the answer is almost always the [three jobs](#the-three-jobs) and nothing else.
+2. **Set the hierarchy.** Which moments matter more than others? A destructive confirmation matters more than a hover. Most moments matter very little.
+3. **Map the journey.** Walk the flows a person actually takes and note every place something appears, leaves, or changes size.
+4. **Find the key moments.** Of those, mark the few where motion answers a question the still frame cannot. Everything else stays still or uses the library's defaults.
+5. **Choose the style.** Productive for all of it. Expressive only for the [two moments](/principles/motion/style#expressive-two-moments-never-a-control) that earn it, a page arriving or a critical alert.
+6. **Prototype and test.** At real speed and in slow motion (every demo on these pages has the switch), with reduced motion on, on a phone, and with someone who has not seen it before.
+
+Most of the time the result of that exercise is to use the library as it is and add nothing. That is a good result.
 
 ## Before you write an animation
 
