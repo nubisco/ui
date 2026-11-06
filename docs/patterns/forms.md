@@ -889,7 +889,7 @@ the server refuse it.
     <NbForm title="Invite a teammate" novalidate @submit.prevent="submitInvite">
       <template #message>Required fields are marked with an asterisk.</template>
       <NbBanner v-if="inviteBanner" status="error" variant="inline" :title="inviteBanner" />
-      <NbTextInput id="fdx-invite-email" v-model="invite.values.email" label="Work email" type="email" placeholder="you@acme.com" required :error="invite.errors.email" :aria-invalid="invite.errors.email ? true : undefined" @blur="touchInvite('email')" @input="reviseInvite('email')" />
+      <NbTextInput id="fdx-invite-email" v-model="invite.values.email" label="Work email" type="email" placeholder="you@acme.com" required :error="invite.errors.email" @blur="touchInvite('email')" @input="reviseInvite('email')" />
       <NbSelect id="fdx-invite-role" v-model="invite.values.role" label="Role" :options="roleOptions" required :error="invite.errors.role" @change="commitInvite('role')" />
       <template #footer>
         <NbButton variant="secondary" type="button" @click="resetInvite">Cancel</NbButton>
@@ -1299,11 +1299,14 @@ your problem. For forms, explicitly.
   control's `label` (which sets `for` on `NbLabel`).
 - `aria-required` on `NbSelect` and the native `required` attribute on
   `NbTextInput`, `NbNumberInput` and `NbDatePicker`.
-- Message announcement: `NbMessage` renders with `role="status"` and
-  `aria-live="assertive"` for `error`, `polite` otherwise, so a message that
-  appears is announced without stealing focus.
-- `aria-invalid` and `aria-describedby` on `NbDatePicker`, which is the only
-  control that wires its message to its input today.
+- Error state on the control: `NbTextInput`, `NbNumberInput`, `NbSelect`,
+  `NbRadio`, `NbSlider`, `NbCheckboxGroup` and `NbDatePicker` set
+  `aria-invalid` while an error shows, and link the visible helper, warning or
+  error message to the control by id with `aria-describedby`.
+- Error announcement: an error that appears after the form has loaded is
+  announced once with `role="alert"`. A message present on first render is not
+  announced, so a form opened with errors does not shout, and a user who tabs
+  to the field hears it through `aria-describedby`.
 - `role="group"` and a group label on `NbCheckboxGroup`.
 - Native radio grouping via `NbRadio`'s required `name` prop.
 - `role="alert"` with `aria-live="assertive"` on `NbBanner` when
@@ -1313,48 +1316,13 @@ your problem. For forms, explicitly.
 
 - **The id, from Rule 6.** Everything below depends on it.
 
-- **`aria-invalid`, and only `NbTextInput` can take it today.** `TextInput.vue`
-  declares `inheritAttrs: false` and binds `v-bind="$attrs"` on the native
-  element, so an attribute you pass lands on the `<input>`:
-
-  ```vue
-  <NbTextInput
-    id="field-email"
-    v-model="values.email"
-    label="Work email"
-    :error="errors.email"
-    :aria-invalid="errors.email ? true : undefined"
-  />
-  ```
-
-  `NbNumberInput` and `NbSelect` do **not** do this. Neither sets
-  `inheritAttrs: false`, so an `aria-invalid` you pass lands on the wrapper
-  `<div>`, where it means nothing and is not an error you will ever see. Do not
-  write it there and assume it worked. This is a library gap: the controls
-  should derive `aria-invalid` from `error` themselves.
-
-- **`aria-describedby` is missing on text, number and select fields, and you
-  cannot supply it either.** The `NbMessage` those controls render for `error`,
-  `warning` and `helper` carries no id, so there is no node to point at. The
-  practical consequence: the error is announced when it appears (`NbMessage` is
-  a live region), but a user who tabs back to that field later hears the label
-  and nothing else. Until the controls expose a message id, the mitigations are:
-  1. Put the constraint in the label or hint text, where it is part of the
-     accessible name or is at least read on arrival.
-  2. On a form-level failure, the `NbBanner` summary (Rule 11) names every
-     broken field, and focus moves to it, so the information is reachable.
-
-  Do not paper over it by hiding the visible message and rendering your own:
-  that is a hand-rolled field, which Rule 2 bans.
+- **Nothing for error state.** Pass `error` and the control sets
+  `aria-invalid`, describes itself by the message and announces it. Do not pass
+  `aria-invalid` yourself.
 
 - **Focus management after submit.** Nothing moves focus for you. First invalid
   field on a validation failure, the banner on a server failure, first editable
   control on a modal that just opened (Rule 13).
-
-- **`NbModal` has no focus trap.** Despite what `introduction.md` says, Tab
-  leaves an open modal and lands behind it. A modal form is therefore not safe
-  from the keyboard yet. `NbConfirm` does trap correctly and restores focus, so
-  `useConfirm` is unaffected. See [Accessibility overview](/accessibility/overview).
 
 - **Tab order is DOM order, so keep DOM order equal to visual order.** Never
   reorder fields with `order`, `row-reverse` or a grid placement: a sighted
@@ -1510,9 +1478,8 @@ the template.
 - [ ] Destructive actions go through `useConfirm` with the request in
       `onConfirm`, sit away from the commit button, and never use
       `window.confirm`.
-- [ ] Text fields with an error also carry `aria-invalid`, and no `aria-invalid`
-      is passed to `NbNumberInput` or `NbSelect` in the belief that it lands on
-      the control.
+- [ ] Errors reach a field through its `error` prop, never through a
+      hand-written `aria-invalid`.
 - [ ] A page with more than one form gives each form an accessible name.
 - [ ] Every interactive element is reachable and operable by keyboard.
 - [ ] The form was checked with the `.dark` class applied, and no meaning is
