@@ -106,6 +106,11 @@ export type {
   IDefinitionListItem,
   TDefinitionListLayout,
 } from './components/DefinitionList.d'
+export { default as NbStructuredList } from './components/StructuredList.vue'
+export type {
+  IStructuredListProps,
+  IStructuredListColumn,
+} from './components/StructuredList.d'
 export { default as NbContainedList } from './components/ContainedList.vue'
 export type {
   IContainedListProps,

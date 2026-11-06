@@ -32,6 +32,7 @@ export const COMPONENT_MANIFEST = {
   NbCheckboxGroup: 'CheckboxGroup',
   NbDefinitionList: 'DefinitionList',
   NbDefinitionListItem: 'DefinitionListItem',
+  NbStructuredList: 'StructuredList',
   NbContainedList: 'ContainedList',
   NbContainedListItem: 'ContainedListItem',
   NbDragHandle: 'DragHandle',
