@@ -4,7 +4,7 @@ title: Icon
 intro: '`NbIcon` renders SVG icons from the Phosphor icon set. Icons are loaded as async Vue components via a Vite virtual module, so only icons that are actually used end up in your bundle.'
 source: src/components/Icon.vue
 tab: usage
-pageTabs: ['usage', 'code']
+pageTabs: ['usage', 'animation', 'code']
 ---
 
 ## Icons
@@ -33,7 +33,6 @@ downloads the drawing in the weight you picked, painted `currentColor`.
         :size="resultingProps.size"
         :color="resultingProps.color"
         :weight="resultingProps.weight"
-        v-bind="{...(resultingProps.animation && {animation: resultingProps.animation})}"
       />
       <span class="icon-name">{{ icon.name }}</span>
       <div class="icon-overlay">

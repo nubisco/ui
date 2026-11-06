@@ -103,91 +103,73 @@ const availableProps: PreviewPropDef[] = [
     min: 16,
     max: 128,
   },
-  {
-    label: 'Animation',
-    name: 'animation',
-    type: 'single',
-    options: [
-      {
-        label: 'No animation',
-        value: null,
-      },
-      {
-        label: 'swing-right',
-        value: 'swing-right',
-      },
-      {
-        label: 'wobble',
-        value: 'wobble',
-      },
-      {
-        label: 'expand',
-        value: 'expand',
-      },
-      {
-        label: 'refresh',
-        value: 'refresh',
-      },
-      {
-        label: 'heart',
-        value: 'heart',
-      },
-      {
-        label: 'undo',
-        value: 'undo',
-      },
-      {
-        label: 'italic',
-        value: 'italic',
-      },
-      {
-        label: 'cog',
-        value: 'cog',
-      },
-      {
-        label: 'wrench',
-        value: 'wrench',
-      },
-      {
-        label: 'mouse-pointer',
-        value: 'mouse-pointer',
-      },
-      {
-        label: 'magic',
-        value: 'magic',
-      },
-      {
-        label: 'lock',
-        value: 'lock',
-      },
-      {
-        label: 'unlock',
-        value: 'unlock',
-      },
-      {
-        label: 'hourglass',
-        value: 'hourglass',
-      },
-      {
-        label: 'eraser',
-        value: 'eraser',
-      },
-      {
-        label: 'rocket',
-        value: 'rocket',
-      },
-      {
-        label: 'times',
-        value: 'times',
-      },
-    ],
-    default: null,
-    placeholder: 'Select one',
-  },
 ]
+
+/**
+ * The animation tab: each gesture on the glyph it was drawn for, so the
+ * motion reads as the meaning it carries.
+ */
+const animations = [
+  { name: 'refresh', icon: 'arrows-clockwise', loading: true },
+  { name: 'cog', icon: 'gear', loading: true },
+  { name: 'hourglass', icon: 'hourglass', loading: true },
+  { name: 'swing-right', icon: 'hand-waving' },
+  { name: 'wobble', icon: 'bell' },
+  { name: 'expand', icon: 'arrows-out' },
+  { name: 'heart', icon: 'heart' },
+  { name: 'undo', icon: 'arrow-counter-clockwise' },
+  { name: 'italic', icon: 'text-italic' },
+  { name: 'wrench', icon: 'wrench' },
+  { name: 'mouse-pointer', icon: 'cursor' },
+  { name: 'magic', icon: 'magic-wand' },
+  { name: 'lock', icon: 'lock' },
+  { name: 'unlock', icon: 'lock-open' },
+  { name: 'eraser', icon: 'eraser' },
+  { name: 'rocket', icon: 'rocket' },
+  { name: 'times', icon: 'x' },
+]
+
+const animationsPlaying = ref(true)
 </script>
 
 <style lang="scss" scoped>
+.animation-demo {
+  display: grid;
+  list-style-type: none;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1px;
+  padding: 0;
+  margin: calc(var(--nb-base-unit) * 2) 0 0 0;
+  background-color: var(--vp-c-divider);
+
+  li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--nb-base-unit) * 1.5);
+    height: 120px;
+    margin: 0;
+    padding: calc(var(--nb-base-unit) * 1.5);
+    box-sizing: border-box;
+    background: var(--vp-code-block-bg);
+  }
+
+  &.paused :deep(.nb-icon) {
+    animation-play-state: paused;
+  }
+
+  .animation-name {
+    font-family: var(--vp-font-family-mono);
+    font-size: 12px;
+    color: var(--vp-c-text-2);
+  }
+
+  .animation-loading {
+    color: var(--vp-c-text-3);
+  }
+}
+
 .icon-demo {
   display: grid;
   list-style-type: none;

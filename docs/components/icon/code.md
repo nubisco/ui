@@ -4,7 +4,7 @@ title: Icon
 intro: '`NbIcon` renders SVG icons from the Phosphor icon set. Icons are loaded as async Vue components via a Vite virtual module, so only icons that are actually used end up in your bundle.'
 source: src/components/Icon.vue
 tab: code
-pageTabs: ['usage', 'code']
+pageTabs: ['usage', 'animation', 'code']
 ---
 
 ## Overview
@@ -170,11 +170,11 @@ glyph turns to a grey smudge. `xxl` (92) is kept for compatibility.
 ## Animations
 
 `animation` takes one of seventeen gestures (`refresh`, `cog`, `hourglass`,
-`wobble`, `heart` and the rest; the gallery plays them all), and
-`animation-mode` plays it `always` or only on `hover`. An animated icon stays
-the size of a static one: only the gesture moves. The timing reads
-`--nb-motion-loop` and `--nb-ease-standard`, so a product that retunes its
-motion tokens retunes these too.
+`wobble`, `heart` and the rest; the [Animation tab](./animation) plays them
+all), and `animation-mode` plays it `always` or only on `hover`. An animated
+icon stays the size of a static one: only the gesture moves. Each cycle is one
+second (half that for the quick gestures, five for `cog`), tuned to the icon
+like every loop in the library, and the gestures ease on `--nb-ease-standard`.
 
 Under `prefers-reduced-motion: reduce` the travel stops. The three that say
 "working" (`refresh`, `cog`, `hourglass`) keep looping as an opacity breath
