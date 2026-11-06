@@ -1132,7 +1132,7 @@ function onColumnDragEnd() {
 
 .nb-board__lane-count {
   font-size: var(--nb-type-body-sm-size);
-  background: var(--nb-c-discrete);
+  background: var(--nb-c-surface-accent);
   color: var(--nb-c-text-muted);
   padding: 0.05rem 0.35rem;
   border-radius: 999px;

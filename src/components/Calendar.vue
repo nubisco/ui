@@ -301,7 +301,9 @@ function getEventsForDate(dateStr: string): ICalendarEvent[] {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   border-bottom: 1px solid var(--nb-c-border);
-  background: var(--nb-c-surface-hover);
+  // The supporting ground inside a component on this plane (Carbon's
+  // $layer-accent), not the hover state it used to borrow.
+  background: var(--nb-c-surface-accent);
 }
 
 .nb-calendar__weekday {
@@ -332,6 +334,10 @@ function getEventsForDate(dateStr: string): ICalendarEvent[] {
 
   &:hover {
     background: var(--nb-c-surface-hover);
+  }
+
+  &:active {
+    background: var(--nb-c-surface-active);
   }
 
   &--outside {

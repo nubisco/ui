@@ -379,7 +379,7 @@ const collapsed = computed(
   font-size: 0.88em;
   padding: 0.1em 0.4em;
   border-radius: var(--nb-radius-control, 4px);
-  background: var(--nb-c-discrete);
+  background: var(--nb-c-surface-accent);
   color: inherit;
 }
 
