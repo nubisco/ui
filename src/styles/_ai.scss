@@ -1,0 +1,112 @@
+/// AI presence: a wash and an edge that say "a model took part in this"
+/// before the label is read.
+///
+/// Every value is derived from `--nb-c-primary` and the surface's own
+/// border, never a fixed hue, so the treatment rebrands with the product the
+/// same way the focus ring does. A white-label palette gets its own accent
+/// here, not the vendor's.
+///
+/// ## Why the tokens are emitted in several scopes
+///
+/// A custom property built with `var()` is substituted on the element that
+/// declares it (see `_accent.scss`). Declared only at `:root`, these would
+/// freeze to the root primary and the layer-1 border, so they are declared
+/// again wherever either can change: the dark scope, every named theme scope
+/// (`[data-nb-theme]`, whatever its id), and on `.nb-ai-presence` itself,
+/// which is what lets the edge follow the layer the container sits on.
+///
+/// ## Contrast
+///
+/// The wash is 8% of the accent at the strongest point of the gradient, in
+/// both modes. `tests/aiPresenceContrast.test.ts` composites it over every
+/// layer and hover surface: primary text stays at AAA everywhere, and muted
+/// text stays at AAA in light. Dark has no room for more: its muted text
+/// measures 7.01 on the deepest hover surface with no wash at all, so any
+/// tint takes it under AAA. At 8% the worst case is 6.60, and the test holds
+/// it at 6.5 or better, so the wash cannot quietly grow into a problem.
+///
+/// @group @nubisco/ai
+
+/// The tokens, for one colour mode.
+///
+/// @param {Number} $aura - how much accent the wash carries at its strongest
+@mixin tokens($aura) {
+  --nb-c-ai-aura: color-mix(in srgb, var(--nb-c-primary) #{$aura}, transparent);
+  --nb-c-ai-border-start: color-mix(
+    in srgb,
+    var(--nb-c-primary) 50%,
+    var(--nb-c-border)
+  );
+  --nb-c-ai-border-end: var(--nb-c-border);
+}
+
+// One weight today. The dark half is still emitted on its own, because the
+// dark primary is a different colour and a token declared at :root would
+// freeze to the light one.
+$light-aura: 8%;
+$dark-aura: 8%;
+
+:root,
+[data-nb-theme] {
+  @include tokens($light-aura);
+}
+
+// Two selectors for the dark half, because the dark class and the theme
+// attribute can land on the same element or on different ones. Both outrank
+// the single-attribute block above.
+.dark,
+.dark[data-nb-theme],
+.dark [data-nb-theme] {
+  @include tokens($dark-aura);
+}
+
+/// Paints AI presence on a container: a wash rising from the bottom edge and
+/// a border running from the accent into the container's own edge.
+///
+/// Both are pseudo-elements, so the container keeps its own background and
+/// border and no component's scoped styles have to give way. The wash sits
+/// under the content (`isolation` makes the container its stacking context),
+/// and the edge is a one-pixel ring drawn over the container's border.
+.nb-ai-presence {
+  @include tokens($light-aura);
+  isolation: isolate;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  &::before {
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(to top, var(--nb-c-ai-aura), transparent 50%);
+  }
+
+  &::after {
+    inset: -1px;
+    padding: 1px;
+    background: linear-gradient(
+      to bottom,
+      var(--nb-c-ai-border-start),
+      var(--nb-c-ai-border-end)
+    );
+    // Keep only the ring: the full box minus its content box.
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+  }
+}
+
+.dark .nb-ai-presence,
+.dark.nb-ai-presence {
+  @include tokens($dark-aura);
+}
+
+// Low specificity on purpose: a container that is already positioned keeps
+// its own position, and a static one becomes the anchor for the two layers.
+:where(.nb-ai-presence) {
+  position: relative;
+}
