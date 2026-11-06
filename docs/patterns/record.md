@@ -100,13 +100,3 @@ scrolls away with the page.
   `heading-02` heading; the accordion headers are quieter. If they look like
   peers of "History", the argument for keeping them open is lost.
 - **Two planes at most.** The page, a well inside a section, and stop.
-
-## Reference
-
-Acta's card inspector is the screen this pattern is written against. Its
-comments state the rule better than this page does: the description is what
-the card is, so putting it behind a disclosure means every card opens showing
-nothing, and burying the conversation behind a disclosure is the fault the
-whole layout exists to fix. What it still lacks is the rank between the open
-sections and the folded ones, and a library page header in place of its
-hand-built sticky head.

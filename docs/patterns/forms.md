@@ -7,25 +7,21 @@ A form is a promise about **when the value is committed**. Everything else on
 this page follows from that: where the label goes, when the red text appears,
 whether there is a Save button at all, and what happens when the server says no.
 
-We audited twelve applications built on this library. Forms came out worse than
-any other surface:
+Four defects make a form untrustworthy, and each one follows from a missing
+decision rather than from taste:
 
-- **Five applications redefine `div.field` by hand.** Same idea (label above
-  control, muted helper below), five different paddings, five different label
-  colours, five copies to fix when the field height changes.
-- **One application binds `NbTextInput`'s `error` prop zero times across
-  fifty-eight call sites.** Not "rarely". Zero. Validation in that product is a
-  paragraph of red text somewhere else on the page, or nothing.
-- **One application has seventy-two `NbField`s and no `<form>` element
-  anywhere.** Enter does nothing in any of them. Password managers do not know
-  what they are looking at.
-- **Three save models live inside a single application**: debounce-on-blur here,
-  a Save button there, a modal with its own Submit in a third view. Same data,
-  same user, three different answers to "is my change kept?".
+- **A hand-rolled `div.field`.** Every copy has its own padding and label
+  colour, and each one has to be fixed by hand when the field height changes.
+- **An unbound `error` prop.** Validation then lands in a paragraph of red text
+  somewhere else on the page, or nowhere.
+- **Fields with no `<form>` element.** Enter does nothing, and password
+  managers do not know what they are looking at.
+- **More than one save model in one product**: debounce-on-blur here, a Save
+  button there, a modal with its own Submit in a third view. Same data, same
+  user, three different answers to "is my change kept?".
 
-None of that is a taste problem. It is the absence of a written decision. This
-page is the decision, heading by heading. Every heading is a ruling and the
-reason for it.
+This page is the decision, heading by heading. Every heading is a ruling and
+the reason for it.
 
 The one principle the rest hangs off: **a form must never be ambiguous about
 whether the user's work is safe.** Ambiguity is what a hand-rolled field, an
@@ -136,8 +132,8 @@ The thresholds are not decoration:
 - **A shell panel is a property editor, not a form.** It has no footer and no
   submit. If it needs a Save button it is a page or a modal.
 - **Inline editing is one field.** Two fields edited in place is a form with no
-  container, no submit and no error region, and it is the shape that produced
-  the fleet's third save model.
+  container, no submit and no error region, and it introduces a third save
+  model.
 
 ## Rule 2: three layouts are legal, and the hand-rolled one is not
 
@@ -175,13 +171,13 @@ All three, running, at the content each one is for:
   </div>
 </preview>
 
-The fourth layout is the one five applications independently reinvented, and it
-is why field height, label colour and helper spacing disagree across the fleet.
+The fourth layout is a hand-rolled `div.field`, and it is not legal. Each copy
+picks its own field height, label colour and helper spacing, so no two agree.
 
 ::: code-group
 
 ```vue [Wrong]
-<!-- Five products shipped a variant of this. All five are subtly different. -->
+<!-- Every copy of this is subtly different from the last. -->
 <div class="field">
   <label for="email">Work email</label>
   <input id="email" v-model="email" type="email" class="input" />
@@ -230,7 +226,7 @@ three fields as library controls, at the same width.
 <preview dir="col">
   <div class="fdx-pair">
     <div class="fdx-half fdx-half--wrong">
-      <p class="fdx-label">Wrong: div.field, as five products shipped it</p>
+      <p class="fdx-label">Wrong: a hand-rolled div.field</p>
       <div class="fdx-handrolled">
         <div class="field"><label for="fdx-hr-name">Name</label><input id="fdx-hr-name" v-model="handRolled.name" class="input" /></div>
         <div class="field"><label for="fdx-hr-email">Work email</label><input id="fdx-hr-email" v-model="handRolled.email" type="email" class="input" /><span class="field-error">Enter a work email address</span></div>
@@ -332,7 +328,7 @@ and unlabelled for a screen reader. Use `placeholder` for the shape of the value
 
 ## Rule 4: know which controls can actually show an error
 
-This is the shortest route to fixing the "zero out of fifty-eight" finding.
+An unbound `error` prop is the usual reason validation never reaches the field.
 Not every control in the library carries messages, and pretending otherwise is
 how validation silently goes missing.
 
@@ -402,7 +398,7 @@ appears and stays under the control.
 
 ## Rule 5: there must be a real `<form>` element
 
-Seventy-two fields and no `<form>` is not a styling detail. Without a form
+Fields with no `<form>` around them are not a styling detail. Without a form
 element you lose Enter-to-submit, the browser's autofill and password-manager
 heuristics, `type="submit"` semantics, and the one DOM node assistive tech uses
 to describe the group.
@@ -457,8 +453,8 @@ Two details that are easy to get wrong:
 ::: code-group
 
 ```vue [Wrong]
-<!-- Shipped. Pressing this Cancel submitted the form, because a <button>
-     with no type attribute is type="submit". -->
+<!-- Pressing this Cancel submits the form when it renders a raw <button>,
+     because a <button> with no type attribute is type="submit". -->
 <template #footer>
   <NbButton variant="secondary" @click="close">Cancel</NbButton>
   <NbButton variant="primary" type="submit">Save changes</NbButton>
@@ -477,7 +473,7 @@ Two details that are easy to get wrong:
 :::
 
 ::: info `NbButton` already defaults to `type="button"`
-The defect above is real and shipped, but it reaches a form through a raw
+The defect above reaches a form through a raw
 `<button>`, not through `NbButton`: `Button.vue` defaults `type` to
 `EButtonType.Button`, so an `NbButton` with no `type` renders
 `type="button"` and does not submit. The rule stands as written anyway, for two
@@ -487,8 +483,8 @@ only version of this that is checkable by reading the template, which is what
 the checklist at the foot of this page asks a reviewer to do.
 :::
 
-The seventy-two-field finding at the top of this page is invisible in a
-screenshot and obvious in one keypress. Put the caret in either field below and
+Fields with no `<form>` around them are invisible in a screenshot and obvious
+in one keypress. Put the caret in either field below and
 press Enter.
 
 <preview dir="col">
@@ -537,8 +533,8 @@ it with the native `form` attribute (it falls through `NbButton` to the
 ```
 
 Do not add padding or an `NbPanel` inside `#footer`. `NbModal` already wraps the
-footer in a right-aligned grid, and stacking another container on top of it is
-the single most-copied markup defect in the fleet.
+footer in a right-aligned grid, and another container on top of it doubles
+the padding and breaks the alignment.
 
 `NbModal` emits `close` from the close button, from Escape, and from the overlay
 (unless `closeOnOverlay` is `false`). All three land on one handler, which is
@@ -567,7 +563,7 @@ Omit the id and each control falls back to a `useId()` value such as
 `nb-input-v-0-3`. It is stable within a render, unpredictable in your code, and
 it is why the focus-the-first-invalid-field helper in
 [Rule 11](#rule-11-field-errors-are-the-truth-the-form-level-summary-is-a-pointer)
-is a no-op in half the fleet.
+finds nothing to focus without one.
 
 ## Rule 7: field sizing is set by the surface, not by the field
 
@@ -595,8 +591,8 @@ you are adding `margin-bottom` to a field, you are fighting the container.
 
 ## Rule 8: mark required, not optional, and never both
 
-The fleet marks nothing, or marks both, or marks "optional" on one form and
-"required" on the next.
+Marking nothing, marking both, or marking "optional" on one form and
+"required" on the next all leave the user guessing which fields they can skip.
 
 **Default: mark the required fields.** `required` on `NbTextInput`,
 `NbNumberInput`, `NbSelect` and `NbDatePicker` renders the asterisk through
@@ -658,8 +654,8 @@ one of the first two.
 
 ## Rule 9: how form text is written
 
-The library styles the string. It cannot write it, and the fleet shows that
-unwritten strings drift further than unwritten styles.
+The library styles the string. It cannot write it, and an unwritten string
+drifts further than an unwritten style.
 [Writing style](/content/writing-style) is the general ruling; these are the
 form-specific ones.
 
@@ -682,8 +678,8 @@ The reasons, since each of these has one:
   the qualifier in the hint.
 - **No trailing colon**, because the label is above or beside the control, not
   introducing it in running text. A colon after every label is eight extra
-  glyphs of noise per screen, and the fleet uses them inconsistently, which
-  makes them look like they mean something.
+  glyphs of noise per screen, and used inconsistently they look like they
+  mean something.
 - **Helper text is guidance, not validation.** "We use this for billing
   receipts" is helper text. "Enter a valid email" is an error and belongs in
   `error`, where it turns the field red and announces itself. Note the caveat in
@@ -944,8 +940,7 @@ the top of the form body, and keep every value the user typed.**
 Why not a toast: a toast is timed and dismissible, and it is delivered somewhere
 other than where the work is. It is the right tool for "Draft saved" after a
 successful action, and the wrong tool for a failure the user must respond to.
-The audit found a fleet where success messages accumulate forever in one
-hand-built toast host and failures vanish after four seconds. That is exactly
+A failure that vanishes after four seconds while successes pile up is exactly
 backwards.
 
 Rules for the failure banner:
@@ -967,8 +962,8 @@ undefined` is not a message to a user. Map it, and log the original.
 
 For a slow submit, `NbInlineLoading` beside the button gives a live-region
 status (`active` to `finished` to `error`, with its own labels) so the wait is
-announced, not just spun. Four of the twelve applications show nothing at all
-during a save.
+announced, not just spun. A save that shows nothing at all reads as a save
+that never started.
 
 ## Rule 13: a form that is still loading is not an empty form
 
@@ -985,9 +980,8 @@ three of them get skipped.
 **Never render an editable empty form while the record is loading.** The user
 starts typing, the response lands, `v-model` is overwritten, and their input
 disappears. This is the most expensive bug on this page because the user cannot
-tell it happened, and it is what "loading and empty look the same" produces: one
-audited application renders both states through a single `.empty-text`, so a
-failed fetch reads as "no contacts yet".
+tell it happened. The same root cause, one element for both loading and empty,
+makes a failed fetch read as "no contacts yet".
 
 ```vue
 <NbForm title="Member profile" @submit.prevent="submit">
@@ -1019,7 +1013,7 @@ announces itself, and a form of eight placeholders announces itself eight times.
 
 ## Rule 14: disabled hides interaction, read-only hides editing, and neither hides truth
 
-Three different states get flattened into `disabled` across the fleet.
+Three different states are easy to flatten into `disabled`. Keep them apart.
 
 | State            | Use when                                                                  | How                                                      |
 | ---------------- | ------------------------------------------------------------------------- | -------------------------------------------------------- |
@@ -1051,7 +1045,7 @@ either, and on a long form it is off screen when the invalid field is on screen.
 
 ```vue [Wrong]
 <!-- The user cannot find out what is missing. There is nothing to press and
-     nothing to read. Shipped in two products. -->
+     nothing to read. -->
 <NbButton variant="primary" type="submit" :disabled="!isValid">
   Save changes
 </NbButton>
@@ -1084,8 +1078,8 @@ Past roughly eight fields a form needs structure. In order of preference:
 3. **`NbStepper` / multi-step** only when the steps are genuinely sequential and
    later ones depend on earlier answers, and each step can be saved. A stepper
    over a form that could have been one page is three extra clicks and a state
-   machine you now maintain. The fleet has two applications, three stepper
-   implementations, and two of those disagree inside one product.
+   machine you now maintain. Use `NbStepper` rather than building one, so
+   every multi-step flow in a product behaves the same way.
 
 Never put a **required** field inside collapsed content. A user cannot fix an
 error they cannot see, and submit-time validation will point at a hidden field.
@@ -1098,9 +1092,8 @@ correctly side by side because they are a single answer.
 
 ## Rule 16: one save model per surface, chosen deliberately
 
-Three models exist in the fleet inside a single application. That is the finding
-that matters most, because it means a user cannot learn the product's answer to
-"is my change kept?".
+Pick one model per surface and keep it consistent across the product. Mixed
+models mean a user cannot learn the product's answer to "is my change kept?".
 
 | Model                         | The promise                                        | Use it when                                                                     |
 | ----------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -1243,10 +1236,9 @@ Three things this rule does not license:
 
 ## Rule 18: name the action, not the gesture
 
-Across twelve applications: 25 "Cancel", 6 "Done", 5 "Delete", 4 "Close",
-3 "Create", 3 "Back", 2 "Dismiss", 1 "Save", 1 "Apply". Save, Done, Apply and
-Create are used interchangeably for commit; Close, Cancel, Dismiss and Back
-interchangeably for exit. There is no rule anyone could have followed.
+Save, Done, Apply and Create used interchangeably for commit, and Close,
+Cancel, Dismiss and Back interchangeably for exit, leave the user nothing to
+learn. One word per intent fixes that.
 
 [Writing style](/content/writing-style) covers the wording. For a form footer:
 
@@ -1261,16 +1253,13 @@ interchangeably for exit. There is no rule anyone could have followed.
   `NbModal`'s footer do the alignment. Never top-align a form's buttons, and
   never centre them.
 - **Emphasis is one per footer.** One `variant="primary"`, everything else
-  `secondary`. A destructive commit is `variant="danger"`, never primary. The
-  modal docs taught the opposite for a while and one application copied it
-  verbatim, primary-styled Delete and all.
+  `secondary`. A destructive commit is `variant="danger"`, never primary.
 
 ## Rule 19: destructive actions inside forms go through `useConfirm`
 
 A form that can delete the thing it is editing (Delete account, Remove member,
 Revoke key) must confirm. Do not use `window.confirm`: it is a documented no-op
-inside a Tauri webview and cannot be driven by a gamepad, and two applications
-hit that wall independently.
+inside a Tauri webview and cannot be driven by a gamepad.
 
 ```ts
 import { useConfirm } from '@nubisco/ui'
@@ -1301,9 +1290,8 @@ unrecoverable action.
 
 ## Accessibility: what the library does, and what is yours
 
-Only a third of the component pages carry an accessibility section, so the fleet
-cannot tell whether silence means handled or your problem. For forms,
-explicitly.
+Silence on a component page does not tell you whether something is handled or
+your problem. For forms, explicitly.
 
 **The library handles:**
 
@@ -1377,9 +1365,9 @@ explicitly.
   not link it to the `<form>`. Add `aria-label` (or `aria-labelledby` pointing
   at your own heading) when a page carries more than one form.
 
-- **Keyboard path to every control.** Two applications ship clickable rows and
-  card `div`s that a keyboard cannot reach. If it commits a value, it is a
-  button, an input or it has a key handler and a `tabindex`.
+- **Keyboard path to every control.** A clickable row or card `div` is
+  unreachable from the keyboard. If it commits a value, it is a button, an
+  input or it has a key handler and a `tabindex`.
 
 - **Both themes.** Error, warning and helper colours come from `--nb-c-danger`,
   `--nb-c-warning` and `--nb-c-text-subtle`, which are theme-aware. Any colour
@@ -1389,8 +1377,9 @@ explicitly.
 
 ## Tokens a form is allowed to touch
 
-Do not hardcode pixels. One audited application carries 462 hardcoded px values
-and zero spacing tokens; another 287 and zero.
+Do not hardcode pixels. A literal px value does not follow the base unit, the
+density setting or a theme, and every one has to be found by hand when the scale
+changes.
 
 | Token                                                      | What it controls                                                                          |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
@@ -1408,22 +1397,21 @@ and zero spacing tokens; another 287 and zero.
 For gaps between fields, use `NbGrid`'s `gap` scale rather than raw values:
 `xxs` 2px, `xs` 4px, `sm` 8px, `md` 16px, `lg` 24px, `xl` 32px, `xxl` 48px.
 
-## Things we have shipped and should not ship again
+## Anti-patterns
 
-- A form with no `<form>`, so Enter did nothing in seventy-two fields.
-- Fifty-eight text inputs, zero `error` bindings, and validation delivered as a
-  paragraph somewhere else.
-- Five hand-rolled `div.field` implementations with five different label colours
-  and a hardcoded red.
-- A Cancel button with no `type`, which submitted the form.
-- A disabled Save button as the only feedback that a form was invalid, with no
-  indication of which field was the problem.
+- Fields with no `<form>`, so Enter does nothing.
+- Text inputs with no `error` binding, and validation delivered as a paragraph
+  somewhere else.
+- A hand-rolled `div.field`, with its own label colour and a hardcoded red.
+- A raw `<button>` with no `type`, which submits the form.
+- A disabled Save button as the only feedback that a form is invalid, with no
+  indication of which field is the problem.
 - A modal footer with an `NbPanel` and inline padding inside it, fighting the
-  right-aligned grid the modal already provides, with a primary-styled Delete.
-- Three save models on one product, so the user could not learn the answer to
-  "did that stick?".
-- One `.empty-text` element rendering both the loading state and the empty
-  state, so a failed fetch read as "no contacts yet".
+  right-aligned grid the modal already provides, or a primary-styled Delete.
+- More than one save model in one product, so the user cannot learn the answer
+  to "did that stick?".
+- One element rendering both the loading state and the empty state, so a
+  failed fetch reads as "no contacts yet".
 - `window.confirm` in a Tauri webview, where it does nothing at all.
 
 ## Checklist
@@ -1795,8 +1783,8 @@ function resetInvite() {
   font-size: 12px;
 }
 
-/* Rule 5: fields with no form around them, laid out the way the audited views
-   lay them out. The absence of a <form> is the demo; this only stacks them. */
+/* Rule 5: fields with no form around them. The absence of a <form> is the demo.
+   This only stacks them. */
 .fdx-loose {
   display: flex;
   flex-direction: column;
@@ -1812,7 +1800,7 @@ function resetInvite() {
 }
 
 /* THE DEFECT, RENDERED. This is not a component and is not offered as one: it
-   is the div.field five products shipped, reproduced verbatim from the [Wrong]
+   is the hand-rolled div.field, reproduced verbatim from the [Wrong]
    block above (6px gap, 16px margin, #e5484d at 12px) so the comparison beside
    it is a comparison and not an assertion. Never copy this block. */
 .fdx-handrolled .field {

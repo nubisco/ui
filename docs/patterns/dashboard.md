@@ -103,10 +103,3 @@ The main region is loud on two ladders, position and layer, and no more.
   one step more above and below when the page is short.
 - **Colour is status.** A red figure means late, never "important". See
   [Status indicators](/patterns/status-indicators).
-
-## Reference
-
-Acta's Home is the screen this pattern is written against: a greeting, then
-"Next up" as the first and widest panel, with goals, documents and spaces
-beside it. Its next step is this shape: a summary strip, "Next up" as the one
-raised region, and the rest as flat tiles.

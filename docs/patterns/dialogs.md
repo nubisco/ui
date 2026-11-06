@@ -19,30 +19,20 @@ tasteful restraint excuses the missing guard.
 
 ---
 
-## What the fleet actually does
+## Two failures, in opposite directions
 
-Twelve applications built on this library were read end to end. Destructive
-confirmation was the worst result in the whole audit, and it failed in two
-directions at once:
+Destructive confirmation fails in two directions at once:
 
-- **Seven distinct confirmation mechanics across twelve applications.** A
-  `window.confirm`, a hand-built `NbModal` with a primary-styled Delete, a
-  second modal wrapping an `NbPanel` in its footer, an inline "click again to
-  confirm" toggle, a checkbox the user had to tick, a toast that claimed to
-  confirm something, and one view that just did it.
-- **Sixteen-plus destructive actions with no confirmation at all.** Deleting a
-  CMS environment and every entry, release and key inside it, behind a
-  `window.confirm`. Regenerating an OAuth client secret on one unguarded click.
-  A `localStorage.clear()` sitting in a command palette next to "Toggle theme".
-  Deleting another user's comment.
-- **And the inversion.** One application confirms a delete that has a working
-  undo, and ships the delete that has no undo with no confirmation at all.
+- **No guard where one is needed.** Deleting an environment and every entry,
+  release and key inside it on one click. Regenerating an OAuth client secret on
+  one click. A `localStorage.clear()` in a command palette next to "Toggle
+  theme". Deleting another user's comment.
+- **A guard where none is needed.** Confirming a delete that has a working undo,
+  while the delete with no undo goes unguarded.
 
-That last one is the most useful finding in the estate, because it shows the
-failure is not laziness. Somebody thought about it. They just had no rule, so
-they guarded the action that felt scary rather than the action that was
-irreversible. Feeling scary and being irreversible are different properties, and
-only one of them is a reason to interrupt someone.
+The second is not laziness. It is guarding the action that feels scary rather
+than the action that is irreversible. Feeling scary and being irreversible are
+different properties, and only one of them is a reason to interrupt someone.
 
 ::: danger The rule that inversion breaks
 **The guard belongs to the action that cannot be undone, not to the action that
@@ -68,8 +58,8 @@ matches what you actually need, and take the surface in it.
 | Collect up to four inputs, tied to what is behind it        | `NbModal`                                           | This one _is_ a dialog                                                                    |
 | Get a yes or no about something irreversible                | `useConfirm()`                                      | This one is a dialog too, and it is the only shape it may take                            |
 
-Two of those rows are dialogs. The other six are the reason most of the dialogs
-in the fleet should not exist.
+Two of those rows are dialogs. The other six are the reason most dialogs should
+not exist.
 
 ### The two dialogs we ship, and nothing else
 
@@ -79,26 +69,14 @@ in the fleet should not exist.
 | [`NbConfirm`](/components/confirm/usage) via `useConfirm()` | "Is this the thing you meant to destroy?" | The whole dialog: buttons, order, focus, dismissal, pending state, role |
 
 There is no third one, and in particular **a confirmation is never assembled out
-of `NbModal`.** Every hand-assembled confirmation in the fleet lost the same
-five things: initial focus on cancel, the pending lock, `role="alertdialog"`,
+of `NbModal`.** A hand-assembled confirmation loses the same five things: initial focus on cancel, the pending lock, `role="alertdialog"`,
 the danger variant on the confirm button, and the record's own name in the body.
 Those are not decorations, they are the entire content of the guard.
 
-::: warning The docs themselves taught this wrong
-Until this release, [`docs/components/modal.md`](/components/modal/usage)
-demonstrated a destructive confirmation with `variant="primary"` on the Confirm
-button, a title-case "Confirm Action" heading, the body text "Are you sure you
-want to continue?", and an `NbPanel` with inline padding inside `#footer`
-fighting the right-aligned `NbGrid` that `Modal.vue` already puts there. One
-audited application's markup is a near-copy of it, primary-styled destructive
-button included. **The docs caused that defect.** That page has since been
-corrected and now points here, but the lesson is why this page exists: a wrong
-example is copied faster than a written rule is read.
-:::
-
-Both of those are live below. On the left is the confirmation this
-documentation used to teach, assembled out of `NbModal` exactly as it was
-written here; on the right is the same question through `useConfirm()`. Open
+Both of those are live below. On the left is a confirmation assembled out of
+`NbModal`, with a primary-styled commit, a title-case "Confirm Action" heading
+and a padding wrapper inside `#footer`. On the right is the same question
+through `useConfirm()`. Open
 them one after the other, and press <kbd>Tab</kbd> in each:
 
 <preview dir="col">
@@ -167,9 +145,9 @@ Just do it.
   that says "Delete 10 conversations", and an undo is a better design than a
   dialog that repeats the number back.
 
-### Actions that must be confirmed, in our own products
+### Actions that must be confirmed
 
-Straight from the audit, so nobody has to re-derive the list:
+These are irreversible, so none of them can be an undo:
 
 | Action                                        | Why it cannot be an undo                                                    |
 | --------------------------------------------- | --------------------------------------------------------------------------- |
@@ -242,9 +220,8 @@ mistake is fixed. If the restore can fail, confirm up front instead.
 
 ### The inversion, live
 
-This is the audit's sharpest single finding, and it is one product: the delete
-that could be undone was confirmed, and the delete that could not be undone was
-not. Both halves below are wrong, and they are wrong in opposite directions:
+The delete that could be undone is confirmed, and the delete that could not be
+undone is not. Both halves below are wrong, and they are wrong in opposite directions:
 
 <preview dir="col">
   <div class="nfx-pair">
@@ -256,7 +233,7 @@ not. Both halves below are wrong, and they are wrong in opposite directions:
     <div class="nfx-half nfx-half--wrong">
       <p class="nfx-label">Wrong: no guard on the irreversible one</p>
       <NbButton size="sm" variant="danger" @click="unguardedRevokes++">Regenerate secret</NbButton>
-      <p class="nfx-note">One click, no question, and every client using the old secret is already broken. Secrets regenerated so far in this preview: <strong>{{ unguardedRevokes }}</strong>. That is the audit's finding rendered exactly: the user cannot tell the two buttons apart until afterwards.</p>
+      <p class="nfx-note">One click, no question, and every client using the old secret is already broken. Secrets regenerated so far in this preview: <strong>{{ unguardedRevokes }}</strong>. The user cannot tell the two buttons apart until afterwards.</p>
     </div>
   </div>
 </preview>
@@ -373,19 +350,18 @@ themselves.
   holds initial focus                         where the hand rests
 ```
 
-| The contract                                                          | Why                                                                                                                                       |
-| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| **Exactly two buttons**                                               | A third choice in a confirmation is a task, and a task belongs on a route. "Save and delete" is two decisions wearing one button          |
-| **Cancel on the left, commit on the right**                           | The exit is where the reading eye arrives, the commit is where it stops. An app that flips this makes every other app in the fleet a trap |
-| **Cancel is `variant="ghost"`**                                       | It is the safe option, so it needs no emphasis. Emphasis is a claim on attention, and the exit does not need one                          |
-| **The commit is `variant="danger"`** (`primary` for `tone="neutral"`) | A destructive action styled as a primary button is the exact defect the modal docs taught                                                 |
-| **The commit says the verb**                                          | "Delete environment", never "Yes", "OK", "Confirm" or "Continue"                                                                          |
-| **Initial focus is Cancel**                                           | The dialog appears under the hand that just clicked. Focus on the commit turns one stray <kbd>Space</kbd> into a deletion                 |
-| **The header's close control is a third Cancel**                      | Three exits, one meaning. None of them may ever mean confirm                                                                              |
+| The contract                                                          | Why                                                                                                                              |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Exactly two buttons**                                               | A third choice in a confirmation is a task, and a task belongs on a route. "Save and delete" is two decisions wearing one button |
+| **Cancel on the left, commit on the right**                           | The exit is where the reading eye arrives, the commit is where it stops. An app that flips this makes every other app a trap     |
+| **Cancel is `variant="ghost"`**                                       | It is the safe option, so it needs no emphasis. Emphasis is a claim on attention, and the exit does not need one                 |
+| **The commit is `variant="danger"`** (`primary` for `tone="neutral"`) | A destructive action styled as a primary button reads as the expected answer                                                     |
+| **The commit says the verb**                                          | "Delete environment", never "Yes", "OK", "Confirm" or "Continue"                                                                 |
+| **Initial focus is Cancel**                                           | The dialog appears under the hand that just clicked. Focus on the commit turns one stray <kbd>Space</kbd> into a deletion        |
+| **The header's close control is a third Cancel**                      | Three exits, one meaning. None of them may ever mean confirm                                                                     |
 
 `NbConfirm` renders that footer itself; you supply `confirmLabel` and nothing
-else. For an `NbModal` you assemble it, and the two mistakes to avoid are both
-in the fleet:
+else. For an `NbModal` you assemble it, and there are two mistakes to avoid:
 
 ```vue
 <!-- Wrong: a padding wrapper inside a footer that is already a grid, a
@@ -415,8 +391,7 @@ in the fleet:
 ### The contract, one variable at a time
 
 Two confirmations that differ in exactly one option each. The wrong half of each
-pair is a real defect out of the audit, and both are reachable only by asking
-for them: `NbConfirm` has no prop that styles a destructive commit as primary,
+pair is reachable only by asking for it: `NbConfirm` has no prop that styles a destructive commit as primary,
 so the left dialog below gets there through `tone="neutral"`, which is the
 option that means "this is not destructive".
 
@@ -459,7 +434,7 @@ list of the page's actions, where each label appears with no sentence around it.
 `Yes`, `No`, `Cancel` conveys nothing at all. `Delete environment`, `Cancel`
 conveys the entire dialog. The full register of verbs and what each one promises
 lives in [Action labels](/content/action-labels#the-verb-precisely); use it,
-because "Remove" and "Delete" mean different things and the fleet uses them
+because "Remove" and "Delete" mean different things and are easy to use
 interchangeably.
 
 `NbConfirm` defaults `confirmLabel` to `'Confirm'` so the component can never
@@ -496,8 +471,8 @@ await confirm({
   before you call.
 
 When the action touches someone else's data, say whose: `Delete Ana's comment`,
-not `Delete comment`. The audit found a comment delete that named nothing at
-all, in a product where moderators delete other people's writing.
+not `Delete comment`. A moderator deleting other people's writing has to see
+whose it is before confirming.
 
 The same delete, asked twice. Only one of them tells the user which row they
 clicked:
@@ -545,7 +520,7 @@ Do not demand it for a single record the user owns, however dramatic the verb
 is. A gate on a routine delete trains people to type the phrase without reading
 it, which spends exactly the attention it was meant to buy. It is also the one
 part of this dialog a game controller cannot drive without an on-screen
-keyboard, which matters in two of our products.
+keyboard.
 
 ```ts
 await confirm({
@@ -586,8 +561,8 @@ spending it:
 
 ## Rule 7: a fired action cannot be un-fired, so the dialog locks
 
-The second failure mode of every hand-rolled confirmation in the fleet: the user
-clicks the commit, nothing visibly changes, and they click again. Two `DELETE`
+The second failure mode of a hand-rolled confirmation: the user clicks the
+commit, nothing visibly changes, and they click again. Two `DELETE`
 requests, one of which is about to fail loudly on a record that no longer
 exists.
 
@@ -744,13 +719,11 @@ state on a bare `NbModal`, move focus to the dialog box yourself.
 
 ## Rule 10: never `window.confirm`, and never `alert`
 
-It is the mechanism most of the fleet reached for, and it is not available to
-all of the fleet.
+It is the easiest mechanism to reach for, and it is not available everywhere.
 
 - **Inside a Tauri webview it is a documented no-op.** The dialog never appears
   and the call returns immediately, so the guard evaluates as "cancelled" (or,
-  in the inverted spellings, as "confirmed") with nobody asked. Two of our
-  applications discovered this independently.
+  in the inverted spellings, as "confirmed") with nobody asked.
 - **It cannot be driven by a gamepad.** `NbConfirm` is ordinary DOM with real
   focus, so anything that produces <kbd>Tab</kbd>, <kbd>Space</kbd> and
   <kbd>Esc</kbd> drives it, controller mappings included.
@@ -759,8 +732,7 @@ all of the fleet.
   suppress it permanently after the second appearance. A user who ticks that box
   has disabled every guard in the product.
 
-The same applies to `alert()` for errors: one audited application throws 21 of
-them. An exception the user can act on is an [inline banner](/patterns/status-indicators);
+The same applies to `alert()` for errors. An exception the user can act on is an [inline banner](/patterns/status-indicators);
 one they cannot is a log line.
 
 Migration is mechanical, because the call shape is identical:
@@ -852,26 +824,26 @@ at stake, and a banner they can ignore would cost them the work.
 
 ---
 
-## Things we have shipped and should not ship again
+## Never these
 
-- Deleting a CMS environment and every entry in it behind a `window.confirm`,
-  in a product that also ships in a webview where `window.confirm` does nothing.
+- A delete that takes a container and its contents with it, behind a
+  `window.confirm`, in a product that also runs in a webview where
+  `window.confirm` does nothing.
 - Regenerating an OAuth client secret on one unguarded click, next to nothing
   that says what breaks.
 - `localStorage.clear()` in a command palette, reachable by fuzzy-matching
   "clear".
 - Deleting another user's comment with no confirmation and no owner named.
-- Confirming a delete that has a working undo while shipping the delete with no
-  undo unguarded.
-- A destructive commit styled `variant="primary"`, copied out of our own modal
-  documentation.
+- Confirming a delete that has a working undo while the delete with no undo goes
+  unguarded.
+- A destructive commit styled `variant="primary"`.
 - An `NbPanel` with `style="padding: 12px"` inside `#footer`, fighting the grid
   `NbModal` already puts there.
-- A confirmation whose body said "Are you sure you want to continue?" and named
+- A confirmation whose body says "Are you sure you want to continue?" and names
   neither the action nor the record.
-- A confirm button labelled `Yes`, in a dialog whose title was `Confirm Action`.
-- A hand-rolled confirmation with no pending state, which sent two `DELETE`s
-  when the network was slow.
+- A confirm button labelled `Yes`, in a dialog whose title is `Confirm Action`.
+- A hand-rolled confirmation with no pending state, which sends two `DELETE`s
+  when the network is slow.
 
 ---
 
@@ -924,7 +896,7 @@ For each action, answer in order and stop at the first yes:
       another person's data with it → the same, plus `typeToConfirm`.
 
 If an action already has both a confirmation and an undo, delete the
-confirmation. That inversion is in the fleet today.
+confirmation.
 
 ### Step 3: fix the mechanism
 

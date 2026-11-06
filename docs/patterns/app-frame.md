@@ -7,31 +7,16 @@ description: What each region of NbShell is for, how a view contributes controls
 The frame is the part of a product the user never chose to look at and never
 stops looking at. It answers three questions continuously, without being asked:
 **where am I**, **what can I do here**, and **how do I get out**. A product that
-answers those three the same way as the other eleven is part of one ecosystem. A
-product that answers them its own way is a separate product wearing our colours.
+answers those three the same way as every other product on this library is part
+of one ecosystem. A product that answers them its own way is a separate product
+wearing our colours.
 
-We read twelve applications built on this library end to end. The frame is where
-they diverged most:
-
-- **Eight of twelve invented a DOM id** to let a view put controls in the shell:
-  `#cms-topbar`, `#nks-topbar-right`, `#verba-topbar`, `#ob-topbar-left`,
-  `#nba-topbar-left`, `#tally-topbar`, `#page-actions`, `#verba-inspector`.
-  Eight incompatible contracts for one need, and one live bug: in tally a view
-  and its own child teleport into the same target, so what the topbar shows
-  depends on mount order, and the layout compensates with a `:deep()` rule.
-- **Four applications have no way back at all.** One renders its breadcrumbs as
-  inert `<span>`s, so from a task list three levels deep the only route back to
-  the parent is the sidebar icon, which drops the whole trail.
-- **Two render two breadcrumb trails at once** on some routes.
-- **Two put a back button** next to, or instead of, a trail.
-- **Four fight the frame from outside with CSS**, including one whose single
-  `:deep()` override in the entire codebase is load-bearing, and one whose
-  comment admits it doubled a selector to out-specify a rule inside the built
-  `ui.css`.
-
-None of that is a taste problem. It is the absence of a written decision. This
-page is the decision. Every heading is a ruling with the reason attached,
-because a rule whose reason is missing gets re-litigated in the next product.
+The frame is also where products diverge most when nothing is written down: a
+private DOM id per product for putting controls in the shell, breadcrumbs that
+render as inert text, two trails on one route, a back button beside the trail,
+and CSS that reaches into the shell's internal markup. This page is the written
+decision. Every heading is a ruling with the reason attached, because a rule
+whose reason is missing gets re-litigated in the next product.
 
 ::: tip This page is rules, not mechanics
 How the regions render, every prop, every token and every edge case lives in
@@ -41,11 +26,9 @@ Read those for the API. Read this for what belongs where and why.
 
 ## The frame is not the console look
 
-Two of the twelve are graphical: a digital audio workstation and a 3D editor.
-Neither looks anything like a console, and neither should. What they still owe
-the user is the same three answers, and they are the two applications that
-answer none of them: one switches five sibling views with unlabelled topbar
-buttons, the other has a project name and nothing else.
+A graphical application, such as a digital audio workstation or a 3D editor,
+looks nothing like a console, and should not. It still owes the user the same
+three answers: which document is open, which view this is, and how to get back.
 
 So read every rule below as being about **mechanics**, not appearance. A rack of
 knobs is app domain and stays app domain. "Which document am I editing, and how
@@ -55,7 +38,7 @@ makes the same rules land in a canvas.
 
 ## When the pattern applies, and when it does not
 
-This page rules on **any product that mounts `NbShell`**, which is all twelve.
+This page rules on **any product that mounts `NbShell`**.
 Three carve-outs, so nobody applies a rule where it does harm:
 
 | Situation                                                                               | What still applies                                                                 | What does not                                                                                                  |
@@ -64,7 +47,7 @@ Three carve-outs, so nobody applies a rule where it does harm:
 | **A full-page task** taken over the frame: sign-in, an onboarding wizard, a print route | Nothing. Mount the page without `NbShell`                                          | All of it. A task with one way out does not need a frame that offers six                                       |
 | **A view embedded in someone else's page**: an iframe widget, a docs preview            | Nothing                                                                            | `useShellSlot` is inert outside a shell by design, so an embedded view needs no branch                         |
 
-Not a carve-out, and worth stating because two products treated it as one: a
+Not a carve-out, and worth stating because it is easy to treat as one: a
 product that looks nothing like a console (a DAW, a 3D editor) is **inside** the
 pattern. See [Applications with no router](#applications-with-no-router).
 
@@ -136,24 +119,23 @@ and becomes a full-screen sheet; everything else keeps its place.
 **The thirteenth slot: `menubar`.** `NbShell` also renders a `menubar` slot
 inside the body, below `notification` and above the topbar. It predates
 `outer-menu` and `inner-menu`, it is not in `TShellSlotName`, and no view can
-contribute to it. **Rule.** Do not pass it in new work. Two products still do;
-both want `inner-menu` (a bar over the body and inspector) or `outer-menu` (a bar
-spanning the rail too). It stays rendered so those two keep working, and it is
-the one region on this page with no rule about what it holds, because the answer
-is "nothing new".
+contribute to it. **Rule.** Do not pass it in new work. Use `inner-menu` (a bar
+over the body and inspector) or `outer-menu` (a bar spanning the rail too). It
+stays rendered for compatibility, and it is the one region on this page with no
+rule about what it holds, because the answer is "nothing new".
 
-Two consequences worth stating outright, because both shipped:
+Two consequences worth stating outright:
 
 ::: danger Never these
 
 - **Never two navigation surfaces for the same thing.** A rail plus a
   topbar-left menu of the same destinations means every user learns both and
-  trusts neither. One of our products renders route-meta breadcrumbs correctly
-  and then renders a second trail into the right slot on three routes.
+  trusts neither. The same goes for a second breadcrumb trail rendered into
+  `topbar-right` beside the route-meta trail in `topbar-left`.
 - **Never reach into the frame with a selector.** `:deep(.nb-shell__topbar)`,
   an unscoped `.nb-shell` restyle, or a doubled class to beat a scoped rule in
   the built stylesheet, are all the same bug: a product coupled to our internal
-  markup. There is a prop or a token for every case we found. See
+  markup. There is a prop or a token for every legitimate case. See
   [Theming the frame](#theming-the-frame-without-selectors).
 
 :::
@@ -199,7 +181,7 @@ body, the pinned `bottom` region and the inspector column.
 </preview>
 
 Then the three strips that sit above the topbar, which most products never use
-and two of them use for the wrong thing. `outer-menu` spans the rail and the
+and which are easy to use for the wrong thing. `outer-menu` spans the rail and the
 inspector; `inner-menu` spans the body and the inspector but not the rail;
 `notification` is inside the body, above the topbar, and holds a `flush` banner
 about the account:
@@ -260,7 +242,7 @@ position. It also means there is exactly one place a long page can grow.
 | The rail (`sidebar-nav`)                   | Internally, when the destinations overflow. The logo and the account corner stay pinned       |
 | The inspector                              | Independently of the page, inside an `NbShellPanel` marked `fill`                             |
 
-**Two things a product must never do**, both of which shipped:
+**Two things a product must never do**:
 
 - **Never make `body` or `html` the scroller.** A page that sets `height: auto`
   on the frame or scrolls the document scrolls the chrome out of view, and then
@@ -280,8 +262,8 @@ nothing above it scrolls either. See
 ## Choosing the frame's shape
 
 Four props decide what the frame looks like before a single view renders. All
-four have defaults that are right for a console, which is why three of them were
-being set by copy-paste rather than by decision. Here is the decision.
+four have defaults that are right for a console, so they are easy to copy from
+another product instead of deciding. Here is the decision.
 
 ### `sidebar-variant`: `compact` (default) or `verbose`
 
@@ -296,9 +278,7 @@ being set by copy-paste rather than by decision. Here is the decision.
 Both variants render groups and nested items; they differ in how. In `compact`,
 an `NbSidebarMenuGroup` becomes a divider whose label is announced to assistive
 technology, and a nested `NbSidebarMenuItem` shows its children in a flyout
-beside the rail. (This page used to say groups and nested items existed only in
-`verbose`. The components have supported both for some time; the page had not
-caught up.) [The flyout](#collapsed-sub-items-and-the-flyout) below covers how
+beside the rail. [The flyout](#collapsed-sub-items-and-the-flyout) below covers how
 it opens by pointer, touch and keyboard.
 
 The tie-break, when it is genuinely eight or nine: **do the labels repeat?** A
@@ -312,9 +292,9 @@ and is for a user preference, never for a route.
 ### Expanding and collapsing the rail
 
 **Scope.** The rail rules below (collapse, flyouts, the account row) are for
-web products that navigate through `NbShell`'s sidebar. Stagewright is a desktop
-application with its own window chrome and does not use this rail, so none of
-them apply to it; do not retrofit them there.
+web products that navigate through `NbShell`'s sidebar. A desktop application
+with its own window chrome does not use this rail, so none of them apply to it.
+Do not retrofit them there.
 
 **Rule.** A product whose destinations suit `verbose` offers the person a way to
 collapse it, and that choice is a **preference that persists**, never a function
@@ -342,8 +322,8 @@ const nav = useSidebarVariant({ storageKey: 'product.sidebar' })
 **One element per destination, in both variants.** `NbSidebarMenuItem` already
 renders as a labelled row when expanded and as an icon when collapsed. Do not
 keep a second, icon-only set of `NbSidebarLink`s for the collapsed rail beside a
-set of menu items for the expanded one: the audit found exactly that, and the
-two sets drift apart one edit at a time.
+set of menu items for the expanded one. The two sets drift apart one edit at a
+time.
 
 **Never per route.** Deriving the variant from where someone is means the rail
 changes shape as they move, with nothing they did to cause it, and it undoes a
@@ -425,8 +405,8 @@ the inspector becomes a sheet.
 
 - **`auto`** unless you can state which of the other two you need. The bar
   appears when `topbar-left` or `topbar-right` has content or a view has claimed
-  one of them, and it is absent from the DOM otherwise. This is the setting that
-  makes four products' empty-strip CSS deletable.
+  one of them, and it is absent from the DOM otherwise. An application never
+  needs CSS to hide an empty strip.
 - **`always`** when something outside the shell is positioned against the bar's
   height or its bottom border, and would jump on the routes that fill neither
   half. It is also the exact pre-`auto` behaviour, so it is the one-line fix for
@@ -456,7 +436,7 @@ prop:
           <p class="afx-note" style="margin: 0">The body starts at the top of the frame. There is no bar and no border line, because there is nothing to put in one.</p>
         </NbShell>
       </div>
-      <p class="afx-note">Absent from the DOM, not hidden. This is the setting that makes four products' empty-strip CSS deletable.</p>
+      <p class="afx-note">Absent from the DOM, not hidden. An application never needs CSS to hide an empty strip.</p>
     </div>
     <div class="afx-half afx-half--neutral">
       <p class="afx-label">topbar="always"</p>
@@ -474,7 +454,7 @@ prop:
 ### Order inside `topbar-right`
 
 The region takes whatever a view gives it, so without a rule a five-icon topbar
-is five products' worth of taste. **Rule.** Left to right:
+is ordered by whoever added the last icon. **Rule.** Left to right:
 
 | #   | Slot                                                                     | Why there                                                                                                                                           |
 | --- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -500,8 +480,7 @@ frame scope.
 gets back. It never queries the DOM, never teleports to a selector, and the
 layout never declares an empty `<div id="...">` for it to find.
 
-Here is the shape we found, and the shape that replaces it. Both are real: the
-left-hand one is condensed from tally and openbridge, which differ only in the id.
+Here is the id convention, and the shape that replaces it.
 
 ::: danger Wrong: an id the layout declares and the view hunts for
 
@@ -648,20 +627,20 @@ so the running one above is the same setup body with a render function instead
 of a template: `h(crumbs.Outlet, …)` is the outlet `<component :is="…">`
 resolves to, and nothing else about it differs.
 
-**Why.** The id convention looks harmless and fails in three ways we have shipped:
+**Why.** The id convention looks harmless and fails in three ways:
 
 1. **Timing.** A child's `onMounted` runs before its ancestors'. A view that
    queries for a shell element on mount is looking too early, which is why one
    product patched it with a `setTimeout`. `useShellSlot` hands back a reactive
    `target`, so there is nothing to time.
 2. **Ordering.** During a route transition both views hold the region. The id
-   convention resolves that by mount order, which is why tally's `/horas` shows
-   the topbar of whichever of `HoursView` and `HoursMatrix` mounted last. The
+   convention resolves that by mount order, so a route whose view and nested
+   child both teleport to one id shows the topbar of whichever mounted last. The
    composable's default `claim: 'last'` gives the region to the arriving view on
    the same tick, and gives it back when a nested contributor unmounts.
 3. **Existence.** An id target has to be declared whether or not anything uses
-   it, which is exactly why four applications ended up with an empty 50px strip
-   they then hid with CSS. A contribution _creates_ the region and removes it
+   it, which leaves an empty strip on every route that does not use it, hidden
+   with CSS. A contribution _creates_ the region and removes it
    again, so `topbar="auto"` (the default) is enough.
 
 **The one legitimate exception is not an exception.** If two contributions
@@ -712,9 +691,9 @@ and is not a link. Never zero, never two. The flat-product carve-out is
 </template>
 ```
 
-Derive `crumbs` from route meta rather than from a per-view call. Two of our
-products already do, and they are the two whose trail is correct on every route
-including a hard refresh into a deep link:
+Derive `crumbs` from route meta rather than from a per-view call. A trail built
+from route meta is correct on every route, including a hard refresh into a deep
+link:
 
 ```ts
 // routes.ts
@@ -724,12 +703,12 @@ including a hard refresh into a deep link:
 
 Whether the trail element itself lives in the layout's `#topbar-left` slot or is
 contributed by the view with `useShellSlot('topbar-left')` is a product
-decision, and both are legal. What is not legal is doing both, which is how two
-products came to render two trails.
+decision, and both are legal. What is not legal is doing both, because that renders
+two trails.
 
-Two trails and one trail, in two real frames. The left-hand one is the shape two
-products ship: a correct trail in `topbar-left`, and a second one rendered into
-`topbar-right` on some routes.
+Two trails and one trail, in two real frames. The left-hand one is the mistake:
+a correct trail in `topbar-left`, and a second one rendered into `topbar-right`
+on some routes.
 
 <preview dir="col">
   <div class="afx-pair afx-pair--stack">
@@ -786,8 +765,6 @@ work instead.
 the rail already shows with `aria-current`, it repeats what the `<h1>` already
 says, and it teaches the user that the trail is decorative, which is exactly the
 lesson that makes them stop reading it in the product where it is load-bearing.
-Two of our applications have a genuinely flat shape and one of them renders a
-one-crumb trail on all six of its routes.
 
 The line is **depth, not size**. A twelve-destination product where nothing
 drills in is flat. A three-destination product where one of them opens a record
@@ -815,9 +792,9 @@ states, three rulings.
   navigation flickers its own furniture, and for the two or three seconds a slow
   fetch takes, the user has no way back from a page that is not there yet. The
   parents are known from the route; render them.
-- **A failed fetch does not change where the user is.** Four applications drop
-  the trail into an error branch, which removes the one control that would let
-  the user leave. The trail is the frame; the error is the page.
+- **A failed fetch does not change where the user is.** Do not drop the trail
+  into an error branch: that removes the one control that would let the user
+  leave. The trail is the frame. The error is the page.
 - **The last crumb is derived from the route, not from the response**, wherever
   it can be. `meta.crumb` gives you a label with no request. Only a crumb whose
   label genuinely comes from the record (a device name, a document title) needs a
@@ -839,13 +816,12 @@ states, three rulings.
 
 `NbBreadcrumbs` takes `title` and `subtitle` for the brand prefix and renders
 whatever you put in its default slot as the crumbs. It does not decide what a
-crumb is, which means it will happily render inert text, and two products let it:
+crumb is, which means it will happily render inert text. Two misuses follow:
 
-- One renders every crumb as a `<span>`. From `/properties/:id/tasks` there is
+- Every crumb rendered as a `<span>`. From `/properties/:id/tasks` there is then
   no in-app way back to `/properties`.
-- One passes only `title` and `subtitle` at all six of its call sites, so the
-  component is being used as a page label. It is the same product that then
-  needed a `router.back()` button on one page.
+- Only `title` and `subtitle` passed, so the component is a page label. A
+  product that does this soon needs a `router.back()` button as well.
 
 A trail whose crumbs do not navigate is decoration. If your crumbs are not
 links, you do not have a trail, you have a heading with chevrons in it, and the
@@ -991,13 +967,12 @@ not at the top of a detail page.
    (`router.back()` versus a hard-coded parent route) makes two controls that
    look identical and are not.
 3. **It hides depth.** "Back" cannot say where back is. Three levels deep, a
-   trail shows all three and lets the user jump two of them at once. Our audit
-   found exactly this: the one product with a back button on its only drill-down
-   also loses the search, sort and page state the URL was holding, because
-   "back" was implemented as a link to the listing root.
-4. **It is the symptom, not the cure.** Every back button we found sits in a
-   product whose trail is decorative. Fix the trail and the button has nothing
-   left to do.
+   trail shows all three and lets the user jump two of them at once. A "back"
+   implemented as a link to the listing root also loses the search, sort and
+   page state the URL was holding.
+4. **It is the symptom, not the cure.** A back button is usually compensating
+   for a trail that is decorative. Fix the trail and the button has nothing left
+   to do.
 
 The narrow thing that is **not** a back button and remains correct: a full-page
 task (a wizard, a checkout, an import) may offer **Cancel**, and a multi-step
@@ -1055,8 +1030,8 @@ renderings of the same fact and must agree.
   and heading-semantics rules that go with that are in
   [Accessibility](#accessibility), which is where all of them live.
 - `<main>` contains **exactly one `<h1>`**, and it is the same string as the last
-  crumb. Two of our products render a page title in the topbar and again at the
-  top of the body, in different words.
+  crumb. A page title in the topbar and a different one at the top of the body
+  make the page look doubled.
 - **The document title follows the trail**, in the same order the trail reads,
   narrowest first: `Rack 4 · Devices · Openbridge`. It is the tab, the history
   entry and the bookmark, all of which are places the frame is not visible.
@@ -1165,13 +1140,12 @@ next product that hits it.
 **Sign-out lives in that menu and nowhere else.** `NbSidebarLink` has a `danger`
 prop and it is tempting to spend it on a sign-out rail icon. Do not: an
 irreversible session action one mis-click from the navigation is the same class
-of mistake as the unguarded destructive actions the audit counted sixteen of.
+of mistake as an unguarded destructive action.
 
 ## Where notifications land
 
-Three destinations, three scopes, no overlap. Getting this wrong is what made
-three products hand-build a notification bell (312, 343 and 308 lines) and three
-more hand-build a toast host.
+Three destinations, three scopes, no overlap. Each has a component, so no
+product builds its own notification bell or toast host.
 
 | The message is about                                   | Where it goes                                | Component                                                               |
 | ------------------------------------------------------ | -------------------------------------------- | ----------------------------------------------------------------------- |
@@ -1233,13 +1207,12 @@ rules on top of it are these:
   region degraded, a payment method about to lapse. Use
   `variant="callout"` when the message cannot be dismissed truthfully, because
   dismissing it would not make it untrue. A "Saved" banner in this region
-  outlives the save, which is why one product put its own six second timer
-  around it.
+  outlives the save, and a timer around it is a toast built by hand.
 - **The bell is a log, not an alert.** `NbNotificationCenter` in `topbar-right`,
   `align="end"`. Its rows are things that already happened. If the user must act
   now, that is a toast with an action or a banner, not a number on a bell.
-- **`window.alert` is not a notification surface.** One product surfaces
-  exception failures through 21 of them.
+- **`window.alert` is not a notification surface.** It blocks the page, cannot
+  be styled or translated by the frame, and carries no severity.
 
 ## One inspector, and where it sits
 
@@ -1259,12 +1232,11 @@ properties of the current selection, and its visibility belongs to the shell.
 ```
 
 - **Views contribute to it** with `useShellSlot('inspector')`, exactly as they
-  contribute to the topbar. One product invented `#verba-inspector` for this.
+  contribute to the topbar. Never a private DOM id for the inspector.
 - **Sections are `NbShellPanel`s**, not hand-rolled headers. Use `fill` for the
   one panel that should take the leftover height and scroll internally, `fluid`
-  for panels that should be only as tall as their content. Two products
-  re-declared `flex: 1 1 auto; min-height: 0` on our internal class names in six
-  places before that prop existed.
+  for panels that should be only as tall as their content. Never re-declare
+  `flex` or `min-height` on the panel's internal class names.
 - **Never a second drawer.** A product that needs a second surface for a second
   kind of detail needs tabs inside the one inspector, or the `bottom` region if
   the content is long rather than deep.
@@ -1294,8 +1266,7 @@ product's conformance, not just a control.
 ## Accessibility
 
 The frame is the part of the product a keyboard user meets first on every page
-load and a screen reader user meets first on every navigation. It is also the
-part that twelve products each got partly right. This section is the whole
+load and a screen reader user meets first on every navigation. This section is the whole
 contract; nothing about frame accessibility is stated anywhere else on this page.
 
 `NbShell` implements all of it except where a rule says "the product". Component
@@ -1360,8 +1331,7 @@ Three consequences a product has to live with:
 
 ### Focus when the frame navigates
 
-This is the rule with the most missing implementations across the fleet: **not
-one of the twelve moves focus on navigation.** A keyboard user who activates a
+This is the rule most often left unimplemented. A keyboard user who activates a
 crumb or a rail item lands with focus still on the control they left, in the old
 frame, and has to tab past the whole frame to reach the page they asked for. A
 screen reader user is told nothing happened at all.
@@ -1394,7 +1364,7 @@ this purpose and is the same target the skip link uses. The next Tab is therefor
 the first control **in the page**, and a screen reader announces the new page
 rather than staying silent.
 
-Four sub-rules, each answering a case we found:
+Four sub-rules:
 
 1. **Applies to the trail, the rail and the drawer alike.** Any activation that
    changes what `<main>` contains.
@@ -1424,10 +1394,9 @@ rest of this page depends on it being the only answer.
 **Rules for the product, given that.**
 
 - **Every crumb but the last is a real link or a real `<button>`.** The component
-  renders whatever you hand it, including inert `<span>`s, and one product hands
-  it exactly that. A `<span>` is not focusable, is not announced as actionable,
-  and is not reachable at all by keyboard. This is the single most consequential
-  accessibility defect the audit found in the frame.
+  renders whatever you hand it, including inert `<span>`s. A `<span>` is not focusable, is not announced as
+  actionable, and is not reachable at all by keyboard, so a trail of them leaves
+  a keyboard user no way up the hierarchy.
 - **The last crumb carries `aria-current="page"`** and is not a link. That is
   what tells a screen reader which of the crumbs is the destination, and with no
   list semantics it is the only positional information present.
@@ -1488,8 +1457,7 @@ below the floor).
 
 **Product rules.** Do not re-bind these keys from a parent while focus is in the
 handle. Do not render the handle without `resizable`, and do not build your own:
-a `<div>` with a `pointerdown` handler is a resize that no keyboard can reach,
-which is what two products shipped before the prop existed. Below `collapse-at`
+a `<div>` with a `pointerdown` handler is a resize that no keyboard can reach. Below `collapse-at`
 the handle is not rendered at all, because the inspector is an overlay there and
 its width is the window's, which is the honest answer rather than a control that
 does nothing.
@@ -1567,9 +1535,9 @@ set for both. See [Colour contrast](/accessibility/color-contrast).
 
 ## Applications with no router
 
-Two of the twelve are graphical and have no router, and the audit's verdict is
-worth quoting exactly: having no depth to represent is **fine**; having no
-answer to "where am I" is **not**, and that is a different question.
+A graphical application often has no router. Having no depth to represent is
+**fine**. Having no answer to "where am I" is **not**, and that is a different
+question.
 
 A router is a way to name a location. It is not the only way. What the frame
 actually requires is four properties, and a canvas application can have all four
@@ -1672,11 +1640,11 @@ is not here: a back button. A routerless application has **no history at all**,
 so a control labelled "Back" there is not merely ambiguous, it is describing
 something that does not exist.
 
-Two more rules specific to this shape, both from real code:
+Two more rules specific to this shape:
 
-- **A canvas is `:main-padding="false"`, not a `:deep()` override.** One product's
-  only `:deep()` in its entire codebase hides `.nb-shell__topbar`. It is
-  load-bearing and it will break. `topbar="never"` is the supported way to have
+- **A canvas is `:main-padding="false"`, not a `:deep()` override.** A `:deep()`
+  rule that hides `.nb-shell__topbar` depends on internal markup and breaks
+  when that markup changes. `topbar="never"` is the supported way to have
   no topbar, and `topbar="auto"` (the default) means an empty one is never
   rendered in the first place.
 - **Sibling views switched by topbar buttons are still places.** Five unlabelled
@@ -1687,8 +1655,8 @@ Two more rules specific to this shape, both from real code:
 
 ## Theming the frame without selectors
 
-Four products restyle the frame from outside. Every **colour** case we found is
-a token declared once at `:root`, so an application overrides it there without
+Do not restyle the frame from outside. Every **colour** in it is a token
+declared once at `:root`, so an application overrides it there without
 competing with our scoped styles.
 
 ```scss
