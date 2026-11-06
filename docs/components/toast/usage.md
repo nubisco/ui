@@ -110,7 +110,7 @@ The words are covered once, in [Writing style](/content/writing-style). Three th
 
 - Past tense, no full stop: "Draft saved", not "Your draft has been saved.".
 - The `title` carries what went wrong and the `message` carries the recovery: `toast.error('Could not reach the server', { title: 'Save failed' })`.
-- The action is a verb from the shared register (`Retry`, `Reload`, `Undo`), never `OK`, `Done`, `Close` or `Dismiss`. The close button is the exit; a second control that also means "go away" is a coin toss for anyone reading the stack through a screen reader.
+- The action is a verb from the [shared register](/content/action-labels) (`Try again`, `Refresh`, `Undo`), never `OK`, `Done`, `Close` or `Dismiss`. The close button is the exit; a second control that also means "go away" is a coin toss for anyone reading the stack through a screen reader.
 
 ## Severity is in words, not only in colour
 

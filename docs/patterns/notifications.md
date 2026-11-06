@@ -445,8 +445,8 @@ yourself and never build a host: see
 
 **It must contain** a past-tense sentence with no full stop ("Draft saved"), the
 right `variant`, and, if it carries one, exactly one action whose label is a
-verb (`Retry`, `Undo`, `Reload`,
-never `OK` or `Dismiss`). The close button is the exit; a second control meaning
+verb from [Action labels](/content/action-labels) (`Try again`, `Undo`,
+`Refresh`, never `OK` or `Dismiss`). The close button is the exit; a second control meaning
 "go away" is a coin toss for anyone reading the stack through a screen reader.
 
 Two mechanics worth knowing before you reach for a second toast:
@@ -890,7 +890,7 @@ More in [Accessibility overview](/accessibility/overview) and
 ## The words
 
 Message copy is decided once, in [Writing style](/content/writing-style), and
-action labels once, in [Writing style](/content/writing-style). Read the
+action labels once, in [Action labels](/content/action-labels). Read the
 [error construction rule](/content/writing-style#the-three-parts) there rather
 than inventing a sentence shape per product; it is the same three parts (what
 happened, why, what to do) on every surface on this page.
@@ -900,7 +900,7 @@ Three things are peculiar to a message that removes itself:
 - **Past tense, no full stop**: "Draft saved", not "Your draft has been saved.".
 - **Split failure and recovery** across `title` and `message`:
   `toast.error('Could not reach the server', { title: 'Save failed' })`.
-- **One verb, from the register.** `Retry`, `Reload`, `Undo`. Never `OK`,
+- **One verb, from the [register](/content/action-labels).** `Try again`, `Refresh`, `Undo`. Never `OK`,
   `Done`, `Close` or `Dismiss`.
 
 ---

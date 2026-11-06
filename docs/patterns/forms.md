@@ -973,7 +973,7 @@ three of them get skipped.
 | State       | What renders                                                                   |
 | ----------- | ------------------------------------------------------------------------------ |
 | **Loading** | `NbSkeleton` placeholders in the shape of the fields, inside the form's frame  |
-| **Failed**  | An `NbBanner` with `status="error"` and a Retry action, no fields              |
+| **Failed**  | An `NbBanner` with `status="error"` and a Try again action, no fields          |
 | **Ready**   | The form, populated, with focus placed as described below                      |
 | **Empty**   | Only for a form over a list (no members yet): `NbEmptyState`, not a blank body |
 

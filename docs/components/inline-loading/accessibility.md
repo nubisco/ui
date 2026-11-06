@@ -23,7 +23,7 @@ pageTabs: ['usage', 'code', 'accessibility']
   translatable, selectable and reachable by a screen reader's virtual cursor.
 - Anything placed in the default slot renders inside that same live region and
   is announced with the state. That is the reason for the one-action rule: a
-  `Retry` button is useful in an announcement, three sentences of advice are
+  `Try again` button is useful in an announcement, three sentences of advice are
   not.
 - Nothing here depends on colour. `--nb-c-success` and `--nb-c-danger` reinforce
   a mark and a sentence that already say the same thing, which is also why

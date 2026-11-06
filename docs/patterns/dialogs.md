@@ -458,7 +458,7 @@ The reason is mechanical rather than aesthetic. A screen reader user can pull a
 list of the page's actions, where each label appears with no sentence around it.
 `Yes`, `No`, `Cancel` conveys nothing at all. `Delete environment`, `Cancel`
 conveys the entire dialog. The full register of verbs and what each one promises
-is the verb itself; use it,
+lives in [Action labels](/content/action-labels#the-verb-precisely); use it,
 because "Remove" and "Delete" mean different things and the fleet uses them
 interchangeably.
 

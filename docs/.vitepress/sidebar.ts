@@ -209,6 +209,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Keyboard interaction', link: '/accessibility/keyboard' },
       { text: 'Colour and contrast', link: '/accessibility/color-contrast' },
       { text: 'Writing style', link: '/content/writing-style' },
+      { text: 'Action labels', link: '/content/action-labels' },
       { text: 'Types, Interfaces & Enums', link: '/conventions/types' },
     ],
   },
