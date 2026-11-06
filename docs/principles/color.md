@@ -11,7 +11,7 @@ A **ramp** is a named hue with seventeen tints: `--nb-c-grape-hyacinth-500` is a
 Application code and component code name roles. Only `src/styles/_theme.scss` names ramps.
 
 ::: danger This is the rule the audit found broken
-A white-label white-label product inherited a violet placeholder series in its charts, because `Charts/shared/palette.ts` listed eight ramp names and a comment claiming brand overrides propagated. They did not: the product did not own those ramps, so it hardcoded hex per chart and now no library upgrade can recolour it. Separately, the ghost button bound its hover border to `--nb-c-grape-hyacinth-200`, so a rebranded product had to name the vendor's brand colour in its own stylesheet to stop purple leaking on hover.
+A white-label product inherited a violet placeholder series in its charts, because `Charts/shared/palette.ts` listed eight ramp names and a comment claiming brand overrides propagated. They did not: the product did not own those ramps, so it hardcoded hex per chart and now no library upgrade can recolour it. Separately, the ghost button bound its hover border to `--nb-c-grape-hyacinth-200`, so a rebranded product had to name the vendor's brand colour in its own stylesheet to stop purple leaking on hover.
 
 Both now go through roles (`--nb-c-chart-1` through `-8`, and `--nb-c-primary-subtle`). The rule exists so the next one does not happen.
 :::
@@ -90,7 +90,7 @@ These are **fills**: colours you set a background to, with the matching `-a11y` 
 ::: danger A fill is not an ink
 `--nb-c-warning` measures **2.06 : 1** against layer 1 in the light theme. As a background under `--nb-c-warning-a11y` it is fine. As a text colour it is illegible, and as a 1px outline it fails WCAG 1.4.11.
 
-This is not hypothetical. `NbBadge`'s `orange` variant paints `color: var(--nb-c-warning)` on a 12% tint of the same colour, which measures **1.88 : 1** in light. `green` measures 2.79, `red` 3.84, `blue` 4.45. Only `primary` (6.01) and `grey` (8.86) clear AA. Treat that component's colour variants as a known defect rather than a pattern to copy: for coloured text on a surface use `--nb-c-status-*`, and for a filled block use a status surface pair.
+This is not hypothetical. `NbBadge`'s old `orange` variant painted `color: var(--nb-c-warning)` on a 12% tint of the same colour, which measured **1.88 : 1** in light. `green` measured 2.79, `red` 3.84, `blue` 4.45. The fix was the rule above: the badge now takes intents (`neutral`, `info`, `success`, `warning`, `danger`, `primary`) that paint the status surface pairs, 8.04 : 1 or better in light, and the colour names are deprecated aliases of them. For coloured text on a surface use `--nb-c-status-*` or `--nb-c-text-error`, and for a filled block use a status surface pair.
 :::
 
 ### Status: grounds, inks and glyphs
@@ -140,13 +140,26 @@ Neutral colours for controls that are not carrying intent.
 
 Chart colour has its own rules (how many series colour can carry, what the measured separations are under colour-vision deficiency). Read [Charts, Colour](/components/charts/color/usage) before assigning a series a colour.
 
+### Roles added after 5.47
+
+These were gaps through 5.47 and are now roles, each measured on every ground it can land on:
+
+| Role                                                                                        | What it is                                                                                     |
+| ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `--nb-c-surface-selected`, `-selected-hover`, `-active`, `-accent`, `-accent-hover`         | State and supporting surfaces, per plane. See [The per-plane set](/theming#the-per-plane-set). |
+| `--nb-c-border-strong`                                                                      | A structural edge, 3:1 on its plane                                                            |
+| `--nb-c-field-bg`, `--nb-c-field-border`                                                    | Now per plane: a field on plane N takes the next plane's fill                                  |
+| `--nb-c-text-placeholder`, `--nb-c-text-error`, `--nb-c-icon`                               | Text roles beyond the three tiers                                                              |
+| `--nb-c-link`, `-hover`, `-visited`                                                         | The primary drawn as ink, AA on every layer and hover                                          |
+| `--nb-c-status-info`, `--nb-c-status-neutral`                                               | The glyph tier's missing two, 3:1 on every layer, measured on dark layer 3                     |
+| `--nb-c-bg-inverse`, `--nb-c-text-inverse`, `--nb-c-border-inverse`, `--nb-c-focus-inverse` | An inverted chip (the tooltip reads these)                                                     |
+
 ### Roles that do not exist yet
 
 Say so rather than invent one. These are real gaps as of today:
 
-- **No `--nb-c-status-info` or `--nb-c-status-neutral`.** The glyph tier covers valid, warning and error only. An informational glyph on a surface has to borrow `--nb-c-info`, which measures 5.25 : 1 on layer 1 in light but **4.42** in dark, so it is fine for a 24px icon and marginal for small text.
-- **No `--nb-c-primary-surface` / `--nb-c-on-primary-surface`.** There is a full ground-and-ink pair for the four statuses and for neutral, but not for the brand. `NbBadge` hand-mixes `color-mix(in srgb, var(--nb-c-primary) 12%, var(--nb-c-surface))` because of it.
-- **No selection role.** Selected rows and selected calendar days each solve it locally from `--nb-c-primary`.
+- **No `--nb-c-primary-surface` / `--nb-c-on-primary-surface`.** There is a full ground-and-ink pair for the four statuses and for neutral, but not for the brand. The `primary` badge is the filled accent because of it.
+- **No component colour tier.** A product that wants to recolour one component without moving a role has no token for it.
 
 ## Choosing a colour for a new surface
 
@@ -236,26 +249,26 @@ Use an `-a11y` token **only as the foreground of the role it is named after, at 
 
 The second snippet renders white text on a near-white surface in the light theme. The token is not "a colour that is accessible", it is "the colour that is accessible **on primary**".
 
-### Where it currently breaks
+### Where it is measured
 
-The generator picks the better of black and white. Better is not the same as sufficient. Every pair below is measured off the compiled theme; the failures are all in the dark theme, because `.dark` re-points the fills to lighter tints without re-computing every ink.
+The generator picks the better of black and white. Better is not the same as sufficient, so every pair below is measured off the compiled theme, and the button fills are held to AA by `tests/inkContrast.test.ts`. The dark theme re-points the fills to lighter tints and re-computes each ink with them.
 
 | Pair                        |     Light |               Dark | Painted by                                        |
 | --------------------------- | --------: | -----------------: | ------------------------------------------------- |
 | `primary` / `-a11y`         |  7.60 : 1 |           4.71 : 1 | Button, Badge, DataTable, DatePicker, StepperStep |
-| `primary-hover` / `-a11y`   |  9.70 : 1 | **3.76 : 1 fails** | Button, hover and focus outline                   |
-| `primary-active` / `-a11y`  | 12.67 : 1 | **3.01 : 1 fails** | Button, active                                    |
+| `primary-hover` / `-a11y`   |  9.70 : 1 |           5.06 : 1 | Button, hover and focus outline                   |
+| `primary-active` / `-a11y`  | 12.67 : 1 |           6.31 : 1 | Button, active                                    |
 | `secondary` / `-a11y`       |  8.52 : 1 |           8.86 : 1 | Button                                            |
 | `success` / `-a11y`         |  5.76 : 1 |           8.86 : 1 | Button                                            |
-| `info` / `-a11y`            |  5.48 : 1 | **3.74 : 1 fails** | Button                                            |
+| `info` / `-a11y`            |  5.48 : 1 |           5.09 : 1 | Button                                            |
 | `warning` / `-a11y`         |  8.86 : 1 |          10.25 : 1 | Button                                            |
-| `danger` / `-a11y`          |  4.83 : 1 | **3.82 : 1 fails** | Button, NotificationCenter                        |
+| `danger` / `-a11y`          |  4.83 : 1 |           4.98 : 1 | Button, NotificationCenter                        |
 | `component-plain` / `-a11y` |  4.83 : 1 | **2.97 : 1 fails** | nothing today                                     |
 | `discrete` / `-a11y`        | 11.64 : 1 | **2.15 : 1 fails** | nothing today                                     |
 | `text-subtle` / `-a11y`     |  7.47 : 1 | **2.38 : 1 fails** | nothing today                                     |
 
 ::: warning What to do about it today
-Four of those failures are live: they are what a dark-theme user sees on a hovered primary button, an info button and a danger button. Until the theme re-computes the missing inks, do not add new call sites for `--nb-c-*-hover-a11y` or `--nb-c-*-active-a11y`, and if you need a guaranteed-legible foreground on a coloured ground, use a status surface pair (`--nb-c-danger-surface` with `--nb-c-on-danger-surface`, 10.28 : 1) instead of a fill with an ink.
+The three remaining failures (`component-plain`, `discrete` and `text-subtle` in dark) have no call site in the library. Do not add one. If you need a guaranteed-legible foreground on a coloured ground, use a status surface pair (`--nb-c-danger-surface` with `--nb-c-on-danger-surface`, 10.28 : 1) instead of a fill with an ink.
 
 Re-measure any change to the fills with `node scripts/audit-contrast.mjs`.
 :::
@@ -337,7 +350,7 @@ You may also override a role on any ancestor rather than on `:root`. `var()` and
 A rebrand that only sets `--nb-c-primary` leaves vendor colour in five places. Each of these is a real miss the audit found or a direct consequence of the token graph:
 
 1. **The `-a11y` inks.** They are computed against the default fills. Change the fill, and the ink may need to flip. Check both themes with `node scripts/audit-contrast.mjs`.
-2. **`--nb-c-primary-subtle`.** It does not derive from `--nb-c-primary` today, it aliases a ramp tint, so it stays violet unless you set it. That is deliberate (aliasing kept the rendered pixel identical when the leak was fixed) and it is scheduled to become `color-mix(in srgb, var(--nb-c-primary) 39%, var(--nb-c-white))` in the next major.
+2. **`--nb-c-primary-subtle`, `--nb-c-focus-ring`, `--nb-c-selected-edge`, `--nb-c-link`, `--nb-c-focus-inverse`.** All derive from `--nb-c-primary` with `color-mix()`, so they follow it, but only where they are re-declared: on `:root`, in `.dark`, and in a named theme's own scopes. Set the primary on some other ancestor and re-declare these there too (`_accent.scss` explains why a `:root` alias freezes).
 3. **The chart roles.** Eight properties, and they default to the Nubisco ramps. A product whose brand is not violet and does not set `--nb-c-chart-1` gets a violet first series.
 4. **The shell chrome.** `--nb-shell-sidebar-bg` and the sidebar link states are `color-mix()` derivations of `--nb-c-primary`, so they follow a rebrand automatically. Verify rather than assume: a very light brand hue produces a rail that is no longer near-black.
 5. **`--nb-c-secondary`.** It is a grey in both themes on purpose. If your brand has a genuine second colour, it belongs on the chart roles or on a role you introduce, not here. Two saturated buttons in a row is two primaries, whatever they are called.

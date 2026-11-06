@@ -71,13 +71,46 @@ The override is an exception, not an option. If you are reaching for it because
 your category's accent looks wrong on a particular screen, that is a bug in the
 screen, not a reason to fork the colour.
 
-An accent you supply is held to the same bar, and the library cannot test a
-value it never sees, so assert it in your own repo:
+An accent you supply is held to the same bar: 4.5:1 on all four layers of its
+mode. `app-theme()` checks it on every build, and an accent that falls short is
+**repaired**, not shipped. Each half that fails is run through `a11y-color()`
+and moved to the nearest lightness that clears the bar on the worst layer,
+keeping its hue, and the build prints exactly what it did:
+
+```text
+Warning: Accent #f5c400 was 1.34:1 on light surface #e7e8e9, below 4.5:1.
+Repaired to #79661d at 4.59:1 on the worst light surface, same HSL hue.
+Pass that value to silence this.
+```
+
+Paste the repaired value into your call so the warning goes away and the colour
+you ship is the one written in your source.
+
+Some hues cannot be made legible without becoming a different colour: a navy
+lightened far enough to read on a dark layer turns periwinkle. A repair that
+moves the hue more than 12 degrees (OKLCH) or keeps less than 40% of its chroma
+is refused, and the build fails with the measurements, the way it always did.
+Pick a different value for that half.
+
+Repair holds AA, not AAA. An accent at 7:1 would have to sit near L\* 35 in
+light and L\* 80 in dark, and the six categories would stop being
+distinguishable from each other. Text is held to AAA; the accent is not.
+
+`assert-accent-contrast()` is still there for a value you want to check without
+theming anything:
 
 ```scss
 // fails the build if the pair does not clear AA on every surface
 @debug nb.assert-accent-contrast((#0b7285, #41d6e0));
 ```
+
+### `info` is not themed
+
+`app-theme()` moves the primary and everything derived from it. It does not
+move `--nb-c-info`. A blue product therefore gets its own primary next to the
+library's info blue, two unrelated blues on one screen. If that matters, set
+`info` (and its `-hover` and `-active`) in a `theme()` call with the same id,
+and measure it.
 
 ## Why the library holds no product list
 
@@ -121,7 +154,10 @@ These follow the accent too:
 
 - `--nb-c-primary-subtle`
 - `--nb-c-selected-edge`
-- `--nb-c-focus-ring`
+- `--nb-c-focus-ring` (lifted toward white in dark, so it clears 3:1 on every
+  dark layer)
+- `--nb-c-focus-inverse`
+- `--nb-c-link`, `--nb-c-link-hover`, `--nb-c-link-visited`
 - `--nb-shell-sidebar-bg`
 - `--nb-shell-sidebar-link-active-bg`
 - `--nb-shell-sidebar-link-active-color`

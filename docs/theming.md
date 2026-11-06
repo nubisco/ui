@@ -298,6 +298,31 @@ const { theme, resolved, setTheme, toggle } = useTheme()
 Nothing else in the library needs to know: every component paints from the
 tokens below, and those tokens are what the class swaps.
 
+### Zoning: a dark region inside a light page
+
+`.dark` works on any element, not only `<html>`, so a dark rail, a code panel or
+a media viewer can sit inside a light page. There is no `.light` class, so the
+reverse (a light island in a dark page) is not available. The rule for when to
+zone, and how:
+
+- **Zone for a major shift, layer for a minor one.** A region that should read
+  as a different room (a dark editor in a light product) is a zone. A region
+  that is only "one step deeper" is a layer: use `.nb-layer-N` or let nesting
+  decide, never `.dark`.
+- **Put the class on the region's outermost element**, the one that paints its
+  ground, and paint that ground with a layer token (`--nb-c-layer-0` or
+  `--nb-c-surface`), so the zone has an edge.
+- **Every token re-resolves inside the zone.** The `.dark` block re-declares the
+  contextual tokens (surface, border, the per-plane set, the field, the focus
+  ring, the link) as well as the ramp values, because an alias resolved on
+  `:root` would freeze to the light value (`_accent.scss` explains why). A
+  named theme does the same in its own dark scope. If you add a derived token
+  of your own, re-declare it inside `.dark` too.
+- **A tooltip or popover teleported out of the zone takes the page's theme**,
+  not the zone's, because it is no longer inside it. That is usually what you
+  want for a tooltip (it reads `--nb-c-bg-inverse`, which inverts against the
+  page). For a menu that must match the zone, teleport it into the zone.
+
 ## Semantic vs. palette tokens
 
 NubiscoUI separates two layers:
@@ -608,8 +633,8 @@ a descending ramp would have it near L\* 86.
 | 2     | `#e7e8e9` | `#838485` | `#d7d8d9` |
 | 3     | `#f3f4f5` | `#818283` | `#e1e2e3` |
 
-Text `#242526`, muted text `#38393a`, subtle text `#545556`, field background
-`#cacbcc`, field border `#646566`.
+Text `#242526`, muted text `#38393a`, subtle text `#545556`. The field fill
+and rule are per plane, see [The per-plane set](#the-per-plane-set) below.
 
 Two things separate this from a plain alternating set. All four surfaces are
 distinct, worst pair 2.08 dL\*, so nesting past one level still carries a fill
@@ -632,7 +657,8 @@ ground.
 | 2     | `#2d2e2f` | `#595a5b` | `#38393a` |
 | 3     | `#3d3e3f` | `#696a6b` | `#313233` |
 
-Text `#eaebec`, muted text `#d0d1d2`, field background `#141516`, field border `#626364`.
+Text `#eaebec`, muted text `#d0d1d2`, subtle text `#a7a8aa`. Fields are per
+plane, below.
 
 Adjacent separation never decreases with depth in either theme, so nesting reads
 as a position in an order rather than as a set of local boundaries.
@@ -641,6 +667,66 @@ Dark hover reverses direction at layer 3: levels 0 to 2 lighten by about 5.1
 dL\*, level 3 darkens by 5.42. There is no headroom above layer 3, and a hover
 surface lighter than it would push muted text toward white and collapse the gap
 between the two text tiers.
+
+### The per-plane set
+
+`.nb-layer-N` re-points a full set of tokens per plane, the way a Carbon layer
+set does, not only the surface, border and hover. A component asks for "the
+selected surface" or "a field's fill" and gets the value for the plane it is
+sitting on. Every value is explicit hex in `src/styles/variables/_layers.scss`.
+
+| Contextual token                | Per-plane value                   | What it is                                                                        |
+| ------------------------------- | --------------------------------- | --------------------------------------------------------------------------------- |
+| `--nb-c-surface-accent`         | `--nb-c-layer-accent-{N}`         | Supporting ground inside a component: table header, zebra stripe, a chip, a track |
+| `--nb-c-surface-accent-hover`   | `--nb-c-layer-accent-hover-{N}`   | That ground, hovered                                                              |
+| `--nb-c-surface-selected`       | `--nb-c-layer-selected-{N}`       | A selected row or item                                                            |
+| `--nb-c-surface-selected-hover` | `--nb-c-layer-selected-hover-{N}` | Selected and hovered                                                              |
+| `--nb-c-surface-active`         | `--nb-c-layer-active-{N}`         | Pressed                                                                           |
+| `--nb-c-border-strong`          | `--nb-c-layer-border-strong-{N}`  | A structural edge, 3:1 on its plane                                               |
+| `--nb-c-field-bg`               | `--nb-c-layer-field-{N}`          | A field's fill on this plane                                                      |
+| `--nb-c-field-border`           | `--nb-c-layer-field-border-{N}`   | A field's bottom rule on this plane                                               |
+
+**Light**
+
+| Plane | accent    | selected  | active    | border-strong | field     | field rule |
+| ----- | --------- | --------- | --------- | ------------- | --------- | ---------- |
+| 0     | `#d4d5d6` | `#cfd0d1` | `#d3d4d5` | `#818283`     | `#f9fafb` | `#646566`  |
+| 1     | `#dcddde` | `#d6d7d8` | `#d9dadb` | `#898a8b`     | `#f1f2f3` | `#646566`  |
+| 2     | `#d2d3d4` | `#cdcecf` | `#cecfd0` | `#7d7e7f`     | `#f3f4f5` | `#646566`  |
+| 3     | `#dbdcdd` | `#d5d6d7` | `#d8d9da` | `#858687`     | `#e9eaeb` | `#646566`  |
+
+**Dark**
+
+| Plane | accent    | selected  | active    | border-strong | field     | field rule |
+| ----- | --------- | --------- | --------- | ------------- | --------- | ---------- |
+| 0     | `#222324` | `#272829` | `#212223` | `#656667`     | `#1e1f20` | `#818283`  |
+| 1     | `#313233` | `#363738` | `#303132` | `#6f7071`     | `#2d2e2f` | `#818283`  |
+| 2     | `#232425` | `#1f2021` | `#3c3d3e` | `#7d7e7f`     | `#3d3e3f` | `#939495`  |
+| 3     | `#2a2b2c` | `#262728` | `#2a2b2c` | `#8e8f90`     | `#2d2e2f` | `#939495`  |
+
+`accent-hover` and `selected-hover` share their values on every shipped plane,
+so they are left out of the tables; they are separate tokens so a theme can
+split them.
+
+What each value is held to, in both themes, by `tests/layerContrast.test.ts`:
+
+- Text and muted text at AAA, subtle text at AA, on every state surface.
+- Every state surface at least 3 dL\* from its plane and 1.5 from that plane's
+  hover, so a selected row never reads as a hovered one, and `selected` at
+  least 1.5 from `accent`, so a selected zebra row still differs from its
+  stripe.
+- `border-strong` at 3:1 on its own plane (3.31 to 3.35).
+- The field rule at 3:1 against both the fill and the plane.
+
+A field on plane N takes the next plane's fill where there is one, so it
+always has a fill boundary. Light plane 1 keeps its tuned `#f1f2f3`, where most
+fields live. The top plane has nothing above it, so it steps the other way.
+The dark field used to equal layer 1, which made a field inside a dark panel
+1.00:1 against the panel; it is now `#2d2e2f` on `#1e1f20`.
+
+In dark, planes 2 and 3 have no room above them (muted text is at 7.01:1 on
+layer 3 already), so their accent and selected surfaces step down, the same
+reversal hover makes at layer 3.
 
 ### Measured contrast
 
@@ -651,40 +737,42 @@ Every ratio below is WCAG 2.x, measured on the compiled stylesheet by
 plus the field background. `--nb-c-text-subtle` is held to AA on the same nine
 surfaces, for the reason given under Custom Properties below.
 
-Tokens outside the layer ramp (selected, active and accent fills, and the status
-colours) are not covered by these figures or by the guard.
+The per-plane set above is covered by the same guard. The status colours, links
+and text roles are measured by `tests/textRoles.test.ts`, the focus ring by
+`tests/focusRingContrast.test.ts`.
 
 **Light**
 
-| Surface  | Primary text | Muted text |
-| -------- | ------------ | ---------- |
-| layer-0  | 13.22        | 9.96       |
-| layer-1  | 14.69        | 11.07      |
-| layer-2  | 12.52        | 9.43       |
-| layer-3  | 13.94        | 10.51      |
-| hover-0  | 11.29        | 8.51       |
-| hover-1  | 11.95        | 9.01       |
-| hover-2  | 10.76        | 8.11       |
-| hover-3  | 11.84        | 8.92       |
-| field-bg | 10.23        | 7.80       |
+| Surface | Primary text | Muted text |
+| ------- | ------------ | ---------- |
+| layer-0 | 13.22        | 9.96       |
+| layer-1 | 14.69        | 11.07      |
+| layer-2 | 12.52        | 9.43       |
+| layer-3 | 13.94        | 10.51      |
+| hover-0 | 11.29        | 8.51       |
+| hover-1 | 11.95        | 9.01       |
+| hover-2 | 10.76        | 8.11       |
+| hover-3 | 11.84        | 8.92       |
+| field-1 | 13.70        | 10.33      |
 
 **Dark**
 
-| Surface  | Primary text | Muted text |
-| -------- | ------------ | ---------- |
-| layer-0  | 15.96        | 12.46      |
-| layer-1  | 13.83        | 10.80      |
-| layer-2  | 11.40        | 8.90       |
-| layer-3  | 8.98         | 7.01       |
-| hover-0  | 14.45        | 11.28      |
-| hover-1  | 12.05        | 9.40       |
-| hover-2  | 9.70         | 7.57       |
-| hover-3  | 10.76        | 8.40       |
-| field-bg | 15.32        | 11.96      |
+| Surface | Primary text | Muted text |
+| ------- | ------------ | ---------- |
+| layer-0 | 15.96        | 12.46      |
+| layer-1 | 13.83        | 10.80      |
+| layer-2 | 11.40        | 8.90       |
+| layer-3 | 8.98         | 7.01       |
+| hover-0 | 14.45        | 11.28      |
+| hover-1 | 12.05        | 9.40       |
+| hover-2 | 9.70         | 7.57       |
+| hover-3 | 10.76        | 8.40       |
+| field-1 | 11.40        | 8.90       |
 
-Borders read 2.05 to 2.64 against their own surface in light and 1.95 to 1.98 in
-dark; the field border, the one strong-edge role, reads 3.29 (light) and 3.04
-(dark) against the field it encloses.
+Layer borders read 2.15 to 3.50 against their own surface in light and 1.95 to
+1.98 in dark. They are decorative. The structural edges are `border-strong`
+(3.31 to 3.35 on its plane) and the field rule (5.21 light and 3.53 dark on the
+plane-1 fill).
 
 ### Breaking change
 
@@ -713,7 +801,7 @@ hand, and a way to pin the old values if you need more time.
 - **Surfaces were fractional.** The old tint chain emitted
   `rgb(229.5, 229.5, 229.5)`. Every token is now integer-channel hex.
 - **`--nb-c-field-bg` was the same value as layer 0**, so a field on the page
-  had no fill boundary. It is now a distinct value in both themes.
+  had no fill boundary. It is now a distinct value per plane in both themes.
 - **`NbModal` now paints layer 3** rather than layer 1, and a surface nested in
   another surface now deepens instead of matching it. That is the defect being
   fixed, and it is the one difference visible in markup that never used
@@ -814,14 +902,23 @@ Stated plainly, because they are real.
 
 ## Layer-aware tokens
 
-`.nb-layer-{N}`, and every component that resolves a layer, reassign exactly
-these three.
+`.nb-layer-{N}`, and every component that resolves a layer, reassign these.
 
-| Semantic token         | What it controls            |
-| ---------------------- | --------------------------- |
-| `--nb-c-surface`       | the layer's background fill |
-| `--nb-c-border`        | the layer's border colour   |
-| `--nb-c-surface-hover` | the layer's hover fill      |
+| Semantic token                  | What it controls                       |
+| ------------------------------- | -------------------------------------- |
+| `--nb-c-surface`                | the layer's background fill            |
+| `--nb-c-border`                 | the layer's border colour (decorative) |
+| `--nb-c-surface-hover`          | the layer's hover fill                 |
+| `--nb-c-surface-active`         | the layer's pressed fill               |
+| `--nb-c-surface-selected`       | a selected item on the layer           |
+| `--nb-c-surface-selected-hover` | a selected item, hovered               |
+| `--nb-c-surface-accent`         | a supporting ground inside a component |
+| `--nb-c-surface-accent-hover`   | that ground, hovered                   |
+| `--nb-c-border-strong`          | a structural edge, 3:1 on the layer    |
+| `--nb-c-field-bg`               | a field's fill on the layer            |
+| `--nb-c-field-border`           | a field's bottom rule on the layer     |
+
+Values and measurements are under [The per-plane set](#the-per-plane-set).
 
 Text tokens are set once per theme, not per layer. That is the point of the
 ramp: `--nb-c-text` and `--nb-c-text-muted` clear AAA on all four layers, all
@@ -836,16 +933,22 @@ separate tier. That is the usual call for a helper-text tier. Use
 `--nb-c-text-subtle` only for genuinely non-essential text, never for anything
 someone has to read to operate the interface.
 
-Components that tint with `color-mix()` against `var(--nb-c-surface)` (Badge,
-for example) follow the current layer automatically.
+Components that tint with `color-mix()` against `var(--nb-c-surface)` follow
+the current layer automatically, but a mix is not measured. Prefer the
+per-plane tokens above, which are.
 
 ## Tokens
 
-| Token                     | Description                    |
-| ------------------------- | ------------------------------ |
-| `--nb-c-layer-{N}`        | surface background for layer N |
-| `--nb-c-layer-border-{N}` | border colour for layer N      |
-| `--nb-c-layer-hover-{N}`  | hover background for layer N   |
+| Token                     | Description                                                                                                                   |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `--nb-c-layer-{N}`        | surface background for layer N                                                                                                |
+| `--nb-c-layer-border-{N}` | border colour for layer N                                                                                                     |
+| `--nb-c-layer-hover-{N}`  | hover background for layer N                                                                                                  |
+| `--nb-c-layer-{role}-{N}` | the per-plane set: `accent`, `accent-hover`, `selected`, `selected-hover`, `active`, `border-strong`, `field`, `field-border` |
+
+A named theme that redefines the layer values should redefine the per-plane
+values with them, and measure: setting `--nb-c-field-bg` alone is undone by the
+first `.nb-layer-N` inside the scope.
 
 Override them to match your brand:
 
@@ -944,17 +1047,17 @@ Use the color naming tool below to generate a descriptive name for any hex value
 
 The default palette includes:
 
-| Name                 | Value     | Use                        |
-| -------------------- | --------- | -------------------------- |
-| `grape-hyacinth`     | `#5c35c4` | Primary brand color        |
-| `emerald-reflection` | `#4acf7b` | Success states             |
-| `the-blues-brothers` | `#214da6` | Info states                |
-| `phoenix-flames`     | `#f59e0b` | Warning states             |
-| `chicken-comb`       | `#dc2626` | Danger/error states        |
-| `nouveau-gray`       | `#6b7280` | Neutral UI chrome          |
-| `french-gray`        | `#a7a7a7` | Borders, field backgrounds |
-| `plain-white`        | `#ffffff` | Surfaces, backgrounds      |
-| `plain-black`        | `#000000` | Text, contrast surfaces    |
+| Name                 | Value     | Use                                                                                                       |
+| -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| `grape-hyacinth`     | `#5c35c4` | Primary brand color                                                                                       |
+| `emerald-reflection` | `#4acf7b` | Success states                                                                                            |
+| `the-blues-brothers` | `#214da6` | Info states                                                                                               |
+| `phoenix-flames`     | `#f59e0b` | Warning states                                                                                            |
+| `chicken-comb`       | `#dc2626` | Danger/error states                                                                                       |
+| `nouveau-gray`       | `#6b7280` | Neutral UI chrome                                                                                         |
+| `french-gray`        | `#a7a7a7` | None. A leftover, kept so a consumer that named it does not break. Fields and borders read the layer ramp |
+| `plain-white`        | `#ffffff` | Surfaces, backgrounds                                                                                     |
+| `plain-black`        | `#000000` | Text, contrast surfaces                                                                                   |
 
 ### Wiring a color to a semantic role
 
@@ -1106,47 +1209,58 @@ helper rather than the bare token:
 
 ### Layers
 
-| Token                       | Description                       |
-| --------------------------- | --------------------------------- |
-| `--nb-c-layer-0`            | App/page background surface       |
-| `--nb-c-layer-1`            | Panels, cards surface             |
-| `--nb-c-layer-2`            | Nested panels, inspector sections |
-| `--nb-c-layer-3`            | Overlays, modals, popovers        |
-| `--nb-c-layer-border-{0-3}` | Border color for each layer       |
-| `--nb-c-layer-hover-{0-3}`  | Hover background for each layer   |
+| Token                       | Description                            |
+| --------------------------- | -------------------------------------- |
+| `--nb-c-layer-0`            | App/page background surface            |
+| `--nb-c-layer-1`            | Panels, cards surface                  |
+| `--nb-c-layer-2`            | Nested panels, inspector sections      |
+| `--nb-c-layer-3`            | Overlays, modals, popovers             |
+| `--nb-c-layer-border-{0-3}` | Border color for each layer            |
+| `--nb-c-layer-hover-{0-3}`  | Hover background for each layer        |
+| `--nb-c-layer-{role}-{0-3}` | The per-plane set (see the Layers tab) |
 
 See the [Layers tab](#layers) for usage details.
 
 ### Surface & text
 
-| Token                   | Description                                       |
-| ----------------------- | ------------------------------------------------- |
-| `--nb-c-surface`        | Current surface background (set by layer context) |
-| `--nb-c-surface-raised` | Background below the current surface (page level) |
-| `--nb-c-border`         | Current border color (set by layer context)       |
-| `--nb-c-surface-hover`  | Hover background for current layer                |
-| `--nb-c-contrast`       | Maximum contrast on surface (near-black in light) |
-| `--nb-c-document`       | Page/document background                          |
-| `--nb-c-white`          | Absolute white, not theme-aware                   |
-| `--nb-c-black`          | Absolute black, not theme-aware                   |
-| `--nb-c-text`           | Primary body text                                 |
-| `--nb-c-text-muted`     | Supporting text, captions, secondary labels       |
-| `--nb-c-text-subtle`    | Placeholder text, disabled labels                 |
-| `--nb-c-bg`             | Page background tier                              |
-| `--nb-c-bg-soft`        | Elevated/inset background tier                    |
+| Token                     | Description                                                     |
+| ------------------------- | --------------------------------------------------------------- |
+| `--nb-c-surface`          | Current surface background (set by layer context)               |
+| `--nb-c-surface-raised`   | Background below the current surface (page level)               |
+| `--nb-c-border`           | Current border color (set by layer context)                     |
+| `--nb-c-surface-hover`    | Hover background for current layer                              |
+| `--nb-c-contrast`         | Maximum contrast on surface (near-black in light)               |
+| `--nb-c-document`         | Page/document background                                        |
+| `--nb-c-white`            | Absolute white, not theme-aware                                 |
+| `--nb-c-black`            | Absolute black, not theme-aware                                 |
+| `--nb-c-text`             | Primary body text                                               |
+| `--nb-c-text-muted`       | Supporting text, captions, secondary labels                     |
+| `--nb-c-text-subtle`      | Non-essential labels (AA, not AAA)                              |
+| `--nb-c-text-placeholder` | Placeholder text in a field (the subtle value)                  |
+| `--nb-c-text-error`       | Error text, 4.5:1 on every layer and hover                      |
+| `--nb-c-icon`             | An icon beside a label (the muted value)                        |
+| `--nb-c-link`             | A text link: primary drawn as ink, with `-hover` and `-visited` |
+| `--nb-c-status-info`      | Info glyph, 3:1 on every layer                                  |
+| `--nb-c-status-neutral`   | Neutral glyph, 3:1 on every layer                               |
+| `--nb-c-bg-inverse`       | An inverted chip: dark in light, light in dark                  |
+| `--nb-c-text-inverse`     | Text on `--nb-c-bg-inverse` (AAA)                               |
+| `--nb-c-border-inverse`   | An edge on `--nb-c-bg-inverse` (3:1)                            |
+| `--nb-c-focus-inverse`    | The focus ring on `--nb-c-bg-inverse` (3:1)                     |
+| `--nb-c-bg`               | Page background tier                                            |
+| `--nb-c-bg-soft`          | Elevated/inset background tier                                  |
 
 ### Form field tokens
 
-| Token                         | Default                | Description                 |
-| ----------------------------- | ---------------------- | --------------------------- |
-| `--nb-c-field-bg`             | french-gray-100        | Input background            |
-| `--nb-c-field-border`         | french-gray-500        | Input border                |
-| `--nb-field-height-sm`        | `4 × base-unit` (32px) | Small field height          |
-| `--nb-field-height-md`        | `5 × base-unit` (40px) | Medium field height         |
-| `--nb-field-height-lg`        | `6 × base-unit` (48px) | Large field height          |
-| `--nb-field-padding-h`        | `2 × base-unit` (16px) | Horizontal field padding    |
-| `--nb-field-font-size`        | `--nb-font-size-14`    | Font size for all inputs    |
-| `--nb-field-disabled-opacity` | `0.45`                 | Opacity for disabled fields |
+| Token                         | Default                                                            | Description                 |
+| ----------------------------- | ------------------------------------------------------------------ | --------------------------- |
+| `--nb-c-field-bg`             | per plane, `#f1f2f3` on plane 1 (dark `#2d2e2f`)                   | Input background            |
+| `--nb-c-field-border`         | per plane, `#646566` (dark `#818283`, `#939495` on planes 2 and 3) | Input bottom rule           |
+| `--nb-field-height-sm`        | `4 × base-unit` (32px)                                             | Small field height          |
+| `--nb-field-height-md`        | `5 × base-unit` (40px)                                             | Medium field height         |
+| `--nb-field-height-lg`        | `6 × base-unit` (48px)                                             | Large field height          |
+| `--nb-field-padding-h`        | `2 × base-unit` (16px)                                             | Horizontal field padding    |
+| `--nb-field-font-size`        | `--nb-font-size-14`                                                | Font size for all inputs    |
+| `--nb-field-disabled-opacity` | `0.45`                                                             | Opacity for disabled fields |
 
 ### Grid
 
@@ -1158,15 +1272,9 @@ See the [Layers tab](#layers) for usage details.
 
 ### Gap scale
 
-| Token          | Value  | Description  |
-| -------------- | ------ | ------------ |
-| `--nb-gap-xxs` | `2px`  | ¼ base unit  |
-| `--nb-gap-xs`  | `4px`  | ½ base unit  |
-| `--nb-gap-sm`  | `8px`  | 1× base unit |
-| `--nb-gap-md`  | `16px` | 2× base unit |
-| `--nb-gap-lg`  | `24px` | 3× base unit |
-| `--nb-gap-xl`  | `32px` | 4× base unit |
-| `--nb-gap-xxl` | `48px` | 6× base unit |
+There are no `--nb-gap-*` custom properties. The gap scale is a Sass map
+compiled to `.gap-*` classes; see [Spacing and rhythm](/principles/spacing) for
+the custom properties that do exist (`--nb-spacing-*`).
 
 ### Z-index stack
 

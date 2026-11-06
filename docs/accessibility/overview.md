@@ -96,19 +96,8 @@ body scroll when it mounts already `open` (the watcher is `immediate`), and the
 **What to do.** Put a real control in the row and treat `row-click` as a shortcut on top of it, not as the interaction. Full pattern in [Making a whole row activatable](/accessibility/keyboard#making-a-whole-row-activatable).
 :::
 
-::: danger `NbBadge`'s variants are colours, and four of them fail contrast
-`EBadgeVariant` is `Grey | Blue | Orange | Green | Red | Purple | Primary`. The source carries a `// FIXME replace the variant with the existing variants`, so this is known. Two consequences:
-
-1. The prop names a colour, so it cannot help you satisfy 1.4.1. `variant="green"` says nothing a colour-blind reader can use.
-2. The variants are not all legible. At the badge's 10px and 11px type, measured against `--nb-c-layer-1`: **orange 1.88:1, green 2.79:1, red 3.84:1, blue 4.45:1** in the light theme. Small text needs 4.5:1.
-
-**What to do.** See [Status is never only a colour](/accessibility/color-contrast#status-is-never-only-a-colour) for the ink to override with and the words to add.
-:::
-
-::: warning The focus ring falls below 3:1 on deep dark surfaces
-`--nb-c-focus-ring` measures 6.20:1 to 7.28:1 against every layer in the light theme, comfortably clear. In the dark theme it measures 4.04, 3.50, 2.89 and 2.27 against layers 0 to 3. **Inside a modal or a popover (layer 3) a dark-theme focus ring is at 2.27:1, well under the 3:1 that 1.4.11 requires.**
-
-**What to do.** See [The focus ring](/accessibility/color-contrast#the-focus-ring) for the one-line override.
+::: tip Fixed: `NbBadge` variants name intents, and the dark focus ring clears 3:1
+`NbBadge` takes `neutral`, `info`, `success`, `warning`, `danger` and `primary`, each painting a measured status surface pair (4.84:1 or better on every plane in both themes). The old colour names are deprecated aliases. The dark `--nb-c-focus-ring` is lifted toward white and measures 6.88 / 5.96 / 4.92 / 3.87 on layers 0 to 3, where it was 2.27 on layer 3. See [Colour and contrast](/accessibility/color-contrast).
 :::
 
 ::: warning `NbMenu` closes without restoring focus
@@ -163,7 +152,7 @@ In this mode the browser replaces your palette with the user's. `background-imag
 - **Icons that are background images vanish.** Ours are inline SVG and inherit `currentColor`, so they survive.
 - **Scrims flatten.** `--nb-c-scrim` is a `color-mix` to transparent; in forced colours a dialog can end up visually continuous with the page behind it. Give overlay content an explicit border.
 
-The library ships **no `forced-colors` handling of its own today**: there are zero `@media (forced-colors: active)` blocks in `src/`. That is a stated gap, not an omission you are meant to infer. See [Forced colours](/accessibility/color-contrast#forced-colours) for what to add on your side.
+The library's own `forced-colors` handling is **partial**: six components carry a `@media (forced-colors: active)` block (`NbToast`, `NbToaster`, `NbSpinner`, `NbSkeleton`, `NbNotificationCenter`, `NbNotificationCenterItem`). Selected rows, the modal scrim and dialog edge, and the `NbSelect` highlight still vanish. That is a stated gap, not an omission you are meant to infer. See [Forced colours](/accessibility/color-contrast#forced-colours) for what to add on your side.
 
 ### What automated tools will and will not do
 
