@@ -1,5 +1,13 @@
 # Upgrading
 
+## To 5.48.1 from 5.48.0
+
+- **The count on a folded rail row is solid.** It was a translucent white tint
+  with a ring in the rail colour, which read as an empty outlined circle on a
+  hovered or active row. It is now white with the rail's dark colour as text,
+  and has no ring. A product that set `--nb-shell-sidebar-badge-bg` or
+  `--nb-shell-sidebar-badge-color` keeps its own colours.
+
 ## To 5.48.0 from 5.47.x
 
 This release aligns the foundations with the IBM Carbon design system: type,

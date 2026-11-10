@@ -728,11 +728,14 @@
       var(--nb-c-white) 90%,
       transparent
     );
-    // The count on a folded rail row. Reads the hover tokens by default, so
-    // it paints as it always did, and a product with a rail the hover tint
-    // cannot be read on sets these two alone.
-    --nb-shell-sidebar-badge-bg: var(--nb-shell-sidebar-link-hover-bg);
-    --nb-shell-sidebar-badge-color: var(--nb-shell-sidebar-link-hover-color);
+    // The count on a folded rail row: solid white with the rail's own dark
+    // colour as text, so it reads on the rail and on a tinted row alike. A
+    // translucent tint vanished into a hovered or active row.
+    --nb-shell-sidebar-badge-bg: var(--nb-c-white);
+    --nb-shell-sidebar-badge-color: var(
+      --nb-shell-sidebar-bg,
+      var(--nb-c-black)
+    );
     --nb-shell-topbar-height: calc(var(--nb-base-unit) * 6.25); // 50px
 
     // Shell chrome. Every rule that paints the frame reads one of these, so a
