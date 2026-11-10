@@ -1,3 +1,15 @@
+## [5.48.1](https://github.com/nubisco/ui/compare/v5.48.0+rewrite...v5.48.1) (2026-11-10)
+
+
+### Bug Fixes
+
+* **sidebar:** the count on a folded rail row is solid white with dark text ([f2bf697](https://github.com/nubisco/ui/commit/f2bf697e012c608750c6552196093f364a3bd6ac))
+
+
+### Reverts
+
+* drop the failed 5.42.0 release commit ([279a1e9](https://github.com/nubisco/ui/commit/279a1e96a997f67ef749e453763813da02775c6e))
+
 # [5.48.0](https://github.com/nubisco/ui/compare/v5.47.1...v5.48.0) (2026-11-06)
 
 
