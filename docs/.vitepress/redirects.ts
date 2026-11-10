@@ -26,8 +26,8 @@ import { dirname, join, relative, resolve } from 'node:path'
  *    reports the doubled URLs gone, that half can be deleted.
  *
  * 2. Each component page is now split into one route per tab:
- *    `/components/data-table.html` became `/components/data-table/usage.html`,
- *    `/code.html` and `/accessibility.html`. The old page's stub reads the
+ *    `/components/data-table.html` became `/components/data-table/usage`,
+ *    `/code` and `/accessibility`. The old page's stub reads the
  *    `#anchor` it was opened with and sends the reader to the tab that now
  *    holds that section, so a deep link to `#props` lands on Code.
  */
@@ -164,8 +164,18 @@ function tabStub(base: string, page: ISplitPage): string {
   const script =
     `var m=${JSON.stringify(page.anchors)};` +
     `var h=decodeURIComponent(location.hash.slice(1));` +
-    `location.replace(${JSON.stringify(dirUrl)}+(m[h]||'usage')+'.html'+location.hash)`
-  return stub(`${dirUrl}usage.html`, script)
+    `location.replace(${JSON.stringify(dirUrl)}+(m[h]||'usage')+location.hash)`
+  return stub(`${dirUrl}usage`, script)
+}
+
+/**
+ * The address a page is served at, now that the site uses clean URLs:
+ * `components/badge/code.md` is `components/badge/code`, and an `index.md`
+ * is its folder. The stub files themselves keep their old `.html` names,
+ * because those are the URLs that were published.
+ */
+function cleanUrl(page: string): string {
+  return page.replace(/\.md$/, '').replace(/(^|\/)index$/, '$1')
 }
 
 function write(path: string, html: string) {
@@ -203,7 +213,7 @@ export function writeLegacyRedirects(
     for (const page of pagesUnder(srcDir, dir)) {
       if (tabFiles.has(page)) continue
       const html = page.replace(/\.md$/, '.html')
-      write(join(outDir, 'ui', html), stub(`${base}${html}`))
+      write(join(outDir, 'ui', html), stub(`${base}${cleanUrl(page)}`))
       written++
     }
   }

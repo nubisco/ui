@@ -36,12 +36,15 @@ export default defineNubiscoDocs({
   // Every demo names components in Markdown, and the docs register them all.
   libraryPlugin: false,
   vitepress: {
+    // One address per page: /page, never also /page.html. Links, search and
+    // the sitemap use the clean form, and the gateway 301s the .html one.
+    cleanUrls: true,
     themeConfig: { siteTitle: 'Nubisco UI' },
 
     /**
      * Stubs for pages that moved: the old twice-prefixed /ui/ui/ paths, and
      * each component page that is now split into one route per tab
-     * (/components/x.html to /components/x/usage.html, /code.html, ...).
+     * (/components/x.html to /components/x/usage, /code, ...).
      * GitHub Pages cannot issue a 301, so the old paths keep a stub that
      * points at the new one; see redirects.ts.
      */
