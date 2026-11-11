@@ -1,5 +1,50 @@
 # Upgrading
 
+## To 5.49.0 from 5.48.x
+
+This release brings buttons, and every component that hosts one, in line with
+Carbon's button guidelines, and adds the toolbar, overflow and dialog pieces
+that were missing. Nothing is renamed or removed, but buttons look different
+everywhere, so check a few real screens before you ship.
+
+**What every product will see:**
+
+- **Button anatomy.** The label starts at the left edge and the icon sits at
+  the right edge, instead of both centred together. A labelled button keeps
+  64px at its end, so buttons are wider than before. A ghost button keeps 16px
+  on both sides, with its icon 8px after the label.
+- **xl and xxl.** xl (64px) and xxl (now 80px, was 128px) put the label at the
+  top left and let it wrap onto a second line. Every size uses a 14px label.
+- **Ghost hover is neutral grey**, the hover of the surface, instead of a
+  brand fill. Outlined (tertiary) buttons fill solid on hover. Disabled uses
+  disabled colours instead of 45% opacity.
+- **One focus ring.** Buttons and fields draw the same two-band ring in
+  `--nb-c-focus-ring`. Fields used the bare primary.
+- **Dialog footers.** `NbModal` and `NbConfirm` footer buttons are xl, bleed to
+  the edges and have square corners. Cancel is `secondary`, on the left. Tab
+  reaches the primary first, then Cancel, then the close button, which is now
+  48px. `closeAppearance` is deprecated: both values draw the same close.
+- **Field xs is 24px** (was 28px), the same as button xs.
+- **The leading slot of `NbTextInput` is padded** to where the text starts. If
+  you added a margin to a leading icon to keep it off the field's edge, remove
+  it, or the gap doubles.
+- **`NbActionGroup` outside a toolbar** is its own row with an 8px gap.
+
+**New, opt in:**
+
+- `NbButton`: `label` (the name and tooltip of an icon-only button),
+  `tooltipPosition`, `pressed`, `disabledReason` (keeps a disabled button
+  focusable and says why), and the `danger-tertiary` and `danger-ghost`
+  variants. Icon-only buttons with no name warn in development: give them a
+  `label`, and drop the `aria-label` and `v-nb-tooltip` you wired by hand.
+- Components: `NbToolbar`, `NbOverflowMenu`, `NbBatchActions`,
+  `NbContentSwitcher`, `NbButtonSet`, `NbCloseButton`, `NbInputGroup`,
+  `NbSearch`, `NbChipGroup`.
+- `NbTextInput` `clearable` and `revealable`, `NbDataTable` `rowActions`,
+  `NbMenu` `align`, `NbActionGroup` `overflow: 'auto'`, `NbCard`
+  `hoverEffect: 'draw'`, `NbSuggestionList` `itemGroup`, and
+  `NbSkeleton variant="button"`.
+
 ## To 5.48.1 from 5.48.0
 
 - **The count on a folded rail row is solid.** It was a translucent white tint
