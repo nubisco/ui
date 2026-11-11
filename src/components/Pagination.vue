@@ -32,7 +32,7 @@
         :size="controlSize"
         icon="caret-left"
         :disabled="disabled || currentPage <= 1"
-        :aria-label="nbStrings.paginationPrevious"
+        :label="nbStrings.paginationPrevious"
         @click="goTo(currentPage - 1)"
       />
       <NbButton
@@ -41,7 +41,7 @@
         :size="controlSize"
         icon="caret-right"
         :disabled="disabled || currentPage >= totalPages"
-        :aria-label="nbStrings.paginationNext"
+        :label="nbStrings.paginationNext"
         @click="goTo(currentPage + 1)"
       />
     </div>

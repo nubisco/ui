@@ -132,49 +132,27 @@
     </div>
 
     <!-- While cards are selected, what can be done to all of them at once.
-         The same pattern as NbDataTable's batch bar. On a phone it is pinned
+         NbBatchActions, floating, as NbDataTable's is an overlay. On a phone it is pinned
          to the foot of the screen, which a bar inside the board cannot be:
          the board is a size container, and that makes it the containing
          block of anything fixed inside it. So there it moves to <body>. -->
     <Teleport to="body" :disabled="!phone">
-      <div
+      <NbBatchActions
         v-if="showBatch"
         class="nb-board__batch"
-        role="region"
-        :aria-label="nbStrings.boardSelectionActions"
+        variant="floating"
+        :count="selectedIds.length"
+        :label="nbStrings.boardSelectionActions"
+        :cancel-label="nbStrings.boardClearSelection"
+        @cancel="clearSelection"
       >
-        <span class="nb-board__batch-count">
-          {{ nbStrings.selectionCount(selectedIds.length) }}
-        </span>
-        <div class="nb-board__batch-actions">
-          <slot
-            name="batch-actions"
-            :selected="selectedIds"
-            :clear="clearSelection"
-            :phone="phone"
-          />
-        </div>
-        <!-- An icon on a phone, where the bar is one row the width of the
-             screen and the actions need the room. -->
-        <NbButton
-          v-if="phone"
-          class="nb-board__batch-cancel"
-          variant="ghost"
-          size="sm"
-          icon="x"
-          :aria-label="nbStrings.boardClearSelection"
-          @click="clearSelection"
+        <slot
+          name="batch-actions"
+          :selected="selectedIds"
+          :clear="clearSelection"
+          :phone="phone"
         />
-        <NbButton
-          v-else
-          class="nb-board__batch-cancel"
-          variant="ghost"
-          size="sm"
-          @click="clearSelection"
-        >
-          Clear selection
-        </NbButton>
-      </div>
+      </NbBatchActions>
     </Teleport>
 
     <!-- Instructions, and the live region that reports what happened. A
@@ -200,7 +178,7 @@
 <script setup lang="ts">
 import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { computed, nextTick, ref, useSlots } from 'vue'
-import NbButton from './Button.vue'
+import NbBatchActions from './BatchActions.vue'
 import type {
   IBoardProps,
   IBoardColumn,
@@ -1212,46 +1190,6 @@ function onColumnDragEnd() {
   opacity: 0.45;
 }
 
-.nb-board__batch {
-  position: sticky;
-  bottom: var(--nb-spacing-16, 16px);
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  gap: var(--nb-spacing-12, 12px);
-  inline-size: fit-content;
-  max-inline-size: calc(100% - 32px);
-  margin: var(--nb-spacing-16, 16px) auto 0;
-  padding: var(--nb-spacing-8, 8px) var(--nb-spacing-16, 16px);
-  border-radius: var(--nb-radius-panel, 4px);
-  background: var(--nb-c-primary);
-  color: var(--nb-c-primary-a11y);
-  box-shadow: 0 6px 20px rgb(0 0 0 / 0.2);
-}
-
-.nb-board__batch-count {
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.nb-board__batch-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--nb-spacing-4, 4px);
-}
-
-// Ghost on brand: the bar's inverse foreground, as NbDataTable's batch bar.
-// Specific enough to beat the button's own ghost colour (.nb-button.nb-button--ghost),
-// which otherwise left Clear selection black on the brand bar.
-.nb-board__batch .nb-button.nb-button--ghost {
-  color: inherit;
-
-  &:hover:not(:disabled) {
-    background: var(--nb-c-primary-hover, rgb(255 255 255 / 0.16));
-  }
-}
-
 .nb-board__card--lifted {
   border-color: var(--nb-c-primary);
   box-shadow: inset 0 0 0 1px var(--nb-c-primary);
@@ -1361,30 +1299,18 @@ function onColumnDragEnd() {
   // The batch bar, moved to <body>, pinned along the foot of the screen in one
   // row clear of the home indicator. Actions that do not fit scroll sideways
   // rather than wrap onto a second row over the cards.
-  .nb-board__batch {
+  // Two classes, to outrank the floating variant's own position.
+  .nb-board__batch.nb-batch-actions {
     position: fixed;
     inset-inline: 0;
     bottom: 0;
     z-index: var(--nb-board-batch-z, 200);
-    flex-wrap: nowrap;
     inline-size: auto;
     max-inline-size: none;
     margin: 0;
     padding: var(--nb-spacing-8, 8px) var(--nb-spacing-12, 12px)
       calc(var(--nb-spacing-8, 8px) + env(safe-area-inset-bottom, 0px));
     border-radius: 0;
-  }
-
-  .nb-board__batch-actions {
-    flex: 1 1 auto;
-    flex-wrap: nowrap;
-    min-width: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .nb-board__batch-cancel {
-    flex-shrink: 0;
   }
 
   // Room under the last cards for the pinned bar, so it never hides them. On

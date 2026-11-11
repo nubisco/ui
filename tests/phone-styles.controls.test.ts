@@ -219,10 +219,20 @@ describe('phone layouts', () => {
       ),
     ).toBe(true)
     expect(
-      find(rules, NB_PHONE_QUERY, '.nb-board__batch', 'position: fixed'),
+      find(
+        rules,
+        NB_PHONE_QUERY,
+        '.nb-board__batch.nb-batch-actions',
+        'position: fixed',
+      ),
     ).toBe(true)
     expect(
-      find(rules, NB_PHONE_QUERY, '.nb-board__batch', 'safe-area-inset-bottom'),
+      find(
+        rules,
+        NB_PHONE_QUERY,
+        '.nb-board__batch.nb-batch-actions',
+        'safe-area-inset-bottom',
+      ),
     ).toBe(true)
     expect(
       find(rules, NB_PHONE_QUERY, '.nb-board__lane-header', 'position: sticky'),

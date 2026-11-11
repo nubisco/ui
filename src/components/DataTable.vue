@@ -28,45 +28,41 @@
         </slot>
       </div>
       <div v-if="hasToolsRow" class="nb-data-table__toolbar-row">
-        <div
+        <!-- The strip is an NbToolbar: flush, as tall as a row (48px at
+             most), its buttons full height with the last one in the corner.
+             A search in #search fills the start of it. -->
+        <NbToolbar
           v-if="$slots.search || $slots['toolbar-actions']"
           class="nb-data-table__toolbar-tools"
           :class="{ 'nb-data-table__toolbar-tools--search': !!$slots.search }"
+          :label="nbStrings.dataTableToolbar"
+          :size="toolbarSize"
+          flush
           :inert="showBatchBar || undefined"
           :aria-hidden="showBatchBar || undefined"
         >
-          <div v-if="$slots.search" class="nb-data-table__toolbar-search">
+          <template v-if="$slots.search" #start>
             <slot name="search" />
-          </div>
+          </template>
           <slot name="toolbar-actions" />
-        </div>
+        </NbToolbar>
 
-        <!-- Batch action bar, shown over the tools while rows are selected -->
-        <div
+        <!-- Batch action bar, shown over the strip while rows are selected -->
+        <NbBatchActions
           v-if="showBatchBar"
           class="nb-data-table__batch"
-          role="region"
-          :aria-label="nbStrings.dataTableBatchActions"
+          variant="overlay"
+          :count="selectedCount"
+          :size="toolbarSize"
+          :label="nbStrings.dataTableBatchActions"
+          @cancel="clearSelection"
         >
-          <span class="nb-data-table__batch-count">
-            {{ nbStrings.selectionCount(selectedCount) }}
-          </span>
-          <div class="nb-data-table__batch-actions">
-            <slot
-              name="batch-actions"
-              :selected-keys="selectedKeys"
-              :clear="clearSelection"
-            />
-          </div>
-          <NbButton
-            class="nb-data-table__batch-cancel"
-            variant="ghost"
-            :size="toolbarControlSize"
-            @click="clearSelection"
-          >
-            Cancel
-          </NbButton>
-        </div>
+          <slot
+            name="batch-actions"
+            :selected-keys="selectedKeys"
+            :clear="clearSelection"
+          />
+        </NbBatchActions>
       </div>
     </div>
 
@@ -157,7 +153,9 @@
               scope="col"
               class="nb-data-table__th nb-data-table__actions-cell"
             >
-              <span class="nb-sr-only">Row actions</span>
+              <span class="nb-sr-only">{{
+                nbStrings.dataTableRowActions
+              }}</span>
             </th>
           </tr>
         </thead>
@@ -338,7 +336,49 @@
                   class="nb-data-table__td nb-data-table__actions-cell"
                   @click.stop
                 >
-                  <slot name="row-actions" :row="row" :row-index="rowIndex" />
+                  <!-- Icons that never vanish: every row shows the same
+                       actions in the same places, an action that does not
+                       apply stays disabled and says why, and past three
+                       the rest go to a "more" menu. All of them rest while
+                       the batch bar is up, so a row cannot be acted on
+                       behind a selection. -->
+                  <span v-if="rowActions" class="nb-data-table__row-actions">
+                    <template
+                      v-for="(split, splitIndex) in [splitRowActions(row)]"
+                      :key="splitIndex"
+                    >
+                      <NbButton
+                        v-for="item in split.inline"
+                        :key="item.id"
+                        variant="ghost"
+                        size="sm"
+                        :icon="item.icon"
+                        :label="item.label"
+                        :disabled-reason="
+                          showBatchBar ? undefined : item.disabledReason
+                        "
+                        :disabled="
+                          item.disabled || item.loading || showBatchBar
+                        "
+                        :loading="item.loading"
+                        tooltip-position="left"
+                        @click="chooseRowAction(item)"
+                      />
+                      <NbOverflowMenu
+                        v-if="split.more.length"
+                        size="sm"
+                        :items="split.more"
+                        :disabled="showBatchBar"
+                      />
+                    </template>
+                  </span>
+                  <slot
+                    v-else
+                    name="row-actions"
+                    :row="row"
+                    :row-index="rowIndex"
+                    :disabled="showBatchBar"
+                  />
                 </td>
               </tr>
               <!-- The row's detail: a full-width row directly under it, only
@@ -407,6 +447,11 @@ import NbCheckbox from './Checkbox.vue'
 import NbIcon from './Icon.vue'
 import NbButton from './Button.vue'
 import NbGrid from './Grid.vue'
+import NbToolbar from './Toolbar.vue'
+import NbBatchActions from './BatchActions.vue'
+import NbOverflowMenu from './OverflowMenu.vue'
+import type { IActionGroupItem } from './ActionGroup.d'
+import type { TToolbarSize } from './Toolbar.context'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 
@@ -429,6 +474,7 @@ const props = withDefaults(defineProps<IDataTableProps<T>>(), {
   ariaLabel: undefined,
   stackOnPhone: false,
   expanded: () => [],
+  rowActions: undefined,
 })
 
 // The table paints the surface its toolbar, header and rows sit on, so it takes
@@ -445,12 +491,14 @@ const emit = defineEmits<{
 const slots = useSlots()
 const radioName = `nb-data-table-select-${useId()}`
 
-// The toolbar strip and the batch bar match the row height, up to 48px: an
-// `xl` table keeps a 48px toolbar, as Carbon's does. The batch bar's Cancel
-// takes the same size so it fills the bar.
-const toolbarControlSize = computed(() =>
-  props.size === 'xl' ? 'lg' : props.size,
-)
+// The toolbar strip and the batch bar match the row height, from 32px up to
+// 48px: an `xl` table keeps a 48px toolbar, as Carbon's does, and an `xs`
+// one a 32px strip, the smallest a toolbar comes in.
+const toolbarSize = computed<TToolbarSize>(() => {
+  if (props.size === 'xl') return 'lg'
+  if (props.size === 'xs') return 'sm'
+  return props.size
+})
 
 // #region columns
 const visibleColumns = computed(() =>
@@ -458,7 +506,9 @@ const visibleColumns = computed(() =>
 )
 
 const hasSelectColumn = computed(() => props.selectable !== 'none')
-const hasRowActions = computed(() => !!slots['row-actions'])
+const hasRowActions = computed(
+  () => !!props.rowActions || !!slots['row-actions'],
+)
 const hasExpandColumn = computed(() => !!slots['row-detail'])
 
 const totalColumns = computed(
@@ -640,6 +690,27 @@ const canShowBatchBar = computed(
 const showBatchBar = computed(
   () => canShowBatchBar.value && selectedCount.value > 0,
 )
+// #endregion
+
+// #region row actions
+/*
+ * Up to three actions are icons in the row. Past three, two stay and the
+ * rest go to an overflow menu, so the column is never wider than three
+ * buttons and the same action sits in the same place on every row.
+ */
+function splitRowActions(row: T): {
+  inline: IActionGroupItem[]
+  more: IActionGroupItem[]
+} {
+  const items = props.rowActions?.(row) ?? []
+  if (items.length <= 3) return { inline: items, more: [] }
+  return { inline: items.slice(0, 2), more: items.slice(2) }
+}
+
+function chooseRowAction(item: IActionGroupItem) {
+  if (item.disabled || item.loading || showBatchBar.value) return
+  item.onSelect?.()
+}
 // #endregion
 
 // #region expansion
@@ -828,9 +899,11 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
   line-height: var(--nb-type-body-md-line-height);
 
   // Density
+  // A toolbar comes no smaller than 32px, so an extra small table keeps a
+  // small one.
   &--xs {
     --nb-dt-row-height: calc(var(--nb-base-unit) * 3);
-    --nb-dt-toolbar-height: calc(var(--nb-base-unit) * 3);
+    --nb-dt-toolbar-height: calc(var(--nb-base-unit) * 4);
   }
   &--sm {
     --nb-dt-row-height: calc(var(--nb-base-unit) * 4);
@@ -878,9 +951,9 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
     color: var(--nb-c-text-muted);
   }
 
-  // The strip of tools. It is as tall as a row (48px at most) and its
-  // buttons fill that height, so the last one sits flush in the corner over
-  // the header, the way Carbon's primary button does.
+  // The strip of tools, an NbToolbar. It is as tall as a row (48px at most)
+  // and lays out its own buttons: flush, full height, the last one in the
+  // corner over the header, as Carbon's. Nothing here reaches into them.
   &__toolbar-row {
     position: relative; // containing block for the batch overlay
     display: flex;
@@ -888,94 +961,13 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
   }
 
   &__toolbar-tools {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: stretch;
-    justify-content: flex-end;
     flex: 1 1 auto;
-    min-width: 0;
-
-    // The buttons in the strip: full height, square corners where they meet
-    // the header and each other, icon-only ones square. An action group
-    // passed in is laid out the same way.
-    > :deep(.nb-button),
-    > :deep(.nb-action-group > .nb-button) {
-      height: auto;
-      min-height: var(--nb-dt-toolbar-height);
-      border-radius: 0;
-    }
-
-    > :deep(.nb-button--icon-only),
-    > :deep(.nb-action-group > .nb-button--icon-only) {
-      width: var(--nb-dt-toolbar-height);
-    }
-
-    > :deep(.nb-action-group) {
-      align-items: stretch;
-      gap: 0;
-    }
   }
 
-  // A search field takes whatever width the buttons leave, and moves to a
-  // line of its own when that is too little (a phone, a narrow card).
-  &__toolbar-search {
-    display: flex;
+  // Row actions: small ghost icons side by side, centred in the cell.
+  &__row-actions {
+    display: inline-flex;
     align-items: center;
-    flex: 1 1 16rem;
-    min-width: 0;
-    padding-inline: var(--nb-dt-cell-pad-x) var(--nb-spacing-8);
-
-    > :deep(*) {
-      flex: 1 1 auto;
-      min-width: 0;
-    }
-  }
-
-  // Batch action bar (selection mode). Carbon overlays the tools with a solid
-  // brand-filled bar and inverse content, so selection mode is unmistakable.
-  // Overlay, not a sibling in flow: covering the strip leaves its height (and
-  // therefore every row below it) exactly where it was. Its buttons fill its
-  // height like the tools do, and Cancel sits flush in the corner.
-  &__batch {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: stretch;
-    gap: var(--nb-spacing-16);
-    padding-inline-start: var(--nb-dt-cell-pad-x);
-    background: var(--nb-c-primary);
-    color: var(--nb-c-primary-a11y);
-
-    :deep(.nb-button) {
-      height: auto;
-      min-height: var(--nb-dt-toolbar-height);
-      border-radius: 0;
-    }
-  }
-
-  &__batch-count {
-    display: flex;
-    align-items: center;
-    font-weight: var(--nb-font-weight-semibold);
-    color: inherit;
-  }
-
-  &__batch-actions {
-    display: flex;
-    align-items: stretch;
-    justify-content: flex-end;
-    flex: 1;
-  }
-
-  // Ghost-on-brand: inherit the bar's inverse foreground rather than the
-  // ghost variant's default text colour, which is tuned for the surface.
-  &__batch-cancel,
-  &__batch-actions :deep(.nb-button--ghost) {
-    color: inherit;
-
-    &:hover:not(:disabled) {
-      background: var(--nb-c-primary-hover, rgb(255 255 255 / 0.16));
-    }
   }
 
   // ── Scroll region ────────────────────────────────────────

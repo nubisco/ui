@@ -18,14 +18,11 @@ It is deliberately **not** an editable spreadsheet. When cells need in-place edi
     row-key="id"
     title="Team members"
     description="People with access to this workspace."
+    :row-actions="rowActions"
     style="width: 100%"
   >
     <template #toolbar-actions>
       <NbButton variant="primary" icon="plus">New</NbButton>
-    </template>
-    <template #row-actions>
-      <NbButton variant="ghost" size="sm">Open</NbButton>
-      <NbButton variant="ghost" size="sm">Delete</NbButton>
     </template>
   </NbDataTable>
 </preview>

@@ -14,6 +14,20 @@ const rows = [
 ]
 
 const selected = ref([])
+// Row actions: the same icons on every row. One that does not apply stays,
+// disabled, and its tooltip says why.
+function rowActions(row) {
+  return [
+    { id: 'edit', label: 'Edit', icon: 'pencil-simple' },
+    {
+      id: 'remove',
+      label: 'Remove',
+      icon: 'trash',
+      disabled: row.status === 'Away',
+      disabledReason: 'Away members cannot be removed',
+    },
+  ]
+}
 const lastOpened = ref('')
 const expanded = ref([2])
 function detailItems(row) {

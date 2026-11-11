@@ -9,28 +9,31 @@ pageTabs: ['usage', 'code', 'accessibility']
 
 ## Props
 
-| Prop            | Type                             | Default          | Description                                      |
-| --------------- | -------------------------------- | ---------------- | ------------------------------------------------ |
-| `items`         | `IActionGroupItem[]`             | required         | The actions, in reading order                    |
-| `size`          | `TButtonSize`                    | `'sm'`           | Size of every action and of the overflow trigger |
-| `overflow`      | `'never' \| 'phone' \| 'always'` | `'never'`        | When the actions fold into the overflow menu     |
-| `overflowLabel` | `string`                         | `'More actions'` | Accessible name of the overflow trigger          |
-| `phoneVisible`  | `number`                         | `1`              | How many actions stay on screen while folded     |
+| Prop            | Type                                       | Default                  | Description                                      |
+| --------------- | ------------------------------------------ | ------------------------ | ------------------------------------------------ |
+| `items`         | `IActionGroupItem[]`                       | required                 | The actions, in reading order                    |
+| `size`          | `TButtonSize`                              | `'sm'`, or the toolbar's | Size of every action and of the overflow trigger |
+| `overflow`      | `'never' \| 'phone' \| 'always' \| 'auto'` | `'never'`                | When the actions fold into the overflow menu     |
+| `overflowLabel` | `string`                                   | `'More actions'`         | Name and tooltip of the overflow trigger         |
+| `phoneVisible`  | `number`                                   | `1`                      | How many actions stay on screen while folded     |
 
 ## IActionGroupItem
 
-| Field      | Type                       | Description                                                  |
-| ---------- | -------------------------- | ------------------------------------------------------------ |
-| `id`       | `string`                   | Stable key, and the payload of `select`                      |
-| `label`    | `string`                   | Button text, or the icon-only button's accessible name       |
-| `icon`     | `TIconSource`              | Needed for the action to fold to icon-only                   |
-| `variant`  | `TButtonVariant`           | Passed to `NbButton`. Defaults to `danger` when `danger` set |
-| `outlined` | `boolean`                  | Passed to `NbButton`                                         |
-| `disabled` | `boolean`                  | Passed to `NbButton` and the menu row                        |
-| `loading`  | `boolean`                  | Passed to `NbButton`. A loading row is disabled in the menu  |
-| `priority` | `'primary' \| 'secondary'` | `primary` actions are the ones a phone keeps on screen       |
-| `danger`   | `boolean`                  | Destructive: a danger button and a danger menu row           |
-| `onSelect` | `() => void`               | Runs when the action is chosen                               |
+| Field            | Type                       | Description                                                  |
+| ---------------- | -------------------------- | ------------------------------------------------------------ |
+| `id`             | `string`                   | Stable key, and the payload of `select`                      |
+| `label`          | `string`                   | Button text, or the icon-only button's accessible name       |
+| `icon`           | `TIconSource`              | Needed for the action to fold to icon-only                   |
+| `variant`        | `TButtonVariant`           | Passed to `NbButton`. Defaults to `danger` when `danger` set |
+| `outlined`       | `boolean`                  | Passed to `NbButton`                                         |
+| `iconOnly`       | `boolean`                  | An icon button at every width, named and tooltipped by label |
+| `disabled`       | `boolean`                  | Passed to `NbButton` and the menu row                        |
+| `disabledReason` | `string`                   | Why it is disabled: `NbButton`'s `disabledReason`            |
+| `pressed`        | `boolean`                  | A toggle's state: the button's pressed state, a checked row  |
+| `loading`        | `boolean`                  | Passed to `NbButton`. A loading row is disabled in the menu  |
+| `priority`       | `'primary' \| 'secondary'` | `primary` actions are the ones a phone keeps on screen       |
+| `danger`         | `boolean`                  | Destructive: a danger button and a danger menu row           |
+| `onSelect`       | `() => void`               | Runs when the action is chosen                               |
 
 ## Slots
 

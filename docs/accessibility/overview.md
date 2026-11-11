@@ -56,7 +56,7 @@ From this section forward, a component page with no **Accessibility** heading me
 A page **with** an Accessibility heading is a commitment. Everything it claims is true of the current source, and anything it does not claim is yours.
 :::
 
-54 of the 82 component pages currently carry an Accessibility tab (a test, `tests/a11yDocsCounts.test.ts`, holds this number to the source). The rest are silent, and the silence is honest rather than reassuring. The three states in full:
+58 of the 86 component pages currently carry an Accessibility tab (a test, `tests/a11yDocsCounts.test.ts`, holds this number to the source). The rest are silent, and the silence is honest rather than reassuring. The three states in full:
 
 - **Section present, claims made.** Load-bearing. `NbTabs`, `NbConfirm`, `NbDataTable`, `NbWalkthrough`, `NbShell` and fourteen others are in this state. Build on what they say.
 - **Section present, gap stated.** We know about it and we are telling you, with the workaround. This is the most useful state a page can be in and we would rather write it than a section that quietly omits the bad news.
@@ -156,7 +156,7 @@ In this mode the browser replaces your palette with the user's. `background-imag
 - **Icons that are background images vanish.** Ours are inline SVG and inherit `currentColor`, so they survive.
 - **Scrims flatten.** `--nb-c-scrim` is a `color-mix` to transparent; in forced colours a dialog can end up visually continuous with the page behind it. Give overlay content an explicit border.
 
-The library handles forced colours deliberately in 6 component files (`NbToast`, `NbToaster`, `NbSpinner`, `NbSkeleton`, `NbNotificationCenter` and its items). Everything else survives only by construction (outlines and inline SVG). Selected rows, the modal scrim and field borders are the known holes. See [Forced colours](/accessibility/color-contrast#forced-colours) for what is covered and what to add on your side.
+The library handles forced colours deliberately in 7 component files (`NbToast`, `NbToaster`, `NbSpinner`, `NbSkeleton`, `NbNotificationCenter` and its items, `NbContentSwitcher`). Everything else survives only by construction (outlines and inline SVG). Selected rows, the modal scrim and field borders are the known holes. See [Forced colours](/accessibility/color-contrast#forced-colours) for what is covered and what to add on your side.
 
 ### What automated tools will and will not do
 

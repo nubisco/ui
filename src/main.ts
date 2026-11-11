@@ -136,6 +136,11 @@ export type {
   IReorderListProps,
   IReorderEvent,
 } from './components/ReorderList.d'
+export { default as NbBatchActions } from './components/BatchActions.vue'
+export type {
+  IBatchActionsProps,
+  TBatchActionsVariant,
+} from './components/BatchActions.d'
 export { default as NbBoard } from './components/Board.vue'
 export type {
   IBoardColumn,
@@ -245,6 +250,13 @@ export { default as NbFlag } from './components/Flag.vue'
 export type { ESizePixel, IFlagProps } from './components/Flag.d'
 export type { TFlagSource } from './components/Flag.d'
 export { default as NbFloatingToolbar } from './components/FloatingToolbar.vue'
+export { default as NbContentSwitcher } from './components/ContentSwitcher.vue'
+export type {
+  IContentSwitcherItem,
+  IContentSwitcherProps,
+} from './components/ContentSwitcher.d'
+export { default as NbToolbar } from './components/Toolbar.vue'
+export type { IToolbarProps, TToolbarSize } from './components/Toolbar.d'
 export type {
   IFloatingToolbarProps,
   IFloatingToolbarVirtualAnchor,
@@ -365,8 +377,11 @@ export type {
   ISubmenuProps,
   IMenuBarProps,
   TMenuItemSize,
+  TMenuAlign,
 } from './components/Menu.d'
 export type { IMenuContext } from './components/Menu.d'
+export { default as NbOverflowMenu } from './components/OverflowMenu.vue'
+export type { IOverflowMenuProps } from './components/OverflowMenu.d'
 export type {
   ICommand,
   ICommandPaletteProps,

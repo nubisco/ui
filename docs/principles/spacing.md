@@ -312,7 +312,7 @@ As density goes up, the gaps between controls must come **down**, not stay put. 
 
 ### Fields and buttons share one height scale
 
-`NbButton` implements seven sizes (`xxs` `xs` `sm` `md` `lg` `xl` `xxl`) at 16, 24, 32, 40, 48, 64 and 80 pixels. The four field sizes are the middle four of them: a field and a button of the same `size` are the same height, `xs` included (24px each). Put an `xs` button beside an `xs` field and the two line up with nothing to adjust. To join them into one control, wrap them in [`NbInputGroup`](/components/input-group/), which hands one `size` to everything inside.
+`NbButton` implements seven sizes (`xxs` `xs` `sm` `md` `lg` `xl` `xxl`) at 16, 24, 32, 40, 48, 64 and 80 pixels. The four field sizes are the middle four of them: a field and a button of the same `size` are the same height, `xs` included (24px each). Put an `xs` button beside an `xs` field and the two line up with nothing to adjust. To join them into one control, wrap them in [`NbInputGroup`](/components/input-group/usage), which hands one `size` to everything inside.
 
 Every field control (`NbTextInput`, `NbNumberInput`, `NbSelect`, `NbDatePicker`, `NbSearch`) implements all four sizes.
 

@@ -9,6 +9,7 @@ import NbAvatar from './Avatar.vue'
 import NbBadge from './Badge.vue'
 import NbBanner from './Banner.vue'
 import NbBarChart from './Charts/BarChart.vue'
+import NbBatchActions from './BatchActions.vue'
 import NbBoard from './Board.vue'
 import NbBreadcrumbs from './Breadcrumbs.vue'
 import NbButton from './Button.vue'
@@ -41,6 +42,8 @@ import NbFileUploader from './FileUploader.vue'
 import NbGanttChart from './Charts/GanttChart.vue'
 import NbFlag from './Flag.vue'
 import NbFloatingToolbar from './FloatingToolbar.vue'
+import NbToolbar from './Toolbar.vue'
+import NbContentSwitcher from './ContentSwitcher.vue'
 import NbForm from './Form.vue'
 import NbGrid from './Grid.vue'
 import NbIcon from './Icon.vue'
@@ -67,6 +70,7 @@ import NbConfirm from './Confirm.vue'
 import NbNotificationCenter from './NotificationCenter.vue'
 import NbNotificationCenterItem from './NotificationCenterItem.vue'
 import NbNumberInput from './NumberInput.vue'
+import NbOverflowMenu from './OverflowMenu.vue'
 import NbLayer from './Layer.vue'
 import NbPanel from './Panel.vue'
 import NbPieChart from './Charts/PieChart.vue'
@@ -126,6 +130,7 @@ const components = {
   NbBadge,
   NbBanner,
   NbBarChart,
+  NbBatchActions,
   NbBoard,
   NbBreadcrumbs,
   NbButton,
@@ -159,6 +164,8 @@ const components = {
   NbGanttChart,
   NbFlag,
   NbFloatingToolbar,
+  NbToolbar,
+  NbContentSwitcher,
   NbForm,
   NbGrid,
   NbIcon,
@@ -183,6 +190,7 @@ const components = {
   NbNotificationCenter,
   NbNotificationCenterItem,
   NbNumberInput,
+  NbOverflowMenu,
   NbLayer,
   NbPanel,
   NbPieChart,

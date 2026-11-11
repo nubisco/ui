@@ -7,12 +7,13 @@
       // `variant` is optional, and interpolating it unguarded put a literal
       // `nb-button--undefined` class on every button that did not pass one.
       resolvedVariant ? `nb-button--${resolvedVariant}` : null,
-      `nb-button--${size}`,
+      `nb-button--${resolvedSize}`,
       { 'nb-button--outlined': resolvedOutlined },
       { 'nb-button--loading': loading },
       { 'nb-button--icon-only': isIconOnly },
       { 'nb-button--with-icon': hasDecoration && !isIconOnly },
       { 'nb-button--pressed': pressed },
+      { 'nb-button--flush': toolbar?.flush.value },
       { 'nb-button--explained': explained },
     ]"
     :to="useRouter ? to : undefined"
@@ -73,11 +74,14 @@ import {
 } from '@/directives/ToolTip.directive'
 import { useRouterLink } from '@/composables/useRouterLink.composable'
 import { NB_PRIMARY_ACTION_SCOPE } from './PrimaryAction.context'
+import { NB_TOOLBAR } from './Toolbar.context'
 
 const props = withDefaults(defineProps<IButtonProps>(), {
   variant: undefined,
   outlined: false,
-  size: ESize.Medium,
+  // Unset rather than `md`, so a button inside an NbToolbar can tell it was
+  // given no size and take the toolbar's. Everywhere else it is still `md`.
+  size: undefined,
   disabled: false,
   loading: false,
   icon: undefined,
@@ -111,6 +115,18 @@ const resolvedOutlined = computed(
     props.outlined ||
     props.variant === 'tertiary' ||
     props.variant === 'danger-tertiary',
+)
+
+/*
+ * Inside an NbToolbar (or a bar that acts as one, NbBatchActions) a button
+ * with no size of its own takes the strip's, so every control in it is the
+ * same height as the row it belongs to. A flush toolbar also squares the
+ * button's corners, so the buttons meet edge to edge and the last one sits
+ * flush in the corner.
+ */
+const toolbar = inject(NB_TOOLBAR, null)
+const resolvedSize = computed(
+  () => props.size ?? toolbar?.size.value ?? ESize.Medium,
 )
 
 // Inside a header's actions slot (NbPanel, NbCard, NbPageHeader), a filled
@@ -255,7 +271,7 @@ const iconOnlySizeMap: Record<string, number> = {
 
 const iconSize = computed(() => {
   const map = isIconOnly.value ? iconOnlySizeMap : iconSizeMap
-  return map[props.size ?? 'md'] ?? (isIconOnly.value ? 20 : 16)
+  return map[resolvedSize.value] ?? (isIconOnly.value ? 20 : 16)
 })
 
 /*
@@ -557,6 +573,13 @@ onMounted(() => {
     &.nb-button--danger-ghost {
       background: color-mix(in srgb, var(--nb-c-contrast) 12%, transparent);
     }
+  }
+
+  // In a flush toolbar: square corners, so neighbours meet edge to edge and
+  // the last button fills the toolbar's corner. The toolbar's own corner (a
+  // table's, a panel's) is what rounds it.
+  &--flush {
+    border-radius: 0;
   }
 
   // Danger's meaning on a ghost's box. Carbon's danger--ghost: red text at

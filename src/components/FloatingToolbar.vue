@@ -31,6 +31,7 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 import { useVisualViewportVar } from '@/composables/useVisualViewportVar.composable'
+import { useRovingFocus } from '@/composables/useRovingFocus.composable'
 import {
   placeAnchored,
   viewportSize,
@@ -66,8 +67,6 @@ const toolbarRef = ref<HTMLElement | null>(null)
 const placedSide = ref<TAnchorSide>(props.placement as TAnchorSide)
 const position = ref({ top: 0, left: 0 })
 const anchorHidden = ref(false)
-/** Index of the control that holds the toolbar's single tab stop. */
-const activeIndex = ref(0)
 
 const toolbarStyle = computed(() => ({
   top: `${position.value.top}px`,
@@ -114,43 +113,13 @@ function reposition() {
 // ── Roving tabindex ──────────────────────────────────────────────────
 //
 // The toolbar is one tab stop. Arrow keys move between its controls, which is
-// the WAI-ARIA toolbar pattern, and what stops a twelve-button formatting bar
-// from costing twelve presses of Tab.
+// the WAI-ARIA toolbar pattern, shared with NbToolbar. Fields join the set
+// here: a formatting bar's link field is one of its tools.
 
-const FOCUSABLE =
-  'button, [role="button"], a[href], input, select, textarea, [tabindex]'
-
-function items(): HTMLElement[] {
-  const toolbar = toolbarRef.value
-  if (!toolbar) return []
-  return Array.from(toolbar.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-    (el) =>
-      !(el as HTMLButtonElement).disabled &&
-      el.getAttribute('aria-hidden') !== 'true' &&
-      // A nested composite (a select's listbox) manages its own focus.
-      el.closest('[role="toolbar"]') === toolbar,
-  )
-}
-
-function syncTabStops() {
-  const list = items()
-  if (!list.length) return
-  if (activeIndex.value >= list.length) activeIndex.value = list.length - 1
-  if (activeIndex.value < 0) activeIndex.value = 0
-  list.forEach((el, index) => {
-    const value = index === activeIndex.value ? '0' : '-1'
-    if (el.getAttribute('tabindex') !== value)
-      el.setAttribute('tabindex', value)
-  })
-}
-
-function focusIndex(index: number) {
-  const list = items()
-  if (!list.length) return
-  activeIndex.value = (index + list.length) % list.length
-  syncTabStops()
-  list[activeIndex.value].focus()
-}
+const roving = useRovingFocus(toolbarRef, {
+  orientation: () => props.orientation,
+  includeFields: true,
+})
 
 function onKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
@@ -160,42 +129,10 @@ function onKeydown(event: KeyboardEvent) {
     emit('update:open', false)
     return
   }
-
-  const target = event.target as HTMLElement
-  // Arrow keys inside a text field move the caret, not the toolbar.
-  if (target.closest('input, textarea, select, [contenteditable="true"]')) {
-    return
-  }
-
-  const vertical = props.orientation === 'vertical'
-  const previous = vertical ? 'ArrowUp' : 'ArrowLeft'
-  const next = vertical ? 'ArrowDown' : 'ArrowRight'
-
-  const list = items()
-  const current = list.indexOf(target)
-  if (current === -1) return
-
-  if (event.key === next) {
-    event.preventDefault()
-    focusIndex(current + 1)
-  } else if (event.key === previous) {
-    event.preventDefault()
-    focusIndex(current - 1)
-  } else if (event.key === 'Home') {
-    event.preventDefault()
-    focusIndex(0)
-  } else if (event.key === 'End') {
-    event.preventDefault()
-    focusIndex(list.length - 1)
-  }
+  roving.onKeydown(event)
 }
 
-function onFocusIn(event: FocusEvent) {
-  const index = items().indexOf(event.target as HTMLElement)
-  if (index === -1) return
-  activeIndex.value = index
-  syncTabStops()
-}
+const onFocusIn = roving.onFocusIn
 
 /**
  * The toolbar must never take focus from what it acts on. A mousedown on a
@@ -213,38 +150,23 @@ function onMouseDown(event: MouseEvent) {
 }
 
 /** Moves keyboard focus into the toolbar, onto its current tab stop. */
-function focus() {
-  focusIndex(activeIndex.value)
-}
+const focus = roving.focus
 
 // ── Lifecycle ────────────────────────────────────────────────────────
 
-let observer: MutationObserver | undefined
-
+// The roving focus watches the toolbar's own controls coming and going (a
+// link button only for links), so only the page listeners live here.
 function attach() {
   window.addEventListener('resize', reposition)
   // capture: true also catches scrolls in nested containers, which is where
   // an editor usually scrolls.
   window.addEventListener('scroll', reposition, true)
-  if (typeof MutationObserver !== 'undefined' && toolbarRef.value) {
-    // Buttons come and go with the selection (a link button only for links),
-    // and a disabled one cannot hold the tab stop.
-    observer = new MutationObserver(() => syncTabStops())
-    observer.observe(toolbarRef.value, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['disabled'],
-    })
-  }
 }
 
 function detach() {
   if (typeof window === 'undefined') return
   window.removeEventListener('resize', reposition)
   window.removeEventListener('scroll', reposition, true)
-  observer?.disconnect()
-  observer = undefined
 }
 
 const visible = computed(() => props.open && !!props.anchor)
@@ -271,13 +193,13 @@ watch(
     if (typeof window === 'undefined') return
     detach()
     if (!value) return
-    activeIndex.value = 0
+    roving.activeIndex.value = 0
     // Two frames: the first mounts the toolbar (zero-sized, unmeasurable),
     // the second has real dimensions to flip and clamp against. Focus is
     // deliberately left where it is.
     void nextTick(() => {
       attach()
-      syncTabStops()
+      roving.sync()
       reposition()
       requestAnimationFrame(reposition)
     })

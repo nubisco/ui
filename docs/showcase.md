@@ -183,11 +183,13 @@ close button or the scrim.
       <NbBadge>{{ value }}</NbBadge>
     </template>
     <template #row-actions="{ row }">
-      <NbButton
-        variant="ghost"
+      <NbOverflowMenu
         size="sm"
-        icon="dots-three-vertical"
-        :aria-label="`More actions for ${row.name}`"
+        :label="`More actions for ${row.name}`"
+        :items="[
+          { id: 'edit', label: 'Edit' },
+          { id: 'remove', label: 'Remove', danger: true },
+        ]"
       />
     </template>
     <template #footer>
