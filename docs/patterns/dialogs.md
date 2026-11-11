@@ -330,7 +330,7 @@ work in it. Press <kbd>Esc</kbd> again and the modal goes:
     <NbTextInput label="Display name" name="nfx-stack-name" model-value="staging-eu" />
     <p style="margin: 0">Deleting this environment takes its entries, releases and keys with it.</p>
     <template #footer>
-      <NbButton variant="ghost" @click="stackOpen = false">Cancel</NbButton>
+      <NbButton variant="secondary" @click="stackOpen = false">Cancel</NbButton>
       <NbButton variant="danger" @click="runStackedConfirm">Delete environment</NbButton>
     </template>
   </NbModal>
@@ -354,7 +354,7 @@ themselves.
 | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | **Exactly two buttons**                                               | A third choice in a confirmation is a task, and a task belongs on a route. "Save and delete" is two decisions wearing one button |
 | **Cancel on the left, commit on the right**                           | The exit is where the reading eye arrives, the commit is where it stops. An app that flips this makes every other app a trap     |
-| **Cancel is `variant="ghost"`**                                       | It is the safe option, so it needs no emphasis. Emphasis is a claim on attention, and the exit does not need one                 |
+| **Cancel is `variant="secondary"`**                                   | It is the other half of the decision, so it is a real button beside the commit, and quieter than it. A ghost reads as a way out  |
 | **The commit is `variant="danger"`** (`primary` for `tone="neutral"`) | A destructive action styled as a primary button reads as the expected answer                                                     |
 | **The commit says the verb**                                          | "Delete environment", never "Yes", "OK", "Confirm" or "Continue"                                                                 |
 | **Initial focus is Cancel**                                           | The dialog appears under the hand that just clicked. Focus on the commit turns one stray <kbd>Space</kbd> into a deletion        |
@@ -405,7 +405,7 @@ option that means "this is not destructive".
     <div class="nfx-half nfx-half--right">
       <p class="nfx-label">Right: tone danger, which is the default</p>
       <NbButton size="sm" variant="danger" @click="runCorrectConfirm">Delete environment</NbButton>
-      <p class="nfx-note">Red commit, ghost cancel, cancel holding focus, <code>role="alertdialog"</code>. Nothing was passed to get any of it.</p>
+      <p class="nfx-note">Red commit, secondary cancel, cancel holding focus, <code>role="alertdialog"</code>. Nothing was passed to get any of it.</p>
     </div>
   </div>
 </preview>
@@ -616,7 +616,7 @@ click the commit again while it is still working:
         <template #header>Delete environment</template>
         <p style="margin: 0">This deletes staging-eu and everything in it.</p>
         <template #footer>
-          <NbButton variant="ghost" @click="loosePendingOpen = false">Cancel</NbButton>
+          <NbButton variant="secondary" @click="loosePendingOpen = false">Cancel</NbButton>
           <NbButton variant="danger" @click="fireLooseDelete">Delete environment</NbButton>
         </template>
       </NbModal>
@@ -682,10 +682,10 @@ router.beforeEach(() => {
 
 A dialog is a focus contract. Get these five right and the rest is detail.
 
-1. **On open, focus enters the dialog.** A confirmation focuses Cancel. A modal
-   holding a form focuses its first editable control. A modal holding text
-   focuses the dialog box itself, which carries `tabindex="-1"` for exactly
-   this.
+1. **On open, focus enters the dialog.** A destructive confirmation focuses
+   Cancel. A modal holding a form focuses its first editable control. A modal
+   with no fields focuses its primary, which comes first in the footer's tab
+   order, unless that primary is `danger`, when it focuses the secondary.
 2. **Focus never leaves while it is open.** <kbd>Tab</kbd> cycles inside, and
    focus moved by anything that is not a keystroke (a click on the page behind
    the scrim, a `focus()` from application code, a control disabled under the
@@ -783,8 +783,8 @@ Almost nothing that arrives on its own passes it.
 The exception in that last row is the only dialog on this page that is not
 destructive, and it is the one case where `tone="neutral"` is correct: the
 commit is primary rather than red, the role is `dialog` rather than
-`alertdialog`, and the button order, the ghost cancel and the focus on cancel
-are unchanged.
+`alertdialog`, and focus lands on the commit rather than on Cancel, as in any
+transactional dialog. The button order and the secondary cancel are unchanged.
 
 <preview dir="col">
   <NbGrid dir="row" gap="sm" align="center">
@@ -931,8 +931,8 @@ Only relevant where the view drives an `NbModal` itself.
 
 - [ ] The footer has no `NbPanel` and no inline padding: `NbModal` right-aligns
       it already.
-- [ ] Cancel is `variant="ghost"`, left; the commit is `danger` (or `primary`),
-      right; there are exactly two of them.
+- [ ] Cancel is `variant="secondary"`, on the left. The commit is `danger` (or
+      `primary`), on the right. There are exactly two of them, with no `size`.
 - [ ] Something inside the dialog holds focus on open, and focus returns to the
       trigger on close.
 - [ ] The overlay does not dismiss a dirty form, and every close route lands on

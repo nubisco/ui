@@ -76,6 +76,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Brand Marks', link: '/components/nubisco-mark/usage' },
       { text: 'Breadcrumbs', link: '/components/breadcrumbs/usage' },
       { text: 'Button', link: '/components/button/usage' },
+      { text: 'Button Set', link: '/components/button-set/usage' },
       { text: 'Calendar', link: '/components/calendar/usage' },
       { text: 'Card Grid', link: '/components/card-grid/usage' },
       {
@@ -95,6 +96,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
         ],
       },
       { text: 'Checkbox', link: '/components/checkbox/usage' },
+      { text: 'Close Button', link: '/components/close-button/usage' },
       { text: 'Color Strip', link: '/components/color-strip/usage' },
       { text: 'Command Palette', link: '/components/command-palette/usage' },
       { text: 'Confirm', link: '/components/confirm/usage' },

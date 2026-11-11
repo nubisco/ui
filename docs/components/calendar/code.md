@@ -172,4 +172,16 @@ interface ICalendarEvent {
 | ------- | --------------------------- | ----------------------------------- |
 | `event` | `{ event: ICalendarEvent }` | Custom rendering for each event bar |
 
+## Strings
+
+The header's words come from the string catalogue, so `provideNbStrings()`
+translates them with the rest of the library. The month arrows are icon-only
+ghost `NbButton`s, so these are their accessible names and their tooltips.
+
+| Key                     | Default            |
+| ----------------------- | ------------------ |
+| `calendarToday`         | `'Today'`          |
+| `calendarPreviousMonth` | `'Previous month'` |
+| `calendarNextMonth`     | `'Next month'`     |
+
 <!--@include: ./_shared.md-->

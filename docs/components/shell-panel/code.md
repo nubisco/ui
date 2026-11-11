@@ -340,16 +340,17 @@ Inside `NbShell` you already have that: the `bottom` region and the inspector co
 
 ## Accessibility
 
-The default size controls are three toggle buttons, and the panel treats them as one control:
+The default size controls are three icon-only ghost `NbButton`s at `xs` (24px, the size that fits the 28px header), and the panel treats them as one control:
 
 - `type="button"` on all three. The documented use for a panel is an inspector section, which is very often a form, and an untyped `<button>` in a form is a submit button. Clicking Minimize should not save the record.
 - `aria-pressed` reflects the active size, so a screen reader announces which of the three is currently on rather than three identical unlabelled toggles.
-- Each carries an `aria-label` (`Minimize`, `Default`, `Maximize`) and its glyph is `aria-hidden`, so the SVG contributes nothing to the accessible name.
-- They sit in a `role="group"` named after the panel (`"Console panel size"` for `title="Console"`, `"Panel size"` with no title), so the three read as one set of related controls.
+- Each carries a `label` from the string catalogue (`shellPanelMinimize`, `shellPanelRestore`, `shellPanelMaximize`: "Minimize", "Restore", "Maximize"), which is its accessible name and its tooltip. The Phosphor glyph (`minus`, `corners-in`, `corners-out`) is `aria-hidden`.
+- They carry the library's one focus ring, which the hand-drawn buttons they replace did not.
+- They sit in a `role="group"` named after the panel (`"Console panel size"` for `title="Console"`, `"Panel size"` with no title, from `shellPanelSizeFor` and `shellPanelSize`), so the three read as one set of related controls.
 
 Replacing the `controls` slot replaces all of it. If you put your own buttons there, they are yours to type, name and label.
 
-The collapsed-header dim and the size buttons' hover tint are transitions, and both are removed under `prefers-reduced-motion: reduce`. The panel still reaches the same states, instantly.
+The collapsed-header dim is a transition, and it is removed under `prefers-reduced-motion: reduce`. The panel still reaches the same states, instantly.
 
 The panel does not render a heading element for `title`: it is a chrome label in the `overline` type set, not a document heading, and turning it into an `<h2>` would put a heading into every inspector column. If a panel's content is a section of the page, put the heading in the content.
 

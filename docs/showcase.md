@@ -148,10 +148,8 @@ close button or the scrim.
     <template #header>Confirm deletion</template>
     <p>This will permanently delete the selected items. This action cannot be undone.</p>
     <template #footer>
-      <NbGrid dir="row" gap="sm" justify="end">
-        <NbButton variant="ghost" @click="isModalOpen = false">Cancel</NbButton>
-        <NbButton variant="danger" @click="isModalOpen = false">Delete</NbButton>
-      </NbGrid>
+      <NbButton variant="secondary" @click="isModalOpen = false">Cancel</NbButton>
+      <NbButton variant="danger" @click="isModalOpen = false">Delete</NbButton>
     </template>
   </NbModal>
 </preview>
