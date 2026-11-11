@@ -42,6 +42,7 @@ hero type does not arrive asynchronously.
 | `heading` | `type` (default `heading-02`)       | Titles and section headers          |
 | `block`   | `width` and `height` you pass       | Cards, images, charts, map panes    |
 | `circle`  | One of `width` or `height`          | Avatars, round icon buttons         |
+| `button`  | `size`, and `iconOnly`              | An `NbButton` that has not arrived  |
 
 <preview dir="col">
   <NbSkeleton variant="heading" type="heading-03" />
@@ -91,6 +92,47 @@ A circle takes one measurement and applies it to both axes, so an avatar
 placeholder cannot come out oval. `radius` is ignored for circles and otherwise
 takes a step from the radius scale: `none`, `xs`, `sm` (default), `md`, `lg`,
 `pill`.
+
+## Buttons
+
+`variant="button"` stands in for an [`NbButton`](/components/button/usage).
+`size` takes the button's own scale, so the placeholder is exactly as tall as
+the button that replaces it: 16, 24, 32, 40, 48, 64 and 80px from `xxs` to
+`xxl`. The corners are the control radius every button has, whatever `radius`
+says.
+
+A labelled placeholder is 150px wide: the 16px a button keeps at its start and
+the 64px it reserves at its end for the icon, around a 70px label, which is
+about a two-word action. Pass `width` when the real label is known to be
+longer, or `width="100%"` when the button fills a set. `iconOnly` makes it a
+square at the height of `size`, the shape every icon-only button has, and
+ignores `width`.
+
+<preview dir="row" gap="md">
+  <NbSkeleton variant="button" size="sm" />
+  <NbSkeleton variant="button" size="md" />
+  <NbSkeleton variant="button" size="lg" />
+  <NbSkeleton variant="button" size="xl" />
+  <NbSkeleton variant="button" size="sm" icon-only />
+  <NbSkeleton variant="button" size="md" icon-only />
+  <NbSkeleton variant="button" size="lg" icon-only />
+</preview>
+
+```vue
+<template>
+  <NbGrid gap="sm">
+    <NbSkeleton variant="button" size="lg" label="Loading actions" />
+    <NbSkeleton variant="button" size="lg" />
+  </NbGrid>
+</template>
+```
+
+xl and xxl are minimum heights on a real button, where a long label wraps to a
+second line. The placeholder takes the one-line height, which is what every
+short label has. Before reaching for a button skeleton, ask whether a
+`disabled` button would do: a button whose label is already known can render
+disabled while its data loads, and keeps its name and its place in the tab
+order.
 
 ## Composing a loading region
 
@@ -169,12 +211,14 @@ you: its `run()` suppresses the announcement when the action rejects.
 
 | Prop            | Type                                                                                                                                                                 | Default                                          | Description                                                                                                                                                                 |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `variant`       | `'text' \| 'heading' \| 'block' \| 'circle'`                                                                                                                         | `'text'`                                         | Shape family                                                                                                                                                                |
+| `variant`       | `'text' \| 'heading' \| 'block' \| 'circle' \| 'button'`                                                                                                             | `'text'`                                         | Shape family                                                                                                                                                                |
 | `type`          | `'label'`, `'label-sm\|md\|lg'`, `'helper-text'`, `'overline'`, `'body-sm\|compact\|md\|lg'`, `'code-sm\|md\|lg'`, `'heading-compact'`, `'heading-01'..'heading-06'` | `'body-md'` for text, `'heading-02'` for heading | Type set the line height is taken from                                                                                                                                      |
 | `lines`         | `number`                                                                                                                                                             | `1`                                              | Number of text lines. Text variant only                                                                                                                                     |
 | `lastLineWidth` | `string`                                                                                                                                                             | `'60%'`                                          | Width of the last line when there is more than one                                                                                                                          |
 | `width`         | `string \| number`                                                                                                                                                   | `undefined`                                      | Width. A number is pixels. Unset means the CSS default, which is `width: 100%`                                                                                              |
 | `height`        | `string \| number`                                                                                                                                                   | `undefined`                                      | Height for block and circle. A number is pixels. Unset means `--nb-skeleton-height`, which is `calc(var(--nb-base-unit) * 8)`. Text sizes itself from `type` and ignores it |
+| `size`          | `'xxs' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| 'xxl'`                                                                                                             | `'md'`                                           | Button variant only. The `NbButton` size it stands in for, which sets the height                                                                                            |
+| `iconOnly`      | `boolean`                                                                                                                                                            | `false`                                          | Button variant only. A square at the height of `size`, for an icon-only button                                                                                              |
 | `radius`        | `'none' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'pill'`                                                                                                                   | `'sm'`                                           | Corner radius step. Ignored by `circle`                                                                                                                                     |
 | `animated`      | `boolean`                                                                                                                                                            | `true`                                           | Turns the shimmer off when `false`                                                                                                                                          |
 | `label`         | `string`                                                                                                                                                             | `undefined`                                      | Announcement. Set it on one skeleton per region                                                                                                                             |
@@ -194,7 +238,8 @@ None.
 | `--nb-c-discrete`         | Placeholder fill, in both themes                                                                     |
 | `--nb-c-surface`          | The shimmer highlight, mixed into the fill                                                           |
 | `--nb-radius-*`           | Corner radius steps                                                                                  |
-| `--nb-base-unit`          | Gap between lines                                                                                    |
+| `--nb-radius-control`     | The button variant's corners, the same radius a real button has                                      |
+| `--nb-base-unit`          | Gap between lines, and the button variant's height and width                                         |
 
 Width does not come from a token: it is the `width` prop (and `lastLineWidth`
 for the final line of a paragraph), defaulting to `100%` of whatever the
