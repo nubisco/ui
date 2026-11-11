@@ -172,9 +172,9 @@
             width="14"
             height="14"
             role="img"
-            :aria-label="STATUS_LABELS[status]"
+            :aria-label="statusLabel(status)"
           >
-            <title>{{ STATUS_LABELS[status] }}</title>
+            <title>{{ statusLabel(status) }}</title>
             <!-- Shape carries the meaning and colour reinforces it, so
                  the three states stay apart in greyscale, for a reader
                  with a colour vision deficiency, and at the canvas zoom
@@ -236,7 +236,7 @@
             <input
               type="checkbox"
               :checked="enabled"
-              :aria-label="`Enable ${title}`"
+              :aria-label="nbStrings.blueprintEnableCard(title)"
               @change="
                 $emit('toggle', id, ($event.target as HTMLInputElement).checked)
               "
@@ -570,23 +570,31 @@ function pinStyle(pin: IRenderedPin): Record<string, string> {
 
 // ── Labels and keyboard ───────────────────────────────────────────────
 
-const STATUS_LABELS: Record<Exclude<TBlueprintCardStatus, 'none'>, string> = {
-  valid: 'Valid',
-  warning: 'Warning',
-  error: 'Error',
+function statusLabel(status: Exclude<TBlueprintCardStatus, 'none'>): string {
+  const strings = nbStrings.value
+  if (status === 'valid') return strings.blueprintStatusValid
+  if (status === 'warning') return strings.blueprintStatusWarning
+  return strings.blueprintStatusError
 }
 
 function pinAriaLabel(pin: IRenderedPin, type: 'input' | 'output'): string {
-  const state = isConnected(pin.portId) ? 'connected' : 'not connected'
-  return `${pinTitle(pin)}, ${type}, ${state}`
+  return nbStrings.value.blueprintPin(
+    pinTitle(pin),
+    type,
+    isConnected(pin.portId),
+  )
 }
 
 const cardAriaLabel = computed(() => {
   const parts = [props.title]
   if (props.category) parts.push(props.category)
   if (props.status && props.status !== 'none')
-    parts.push(STATUS_LABELS[props.status])
-  parts.push(props.enabled ? 'enabled' : 'disabled')
+    parts.push(statusLabel(props.status))
+  parts.push(
+    props.enabled
+      ? nbStrings.value.blueprintCardEnabled
+      : nbStrings.value.blueprintCardDisabled,
+  )
   return parts.join(', ')
 })
 

@@ -149,6 +149,21 @@ export interface INbStrings {
   blueprintCollapseCard: (title: string) => string
   /** The remove button's spoken name. `blueprintRemoveCard` is its tooltip. */
   blueprintRemoveCardNamed: (title: string) => string
+  /** The card's status, in its spoken name and on the status mark. */
+  blueprintStatusValid: string
+  blueprintStatusWarning: string
+  blueprintStatusError: string
+  /** The last part of the card's spoken name. */
+  blueprintCardEnabled: string
+  blueprintCardDisabled: string
+  /** The enable switch, named with the card's title. */
+  blueprintEnableCard: (title: string) => string
+  /** A pin's spoken name: its title, its direction and whether it is wired. */
+  blueprintPin: (
+    title: string,
+    direction: 'input' | 'output',
+    connected: boolean,
+  ) => string
   // NbCopyButton
   copyButtonCopy: string
   copyButtonCopied: string
@@ -304,6 +319,17 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   blueprintExpandCard: (title: string) => `Expand ${title}`,
   blueprintCollapseCard: (title: string) => `Collapse ${title}`,
   blueprintRemoveCardNamed: (title: string) => `Remove ${title}`,
+  blueprintStatusValid: 'Valid',
+  blueprintStatusWarning: 'Warning',
+  blueprintStatusError: 'Error',
+  blueprintCardEnabled: 'enabled',
+  blueprintCardDisabled: 'disabled',
+  blueprintEnableCard: (title: string) => `Enable ${title}`,
+  blueprintPin: (
+    title: string,
+    direction: 'input' | 'output',
+    connected: boolean,
+  ) => `${title}, ${direction}, ${connected ? 'connected' : 'not connected'}`,
   copyButtonCopy: 'Copy',
   copyButtonCopied: 'Copied',
   backToTop: 'Back to top',
