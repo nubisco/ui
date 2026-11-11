@@ -12,7 +12,12 @@ pageTabs: ['usage', 'code', 'accessibility']
     :items="[
       { id: 'rename', label: 'Rename' },
       { id: 'duplicate', label: 'Duplicate' },
-      { id: 'archive', label: 'Archive', disabled: true },
+      {
+        id: 'archive',
+        label: 'Archive',
+        disabled: true,
+        disabledReason: 'Shared files cannot be archived',
+      },
       { id: 'delete', label: 'Delete', danger: true },
     ]"
   />
@@ -36,6 +41,15 @@ pageTabs: ['usage', 'code', 'accessibility']
 [`NbActionGroup`](/components/action-group/usage), so a group's overflow and a
 standalone menu are written the same way. `NbMenuItem`s in the default slot
 are added after them, for a submenu or a divider.
+
+## An action that does not apply
+
+Keep it in the menu with `disabled` and a `disabledReason`, as you would on a
+button. A button shows the reason as its tooltip. A menu row has nowhere to
+hover on a touch screen, so it prints the reason under its label instead,
+and the arrow keys still stop on it. The same item reads the same whether it
+sits inline or has folded into the menu, which is what `NbActionGroup`,
+`NbBatchActions` and the rows of `NbDataTable` rely on.
 
 ## Alignment
 

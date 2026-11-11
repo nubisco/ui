@@ -28,6 +28,7 @@
         :label="item.label"
         :icon="item.icon"
         :disabled="item.disabled || item.loading"
+        :disabled-reason="item.disabled ? item.disabledReason : undefined"
         :danger="item.danger"
         :selectable="item.pressed !== undefined"
         :selected="item.pressed"

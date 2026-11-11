@@ -204,10 +204,15 @@ function onKeydown(e: KeyboardEvent) {
   const focused = menuItems.indexOf(document.activeElement as HTMLElement)
   if (focused >= 0) highlighted.value = focused
 
+  // Where the arrow keys stop: every enabled item, and a disabled one that
+  // says why it is disabled. That one is unavailable, not absent, and a
+  // keyboard or screen reader user has to land on it to hear the reason.
+  // A disabled item with nothing to say is still skipped.
   const enabled = (i: number) =>
-    menuItems[i]?.getAttribute('aria-disabled') !== 'true'
+    menuItems[i]?.getAttribute('aria-disabled') !== 'true' ||
+    menuItems[i]?.hasAttribute('data-nb-explained')
 
-  /** The next enabled item from `from` in `step`, wrapping; -1 if none. */
+  /** The next reachable item from `from` in `step`, wrapping, or -1. */
   function seek(from: number, step: 1 | -1): number {
     for (let n = 1; n <= menuItems.length; n++) {
       const i = (from + step * n + menuItems.length * n) % menuItems.length
@@ -249,7 +254,7 @@ function onKeydown(e: KeyboardEvent) {
     // A field inside the menu (a filter, a quick edit) takes its own letters.
     !(e.target as HTMLElement).closest('input, textarea, [contenteditable]')
   ) {
-    // First-letter typeahead: the next enabled item whose label starts with
+    // First-letter typeahead: the next reachable item whose label starts with
     // the key, wrapping, so pressing it again walks the matches.
     const key = e.key.toLowerCase()
     for (let n = 1; n <= menuItems.length; n++) {

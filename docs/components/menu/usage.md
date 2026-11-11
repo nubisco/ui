@@ -80,13 +80,21 @@ The `danger` prop renders an item with destructive styling (red text, red hover 
 
 ## Disabled items
 
-Disabled items are visually muted and cannot be activated.
+Disabled items are visually muted and cannot be activated. Prefer disabling
+an item to removing it: a menu that changes shape from one opening to the
+next is a menu nobody can learn.
+
+Give a disabled item a `disabled-reason` to say why it does not apply. The
+reason is printed as a muted second line under the label, so it reads the
+same with a mouse, a finger or a keyboard, and the arrow keys stop on the
+item so a screen reader announces it. Items without a reason keep their
+single-line height.
 
 <preview>
   <NbButton ref="disabledTrigger" @click="openDisabledMenu">Edit</NbButton>
   <NbMenu ref="disabledMenu" v-model:open="disabledOpen" @close="disabledOpen = false">
     <NbMenuItem label="Copy" @select="disabledOpen = false" />
-    <NbMenuItem label="Paste" disabled />
+    <NbMenuItem label="Paste" disabled disabled-reason="The clipboard is empty" />
     <NbMenuItem label="Select All" @select="disabledOpen = false" />
   </NbMenu>
 </preview>
