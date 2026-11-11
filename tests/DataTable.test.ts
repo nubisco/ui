@@ -3,6 +3,9 @@ import { stubPhone, unstubPhone } from './__mocks__/phoneLayout'
 import { h } from 'vue'
 import { mount } from '@vue/test-utils'
 import DataTable from '../src/components/DataTable.vue'
+import NbButton from '../src/components/Button.vue'
+import NbOverflowMenu from '../src/components/OverflowMenu.vue'
+import type { IActionGroupItem } from '../src/components/ActionGroup.d'
 import type {
   IDataTableColumn,
   IDataTableSortState,
@@ -599,7 +602,8 @@ describe('NbDataTable toolbar layout', () => {
         },
       },
     )
-    const search = wrapper.find('.nb-data-table__toolbar-search')
+    // The strip is an NbToolbar, and its start slot is the box that grows.
+    const search = wrapper.find('.nb-toolbar__start')
     expect(search.find('.search').exists()).toBe(true)
     expect(wrapper.find('.nb-data-table__toolbar-tools').classes()).toContain(
       'nb-data-table__toolbar-tools--search',
@@ -611,9 +615,123 @@ describe('NbDataTable toolbar layout', () => {
       { size: 'xl', selectable: 'multiple', selected: [1] },
       { slots: { 'batch-actions': '<button>Delete</button>' } },
     )
-    expect(wrapper.find('.nb-data-table__batch-cancel').classes()).toContain(
+    expect(wrapper.find('.nb-batch-actions__cancel').classes()).toContain(
       'nb-button--lg',
     )
+  })
+
+  it('builds the strip on a flush NbToolbar sized to the rows', () => {
+    const wrapper = mountTable(
+      { size: 'md' },
+      { slots: { 'toolbar-actions': () => h(NbButton, () => 'New') } },
+    )
+    const toolbar = wrapper.find('.nb-data-table__toolbar-tools')
+    expect(toolbar.attributes('role')).toBe('toolbar')
+    expect(toolbar.attributes('aria-label')).toBe('Table tools')
+    expect(toolbar.classes()).toContain('nb-toolbar--flush')
+    const button = toolbar.find('.nb-button')
+    expect(button.classes()).toContain('nb-button--md')
+    expect(button.classes()).toContain('nb-button--flush')
+  })
+
+  it('keeps a 32px strip for an extra small table', () => {
+    const wrapper = mountTable(
+      { size: 'xs' },
+      { slots: { 'toolbar-actions': () => h(NbButton, () => 'New') } },
+    )
+    expect(wrapper.find('.nb-toolbar').classes()).toContain('nb-toolbar--sm')
+  })
+
+  it('takes the Cancel text from the catalogue', () => {
+    const wrapper = mountTable(
+      { selectable: 'multiple', selected: [1] },
+      { slots: { 'batch-actions': '<button>Delete</button>' } },
+    )
+    expect(wrapper.find('.nb-batch-actions__cancel').text()).toBe('Cancel')
+  })
+})
+
+describe('NbDataTable rowActions', () => {
+  const actions = (row: Record<string, unknown>): IActionGroupItem[] => [
+    { id: 'edit', label: 'Edit', icon: 'pencil-simple', onSelect: vi.fn() },
+    {
+      id: 'delete',
+      label: 'Delete',
+      icon: 'trash',
+      disabled: row.id === 1,
+      disabledReason: 'Paid invoices cannot be deleted',
+    },
+  ]
+
+  it('renders small ghost icon buttons named by their label', () => {
+    const wrapper = mountTable({ rowActions: actions })
+    const cell = wrapper.findAll('td.nb-data-table__actions-cell')[0]
+    const buttons = cell.findAll('button')
+    expect(buttons).toHaveLength(2)
+    expect(buttons[0].classes()).toEqual(
+      expect.arrayContaining([
+        'nb-button--ghost',
+        'nb-button--sm',
+        'nb-button--icon-only',
+      ]),
+    )
+    expect(buttons[0].attributes('aria-label')).toBe('Edit')
+  })
+
+  it('keeps an action that does not apply in place, saying why', () => {
+    const wrapper = mountTable({ rowActions: actions })
+    const cells = wrapper.findAll('td.nb-data-table__actions-cell')
+    const first = cells[0].findAll('button')[1]
+    expect(first.attributes('disabled')).toBeDefined()
+    expect(first.attributes('aria-label')).toBe(
+      'Delete: Paid invoices cannot be deleted',
+    )
+    const second = cells[1].findAll('button')[1]
+    expect(second.attributes('disabled')).toBeUndefined()
+    expect(second.attributes('aria-label')).toBe('Delete')
+  })
+
+  it('names the column from the catalogue', () => {
+    const wrapper = mountTable({ rowActions: actions })
+    expect(wrapper.find('th.nb-data-table__actions-cell').text()).toBe(
+      'Row actions',
+    )
+  })
+
+  it('moves actions past three into an overflow menu', () => {
+    const many = (): IActionGroupItem[] =>
+      ['a', 'b', 'c', 'd'].map((id) => ({ id, label: id, icon: 'star' }))
+    const wrapper = mountTable({ rowActions: many })
+    const cell = wrapper.findAll('td.nb-data-table__actions-cell')[0]
+    expect(cell.findAll('button')).toHaveLength(3)
+    const menu = cell.findComponent(NbOverflowMenu)
+    expect(menu.props('items').map((i: IActionGroupItem) => i.id)).toEqual([
+      'c',
+      'd',
+    ])
+  })
+
+  it('disables every row action while the batch bar is up', () => {
+    const wrapper = mountTable(
+      { rowActions: actions, selectable: 'multiple', selected: [2] },
+      { slots: { 'batch-actions': '<button>Delete</button>' } },
+    )
+    const cell = wrapper.findAll('td.nb-data-table__actions-cell')[1]
+    expect(
+      cell
+        .findAll('button')
+        .every((b) => b.attributes('disabled') !== undefined),
+    ).toBe(true)
+  })
+
+  it('runs an action on click', async () => {
+    const list = actions({ id: 2 })
+    const wrapper = mountTable({ rowActions: () => list })
+    await wrapper
+      .findAll('td.nb-data-table__actions-cell')[0]
+      .find('button')
+      .trigger('click')
+    expect(list[0].onSelect).toHaveBeenCalledOnce()
   })
 })
 

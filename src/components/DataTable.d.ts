@@ -1,4 +1,5 @@
 import type { VNodeChild } from 'vue'
+import type { IActionGroupItem } from './ActionGroup.d'
 
 /**
  * NbDataTable: presentational, data-driven table for read-mostly application
@@ -98,7 +99,7 @@ export interface IDataTableProps<T = Record<string, unknown>> {
   /**
    * Row height, on Carbon's data table scale: `xs` 24px, `sm` 32px, `md` 40px,
    * `lg` 48px (the default) and `xl` 64px. The header row matches it, and the
-   * toolbar and batch bar match it too, up to 48px.
+   * toolbar and batch bar match it too, from 32px up to 48px.
    *
    * @default 'lg'
    */
@@ -167,6 +168,16 @@ export interface IDataTableProps<T = Record<string, unknown>> {
    * @default []
    */
   expanded?: (string | number)[]
+  /**
+   * Each row's actions, as small ghost icon buttons in a trailing column.
+   * Every item needs an `icon`, and its `label` is the button's name and
+   * tooltip. Return the same actions for every row: one that does not apply
+   * stays in place with `disabled` and a `disabledReason`, which the tooltip
+   * reads out. Past three, two stay and the rest go into an overflow menu.
+   * All of them are disabled while the batch bar is up. Takes the place of
+   * the `#row-actions` slot.
+   */
+  rowActions?: (row: T) => IActionGroupItem[]
 }
 
 /** Payload emitted by `NbDataTable` events. */
