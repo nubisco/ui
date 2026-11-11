@@ -3,7 +3,7 @@
     <!-- DEFAULT variant -->
     <template v-if="variant === 'default'">
       <NbLabel
-        v-if="label"
+        v-if="label && !grouped"
         :for="inputId"
         :required="required"
         :disabled="isDisabled"
@@ -31,7 +31,7 @@
         />
 
         <NbMessage
-          v-if="error"
+          v-if="error && !grouped"
           variant="error"
           :icon-only="true"
           live="off"
@@ -40,7 +40,7 @@
           >{{ error }}</NbMessage
         >
         <NbMessage
-          v-else-if="warning"
+          v-else-if="warning && !grouped"
           variant="warning"
           :icon-only="true"
           live="off"
@@ -89,7 +89,7 @@
       </div>
 
       <NbMessage
-        v-if="error"
+        v-if="error && !grouped"
         :id="ids.error"
         :key="messageKey"
         variant="error"
@@ -98,7 +98,7 @@
         >{{ error }}</NbMessage
       >
       <NbMessage
-        v-else-if="warning"
+        v-else-if="warning && !grouped"
         :id="ids.warning"
         :key="messageKey"
         variant="warning"
@@ -107,7 +107,7 @@
         >{{ warning }}</NbMessage
       >
       <NbMessage
-        v-else-if="helper"
+        v-else-if="helper && !grouped"
         :id="ids.helper"
         :key="messageKey"
         variant="helper"
@@ -120,7 +120,7 @@
     <!-- FLUID variant -->
     <template v-else-if="variant === 'fluid'">
       <div class="nb-number-input__field-wrapper" :class="wrapperClasses">
-        <div v-if="label" class="nb-number-input__inner-header">
+        <div v-if="label && !grouped" class="nb-number-input__inner-header">
           <label :for="inputId" class="nb-number-input__inner-label">
             {{ label }}
             <span
@@ -162,7 +162,7 @@
           />
 
           <NbMessage
-            v-if="error"
+            v-if="error && !grouped"
             variant="error"
             :icon-only="true"
             live="off"
@@ -171,7 +171,7 @@
             >{{ error }}</NbMessage
           >
           <NbMessage
-            v-else-if="warning"
+            v-else-if="warning && !grouped"
             variant="warning"
             :icon-only="true"
             live="off"
@@ -216,7 +216,7 @@
       </div>
 
       <NbMessage
-        v-if="error"
+        v-if="error && !grouped"
         :id="ids.error"
         :key="messageKey"
         variant="error"
@@ -225,7 +225,7 @@
         >{{ error }}</NbMessage
       >
       <NbMessage
-        v-else-if="warning"
+        v-else-if="warning && !grouped"
         :id="ids.warning"
         :key="messageKey"
         variant="warning"
@@ -290,6 +290,7 @@ const autoId = useStableId({})
 // Inside an NbInputGroup the group's size, disabled state and message win,
 // and the first field takes the id the group's label points at.
 const group = useInputGroupField(props, autoId)
+const grouped = group.grouped
 const inputId = group.id
 const resolvedSize = group.size
 const isDisabled = group.disabled
@@ -301,15 +302,21 @@ const {
   key: messageKey,
 } = useFieldMessage(props, inputId)
 const describedBy = computed(() =>
-  joinDescribedBy(messageId.value, group.describedBy.value),
+  joinDescribedBy(
+    grouped ? undefined : messageId.value,
+    group.describedBy.value,
+  ),
 )
 const ariaInvalid = computed(
   () => invalid.value ?? (group.status.value === 'error' ? 'true' : undefined),
 )
-const hasError = computed(() => !!props.error || group.status.value === 'error')
+const hasError = computed(
+  () => (!grouped && !!props.error) || group.status.value === 'error',
+)
 const hasWarning = computed(
   () =>
-    !hasError.value && (!!props.warning || group.status.value === 'warning'),
+    !hasError.value &&
+    ((!grouped && !!props.warning) || group.status.value === 'warning'),
 )
 const isAtMin = computed(
   () =>

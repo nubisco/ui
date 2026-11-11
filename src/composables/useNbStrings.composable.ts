@@ -42,6 +42,8 @@ export interface INbStrings {
   datePickerNextYear: string
   datePickerChooseDate: string
   datePickerChooseEndDate: string
+  /** Names a range's end field inside an input group, which shows no label of its own. */
+  datePickerEndDate: string
   datePickerChangeDate: (date: string) => string
   datePickerChangeEndDate: (date: string) => string
   datePickerDialog: string
@@ -230,6 +232,7 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   datePickerNextYear: 'Next year',
   datePickerChooseDate: 'Choose date',
   datePickerChooseEndDate: 'Choose end date',
+  datePickerEndDate: 'End date',
   datePickerChangeDate: (date: string) => `Change date, ${date}`,
   datePickerChangeEndDate: (date: string) => `Change end date, ${date}`,
   datePickerDialog: 'Date picker',

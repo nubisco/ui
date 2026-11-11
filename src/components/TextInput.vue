@@ -203,7 +203,10 @@
     <!-- ── FLUID variant ─────────────────────────────────────── -->
     <template v-else-if="variant === 'fluid'">
       <div class="nb-text-input__field-wrapper" :class="wrapperClasses">
-        <div v-if="label || $slots.label" class="nb-text-input__inner-header">
+        <div
+          v-if="(label || $slots.label) && !grouped"
+          class="nb-text-input__inner-header"
+        >
           <slot v-if="$slots.label" name="label" />
           <label
             v-else

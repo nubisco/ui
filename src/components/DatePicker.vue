@@ -85,6 +85,7 @@
               :id="endInputId"
               ref="endInputRef"
               type="text"
+              :aria-label="endGroupedLabel"
               class="nb-date-picker__field"
               :value="endDisplayValue"
               :placeholder="endPlaceholder || dateFormatHint"
@@ -153,7 +154,7 @@
           :class="startWrapperClasses"
         >
           <div
-            v-if="label || $slots.label || startFluidMessage"
+            v-if="(label || $slots.label || startFluidMessage) && !grouped"
             class="nb-date-picker__inner-header"
           >
             <slot v-if="$slots.label" name="label" />
@@ -219,7 +220,7 @@
           :class="endWrapperClasses"
         >
           <div
-            v-if="endFluidLabel || endMessage"
+            v-if="(endFluidLabel || endMessage) && !grouped"
             class="nb-date-picker__inner-header"
           >
             <label :for="endInputId" class="nb-date-picker__inner-label">
@@ -245,6 +246,7 @@
               :id="endInputId"
               ref="endInputRef"
               type="text"
+              :aria-label="endGroupedLabel"
               class="nb-date-picker__field"
               :value="endDisplayValue"
               :placeholder="endPlaceholder || dateFormatHint"
@@ -645,6 +647,15 @@ const perFieldLabels = computed(
 )
 
 const endFluidLabel = computed(() => props.endLabel || props.endPlaceholder)
+// Inside a group neither end label is drawn, and the group's label names
+// only the start field, so the end field is named here instead.
+const endGroupedLabel = computed(() =>
+  grouped
+    ? props.endLabel ||
+      props.endPlaceholder ||
+      nbStrings.value.datePickerEndDate
+    : undefined,
+)
 
 // ── Date constraints ───────────────────────────────────────
 function isDateDisabled(iso: string): boolean {

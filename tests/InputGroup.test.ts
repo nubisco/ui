@@ -289,4 +289,48 @@ describe('NbInputGroup owns the label and message', () => {
     ).toHaveLength(2)
     warn.mockRestore()
   })
+
+  // The fluid variant draws its label inside the box, and every member
+  // used to keep it there. NumberInput kept its label and message in both.
+  it.each([
+    ['TextInput', TextInput, { modelValue: '' }],
+    ['NumberInput', NumberInput, { modelValue: 1 }],
+    ['Select', Select, { modelValue: null, options }],
+    ['DatePicker', DatePicker, { modelValue: '' }],
+  ])(
+    'hides the label and message of a %s in either variant',
+    async (_name, field, extra) => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      for (const variant of ['default', 'fluid']) {
+        const w = group({ label: 'Group', id: 'g' }, () => [
+          h(field as never, {
+            ...extra,
+            variant,
+            label: 'Own label',
+            helper: 'Own helper',
+            error: 'Own error',
+          }),
+        ])
+        await nextTick()
+        expect(w.text(), variant).not.toContain('Own label')
+        expect(w.text(), variant).not.toContain('Own helper')
+        expect(w.text(), variant).not.toContain('Own error')
+        expect(w.findAll('label'), variant).toHaveLength(1)
+        w.unmount()
+      }
+      warn.mockRestore()
+    },
+  )
+
+  it('names a grouped range picker’s end field, which has no label shown', async () => {
+    const w = group({ label: 'Stay', id: 'stay' }, () => [
+      h(DatePicker, { modelValue: '', type: 'range', variant: 'fluid' }),
+    ])
+    await nextTick()
+    const [start, end] = w.findAll('.nb-date-picker__field')
+    expect(start.attributes('id')).toBe('stay')
+    expect(start.attributes('aria-label')).toBeUndefined()
+    expect(end.attributes('aria-label')).toBe('End date')
+    w.unmount()
+  })
 })

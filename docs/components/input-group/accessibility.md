@@ -29,7 +29,6 @@ Nothing new. <kbd>Tab</kbd> moves through the field and then each button, in the
 
 ## Known gaps
 
-- `NbDatePicker` joins a group's corners, but does not take the group's size, state or message yet. Give it its own.
 - No manual screen reader pass has been recorded for this component.
 
 <!--@include: ./_shared.md-->

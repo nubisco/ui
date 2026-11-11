@@ -56,7 +56,7 @@
             <template v-else>{{ placeholder }}</template>
           </span>
           <NbMessage
-            v-if="error"
+            v-if="error && !grouped"
             variant="error"
             :icon-only="true"
             live="off"
@@ -65,7 +65,7 @@
             >{{ error }}</NbMessage
           >
           <NbMessage
-            v-else-if="warning"
+            v-else-if="warning && !grouped"
             variant="warning"
             :icon-only="true"
             live="off"
@@ -147,7 +147,7 @@
           @blur="focused = false"
         >
           <NbGrid
-            v-if="label || $slots.label"
+            v-if="(label || $slots.label) && !grouped"
             dir="row"
             align="center"
             gap="xs"
@@ -219,7 +219,7 @@
       </SelectControl>
 
       <NbMessage
-        v-if="error"
+        v-if="error && !grouped"
         :id="ids.error"
         :key="messageKey"
         variant="error"
@@ -228,7 +228,7 @@
         >{{ error }}</NbMessage
       >
       <NbMessage
-        v-else-if="warning"
+        v-else-if="warning && !grouped"
         :id="ids.warning"
         :key="messageKey"
         variant="warning"
