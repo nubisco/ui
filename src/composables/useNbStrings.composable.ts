@@ -58,9 +58,27 @@ export interface INbStrings {
   modalClose: string
   // NbTextInput `showCount`
   textInputCount: (length: number, max: number) => string
+  // NbTextInput `clearable` and `revealable`
+  textInputClear: string
+  textInputShowPassword: string
+  textInputHidePassword: string
+  // NbSearch
+  searchLabel: string
+  searchPlaceholder: string
+  // NbSelect `clearable`, when no `clearLabel` is passed
+  selectClear: string
   // NbNumberInput
   numberInputDecrease: string
   numberInputIncrease: string
+  // NbFileUploader
+  fileUploaderDropHint: string
+  /** The remove button's tooltip: short, because it is a chip. */
+  fileUploaderRemove: string
+  /** The remove button's spoken name, which says which file. */
+  fileUploaderRemoveFile: (fileName: string) => string
+  // NbInlineEdit: the spoken name of the value while it is not being edited
+  inlineEditEmpty: string
+  inlineEditName: (label: string, value: string) => string
   // NbBoard
   boardSelectionActions: string
   boardClearSelection: string
@@ -140,8 +158,20 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   selectionCount: (count: number) => `${count} selected`,
   modalClose: 'Close',
   textInputCount: (length: number, max: number) => `${length}/${max}`,
+  textInputClear: 'Clear',
+  textInputShowPassword: 'Show password',
+  textInputHidePassword: 'Hide password',
+  searchLabel: 'Search',
+  searchPlaceholder: 'Search',
+  selectClear: 'Clear selection',
   numberInputDecrease: 'Decrease',
   numberInputIncrease: 'Increase',
+  fileUploaderDropHint: 'Drag and drop files here or click to upload',
+  fileUploaderRemove: 'Remove',
+  fileUploaderRemoveFile: (fileName: string) => `Remove ${fileName}`,
+  inlineEditEmpty: 'empty',
+  inlineEditName: (label: string, value: string) =>
+    `${label}: ${value}. Press Enter to edit.`,
   boardSelectionActions: 'Actions for the selected cards',
   boardClearSelection: 'Clear selection',
   boardSelectionCleared: 'Selection cleared',

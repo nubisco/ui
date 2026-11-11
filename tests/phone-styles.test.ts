@@ -129,7 +129,9 @@ describe('phone styles stay behind the phone gate', () => {
     )
   })
 
-  it('NbDatePicker: sheet, 16px field text, 44px trigger', () => {
+  // The 44px trigger is no longer drawn here: the calendar button is an
+  // NbButton, whose small and medium sizes carry their own phone hit area.
+  it('NbDatePicker: sheet and 16px field text', () => {
     const phone = phoneOf('DatePicker.vue')
     expect(rule(phone, '.nb-date-picker__calendar--sheet')).toContain(
       'inset-inline: 0',
@@ -137,7 +139,6 @@ describe('phone styles stay behind the phone gate', () => {
     expect(rule(phone, '.nb-date-picker__scrim')).toContain('position: fixed')
     const touch = phoneTouchOf('DatePicker.vue')
     expect(rule(touch, '.nb-date-picker__field')).toContain('max(16px')
-    expect(touch).toContain('.nb-date-picker__icon::after')
   })
 
   it('NbInlineEdit: editor text is never below 16px on a touch phone', () => {

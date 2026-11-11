@@ -37,7 +37,12 @@
     type="button"
     class="nb-inline-edit__text"
     :class="[`nb-inline-edit__text--${size}`, { 'is-disabled': disabled }]"
-    :aria-label="`${label}: ${modelValue || placeholder || 'empty'}. Press Enter to edit.`"
+    :aria-label="
+      nbStrings.inlineEditName(
+        label,
+        modelValue || placeholder || nbStrings.inlineEditEmpty,
+      )
+    "
     :disabled="disabled"
     @click="start"
   >
@@ -62,6 +67,7 @@
 import { computed, nextTick, ref } from 'vue'
 import type { IInlineEditProps } from './InlineEdit.d'
 import NbIcon from './Icon.vue'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 
 const props = withDefaults(defineProps<IInlineEditProps>(), {
   placeholder: undefined,
@@ -75,6 +81,8 @@ const emit = defineEmits<{
   commit: [value: string]
   cancel: []
 }>()
+
+const nbStrings = useNbStrings()
 
 const editing = ref(false)
 const input = ref<HTMLInputElement | HTMLTextAreaElement | null>(null)

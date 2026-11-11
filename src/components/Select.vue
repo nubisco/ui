@@ -80,17 +80,17 @@
             <NbIcon :name="isOpen ? 'caret-up' : 'caret-down'" :size="16" />
           </NbGrid>
         </button>
-        <button
+        <NbButton
           v-if="showClear"
-          type="button"
+          variant="ghost"
+          icon="x"
+          size="xs"
+          :label="resolvedClearLabel"
           class="nb-select__clear"
-          :aria-label="clearLabel"
           @click="clearSelection"
           @keydown.enter.stop
           @keydown.space.stop
-        >
-          <NbIcon name="x" :size="16" />
-        </button>
+        />
       </SelectControl>
 
       <NbMessage
@@ -201,17 +201,17 @@
             </NbGrid>
           </NbGrid>
         </button>
-        <button
+        <NbButton
           v-if="showClear"
-          type="button"
+          variant="ghost"
+          icon="x"
+          size="xs"
+          :label="resolvedClearLabel"
           class="nb-select__clear"
-          :aria-label="clearLabel"
           @click="clearSelection"
           @keydown.enter.stop
           @keydown.space.stop
-        >
-          <NbIcon name="x" :size="16" />
-        </button>
+        />
       </SelectControl>
 
       <NbMessage
@@ -364,6 +364,8 @@ import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
 import NbGrid from './Grid.vue'
 import NbIcon from './Icon.vue'
+import NbButton from './Button.vue'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { useFieldMessage } from '@/composables/useFieldMessage.composable'
 import {
   ref,
@@ -386,7 +388,7 @@ const props = withDefaults(defineProps<ISelectProps>(), {
   creatable: false,
   createPlaceholder: '',
   clearable: false,
-  clearLabel: 'Clear selection',
+  clearLabel: undefined,
   searchable: false,
   anchor: null,
   selectedMark: 'fill',
@@ -801,6 +803,13 @@ const triggerSlot = computed(() => ({
   },
 }))
 
+// The prop wins, then the string catalogue, so a translated app no longer
+// has to pass `clear-label` to every select to stop it saying English.
+const nbStrings = useNbStrings()
+const resolvedClearLabel = computed(
+  () => props.clearLabel ?? nbStrings.value.selectClear,
+)
+
 const showClear = computed(
   () => props.clearable && !props.disabled && selectedValues.value.length > 0,
 )
@@ -1094,6 +1103,11 @@ defineExpose({
   gap: var(--nb-field-label-gap);
   font-family: var(--nb-font-family-sans, sans-serif);
   --field-h: var(--nb-field-height-md);
+  // The clear button and the space it holds in the trigger's row.
+  --nb-select-clear-size: min(
+    calc(var(--nb-base-unit) * 3),
+    calc(var(--field-h) - 1px - 2 * var(--nb-field-border-width, 0px))
+  );
 
   &--xs {
     --field-h: var(--nb-field-height-xs);
@@ -1268,37 +1282,26 @@ defineExpose({
   // status icon end before it rather than running under it.
   &__clear-space {
     flex-shrink: 0;
-    width: 24px;
+    width: var(--nb-select-clear-size);
   }
 
+  /*
+   * An NbButton (ghost, icon-only, named by `label`), so it has the shared
+   * hover, the shared focus ring and a tooltip. 24px, or the field's inner
+   * height when that is smaller, so it never pushes an xs field taller.
+   */
   &__clear {
     position: absolute;
     top: 50%;
     // Over the spacer: the trigger's end padding, the caret and one gap
     right: calc(var(--nb-field-padding-h) + 16px + 8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    margin: 0;
     transform: translateY(-50%);
-    border: none;
-    background: transparent;
-    color: var(--nb-c-text-subtle);
-    cursor: pointer;
-    @include radius.standalone(control-sm);
-    @include touch.hit-area(44px, false);
-    transition: color var(--nb-motion-short);
 
-    &:hover {
-      color: var(--nb-c-text);
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--nb-c-primary);
-      outline-offset: 0;
+    // Under the root, to outrank NbButton's own size rule whatever the
+    // order the two stylesheets load in.
+    .nb-select &.nb-button {
+      width: var(--nb-select-clear-size);
+      height: var(--nb-select-clear-size);
     }
   }
 

@@ -49,29 +49,38 @@
           >{{ warning }}</NbMessage
         >
 
+        <!-- At a limit the stepper is aria-disabled: NbButton draws it as
+             disabled and takes it off the pointer, and it stays in the tab
+             order so it is still found and announced. -->
         <div class="nb-number-input__steppers">
-          <button
-            type="button"
+          <span class="nb-number-input__divider" aria-hidden="true" />
+          <NbButton
+            variant="ghost"
+            icon="minus"
+            :size="size"
+            :label="nbStrings.numberInputDecrease"
+            tooltip-position="top"
             class="nb-number-input__stepper"
             :class="{ 'nb-number-input__stepper--at-limit': isAtMin }"
             :disabled="disabled"
-            :aria-label="nbStrings.numberInputDecrease"
+            :aria-disabled="isAtMin || undefined"
             @mousedown.prevent
             @click="decrement"
-          >
-            <NbIcon name="minus" :size="16" />
-          </button>
-          <button
-            type="button"
+          />
+          <span class="nb-number-input__divider" aria-hidden="true" />
+          <NbButton
+            variant="ghost"
+            icon="plus"
+            :size="size"
+            :label="nbStrings.numberInputIncrease"
+            tooltip-position="top"
             class="nb-number-input__stepper"
             :class="{ 'nb-number-input__stepper--at-limit': isAtMax }"
             :disabled="disabled"
-            :aria-label="nbStrings.numberInputIncrease"
+            :aria-disabled="isAtMax || undefined"
             @mousedown.prevent
             @click="increment"
-          >
-            <NbIcon name="plus" :size="16" />
-          </button>
+          />
         </div>
       </div>
 
@@ -168,28 +177,34 @@
           >
 
           <div class="nb-number-input__steppers">
-            <button
-              type="button"
+            <span class="nb-number-input__divider" aria-hidden="true" />
+            <NbButton
+              variant="ghost"
+              icon="minus"
+              :size="size"
+              :label="nbStrings.numberInputDecrease"
+              tooltip-position="top"
               class="nb-number-input__stepper"
               :class="{ 'nb-number-input__stepper--at-limit': isAtMin }"
               :disabled="disabled"
-              :aria-label="nbStrings.numberInputDecrease"
+              :aria-disabled="isAtMin || undefined"
               @mousedown.prevent
               @click="decrement"
-            >
-              <NbIcon name="minus" :size="16" />
-            </button>
-            <button
-              type="button"
+            />
+            <span class="nb-number-input__divider" aria-hidden="true" />
+            <NbButton
+              variant="ghost"
+              icon="plus"
+              :size="size"
+              :label="nbStrings.numberInputIncrease"
+              tooltip-position="top"
               class="nb-number-input__stepper"
               :class="{ 'nb-number-input__stepper--at-limit': isAtMax }"
               :disabled="disabled"
-              :aria-label="nbStrings.numberInputIncrease"
+              :aria-disabled="isAtMax || undefined"
               @mousedown.prevent
               @click="increment"
-            >
-              <NbIcon name="plus" :size="16" />
-            </button>
+            />
           </div>
         </div>
       </div>
@@ -222,7 +237,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import type { IFieldComponent } from '@/types/Props.d'
 import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
-import NbIcon from './Icon.vue'
+import NbButton from './Button.vue'
 import { useStableId } from '@/composables/useStableId.composable'
 import { useFieldMessage } from '@/composables/useFieldMessage.composable'
 
@@ -507,43 +522,31 @@ defineExpose({ focus: () => inputRef.value?.focus() })
     flex-shrink: 0;
   }
 
-  &__stepper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    // Knob so dense containers (e.g. .nb-inspector) can shrink the steppers.
-    width: var(--nb-number-input-stepper-width, 40px);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--nb-c-text);
-    transition: background var(--nb-motion-short);
-    padding: 0;
+  /*
+   * The steppers are NbButtons: ghost, icon-only, named by `label`, and the
+   * same size as the field, so they get the shared hover, the shared focus
+   * ring and a tooltip instead of a hand-made square that drew no ring at
+   * all. Each is as wide as the field is tall (40px at md, as before) and
+   * fills the field's height inside its border, so the pair still reads as
+   * one two-segment control at the end of the box. ArrowUp and ArrowDown on
+   * the input itself still step, natively.
+   */
+  &__steppers .nb-number-input__stepper {
+    // Knob so dense containers (e.g. .nb-inspector) can narrow the steppers.
+    width: var(--nb-number-input-stepper-width, var(--field-h));
+    height: auto;
+    align-self: stretch;
     flex-shrink: 0;
-    position: relative;
+  }
 
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 25%;
-      bottom: 25%;
-      width: 1px;
-      background: var(--nb-c-field-border);
-    }
-
-    &:hover:not(:disabled):not(.nb-number-input__stepper--at-limit) {
-      background: var(--nb-c-discrete);
-    }
-
-    &:disabled {
-      cursor: not-allowed;
-    }
-
-    &--at-limit {
-      opacity: var(--nb-field-disabled-opacity);
-      cursor: not-allowed;
-    }
+  // The rule between the input and each stepper: half the field's height,
+  // centred, so the two segments read as parts of one box.
+  &__divider {
+    align-self: center;
+    flex-shrink: 0;
+    width: 1px;
+    height: 50%;
+    background: var(--nb-c-field-border);
   }
 
   &__message,

@@ -50,21 +50,21 @@
               @blur="onBlur"
               @keydown="onInputKeydown"
             />
-            <button
+            <NbButton
               v-if="type !== 'simple'"
-              type="button"
+              variant="ghost"
+              icon="calendar"
+              :size="fieldButtonSize"
               class="nb-date-picker__icon"
               :disabled="disabled || readonly"
               tabindex="-1"
-              :aria-label="
+              :label="
                 modelValue
                   ? nbStrings.datePickerChangeDate(formatForDisplay(modelValue))
                   : nbStrings.datePickerChooseDate
               "
               @click="toggleCalendar"
-            >
-              <NbIcon name="calendar" :size="16" />
-            </button>
+            />
           </div>
         </div>
 
@@ -96,12 +96,14 @@
               @blur="onBlur"
               @keydown="onInputKeydown"
             />
-            <button
-              type="button"
+            <NbButton
+              variant="ghost"
+              icon="calendar"
+              :size="fieldButtonSize"
               class="nb-date-picker__icon"
               :disabled="disabled || readonly"
               tabindex="-1"
-              :aria-label="
+              :label="
                 endValue
                   ? nbStrings.datePickerChangeEndDate(
                       formatForDisplay(endValue),
@@ -109,9 +111,7 @@
                   : nbStrings.datePickerChooseEndDate
               "
               @click="toggleCalendar"
-            >
-              <NbIcon name="calendar" :size="16" />
-            </button>
+            />
           </div>
         </div>
       </NbGrid>
@@ -192,21 +192,21 @@
               @blur="onBlur"
               @keydown="onInputKeydown"
             />
-            <button
+            <NbButton
               v-if="type !== 'simple'"
-              type="button"
+              variant="ghost"
+              icon="calendar"
+              :size="fieldButtonSize"
               class="nb-date-picker__icon"
               :disabled="disabled || readonly"
               tabindex="-1"
-              :aria-label="
+              :label="
                 modelValue
                   ? nbStrings.datePickerChangeDate(formatForDisplay(modelValue))
                   : nbStrings.datePickerChooseDate
               "
               @click="toggleCalendar"
-            >
-              <NbIcon name="calendar" :size="16" />
-            </button>
+            />
           </div>
         </div>
 
@@ -254,12 +254,14 @@
               @blur="onBlur"
               @keydown="onInputKeydown"
             />
-            <button
-              type="button"
+            <NbButton
+              variant="ghost"
+              icon="calendar"
+              :size="fieldButtonSize"
               class="nb-date-picker__icon"
               :disabled="disabled || readonly"
               tabindex="-1"
-              :aria-label="
+              :label="
                 endValue
                   ? nbStrings.datePickerChangeEndDate(
                       formatForDisplay(endValue),
@@ -267,9 +269,7 @@
                   : nbStrings.datePickerChooseEndDate
               "
               @click="toggleCalendar"
-            >
-              <NbIcon name="calendar" :size="16" />
-            </button>
+            />
           </div>
         </div>
       </NbGrid>
@@ -308,22 +308,22 @@
     >
       <!-- Calendar header -->
       <div class="nb-date-picker__cal-header">
-        <button
-          type="button"
+        <NbButton
+          variant="ghost"
+          icon="caret-double-left"
+          size="sm"
           class="nb-date-picker__cal-nav"
-          :aria-label="nbStrings.datePickerPreviousYear"
+          :label="nbStrings.datePickerPreviousYear"
           @click="prevYear"
-        >
-          <NbIcon name="caret-double-left" :size="16" />
-        </button>
-        <button
-          type="button"
+        />
+        <NbButton
+          variant="ghost"
+          icon="caret-left"
+          size="sm"
           class="nb-date-picker__cal-nav"
-          :aria-label="nbStrings.datePickerPreviousMonth"
+          :label="nbStrings.datePickerPreviousMonth"
           @click="prevMonth"
-        >
-          <NbIcon name="caret-left" :size="16" />
-        </button>
+        />
         <span
           :id="calTitleId"
           class="nb-date-picker__cal-title"
@@ -331,22 +331,22 @@
         >
           {{ calMonthLabel }}
         </span>
-        <button
-          type="button"
+        <NbButton
+          variant="ghost"
+          icon="caret-right"
+          size="sm"
           class="nb-date-picker__cal-nav"
-          :aria-label="nbStrings.datePickerNextMonth"
+          :label="nbStrings.datePickerNextMonth"
           @click="nextMonth"
-        >
-          <NbIcon name="caret-right" :size="16" />
-        </button>
-        <button
-          type="button"
+        />
+        <NbButton
+          variant="ghost"
+          icon="caret-double-right"
+          size="sm"
           class="nb-date-picker__cal-nav"
-          :aria-label="nbStrings.datePickerNextYear"
+          :label="nbStrings.datePickerNextYear"
           @click="nextYear"
-        >
-          <NbIcon name="caret-double-right" :size="16" />
-        </button>
+        />
       </div>
 
       <!-- Day grid -->
@@ -412,7 +412,7 @@ import { ref, computed, watch, nextTick, onBeforeUnmount, useId } from 'vue'
 import type { IDatePickerProps } from './DatePicker.d'
 import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
-import NbIcon from './Icon.vue'
+import NbButton from './Button.vue'
 import NbGrid from './Grid.vue'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import { useMenuSurface } from '@/composables/useMenuSurface.composable'
@@ -1111,6 +1111,13 @@ const calRows = computed(() => {
   return rows
 })
 
+// The calendar button is the field's size, so it is one square of the same
+// scale. A fluid field is taller than its size (the label sits inside it),
+// so its button stays at sm beside the value row.
+const fieldButtonSize = computed(() =>
+  props.variant === 'fluid' ? 'sm' : (props.size ?? 'md'),
+)
+
 const rootClasses = computed(() => [
   'nb-date-picker',
   `nb-date-picker--${props.variant}`,
@@ -1309,31 +1316,25 @@ defineExpose({
 }
 
 .nb-date-picker__icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  padding: 0 var(--nb-field-padding-h) 0 0;
-  color: var(--nb-c-text-muted);
-  cursor: pointer;
-  transition: color var(--nb-motion-short);
   flex-shrink: 0;
-  // A 16px glyph is not something a thumb can find. The target grows, the
-  // glyph does not.
-  @include touch.hit-area;
+}
 
-  &:hover:not(:disabled) {
-    color: var(--nb-c-text);
-  }
+/*
+ * The calendar button is an NbButton (ghost, icon-only, named by `label`),
+ * which brings the shared hover, focus ring and phone hit area. It is a
+ * square of the field's inner height, so it fills the end of the box without
+ * pushing it taller. It stays out of the tab order: the input opens the
+ * calendar from the keyboard.
+ */
+.nb-date-picker__input-wrapper .nb-date-picker__icon.nb-button {
+  width: calc(var(--field-h) - 1px - var(--nb-field-border-width, 0px));
+  height: calc(var(--field-h) - 1px - var(--nb-field-border-width, 0px));
+}
 
-  &:disabled {
-    cursor: not-allowed;
-  }
-
-  .nb-date-picker__input-wrapper--fluid & {
-    padding: 0 var(--nb-field-padding-h) 10px 0;
-  }
+.nb-date-picker__input-wrapper--fluid .nb-date-picker__icon.nb-button {
+  width: calc(var(--nb-base-unit) * 4);
+  height: calc(var(--nb-base-unit) * 4);
+  margin: 0 var(--nb-base-unit) var(--nb-base-unit) 0;
 }
 
 .nb-date-picker__inner-header {
@@ -1387,27 +1388,10 @@ defineExpose({
   padding: 8px 4px;
 }
 
+// Previous and next year and month: NbButtons (ghost, icon-only, sm), so
+// they share the focus ring and carry their names as tooltips.
 .nb-date-picker__cal-nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: none;
-  border: none;
-  color: var(--nb-c-text-muted);
-  cursor: pointer;
-  transition: color var(--nb-motion-short);
-  @include touch.hit-area;
-
-  &:hover {
-    color: var(--nb-c-text);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--nb-c-focus-ring, var(--nb-c-primary));
-    outline-offset: -2px;
-  }
+  flex-shrink: 0;
 }
 
 .nb-date-picker__cal-title {
