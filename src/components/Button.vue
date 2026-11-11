@@ -13,13 +13,12 @@
       { 'nb-button--icon-only': isIconOnly },
       { 'nb-button--with-icon': hasDecoration && !isIconOnly },
       { 'nb-button--pressed': pressed },
+      { 'nb-button--explained': explained },
     ]"
     :to="useRouter ? to : undefined"
     v-bind="anchorAttrs"
-    :disabled="linkTag === 'button' ? disabled || loading : undefined"
-    :aria-disabled="
-      linkTag !== 'button' && (disabled || loading) ? true : undefined
-    "
+    :disabled="nativeDisabled"
+    :aria-disabled="isInert && !nativeDisabled ? true : undefined"
     :aria-label="ariaLabel"
     :aria-pressed="pressed === undefined ? undefined : pressed"
     :type="linkTag === 'button' ? type : undefined"
@@ -84,6 +83,7 @@ const props = withDefaults(defineProps<IButtonProps>(), {
   icon: undefined,
   iconWeight: 'regular',
   label: undefined,
+  disabledReason: undefined,
   tooltipPosition: 'bottom',
   pressed: undefined,
   type: EButtonType.Button,
@@ -146,17 +146,42 @@ const ariaLabel = computed(() => {
   if (!isIconOnly.value || !props.label) return undefined
   return (attrs['aria-label'] as string | undefined) ?? props.label
 })
-const tooltip = computed<ITooltipOptions | undefined>(() =>
-  isIconOnly.value && props.label
-    ? { body: props.label, aria: 'none', position: props.tooltipPosition }
-    : undefined,
-)
+const tooltip = computed<ITooltipOptions | undefined>(() => {
+  const position = props.tooltipPosition
+  // A disabled button that says why: the reason is the tooltip, announced as
+  // the button's description, and an icon-only button keeps its label as the
+  // chip's header so the chip still says what the button is.
+  if (explained.value) {
+    return {
+      header: isIconOnly.value ? props.label : undefined,
+      body: props.disabledReason,
+      aria: 'description',
+      position,
+    }
+  }
+  return isIconOnly.value && props.label
+    ? { body: props.label, aria: 'none', position }
+    : undefined
+})
 
 // Render a real <RouterLink> when vue-router is installed and `to` is set;
 // otherwise a string `to`/`href` becomes a plain <a> and an object `to` (which
 // needs a router) falls back to a <button>.
 const routerLink = useRouterLink()
 const isInert = computed(() => props.disabled || props.loading)
+/*
+ * A disabled button with a reason stays in the tab order. Native `disabled`
+ * takes a button out of it, so a keyboard user could never reach the tooltip
+ * that says why the action is unavailable. It carries `aria-disabled`
+ * instead, is still announced as unavailable, and the click is swallowed in
+ * `onClick` (which also stops a submit button from submitting).
+ */
+const explained = computed(() => props.disabled && !!props.disabledReason)
+const nativeDisabled = computed(() =>
+  linkTag.value === 'button' && isInert.value && !explained.value
+    ? true
+    : undefined,
+)
 /*
  * A disabled link is a plain <a> with no href. A RouterLink keeps its own
  * click handler and an <a> keeps its href, so `pointer-events: none` only
@@ -333,14 +358,14 @@ onMounted(() => {
   color: var(--nb-c-surface);
   padding-inline: var(--nb-button-pad-start) var(--nb-button-pad-end);
 
-  &:hover:not(:disabled) {
+  &:hover:not(:disabled):not([aria-disabled='true']) {
     background: color-mix(
       in srgb,
       var(--nb-c-contrast) 86%,
       var(--nb-c-surface)
     );
   }
-  &:active:not(:disabled) {
+  &:active:not(:disabled):not([aria-disabled='true']) {
     background: color-mix(
       in srgb,
       var(--nb-c-contrast) 76%,
@@ -473,11 +498,11 @@ onMounted(() => {
   &--primary {
     background: var(--nb-c-primary);
     color: var(--nb-c-primary-a11y);
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled):not([aria-disabled='true']) {
       background: var(--nb-c-primary-hover);
       color: var(--nb-c-primary-hover-a11y);
     }
-    &:active:not(:disabled) {
+    &:active:not(:disabled):not([aria-disabled='true']) {
       background: var(--nb-c-primary-active);
       color: var(--nb-c-primary-active-a11y);
     }
@@ -486,11 +511,11 @@ onMounted(() => {
   &--secondary {
     background: var(--nb-c-secondary);
     color: var(--nb-c-secondary-a11y);
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled):not([aria-disabled='true']) {
       background: var(--nb-c-secondary-hover);
       color: var(--nb-c-secondary-hover-a11y);
     }
-    &:active:not(:disabled) {
+    &:active:not(:disabled):not([aria-disabled='true']) {
       background: var(--nb-c-secondary-active);
       color: var(--nb-c-secondary-active-a11y);
     }
@@ -513,10 +538,10 @@ onMounted(() => {
     --nb-button-pad-end: var(--nb-button-pad-start);
     --nb-button-icon-gap: var(--nb-base-unit);
     justify-content: flex-start;
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled):not([aria-disabled='true']) {
       background: var(--nb-c-surface-hover);
     }
-    &:active:not(:disabled) {
+    &:active:not(:disabled):not([aria-disabled='true']) {
       background: color-mix(in srgb, var(--nb-c-contrast) 14%, transparent);
     }
   }
@@ -538,11 +563,11 @@ onMounted(() => {
   // rest, filled red on hover.
   &--danger-ghost {
     color: ink.ink(danger);
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled):not([aria-disabled='true']) {
       background: var(--nb-c-danger);
       color: var(--nb-c-danger-a11y);
     }
-    &:active:not(:disabled) {
+    &:active:not(:disabled):not([aria-disabled='true']) {
       background: var(--nb-c-danger-active);
       color: var(--nb-c-danger-active-a11y);
     }
@@ -589,13 +614,13 @@ onMounted(() => {
     border-radius: 2px;
     --nb-button-icon-size: 1em;
 
-    &:hover:not(:disabled),
+    &:hover:not(:disabled):not([aria-disabled='true']),
     &:focus-visible {
       color: var(--nb-button-link-color, var(--nb-c-link-hover));
       text-decoration: underline;
       background: transparent;
     }
-    &:active:not(:disabled) {
+    &:active:not(:disabled):not([aria-disabled='true']) {
       text-decoration-thickness: 2px;
       background: transparent;
     }
@@ -614,11 +639,11 @@ onMounted(() => {
   &--warning {
     background: var(--nb-c-warning);
     color: var(--nb-c-warning-a11y);
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled):not([aria-disabled='true']) {
       background: var(--nb-c-warning-hover);
       color: var(--nb-c-warning-hover-a11y);
     }
-    &:active:not(:disabled) {
+    &:active:not(:disabled):not([aria-disabled='true']) {
       background: var(--nb-c-warning-active);
       color: var(--nb-c-warning-active-a11y);
     }
@@ -627,11 +652,11 @@ onMounted(() => {
   &--danger {
     background: var(--nb-c-danger);
     color: var(--nb-c-danger-a11y);
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled):not([aria-disabled='true']) {
       background: var(--nb-c-danger-hover);
       color: var(--nb-c-danger-hover-a11y);
     }
-    &:active:not(:disabled) {
+    &:active:not(:disabled):not([aria-disabled='true']) {
       background: var(--nb-c-danger-active);
       color: var(--nb-c-danger-active-a11y);
     }
@@ -640,11 +665,11 @@ onMounted(() => {
   &--success {
     background: var(--nb-c-success);
     color: var(--nb-c-success-a11y);
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled):not([aria-disabled='true']) {
       background: var(--nb-c-success-hover);
       color: var(--nb-c-success-hover-a11y);
     }
-    &:active:not(:disabled) {
+    &:active:not(:disabled):not([aria-disabled='true']) {
       background: var(--nb-c-success-active);
       color: var(--nb-c-success-active-a11y);
     }
@@ -653,11 +678,11 @@ onMounted(() => {
   &--info {
     background: var(--nb-c-info);
     color: var(--nb-c-info-a11y);
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled):not([aria-disabled='true']) {
       background: var(--nb-c-info-hover);
       color: var(--nb-c-info-hover-a11y);
     }
-    &:active:not(:disabled) {
+    &:active:not(:disabled):not([aria-disabled='true']) {
       background: var(--nb-c-info-active);
       color: var(--nb-c-info-active-a11y);
     }
@@ -687,12 +712,12 @@ onMounted(() => {
     @each $variant in primary, secondary, danger, warning, success, info {
       &.nb-button--#{$variant} {
         color: ink.ink($variant);
-        &:hover:not(:disabled) {
+        &:hover:not(:disabled):not([aria-disabled='true']) {
           color: var(--nb-c-#{$variant}-hover-a11y);
           background: var(--nb-c-#{$variant}-hover);
           border-color: var(--nb-c-#{$variant}-hover);
         }
-        &:active:not(:disabled) {
+        &:active:not(:disabled):not([aria-disabled='true']) {
           color: var(--nb-c-#{$variant}-active-a11y);
           background: var(--nb-c-#{$variant}-active);
           border-color: var(--nb-c-#{$variant}-active);
@@ -734,6 +759,12 @@ onMounted(() => {
       background: transparent;
       color: color-mix(in srgb, var(--nb-c-contrast) 40%, transparent);
     }
+  }
+
+  // A disabled button that explains itself takes the pointer, so its
+  // tooltip can open on hover. Clicks are swallowed in script.
+  &--explained:not(&--loading) {
+    pointer-events: auto;
   }
 
   &--loading {

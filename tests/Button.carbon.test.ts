@@ -128,3 +128,45 @@ describe('NbButton disabled link', () => {
     expect(w.emitted('click')).toBeUndefined()
   })
 })
+
+describe('NbButton disabledReason', () => {
+  it('stays focusable with aria-disabled, and swallows the click', async () => {
+    const w = mount(Button, {
+      props: { disabled: true, disabledReason: 'Already sent' },
+      slots: { default: 'Send' },
+    })
+    expect(w.attributes('disabled')).toBeUndefined()
+    expect(w.attributes('aria-disabled')).toBe('true')
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true })
+    w.element.dispatchEvent(event)
+    expect(event.defaultPrevented).toBe(true)
+    expect(w.emitted('click')).toBeUndefined()
+  })
+
+  it('shows the reason on keyboard focus, under the icon-only label', async () => {
+    const w = mount(Button, {
+      props: {
+        icon: 'paper-plane-tilt',
+        label: 'Send',
+        disabled: true,
+        disabledReason: 'Already sent',
+      },
+      attachTo: document.body,
+    })
+    expect(w.attributes('aria-label')).toBe('Send')
+    await w.trigger('focusin')
+    await new Promise((r) => setTimeout(r, 0))
+    const chip = document.querySelector('.nb-tooltip')
+    expect(chip?.textContent).toContain('Already sent')
+    expect(chip?.textContent).toContain('Send')
+    w.unmount()
+  })
+
+  it('stays natively disabled without a reason', () => {
+    const w = mount(Button, {
+      props: { disabled: true },
+      slots: { default: 'Send' },
+    })
+    expect(w.attributes('disabled')).toBeDefined()
+  })
+})
