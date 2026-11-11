@@ -122,8 +122,16 @@ jobs:
           path: node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
+      # --with-deps installs Chromium's system libraries through apt. When the
+      # runner cannot reach the Ubuntu mirrors (2026-11-11, hours of DNS
+      # failures) that step fails before a single test runs and blocks the
+      # release. The runner image already carries the libraries Chromium
+      # needs, so fall back to the browser alone: if a library really is
+      # missing, the tests fail on it, visibly.
       - name: Install Chromium
-        run: pnpm exec playwright install --with-deps chromium
+        run: |
+          pnpm exec playwright install --with-deps chromium \
+            || pnpm exec playwright install chromium
 
       - run: pnpm run test:e2e --project=chromium
 
