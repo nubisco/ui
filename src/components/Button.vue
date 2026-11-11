@@ -1,6 +1,7 @@
 <template>
   <component
     :is="linkTag"
+    v-nb-tooltip="tooltip"
     :class="[
       'nb-button',
       // `variant` is optional, and interpolating it unguarded put a literal
@@ -10,6 +11,8 @@
       { 'nb-button--outlined': resolvedOutlined },
       { 'nb-button--loading': loading },
       { 'nb-button--icon-only': isIconOnly },
+      { 'nb-button--with-icon': hasDecoration && !isIconOnly },
+      { 'nb-button--pressed': pressed },
     ]"
     :to="useRouter ? to : undefined"
     v-bind="anchorAttrs"
@@ -17,11 +20,13 @@
     :aria-disabled="
       linkTag !== 'button' && (disabled || loading) ? true : undefined
     "
+    :aria-label="ariaLabel"
+    :aria-pressed="pressed === undefined ? undefined : pressed"
     :type="linkTag === 'button' ? type : undefined"
-    @click="disabled || loading ? undefined : $emit('click', $event)"
+    @click="onClick"
   >
-    <slot />
-    <div v-if="loading || icon" class="nb-button__decorations">
+    <span v-if="!isIconOnly" class="nb-button__label"><slot /></span>
+    <span v-if="hasDecoration" class="nb-button__decorations">
       <span v-if="loading" class="nb-button__spinner" aria-hidden="true" />
       <NbIcon
         v-else-if="icon"
@@ -30,7 +35,7 @@
         :weight="iconWeight"
         class="nb-button__icon"
       />
-    </div>
+    </span>
   </component>
 </template>
 
@@ -56,12 +61,17 @@ import {
   nextTick,
   onBeforeUnmount,
   onMounted,
+  useAttrs,
   useSlots,
   type Component,
 } from 'vue'
 import { ESize } from '@/types/Size.d'
 import { EButtonType, IButtonProps } from './Button.d'
 import NbIcon from './Icon.vue'
+import {
+  nbTooltip as vNbTooltip,
+  type ITooltipOptions,
+} from '@/directives/ToolTip.directive'
 import { useRouterLink } from '@/composables/useRouterLink.composable'
 import { NB_PRIMARY_ACTION_SCOPE } from './PrimaryAction.context'
 
@@ -73,6 +83,9 @@ const props = withDefaults(defineProps<IButtonProps>(), {
   loading: false,
   icon: undefined,
   iconWeight: 'regular',
+  label: undefined,
+  tooltipPosition: 'bottom',
+  pressed: undefined,
   type: EButtonType.Button,
   href: undefined,
   target: undefined,
@@ -80,15 +93,24 @@ const props = withDefaults(defineProps<IButtonProps>(), {
   to: undefined,
 })
 
-defineEmits<{ click: [event: MouseEvent] }>()
+const emit = defineEmits<{ click: [event: MouseEvent] }>()
 
-// `tertiary` is a name for a button that already existed: primary, outlined.
-// It renders exactly the classes `variant="primary" outlined` does.
-const resolvedVariant = computed(() =>
-  props.variant === 'tertiary' ? 'primary' : props.variant,
-)
+/*
+ * `tertiary` is a name for a button that already existed: primary, outlined.
+ * It renders exactly the classes `variant="primary" outlined` does, and
+ * `danger-tertiary` is the same thing for danger. `danger-ghost` is its own
+ * class: a ghost's box with danger's meaning.
+ */
+const resolvedVariant = computed(() => {
+  if (props.variant === 'tertiary') return 'primary'
+  if (props.variant === 'danger-tertiary') return 'danger'
+  return props.variant
+})
 const resolvedOutlined = computed(
-  () => props.outlined || props.variant === 'tertiary',
+  () =>
+    props.outlined ||
+    props.variant === 'tertiary' ||
+    props.variant === 'danger-tertiary',
 )
 
 // Inside a header's actions slot (NbPanel, NbCard, NbPageHeader), a filled
@@ -107,15 +129,42 @@ onMounted(() => {
 onBeforeUnmount(() => uncountPrimary?.())
 
 const slots = useSlots()
+const attrs = useAttrs()
 const isIconOnly = computed(
   () => !slots.default && !!(props.icon || props.loading),
+)
+const hasDecoration = computed(() => !!(props.loading || props.icon))
+
+/*
+ * An icon-only button is named by `label`, and the same words are its
+ * tooltip, anchored below the button: the one place a sighted mouse user
+ * learns what an unlabelled icon does. An explicit `aria-label` still wins
+ * for the name, so a caller that wants a longer spoken name than the chip
+ * ("Delete invoice 2026/002" against "Delete") keeps it.
+ */
+const ariaLabel = computed(() => {
+  if (!isIconOnly.value || !props.label) return undefined
+  return (attrs['aria-label'] as string | undefined) ?? props.label
+})
+const tooltip = computed<ITooltipOptions | undefined>(() =>
+  isIconOnly.value && props.label
+    ? { body: props.label, aria: 'none', position: props.tooltipPosition }
+    : undefined,
 )
 
 // Render a real <RouterLink> when vue-router is installed and `to` is set;
 // otherwise a string `to`/`href` becomes a plain <a> and an object `to` (which
 // needs a router) falls back to a <button>.
 const routerLink = useRouterLink()
-const useRouter = computed(() => props.to != null && !!routerLink.value)
+const isInert = computed(() => props.disabled || props.loading)
+/*
+ * A disabled link is a plain <a> with no href. A RouterLink keeps its own
+ * click handler and an <a> keeps its href, so `pointer-events: none` only
+ * stopped the mouse: Enter on a focused, disabled link still navigated.
+ */
+const useRouter = computed(
+  () => props.to != null && !!routerLink.value && !isInert.value,
+)
 
 const resolvedHref = computed<string | undefined>(() => {
   if (typeof props.to === 'string') return props.to
@@ -126,6 +175,7 @@ const resolvedHref = computed<string | undefined>(() => {
 const linkTag = computed<string | Component>(() => {
   if (useRouter.value) return routerLink.value as Component
   if (resolvedHref.value) return 'a'
+  if (props.to != null && routerLink.value) return 'a'
   return 'button'
 })
 
@@ -134,11 +184,19 @@ const linkTag = computed<string | Component>(() => {
 // href and renders it on the <a> it owns; a fallthrough `href` merges over
 // that, so `:href="linkTag === 'a' ? resolvedHref : undefined"` produced a
 // link with no href in every app that has a router installed.
-const anchorAttrs = computed(() =>
-  linkTag.value === 'a'
-    ? { href: resolvedHref.value, target: props.target, rel: props.rel }
-    : {},
-)
+const anchorAttrs = computed(() => {
+  if (linkTag.value !== 'a') return {}
+  if (isInert.value) return { role: 'link' }
+  return { href: resolvedHref.value, target: props.target, rel: props.rel }
+})
+
+function onClick(event: MouseEvent) {
+  if (isInert.value) {
+    event.preventDefault()
+    return
+  }
+  emit('click', event)
+}
 
 /*
  * Both maps stay on the icon scale (16, 20, 24, 32): below 16 a Phosphor
@@ -150,8 +208,8 @@ const iconSizeMap: Record<string, number> = {
   sm: 16,
   md: 16,
   lg: 16,
-  xl: 20,
-  xxl: 32,
+  xl: 16,
+  xxl: 16,
 }
 /*
  * Icon-only buttons size their icon differently, and the stylesheet already
@@ -202,8 +260,8 @@ onMounted(() => {
     warnedIcons.add(key)
     console.warn(
       `[NbButton] An icon-only button${key ? ` (icon "${key}")` : ''} has no ` +
-        'accessible name, so a screen reader announces it as "button". Add ' +
-        'aria-label, or name it with v-nb-tooltip.',
+        'accessible name, so a screen reader announces it as "button". Give ' +
+        'it a `label`, which names it and shows the same words as its tooltip.',
       el,
     )
   })
@@ -213,15 +271,34 @@ onMounted(() => {
 <style scoped lang="scss">
 @use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
+@use '../styles/logic/focus' as focus;
 @use '../styles/variables/breakpoints' as bp;
 @use '../styles/logic/touch' as touch;
 @use '../styles/logic/ink' as ink;
 
+/*
+ * Anatomy, after Carbon.
+ *
+ * The label starts at the left edge and the icon sits at the right edge,
+ * never beside the label in the middle. A labelled button keeps 64px at its
+ * end whether or not it has an icon: 16px of padding, the 16px icon, and at
+ * least 32px between the icon and the label. So adding an icon, or the
+ * spinner taking the icon's place while loading, never changes the width.
+ *
+ * Up to lg (48px) a button is one line tall. xl and xxl are the sizes that
+ * bleed to the edge of a modal, side panel or full-screen surface: their
+ * label sits at the top left, wraps onto a second line rather than
+ * overflowing, and the icon stays pinned to the top right.
+ */
 .nb-button {
+  --nb-button-pad-start: calc(var(--nb-base-unit) * 2);
+  --nb-button-pad-end: calc(var(--nb-base-unit) * 8);
+  --nb-button-icon-gap: calc(var(--nb-base-unit) * 4);
+
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: var(--nb-button-icon-gap);
   border: none;
   /*
    * Standalone, not inset. A button in the middle of a panel does not run
@@ -238,42 +315,67 @@ onMounted(() => {
   // visibly wider than the buttons beside it.
   box-sizing: border-box;
   font-family: inherit;
+  font-size: var(--nb-type-body-compact-size);
   font-weight: var(--nb-font-weight-regular, 400);
+  letter-spacing: var(--nb-type-body-compact-letter-spacing, 0.16px);
+  line-height: 1;
+  text-align: start;
   cursor: pointer;
   transition:
     background var(--nb-motion-short),
+    color var(--nb-motion-short),
     opacity var(--nb-motion-short),
     box-shadow var(--nb-motion-short);
   white-space: nowrap;
   outline: none;
-
-  &:focus-visible {
-    outline: 1px solid var(--nb-c-focus-ring);
-    outline-offset: -2px;
-  }
-  line-height: 1;
   text-decoration: none;
   background: var(--nb-c-contrast);
   color: var(--nb-c-surface);
-  padding-inline: calc(var(--nb-base-unit) * 2);
+  padding-inline: var(--nb-button-pad-start) var(--nb-button-pad-end);
+
+  &:hover:not(:disabled) {
+    background: color-mix(
+      in srgb,
+      var(--nb-c-contrast) 86%,
+      var(--nb-c-surface)
+    );
+  }
+  &:active:not(:disabled) {
+    background: color-mix(
+      in srgb,
+      var(--nb-c-contrast) 76%,
+      var(--nb-c-surface)
+    );
+  }
+
+  &:focus-visible {
+    @include focus.ring;
+  }
+
+  // With an icon (or the spinner) the 64px end splits into padding, icon and gap.
+  &--with-icon {
+    --nb-button-pad-end: var(--nb-button-pad-start);
+  }
+
+  &__label {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
 
   &--xxs {
     height: calc(var(--nb-base-unit) * 2);
-    padding-block: 0;
-    padding-inline: calc(var(--nb-base-unit) * 1);
+    --nb-button-pad-start: var(--nb-base-unit);
+    --nb-button-pad-end: var(--nb-base-unit);
+    --nb-button-icon-gap: calc(var(--nb-base-unit) * 0.5);
     font-size: var(--nb-type-body-sm-size);
     --nb-button-icon-size: 16px;
   }
   &--xs {
     height: calc(var(--nb-base-unit) * 3);
-    padding-inline: calc(var(--nb-base-unit) * 1.5);
-    font-size: var(--nb-type-body-sm-size);
     --nb-button-icon-size: 16px;
   }
   &--sm {
     height: calc(var(--nb-base-unit) * 4);
-    padding-inline: calc(var(--nb-base-unit) * 1.5);
-    font-size: var(--nb-type-body-sm-size);
     --nb-button-icon-size: 16px;
   }
   // The small and medium sizes are 16 to 40px tall, under a fingertip's 44.
@@ -297,37 +399,40 @@ onMounted(() => {
   }
   &--md {
     height: calc(var(--nb-base-unit) * 5);
-    font-size: var(--nb-type-body-compact-size);
     --nb-button-icon-size: 16px;
   }
   &--lg {
     height: calc(var(--nb-base-unit) * 6);
-    padding-inline: calc(var(--nb-base-unit) * 2.5);
-    font-size: var(--nb-type-body-compact-size);
     --nb-button-icon-size: 16px;
   }
+  &--xl,
+  &--xxl {
+    height: auto;
+    max-width: 20rem;
+    align-items: flex-start;
+    padding-block: calc(var(--nb-base-unit) * 2);
+    white-space: normal;
+    line-height: var(--nb-type-body-compact-line-height, 1.2857);
+    --nb-button-icon-size: 16px;
+
+    // Centre the icon on the first line of the label.
+    .nb-button__decorations {
+      height: 1lh;
+    }
+  }
   &--xl {
-    height: calc(var(--nb-base-unit) * 8);
-    padding-block: 14px;
-    padding-inline: calc(var(--nb-base-unit) * 3);
-    font-size: var(--nb-type-body-lg-size);
-    align-items: center;
-    --nb-button-icon-size: 20px;
+    min-height: calc(var(--nb-base-unit) * 8);
   }
   &--xxl {
-    height: calc(var(--nb-base-unit) * 16);
-    padding-block: 14px;
-    padding-inline: calc(var(--nb-base-unit) * 4);
-    font-size: var(--nb-type-heading-04-size);
-    align-items: center;
-    --nb-button-icon-size: 32px;
+    min-height: calc(var(--nb-base-unit) * 10);
   }
 
-  // Icon-only: no slot content → square button, icon centered and slightly larger
+  // Icon-only: no slot content, so a square button with the icon centred.
   &--icon-only {
     padding: 0;
     align-items: center;
     justify-content: center;
+    max-width: none;
 
     &.nb-button--xxs {
       width: 16px;
@@ -350,20 +455,21 @@ onMounted(() => {
       --nb-button-icon-size: 20px;
     }
     &.nb-button--xl {
-      width: 48px;
+      width: 64px;
+      height: 64px;
       --nb-button-icon-size: 24px;
     }
     &.nb-button--xxl {
-      width: 64px;
+      width: 80px;
+      height: 80px;
       --nb-button-icon-size: 32px;
     }
 
     .nb-button__decorations {
-      align-items: center;
+      height: auto;
     }
   }
 
-  /* Primary: dark brand */
   &--primary {
     background: var(--nb-c-primary);
     color: var(--nb-c-primary-a11y);
@@ -375,12 +481,8 @@ onMounted(() => {
       background: var(--nb-c-primary-active);
       color: var(--nb-c-primary-active-a11y);
     }
-    &:focus-visible {
-      outline-color: var(--nb-c-primary-hover-a11y);
-    }
   }
 
-  /* Secondary: subtle border */
   &--secondary {
     background: var(--nb-c-secondary);
     color: var(--nb-c-secondary-a11y);
@@ -392,38 +494,57 @@ onMounted(() => {
       background: var(--nb-c-secondary-active);
       color: var(--nb-c-secondary-active-a11y);
     }
-    &:focus-visible {
-      outline-color: var(--nb-c-secondary-hover-a11y);
+  }
+
+  /*
+   * Ghost: no box until the pointer is on it, and then a neutral one.
+   *
+   * The hover is the surface's own hover, the grey every row, list item and
+   * hand-made icon control already used, so a ghost close button and the row
+   * beside it light the same way. It used to fill with the brand colour, the
+   * loudest thing on the page for the quietest button on it. A ghost keeps
+   * 16px on both sides, and its icon follows the label 8px later rather than
+   * sitting at the far edge: a ghost is sized by its content.
+   */
+  &--ghost,
+  &--danger-ghost {
+    background: transparent;
+    color: var(--nb-c-contrast);
+    --nb-button-pad-end: var(--nb-button-pad-start);
+    --nb-button-icon-gap: var(--nb-base-unit);
+    justify-content: flex-start;
+    &:hover:not(:disabled) {
+      background: var(--nb-c-surface-hover);
+    }
+    &:active:not(:disabled) {
+      background: color-mix(in srgb, var(--nb-c-contrast) 14%, transparent);
+    }
+  }
+  &--ghost.nb-button--xxs,
+  &--danger-ghost.nb-button--xxs {
+    --nb-button-icon-gap: calc(var(--nb-base-unit) * 0.5);
+  }
+
+  // A toggle that is on. Ghost is where toggles live (toolbars, view
+  // switches), so that is where the pressed state is drawn.
+  &--pressed {
+    &.nb-button--ghost,
+    &.nb-button--danger-ghost {
+      background: color-mix(in srgb, var(--nb-c-contrast) 12%, transparent);
     }
   }
 
-  /* Ghost: transparent */
-  &--ghost {
-    background: transparent;
-    color: var(--nb-c-contrast);
-    border-bottom: 1px solid transparent;
-    padding-inline: calc(var(--nb-base-unit) * 1.5);
+  // Danger's meaning on a ghost's box. Carbon's danger--ghost: red text at
+  // rest, filled red on hover.
+  &--danger-ghost {
+    color: ink.ink(danger);
     &:hover:not(:disabled) {
-      background: var(--nb-c-primary-hover);
-      color: var(--nb-c-primary-hover-a11y);
-      /*
-       * No coloured edge on hover.
-       *
-       * The hover already fills the button, and the pale bottom border drawn
-       * on top of that fill was left from an older ghost whose hover WAS the
-       * underline. Two affordances for one state, and under the rounded
-       * appearance the straight line cut across the capsule's arc.
-       *
-       * The transparent border above stays: it reserves the pixel so the
-       * button does not move between states.
-       */
+      background: var(--nb-c-danger);
+      color: var(--nb-c-danger-a11y);
     }
     &:active:not(:disabled) {
-      background: var(--nb-c-primary-active);
-      color: var(--nb-c-primary-active-a11y);
-    }
-    &:focus-visible {
-      outline-color: var(--nb-c-contrast);
+      background: var(--nb-c-danger-active);
+      color: var(--nb-c-danger-active-a11y);
     }
   }
 
@@ -449,12 +570,16 @@ onMounted(() => {
    */
   &--link {
     height: auto;
+    min-height: 0;
+    max-width: none;
     padding: 0;
     gap: 0.35em;
+    justify-content: flex-start;
     background: transparent;
     color: var(--nb-button-link-color, var(--nb-c-link));
     font-size: inherit;
     font-weight: inherit;
+    letter-spacing: inherit;
     line-height: inherit;
     white-space: normal;
     text-align: start;
@@ -468,21 +593,24 @@ onMounted(() => {
     &:focus-visible {
       color: var(--nb-button-link-color, var(--nb-c-link-hover));
       text-decoration: underline;
+      background: transparent;
     }
     &:active:not(:disabled) {
       text-decoration-thickness: 2px;
+      background: transparent;
     }
     &:focus-visible {
       outline: 2px solid var(--nb-c-focus-ring);
       outline-offset: 2px;
+      box-shadow: none;
     }
     // Icon-only sets a square width per size. A link has no box to square.
     &.nb-button--icon-only {
       width: auto;
+      height: auto;
     }
   }
 
-  /* Warning: red */
   &--warning {
     background: var(--nb-c-warning);
     color: var(--nb-c-warning-a11y);
@@ -494,12 +622,8 @@ onMounted(() => {
       background: var(--nb-c-warning-active);
       color: var(--nb-c-warning-active-a11y);
     }
-    &:focus-visible {
-      outline-color: var(--nb-c-warning-hover-a11y);
-    }
   }
 
-  /* Danger: red */
   &--danger {
     background: var(--nb-c-danger);
     color: var(--nb-c-danger-a11y);
@@ -511,12 +635,8 @@ onMounted(() => {
       background: var(--nb-c-danger-active);
       color: var(--nb-c-danger-active-a11y);
     }
-    &:focus-visible {
-      outline-color: var(--nb-c-danger-hover-a11y);
-    }
   }
 
-  /* Success: green */
   &--success {
     background: var(--nb-c-success);
     color: var(--nb-c-success-a11y);
@@ -527,9 +647,6 @@ onMounted(() => {
     &:active:not(:disabled) {
       background: var(--nb-c-success-active);
       color: var(--nb-c-success-active-a11y);
-    }
-    &:focus-visible {
-      outline-color: var(--nb-c-success-hover-a11y);
     }
   }
 
@@ -543,19 +660,6 @@ onMounted(() => {
     &:active:not(:disabled) {
       background: var(--nb-c-info-active);
       color: var(--nb-c-info-active-a11y);
-    }
-    &:focus-visible {
-      outline-color: var(--nb-c-info-hover-a11y);
-    }
-  }
-
-  &:disabled,
-  &[aria-disabled='true'] {
-    opacity: 0.45;
-    cursor: not-allowed;
-    pointer-events: none;
-    &:focus-visible {
-      outline-color: transparent;
     }
   }
 
@@ -573,32 +677,62 @@ onMounted(() => {
    * In light mode that is the same colour exactly. In dark mode the fills are
    * picked to carry their own foreground, not to be read against a dark layer,
    * and the outlined secondary measured as low as 1.21:1 there. See
-   * `styles/logic/_ink.scss`. The hover and pressed washes keep the fill
-   * colour: they are a tint of the variant, not text.
+   * `styles/logic/_ink.scss`.
+   *
+   * Hover fills solid, the way Carbon's tertiary does: the border was already
+   * the variant's colour, so the button becomes the filled variant under the
+   * pointer. An 8% tint was too faint to read as a response on a dark layer.
    */
   &--outlined {
     @each $variant in primary, secondary, danger, warning, success, info {
       &.nb-button--#{$variant} {
         color: ink.ink($variant);
         &:hover:not(:disabled) {
-          color: ink.ink($variant);
-          background: color-mix(
-            in srgb,
-            var(--nb-c-#{$variant}) 8%,
-            transparent
-          );
+          color: var(--nb-c-#{$variant}-hover-a11y);
+          background: var(--nb-c-#{$variant}-hover);
+          border-color: var(--nb-c-#{$variant}-hover);
         }
         &:active:not(:disabled) {
-          background: color-mix(
-            in srgb,
-            var(--nb-c-#{$variant}) 14%,
-            transparent
-          );
-        }
-        &:focus-visible {
-          outline-color: ink.ink($variant);
+          color: var(--nb-c-#{$variant}-active-a11y);
+          background: var(--nb-c-#{$variant}-active);
+          border-color: var(--nb-c-#{$variant}-active);
         }
       }
+    }
+  }
+
+  /*
+   * Disabled, from tokens rather than opacity.
+   *
+   * Fading the whole button left a disabled primary still reading as the
+   * page's primary, only paler, and its contrast moved with whatever sat
+   * behind it. A filled button now takes the disabled fill, an outlined one
+   * the disabled border, and a ghost or link only the disabled text.
+   * Loading is not disabled to the eye: it keeps its colours and the wait
+   * cursor while the native `disabled` keeps it from being pressed twice.
+   */
+  &:disabled:not(&--loading),
+  &[aria-disabled='true']:not(&--loading) {
+    --nb-button-disabled-text: color-mix(
+      in srgb,
+      var(--nb-c-contrast) 40%,
+      var(--nb-c-component-disabled)
+    );
+    cursor: not-allowed;
+    pointer-events: none;
+    background: var(--nb-c-component-disabled);
+    color: var(--nb-button-disabled-text);
+    border-color: transparent;
+
+    &.nb-button--outlined {
+      background: transparent;
+      border-color: var(--nb-c-component-disabled);
+    }
+    &.nb-button--ghost,
+    &.nb-button--danger-ghost,
+    &.nb-button--link {
+      background: transparent;
+      color: color-mix(in srgb, var(--nb-c-contrast) 40%, transparent);
     }
   }
 
@@ -618,6 +752,7 @@ onMounted(() => {
   &__spinner {
     width: var(--nb-button-icon-size, 16px);
     height: var(--nb-button-icon-size, 16px);
+    box-sizing: border-box;
     border: 2px solid currentColor;
     border-top-color: transparent;
     border-radius: 50%;

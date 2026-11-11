@@ -31,6 +31,8 @@ type TButtonVariant =
   | 'info'
   | 'warning'
   | 'danger'
+  | 'danger-tertiary'
+  | 'danger-ghost'
 
 interface IButtonProps {
   /**
@@ -51,6 +53,10 @@ interface IButtonProps {
    * a control whose semantics match: `danger` on something destructive, not on
    * whatever the page wants to emphasise.
    *
+   * `danger-tertiary` is danger outlined (it renders exactly
+   * `variant="danger" outlined`), and `danger-ghost` is a ghost's box in
+   * danger's colour: Carbon's three danger styles. Danger is never icon-only.
+   *
    * Omitted, the button renders the high-contrast base treatment.
    */
   variant?: TButtonVariant
@@ -58,7 +64,12 @@ interface IButtonProps {
   size?: TButtonSize
   disabled?: boolean
   loading?: boolean
-  /** Icon name passed directly to NbIcon. Rendered in the trailing padding area. Hidden while loading. */
+  /**
+   * Icon name passed directly to NbIcon. On a labelled button it sits at the
+   * far end, pinned to the right edge (top right on xl and xxl), never beside
+   * the label. On a ghost it follows the label. Replaced by the spinner while
+   * loading, in the same slot, so the width does not change.
+   */
   icon?: TIconSource
   /**
    * The icon's weight. `regular` everywhere, `fill` only for a selected or
@@ -66,6 +77,23 @@ interface IButtonProps {
    * plugin so `<NbButton icon="plus">` links one weight rather than six.
    */
   iconWeight?: `${EWeight}`
+  /**
+   * The words for an icon-only button. Required on every icon-only button:
+   * it becomes the accessible name AND the tooltip, anchored to the button,
+   * so the two can never disagree and no icon-only button ships without
+   * one. An explicit `aria-label` still wins for the spoken name, for a
+   * longer name than the chip shows ("Delete invoice 2026/002" against
+   * "Delete"). Ignored on a labelled button, whose text is its name.
+   */
+  label?: string
+  /** Where the icon-only tooltip opens. Defaults to `bottom`, as Carbon's. */
+  tooltipPosition?: 'top' | 'bottom' | 'left' | 'right'
+  /**
+   * A toggle's state. When set, the button carries `aria-pressed`, and a
+   * ghost draws a selected fill while it is `true`. Leave it `undefined` for
+   * an ordinary button, which then has no `aria-pressed` at all.
+   */
+  pressed?: boolean
   /** Native button type. Ignored when `href` is provided. */
   type?: `${EButtonType}`
   /** When provided the component renders as an `<a>` element instead of `<button>`. */

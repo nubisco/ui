@@ -1,0 +1,20 @@
+/// The control focus ring, drawn inside the control.
+///
+/// Two bands, the way Carbon draws it: 2px of `--nb-c-focus-ring` at the
+/// edge, then 1px of the surface inside it. The inner band is what keeps the
+/// ring legible on a filled control whose fill is close to the ring colour
+/// (a primary button), and it is invisible on a transparent one, where it
+/// matches what is behind it. One colour for every control, whatever its
+/// variant, so a keyboard user follows a single ring across the page.
+///
+/// Drawn with `outline` so forced colours keeps the outer band. The inner
+/// band is a `box-shadow` and drops out there, which is fine: it only exists
+/// to separate the ring from a fill that forced colours removes anyway.
+///
+/// @param {Color} $inner - the inner band, the surface by default
+/// @group @nubisco/logic
+@mixin ring($inner: var(--nb-c-surface)) {
+  outline: 2px solid var(--nb-c-focus-ring);
+  outline-offset: -2px;
+  box-shadow: inset 0 0 0 3px #{$inner};
+}

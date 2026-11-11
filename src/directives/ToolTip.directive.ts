@@ -1113,6 +1113,267 @@ const syncOpenState = (
   else el.__hideTooltip__?.(0, 'program')
 }
 
+/**
+ * The directive itself, for a component that uses it in its own template.
+ * Importing it (`import { nbTooltip as vNbTooltip }`) works whether or not
+ * the application installed the plugin, which is what lets NbButton give
+ * every icon-only button its tooltip. The document-level dismiss is wired
+ * on first mount either way, and it only ever installs once.
+ */
+export const nbTooltip: ObjectDirective<TTooltipEl, ITooltipOptions> = {
+  mounted(el: TTooltipEl, binding: DirectiveBinding<ITooltipOptions>) {
+    installDocumentDismiss()
+    el.__showTooltip__ = (trigger: TTooltipTrigger = 'pointer') => {
+      const options = el.__tooltipBinding__
+      if (!options) return
+      // Controlled. `open` is the single source of truth, so a user gesture
+      // is a REQUEST: report it and let the host decide. Without this the
+      // chip would open on hover and then be closed again by the next
+      // render that re-applied `open: false`, which is the flicker every
+      // controlled/uncontrolled hybrid produces.
+      if (options.open !== undefined && trigger !== 'program') {
+        warnDeafControlled(options)
+        options.onOpenChange?.(true, trigger)
+        return
+      }
+      clearTimeout(el.__hideTimer__)
+      el.__hideTimer__ = undefined
+      showTooltip(el, options, trigger)
+    }
+
+    el.__hideTooltip__ = (
+      delay = el.__tooltipBinding__?.hideDelay ?? 150,
+      reason: TTooltipReason = 'dismiss',
+    ) => {
+      const options = el.__tooltipBinding__
+      // Controlled, and this is a request rather than the host's own doing.
+      // Report it and stop: `open` is the host's state and we do not write
+      // to it. Escape arrives here as 'dismiss', so a host that handles
+      // `onOpenChange` gets a genuine dismissal; a host that does not is
+      // warned, once, because an undismissable tooltip fails WCAG 1.4.13.
+      if (options?.open !== undefined && reason !== 'program') {
+        warnDeafControlled(options)
+        options.onOpenChange?.(false, reason)
+        return
+      }
+      clearTimeout(el.__hideTimer__)
+      // `0` means now, not "next macrotask". Every caller that passes 0 is
+      // saying the chip must not survive this tick: a route change, an
+      // Escape, and above all the one-chip rule, which would otherwise
+      // leave two chips painted for a frame.
+      if (delay <= 0) {
+        el.__hideTimer__ = undefined
+        hideTooltip(el, true, reason)
+        return
+      }
+      // Default 150ms: long enough that crossing a 1px gap between two
+      // adjacent icon buttons does not flicker, short enough that the chip
+      // is gone before the user's eye returns.
+      el.__hideTimer__ = setTimeout(() => {
+        el.__hideTimer__ = undefined
+        hideTooltip(el, delay <= 0, reason)
+      }, delay)
+    }
+
+    el.__mouseMove__ = (event: MouseEvent) => {
+      el.__mouseX__ = event.clientX
+      el.__mouseY__ = event.clientY
+      // Read from the LIVE binding, not the closure's mount-time one:
+      // `followCursor` is a reactive option like every other, and reading
+      // `binding.value` here froze it at whatever it was when the anchor
+      // mounted.
+      if (el.__tooltipBinding__?.followCursor) {
+        positionTooltip(el, el.tooltipElement, el.__tooltipBinding__?.position)
+      }
+    }
+
+    el.__tooltipBinding__ = binding.value
+
+    el.__showHandler__ = (event: Event) => {
+      // Touchscreen browsers replay a full mouse sequence after a tap. The
+      // touch handler has already opened (and scheduled the close of) the
+      // chip, so honouring the replayed mouseenter would re-open it with no
+      // mouseleave ever coming to close it again.
+      if (withinMs(el.__lastTouchAt__, TOUCH_MOUSE_GRACE_MS)) return
+      const mouse = event as MouseEvent
+      // Mid-drag. A pointer that enters this anchor with a button already
+      // held is committed to a gesture that started somewhere else (a
+      // slider thumb, a reorder handle, a text selection), so an anchor it
+      // merely passes over on the way must stay quiet rather than pop a
+      // chip under the moving cursor.
+      //
+      // Read from the event rather than from a flag we maintain across
+      // pointerdown/pointerup: a drag that ends outside the document never
+      // delivers a pointerup, and a flag left stuck on would suppress every
+      // hover for the rest of the session. `buttons` is 0 on an ordinary
+      // hover in every engine.
+      if (mouse.buttons) return
+      // Seed the cursor position from the enter event. Without this a
+      // cursor-positioned tooltip opened by an element sliding under a
+      // stationary pointer lands at the top-left corner of the viewport.
+      if (
+        typeof mouse.clientX === 'number' &&
+        (mouse.clientX || mouse.clientY)
+      ) {
+        el.__mouseX__ = mouse.clientX
+        el.__mouseY__ = mouse.clientY
+      }
+      el.__showTooltip__?.('pointer')
+    }
+    el.__hideHandler__ = () => el.__hideTooltip__?.(undefined, 'pointer')
+
+    // Keyboard. An icon-only button is unusable without this: the user can
+    // reach it with Tab and has no way to find out what it does.
+    el.__focusHandler__ = (event: Event) => {
+      // Focus that a click just moved here is not a request to read the
+      // label, and the chip would then sit over whatever the click opened.
+      if (withinMs(lastPointerDownAt, POINTER_FOCUS_GRACE_MS)) return
+      // A nested anchor owns its own focus. Without this a wrapper and the
+      // control inside it both opened a chip on one Tab.
+      if (!isNearestAnchor(el, event)) return
+      el.__showTooltip__?.('focus')
+    }
+    el.__blurHandler__ = () => el.__hideTooltip__?.(undefined, 'focus')
+
+    // Touch. No hover exists, so a tap opens the chip immediately and it
+    // times itself out; the document-level pointerdown dismiss closes it
+    // early if the user taps anything else.
+    el.__touchHandler__ = (event: Event) => {
+      if (el.__tooltipBinding__?.touch === false) return
+      if (!isNearestAnchor(el, event)) return
+      // Stamped before the control check, so the mouse sequence the browser
+      // replays after the tap is still swallowed. Otherwise its mouseenter
+      // would open the chip anyway, with no mouseleave to close it.
+      el.__lastTouchAt__ = Date.now()
+      if (isTouchActivated(el)) return
+      el.__showTooltip__?.('touch')
+      el.__hideTooltip__?.(TOUCH_VISIBLE_MS, 'touch')
+    }
+
+    // Reachability. A <span> or an <svg> cannot be tabbed to, so its
+    // tooltip is invisible to keyboard and screen-reader users. We never
+    // add a tab stop behind the consumer's back: `focusable: true` is an
+    // explicit statement that this element carries information nothing
+    // else on the page carries.
+    syncFocusable(el, binding.value)
+
+    syncAria(el, binding.value)
+    el.setAttribute(ANCHOR_ATTR, '')
+
+    el.addEventListener('mouseenter', el.__showHandler__)
+    el.addEventListener('mouseleave', el.__hideHandler__)
+    el.addEventListener('mousemove', el.__mouseMove__ as EventListener)
+    // focusin/focusout rather than focus/blur: they bubble, so a tooltip on
+    // a wrapper still fires when focus lands on the control inside it.
+    el.addEventListener('focusin', el.__focusHandler__)
+    el.addEventListener('focusout', el.__blurHandler__)
+    el.addEventListener('touchstart', el.__touchHandler__, { passive: true })
+    syncDisabledProxy(el)
+    // `defaultOpen` and a controlled `open: true` both have to take effect
+    // now, not on the first hover: an onboarding highlight that waits for a
+    // pointer is not a highlight.
+    syncOpenState(el, binding.value)
+    // Scrolling is NOT wired here. A per-anchor `scroll` listener on
+    // `window` (what this used to be) is the wrong subscription twice over:
+    // it never hears an inner container scroll, because scroll does not
+    // bubble, and hiding is the wrong response anyway. Scroll is handled by
+    // the shared re-anchor loop, which follows the anchor while it is
+    // visible and takes the chip down when it is not.
+  },
+
+  updated(el: TTooltipEl, binding: DirectiveBinding<ITooltipOptions>) {
+    const previous = el.__tooltipBinding__
+    el.__tooltipBinding__ = binding.value
+
+    if (!binding.value) {
+      syncAria(el, undefined)
+      syncFocusable(el, undefined)
+      hideTooltip(el, true)
+      return
+    }
+
+    // The accessible contract tracks the binding even when nothing is on
+    // screen: an icon button whose tooltip flipped from "Mute" to "Unmute"
+    // has changed its name, chip or no chip, and an `aria` option that
+    // flipped from `label` to `description` has changed which of the two the
+    // anchor is carrying. Running this only in `showTooltip` was how a chip
+    // that was already up ended up announced twice: the anchor kept the name
+    // it was mounted with and gained a description saying the same words.
+    if (previous !== binding.value) {
+      syncAria(el, binding.value)
+      syncFocusable(el, binding.value)
+    }
+    // Outside the identity guard above, deliberately: `disabled` is an
+    // attribute of the ELEMENT, not of the binding, so it flips on renders
+    // where the options object is unchanged, and a control that just became
+    // disabled has silently lost every listener it had. The check is a
+    // property read and a reference comparison.
+    syncDisabledProxy(el)
+    // Before the early-outs below: visibility is not content, and a
+    // controlled tooltip whose `open` just changed must act even when the
+    // chip's markup is identical.
+    syncOpenState(el, binding.value)
+    // Nothing on screen: never touch layout on a host re-render.
+    if (!el.tooltipElement) return
+    // Same options object as last render: cannot have changed.
+    if (previous === binding.value) return
+    // Content-equal re-render (inline object literal, new identity,
+    // identical effective content). Comparing the rendered signature
+    // is pure string work; the expensive part (innerHTML rewrite plus
+    // getBoundingClientRect, i.e. a forced synchronous layout of the
+    // whole document) only runs when something actually changed.
+    const signature = contentSignature(binding.value)
+    if (signature === el.__lastContent__) return
+
+    el.__lastContent__ = signature
+    updateTooltip(el, binding.value)
+  },
+
+  unmounted(el: TTooltipEl) {
+    // Belt-and-braces: cancel the show-timer FIRST so a pending
+    // show doesn't append a tooltip after the anchor's gone.
+    // hideTooltip below also clears it, but doing it explicitly
+    // here guards against any reordering inside hideTooltip.
+    clearTimeout(el.__showTimer__)
+    el.__showTimer__ = undefined
+    clearTimeout(el.__hideTimer__)
+    el.__hideTimer__ = undefined
+    // immediate: the anchor is gone, so every chip it created goes
+    // with it right now rather than after an exit animation.
+    hideTooltip(el, true)
+    registeredTooltips.delete(el)
+    if (el.__showHandler__)
+      el.removeEventListener('mouseenter', el.__showHandler__)
+    if (el.__hideHandler__)
+      el.removeEventListener('mouseleave', el.__hideHandler__)
+    if (el.__focusHandler__)
+      el.removeEventListener('focusin', el.__focusHandler__)
+    if (el.__blurHandler__)
+      el.removeEventListener('focusout', el.__blurHandler__)
+    if (el.__touchHandler__)
+      el.removeEventListener('touchstart', el.__touchHandler__)
+    destroyDescription(el)
+    restoreNativeTitle(el)
+    if (el.__ownsAriaLabel__) {
+      el.removeAttribute('aria-label')
+      el.__ownsAriaLabel__ = false
+    }
+    if (el.__ownsTabIndex__) {
+      el.removeAttribute('tabindex')
+      el.__ownsTabIndex__ = false
+    }
+    if (el.__ownsRole__) {
+      el.removeAttribute('role')
+      el.__ownsRole__ = false
+    }
+    el.removeAttribute(ANCHOR_ATTR)
+    detachDisabledProxy(el)
+    if (el.__mouseMove__)
+      el.removeEventListener('mousemove', el.__mouseMove__ as EventListener)
+    stopReanchoring(el)
+  },
+}
+
 const tooltipDirective = (app: App) => {
   installDocumentDismiss()
   const router = app.config.globalProperties.$router
@@ -1126,262 +1387,7 @@ const tooltipDirective = (app: App) => {
     })
   }
 
-  app.directive('nb-tooltip', {
-    mounted(el: TTooltipEl, binding: DirectiveBinding<ITooltipOptions>) {
-      el.__showTooltip__ = (trigger: TTooltipTrigger = 'pointer') => {
-        const options = el.__tooltipBinding__
-        if (!options) return
-        // Controlled. `open` is the single source of truth, so a user gesture
-        // is a REQUEST: report it and let the host decide. Without this the
-        // chip would open on hover and then be closed again by the next
-        // render that re-applied `open: false`, which is the flicker every
-        // controlled/uncontrolled hybrid produces.
-        if (options.open !== undefined && trigger !== 'program') {
-          warnDeafControlled(options)
-          options.onOpenChange?.(true, trigger)
-          return
-        }
-        clearTimeout(el.__hideTimer__)
-        el.__hideTimer__ = undefined
-        showTooltip(el, options, trigger)
-      }
-
-      el.__hideTooltip__ = (
-        delay = el.__tooltipBinding__?.hideDelay ?? 150,
-        reason: TTooltipReason = 'dismiss',
-      ) => {
-        const options = el.__tooltipBinding__
-        // Controlled, and this is a request rather than the host's own doing.
-        // Report it and stop: `open` is the host's state and we do not write
-        // to it. Escape arrives here as 'dismiss', so a host that handles
-        // `onOpenChange` gets a genuine dismissal; a host that does not is
-        // warned, once, because an undismissable tooltip fails WCAG 1.4.13.
-        if (options?.open !== undefined && reason !== 'program') {
-          warnDeafControlled(options)
-          options.onOpenChange?.(false, reason)
-          return
-        }
-        clearTimeout(el.__hideTimer__)
-        // `0` means now, not "next macrotask". Every caller that passes 0 is
-        // saying the chip must not survive this tick: a route change, an
-        // Escape, and above all the one-chip rule, which would otherwise
-        // leave two chips painted for a frame.
-        if (delay <= 0) {
-          el.__hideTimer__ = undefined
-          hideTooltip(el, true, reason)
-          return
-        }
-        // Default 150ms: long enough that crossing a 1px gap between two
-        // adjacent icon buttons does not flicker, short enough that the chip
-        // is gone before the user's eye returns.
-        el.__hideTimer__ = setTimeout(() => {
-          el.__hideTimer__ = undefined
-          hideTooltip(el, delay <= 0, reason)
-        }, delay)
-      }
-
-      el.__mouseMove__ = (event: MouseEvent) => {
-        el.__mouseX__ = event.clientX
-        el.__mouseY__ = event.clientY
-        // Read from the LIVE binding, not the closure's mount-time one:
-        // `followCursor` is a reactive option like every other, and reading
-        // `binding.value` here froze it at whatever it was when the anchor
-        // mounted.
-        if (el.__tooltipBinding__?.followCursor) {
-          positionTooltip(
-            el,
-            el.tooltipElement,
-            el.__tooltipBinding__?.position,
-          )
-        }
-      }
-
-      el.__tooltipBinding__ = binding.value
-
-      el.__showHandler__ = (event: Event) => {
-        // Touchscreen browsers replay a full mouse sequence after a tap. The
-        // touch handler has already opened (and scheduled the close of) the
-        // chip, so honouring the replayed mouseenter would re-open it with no
-        // mouseleave ever coming to close it again.
-        if (withinMs(el.__lastTouchAt__, TOUCH_MOUSE_GRACE_MS)) return
-        const mouse = event as MouseEvent
-        // Mid-drag. A pointer that enters this anchor with a button already
-        // held is committed to a gesture that started somewhere else (a
-        // slider thumb, a reorder handle, a text selection), so an anchor it
-        // merely passes over on the way must stay quiet rather than pop a
-        // chip under the moving cursor.
-        //
-        // Read from the event rather than from a flag we maintain across
-        // pointerdown/pointerup: a drag that ends outside the document never
-        // delivers a pointerup, and a flag left stuck on would suppress every
-        // hover for the rest of the session. `buttons` is 0 on an ordinary
-        // hover in every engine.
-        if (mouse.buttons) return
-        // Seed the cursor position from the enter event. Without this a
-        // cursor-positioned tooltip opened by an element sliding under a
-        // stationary pointer lands at the top-left corner of the viewport.
-        if (
-          typeof mouse.clientX === 'number' &&
-          (mouse.clientX || mouse.clientY)
-        ) {
-          el.__mouseX__ = mouse.clientX
-          el.__mouseY__ = mouse.clientY
-        }
-        el.__showTooltip__?.('pointer')
-      }
-      el.__hideHandler__ = () => el.__hideTooltip__?.(undefined, 'pointer')
-
-      // Keyboard. An icon-only button is unusable without this: the user can
-      // reach it with Tab and has no way to find out what it does.
-      el.__focusHandler__ = (event: Event) => {
-        // Focus that a click just moved here is not a request to read the
-        // label, and the chip would then sit over whatever the click opened.
-        if (withinMs(lastPointerDownAt, POINTER_FOCUS_GRACE_MS)) return
-        // A nested anchor owns its own focus. Without this a wrapper and the
-        // control inside it both opened a chip on one Tab.
-        if (!isNearestAnchor(el, event)) return
-        el.__showTooltip__?.('focus')
-      }
-      el.__blurHandler__ = () => el.__hideTooltip__?.(undefined, 'focus')
-
-      // Touch. No hover exists, so a tap opens the chip immediately and it
-      // times itself out; the document-level pointerdown dismiss closes it
-      // early if the user taps anything else.
-      el.__touchHandler__ = (event: Event) => {
-        if (el.__tooltipBinding__?.touch === false) return
-        if (!isNearestAnchor(el, event)) return
-        // Stamped before the control check, so the mouse sequence the browser
-        // replays after the tap is still swallowed. Otherwise its mouseenter
-        // would open the chip anyway, with no mouseleave to close it.
-        el.__lastTouchAt__ = Date.now()
-        if (isTouchActivated(el)) return
-        el.__showTooltip__?.('touch')
-        el.__hideTooltip__?.(TOUCH_VISIBLE_MS, 'touch')
-      }
-
-      // Reachability. A <span> or an <svg> cannot be tabbed to, so its
-      // tooltip is invisible to keyboard and screen-reader users. We never
-      // add a tab stop behind the consumer's back: `focusable: true` is an
-      // explicit statement that this element carries information nothing
-      // else on the page carries.
-      syncFocusable(el, binding.value)
-
-      syncAria(el, binding.value)
-      el.setAttribute(ANCHOR_ATTR, '')
-
-      el.addEventListener('mouseenter', el.__showHandler__)
-      el.addEventListener('mouseleave', el.__hideHandler__)
-      el.addEventListener('mousemove', el.__mouseMove__ as EventListener)
-      // focusin/focusout rather than focus/blur: they bubble, so a tooltip on
-      // a wrapper still fires when focus lands on the control inside it.
-      el.addEventListener('focusin', el.__focusHandler__)
-      el.addEventListener('focusout', el.__blurHandler__)
-      el.addEventListener('touchstart', el.__touchHandler__, { passive: true })
-      syncDisabledProxy(el)
-      // `defaultOpen` and a controlled `open: true` both have to take effect
-      // now, not on the first hover: an onboarding highlight that waits for a
-      // pointer is not a highlight.
-      syncOpenState(el, binding.value)
-      // Scrolling is NOT wired here. A per-anchor `scroll` listener on
-      // `window` (what this used to be) is the wrong subscription twice over:
-      // it never hears an inner container scroll, because scroll does not
-      // bubble, and hiding is the wrong response anyway. Scroll is handled by
-      // the shared re-anchor loop, which follows the anchor while it is
-      // visible and takes the chip down when it is not.
-    },
-
-    updated(el: TTooltipEl, binding: DirectiveBinding<ITooltipOptions>) {
-      const previous = el.__tooltipBinding__
-      el.__tooltipBinding__ = binding.value
-
-      if (!binding.value) {
-        syncAria(el, undefined)
-        syncFocusable(el, undefined)
-        hideTooltip(el, true)
-        return
-      }
-
-      // The accessible contract tracks the binding even when nothing is on
-      // screen: an icon button whose tooltip flipped from "Mute" to "Unmute"
-      // has changed its name, chip or no chip, and an `aria` option that
-      // flipped from `label` to `description` has changed which of the two the
-      // anchor is carrying. Running this only in `showTooltip` was how a chip
-      // that was already up ended up announced twice: the anchor kept the name
-      // it was mounted with and gained a description saying the same words.
-      if (previous !== binding.value) {
-        syncAria(el, binding.value)
-        syncFocusable(el, binding.value)
-      }
-      // Outside the identity guard above, deliberately: `disabled` is an
-      // attribute of the ELEMENT, not of the binding, so it flips on renders
-      // where the options object is unchanged, and a control that just became
-      // disabled has silently lost every listener it had. The check is a
-      // property read and a reference comparison.
-      syncDisabledProxy(el)
-      // Before the early-outs below: visibility is not content, and a
-      // controlled tooltip whose `open` just changed must act even when the
-      // chip's markup is identical.
-      syncOpenState(el, binding.value)
-      // Nothing on screen: never touch layout on a host re-render.
-      if (!el.tooltipElement) return
-      // Same options object as last render: cannot have changed.
-      if (previous === binding.value) return
-      // Content-equal re-render (inline object literal, new identity,
-      // identical effective content). Comparing the rendered signature
-      // is pure string work; the expensive part (innerHTML rewrite plus
-      // getBoundingClientRect, i.e. a forced synchronous layout of the
-      // whole document) only runs when something actually changed.
-      const signature = contentSignature(binding.value)
-      if (signature === el.__lastContent__) return
-
-      el.__lastContent__ = signature
-      updateTooltip(el, binding.value)
-    },
-
-    unmounted(el: TTooltipEl) {
-      // Belt-and-braces: cancel the show-timer FIRST so a pending
-      // show doesn't append a tooltip after the anchor's gone.
-      // hideTooltip below also clears it, but doing it explicitly
-      // here guards against any reordering inside hideTooltip.
-      clearTimeout(el.__showTimer__)
-      el.__showTimer__ = undefined
-      clearTimeout(el.__hideTimer__)
-      el.__hideTimer__ = undefined
-      // immediate: the anchor is gone, so every chip it created goes
-      // with it right now rather than after an exit animation.
-      hideTooltip(el, true)
-      registeredTooltips.delete(el)
-      if (el.__showHandler__)
-        el.removeEventListener('mouseenter', el.__showHandler__)
-      if (el.__hideHandler__)
-        el.removeEventListener('mouseleave', el.__hideHandler__)
-      if (el.__focusHandler__)
-        el.removeEventListener('focusin', el.__focusHandler__)
-      if (el.__blurHandler__)
-        el.removeEventListener('focusout', el.__blurHandler__)
-      if (el.__touchHandler__)
-        el.removeEventListener('touchstart', el.__touchHandler__)
-      destroyDescription(el)
-      restoreNativeTitle(el)
-      if (el.__ownsAriaLabel__) {
-        el.removeAttribute('aria-label')
-        el.__ownsAriaLabel__ = false
-      }
-      if (el.__ownsTabIndex__) {
-        el.removeAttribute('tabindex')
-        el.__ownsTabIndex__ = false
-      }
-      if (el.__ownsRole__) {
-        el.removeAttribute('role')
-        el.__ownsRole__ = false
-      }
-      el.removeAttribute(ANCHOR_ATTR)
-      detachDisabledProxy(el)
-      if (el.__mouseMove__)
-        el.removeEventListener('mousemove', el.__mouseMove__ as EventListener)
-      stopReanchoring(el)
-    },
-  })
+  app.directive('nb-tooltip', nbTooltip)
 }
 
 const createTooltipContent = ({
