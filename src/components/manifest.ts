@@ -49,6 +49,7 @@ export const COMPONENT_MANIFEST = {
   NbFlag: 'Flag',
   NbFloatingToolbar: 'FloatingToolbar',
   NbToolbar: 'Toolbar',
+  NbContentSwitcher: 'ContentSwitcher',
   NbForm: 'Form',
   NbGrid: 'Grid',
   NbIcon: 'Icon',

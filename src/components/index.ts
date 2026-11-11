@@ -40,6 +40,7 @@ import NbGanttChart from './Charts/GanttChart.vue'
 import NbFlag from './Flag.vue'
 import NbFloatingToolbar from './FloatingToolbar.vue'
 import NbToolbar from './Toolbar.vue'
+import NbContentSwitcher from './ContentSwitcher.vue'
 import NbForm from './Form.vue'
 import NbGrid from './Grid.vue'
 import NbIcon from './Icon.vue'
@@ -156,6 +157,7 @@ const components = {
   NbFlag,
   NbFloatingToolbar,
   NbToolbar,
+  NbContentSwitcher,
   NbForm,
   NbGrid,
   NbIcon,

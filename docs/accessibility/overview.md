@@ -156,7 +156,7 @@ In this mode the browser replaces your palette with the user's. `background-imag
 - **Icons that are background images vanish.** Ours are inline SVG and inherit `currentColor`, so they survive.
 - **Scrims flatten.** `--nb-c-scrim` is a `color-mix` to transparent; in forced colours a dialog can end up visually continuous with the page behind it. Give overlay content an explicit border.
 
-The library handles forced colours deliberately in 6 component files (`NbToast`, `NbToaster`, `NbSpinner`, `NbSkeleton`, `NbNotificationCenter` and its items). Everything else survives only by construction (outlines and inline SVG). Selected rows, the modal scrim and field borders are the known holes. See [Forced colours](/accessibility/color-contrast#forced-colours) for what is covered and what to add on your side.
+The library handles forced colours deliberately in 7 component files (`NbToast`, `NbToaster`, `NbSpinner`, `NbSkeleton`, `NbNotificationCenter` and its items, `NbContentSwitcher`). Everything else survives only by construction (outlines and inline SVG). Selected rows, the modal scrim and field borders are the known holes. See [Forced colours](/accessibility/color-contrast#forced-colours) for what is covered and what to add on your side.
 
 ### What automated tools will and will not do
 

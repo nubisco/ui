@@ -237,6 +237,11 @@ export { default as NbFlag } from './components/Flag.vue'
 export type { ESizePixel, IFlagProps } from './components/Flag.d'
 export type { TFlagSource } from './components/Flag.d'
 export { default as NbFloatingToolbar } from './components/FloatingToolbar.vue'
+export { default as NbContentSwitcher } from './components/ContentSwitcher.vue'
+export type {
+  IContentSwitcherItem,
+  IContentSwitcherProps,
+} from './components/ContentSwitcher.d'
 export { default as NbToolbar } from './components/Toolbar.vue'
 export type { IToolbarProps, TToolbarSize } from './components/Toolbar.d'
 export type {
