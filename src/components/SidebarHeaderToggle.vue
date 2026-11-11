@@ -8,7 +8,9 @@
     :aria-expanded="!isCompact"
     @click="emit('toggle')"
   >
-    <NbIcon :name="glyph" :size="isEdge ? 16 : 18" />
+    <!-- On the icon scale (16, 20, 24, 32): 20 in the 32px button, as a
+         md icon-only NbButton has, 16 on the 24px edge tab. -->
+    <NbIcon :name="glyph" :size="isEdge ? 16 : 20" />
   </button>
 </template>
 
@@ -100,6 +102,7 @@ const label = computed(() =>
 
 <style scoped lang="scss">
 @use '../styles/logic/motion' as motion;
+@use '../styles/logic/focus' as focus;
 .nb-sidebar-header-toggle {
   display: inline-flex;
   align-items: center;
@@ -121,9 +124,10 @@ const label = computed(() =>
     color: var(--nb-shell-sidebar-link-hover-color);
   }
 
+  // The house ring, its inner band in the rail's own colour so it does not
+  // paint a light ring inside a dark rail.
   &:focus-visible {
-    outline: 2px solid var(--nb-c-focus-ring);
-    outline-offset: 2px;
+    @include focus.ring(var(--nb-shell-sidebar-bg, var(--nb-c-surface)));
   }
 }
 
@@ -141,6 +145,11 @@ const label = computed(() =>
   &:hover {
     background: var(--nb-c-surface-raised);
     color: var(--nb-c-text);
+  }
+
+  // The tab paints the surface, so the inner band is the surface again.
+  &:focus-visible {
+    @include focus.ring;
   }
 }
 

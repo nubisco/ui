@@ -9,13 +9,13 @@ pageTabs: ['usage', 'code', 'accessibility']
 
 ## Props
 
-| Prop          | Type          | Default    | Description                                       |
-| ------------- | ------------- | ---------- | ------------------------------------------------- |
-| `text`        | `string`      | required   | What lands on the clipboard                       |
-| `label`       | `string`      | `'Copy'`   | Accessible name and tooltip                       |
-| `copiedLabel` | `string`      | `'Copied'` | Accessible name and tooltip while it shows a tick |
-| `size`        | `TButtonSize` | `'xs'`     | Button size                                       |
-| `duration`    | `number`      | `1500`     | How long the checkmark stays, in ms               |
+| Prop          | Type          | Default    | Description                                                                                        |
+| ------------- | ------------- | ---------- | -------------------------------------------------------------------------------------------------- |
+| `text`        | `string`      | required   | What lands on the clipboard                                                                        |
+| `label`       | `string`      | `'Copy'`   | Accessible name and tooltip. Default from the catalogue (`copyButtonCopy`)                         |
+| `copiedLabel` | `string`      | `'Copied'` | Accessible name and tooltip while it shows a tick. Default from the catalogue (`copyButtonCopied`) |
+| `size`        | `TButtonSize` | `'xs'`     | Button size                                                                                        |
+| `duration`    | `number`      | `1500`     | How long the checkmark stays, in ms                                                                |
 
 ## Events
 

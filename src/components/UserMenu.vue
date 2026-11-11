@@ -87,41 +87,55 @@
             <div class="nb-user-menu__divider" role="separator" />
 
             <template v-if="props.accounts && props.accounts.length">
-              <button
+              <!-- The remove control is a sibling of the account's button,
+                   not an icon inside it: a button cannot hold another
+                   control, and the clickable icon it used to be was out of
+                   reach of the keyboard and had no name. -->
+              <div
                 v-for="account in props.accounts"
                 :key="account.id"
-                type="button"
-                role="menuitem"
-                class="nb-user-menu__account"
-                :class="{ 'nb-user-menu__account--current': account.current }"
-                :disabled="account.current"
-                @click="onSwitch(account)"
+                class="nb-user-menu__account-row"
+                role="none"
               >
-                <span class="nb-user-menu__account-main">
-                  <span class="nb-user-menu__account-email">{{
-                    account.email
-                  }}</span>
-                  <span
-                    v-if="account.name"
-                    class="nb-user-menu__account-name"
-                    >{{ account.name }}</span
-                  >
-                </span>
-                <NbIcon
-                  v-if="account.current"
-                  name="check"
-                  size="sm"
-                  class="nb-user-menu__check"
-                />
-                <NbIcon
-                  v-else-if="account.removable !== false"
-                  name="x"
-                  size="sm"
+                <button
+                  type="button"
+                  role="menuitem"
+                  class="nb-user-menu__account"
+                  :class="{
+                    'nb-user-menu__account--current': account.current,
+                  }"
+                  :disabled="account.current"
+                  @click="onSwitch(account)"
+                >
+                  <span class="nb-user-menu__account-main">
+                    <span class="nb-user-menu__account-email">{{
+                      account.email
+                    }}</span>
+                    <span
+                      v-if="account.name"
+                      class="nb-user-menu__account-name"
+                      >{{ account.name }}</span
+                    >
+                  </span>
+                  <NbIcon
+                    v-if="account.current"
+                    name="check"
+                    size="sm"
+                    class="nb-user-menu__check"
+                  />
+                </button>
+                <NbButton
+                  v-if="!account.current && account.removable !== false"
                   class="nb-user-menu__remove"
-                  :title="t('userMenu.REMOVE_ACCOUNT')"
+                  role="menuitem"
+                  variant="ghost"
+                  size="sm"
+                  icon="x"
+                  :label="t('userMenu.REMOVE_ACCOUNT')"
+                  tooltip-position="left"
                   @click.stop="onRemove(account)"
                 />
-              </button>
+              </div>
             </template>
             <button
               v-else-if="props.accountsUnknown"
@@ -234,6 +248,7 @@ import {
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 import { useI18n } from 'vue-i18n'
 import NbIcon from './Icon.vue'
+import NbButton from './Button.vue'
 import NbNubiscoMark from './NubiscoMark.vue'
 import NbRadio from './Radio.vue'
 import { useTheme, type TTheme } from '@/composables/useTheme.composable'
@@ -521,6 +536,7 @@ defineExpose({ open, toggle, close })
 <style lang="scss">
 @use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
+@use '../styles/logic/focus' as focus;
 @use '../styles/variables/breakpoints' as bp;
 
 .nb-user-menu {
@@ -561,6 +577,12 @@ defineExpose({ open, toggle, close })
   &:disabled {
     opacity: 0.6;
     cursor: default;
+  }
+
+  // It had none. The inner band is the rail's colour, which is what sits
+  // around the avatar.
+  &:focus-visible {
+    @include focus.ring(var(--nb-shell-sidebar-bg, var(--nb-c-surface)));
   }
 }
 
@@ -603,8 +625,7 @@ defineExpose({ open, toggle, close })
   }
 
   &:focus-visible {
-    outline: 2px solid var(--nb-c-focus-ring);
-    outline-offset: -2px;
+    @include focus.ring(var(--nb-shell-sidebar-bg, var(--nb-c-surface)));
   }
 
   &:disabled {
@@ -753,6 +774,24 @@ defineExpose({ open, toggle, close })
   &:hover {
     background: var(--nb-c-layer-hover-3, rgba(0, 0, 0, 0.05));
   }
+
+  // None of the menu's rows drew a ring, so a keyboard user tabbing
+  // through the panel could not see where they were.
+  &:focus-visible {
+    @include focus.ring(var(--nb-c-layer-3));
+  }
+}
+
+// An account and its remove control, on one line.
+.nb-user-menu__account-row {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--nb-base-unit) * 0.5);
+
+  .nb-user-menu__account {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
 }
 
 .nb-user-menu__account--current {
@@ -786,13 +825,8 @@ defineExpose({ open, toggle, close })
   color: var(--nb-c-success, #16a34a);
 }
 
-.nb-user-menu__remove {
-  color: var(--nb-c-text-subtle);
-  cursor: pointer;
-
-  &:hover {
-    color: var(--nb-c-danger, #b91c1c);
-  }
+.nb-user-menu__panel .nb-user-menu__remove {
+  flex: none;
 }
 
 .nb-user-menu__brand {

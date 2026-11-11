@@ -13,7 +13,7 @@
           class="nb-command-palette"
           role="dialog"
           aria-modal="true"
-          :aria-label="label"
+          :aria-label="dialogLabel"
           tabindex="-1"
           @keydown="onKeydown"
         >
@@ -31,15 +31,25 @@
               class="nb-command-palette__input"
               role="combobox"
               aria-autocomplete="list"
-              :aria-label="label"
+              :aria-label="dialogLabel"
               :aria-expanded="flatResults.length > 0"
               :aria-controls="flatResults.length > 0 ? listboxId : undefined"
               :aria-activedescendant="
                 highlightedId !== null ? optionId(highlightedId) : undefined
               "
-              :placeholder="placeholder"
+              :placeholder="placeholder ?? strings.commandPalettePlaceholder"
               autocomplete="off"
               spellcheck="false"
+            />
+            <!-- A phone has no Escape key, and the sheet can cover the scrim
+                 that closes it on a desktop, so it gets a way out. -->
+            <NbButton
+              v-if="phone"
+              class="nb-command-palette__close"
+              variant="ghost"
+              icon="x"
+              :label="strings.commandPaletteClose"
+              @click="state.close()"
             />
           </div>
 
@@ -51,7 +61,7 @@
             :id="listboxId"
             class="nb-command-palette__results"
             role="listbox"
-            :aria-label="label"
+            :aria-label="dialogLabel"
           >
             <div
               v-for="(group, gi) in groupedResults"
@@ -117,17 +127,17 @@
             class="nb-command-palette__empty"
             role="status"
           >
-            Searching...
+            {{ strings.commandPaletteSearching }}
           </div>
           <div
             v-else-if="query"
             class="nb-command-palette__empty"
             role="status"
           >
-            No matches
+            {{ strings.commandPaletteNoMatches }}
           </div>
           <div v-else class="nb-command-palette__empty">
-            Type to search commands
+            {{ strings.commandPaletteHint }}
           </div>
         </div>
       </div>
@@ -137,6 +147,7 @@
 
 <script setup lang="ts">
 import NbIcon from './Icon.vue'
+import NbButton from './Button.vue'
 import {
   ref,
   computed,
@@ -155,6 +166,8 @@ import type {
 import { NB_COMMAND_PALETTE_KEY } from '@/composables/useCommandPalette.composable'
 import { useScrollLock } from '@/composables/useScrollLock.composable'
 import { useFocusTrap } from '@/composables/useFocusTrap.composable'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
+import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 
 // The palette takes the page's scrollbar while it is open. It holds a share of
 // the same counted lock NbModal and NbSpinner's page overlay use, so a palette
@@ -163,12 +176,18 @@ const { lock: lockScroll, unlock: unlockScroll } = useScrollLock()
 
 const props = withDefaults(defineProps<ICommandPaletteProps>(), {
   openShortcut: 'Meta+k',
-  placeholder: 'Search commands...',
+  placeholder: undefined,
   maxResults: 50,
   suggest: undefined,
   suggestDebounce: 150,
-  label: 'Command palette',
+  label: undefined,
 })
+
+const strings = useNbStrings()
+const dialogLabel = computed(
+  () => props.label ?? strings.value.commandPaletteLabel,
+)
+const { phone } = usePhoneLayout()
 
 const state = inject<ICommandPaletteState>(NB_COMMAND_PALETTE_KEY)!
 
@@ -571,6 +590,13 @@ onBeforeUnmount(() => {
   gap: 12px;
   padding: 12px 16px;
   border-bottom: 1px solid var(--nb-c-layer-border-3);
+}
+
+.nb-command-palette__close {
+  flex-shrink: 0;
+  // Into the row's end padding, so the icon lines up with the edge of the
+  // results below rather than 16px in from it.
+  margin-inline-end: calc(var(--nb-base-unit) * -1);
 }
 
 .nb-command-palette__search-icon {

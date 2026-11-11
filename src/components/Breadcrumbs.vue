@@ -79,8 +79,12 @@
             :anchor="() => itemEls[index]"
             :model-value="currentOption(item)"
             :options="selectOptions(item)"
-            :search-placeholder="item.searchPlaceholder ?? 'Find'"
-            :no-results-label="item.noResultsLabel ?? 'No results'"
+            :search-placeholder="
+              item.searchPlaceholder ?? strings.breadcrumbsFind
+            "
+            :no-results-label="
+              item.noResultsLabel ?? strings.breadcrumbsNoResults
+            "
             @change="onSwitch(item, index, $event)"
           >
             <!-- Only when an option carries a picture, so a list without
@@ -105,7 +109,9 @@
                 type="button"
                 class="nb-breadcrumbs__switch"
                 v-bind="attrs"
-                :aria-label="item.switchLabel ?? `Switch ${item.label}`"
+                :aria-label="
+                  item.switchLabel ?? strings.breadcrumbsSwitch(item.label)
+                "
               >
                 <NbIcon :name="iconUpDown" size="sm" aria-hidden="true" />
               </button>
@@ -135,6 +141,9 @@ import {
 } from 'vue'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 import type { IBreadcrumbItem, IBreadcrumbOption } from './Breadcrumbs.d'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
+
+const strings = useNbStrings()
 
 const props = withDefaults(
   defineProps<{
@@ -297,6 +306,8 @@ const collapsed = computed(
 
 <style lang="scss" scoped>
 @use '../styles/variables/breakpoints' as bp;
+@use '../styles/logic/focus' as focus;
+@use '../styles/logic/radius' as radius;
 
 .nb-breadcrumbs {
   display: inline-flex;
@@ -444,7 +455,9 @@ const collapsed = computed(
   padding: 2px;
   background: transparent;
   border: 0;
-  border-radius: 4px;
+  // The control radius, so it squares with every other control on a square
+  // page rather than staying at a fixed 4px.
+  @include radius.standalone(control-sm);
   color: var(--nb-c-text-subtle);
   cursor: pointer;
 
@@ -454,9 +467,9 @@ const collapsed = computed(
     background: color-mix(in srgb, var(--nb-c-text) 8%, transparent);
   }
 
+  // The one ring every control draws, not a primary-coloured one of its own.
   &:focus-visible {
-    outline: 2px solid var(--nb-c-primary);
-    outline-offset: 1px;
+    @include focus.ring;
   }
 
   // A fingertip, on a phone.

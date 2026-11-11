@@ -48,7 +48,7 @@
           class="nb-accordion-item__info"
           :text="info"
           :size="16"
-          :label="`About ${title || 'this section'}`"
+          :label="strings.accordionAbout(title ?? '')"
         />
         <span class="nb-accordion-item__spacer" aria-hidden="true" />
         <!-- Above the overlay, so a tooltip on the meta can be hovered. It
@@ -94,6 +94,9 @@ import { NB_ACCORDION_CONTEXT } from './Accordion.context'
 import NbIcon from './Icon.vue'
 import NbInfoHint from './InfoHint.vue'
 import { useStableId } from '../composables/useStableId.composable'
+import { useNbStrings } from '../composables/useNbStrings.composable'
+
+const strings = useNbStrings()
 
 const props = withDefaults(defineProps<IAccordionItemProps>(), {
   id: undefined,
@@ -156,6 +159,7 @@ function onKeydown(event: KeyboardEvent) {
 
 <style scoped lang="scss">
 @use '../styles/logic/motion' as motion;
+@use '../styles/logic/focus' as focus;
 @use '../styles/variables/breakpoints' as bp;
 
 .nb-accordion-item {
@@ -203,8 +207,7 @@ function onKeydown(event: KeyboardEvent) {
   }
 
   &:focus-visible {
-    outline: 2px solid var(--nb-c-focus-ring);
-    outline-offset: -2px;
+    @include focus.ring;
   }
 
   &:disabled {
@@ -333,8 +336,7 @@ function onKeydown(event: KeyboardEvent) {
   }
 
   &:has(.nb-accordion-item__header:focus-visible) {
-    outline: 2px solid var(--nb-c-focus-ring);
-    outline-offset: -2px;
+    @include focus.ring;
   }
 
   .nb-accordion--flush & {
