@@ -28,6 +28,7 @@
             variant="ghost"
             :icon="item.icon"
             :disabled="item.disabled"
+            :disabled-reason="item.disabledReason"
             :loading="item.loading"
             @click="choose(item)"
             >{{ item.label }}</NbButton

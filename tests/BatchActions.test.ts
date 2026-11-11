@@ -80,3 +80,24 @@ describe('NbBatchActions', () => {
     expect(w.find('.flag').text()).toBe('true')
   })
 })
+
+describe('NbBatchActions disabled reason', () => {
+  it('passes a disabled action its reason, so it stays focusable', () => {
+    const w = mount(NbBatchActions, {
+      props: {
+        count: 2,
+        items: [
+          {
+            id: 'send',
+            label: 'Send',
+            disabled: true,
+            disabledReason: 'Already sent',
+          },
+        ],
+      },
+    })
+    const send = w.findAll('button').find((b) => b.text() === 'Send')
+    expect(send?.attributes('aria-disabled')).toBe('true')
+    expect(send?.attributes('disabled')).toBeUndefined()
+  })
+})
