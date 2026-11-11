@@ -632,7 +632,7 @@ describe('NbBoard select mode', () => {
       },
     )
     expect(w.classes()).toContain('nb-board--select-mode')
-    await w.find('.nb-board__batch-cancel').trigger('click')
+    await w.find('.nb-batch-actions__cancel').trigger('click')
     expect(selection(w)).toEqual([])
     expect(w.emitted('update:selectMode')?.at(-1)).toEqual([false])
   })
@@ -713,7 +713,7 @@ describe('NbBoard on a phone', () => {
     expect(bar!.querySelector('.act')!.textContent).toBe('phone')
     expect(w.classes()).toContain('nb-board--batching')
     // The cancel still works from its new home.
-    ;(bar!.querySelector('.nb-board__batch-cancel') as HTMLElement).click()
+    ;(bar!.querySelector('.nb-batch-actions__cancel') as HTMLElement).click()
     expect(w.emitted('update:selected')?.at(-1)).toEqual([[]])
     w.unmount()
     expect(document.body.querySelector('.nb-board__batch')).toBeNull()

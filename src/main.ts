@@ -136,6 +136,11 @@ export type {
   IReorderListProps,
   IReorderEvent,
 } from './components/ReorderList.d'
+export { default as NbBatchActions } from './components/BatchActions.vue'
+export type {
+  IBatchActionsProps,
+  TBatchActionsVariant,
+} from './components/BatchActions.d'
 export { default as NbBoard } from './components/Board.vue'
 export type {
   IBoardColumn,

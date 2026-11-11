@@ -17,6 +17,7 @@ export const COMPONENT_MANIFEST = {
   NbBadge: 'Badge',
   NbBanner: 'Banner',
   NbBarChart: 'Charts/BarChart',
+  NbBatchActions: 'BatchActions',
   NbBoard: 'Board',
   NbBreadcrumbs: 'Breadcrumbs',
   NbButton: 'Button',

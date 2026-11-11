@@ -59,6 +59,8 @@ export interface INbStrings {
   /** An unavailable action's name and tooltip: the action, then why. */
   actionUnavailable: (label: string, reason: string) => string
   batchActionsCancel: string
+  batchActionsLabel: string
+  dataTableToolbar: string
   dataTableRowActions: string
   // NbModal
   modalClose: string
@@ -147,6 +149,8 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   overflowMenuLabel: 'More actions',
   actionUnavailable: (label: string, reason: string) => `${label}: ${reason}`,
   batchActionsCancel: 'Cancel',
+  batchActionsLabel: 'Batch actions',
+  dataTableToolbar: 'Table tools',
   dataTableRowActions: 'Row actions',
   modalClose: 'Close',
   textInputCount: (length: number, max: number) => `${length}/${max}`,

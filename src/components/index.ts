@@ -9,6 +9,7 @@ import NbAvatar from './Avatar.vue'
 import NbBadge from './Badge.vue'
 import NbBanner from './Banner.vue'
 import NbBarChart from './Charts/BarChart.vue'
+import NbBatchActions from './BatchActions.vue'
 import NbBoard from './Board.vue'
 import NbBreadcrumbs from './Breadcrumbs.vue'
 import NbButton from './Button.vue'
@@ -123,6 +124,7 @@ const components = {
   NbBadge,
   NbBanner,
   NbBarChart,
+  NbBatchActions,
   NbBoard,
   NbBreadcrumbs,
   NbButton,
