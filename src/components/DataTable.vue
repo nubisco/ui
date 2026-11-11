@@ -353,7 +353,10 @@
                         variant="ghost"
                         size="sm"
                         :icon="item.icon"
-                        :label="actionName(item)"
+                        :label="item.label"
+                        :disabled-reason="
+                          showBatchBar ? undefined : item.disabledReason
+                        "
                         :disabled="
                           item.disabled || item.loading || showBatchBar
                         "
@@ -702,14 +705,6 @@ function splitRowActions(row: T): {
   const items = props.rowActions?.(row) ?? []
   if (items.length <= 3) return { inline: items, more: [] }
   return { inline: items.slice(0, 2), more: items.slice(2) }
-}
-
-/** The icon's words, with the reason when it is disabled. */
-function actionName(item: IActionGroupItem): string {
-  if (item.disabled && item.disabledReason) {
-    return nbStrings.value.actionUnavailable(item.label, item.disabledReason)
-  }
-  return item.label
 }
 
 function chooseRowAction(item: IActionGroupItem) {

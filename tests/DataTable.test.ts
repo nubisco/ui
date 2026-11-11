@@ -681,14 +681,17 @@ describe('NbDataTable rowActions', () => {
   it('keeps an action that does not apply in place, saying why', () => {
     const wrapper = mountTable({ rowActions: actions })
     const cells = wrapper.findAll('td.nb-data-table__actions-cell')
+    // Disabled with a reason: still focusable (aria-disabled), the reason
+    // its tooltip, so a keyboard user can reach it too.
     const first = cells[0].findAll('button')[1]
-    expect(first.attributes('disabled')).toBeDefined()
-    expect(first.attributes('aria-label')).toBe(
-      'Delete: Paid invoices cannot be deleted',
-    )
+    expect(first.attributes('aria-disabled')).toBe('true')
+    expect(first.attributes('aria-label')).toBe('Delete')
+    expect(
+      cells[0].findAllComponents(NbButton)[1].props('disabledReason'),
+    ).toBe('Paid invoices cannot be deleted')
     const second = cells[1].findAll('button')[1]
+    expect(second.attributes('aria-disabled')).toBeUndefined()
     expect(second.attributes('disabled')).toBeUndefined()
-    expect(second.attributes('aria-label')).toBe('Delete')
   })
 
   it('names the column from the catalogue', () => {

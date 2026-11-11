@@ -254,10 +254,14 @@ describe('NbActionGroup Carbon behaviour', () => {
         ],
       },
     })
-    expect(w.find('button').attributes('aria-label')).toBe(
-      'Delete: Paid invoices cannot be deleted',
+    // NbButton's disabledReason: still focusable, so the reason is reachable
+    // from the keyboard, and the reason is its tooltip.
+    const button = w.findComponent(NbButton)
+    expect(button.props('disabledReason')).toBe(
+      'Paid invoices cannot be deleted',
     )
-    expect(w.find('button').attributes('disabled')).toBeDefined()
+    expect(button.attributes('aria-label')).toBe('Delete')
+    expect(button.attributes('aria-disabled')).toBe('true')
   })
 
   it('draws a pressed toggle with the button pressed state', () => {

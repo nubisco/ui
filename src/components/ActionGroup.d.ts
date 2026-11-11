@@ -48,9 +48,10 @@ interface IActionGroupItem {
    */
   disabled?: boolean
   /**
-   * Why the action is disabled ("Paid invoices cannot be deleted"). An
-   * icon-only action adds it to its tooltip and accessible name, so the
-   * action still explains itself. Read only while `disabled`.
+   * Why the action is disabled ("Paid invoices cannot be deleted"). Passed
+   * to NbButton's `disabledReason`: the button stays focusable, cannot be
+   * pressed, and shows the reason as its tooltip, so the action still
+   * explains itself. Read only while `disabled`.
    */
   disabledReason?: string
   loading?: boolean

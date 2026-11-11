@@ -11,7 +11,8 @@
         :disabled="item.disabled"
         :loading="item.loading"
         :icon="item.icon"
-        :label="nameOf(item)"
+        :label="item.label"
+        :disabled-reason="item.disabledReason"
         :pressed="item.pressed"
         :data-action-id="measuring ? item.id : undefined"
         @click="choose(item)"
@@ -24,6 +25,7 @@
         :disabled="item.disabled"
         :loading="item.loading"
         :icon="item.icon"
+        :disabled-reason="item.disabledReason"
         :pressed="item.pressed"
         :data-action-id="measuring ? item.id : undefined"
         @click="choose(item)"
@@ -215,18 +217,6 @@ const overflowLabel = computed(
 function iconOnly(item: IActionGroupItem): boolean {
   if (!item.icon) return false
   return !!item.iconOnly || (folded.value && phone.value)
-}
-
-/**
- * The words of an icon-only action. A disabled one says why it is disabled
- * in the same tooltip, so an action that does not apply stays in its place
- * and still explains itself.
- */
-function nameOf(item: IActionGroupItem): string {
-  if (item.disabled && item.disabledReason) {
-    return nbStrings.value.actionUnavailable(item.label, item.disabledReason)
-  }
-  return item.label
 }
 
 function variantOf(item: IActionGroupItem): TButtonVariant | undefined {
