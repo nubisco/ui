@@ -47,6 +47,40 @@ Set `multiline` to render a `<textarea>`. Use `rows` to control the initial heig
 </template>
 ```
 
+## Leading icon
+
+The `#leading` slot puts an icon before the text, for a search field or a field whose kind an icon says faster than a label. The slot is padded to where the text would otherwise start, so the icon lines up with the placeholders of the fields above and below it, and the text follows the icon by 8px. A multiline field keeps the icon on its first line. Without the slot, nothing about the field changes.
+
+For a full search control (clear on <kbd>Escape</kbd>, an expandable mode for toolbars) use [`NbSearch`](/components/search/usage), which is built this way.
+
+<preview>
+  <div style="display: grid; gap: 16px; width: 360px">
+    <NbTextInput v-model="leadingVal" label="Search the docs" placeholder="Search docs" size="lg">
+      <template #leading>
+        <NbIcon name="magnifying-glass" :size="20" />
+      </template>
+    </NbTextInput>
+    <NbTextInput v-model="leadingVal" label="Without an icon" placeholder="Search docs" size="lg" />
+  </div>
+</preview>
+
+```vue
+<NbTextInput
+  v-model="query"
+  label="Search the docs"
+  placeholder="Search docs"
+  size="lg"
+>
+  <template #leading>
+    <NbIcon name="magnifying-glass" :size="20" />
+  </template>
+</NbTextInput>
+```
+
+::: tip Drop your own spacing
+Before this release the slot had no padding, and the icon touched the field's left edge. If you added a margin to the icon to make up for it, remove it now, or the gap doubles.
+:::
+
 ## Inline actions slot
 
 Use the `#actions` slot to place buttons inside the field at the trailing edge (default variant only). An action is an icon-only `NbButton`, ghost, with a `label`: the label is its accessible name and its tooltip, so it never needs an `aria-label` or a tooltip of its own. Pass the icon as `icon`, never an `NbIcon` in the slot.
@@ -132,6 +166,7 @@ The `#dropdown` slot holds a popup anchored to the field. For autocomplete (an @
 | Slot       | Description                                                                                       |
 | ---------- | ------------------------------------------------------------------------------------------------- |
 | `label`    | Custom label content (replaces the `label` prop text)                                             |
+| `leading`  | An icon before the text, padded to where the text would start (default variant only)              |
 | `actions`  | Buttons or icons rendered at the trailing edge (default only)                                     |
 | `dropdown` | A popup anchored to the field, such as an [`NbSuggestionList`](/components/suggestion-list/usage) |
 

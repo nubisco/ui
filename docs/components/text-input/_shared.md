@@ -103,6 +103,7 @@ const stateWarning = ref('A rather long description that probably exceeds the li
 const stateHelper = ref('')
 const multilineVal = ref('')
 const actionsVal = ref('')
+const leadingVal = ref('')
 const clearVal = ref('Quarterly report')
 const passwordVal = ref('')
 const sizeXs = ref('')

@@ -22,7 +22,13 @@
       </NbLabel>
 
       <div class="nb-text-input__field-wrapper" :class="wrapperClasses">
-        <slot name="leading" />
+        <!-- Padded to where the text would start, so a leading icon lines up
+             with the placeholder of the field above it, and the text after it
+             moves in by only the icon gap. Rendered only when filled, so a
+             field without it does not move. -->
+        <div v-if="$slots.leading" class="nb-text-input__leading">
+          <slot name="leading" />
+        </div>
 
         <!-- ░░ OVERLAY MODE (highlight function provided) ░░░░░░░░ -->
         <!-- CSS Grid overlap: mirror and transparent field share the same grid cell,
@@ -260,7 +266,15 @@
 
 <script setup lang="ts">
 import NbGrid from './Grid.vue'
-import { computed, nextTick, provide, ref, useAttrs, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  provide,
+  ref,
+  useAttrs,
+  useSlots,
+  watch,
+} from 'vue'
 import type { IReadableFieldComponent } from '@/types/Props.d'
 import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
@@ -473,6 +487,8 @@ const hasWarning = computed(
     !hasError.value && (!!props.warning || group.status.value === 'warning'),
 )
 
+const slots = useSlots()
+
 const wrapperClasses = computed(() => ({
   'nb-text-input__field-wrapper--focused': focused.value,
   'nb-text-input__field-wrapper--error': hasError.value,
@@ -481,6 +497,7 @@ const wrapperClasses = computed(() => ({
   'nb-text-input__field-wrapper--readonly': props.readonly,
   'nb-text-input__field-wrapper--overlay': useOverlay.value,
   'nb-text-input__field-wrapper--multiline': props.multiline,
+  'nb-text-input__field-wrapper--leading': !!slots.leading,
 }))
 </script>
 
@@ -509,6 +526,41 @@ const wrapperClasses = computed(() => ({
   }
   &--lg {
     --field-h: var(--nb-field-height-lg);
+  }
+
+  /*
+   * Where the text starts. The field's own inline padding, unless a leading
+   * slot takes that place: then the slot carries the field padding (so its
+   * icon sits where text would start) and the text follows it by the icon
+   * gap, the same 8px the trailing decorator keeps on its side.
+   */
+  --nb-text-input-pad-start: var(--nb-field-padding-h);
+
+  &__field-wrapper--leading {
+    --nb-text-input-pad-start: var(--nb-base-unit);
+  }
+
+  &__leading {
+    display: flex;
+    align-items: center;
+    align-self: stretch;
+    flex-shrink: 0;
+    padding-inline-start: var(--nb-field-padding-h);
+    color: var(--nb-c-text-muted);
+    z-index: 2; // above the transparent overlay input
+  }
+
+  // A multiline field's icon belongs to the first line, not the middle of
+  // the box: it sits in a first-line-tall row at the textarea's top padding.
+  &--multiline &__leading {
+    align-self: flex-start;
+    box-sizing: content-box;
+    padding-block-start: 8px;
+    height: calc(var(--nb-field-font-size) * var(--nb-field-line-height));
+  }
+
+  .nb-text-input__field-wrapper--disabled &__leading {
+    color: var(--nb-c-text-placeholder);
   }
 
   // ─── Field wrapper ────────────────────────────────────────
@@ -637,7 +689,8 @@ const wrapperClasses = computed(() => ({
     flex: 1;
     min-width: 0;
     height: var(--nb-text-input-inner-h);
-    padding: 0 var(--nb-field-padding-h);
+    padding-block: 0;
+    padding-inline: var(--nb-text-input-pad-start) var(--nb-field-padding-h);
     background: transparent;
     border: none;
     outline: none;
@@ -708,7 +761,8 @@ const wrapperClasses = computed(() => ({
     .nb-text-input__mirror,
     .nb-text-input__field--transparent {
       height: var(--nb-text-input-inner-h);
-      padding: 0 var(--nb-field-padding-h);
+      padding-block: 0;
+      padding-inline: var(--nb-text-input-pad-start) var(--nb-field-padding-h);
       // line-height = height centres single-line text identically in mirror and input
       line-height: var(--nb-text-input-inner-h);
       white-space: pre;
@@ -725,7 +779,8 @@ const wrapperClasses = computed(() => ({
     // Overlay: padding top/bottom, height driven by mirror content
     .nb-text-input__mirror,
     .nb-text-input__field--transparent {
-      padding: 8px var(--nb-field-padding-h);
+      padding-block: 8px;
+      padding-inline: var(--nb-text-input-pad-start) var(--nb-field-padding-h);
       white-space: pre-wrap;
       min-height: 80px;
       overflow-y: auto;
@@ -735,7 +790,8 @@ const wrapperClasses = computed(() => ({
     .nb-text-input__field {
       height: auto;
       min-height: 80px;
-      padding: 8px var(--nb-field-padding-h);
+      padding-block: 8px;
+      padding-inline: var(--nb-text-input-pad-start) var(--nb-field-padding-h);
       resize: vertical;
       overflow: auto;
     }
