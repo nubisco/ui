@@ -71,7 +71,7 @@
              screen reader user gets no signal at all from a button that has
              quietly become disabled. -->
         <p v-if="busy" class="nb-confirm__status" role="status">
-          {{ busyLabel }}
+          {{ resolvedBusyLabel }}
         </p>
 
         <!-- The finished beat. Opt-in, because a dialog that lingers after a
@@ -102,29 +102,31 @@
     </div>
 
     <template #footer>
-      <!-- Cancel first, and it holds initial focus. Confirm sits where the
-           eye finishes and the hand rests, but nothing lands on it. -->
+      <!-- Written Cancel first; NbButtonSet in NbModal's footer places it on
+           the left and the confirm verb on the right, and puts the confirm
+           first in the tab order, as Carbon does. A secondary Cancel, not a
+           ghost: it is the other half of the decision, not a way to wander
+           off. Where focus lands on open is decided below, per tone. -->
       <NbButton
         ref="cancelRef"
         class="nb-confirm__action nb-confirm__action--cancel"
-        variant="ghost"
-        size="lg"
+        variant="secondary"
         :disabled="locked"
         data-nb-confirm="cancel"
         @click="onCancel"
       >
-        {{ cancelLabel }}
+        {{ resolvedCancelLabel }}
       </NbButton>
       <NbButton
+        ref="confirmRef"
         class="nb-confirm__action nb-confirm__action--confirm"
         :variant="confirmVariant"
-        size="lg"
         :disabled="!canConfirm"
         :loading="busy"
         data-nb-confirm="confirm"
         @click="onConfirmClick"
       >
-        {{ confirmLabel }}
+        {{ resolvedConfirmLabel }}
       </NbButton>
     </template>
   </NbModal>
@@ -147,6 +149,7 @@ import NbIcon from './Icon.vue'
 import NbMessage from './Message.vue'
 import NbTextInput from './TextInput.vue'
 import { useReducedMotion } from '@/composables/useReducedMotion.composable'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { applyConfirmMotion, floatingSelector } from './Confirm.env'
 import type { IConfirmProps } from './Confirm.d'
 
@@ -160,14 +163,14 @@ const props = withDefaults(defineProps<IConfirmProps>(), {
   message: undefined,
   subject: undefined,
   subjectLabel: undefined,
-  confirmLabel: 'Confirm',
-  cancelLabel: 'Cancel',
+  confirmLabel: undefined,
+  cancelLabel: undefined,
   tone: 'danger',
   typeToConfirm: undefined,
   typeToConfirmLabel: undefined,
   typeToConfirmHelper: undefined,
   busy: false,
-  busyLabel: 'Working',
+  busyLabel: undefined,
   succeeded: false,
   successLabel: undefined,
   error: undefined,
@@ -186,6 +189,7 @@ const slots = useSlots()
 const rootRef = ref<HTMLElement | null>(null)
 const errorRef = ref<HTMLElement | null>(null)
 const cancelRef = ref<InstanceType<typeof NbButton> | null>(null)
+const confirmRef = ref<InstanceType<typeof NbButton> | null>(null)
 const typed = ref('')
 const reducedMotion = useReducedMotion()
 
@@ -213,8 +217,24 @@ const confirmVariant = computed(() =>
   props.tone === 'danger' ? 'danger' : 'primary',
 )
 
+// Every word the dialog says on its own comes from the string catalogue, and
+// a prop still wins, so `confirm({ cancelLabel })` keeps working. The
+// catalogue resolves outside a component tree too, which is where the host
+// `useConfirm()` mounts lives.
+const nbStrings = useNbStrings()
+const resolvedConfirmLabel = computed(
+  () => props.confirmLabel ?? nbStrings.value.confirmConfirm,
+)
+const resolvedCancelLabel = computed(
+  () => props.cancelLabel ?? nbStrings.value.confirmCancel,
+)
+const resolvedBusyLabel = computed(
+  () => props.busyLabel ?? nbStrings.value.confirmBusy,
+)
 const gateLabel = computed(
-  () => props.typeToConfirmLabel ?? `Type ${props.typeToConfirm} to confirm`,
+  () =>
+    props.typeToConfirmLabel ??
+    nbStrings.value.confirmTypeToConfirm(props.typeToConfirm ?? ''),
 )
 
 // Trimmed, because a trailing space pasted along with a name is not a
@@ -240,6 +260,47 @@ function onConfirmClick() {
 function cancelEl(): HTMLElement | null {
   const el = cancelRef.value?.$el
   return el instanceof HTMLElement ? el : null
+}
+
+function confirmEl(): HTMLElement | null {
+  const el = confirmRef.value?.$el
+  return el instanceof HTMLElement ? el : null
+}
+
+function gateEl(): HTMLElement | null {
+  return (
+    rootRef.value?.querySelector<HTMLElement>(
+      '[data-nb-confirm="gate"] input, input[data-nb-confirm="gate"]',
+    ) ?? null
+  )
+}
+
+/**
+ * Where focus lands when the question appears, after Carbon.
+ *
+ * A destructive question (`tone="danger"`, the default) opens on Cancel,
+ * always. The confirm button is one Space away from whatever is focused when
+ * a dialog appears, and a dialog that steals focus onto a destructive default
+ * turns a stray keypress into a deletion. Carbon makes the same exception for
+ * a danger modal, and it is the safer default whatever else is in the dialog.
+ *
+ * A neutral question is a transactional dialog: it opens on its first input,
+ * which is the type-to-confirm field when there is one, and otherwise on the
+ * confirm button, the primary. Cancel is the fallback for a confirm button
+ * that cannot take focus.
+ */
+function initialFocusTarget(): HTMLElement | null {
+  if (props.tone === 'danger') return cancelEl()
+  if (props.typeToConfirm) return gateEl() ?? cancelEl()
+  const confirm = confirmEl()
+  if (confirm && !(confirm as HTMLButtonElement).disabled) return confirm
+  return cancelEl()
+}
+
+function focusInitial() {
+  const target = initialFocusTarget()
+  if (target) target.focus()
+  else focusFallback()
 }
 
 /**
@@ -434,12 +495,7 @@ watch(
 
       syncMotion()
 
-      // Initial focus is Cancel, always. The confirm button is one Space
-      // away from whatever is focused when a dialog appears, and a dialog
-      // that steals focus onto a destructive default turns a stray keypress
-      // into a deletion. Cancel is the safe landing.
-      if (cancelEl()) cancelEl()?.focus()
-      else focusFallback()
+      focusInitial()
     } else {
       restoreFocus()
     }
@@ -573,8 +629,7 @@ onMounted(() => {
   // finishes the job.
   if (props.open) {
     syncMotion()
-    if (cancelEl()) cancelEl()?.focus()
-    else focusFallback()
+    focusInitial()
   }
 })
 

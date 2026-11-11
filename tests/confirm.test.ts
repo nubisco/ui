@@ -30,7 +30,7 @@ const part = (which: 'cancel' | 'confirm' | 'gate') =>
 const cancelEl = () => part('cancel')!
 const confirmEl = () => part('confirm')!
 const closeEl = () =>
-  dialogEl()!.querySelector<HTMLButtonElement>('header button')!
+  dialogEl()!.querySelector<HTMLButtonElement>('.nb-modal--close')!
 const modalBody = () => dialogEl()!.querySelector<HTMLElement>('main')!
 const gateInput = () => dialogEl()!.querySelector<HTMLInputElement>('input')!
 const text = () => dialogEl()?.textContent ?? ''
@@ -88,17 +88,20 @@ afterEach(() => {
 
 describe('NbConfirm', () => {
   describe('button contract', () => {
-    it('puts cancel before confirm in the DOM, which is also the tab order', () => {
+    // Carbon's dialog focus order: the primary first, then the secondary,
+    // then the close. Cancel is still drawn on the left; NbButtonSet reverses
+    // the row so the DOM can carry the rank order.
+    it('puts confirm before cancel in the DOM, which is also the tab order', () => {
       mountConfirm()
       const order = Array.from(
         dialogEl()!.querySelectorAll('[data-nb-confirm]'),
       ).map((el) => el.getAttribute('data-nb-confirm'))
-      expect(order).toEqual(['cancel', 'confirm'])
+      expect(order).toEqual(['confirm', 'cancel'])
     })
 
-    it('gives cancel the ghost variant and confirm the danger variant', () => {
+    it('gives cancel the secondary variant and confirm the danger variant', () => {
       mountConfirm()
-      expect(cancelEl().className).toContain('nb-button--ghost')
+      expect(cancelEl().className).toContain('nb-button--secondary')
       expect(confirmEl().className).toContain('nb-button--danger')
     })
 
@@ -106,7 +109,7 @@ describe('NbConfirm', () => {
       mountConfirm({ tone: 'neutral' })
       expect(confirmEl().className).toContain('nb-button--primary')
       expect(confirmEl().className).not.toContain('nb-button--danger')
-      expect(cancelEl().className).toContain('nb-button--ghost')
+      expect(cancelEl().className).toContain('nb-button--secondary')
     })
 
     it('defaults the labels and lets both be localised', () => {
@@ -171,6 +174,33 @@ describe('NbConfirm', () => {
   describe('focus', () => {
     it('lands initial focus on cancel, never on the destructive button', async () => {
       const wrapper = mountConfirm({ open: false })
+      await wrapper.setProps({ open: true })
+      await nextTick()
+      expect(document.activeElement).toBe(cancelEl())
+    })
+
+    // Carbon: a transactional dialog with no inputs opens on its primary.
+    // The danger exception above is the only one.
+    it('lands initial focus on the confirm button for a neutral question', async () => {
+      const wrapper = mountConfirm({ open: false, tone: 'neutral' })
+      await wrapper.setProps({ open: true })
+      await nextTick()
+      expect(document.activeElement).toBe(confirmEl())
+    })
+
+    it('lands on the gate field for a neutral question that has one', async () => {
+      const wrapper = mountConfirm({
+        open: false,
+        tone: 'neutral',
+        typeToConfirm: 'staging',
+      })
+      await wrapper.setProps({ open: true })
+      await nextTick()
+      expect(document.activeElement).toBe(gateInput())
+    })
+
+    it('keeps cancel for a destructive question even with a gate field', async () => {
+      const wrapper = mountConfirm({ open: false, typeToConfirm: 'staging' })
       await wrapper.setProps({ open: true })
       await nextTick()
       expect(document.activeElement).toBe(cancelEl())
@@ -1360,8 +1390,10 @@ describe('NbConfirm double-fire guard', () => {
   // driver goes straight past the attribute. These emit from the child
   // component, exactly as a swapped-in button would.
   function fireConfirmButton(wrapper: ReturnType<typeof mountConfirm>) {
-    const buttons = wrapper.findAllComponents(NbButton)
-    buttons[buttons.length - 1].vm.$emit('click', new MouseEvent('click'))
+    const button = wrapper
+      .findAllComponents(NbButton)
+      .find((b) => b.attributes('data-nb-confirm') === 'confirm')!
+    button.vm.$emit('click', new MouseEvent('click'))
   }
 
   it('does not emit confirm while the action is in flight', async () => {

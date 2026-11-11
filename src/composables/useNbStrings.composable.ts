@@ -58,6 +58,11 @@ export interface INbStrings {
   modalClose: string
   // NbCloseButton, and every close or dismiss control built on it
   close: string
+  // NbConfirm
+  confirmConfirm: string
+  confirmCancel: string
+  confirmBusy: string
+  confirmTypeToConfirm: (phrase: string) => string
   // NbShell, the inspector sheet's own dismiss
   shellInspectorClose: string
   // NbNotificationCenter
@@ -153,6 +158,10 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   selectionCount: (count: number) => `${count} selected`,
   modalClose: 'Close',
   close: 'Close',
+  confirmConfirm: 'Confirm',
+  confirmCancel: 'Cancel',
+  confirmBusy: 'Working',
+  confirmTypeToConfirm: (phrase: string) => `Type ${phrase} to confirm`,
   shellInspectorClose: 'Close inspector',
   notificationCenterClose: 'Close notifications',
   walkthroughBack: 'Back',

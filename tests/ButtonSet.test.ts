@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick, ref } from 'vue'
 import ButtonSet from '../src/components/ButtonSet.vue'
 import Button from '../src/components/Button.vue'
+import Modal from '../src/components/Modal.vue'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -147,5 +148,61 @@ describe('NbButtonSet props', () => {
         b.classes().find((c) => /^nb-button--(xs|sm|md|lg|xl)$/.test(c)),
       )
     expect(sizes).toEqual(['nb-button--xl', 'nb-button--xl'])
+  })
+})
+
+describe('NbModal footer', () => {
+  it('is an NbButtonSet of xl buttons with the primary first in the DOM', async () => {
+    mount(Modal, {
+      props: { open: true, title: 'Rename workspace' },
+      slots: {
+        footer: () => [
+          h(Button, { variant: 'secondary' }, () => 'Cancel'),
+          h(Button, { variant: 'primary' }, () => 'Rename'),
+        ],
+      },
+      attachTo: document.body,
+    })
+    await nextTick()
+    const footer = document.querySelector('.nb-modal--footer')!
+    expect(footer.querySelector('.nb-button-set--fluid')).not.toBeNull()
+    expect(labels(footer)).toEqual(['Rename', 'Cancel'])
+    for (const b of footer.querySelectorAll('.nb-button')) {
+      expect(b.classList).toContain('nb-button--xl')
+    }
+  })
+
+  it('opens on the primary when the body has nothing to focus', async () => {
+    mount(Modal, {
+      props: { open: false, title: 'Publish' },
+      slots: {
+        default: () => h('p', 'Publish the draft?'),
+        footer: () => [
+          h(Button, { variant: 'secondary' }, () => 'Cancel'),
+          h(Button, { variant: 'primary', class: 'go' }, () => 'Publish'),
+        ],
+      },
+      attachTo: document.body,
+    }).setProps({ open: true })
+    await nextTick()
+    await nextTick()
+    expect(document.activeElement?.classList).toContain('go')
+  })
+
+  it('steps over a danger primary to the secondary', async () => {
+    mount(Modal, {
+      props: { open: false, title: 'Delete' },
+      slots: {
+        default: () => h('p', 'Delete the draft?'),
+        footer: () => [
+          h(Button, { variant: 'secondary', class: 'cancel' }, () => 'Cancel'),
+          h(Button, { variant: 'danger' }, () => 'Delete'),
+        ],
+      },
+      attachTo: document.body,
+    }).setProps({ open: true })
+    await nextTick()
+    await nextTick()
+    expect(document.activeElement?.classList).toContain('cancel')
   })
 })

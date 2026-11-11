@@ -46,10 +46,11 @@ interface IConfirmProps {
   /**
    * The confirm verb. Name the action ("Delete environment", "Regenerate
    * secret"), never "OK" or "Yes". A naked "Yes" makes the user re-read the
-   * title to find out what they are agreeing to.
+   * title to find out what they are agreeing to. Falls back to the string
+   * catalogue's `confirmConfirm` ("Confirm").
    */
   confirmLabel?: string
-  /** The exit label. "Cancel" unless you are localising it. */
+  /** The exit label. Falls back to the catalogue's `confirmCancel` ("Cancel"). */
   cancelLabel?: string
   /** Destructive (`danger`, the default) or consequential (`neutral`). */
   tone?: TConfirmTone
@@ -62,8 +63,8 @@ interface IConfirmProps {
    */
   typeToConfirm?: string
   /**
-   * Overrides the gate's field label. Defaults to
-   * `Type <typeToConfirm> to confirm`. Supply your own for i18n.
+   * Overrides the gate's field label. Defaults to the catalogue's
+   * `confirmTypeToConfirm`, "Type <typeToConfirm> to confirm".
    */
   typeToConfirmLabel?: string
   /** Helper text under the gate field. */
@@ -82,7 +83,8 @@ interface IConfirmProps {
    * that same subtree a moment later is at the mercy of how the screen reader
    * merges the two. Kept separate, the pending line is an ordinary polite
    * update to a region that was empty, which is a case assistive technology
-   * handles the same way everywhere.
+   * handles the same way everywhere. Falls back to the catalogue's
+   * `confirmBusy` ("Working").
    */
   busyLabel?: string
   /**
