@@ -145,15 +145,14 @@ describe('NbWalkthrough', () => {
     wrapper.vm.start()
     await settle()
 
-    // DOM order is NbButtonSet's rank order: the primary first (drawn on
-    // the right), then the others back towards the left.
+    // DOM order is reading order: the primary last, on the right.
     let labels = wrapper.findAll('.nb-button').map((b) => b.text())
-    expect(labels).toEqual(['Next', 'Skip'])
+    expect(labels).toEqual(['Skip', 'Next'])
 
     wrapper.vm.goTo(2)
     await settle()
     labels = wrapper.findAll('.nb-button').map((b) => b.text())
-    expect(labels).toEqual(['Done', 'Back'])
+    expect(labels).toEqual(['Back', 'Done'])
   })
 
   it('advances and rewinds from the footer buttons', async () => {
@@ -301,8 +300,8 @@ describe('NbWalkthrough', () => {
     await settle()
 
     expect(wrapper.findAll('.nb-button').map((b) => b.text())).toEqual([
-      'Continue',
       'Not now',
+      'Continue',
     ])
     expect(wrapper.find('.nb-walkthrough--progress').text()).toBe('1 of 3')
   })

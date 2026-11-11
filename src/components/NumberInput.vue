@@ -49,9 +49,11 @@
           >{{ warning }}</NbMessage
         >
 
-        <!-- At a limit the stepper is aria-disabled: NbButton draws it as
-             disabled and takes it off the pointer, and it stays in the tab
-             order so it is still found and announced. -->
+        <!-- The steppers are for the pointer and touch. They are out of the
+             tab order, as in Carbon, because the arrow keys on the field
+             already step the value, and two extra stops per number field
+             only slow a keyboard user down. At a limit a stepper is
+             aria-disabled, which NbButton draws as disabled. -->
         <div class="nb-number-input__steppers">
           <span class="nb-number-input__divider" aria-hidden="true" />
           <NbButton
@@ -61,6 +63,7 @@
             :label="nbStrings.numberInputDecrease"
             tooltip-position="top"
             class="nb-number-input__stepper"
+            tabindex="-1"
             :class="{ 'nb-number-input__stepper--at-limit': isAtMin }"
             :disabled="isDisabled"
             :aria-disabled="isAtMin || undefined"
@@ -75,6 +78,7 @@
             :label="nbStrings.numberInputIncrease"
             tooltip-position="top"
             class="nb-number-input__stepper"
+            tabindex="-1"
             :class="{ 'nb-number-input__stepper--at-limit': isAtMax }"
             :disabled="isDisabled"
             :aria-disabled="isAtMax || undefined"
@@ -185,6 +189,7 @@
               :label="nbStrings.numberInputDecrease"
               tooltip-position="top"
               class="nb-number-input__stepper"
+              tabindex="-1"
               :class="{ 'nb-number-input__stepper--at-limit': isAtMin }"
               :disabled="isDisabled"
               :aria-disabled="isAtMin || undefined"
@@ -199,6 +204,7 @@
               :label="nbStrings.numberInputIncrease"
               tooltip-position="top"
               class="nb-number-input__stepper"
+              tabindex="-1"
               :class="{ 'nb-number-input__stepper--at-limit': isAtMax }"
               :disabled="isDisabled"
               :aria-disabled="isAtMax || undefined"
@@ -464,7 +470,7 @@ defineExpose({ focus: () => inputRef.value?.focus() })
       box-shadow var(--nb-motion-short);
 
     &--focused {
-      outline: 2px solid var(--nb-c-primary);
+      outline: 2px solid var(--nb-c-focus-ring);
       outline-offset: -2px;
     }
 

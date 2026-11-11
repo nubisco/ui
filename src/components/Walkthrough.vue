@@ -115,7 +115,7 @@
             :skip="onSkip"
           >
             <!-- NbButtonSet places Next on the right whatever the order
-                 here, and Tab reaches it first. -->
+                 here, and Tab follows the row as it is read. -->
             <NbButtonSet class="nb-walkthrough--actions" align="end" size="sm">
               <NbButton
                 v-if="!controller.isLast.value"

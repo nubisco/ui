@@ -27,6 +27,15 @@ interface IButtonSetProps {
    * button keeps its own.
    */
   size?: TButtonSize
+  /**
+   * The order Tab walks the buttons in. `reading` (the default) follows the
+   * row as it is read: left to right, or top to bottom when stacked. `rank`
+   * is Carbon's dialog order: the primary first, then the others from the
+   * right-hand end back, before Tab moves on to the close button. NbModal's
+   * footer uses `rank`. Outside a dialog, keep `reading`, or Tab runs
+   * against the row.
+   */
+  focusOrder?: 'reading' | 'rank'
 }
 
 export type { IButtonSetProps, TButtonSetStack, TButtonSetAlign }

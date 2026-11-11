@@ -80,7 +80,7 @@ Wrapping the footer buttons breaks this in a way you can see: a group squeezed i
 Four consequences follow, and they are the whole contract:
 
 - **Every button is xl, 64px, with square corners.** The set gives each `NbButton` its size, so footer buttons carry no `size` of their own, and the corners stay square under the rounded appearance because the buttons are the dialog's bottom edge. The dialog's own corner clips the outer two.
-- **The widths are Carbon's.** One button spans the right half. Two share the row equally. Three are a quarter each for the two on the left and the right half for the primary.
+- **The widths are Carbon's.** One button spans the right half. Two share the row equally. Three are a quarter each, gathered on the right, and the left quarter stays empty.
 - **The primary goes on the right, whatever order you write.** The set reads each button's `variant`: a filled `primary` or `danger` is drawn rightmost and comes first in the tab order, then the secondary, then the close button. Write Cancel first and the commit second, as it reads.
 - **A wrapper counts as one child.** Wrapping your buttons in an `NbPanel` or an `NbGrid` makes the whole group the only child, so the group is squeezed to the right half and the nesting buys nothing that was not already there.
 

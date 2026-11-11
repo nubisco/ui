@@ -1213,7 +1213,7 @@ defineExpose({
   }
 
   &--focused &__trigger {
-    outline: 2px solid var(--nb-c-primary);
+    outline: 2px solid var(--nb-c-focus-ring);
     outline-offset: -2px;
   }
 

@@ -15,9 +15,10 @@ const labels = (root: Element) =>
     (b.textContent ?? '').trim(),
   )
 
-describe('NbButtonSet order', () => {
+describe('NbButtonSet rank order (dialog footers)', () => {
   it('puts the primary first in the DOM, whatever the slot order', () => {
     const w = mount(ButtonSet, {
+      props: { focusOrder: 'rank' },
       slots: {
         default: () => [
           h(Button, { variant: 'primary' }, () => 'Save'),
@@ -31,6 +32,7 @@ describe('NbButtonSet order', () => {
 
   it('reads a slot written secondary-first the same way', () => {
     const w = mount(ButtonSet, {
+      props: { focusOrder: 'rank' },
       slots: {
         default: () => [
           h(Button, { variant: 'secondary' }, () => 'Cancel'),
@@ -43,6 +45,7 @@ describe('NbButtonSet order', () => {
 
   it('ranks the others from the right-hand end back to the left', () => {
     const w = mount(ButtonSet, {
+      props: { focusOrder: 'rank' },
       slots: {
         default: () => [
           h(Button, { variant: 'ghost' }, () => 'Skip'),
@@ -56,6 +59,7 @@ describe('NbButtonSet order', () => {
 
   it('treats a filled danger as the primary, and an outlined one as not', () => {
     const danger = mount(ButtonSet, {
+      props: { focusOrder: 'rank' },
       slots: {
         default: () => [
           h(Button, { variant: 'danger' }, () => 'Delete'),
@@ -66,6 +70,7 @@ describe('NbButtonSet order', () => {
     expect(labels(danger.element)).toEqual(['Delete', 'Cancel'])
 
     const outlined = mount(ButtonSet, {
+      props: { focusOrder: 'rank' },
       slots: {
         default: () => [
           h(Button, { variant: 'primary', outlined: '' }, () => 'Preview'),
@@ -81,12 +86,16 @@ describe('NbButtonSet order', () => {
     const show = ref(false)
     const Host = defineComponent({
       setup: () => () =>
-        h(ButtonSet, null, {
-          default: () => [
-            show.value ? h(Button, { variant: 'ghost' }, () => 'Skip') : null,
-            h(Button, { variant: 'primary' }, () => 'Next'),
-          ],
-        }),
+        h(
+          ButtonSet,
+          { focusOrder: 'rank' },
+          {
+            default: () => [
+              show.value ? h(Button, { variant: 'ghost' }, () => 'Skip') : null,
+              h(Button, { variant: 'primary' }, () => 'Next'),
+            ],
+          },
+        ),
     })
     const w = mount(Host)
     expect(labels(w.element)).toEqual(['Next'])
@@ -94,7 +103,39 @@ describe('NbButtonSet order', () => {
     await nextTick()
     expect(labels(w.element)).toEqual(['Next', 'Skip'])
   })
+})
 
+describe('NbButtonSet reading order (the default)', () => {
+  it('puts the primary last in a row, whatever the slot order', () => {
+    const w = mount(ButtonSet, {
+      slots: {
+        default: () => [
+          h(Button, { variant: 'primary' }, () => 'Next'),
+          h(Button, { variant: 'ghost' }, () => 'Skip'),
+          h(Button, { variant: 'secondary' }, () => 'Back'),
+        ],
+      },
+    })
+    // Drawn forwards, so the DOM (and the tab order) is the order on screen.
+    expect(labels(w.element)).toEqual(['Skip', 'Back', 'Next'])
+    expect(w.classes()).toContain('nb-button-set--reading')
+  })
+
+  it('puts the primary first in a stacked set', () => {
+    const w = mount(ButtonSet, {
+      props: { stack: 'always' },
+      slots: {
+        default: () => [
+          h(Button, { variant: 'secondary' }, () => 'Cancel'),
+          h(Button, { variant: 'primary' }, () => 'Save'),
+        ],
+      },
+    })
+    expect(labels(w.element)).toEqual(['Save', 'Cancel'])
+  })
+})
+
+describe('NbButtonSet', () => {
   it('warns in development past three buttons', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     mount(ButtonSet, {

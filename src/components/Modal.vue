@@ -36,7 +36,13 @@
                the secondary on the left and the primary on the right, which
                NbButtonSet places whatever order the slot is written in. -->
           <footer v-if="$slots.footer" class="nb-modal--footer">
-            <NbButtonSet fluid size="xl" class="nb-modal--actions">
+            <NbButtonSet
+              fluid
+              size="xl"
+              focus-order="rank"
+              align="end"
+              class="nb-modal--actions"
+            >
               <slot name="footer" />
             </NbButtonSet>
           </footer>
@@ -434,8 +440,9 @@ $modal-sizes: (
  * have square corners even under the rounded appearance: they are the bottom
  * edge of the dialog, not buttons placed on it, and the dialog's own corner
  * clips the outer two. One button spans the right half. Two share the row.
- * Three are a quarter each for the two on the left and the right half for
- * the primary.
+ * Three are a quarter each, gathered on the right, with the left quarter
+ * left empty: Carbon's "each is 25% of the modal width and aligned to the
+ * right side".
  */
 .nb-modal--footer {
   flex-shrink: 0;
@@ -452,10 +459,8 @@ $modal-sizes: (
     flex: 0 0 50%;
   }
 
-  // Three buttons: 25 / 25 / 50, the primary being the 50.
-  :deep(> :first-child:nth-last-child(3)) {
-    flex: 0 0 50%;
-  }
+  // Three buttons: a quarter each, on the right.
+  :deep(> :first-child:nth-last-child(3)),
   :deep(> :first-child:nth-last-child(3) ~ *) {
     flex: 0 0 25%;
   }

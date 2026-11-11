@@ -4,7 +4,9 @@
       'nb-button-set',
       `nb-button-set--stack-${stack}`,
       `nb-button-set--align-${align}`,
+      `nb-button-set--${focusOrder}`,
       { 'nb-button-set--fluid': fluid },
+      { 'nb-button-set--stacked': stacked },
     ]"
   >
     <Ordered />
@@ -12,8 +14,17 @@
 </template>
 
 <script setup lang="ts">
-import { Comment, Fragment, Text, cloneVNode, useSlots, type VNode } from 'vue'
+import {
+  Comment,
+  Fragment,
+  Text,
+  cloneVNode,
+  computed,
+  useSlots,
+  type VNode,
+} from 'vue'
 import NbButton from './Button.vue'
+import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 import type { IButtonSetProps } from './ButtonSet.d'
 
 /*
@@ -26,20 +37,33 @@ import type { IButtonSetProps } from './ButtonSet.d'
  * of the two wrong at some width. So the set reads each child's `variant` and
  * places the primary itself, whatever order the slot was written in.
  *
- * The DOM order is the rank order: the primary first, then the others from
- * the right-hand end of the row back to the left. A row is drawn with
- * `row-reverse` and a column with `column`, so the same DOM gives the primary
- * on the right in a row and on top in a column, and switching between the two
- * at the phone breakpoint is a stylesheet change with no re-render. It is also
- * Carbon's focus order for a dialog: Tab reaches the primary first and then
- * moves left through the others, before it wraps to the close button.
+ * Where the primary is drawn and where Tab finds it are two decisions.
+ *
+ * `focusOrder="rank"` (a dialog footer): the DOM is the rank order, the
+ * primary first, then the others from the right-hand end of the row back to
+ * the left. A row is drawn with `row-reverse` and a column with `column`, so
+ * the same DOM gives the primary on the right in a row and on top in a
+ * column, and the phone breakpoint is a stylesheet change. It is Carbon's
+ * dialog focus order: Tab reaches the primary first and moves left through
+ * the others, before it wraps to the close button.
+ *
+ * `focusOrder="reading"` (everywhere else): the DOM is the order the row is
+ * read in, so Tab follows the eye. In a row the primary goes last (right),
+ * in a column first (top), and the set re-renders when the phone layout
+ * stacks it.
  */
 const props = withDefaults(defineProps<IButtonSetProps>(), {
   fluid: false,
   stack: 'never',
   align: 'start',
   size: undefined,
+  focusOrder: 'reading',
 })
+
+const { phone } = usePhoneLayout()
+const stacked = computed(
+  () => props.stack === 'always' || (props.stack === 'phone' && phone.value),
+)
 
 const slots = useSlots()
 
@@ -85,8 +109,13 @@ function order(nodes: VNode[]): VNode[] {
       break
     }
   }
-  const rest = items.filter((_, i) => i !== primary).reverse()
-  const ranked = primary >= 0 ? [items[primary], ...rest] : rest
+  const others = items.filter((_, i) => i !== primary)
+  const top = primary >= 0 ? [items[primary]] : []
+  let ranked: typeof items
+  if (props.focusOrder === 'rank') ranked = [...top, ...others.reverse()]
+  // Reading order: the primary leads a column and closes a row.
+  else if (stacked.value) ranked = [...top, ...others]
+  else ranked = [...others, ...top]
   return ranked.map(({ node, index }) =>
     cloneVNode(node, {
       // Keyed by slot position, so moving a button in the DOM moves the same
@@ -167,6 +196,26 @@ function Ordered() {
   }
 }
 
+/*
+ * Reading order: the DOM already runs the way the row is read, so the row is
+ * drawn forwards, the ends mean what they say, and the fluid rule sits on
+ * each button's inline start, facing the one before it.
+ */
+.nb-button-set.nb-button-set--reading {
+  flex-direction: row;
+
+  &.nb-button-set--align-start {
+    justify-content: flex-start;
+  }
+  &.nb-button-set--align-end {
+    justify-content: flex-end;
+  }
+
+  &.nb-button-set--fluid > :deep(* + *:not(:focus-visible)) {
+    box-shadow: inset 1px 0 0 0 var(--nb-c-border);
+  }
+}
+
 // Stacked: a column with the primary on top, every button the column's width.
 @mixin stacked {
   flex-direction: column;
@@ -182,7 +231,8 @@ function Ordered() {
   }
 }
 
-.nb-button-set.nb-button-set--stack-always {
+.nb-button-set.nb-button-set--stack-always,
+.nb-button-set.nb-button-set--reading.nb-button-set--stacked {
   @include stacked;
 }
 

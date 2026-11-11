@@ -36,4 +36,4 @@ at the right. A fluid set fills the row, so it has no alignment.
 
 `NbModal` uses a fluid set of xl (64px) buttons with square corners, and
 Carbon's widths: one button spans the right half, two share the row, three
-are a quarter each for the two on the left and the right half for the primary.
+are a quarter each, gathered on the right, with the left quarter empty.
