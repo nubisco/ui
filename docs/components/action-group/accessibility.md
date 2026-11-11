@@ -9,9 +9,10 @@ pageTabs: ['usage', 'code', 'accessibility']
 
 ## Accessibility
 
-- Every action is a real `NbButton`. Folded to an icon, it keeps its label as
-  `aria-label`, so a screen reader hears the same name a sighted user read on a
-  desktop.
+- Every action is a real `NbButton`. Folded to an icon (or `iconOnly`), its
+  label becomes the button's `label`: the accessible name a screen reader
+  hears, and the tooltip a sighted user sees. A disabled one with a
+  `disabledReason` stays focusable and shows the reason in that tooltip.
 - The overflow trigger is named by `overflowLabel` ("More actions") and carries
   `aria-haspopup="menu"` and `aria-expanded`.
 - The menu takes focus on its first row when it opens and hands it back to the

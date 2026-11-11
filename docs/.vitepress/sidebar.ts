@@ -59,6 +59,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Back To Top', link: '/components/back-to-top/usage' },
       { text: 'Badge', link: '/components/badge/usage' },
       { text: 'Banner', link: '/components/banner/usage' },
+      { text: 'Batch Actions', link: '/components/batch-actions/usage' },
       {
         text: 'Blueprint',
         items: [
@@ -100,6 +101,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Command Palette', link: '/components/command-palette/usage' },
       { text: 'Confirm', link: '/components/confirm/usage' },
       { text: 'Contained List', link: '/components/contained-list/usage' },
+      { text: 'Content Switcher', link: '/components/content-switcher/usage' },
       { text: 'Copy Button', link: '/components/copy-button/usage' },
       { text: 'Data Table', link: '/components/data-table/usage' },
       { text: 'Date Picker', link: '/components/date-picker/usage' },
@@ -128,6 +130,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
         link: '/components/notification-center/usage',
       },
       { text: 'Number Input', link: '/components/number-input/usage' },
+      { text: 'Overflow Menu', link: '/components/overflow-menu/usage' },
       { text: 'Page Header', link: '/components/page-header/usage' },
       { text: 'Page Layout', link: '/components/page-layout/usage' },
       { text: 'Pagination', link: '/components/pagination/usage' },
@@ -163,6 +166,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Text Input', link: '/components/text-input/usage' },
       { text: 'Toast', link: '/components/toast/usage' },
       { text: 'Toaster', link: '/components/toaster/usage' },
+      { text: 'Toolbar', link: '/components/toolbar/usage' },
       { text: 'Tree', link: '/components/tree/usage' },
       { text: 'User Menu', link: '/components/user-menu/usage' },
       { text: 'Video', link: '/components/video/usage' },
@@ -210,6 +214,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Notifications', link: '/patterns/notifications' },
       { text: 'Status indicators', link: '/patterns/status-indicators' },
       { text: 'Team management', link: '/patterns/team-management' },
+      { text: 'Toolbars and overflow', link: '/patterns/toolbars' },
     ],
   },
   {

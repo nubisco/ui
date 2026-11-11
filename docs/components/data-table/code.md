@@ -27,14 +27,11 @@ own surface, so it needs no box.
     row-key="id"
     title="Team members"
     description="People with access to this workspace."
+    :row-actions="rowActions"
     style="width: 100%"
   >
     <template #toolbar-actions>
       <NbButton variant="primary" icon="plus">New</NbButton>
-    </template>
-    <template #row-actions>
-      <NbButton variant="ghost" size="sm">Open</NbButton>
-      <NbButton variant="ghost" size="sm">Delete</NbButton>
     </template>
   </NbDataTable>
 </preview>
@@ -47,13 +44,10 @@ own surface, so it needs no box.
     row-key="id"
     title="Team members"
     description="People with access to this workspace."
+    :row-actions="rowActions"
   >
     <template #toolbar-actions>
       <NbButton variant="primary" icon="plus" @click="create">New</NbButton>
-    </template>
-    <template #row-actions="{ row }">
-      <NbButton variant="ghost" size="sm" @click="open(row)">Open</NbButton>
-      <NbButton variant="ghost" size="sm" @click="remove(row)">Delete</NbButton>
     </template>
   </NbDataTable>
 </template>
@@ -64,8 +58,9 @@ The table takes care of the measurements, so there is nothing to size by hand:
 - **Title** in the `heading-02` type set (Carbon's 20px `heading-03`), with
   16px above it, 24px below and 16px at the sides. The **description** is
   `body-md` in `--nb-c-text-muted`.
-- **Toolbar** as tall as a row, at most 48px. Buttons in it fill that height
-  and lose their corners, whatever `size` they were given.
+- **Toolbar** as tall as a row, from 32px to 48px. It is an
+  [`NbToolbar`](/components/toolbar/usage), flush: buttons in it without a
+  `size` of their own take its height and lose their corners.
 - **Header** in the `heading-compact` type set (14/18 semibold) on a fill one step
   deeper than the table, with no rule under it.
 - **Rows** in `body-md` (14px regular) and `--nb-c-text-muted`, a rule under
@@ -192,7 +187,30 @@ const selected = ref<(string | number)[]>([])
 
 ## Toolbar, batch actions & row actions
 
-The toolbar has two rows. The first holds the `title` and `description` (or your own `#toolbar` content). The second is the strip of tools: a `#search` slot that takes the spare width, then the `#toolbar-actions` slot along the right. Each row renders only when it has something in it. While rows are selected, a batch-action bar covers the strip of tools, not the title, and renders the `#batch-actions` slot (with a `clear` helper). The strip keeps its height either way, so nothing below it moves. A trailing actions column appears whenever a `#row-actions` slot is provided.
+The toolbar has two rows. The first holds the `title` and `description` (or your own `#toolbar` content). The second is the strip of tools: a `#search` slot that takes the spare width, then the `#toolbar-actions` slot along the right. Each row renders only when it has something in it. While rows are selected, a batch-action bar covers the strip of tools, not the title, and renders the `#batch-actions` slot (with a `clear` helper). The strip keeps its height either way, so nothing below it moves. The batch bar is an [`NbBatchActions`](/components/batch-actions/usage) overlay, with Cancel on the far right, and while it is up every row action is disabled. A trailing actions column appears whenever `rowActions` or a `#row-actions` slot is provided.
+
+`rowActions` is the way to give rows actions. It returns the row's actions as `IActionGroupItem`s, rendered as small ghost icon buttons whose `label` is their name and tooltip. Return the same actions for every row: one that does not apply stays in place with `disabled` and a `disabledReason`, which its tooltip reads out. Past three, two stay and the rest go into an [`NbOverflowMenu`](/components/overflow-menu/usage). The `#row-actions` slot is still there for anything else, and gets `disabled` while the batch bar is up.
+
+```ts
+function rowActions(row: Member): IActionGroupItem[] {
+  return [
+    {
+      id: 'edit',
+      label: 'Edit',
+      icon: 'pencil-simple',
+      onSelect: () => edit(row),
+    },
+    {
+      id: 'remove',
+      label: 'Remove',
+      icon: 'trash',
+      disabled: row.status === 'Away',
+      disabledReason: 'Away members cannot be removed',
+      onSelect: () => remove(row),
+    },
+  ]
+}
+```
 
 <preview>
   <NbDataTable
@@ -203,6 +221,7 @@ The toolbar has two rows. The first holds the `title` and `description` (or your
     description="People with access to this workspace."
     selectable="multiple"
     v-model:selected="selectedToolbar"
+    :row-actions="rowActions"
     style="width: 100%"
   >
     <template #toolbar-actions>
@@ -216,9 +235,6 @@ The toolbar has two rows. The first holds the `title` and `description` (or your
     <template #cell-status="{ value }">
       <NbBadge>{{ value }}</NbBadge>
     </template>
-    <template #row-actions>
-      <NbButton variant="ghost" size="sm" icon="dots-three-vertical" />
-    </template>
   </NbDataTable>
 </preview>
 
@@ -231,6 +247,7 @@ The toolbar has two rows. The first holds the `title` and `description` (or your
   description="People with access to this workspace."
   selectable="multiple"
   v-model:selected="selected"
+  :row-actions="rowActions"
 >
   <template #toolbar-actions>
     <NbButton variant="primary" icon="plus">Add member</NbButton>
@@ -239,9 +256,6 @@ The toolbar has two rows. The first holds the `title` and `description` (or your
     <NbButton variant="primary" icon="trash" @click="clear">
       Delete {{ selectedKeys.length }}
     </NbButton>
-  </template>
-  <template #row-actions>
-    <NbButton variant="ghost" size="sm" icon="dots-three-vertical" />
   </template>
 </NbDataTable>
 ```
@@ -347,7 +361,7 @@ Loading renders shimmering skeleton rows (`skeletonRows` controls the count). `e
 
 ## Density
 
-`size` sets the row height on Carbon's scale. The header row matches it, and so do the toolbar and the batch bar, up to 48px. Cell padding (16px) and type (14px) stay the same at every size. Combine with `zebra` for alternating row backgrounds.
+`size` sets the row height on Carbon's scale. The header row matches it, and so do the toolbar and the batch bar, from 32px up to 48px. Cell padding (16px) and type (14px) stay the same at every size. Combine with `zebra` for alternating row backgrounds.
 
 | Size           | Row height | Use it for                                  |
 | -------------- | ---------- | ------------------------------------------- |
@@ -676,6 +690,7 @@ Only one row open at a time is a matter of what you pass back:
 | `ariaLabel`    | `string`                                  | `undefined` | Accessible name for the `<table>`                                                                                       |
 | `stackOnPhone` | `boolean`                                 | `false`     | On a phone, render each row as a stacked card                                                                           |
 | `expanded`     | `(string \| number)[]`                    | `[]`        | Open detail row keys (`v-model:expanded`), read with a `#row-detail` slot                                               |
+| `rowActions`   | `(row: T) => IActionGroupItem[]`          |             | Each row's actions, as small ghost icon buttons with tooltips. Past three, an overflow menu                             |
 
 ## Interfaces
 
@@ -721,7 +736,7 @@ interface IDataTableSortState {
 | `search`          | (none)                             | Search field, takes the toolbar's spare width          |
 | `toolbar-actions` | (none)                             | Toolbar buttons, the primary one last                  |
 | `batch-actions`   | `{ selectedKeys, clear }`          | Actions shown in the batch bar during selection        |
-| `row-actions`     | `{ row, rowIndex }`                | Trailing overflow / actions column                     |
+| `row-actions`     | `{ row, rowIndex, disabled }`      | Trailing actions column, when `rowActions` is not set  |
 | `row-detail`      | `{ row, rowIndex }`                | Detail shown under an open row; adds the toggle column |
 | `loading`         | (none)                             | (Skeleton rows render automatically)                   |
 | `empty`           | (none)                             | Empty-state content                                    |
