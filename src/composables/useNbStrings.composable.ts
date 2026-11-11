@@ -62,6 +62,13 @@ export interface INbStrings {
   shellInspectorClose: string
   // NbNotificationCenter
   notificationCenterClose: string
+  // NbWalkthrough
+  walkthroughBack: string
+  walkthroughNext: string
+  walkthroughSkip: string
+  walkthroughDone: string
+  walkthroughProgress: (current: number, total: number) => string
+  walkthroughDialog: string
   // NbTextInput `showCount`
   textInputCount: (length: number, max: number) => string
   // NbNumberInput
@@ -148,6 +155,13 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   close: 'Close',
   shellInspectorClose: 'Close inspector',
   notificationCenterClose: 'Close notifications',
+  walkthroughBack: 'Back',
+  walkthroughNext: 'Next',
+  walkthroughSkip: 'Skip',
+  walkthroughDone: 'Done',
+  walkthroughProgress: (current: number, total: number) =>
+    `Step ${current} of ${total}`,
+  walkthroughDialog: 'Product walkthrough',
   textInputCount: (length: number, max: number) => `${length}/${max}`,
   numberInputDecrease: 'Decrease',
   numberInputIncrease: 'Increase',

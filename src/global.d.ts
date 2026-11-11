@@ -24,6 +24,7 @@ import Breadcrumbs from './components/Breadcrumbs.vue'
 import Briefing from './components/Briefing.vue'
 import BriefingDestination from './components/BriefingDestination.vue'
 import Button from './components/Button.vue'
+import ButtonSet from './components/ButtonSet.vue'
 import Calendar from './components/Calendar.vue'
 import Card from './components/Card.vue'
 import CardGrid from './components/CardGrid.vue'
@@ -144,6 +145,7 @@ declare module 'vue' {
     NbBriefing: typeof Briefing
     NbBriefingDestination: typeof BriefingDestination
     NbButton: typeof Button
+    NbButtonSet: typeof ButtonSet
     NbCalendar: typeof Calendar
     NbCard: typeof Card
     NbCardGrid: typeof CardGrid

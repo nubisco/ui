@@ -12,6 +12,7 @@ import NbBarChart from './Charts/BarChart.vue'
 import NbBoard from './Board.vue'
 import NbBreadcrumbs from './Breadcrumbs.vue'
 import NbButton from './Button.vue'
+import NbButtonSet from './ButtonSet.vue'
 import NbCalendar from './Calendar.vue'
 import NbCard from './Card.vue'
 import NbCardGrid from './CardGrid.vue'
@@ -125,6 +126,7 @@ const components = {
   NbBoard,
   NbBreadcrumbs,
   NbButton,
+  NbButtonSet,
   NbCalendar,
   NbCard,
   NbCardGrid,

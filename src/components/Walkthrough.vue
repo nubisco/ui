@@ -114,11 +114,12 @@
             :next="onNext"
             :skip="onSkip"
           >
-            <div class="nb-walkthrough--actions">
+            <!-- NbButtonSet places Next on the right whatever the order
+                 here, and Tab reaches it first. -->
+            <NbButtonSet class="nb-walkthrough--actions" align="end" size="sm">
               <NbButton
                 v-if="!controller.isLast.value"
                 variant="ghost"
-                size="sm"
                 @click="onSkip"
               >
                 {{ resolvedLabels.skip }}
@@ -127,19 +128,18 @@
                 v-if="!controller.isFirst.value"
                 variant="secondary"
                 outlined
-                size="sm"
                 @click="onBack"
               >
                 {{ resolvedLabels.back }}
               </NbButton>
-              <NbButton variant="primary" size="sm" @click="onNext">
+              <NbButton variant="primary" @click="onNext">
                 {{
                   controller.isLast.value
                     ? resolvedLabels.done
                     : resolvedLabels.next
                 }}
               </NbButton>
-            </div>
+            </NbButtonSet>
           </slot>
         </div>
       </div>
@@ -150,6 +150,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import NbButton from './Button.vue'
+import NbButtonSet from './ButtonSet.vue'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { useStableId } from '@/composables/useStableId.composable'
 import { useWalkthrough } from '@/composables/useWalkthrough.composable'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
@@ -189,14 +191,17 @@ const emit = defineEmits<{
 
 const EMPTY: IWalkthrough = { id: '', version: 1, steps: [] }
 
-const DEFAULT_LABELS: IWalkthroughLabels = {
-  back: 'Back',
-  next: 'Next',
-  skip: 'Skip',
-  done: 'Done',
-  progress: (current, total) => `Step ${current} of ${total}`,
-  dialog: 'Product walkthrough',
-}
+const nbStrings = useNbStrings()
+
+// The words come from the string catalogue, and `labels` wins over it.
+const defaultLabels = computed<IWalkthroughLabels>(() => ({
+  back: nbStrings.value.walkthroughBack,
+  next: nbStrings.value.walkthroughNext,
+  skip: nbStrings.value.walkthroughSkip,
+  done: nbStrings.value.walkthroughDone,
+  progress: nbStrings.value.walkthroughProgress,
+  dialog: nbStrings.value.walkthroughDialog,
+}))
 
 /**
  * A host that needs to start the tour from outside the template passes a
@@ -246,7 +251,7 @@ const stepIndex = computed(() => controller.stepIndex.value)
 const total = computed(() => controller.stepCount.value)
 
 const resolvedLabels = computed<IWalkthroughLabels>(() => ({
-  ...DEFAULT_LABELS,
+  ...defaultLabels.value,
   ...(props.labels ?? {}),
 }))
 
@@ -656,10 +661,10 @@ defineExpose({
   white-space: nowrap;
 }
 
+// NbButtonSet lays the buttons out. It only has to stay its own width
+// beside the progress line.
 .nb-walkthrough--actions {
-  display: flex;
-  align-items: center;
-  gap: calc(var(--nb-base-unit) * 0.75);
+  flex-shrink: 0;
 }
 
 // Opacity only: the centred variant carries a translate(-50%, -50%) of its

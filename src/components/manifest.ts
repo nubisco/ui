@@ -20,6 +20,7 @@ export const COMPONENT_MANIFEST = {
   NbBoard: 'Board',
   NbBreadcrumbs: 'Breadcrumbs',
   NbButton: 'Button',
+  NbButtonSet: 'ButtonSet',
   NbCalendar: 'Calendar',
   NbCard: 'Card',
   NbCardGrid: 'CardGrid',
