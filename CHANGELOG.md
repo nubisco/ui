@@ -1,3 +1,15 @@
+# [5.51.0](https://github.com/nubisco/ui/compare/v5.50.1...v5.51.0) (2026-11-11)
+
+
+### Bug Fixes
+
+* **input-group:** fluid members leave the label and message to the group too ([4cb0264](https://github.com/nubisco/ui/commit/4cb02643b114de53eb9f96e629fca26e7e50681f))
+
+
+### Features
+
+* **menu:** a disabled submenu says why, and submenus stop on reasons ([04b584c](https://github.com/nubisco/ui/commit/04b584cea6010edb41c354519eec27e02b6a6166))
+
 ## [5.50.1](https://github.com/nubisco/ui/compare/v5.50.0...v5.50.1) (2026-11-11)
 
 
