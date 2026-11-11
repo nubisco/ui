@@ -14,5 +14,8 @@ pageTabs: ['usage', 'code', 'accessibility']
   "Copy".
 - A polite status region says `copiedLabel` once, so a screen reader hears
   that the copy happened without having to see the icon change.
-- The tooltip uses the `v-nb-tooltip` directive the app installs. Without it
-  the button keeps its accessible name and simply shows no tooltip.
+- The tooltip is `NbButton`'s own, drawn from the same `label`, so the name
+  and the tooltip cannot disagree and no directive has to be installed.
+- The defaults, "Copy" and "Copied", come from the string catalogue
+  (`copyButtonCopy`, `copyButtonCopied`), so `provideNbStrings()` translates
+  them. A `label` or `copiedLabel` you pass wins over the catalogue.

@@ -1,4 +1,5 @@
 import { IDefaultProps } from '@/types/Props.d'
+import type { TButtonSize } from './Button.d'
 
 enum ESkeletonVariant {
   /** One or more body text lines, sized from a type set. */
@@ -9,6 +10,11 @@ enum ESkeletonVariant {
   Block = 'block',
   /** A circle: avatars and round icon buttons. */
   Circle = 'circle',
+  /**
+   * An `NbButton` that has not arrived yet, at the height of its `size` and
+   * the width a labelled button takes (square when `iconOnly`).
+   */
+  Button = 'button',
 }
 
 /**
@@ -63,7 +69,20 @@ interface ISkeletonProps extends IDefaultProps {
    * itself from `type`. A number is treated as pixels.
    */
   height?: string | number
-  /** Corner radius step. Ignored by the circle variant. */
+  /**
+   * The button size the placeholder stands in for. Button variant only, and
+   * the same scale as `NbButton`'s `size`: 16, 24, 32, 40, 48, 64 and 80px.
+   */
+  size?: TButtonSize
+  /**
+   * Stand in for an icon-only button: a square at the height of `size`.
+   * Button variant only.
+   */
+  iconOnly?: boolean
+  /**
+   * Corner radius step. Ignored by the circle variant, and by the button
+   * variant, which always takes the control radius a real button has.
+   */
   radius?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'pill'
   /** Turns the shimmer off. Static placeholders still read as loading. */
   animated?: boolean

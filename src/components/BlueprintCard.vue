@@ -130,8 +130,16 @@
           <button
             type="button"
             class="nb-blueprint-card__collapse"
-            :title="collapsed ? 'Expand' : 'Collapse'"
-            :aria-label="`${collapsed ? 'Expand' : 'Collapse'} ${title}`"
+            :title="
+              collapsed
+                ? nbStrings.blueprintExpandCard(title)
+                : nbStrings.blueprintCollapseCard(title)
+            "
+            :aria-label="
+              collapsed
+                ? nbStrings.blueprintExpandCard(title)
+                : nbStrings.blueprintCollapseCard(title)
+            "
             :aria-expanded="!collapsed"
             @mousedown.stop
             @click.stop="$emit('toggle-collapse', id)"
@@ -241,7 +249,7 @@
             type="button"
             class="nb-blueprint-card__remove"
             :title="nbStrings.blueprintRemoveCard"
-            :aria-label="`Remove ${title}`"
+            :aria-label="nbStrings.blueprintRemoveCardNamed(title)"
             @mousedown.stop
             @click.stop="$emit('remove', id)"
           >

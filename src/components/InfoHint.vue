@@ -5,7 +5,7 @@
       type="button"
       class="nb-info-hint--trigger"
       :class="{ 'nb-info-hint--trigger-open': isOpen }"
-      :aria-label="label ?? 'More information'"
+      :aria-label="label ?? strings.infoHintLabel"
       :aria-expanded="isOpen"
       :aria-describedby="isOpen ? popoverId : undefined"
       :disabled="disabled"
@@ -61,6 +61,7 @@ import {
   type TAnchorSide,
 } from '@/utils/anchorPosition.helper'
 import type { IInfoHintProps } from './InfoHint.d'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 
 const props = withDefaults(defineProps<IInfoHintProps>(), {
   text: undefined,
@@ -75,6 +76,8 @@ const props = withDefaults(defineProps<IInfoHintProps>(), {
   teleportTo: 'body',
   disabled: false,
 })
+
+const strings = useNbStrings()
 
 // The default has to be the module, not the name. A name is resolved at
 // runtime, which means it needs the icon catalogue, which a compile-time build

@@ -1,8 +1,9 @@
 <template>
   <span class="nb-copy-button">
+    <!-- `label` is both the name and the tooltip, so the two say "Copied"
+         together while the check is showing. -->
     <NbButton
-      v-nb-tooltip="{ body: copied ? copiedLabel : label, aria: 'none' }"
-      :aria-label="copied ? copiedLabel : label"
+      :label="copied ? copiedText : copyText"
       class="nb-copy-button__button"
       :class="{ 'nb-copy-button__button--copied': copied }"
       variant="ghost"
@@ -16,24 +17,32 @@
     <!-- The tooltip names the button. This says what happened, once, to a
          screen reader that cannot see the icon change. -->
     <span class="nb-copy-button__status" role="status">
-      {{ copied ? copiedLabel : '' }}
+      {{ copied ? copiedText : '' }}
     </span>
   </span>
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import * as iconCopy from '@nubisco/ui/icons/copy'
 import * as iconCheck from '@nubisco/ui/icons/check'
 import NbButton from './Button.vue'
 import type { ICopyButtonProps } from './CopyButton.d'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 
 const props = withDefaults(defineProps<ICopyButtonProps>(), {
-  label: 'Copy',
-  copiedLabel: 'Copied',
+  label: undefined,
+  copiedLabel: undefined,
   size: 'xs',
   duration: 1500,
 })
+
+// The props win, and the catalogue fills in what the caller did not pass.
+const strings = useNbStrings()
+const copyText = computed(() => props.label ?? strings.value.copyButtonCopy)
+const copiedText = computed(
+  () => props.copiedLabel ?? strings.value.copyButtonCopied,
+)
 
 const emit = defineEmits<{
   /** The text is on the clipboard. */

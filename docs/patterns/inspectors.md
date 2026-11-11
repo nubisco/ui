@@ -460,12 +460,14 @@ inspector full of ghost "buttons" reads as a list of grey words. Use
 genuinely want a quiet, dismissive control that still carries a border.
 
 Bare `ghost` is right for an **icon button**: a row action, a toolbar
-tool, a dashboard tile's control. That is the row-action standard: an
-`NbButton` with `size="sm"`, `variant="ghost"` and an `icon`, a
-`v-nb-tooltip` naming the action, and an `aria-label` naming the action
-and the row. The icon is what makes it read as a control at rest, so the
-two rules do not conflict: no bare ghost with words, bare ghost with an
-icon. See [Information hierarchy](/principles/hierarchy#emphasis-one-filled-button-per-region).
+tool, a dashboard tile's control. That is the
+[row-action standard](/principles/hierarchy#the-row-action-standard): an
+`NbButton` with `size="sm"`, `variant="ghost"`, an `icon`, and a `label`
+naming the action and the row, which is its name and its tooltip at
+once. The icon is what makes it read as a control at rest, so the two
+rules do not conflict: no bare ghost with words, bare ghost with an
+icon. See
+[Information hierarchy](/principles/hierarchy#emphasis-one-filled-button-per-region).
 :::
 
 The argument is about **at rest**, so this demo is deliberately static: do not

@@ -18,7 +18,7 @@
     <button
       type="button"
       class="nb-image-picker__surface"
-      :aria-label="hasImage ? replaceLabel : label"
+      :aria-label="hasImage ? text.replace : text.add"
       :aria-busy="loading || undefined"
       :disabled="disabled || loading"
       @click="openFilePicker"
@@ -31,10 +31,10 @@
       />
       <span v-else class="nb-image-picker__empty">
         <NbIcon :name="iconPlus" :size="20" aria-hidden="true" />
-        <span class="nb-image-picker__label">{{ label }}</span>
+        <span class="nb-image-picker__label">{{ text.add }}</span>
       </span>
       <span v-if="isDragging" class="nb-image-picker__drop">{{
-        dropLabel
+        text.drop
       }}</span>
     </button>
 
@@ -47,12 +47,12 @@
          hovered or anything in it has focus, so the keyboard reaches it. -->
     <NbButton
       v-if="hasImage && removable"
-      v-nb-tooltip="{ body: removeLabel, aria: 'none', position: 'left' }"
       class="nb-image-picker__remove"
       variant="ghost"
       size="xs"
       :icon="iconTrash"
-      :aria-label="removeLabel"
+      :label="text.remove"
+      tooltip-position="left"
       :disabled="removeDisabled || disabled || loading"
       @click.stop="emit('remove')"
     />
@@ -78,14 +78,15 @@ import NbButton from './Button.vue'
 import NbIcon from './Icon.vue'
 import NbSpinner from './Spinner.vue'
 import type { IImagePickerProps, TImagePickerRejection } from './ImagePicker.d'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 
 const props = withDefaults(defineProps<IImagePickerProps>(), {
   src: '',
   alt: '',
-  label: 'Add image',
-  dropLabel: 'Drop to upload',
-  replaceLabel: 'Replace image',
-  removeLabel: 'Remove image',
+  label: undefined,
+  dropLabel: undefined,
+  replaceLabel: undefined,
+  removeLabel: undefined,
   accept: 'image/*',
   maxSize: undefined,
   removable: true,
@@ -96,6 +97,15 @@ const props = withDefaults(defineProps<IImagePickerProps>(), {
   ratio: '1 / 1',
   fit: 'contain',
 })
+
+// Every visible word is a prop that wins, with the catalogue behind it.
+const strings = useNbStrings()
+const text = computed(() => ({
+  add: props.label ?? strings.value.imagePickerAdd,
+  drop: props.dropLabel ?? strings.value.imagePickerDrop,
+  replace: props.replaceLabel ?? strings.value.imagePickerReplace,
+  remove: props.removeLabel ?? strings.value.imagePickerRemove,
+}))
 
 const emit = defineEmits<{
   /** A file was chosen or dropped and passed the type and size checks. */
@@ -198,6 +208,7 @@ defineExpose({ open: openFilePicker })
 
 <style lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/logic/focus' as focus;
 @use '../styles/variables/breakpoints' as bp;
 
 .nb-image-picker {
@@ -230,8 +241,7 @@ defineExpose({ open: openFilePicker })
     }
 
     &:focus-visible {
-      outline: 2px solid var(--nb-c-primary);
-      outline-offset: 2px;
+      @include focus.ring;
     }
 
     &:disabled {
