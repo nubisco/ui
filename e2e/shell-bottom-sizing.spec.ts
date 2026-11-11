@@ -47,7 +47,7 @@ async function shareOf(body: Locator, selector: string): Promise<number> {
 
 async function setSize(
   body: Locator,
-  label: 'Minimize' | 'Default' | 'Maximize',
+  label: 'Minimize' | 'Restore' | 'Maximize',
 ) {
   await body.locator(`.nb-shell__bottom button[aria-label="${label}"]`).click()
   // The class lands synchronously, but the flex pass that follows it is the
@@ -91,7 +91,7 @@ test.describe('NbShell bottom panel sizing', () => {
     page,
   }) => {
     const body = shellWithBottom(page)
-    await setSize(body, 'Default')
+    await setSize(body, 'Restore')
 
     // Near the --nb-shell-bottom-height default of 33%. A content-sized region
     // lands somewhere else entirely (24% empty, 686% full), so this one
@@ -108,7 +108,7 @@ test.describe('NbShell bottom panel sizing', () => {
     page,
   }) => {
     const body = shellWithBottom(page)
-    await setSize(body, 'Default')
+    await setSize(body, 'Restore')
     await fillWithLongLog(body)
 
     // The regression, exactly as reported: with a real console in it the
