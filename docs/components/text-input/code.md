@@ -107,9 +107,13 @@ Use the `#actions` slot to place buttons inside the field at the trailing edge (
 
 `clearable` shows an `x` button once the field has a value. It empties the field, emits `clear` and keeps focus in the field, and <kbd>Escape</kbd> does the same. `revealable` on a `type="password"` field puts an eye at the far right that shows and hides the characters. Both buttons are named from the string catalogue (`textInputClear`, `textInputShowPassword`, `textInputHidePassword`).
 
+Both variants have them. In `fluid` they sit at the trailing edge of the value line, centred on the text rather than on the whole box, and the field keeps its height.
+
 <preview dir="row">
   <NbTextInput v-model="clearVal" label="Project name" clearable style="width: 300px" />
   <NbTextInput v-model="passwordVal" label="Password" type="password" revealable autocomplete="new-password" style="width: 300px" />
+  <NbTextInput v-model="clearVal" variant="fluid" label="Project name" clearable style="width: 300px" />
+  <NbTextInput v-model="passwordVal" variant="fluid" label="Password" type="password" revealable autocomplete="new-password" style="width: 300px" />
 </preview>
 
 ```vue
@@ -122,6 +126,7 @@ Use the `#actions` slot to place buttons inside the field at the trailing edge (
     revealable
     autocomplete="new-password"
   />
+  <NbTextInput v-model="name" variant="fluid" label="Project name" clearable />
 </template>
 ```
 

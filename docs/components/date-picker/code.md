@@ -329,6 +329,30 @@ The fluid variant places the label inside the field, matching other fluid-style 
 />
 ```
 
+## In an Input Group
+
+Inside an [`NbInputGroup`](/components/input-group/usage) the picker is one member of the row. It takes the group's `size`, disabled state and error or warning, points at the group's message, and renders no label or message of its own, so its box lines up with the buttons beside it. Give the label and the message to the group.
+
+<preview>
+  <NbInputGroup label="Due date" :error="groupDateError" style="max-width: 360px">
+    <template #default="{ size }">
+      <NbDatePicker v-model="groupDate" />
+      <NbButton variant="primary" :size="size">Set</NbButton>
+    </template>
+  </NbInputGroup>
+</preview>
+
+```vue
+<template>
+  <NbInputGroup label="Due date" :error="dueError">
+    <template #default="{ size }">
+      <NbDatePicker v-model="due" />
+      <NbButton variant="primary" :size="size" @click="save">Set</NbButton>
+    </template>
+  </NbInputGroup>
+</template>
+```
+
 ## Week Starting on Sunday
 
 <preview>
