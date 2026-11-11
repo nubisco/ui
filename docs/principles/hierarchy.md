@@ -103,8 +103,8 @@ table has learned them all.
   not hunt, and the reason ("Already sent", "Only an owner can remove a
   member") tells the person what would make the action available. Removing it
   makes the other actions jump from row to row and hides that the action
-  exists. A disabled button takes no pointer events, so the reason goes on a
-  wrapper for now: `<span v-nb-tooltip="{ body: 'Already sent', focusable: true }">`.
+  exists. `disabled-reason` on `NbButton` does it: the button stays focusable,
+  cannot be pressed, and shows the reason on hover and keyboard focus.
 - **More than three go into an overflow menu.** Up to three icon buttons on a
   row. From the fourth, the less frequent ones go behind one `dots-three`
   [NbOverflowMenu](/components/overflow-menu/usage), last on the row.
@@ -120,24 +120,13 @@ table has learned them all.
     :label="`Edit invoice ${row.number}`"
     @click="edit(row)"
   />
-  <span
-    v-if="row.sent"
-    v-nb-tooltip="{ body: 'Already sent', focusable: true }"
-  >
-    <NbButton
-      variant="ghost"
-      size="sm"
-      icon="paper-plane-tilt"
-      :label="`Send invoice ${row.number}`"
-      disabled
-    />
-  </span>
   <NbButton
-    v-else
     variant="ghost"
     size="sm"
     icon="paper-plane-tilt"
     :label="`Send invoice ${row.number}`"
+    :disabled="row.sent"
+    :disabled-reason="row.sent ? 'Already sent' : undefined"
     @click="send(row)"
   />
 </template>

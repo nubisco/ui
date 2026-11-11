@@ -282,23 +282,23 @@ stays in place, disabled, and its tooltip says why. More than three go into an
 
 <preview dir="row">
   <NbButton variant="ghost" size="sm" icon="pencil-simple" label="Edit invoice 2026/014" />
-  <span v-nb-tooltip="{ body: 'Already sent', focusable: true }">
-    <NbButton variant="ghost" size="sm" icon="paper-plane-tilt" label="Send invoice 2026/014" disabled />
-  </span>
+  <NbButton variant="ghost" size="sm" icon="paper-plane-tilt" label="Send invoice 2026/014" disabled disabled-reason="Already sent" />
   <NbButton variant="ghost" size="sm" icon="dots-three" label="More actions" />
 </preview>
 
+`disabled-reason` keeps a disabled button in the tab order (it carries
+`aria-disabled` instead of native `disabled`), so the reason opens on hover and
+on keyboard focus, and a screen reader hears it as the button's description.
+
 ```vue
-<!-- A disabled button takes no pointer events, so the reason goes on a wrapper -->
-<span v-nb-tooltip="{ body: 'Already sent', focusable: true }">
-  <NbButton
-    variant="ghost"
-    size="sm"
-    icon="paper-plane-tilt"
-    label="Send invoice 2026/014"
-    disabled
-  />
-</span>
+<NbButton
+  variant="ghost"
+  size="sm"
+  icon="paper-plane-tilt"
+  label="Send invoice 2026/014"
+  disabled
+  disabled-reason="Already sent"
+/>
 ```
 
 ## Examples

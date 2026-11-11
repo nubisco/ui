@@ -37,11 +37,11 @@ a11y:
 - **Words that say what happens.** "Save invoice" rather than "OK". A screen reader user often lists the buttons on a page out of context.
 - **Why a disabled row action is disabled.** A disabled button cannot be focused, so its reason has to be visible where the row is: the tooltip of the [row-action standard](/principles/hierarchy#the-row-action-standard), or a line of text.
 - **Announcing the result of a long action.** `loading` changes how the button looks. It does not tell a reader that the save finished or failed. Use `useInlineLoading` or a toast.
+- **A reason for a disabled button.** Without one, `disabled` is native: the button leaves the tab order and its tooltip never opens. With `disabled-reason` it carries `aria-disabled` instead, stays reachable, swallows the press (a submit button does not submit), and the reason is its tooltip and its accessible description.
 - **`type="submit"`** on the one button that submits a form. The default is `button`, so a button inside a `<form>` does not submit it by accident.
 
 ## Known gaps
 
 - **`loading` drops focus.** On a `<button>`, `loading` sets native `disabled`, and a browser moves focus off a control that becomes disabled, to `<body>`. A keyboard user who pressed Save starts again from the top of the page. Until that changes, move focus yourself when the action completes, or keep the button enabled and ignore repeat presses in your handler.
-- **A disabled icon-only button shows no tooltip.** It cannot be focused, and a disabled button takes no pointer events, so its `label` is never seen. Until the button can carry a reason itself, put the reason on a wrapper: `<span v-nb-tooltip="{ body: 'Already sent', focusable: true }">` around the button, which the keyboard can reach and the pointer can hover.
 
 <!--@include: ./_shared.md-->
