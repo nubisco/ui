@@ -14,7 +14,8 @@ const root = path.resolve(__dirname, '../..')
  */
 export default defineNubiscoDocs({
   title: 'Nubisco',
-  description: 'Nubisco UI Documentation',
+  description:
+    'Nubisco UI, the Vue 3 component library built like a real design system: an SCSS token engine, a geometry-first grid and production-ready components.',
   base: process.env.NODE_ENV === 'production' ? '/ui/' : '/',
   hostname: 'https://docs.nubisco.io/ui/',
   repo: 'nubisco/ui',
