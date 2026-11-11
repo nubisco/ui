@@ -11,7 +11,7 @@
         v-else-if="label"
         :for="inputId"
         :required="required"
-        :disabled="disabled"
+        :disabled="isDisabled"
         >{{ label }}</NbLabel
       >
 
@@ -24,11 +24,11 @@
           role="combobox"
           :aria-expanded="isOpen"
           :aria-haspopup="'listbox'"
-          :aria-disabled="disabled || undefined"
+          :aria-disabled="isDisabled || undefined"
           :aria-required="required || undefined"
-          :aria-invalid="invalid"
-          :aria-describedby="messageId"
-          :disabled="disabled || undefined"
+          :aria-invalid="ariaInvalid"
+          :aria-describedby="describedBy"
+          :disabled="isDisabled || undefined"
           @click="toggleDropdown"
           @focus="focused = true"
           @blur="focused = false"
@@ -80,17 +80,17 @@
             <NbIcon :name="isOpen ? 'caret-up' : 'caret-down'" :size="16" />
           </NbGrid>
         </button>
-        <button
+        <NbButton
           v-if="showClear"
-          type="button"
+          variant="ghost"
+          icon="x"
+          size="xs"
+          :label="resolvedClearLabel"
           class="nb-select__clear"
-          :aria-label="clearLabel"
           @click="clearSelection"
           @keydown.enter.stop
           @keydown.space.stop
-        >
-          <NbIcon name="x" :size="16" />
-        </button>
+        />
       </SelectControl>
 
       <NbMessage
@@ -133,11 +133,11 @@
           role="combobox"
           :aria-expanded="isOpen"
           :aria-haspopup="'listbox'"
-          :aria-disabled="disabled || undefined"
+          :aria-disabled="isDisabled || undefined"
           :aria-required="required || undefined"
-          :aria-invalid="invalid"
-          :aria-describedby="messageId"
-          :disabled="disabled || undefined"
+          :aria-invalid="ariaInvalid"
+          :aria-describedby="describedBy"
+          :disabled="isDisabled || undefined"
           @click="toggleDropdown"
           @focus="focused = true"
           @blur="focused = false"
@@ -201,17 +201,17 @@
             </NbGrid>
           </NbGrid>
         </button>
-        <button
+        <NbButton
           v-if="showClear"
-          type="button"
+          variant="ghost"
+          icon="x"
+          size="xs"
+          :label="resolvedClearLabel"
           class="nb-select__clear"
-          :aria-label="clearLabel"
           @click="clearSelection"
           @keydown.enter.stop
           @keydown.space.stop
-        >
-          <NbIcon name="x" :size="16" />
-        </button>
+        />
       </SelectControl>
 
       <NbMessage
@@ -364,7 +364,13 @@ import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
 import NbGrid from './Grid.vue'
 import NbIcon from './Icon.vue'
-import { useFieldMessage } from '@/composables/useFieldMessage.composable'
+import NbButton from './Button.vue'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
+import {
+  joinDescribedBy,
+  useFieldMessage,
+} from '@/composables/useFieldMessage.composable'
+import { useInputGroupField } from './InputGroup.context'
 import {
   ref,
   computed,
@@ -386,7 +392,7 @@ const props = withDefaults(defineProps<ISelectProps>(), {
   creatable: false,
   createPlaceholder: '',
   clearable: false,
-  clearLabel: 'Clear selection',
+  clearLabel: undefined,
   searchable: false,
   anchor: null,
   selectedMark: 'fill',
@@ -474,7 +480,11 @@ const dropdownStyle = ref({
 })
 
 const autoId = `nb-select-${useId()}`
-const inputId = computed(() => props.id ?? autoId)
+// Inside an NbInputGroup the group's size, disabled state and message win,
+// and the first field takes the id the group's label points at.
+const group = useInputGroupField(props, autoId)
+const inputId = group.id
+const isDisabled = group.disabled
 const {
   ids,
   messageId,
@@ -482,6 +492,13 @@ const {
   live: messageLive,
   key: messageKey,
 } = useFieldMessage(props, inputId)
+const describedBy = computed(() =>
+  joinDescribedBy(messageId.value, group.describedBy.value),
+)
+const ariaInvalid = computed(
+  () => invalid.value ?? (group.status.value === 'error' ? 'true' : undefined),
+)
+const hasError = computed(() => !!props.error || group.status.value === 'error')
 const listboxId = computed(() => `${inputId.value}-listbox`)
 const optionId = (index: number) => `${inputId.value}-option-${index}`
 
@@ -654,7 +671,7 @@ function updateDropdownPosition() {
 }
 
 function openDropdown() {
-  if (props.disabled) return
+  if (isDisabled.value) return
   isOpen.value = true
   updateDropdownPosition()
   const opts = props.options ?? []
@@ -801,8 +818,15 @@ const triggerSlot = computed(() => ({
   },
 }))
 
+// The prop wins, then the string catalogue, so a translated app no longer
+// has to pass `clear-label` to every select to stop it saying English.
+const nbStrings = useNbStrings()
+const resolvedClearLabel = computed(
+  () => props.clearLabel ?? nbStrings.value.selectClear,
+)
+
 const showClear = computed(
-  () => props.clearable && !props.disabled && selectedValues.value.length > 0,
+  () => props.clearable && !isDisabled.value && selectedValues.value.length > 0,
 )
 
 function clearSelection() {
@@ -818,12 +842,13 @@ function clearSelection() {
 const rootClasses = computed(() => [
   'nb-select',
   `nb-select--${props.variant}`,
-  `nb-select--${props.size}`,
+  `nb-select--${group.size.value}`,
   {
     'nb-select--open': isOpen.value,
     'nb-select--focused': focused.value && !isOpen.value,
-    'nb-select--error': !!props.error,
-    'nb-select--warning': !props.error && !!props.warning,
+    'nb-select--error': hasError.value,
+    'nb-select--warning':
+      !hasError.value && (!!props.warning || group.status.value === 'warning'),
     'nb-select--multiple': props.multiple,
     'nb-select--bare': !!slots.trigger,
   },
@@ -836,6 +861,7 @@ defineExpose({
 </script>
 
 <style lang="scss">
+@use '../styles/logic/field' as field;
 @use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/variables/breakpoints' as bp;
@@ -1094,6 +1120,11 @@ defineExpose({
   gap: var(--nb-field-label-gap);
   font-family: var(--nb-font-family-sans, sans-serif);
   --field-h: var(--nb-field-height-md);
+  // The clear button and the space it holds in the trigger's row.
+  --nb-select-clear-size: min(
+    calc(var(--nb-base-unit) * 3),
+    calc(var(--field-h) - 1px - 2 * var(--nb-field-border-width, 0px))
+  );
 
   &--xs {
     --field-h: var(--nb-field-height-xs);
@@ -1136,7 +1167,7 @@ defineExpose({
     border: var(--nb-field-border-width, 0) solid var(--nb-c-field-border);
     // Always 1px, and the only edge square draws.
     border-bottom: 1px solid var(--nb-c-field-border);
-    border-radius: var(--nb-field-radius, 0);
+    @include field.radius;
     cursor: pointer;
     user-select: none;
     font: inherit;
@@ -1268,37 +1299,26 @@ defineExpose({
   // status icon end before it rather than running under it.
   &__clear-space {
     flex-shrink: 0;
-    width: 24px;
+    width: var(--nb-select-clear-size);
   }
 
+  /*
+   * An NbButton (ghost, icon-only, named by `label`), so it has the shared
+   * hover, the shared focus ring and a tooltip. 24px, or the field's inner
+   * height when that is smaller, so it never pushes an xs field taller.
+   */
   &__clear {
     position: absolute;
     top: 50%;
     // Over the spacer: the trigger's end padding, the caret and one gap
     right: calc(var(--nb-field-padding-h) + 16px + 8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    margin: 0;
     transform: translateY(-50%);
-    border: none;
-    background: transparent;
-    color: var(--nb-c-text-subtle);
-    cursor: pointer;
-    @include radius.standalone(control-sm);
-    @include touch.hit-area(44px, false);
-    transition: color var(--nb-motion-short);
 
-    &:hover {
-      color: var(--nb-c-text);
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--nb-c-primary);
-      outline-offset: 0;
+    // Under the root, to outrank NbButton's own size rule whatever the
+    // order the two stylesheets load in.
+    .nb-select &.nb-button {
+      width: var(--nb-select-clear-size);
+      height: var(--nb-select-clear-size);
     }
   }
 

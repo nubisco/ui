@@ -1,0 +1,22 @@
+/// The corners of a field box.
+///
+/// One radius for all four corners is what a field draws on its own:
+/// `--nb-field-radius`, which is zero in square and a capsule in rounded.
+/// The corners are split into a start pair and an end pair so that
+/// `NbInputGroup` can square the inner edges of the controls it joins,
+/// a field with a button flush against it, without the field knowing it is
+/// in a group. The group sets `--nb-field-radius-start` or
+/// `--nb-field-radius-end` to zero on the inner side, and the field reads them
+/// here. Logical corners, so the inner edge stays inner right to left.
+///
+/// Outside a group neither property is set, both fall back to the field's
+/// own radius, and the box draws exactly what `border-radius` drew before.
+///
+/// @param {String} $radius - the field's own corner
+/// @group @nubisco/logic
+@mixin radius($radius: var(--nb-field-radius, 0)) {
+  border-start-start-radius: var(--nb-field-radius-start, #{$radius});
+  border-end-start-radius: var(--nb-field-radius-start, #{$radius});
+  border-start-end-radius: var(--nb-field-radius-end, #{$radius});
+  border-end-end-radius: var(--nb-field-radius-end, #{$radius});
+}

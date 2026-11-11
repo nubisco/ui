@@ -12,7 +12,7 @@ pageTabs: ['usage', 'code', 'accessibility']
 - The trigger is a real `NbButton`, so it is reached with Tab and activated
   with Enter or Space. It opens the native file picker, which the browser and
   assistive technology already know how to drive.
-- Each file row has a remove button labelled `Remove <file name>`.
+- Each file row has a remove button, an `xs` ghost `NbButton`. Its tooltip is "Remove" and its accessible name says which file, "Remove invoice.pdf", both from the string catalogue (`fileUploaderRemove`, `fileUploaderRemoveFile`). The drop hint is `fileUploaderDropHint`.
 - While `disabled`, the trigger, the file input and the remove buttons are
   natively disabled. They leave the tab order and are announced as
   unavailable, and a drop does nothing.

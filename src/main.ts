@@ -452,6 +452,18 @@ export type {
 export { default as NbInlineLoading } from './components/InlineLoading.vue'
 export type { IInlineLoadingProps } from './components/InlineLoading.d'
 export { EInlineLoadingStatus } from './components/InlineLoading.d'
+export { default as NbInputGroup } from './components/InputGroup.vue'
+export type {
+  IInputGroupProps,
+  TInputGroupSize,
+} from './components/InputGroup.d'
+export {
+  NB_INPUT_GROUP_CONTEXT,
+  useInputGroupField,
+} from './components/InputGroup.context'
+export type { IInputGroupContext } from './components/InputGroup.context'
+export { default as NbSearch } from './components/Search.vue'
+export type { ISearchProps } from './components/Search.d'
 export { default as NbSkeleton } from './components/Skeleton.vue'
 export type { ISkeletonProps, TSkeletonTypeSet } from './components/Skeleton.d'
 export { ESkeletonVariant } from './components/Skeleton.d'

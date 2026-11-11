@@ -16,7 +16,7 @@ a11y:
 - **A native number field.** It renders `<input type="number">` with `min`, `max` and `step`, so a reader announces it as a spin button and the arrow keys step it natively.
 - **A label tied to the field** through `for` and the field's id.
 - **Validation a reader hears.** With `error`, the field carries `aria-invalid="true"` and `aria-describedby` points at the visible message by its id (`{id}-error`, `{id}-warning`, `{id}-helper`). A message present on first render is read on focus and not announced on load; one that appears or changes later mounts with `role="alert"` (error) or `role="status"` (warning). The status icon inside the field repeats the message for sighted users and is `aria-hidden`, so a reader hears it once.
-- **Named steppers.** The `−` and `+` buttons are real `<button>`s named "Decrease" and "Increase". They do not take focus from the field on a mouse press.
+- **Named steppers.** The `−` and `+` buttons are ghost, icon-only `NbButton`s named "Decrease" and "Increase" through their `label`, which is also their tooltip, and they draw the shared focus ring. They do not take focus from the field on a mouse press. At `min` or `max` the stepper that cannot go further is `aria-disabled`: still a tab stop, announced as unavailable.
 - **Text a phone will not zoom**, at least 16px on a phone touch screen.
 - Tested in `tests/NumberInput.test.ts` and `tests/fieldValidationAria.test.ts`, and by axe in `tests/axe.test.ts`.
 

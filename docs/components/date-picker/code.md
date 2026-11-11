@@ -259,10 +259,11 @@ In a range picker each field validates independently, so users can see exactly w
 
 ## Sizes
 
-Three sizes matching the rest of the design system: `sm` (32px), `md` (40px, default), and `lg` (48px).
+Four sizes matching the rest of the design system, fields and buttons alike: `xs` (24px), `sm` (32px), `md` (40px, default), and `lg` (48px). The calendar button is an `NbButton` of the same size.
 
 <preview>
   <NbGrid dir="col" gap="md">
+    <NbDatePicker v-model="smDate" label="Extra small" size="xs" />
     <NbDatePicker v-model="smDate" label="Small" size="sm" />
     <NbDatePicker v-model="mdDate" label="Medium" size="md" />
     <NbDatePicker v-model="lgDate" label="Large" size="lg" />
@@ -270,6 +271,7 @@ Three sizes matching the rest of the design system: `sm` (32px), `md` (40px, def
 </preview>
 
 ```vue
+<NbDatePicker v-model="date" label="Extra small" size="xs" />
 <NbDatePicker v-model="date" label="Small" size="sm" />
 <NbDatePicker v-model="date" label="Medium" size="md" />
 <NbDatePicker v-model="date" label="Large" size="lg" />
@@ -349,7 +351,7 @@ The fluid variant places the label inside the field, matching other fluid-style 
 | `endPlaceholder` | `string`                                | `''`           | Placeholder for the end date input (range only)                                                      |
 | `endLabel`       | `string`                                | `''`           | Label for the end field (range only); when set, `label` and `endLabel` render above their own fields |
 | `variant`        | `'default' \| 'fluid'`                  | `'default'`    | Presentation variant                                                                                 |
-| `size`           | `'sm' \| 'md' \| 'lg'`                  | `'md'`         | Field height: 32px, 40px, or 48px                                                                    |
+| `size`           | `'xs' \| 'sm' \| 'md' \| 'lg'`          | `'md'`         | Field height: 24px, 32px, 40px, or 48px                                                              |
 | `min`            | `string`                                | `undefined`    | Minimum selectable date (ISO YYYY-MM-DD)                                                             |
 | `max`            | `string`                                | `undefined`    | Maximum selectable date (ISO YYYY-MM-DD)                                                             |
 | `disabledDates`  | `string[] \| (date: string) => boolean` | `undefined`    | Individual unselectable dates: ISO string array or predicate                                         |

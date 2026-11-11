@@ -1,7 +1,7 @@
 ---
 layout: nubisco
 title: Text Input
-intro: '`NbTextInput` is the primary text entry component. It wraps a native `<input>` or `<textarea>` with a label, validation messages, two layout variants, and three sizes. It is designed to sit flush on the same grid line as buttons and other form controls.'
+intro: '`NbTextInput` is the primary text entry component. It wraps a native `<input>` or `<textarea>` with a label, validation messages, two layout variants, and four sizes. It is designed to sit flush on the same grid line as buttons and other form controls.'
 source: src/components/TextInput.vue
 tab: accessibility
 pageTabs: ['usage', 'code', 'accessibility']
@@ -26,7 +26,7 @@ a11y:
 
 ## Keyboard
 
-The browser's own. <kbd>Tab</kbd> reaches the field; everything inside it is native text editing. Buttons you put in the `#actions` slot are separate tab stops after the field.
+The browser's own. <kbd>Tab</kbd> reaches the field; everything inside it is native text editing. Buttons you put in the `#actions` slot, and the built-in clear and reveal buttons, are separate tab stops after the field. With `clearable`, <kbd>Escape</kbd> in a field that has a value empties it, and the key goes no further, so a dialog around the field stays open. On an empty field Escape is left alone.
 
 ## What you own
 
@@ -34,7 +34,7 @@ The browser's own. <kbd>Tab</kbd> reaches the field; everything inside it is nat
 - **`autocomplete`** on personal data fields (`email`, `name`, `tel`, `street-address`), which WCAG 1.3.5 asks for and password managers rely on.
 - **When to validate.** Showing an error on every keystroke announces an alert on every keystroke. Validate on blur or on submit, and after a failed submit move focus to the first invalid field.
 - **Error text that says how to fix it.** "Enter an email like name@example.com" rather than "Invalid".
-- **The names of `#actions` buttons** (a clear button, a password reveal). They are your buttons.
+- **The names of `#actions` buttons.** Give each one a `label`, which names it and shows the same words as its tooltip. The built-in clear and reveal buttons (`clearable`, `revealable`) are already named, from the string catalogue, and the reveal button's name follows its state ("Show password", "Hide password").
 
 ## Known gaps
 

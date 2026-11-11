@@ -138,7 +138,7 @@ A worked example. You are styling a compact toolbar button inside an inspector.
 
 Nine decisions, no literals, and the whole thing retints, rethemes and re-densifies without being touched.
 
-One caveat on that fifth row: a token being available does not make it conformant in context. `--nb-field-height-xs` is 28px and clears the 24px WCAG 2.5.8 target minimum; `NbButton`'s `xxs` size is 16px and does not, except by the spacing exception. Density choices carry accessibility consequences that no token can express. See [Accessibility](/principles/spacing#accessibility) on the spacing page before you commit to a dense surface.
+One caveat on that fifth row: a token being available does not make it conformant in context. `--nb-field-height-xs` is 24px and sits exactly on the WCAG 2.5.8 target minimum; `NbButton`'s `xxs` size is 16px and does not, except by the spacing exception. Density choices carry accessibility consequences that no token can express. See [Accessibility](/principles/spacing#accessibility) on the spacing page before you commit to a dense surface.
 
 A second caveat on spacing specifically: the `.ph-*`, `.pl-*`, `.pr-*` and `.mh-*` utility classes generated from the scale emit physical `padding-left` / `padding-right`, so they do not mirror under right-to-left. Use the logical `.pis-*`, `.pie-*`, `.mis-*` and `.mie-*` beside them, and `padding-inline` and `margin-inline` in component styles, as `Button.vue` and `DataTable.vue` already do. See [Logical properties](/principles/spacing#logical-properties-and-the-logical-utilities).
 

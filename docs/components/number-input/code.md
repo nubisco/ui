@@ -11,7 +11,7 @@ pageTabs: ['usage', 'code', 'accessibility']
 
 ### Default
 
-The label sits above the field. Steppers are at the trailing edge.
+The label sits above the field. Steppers are at the trailing edge: ghost, icon-only `NbButton`s the size of the field, each as wide as the field is tall.
 
 <preview>
   <NbNumberInput v-model="value" label="Editors" helper="Maximum of 4" :min="1" :max="4" />

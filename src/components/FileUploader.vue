@@ -19,7 +19,7 @@
       :class="`nb-file-uploader__dropzone--${variant}`"
     >
       <span class="nb-file-uploader__drop-label">
-        Drag and drop files here<br />or click to upload
+        {{ nbStrings.fileUploaderDropHint }}
       </span>
     </div>
 
@@ -72,19 +72,22 @@
             name="warning-circle-fill"
             class="nb-file-uploader__warn"
           />
-          <button
+          <!-- The tooltip is the short verb, the spoken name says which
+               file, so a list of them is not a column of "Remove". -->
+          <NbButton
             v-if="item.status !== 'loading'"
+            variant="ghost"
+            icon="x"
+            size="xs"
             class="nb-file-uploader__remove"
-            type="button"
-            :aria-label="`Remove ${item.file.name}`"
+            :label="nbStrings.fileUploaderRemove"
+            :aria-label="nbStrings.fileUploaderRemoveFile(item.file.name)"
             :aria-describedby="
               item.error ? `${uploaderId}-error-${i}` : undefined
             "
             :disabled="disabled"
             @click="removeFile(i)"
-          >
-            <NbIcon name="x" />
-          </button>
+          />
         </span>
 
         <!-- Mounts only when a file the person just chose is refused (the
@@ -115,6 +118,7 @@ import NbButton from './Button.vue'
 import NbIcon from './Icon.vue'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import { useStableId } from '@/composables/useStableId.composable'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 
 const props = withDefaults(defineProps<IFileUploaderProps>(), {
   buttonLabel: 'Add file',
@@ -129,6 +133,7 @@ const props = withDefaults(defineProps<IFileUploaderProps>(), {
 const { layerProps } = useSurfaceLayer()
 
 const uploaderId = useStableId({})
+const nbStrings = useNbStrings()
 
 const emit = defineEmits<{
   /** Emitted whenever the file list changes. */
@@ -351,6 +356,10 @@ defineExpose({ files, setFileStatus })
   }
 
   &__drop-label {
+    // One sentence from the string catalogue, balanced over two short lines
+    // the way the hard-coded line break used to set it.
+    max-width: 16rem;
+    text-wrap: balance;
     font-size: var(--nb-type-body-compact-size);
     line-height: var(--nb-type-body-compact-line-height);
     pointer-events: none;
@@ -410,23 +419,10 @@ defineExpose({ files, setFileStatus })
     margin-top: 0.35rem;
   }
 
+  // An NbButton (ghost, icon-only, xs): 24px, the smallest conformant
+  // target, with the shared focus ring the bare 16px glyph never had.
   &__remove {
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    color: var(--nb-c-text-muted);
-    display: flex;
-    align-items: center;
-    line-height: 1;
-
-    &:hover:not(:disabled) {
-      color: var(--nb-c-text);
-    }
-
-    &:disabled {
-      cursor: not-allowed;
-    }
+    flex-shrink: 0;
   }
 
   // Disabled dims what the button does not dim itself, at the opacity every

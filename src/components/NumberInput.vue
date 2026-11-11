@@ -6,7 +6,7 @@
         v-if="label"
         :for="inputId"
         :required="required"
-        :disabled="disabled"
+        :disabled="isDisabled"
         >{{ label }}</NbLabel
       >
 
@@ -14,15 +14,15 @@
         <input
           :id="inputId"
           ref="inputRef"
-          :aria-invalid="invalid"
-          :aria-describedby="messageId"
+          :aria-invalid="ariaInvalid"
+          :aria-describedby="describedBy"
           type="number"
           class="nb-number-input__field"
           :placeholder="placeholder"
           :min="min"
           :max="max"
           :step="step"
-          :disabled="disabled"
+          :disabled="isDisabled"
           :required="required"
           @input="onInput"
           @blur="onBlur"
@@ -49,29 +49,38 @@
           >{{ warning }}</NbMessage
         >
 
+        <!-- At a limit the stepper is aria-disabled: NbButton draws it as
+             disabled and takes it off the pointer, and it stays in the tab
+             order so it is still found and announced. -->
         <div class="nb-number-input__steppers">
-          <button
-            type="button"
+          <span class="nb-number-input__divider" aria-hidden="true" />
+          <NbButton
+            variant="ghost"
+            icon="minus"
+            :size="resolvedSize"
+            :label="nbStrings.numberInputDecrease"
+            tooltip-position="top"
             class="nb-number-input__stepper"
             :class="{ 'nb-number-input__stepper--at-limit': isAtMin }"
-            :disabled="disabled"
-            :aria-label="nbStrings.numberInputDecrease"
+            :disabled="isDisabled"
+            :aria-disabled="isAtMin || undefined"
             @mousedown.prevent
             @click="decrement"
-          >
-            <NbIcon name="minus" :size="16" />
-          </button>
-          <button
-            type="button"
+          />
+          <span class="nb-number-input__divider" aria-hidden="true" />
+          <NbButton
+            variant="ghost"
+            icon="plus"
+            :size="resolvedSize"
+            :label="nbStrings.numberInputIncrease"
+            tooltip-position="top"
             class="nb-number-input__stepper"
             :class="{ 'nb-number-input__stepper--at-limit': isAtMax }"
-            :disabled="disabled"
-            :aria-label="nbStrings.numberInputIncrease"
+            :disabled="isDisabled"
+            :aria-disabled="isAtMax || undefined"
             @mousedown.prevent
             @click="increment"
-          >
-            <NbIcon name="plus" :size="16" />
-          </button>
+          />
         </div>
       </div>
 
@@ -132,15 +141,15 @@
           <input
             :id="inputId"
             ref="inputRef"
-            :aria-invalid="invalid"
-            :aria-describedby="messageId"
+            :aria-invalid="ariaInvalid"
+            :aria-describedby="describedBy"
             type="number"
             class="nb-number-input__field"
             :placeholder="placeholder"
             :min="min"
             :max="max"
             :step="step"
-            :disabled="disabled"
+            :disabled="isDisabled"
             :required="required"
             @input="onInput"
             @blur="onBlur"
@@ -168,28 +177,34 @@
           >
 
           <div class="nb-number-input__steppers">
-            <button
-              type="button"
+            <span class="nb-number-input__divider" aria-hidden="true" />
+            <NbButton
+              variant="ghost"
+              icon="minus"
+              :size="resolvedSize"
+              :label="nbStrings.numberInputDecrease"
+              tooltip-position="top"
               class="nb-number-input__stepper"
               :class="{ 'nb-number-input__stepper--at-limit': isAtMin }"
-              :disabled="disabled"
-              :aria-label="nbStrings.numberInputDecrease"
+              :disabled="isDisabled"
+              :aria-disabled="isAtMin || undefined"
               @mousedown.prevent
               @click="decrement"
-            >
-              <NbIcon name="minus" :size="16" />
-            </button>
-            <button
-              type="button"
+            />
+            <span class="nb-number-input__divider" aria-hidden="true" />
+            <NbButton
+              variant="ghost"
+              icon="plus"
+              :size="resolvedSize"
+              :label="nbStrings.numberInputIncrease"
+              tooltip-position="top"
               class="nb-number-input__stepper"
               :class="{ 'nb-number-input__stepper--at-limit': isAtMax }"
-              :disabled="disabled"
-              :aria-label="nbStrings.numberInputIncrease"
+              :disabled="isDisabled"
+              :aria-disabled="isAtMax || undefined"
               @mousedown.prevent
               @click="increment"
-            >
-              <NbIcon name="plus" :size="16" />
-            </button>
+            />
           </div>
         </div>
       </div>
@@ -222,9 +237,13 @@ import { computed, onMounted, ref, watch } from 'vue'
 import type { IFieldComponent } from '@/types/Props.d'
 import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
-import NbIcon from './Icon.vue'
+import NbButton from './Button.vue'
 import { useStableId } from '@/composables/useStableId.composable'
-import { useFieldMessage } from '@/composables/useFieldMessage.composable'
+import {
+  joinDescribedBy,
+  useFieldMessage,
+} from '@/composables/useFieldMessage.composable'
+import { useInputGroupField } from './InputGroup.context'
 
 const nbStrings = useNbStrings()
 
@@ -262,7 +281,12 @@ const focused = ref(false)
 
 // Positional, so two fields never share an id.
 const autoId = useStableId({})
-const inputId = computed(() => props.id ?? autoId)
+// Inside an NbInputGroup the group's size, disabled state and message win,
+// and the first field takes the id the group's label points at.
+const group = useInputGroupField(props, autoId)
+const inputId = group.id
+const resolvedSize = group.size
+const isDisabled = group.disabled
 const {
   ids,
   messageId,
@@ -270,7 +294,17 @@ const {
   live: messageLive,
   key: messageKey,
 } = useFieldMessage(props, inputId)
-
+const describedBy = computed(() =>
+  joinDescribedBy(messageId.value, group.describedBy.value),
+)
+const ariaInvalid = computed(
+  () => invalid.value ?? (group.status.value === 'error' ? 'true' : undefined),
+)
+const hasError = computed(() => !!props.error || group.status.value === 'error')
+const hasWarning = computed(
+  () =>
+    !hasError.value && (!!props.warning || group.status.value === 'warning'),
+)
 const isAtMin = computed(
   () =>
     props.min !== undefined &&
@@ -355,19 +389,19 @@ function onBlur() {
 const rootClasses = computed(() => [
   'nb-number-input',
   `nb-number-input--${props.variant}`,
-  `nb-number-input--${props.size}`,
+  `nb-number-input--${resolvedSize.value}`,
   {
-    'nb-number-input--error': !!props.error,
-    'nb-number-input--warning': !props.error && !!props.warning,
-    'nb-number-input--disabled': props.disabled,
+    'nb-number-input--error': hasError.value,
+    'nb-number-input--warning': hasWarning.value,
+    'nb-number-input--disabled': isDisabled.value,
   },
 ])
 
 const wrapperClasses = computed(() => ({
   'nb-number-input__field-wrapper--focused': focused.value,
-  'nb-number-input__field-wrapper--error': !!props.error,
-  'nb-number-input__field-wrapper--warning': !props.error && !!props.warning,
-  'nb-number-input__field-wrapper--disabled': props.disabled,
+  'nb-number-input__field-wrapper--error': hasError.value,
+  'nb-number-input__field-wrapper--warning': hasWarning.value,
+  'nb-number-input__field-wrapper--disabled': isDisabled.value,
 }))
 
 defineExpose({ focus: () => inputRef.value?.focus() })
@@ -375,6 +409,7 @@ defineExpose({ focus: () => inputRef.value?.focus() })
 
 <style scoped lang="scss">
 @use '../styles/logic/touch' as touch;
+@use '../styles/logic/field' as field;
 
 .nb-number-input {
   display: flex;
@@ -421,7 +456,7 @@ defineExpose({ focus: () => inputRef.value?.focus() })
     border: var(--nb-field-border-width, 0) solid var(--nb-c-field-border);
     // Always 1px, and the only edge square draws.
     border-bottom: 1px solid var(--nb-c-field-border);
-    border-radius: var(--nb-field-radius, 0);
+    @include field.radius;
     height: var(--field-h);
     box-sizing: border-box;
     transition:
@@ -507,43 +542,31 @@ defineExpose({ focus: () => inputRef.value?.focus() })
     flex-shrink: 0;
   }
 
-  &__stepper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    // Knob so dense containers (e.g. .nb-inspector) can shrink the steppers.
-    width: var(--nb-number-input-stepper-width, 40px);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--nb-c-text);
-    transition: background var(--nb-motion-short);
-    padding: 0;
+  /*
+   * The steppers are NbButtons: ghost, icon-only, named by `label`, and the
+   * same size as the field, so they get the shared hover, the shared focus
+   * ring and a tooltip instead of a hand-made square that drew no ring at
+   * all. Each is as wide as the field is tall (40px at md, as before) and
+   * fills the field's height inside its border, so the pair still reads as
+   * one two-segment control at the end of the box. ArrowUp and ArrowDown on
+   * the input itself still step, natively.
+   */
+  &__steppers .nb-number-input__stepper {
+    // Knob so dense containers (e.g. .nb-inspector) can narrow the steppers.
+    width: var(--nb-number-input-stepper-width, var(--field-h));
+    height: auto;
+    align-self: stretch;
     flex-shrink: 0;
-    position: relative;
+  }
 
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 25%;
-      bottom: 25%;
-      width: 1px;
-      background: var(--nb-c-field-border);
-    }
-
-    &:hover:not(:disabled):not(.nb-number-input__stepper--at-limit) {
-      background: var(--nb-c-discrete);
-    }
-
-    &:disabled {
-      cursor: not-allowed;
-    }
-
-    &--at-limit {
-      opacity: var(--nb-field-disabled-opacity);
-      cursor: not-allowed;
-    }
+  // The rule between the input and each stepper: half the field's height,
+  // centred, so the two segments read as parts of one box.
+  &__divider {
+    align-self: center;
+    flex-shrink: 0;
+    width: 1px;
+    height: 50%;
+    background: var(--nb-c-field-border);
   }
 
   &__message,

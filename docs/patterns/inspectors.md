@@ -27,7 +27,7 @@ compact. Every field component (`TextInput`, `NumberInput`, `Select`,
 
 | size | height | use                               |
 | ---- | -----: | --------------------------------- |
-| `xs` |   28px | inspectors, toolbars, dense grids |
+| `xs` |   24px | inspectors, toolbars, dense grids |
 | `sm` |   32px | compact forms                     |
 | `md` |   40px | standalone forms (the default)    |
 | `lg` |   48px | touch-first / hero forms          |
@@ -37,7 +37,7 @@ ones you are looking at, straight from `--nb-field-height-xs` … `-lg`:
 
 <preview dir="col">
   <div class="nix-sizes">
-    <div class="nix-size"><p class="nix-label">xs, 28px</p><NbTextInput v-model="ramp.xs" size="xs" /></div>
+    <div class="nix-size"><p class="nix-label">xs, 24px</p><NbTextInput v-model="ramp.xs" size="xs" /></div>
     <div class="nix-size"><p class="nix-label">sm, 32px</p><NbTextInput v-model="ramp.sm" size="sm" /></div>
     <div class="nix-size"><p class="nix-label">md, 40px</p><NbTextInput v-model="ramp.md" size="md" /></div>
     <div class="nix-size"><p class="nix-label">lg, 48px</p><NbTextInput v-model="ramp.lg" size="lg" /></div>
@@ -76,7 +76,7 @@ values.
           <NbField label="Latch" control="fit"><NbSwitch v-model="loose.latch" name="latch-md" /></NbField>
         </NbShellPanel>
       </div>
-      <p class="nix-note">The same five rows, about 50px taller: four fields at 40px instead of 28px. `md` is right in a standalone form, where a field is the thing you came for. Here it buys nothing and costs a third of the column.</p>
+      <p class="nix-note">The same five rows, about 64px taller: four fields at 40px instead of 24px. `md` is right in a standalone form, where a field is the thing you came for. Here it buys nothing and costs a third of the column.</p>
     </div>
   </div>
 </preview>

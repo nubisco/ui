@@ -260,7 +260,7 @@ Every field control implementing `IWithFieldAppearance` (`src/types/Props.d.ts`)
 
 | `size` | Token                  | Computed | Base units | Use it for                                                   |
 | ------ | ---------------------- | -------- | ---------- | ------------------------------------------------------------ |
-| `xs`   | `--nb-field-height-xs` | `28px`   | 3.5        | Inspectors, toolbars, property rows. Pair with a 13px face.  |
+| `xs`   | `--nb-field-height-xs` | `24px`   | 3          | Inspectors, toolbars, property rows. Pair with a 14px face.  |
 | `sm`   | `--nb-field-height-sm` | `32px`   | 4          | Dense tables, filter bars, a modal with many fields.         |
 | `md`   | `--nb-field-height-md` | `40px`   | 5          | The default. Standalone forms, settings pages.               |
 | `lg`   | `--nb-field-height-lg` | `48px`   | 6          | Marketing surfaces, a single prominent input, touch targets. |
@@ -301,7 +301,7 @@ The `size` prop belongs to the surface, not to the control. A panel is dense or 
 </NbGrid>
 ```
 
-As density goes up, the gaps between controls must come **down**, not stay put. A 24px gap between two 28px inspector rows makes the rows look unrelated. Rough pairing:
+As density goes up, the gaps between controls must come **down**, not stay put. A 24px gap between two 24px inspector rows makes the rows look unrelated. Rough pairing:
 
 | Density | Gap between controls | Container padding |
 | ------- | -------------------- | ----------------- |
@@ -310,17 +310,11 @@ As density goes up, the gaps between controls must come **down**, not stay put. 
 | `md`    | `16`                 | `16`              |
 | `lg`    | `16` or `24`         | `24`              |
 
-::: danger `xs` is not implemented everywhere
-`NbTextInput` and `NbSelect` both declare a `&--xs` rule that binds `--field-h` to `--nb-field-height-xs`. `NbDatePicker` does not. It accepts `size="xs"` because it extends the same interface, then falls through to its base declaration of `--nb-field-height-md` and renders at 40px next to your 28px inputs, with no error.
+### Fields and buttons share one height scale
 
-Until that is fixed, verify `xs` visually on every control type you put in a dense row. `sm` is implemented by all three.
-:::
+`NbButton` implements seven sizes (`xxs` `xs` `sm` `md` `lg` `xl` `xxl`) at 16, 24, 32, 40, 48, 64 and 80 pixels. The four field sizes are the middle four of them: a field and a button of the same `size` are the same height, `xs` included (24px each). Put an `xs` button beside an `xs` field and the two line up with nothing to adjust. To join them into one control, wrap them in [`NbInputGroup`](/components/input-group/), which hands one `size` to everything inside.
 
-::: warning `NbButton` sizes are not field sizes
-`NbButton` implements seven sizes (`xxs` `xs` `sm` `md` `lg` `xl` `xxl`) at 16, 24, 32, 40, 48, 64 and 80 pixels (`xl` and `xxl` are minimum heights, where a long label wraps). Three of them coincide with field heights: `sm` is 32, `md` is 40, `lg` is 48. **`xs` does not.** A `size="xs"` button next to a `size="xs"` text input is 24px against 28px, and the mismatch is visible.
-
-In an `xs` field row, use `size="sm"` on the button and accept 32 against 28, or set an explicit height. Do not assume the two scales are the same scale, because they are not.
-:::
+Every field control (`NbTextInput`, `NbNumberInput`, `NbSelect`, `NbDatePicker`, `NbSearch`) implements all four sizes.
 
 ## Responsive spacing
 
@@ -374,7 +368,7 @@ Spacing is an accessibility surface, not a cosmetic one. Four areas of the guide
 | Field at `size="lg"`            | 48px high   | Comfortable.                                                              |
 | Field at `size="md"`            | 40px high   | Comfortable.                                                              |
 | Field at `size="sm"`            | 32px high   | Passes.                                                                   |
-| Field at `size="xs"`            | 28px high   | Passes on size, with 4px to spare. Do not shave it further.               |
+| Field at `size="xs"`            | 24px high   | Passes **exactly** at the minimum, like `NbButton size="xs"`.             |
 | `NbButton size="sm"` and up     | 32px and up | Passes.                                                                   |
 | `NbButton size="xs"`            | 24px high   | Passes **exactly** at the minimum. No margin for a border or a transform. |
 | `NbButton size="xxs"`           | 16px high   | **Fails on size.** Passes only via the spacing exception.                 |
@@ -386,7 +380,7 @@ The rules that follow:
 
 - **`xxs` is not a general-purpose size.** Use it only for a target the user is not required to hit: a decorative affordance duplicated by a larger control elsewhere, or something inside a line of text (inline targets are exempt from 2.5.8). If it is the only way to do the thing, it is too small.
 - **`xs` at 24px leaves no headroom.** It conforms today and stops conforming the moment someone adds a 1px inset border or a `scale(0.95)` press animation. Prefer `sm`.
-- **Density does not license crowding.** The density table pairs `xs` fields with an 8px gap because 28px controls need it visually. That is also the smallest gap that keeps a row of small buttons conformant. Do not read it as an invitation to go to 4.
+- **Density does not license crowding.** The density table pairs `xs` fields with an 8px gap because 24px controls need it visually. That is also the smallest gap that keeps a row of small buttons conformant. Do not read it as an invitation to go to 4.
 
 ### Text spacing overrides
 

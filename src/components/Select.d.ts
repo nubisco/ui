@@ -44,7 +44,10 @@ interface ISelectProps extends IFieldComponent {
    * when `multiple`. Off by default.
    */
   clearable?: boolean
-  /** Accessible name of the clear button when `clearable` is true. */
+  /**
+   * The clear button's name and tooltip when `clearable` is true. Defaults to
+   * the string catalogue's `selectClear` ("Clear selection").
+   */
   clearLabel?: string
   /**
    * Shows a search box at the top of the open list and focuses it, so typing

@@ -56,7 +56,7 @@ From this section forward, a component page with no **Accessibility** heading me
 A page **with** an Accessibility heading is a commitment. Everything it claims is true of the current source, and anything it does not claim is yours.
 :::
 
-50 of the 78 component pages currently carry an Accessibility tab (a test, `tests/a11yDocsCounts.test.ts`, holds this number to the source). The rest are silent, and the silence is honest rather than reassuring. The three states in full:
+52 of the 80 component pages currently carry an Accessibility tab (a test, `tests/a11yDocsCounts.test.ts`, holds this number to the source). The rest are silent, and the silence is honest rather than reassuring. The three states in full:
 
 - **Section present, claims made.** Load-bearing. `NbTabs`, `NbConfirm`, `NbDataTable`, `NbWalkthrough`, `NbShell` and fourteen others are in this state. Build on what they say.
 - **Section present, gap stated.** We know about it and we are telling you, with the workaround. This is the most useful state a page can be in and we would rather write it than a section that quietly omits the bad news.

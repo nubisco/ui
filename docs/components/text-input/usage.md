@@ -1,7 +1,7 @@
 ---
 layout: nubisco
 title: Text Input
-intro: '`NbTextInput` is the primary text entry component. It wraps a native `<input>` or `<textarea>` with a label, validation messages, two layout variants, and three sizes. It is designed to sit flush on the same grid line as buttons and other form controls.'
+intro: '`NbTextInput` is the primary text entry component. It wraps a native `<input>` or `<textarea>` with a label, validation messages, two layout variants, and four sizes. It is designed to sit flush on the same grid line as buttons and other form controls.'
 source: src/components/TextInput.vue
 tab: usage
 pageTabs: ['usage', 'code', 'accessibility']
@@ -24,9 +24,10 @@ pageTabs: ['usage', 'code', 'accessibility']
 
 ## Sizes
 
-All three sizes align to the 8px base-unit grid.
+The four sizes are the same heights as `NbButton`'s, so a field and a button of the same `size` line up.
 
 <preview dir="row">
+  <NbTextInput v-model="sizeXs" size="xs" label="Extra small" placeholder="xs: 24px" style="width: 220px" />
   <NbTextInput v-model="sizeSm" size="sm" label="Small" placeholder="sm: 32px" style="width: 220px" />
   <NbTextInput v-model="sizeMd" size="md" label="Medium" placeholder="md: 40px (default)" style="width: 220px" />
   <NbTextInput v-model="sizeLg" size="lg" label="Large" placeholder="lg: 48px" style="width: 220px" />
