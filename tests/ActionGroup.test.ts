@@ -4,6 +4,7 @@ import { enableAutoUnmount, mount } from '@vue/test-utils'
 import NbActionGroup from '../src/components/ActionGroup.vue'
 import NbButton from '../src/components/Button.vue'
 import NbMenuItem from '../src/components/MenuItem.vue'
+import NbToolbar from '../src/components/Toolbar.vue'
 import {
   NB_PHONE_QUERY,
   resetPhoneLayoutForTests,
@@ -66,7 +67,12 @@ describe('NbActionGroup on a desktop', () => {
           ),
         ]),
     })
-    expect(group.html()).toBe(byHand.html())
+    // The buttons, not the wrapper's markup: the group renders through a
+    // fragment and keeps a placeholder for its overflow menu.
+    const buttons = (w: typeof group | typeof byHand) =>
+      w.findAll('.nb-button').map((b) => b.html())
+    expect(group.classes()).toEqual(['nb-action-group'])
+    expect(buttons(group)).toEqual(buttons(byHand))
   })
 
   it('keeps the labelled buttons with overflow="phone" off a phone', () => {
@@ -213,5 +219,119 @@ describe('NbActionGroup on a phone', () => {
     const w = mountPhone({ items: list })
     await w.findAll('.nb-button')[0].trigger('click')
     expect(list[1].onSelect).not.toHaveBeenCalled()
+  })
+})
+
+describe('NbActionGroup Carbon behaviour', () => {
+  it('names an iconOnly action with label, so it gets a tooltip', () => {
+    stubPhone(false)
+    const w = mount(NbActionGroup, {
+      props: {
+        items: [
+          { id: 'filter', label: 'Filter', icon: 'funnel', iconOnly: true },
+        ],
+      },
+    })
+    const button = w.findComponent(NbButton)
+    expect(button.props('label')).toBe('Filter')
+    expect(button.classes()).toContain('nb-button--icon-only')
+    expect(button.attributes('aria-label')).toBe('Filter')
+  })
+
+  it('says why a disabled icon-only action is disabled', () => {
+    stubPhone(false)
+    const w = mount(NbActionGroup, {
+      props: {
+        items: [
+          {
+            id: 'delete',
+            label: 'Delete',
+            icon: 'trash',
+            iconOnly: true,
+            disabled: true,
+            disabledReason: 'Paid invoices cannot be deleted',
+          },
+        ],
+      },
+    })
+    expect(w.find('button').attributes('aria-label')).toBe(
+      'Delete: Paid invoices cannot be deleted',
+    )
+    expect(w.find('button').attributes('disabled')).toBeDefined()
+  })
+
+  it('draws a pressed toggle with the button pressed state', () => {
+    stubPhone(false)
+    const w = mount(NbActionGroup, {
+      props: { items: [{ id: 'grid', label: 'Grid', pressed: true }] },
+    })
+    const button = w.find('button')
+    expect(button.classes()).toContain('nb-button--pressed')
+    expect(button.attributes('aria-pressed')).toBe('true')
+  })
+
+  it('has a gap of its own, and none inside a toolbar', () => {
+    stubPhone(false)
+    const alone = mount(NbActionGroup, { props: { items: items() } })
+    expect(alone.classes()).not.toContain('nb-action-group--in-toolbar')
+    const inBar = mount(NbToolbar, {
+      props: { label: 'Tools', size: 'md' },
+      slots: { default: () => h(NbActionGroup, { items: items() }) },
+    })
+    const group = inBar.find('.nb-action-group')
+    expect(group.classes()).toContain('nb-action-group--in-toolbar')
+    // And the buttons take the toolbar's size rather than `sm`.
+    expect(group.find('.nb-button').classes()).toContain('nb-button--md')
+  })
+
+  it('keeps every action when overflow="auto" has not been measured', () => {
+    stubPhone(false)
+    const w = mount(NbActionGroup, {
+      props: { items: items(), overflow: 'auto' },
+    })
+    expect(w.findAll('.nb-button')).toHaveLength(3)
+    expect(w.find('[aria-haspopup="menu"]').exists()).toBe(false)
+    expect(w.classes()).toContain('nb-action-group--auto')
+  })
+
+  it('folds by width with overflow="auto"', async () => {
+    stubPhone(false)
+    let resize: (() => void) | undefined
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(cb: () => void) {
+          resize = cb
+        }
+        observe() {}
+        disconnect() {}
+      },
+    )
+    const widths: Record<string, number> = { edit: 80, add: 100, delete: 90 }
+    const offsetWidth = vi
+      .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
+      .mockImplementation(function (this: HTMLElement) {
+        return widths[this.dataset.actionId ?? ''] ?? 0
+      })
+    const offsetHeight = vi
+      .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+      .mockReturnValue(32)
+    const clientWidth = vi
+      .spyOn(HTMLElement.prototype, 'clientWidth', 'get')
+      .mockReturnValue(220)
+    const w = mount(NbActionGroup, {
+      props: { items: items(), overflow: 'auto' },
+      attachTo: document.body,
+    })
+    await nextTick()
+    resize!()
+    await nextTick()
+    // 32 (trigger) + 80 + 100 = 212 fits in 220; adding Delete does not.
+    const labels = w.findAll('.nb-button').map((b) => b.text())
+    expect(labels).toEqual(['Edit', 'Add item', ''])
+    expect(w.find('[aria-haspopup="menu"]').exists()).toBe(true)
+    offsetWidth.mockRestore()
+    offsetHeight.mockRestore()
+    clientWidth.mockRestore()
   })
 })

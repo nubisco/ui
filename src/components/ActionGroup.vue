@@ -1,99 +1,73 @@
 <template>
-  <div class="nb-action-group">
-    <template v-if="!folded">
+  <div ref="rootRef" :class="rootClass">
+    <template v-for="item in shown" :key="item.id">
+      <!-- Two branches because NbButton decides it is icon-only from the
+           absence of a default slot, and an empty slot is still a slot. -->
       <NbButton
-        v-for="item in items"
-        :key="item.id"
+        v-if="iconOnly(item)"
         :variant="variantOf(item)"
         :outlined="item.outlined"
-        :size="size"
+        :size="buttonSize"
         :disabled="item.disabled"
         :loading="item.loading"
         :icon="item.icon"
-        :aria-pressed="item.pressed"
+        :label="nameOf(item)"
+        :pressed="item.pressed"
+        :data-action-id="measuring ? item.id : undefined"
+        @click="choose(item)"
+      />
+      <NbButton
+        v-else
+        :variant="variantOf(item)"
+        :outlined="item.outlined"
+        :size="buttonSize"
+        :disabled="item.disabled"
+        :loading="item.loading"
+        :icon="item.icon"
+        :pressed="item.pressed"
+        :data-action-id="measuring ? item.id : undefined"
         @click="choose(item)"
         >{{ item.label }}</NbButton
       >
     </template>
-    <template v-else>
-      <template v-for="item in visible" :key="item.id">
-        <!-- Two branches because NbButton decides it is icon-only from the
-             absence of a default slot, and an empty slot is still a slot. -->
-        <NbButton
-          v-if="iconOnly(item)"
-          :variant="variantOf(item)"
-          :outlined="item.outlined"
-          :size="size"
-          :disabled="item.disabled"
-          :loading="item.loading"
-          :icon="item.icon"
-          :aria-label="item.label"
-          :aria-pressed="item.pressed"
-          @click="choose(item)"
-        />
-        <NbButton
-          v-else
-          :variant="variantOf(item)"
-          :outlined="item.outlined"
-          :size="size"
-          :disabled="item.disabled"
-          :loading="item.loading"
-          :icon="item.icon"
-          :aria-pressed="item.pressed"
-          @click="choose(item)"
-          >{{ item.label }}</NbButton
-        >
-      </template>
-      <NbButton
-        v-if="hasOverflow"
-        ref="triggerRef"
-        class="nb-action-group__more"
-        variant="ghost"
-        :size="size"
-        icon="dots-three"
-        :aria-label="overflowLabel"
-        aria-haspopup="menu"
-        :aria-expanded="menuOpen"
-        @mousedown="onTriggerPress"
-        @click="toggleMenu"
-      />
-      <NbMenu
-        v-if="hasOverflow"
-        ref="menuRef"
-        :open="menuOpen"
-        @update:open="onMenuOpen"
-      >
-        <NbMenuItem
-          v-for="item in hidden"
-          :key="item.id"
-          :label="item.label"
-          :icon="item.icon"
-          :disabled="item.disabled || item.loading"
-          :danger="item.danger"
-          :selectable="item.pressed !== undefined"
-          :selected="item.pressed"
-          @select="choose(item)"
-        />
-        <slot name="menu" />
-      </NbMenu>
-    </template>
+    <NbOverflowMenu
+      v-if="folded && hasOverflow"
+      class="nb-action-group__more"
+      :items="hidden"
+      :label="overflowLabel"
+      :size="buttonSize"
+      @select="(id: string) => emit('select', id)"
+    >
+      <slot name="menu" />
+    </NbOverflowMenu>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, useSlots } from 'vue'
+import {
+  computed,
+  inject,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  useSlots,
+  watch,
+} from 'vue'
 import NbButton from './Button.vue'
-import NbMenu from './Menu.vue'
-import NbMenuItem from './MenuItem.vue'
+import NbOverflowMenu from './OverflowMenu.vue'
 import type { IActionGroupItem, IActionGroupProps } from './ActionGroup.d'
 import type { TButtonVariant } from './Button.d'
+import { NB_TOOLBAR } from './Toolbar.context'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { hasSlotContent } from '@/utils/slotContent.helper'
+import { fitActions } from '@/utils/actionFit.helper'
 
 const props = withDefaults(defineProps<IActionGroupProps>(), {
-  size: 'sm',
+  size: undefined,
   overflow: 'never',
-  overflowLabel: 'More actions',
+  overflowLabel: undefined,
   phoneVisible: 1,
 })
 
@@ -101,28 +75,123 @@ const emit = defineEmits<{ select: [id: string] }>()
 
 const slots = useSlots()
 const { phone } = usePhoneLayout()
+const nbStrings = useNbStrings()
+const toolbar = inject(NB_TOOLBAR, null)
+
+// Inside a toolbar the buttons take the toolbar's height. Anywhere else a
+// group without a size keeps the `sm` it has always had.
+const buttonSize = computed(() => props.size ?? (toolbar ? undefined : 'sm'))
+
+const rootClass = computed(() => [
+  'nb-action-group',
+  {
+    'nb-action-group--in-toolbar': !!toolbar,
+    'nb-action-group--auto': props.overflow === 'auto' && !phone.value,
+  },
+])
+
+// #region fitting by width
+/*
+ * `overflow: 'auto'` folds by the room there is, not by the viewport: as
+ * many actions as fit stay on screen, in reading order, and the rest go to
+ * the overflow menu. Each button's width is read once, while every action
+ * is on screen (the first frame, and again whenever the list of actions
+ * changes), and kept. A resize then only does arithmetic against those
+ * widths, so folding never makes the row flicker through a second layout.
+ */
+const rootRef = ref<HTMLElement | null>(null)
+const widths = ref<Map<string, number>>(new Map())
+const fitCount = ref<number | null>(null)
+const measuring = computed(
+  () => props.overflow === 'auto' && !phone.value && fitCount.value === null,
+)
+
+function measure() {
+  const root = rootRef.value
+  if (!root) return
+  const next = new Map<string, number>()
+  root
+    .querySelectorAll<HTMLElement>('[data-action-id]')
+    .forEach((el) => next.set(el.dataset.actionId!, el.offsetWidth))
+  widths.value = next
+}
+
+function refit() {
+  const root = rootRef.value
+  if (!root || props.overflow !== 'auto' || phone.value) return
+  if (fitCount.value === null) measure()
+  const list = props.items.map((item) => widths.value.get(item.id) ?? 0)
+  const style = getComputedStyle(root)
+  const gap = parseFloat(style.columnGap) || 0
+  // The trigger is a square, as tall as the buttons beside it.
+  const first = root.querySelector<HTMLElement>('.nb-button')
+  const trigger = first?.offsetHeight ?? 0
+  fitCount.value = fitActions(list, root.clientWidth, trigger, gap)
+}
+
+let observer: ResizeObserver | undefined
+
+function observe() {
+  observer?.disconnect()
+  observer = undefined
+  if (
+    props.overflow !== 'auto' ||
+    !rootRef.value ||
+    typeof ResizeObserver === 'undefined'
+  ) {
+    return
+  }
+  observer = new ResizeObserver(() => refit())
+  observer.observe(rootRef.value)
+}
+
+onMounted(observe)
+onBeforeUnmount(() => observer?.disconnect())
+
+// A new set of actions has new widths: show them all for one frame to read
+// them, then fit again.
+watch(
+  () => [props.overflow, phone.value, props.items.map((i) => i.id).join()],
+  async () => {
+    fitCount.value = null
+    await nextTick()
+    observe()
+    refit()
+  },
+)
+// #endregion
 
 /**
  * Folded means some actions live in the overflow menu. `'never'` is checked
  * first, so a group that never opted in renders the plain buttons whatever
- * the viewport says, which is what keeps the desktop byte for byte the same.
+ * the viewport says.
  */
 const folded = computed(() => {
   if (props.overflow === 'never') return false
   if (props.overflow === 'always') return true
-  return phone.value
+  if (phone.value) return true
+  if (props.overflow === 'auto') {
+    return fitCount.value !== null && fitCount.value < props.items.length
+  }
+  return false
 })
 
 /**
- * The actions that stay on screen when folded: the first `phoneVisible`
- * flagged primary, or the first ones when the product flagged none. The rest
- * keep their reading order in the menu.
+ * The actions that stay on screen when folded. By width: the first ones
+ * that fit. Otherwise the first `phoneVisible` flagged primary, or the first
+ * ones when the product flagged none. The rest keep their reading order in
+ * the menu.
  */
 const visible = computed<IActionGroupItem[]>(() => {
+  if (props.overflow === 'auto' && !phone.value) {
+    return props.items.slice(0, fitCount.value ?? props.items.length)
+  }
   const count = Math.max(0, props.phoneVisible)
   const primary = props.items.filter((item) => item.priority === 'primary')
   return (primary.length ? primary : props.items).slice(0, count)
 })
+
+const shown = computed(() => (folded.value ? visible.value : props.items))
 
 const hidden = computed<IActionGroupItem[]>(() =>
   props.items.filter((item) => !visible.value.includes(item)),
@@ -133,13 +202,31 @@ const hasOverflow = computed(
   () => hidden.value.length > 0 || hasSlotContent(slots, 'menu'),
 )
 
+const overflowLabel = computed(
+  () => props.overflowLabel ?? nbStrings.value.overflowMenuLabel,
+)
+
 /**
- * On a phone the visible actions drop their text to fit a 360px topbar, and
- * the label becomes the accessible name. An action without an icon would be an
- * empty square, so it keeps its label.
+ * An action asked to be icon-only is, everywhere. On a phone the actions left
+ * on screen also drop their text to fit a 360px topbar. Either way the label
+ * becomes the button's `label`: its accessible name and its tooltip. An
+ * action without an icon would be an empty square, so it keeps its text.
  */
 function iconOnly(item: IActionGroupItem): boolean {
-  return phone.value && !!item.icon
+  if (!item.icon) return false
+  return !!item.iconOnly || (folded.value && phone.value)
+}
+
+/**
+ * The words of an icon-only action. A disabled one says why it is disabled
+ * in the same tooltip, so an action that does not apply stays in its place
+ * and still explains itself.
+ */
+function nameOf(item: IActionGroupItem): string {
+  if (item.disabled && item.disabledReason) {
+    return nbStrings.value.actionUnavailable(item.label, item.disabledReason)
+  }
+  return item.label
 }
 
 function variantOf(item: IActionGroupItem): TButtonVariant | undefined {
@@ -151,54 +238,40 @@ function choose(item: IActionGroupItem) {
   item.onSelect?.()
   emit('select', item.id)
 }
-
-const menuOpen = ref(false)
-const menuRef = ref<InstanceType<typeof NbMenu> | null>(null)
-const triggerRef = ref<InstanceType<typeof NbButton> | null>(null)
-
-function triggerEl(): HTMLElement | null {
-  return (triggerRef.value?.$el as HTMLElement | undefined) ?? null
-}
-
-// The menu closes itself on any mousedown outside it, and the trigger is
-// outside it. Without this, pressing the trigger of an open menu closed it on
-// mousedown and the click that followed opened it again.
-let pressedWhileOpen = false
-
-function onTriggerPress() {
-  pressedWhileOpen = menuOpen.value
-}
-
-function toggleMenu() {
-  if (pressedWhileOpen || menuOpen.value) {
-    pressedWhileOpen = false
-    menuOpen.value = false
-    return
-  }
-  // Positioned before it opens, so the menu's own clamp, which runs on the
-  // frame it opens, sees the final position and keeps it on screen.
-  const rect = triggerEl()?.getBoundingClientRect()
-  if (rect) menuRef.value?.setPosition(rect)
-  menuOpen.value = true
-}
-
-function onMenuOpen(open: boolean) {
-  menuOpen.value = open
-  if (open) return
-  // Focus goes back to the trigger when the menu took it, so the next Tab
-  // continues from where the user was rather than from the top of the page.
-  const active = document.activeElement
-  if (!active || active === document.body || !active.isConnected) {
-    void nextTick(() => triggerEl()?.focus())
-  }
-}
 </script>
 
 <style lang="scss">
-// `display: contents`, so the buttons are flex children of whatever holds the
-// group (a topbar, a panel header) and take its gap, exactly as the same
-// buttons placed there by hand would.
+// A row of buttons with the library's 8px between them, wherever it is put.
 .nb-action-group {
-  display: contents;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--nb-spacing-8);
+
+  /*
+   * Inside a toolbar the buttons are the toolbar's own children: they take
+   * its gap (none when it is flush), its height and its roving focus, as the
+   * same buttons placed there by hand would.
+   */
+  &--in-toolbar {
+    display: contents;
+  }
+
+  // Folding by width: the group takes the room it is given and no more, and
+  // the fit decides what shows. Never wraps, which would defeat the fit.
+  &--auto {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  &--in-toolbar.nb-action-group--auto {
+    align-self: stretch;
+    align-items: inherit;
+    gap: inherit;
+  }
 }
 </style>

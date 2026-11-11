@@ -56,6 +56,8 @@ export interface INbStrings {
   selectionCount: (count: number) => string
   // NbOverflowMenu, NbBatchActions and the row actions they serve
   overflowMenuLabel: string
+  /** An unavailable action's name and tooltip: the action, then why. */
+  actionUnavailable: (label: string, reason: string) => string
   batchActionsCancel: string
   dataTableRowActions: string
   // NbModal
@@ -143,6 +145,7 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   dataTableError: 'Could not load the data',
   selectionCount: (count: number) => `${count} selected`,
   overflowMenuLabel: 'More actions',
+  actionUnavailable: (label: string, reason: string) => `${label}: ${reason}`,
   batchActionsCancel: 'Cancel',
   dataTableRowActions: 'Row actions',
   modalClose: 'Close',
