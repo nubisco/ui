@@ -1,5 +1,22 @@
 # Upgrading
 
+## To 5.50.0 from 5.49.x
+
+Additive, with one behaviour to check:
+
+- **Fields inside `NbInputGroup` leave the label and message to the group.**
+  `NbTextInput` and `NbSelect` drew their own `label`, `helper`, `error` and
+  `warning` inside a group, so a group could show two labels. They no longer
+  do, the same as `NbDatePicker`, and warn in development when given one.
+  Pass them to the group.
+- **New:** `NbContainedListItem` `lineClamp` lets the line under the title
+  wrap onto several lines. `NbMenuItem` `disabledReason` keeps a disabled
+  item reachable by the arrow keys and shows why under its label, and
+  `NbOverflowMenu`, `NbActionGroup`, `NbBatchActions` and `NbDataTable` row
+  actions carry it through when they fold. `NbDatePicker` is a full member
+  of `NbInputGroup`. `NbTextInput` `clearable` and `revealable` work in the
+  fluid variant.
+
 ## To 5.49.0 from 5.48.x
 
 This release brings buttons, and every component that hosts one, in line with
