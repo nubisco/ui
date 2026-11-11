@@ -1,3 +1,20 @@
+# [5.50.0](https://github.com/nubisco/ui/compare/v5.49.0...v5.50.0) (2026-11-11)
+
+
+### Bug Fixes
+
+* **batch-actions:** a disabled action passes its reason to the button ([08c7a8f](https://github.com/nubisco/ui/commit/08c7a8f0f177d51a793f5d3b180e4ad6ced18292))
+* **blueprint-card:** status, pin and enable labels come from the catalogue ([7d58d74](https://github.com/nubisco/ui/commit/7d58d749bbf213898112bff3d68caae7852a6834))
+* **input-group:** every member field leaves the label and message to the group ([1bb9f32](https://github.com/nubisco/ui/commit/1bb9f32a11f0045b91c9bbeaf58856530929a110))
+
+
+### Features
+
+* **contained-list:** lineClamp lets the line under the title wrap ([9a2fe57](https://github.com/nubisco/ui/commit/9a2fe5700b6638ab7236029916126f433c9eddca))
+* **date-picker:** a full member of NbInputGroup ([32e2079](https://github.com/nubisco/ui/commit/32e2079701cf35c680b54d57f04d9e3e86681280))
+* **menu:** a disabled menu item can say why, and the keyboard still reaches it ([ccfcee3](https://github.com/nubisco/ui/commit/ccfcee346978d2f2ed22b29457e69b1d8218ea4b))
+* **text-input:** clearable and revealable in the fluid variant ([b12f4f8](https://github.com/nubisco/ui/commit/b12f4f8c21d96e9b14f99656646c1752746d9256))
+
 # [5.49.0](https://github.com/nubisco/ui/compare/v5.48.1...v5.49.0) (2026-11-11)
 
 
