@@ -1,3 +1,36 @@
+# [5.49.0](https://github.com/nubisco/ui/compare/v5.48.1...v5.49.0) (2026-11-11)
+
+
+### Bug Fixes
+
+* **controls:** built-in icon buttons use label, the house ring and the catalogue ([5e7d966](https://github.com/nubisco/ui/commit/5e7d96616e0cc5c967e299113499084df15521b8))
+* **text-input:** pad the leading slot to where the text starts ([5ca4542](https://github.com/nubisco/ui/commit/5ca454261927c6084f1a2472f015e42bb25786bd))
+
+
+### Features
+
+* **action-group:** labelled icon-only items, pressed state, auto overflow ([e45f7a4](https://github.com/nubisco/ui/commit/e45f7a4e0ec25642fd36e5b5eea60fcc7fb33016))
+* **batch-actions:** NbBatchActions, and NbBoard's selection bar on it ([8e56d09](https://github.com/nubisco/ui/commit/8e56d09ec49da87cac772b23719f47bd64c602b7))
+* **button-set,fields:** reading tab order outside dialogs, Carbon three-button footer ([8418f80](https://github.com/nubisco/ui/commit/8418f803b398f3c7fc65df42518a50867289e3b6))
+* **button-set:** NbButtonSet, a button row that places the primary ([d37552a](https://github.com/nubisco/ui/commit/d37552a51fe7f92bd75d8c670dccccbce981b6c0))
+* **button:** Carbon anatomy, built-in icon-only tooltip, danger tertiary and ghost ([0dfe5b0](https://github.com/nubisco/ui/commit/0dfe5b0d557302ebf3b37c1053acbd96be5bfa79))
+* **button:** disabledReason keeps a disabled button focusable and explains it ([a974869](https://github.com/nubisco/ui/commit/a974869ad97eacfb6be149167cbd81ce6583529d))
+* **calendar:** month navigation on NbButton, named from the catalogue ([8baf3d3](https://github.com/nubisco/ui/commit/8baf3d31be77811c53206fbb6c10810cc52800eb))
+* **card,chip-group,suggestion-list:** border draw, single-select chips, grouped results ([2225093](https://github.com/nubisco/ui/commit/22250937f92a4d27bffb6ad05d55ca12e97bf4cd))
+* **close-button:** NbCloseButton, one close control in two Carbon sizes ([fb9f2af](https://github.com/nubisco/ui/commit/fb9f2afe82ff306a1ae453ae36441e96ec0f0e00))
+* **content-switcher:** NbContentSwitcher, Carbon's content switcher ([22df87e](https://github.com/nubisco/ui/commit/22df87ea39caa47b07a8eaa57cbfb0e6485e7357))
+* **data-table:** toolbar on NbToolbar, NbBatchActions, rowActions ([9c015b7](https://github.com/nubisco/ui/commit/9c015b7a79a4329b444caeb664744a30ae239104)), closes [#row-actions](https://github.com/nubisco/ui/issues/row-actions)
+* **fields:** field actions are NbButtons with labels and the shared ring ([11e6afe](https://github.com/nubisco/ui/commit/11e6afe481922daf7628b97973394589dde1efeb))
+* **input-group:** NbInputGroup joins a field and its buttons into one control ([1378b88](https://github.com/nubisco/ui/commit/1378b8834140887d0f1ec8e6aaf09f962897b1f2))
+* **menu:** end alignment, vertical flip and NbOverflowMenu ([c6c8077](https://github.com/nubisco/ui/commit/c6c80776b4420fef3a39f74315d84f853d7440d1))
+* **modal:** Carbon footer and close for NbModal and NbConfirm ([dd9714d](https://github.com/nubisco/ui/commit/dd9714d09f9472124d7e254411a5c3dd154dd358))
+* **panels:** size toggles are named icon-only NbButtons ([2c2d11e](https://github.com/nubisco/ui/commit/2c2d11e557f0a5a4bd0412dd1aeacd1eb80900af))
+* **search:** NbSearch, with an expandable mode for toolbars ([71a3161](https://github.com/nubisco/ui/commit/71a31612ff63a959157f6b029d9d2d9f55020db4))
+* **skeleton:** button variant at every button size ([ea2a926](https://github.com/nubisco/ui/commit/ea2a926bfa0b4b8212f0521f0e55d993103e49eb))
+* **text-input:** clearable and revealable, built from NbButton ([392aced](https://github.com/nubisco/ui/commit/392aced6d0ed04de474da6904828d49996c3ee23)), closes [#actions](https://github.com/nubisco/ui/issues/actions)
+* **tokens:** one control-height scale, field xs is 24px like button xs ([50af311](https://github.com/nubisco/ui/commit/50af3114da844f43935e0a4f5b03cd4fc6561523))
+* **toolbar:** NbToolbar with a shared height, flush layout and roving focus ([87448cd](https://github.com/nubisco/ui/commit/87448cdbaafe1edd20a7c7f59ad2686c808e5bfc))
+
 ## [5.48.1](https://github.com/nubisco/ui/compare/v5.48.0+rewrite...v5.48.1) (2026-11-10)
 
 
