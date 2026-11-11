@@ -1,3 +1,10 @@
+## [5.50.1](https://github.com/nubisco/ui/compare/v5.50.0...v5.50.1) (2026-11-11)
+
+
+### Bug Fixes
+
+* **select:** the built-in trigger names its list and the highlighted option ([eadad81](https://github.com/nubisco/ui/commit/eadad81f0c04a88cc65dd0cfd05979312062d456))
+
 # [5.50.0](https://github.com/nubisco/ui/compare/v5.49.0...v5.50.0) (2026-11-11)
 
 
