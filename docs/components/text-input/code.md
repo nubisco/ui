@@ -1,7 +1,7 @@
 ---
 layout: nubisco
 title: Text Input
-intro: '`NbTextInput` is the primary text entry component. It wraps a native `<input>` or `<textarea>` with a label, validation messages, two layout variants, and three sizes. It is designed to sit flush on the same grid line as buttons and other form controls.'
+intro: '`NbTextInput` is the primary text entry component. It wraps a native `<input>` or `<textarea>` with a label, validation messages, two layout variants, and four sizes. It is designed to sit flush on the same grid line as buttons and other form controls.'
 source: src/components/TextInput.vue
 tab: code
 pageTabs: ['usage', 'code', 'accessibility']
@@ -49,14 +49,12 @@ Set `multiline` to render a `<textarea>`. Use `rows` to control the initial heig
 
 ## Inline actions slot
 
-Use the `#actions` slot to place buttons inside the field at the trailing edge (default variant only).
+Use the `#actions` slot to place buttons inside the field at the trailing edge (default variant only). An action is an icon-only `NbButton`, ghost, with a `label`: the label is its accessible name and its tooltip, so it never needs an `aria-label` or a tooltip of its own. Pass the icon as `icon`, never an `NbIcon` in the slot.
 
 <preview dir="row">
   <NbTextInput v-model="actionsVal" label="AI Translate" placeholder="Enter source text…" style="width: 360px">
     <template #actions>
-      <NbButton size="sm" variant="ghost">
-        <NbIcon name="sparkle" :size="14" />
-      </NbButton>
+      <NbButton variant="ghost" size="sm" icon="sparkle" label="Translate" />
     </template>
   </NbTextInput>
 </preview>
@@ -65,11 +63,31 @@ Use the `#actions` slot to place buttons inside the field at the trailing edge (
 <template>
   <NbTextInput v-model="value" label="AI Translate">
     <template #actions>
-      <NbButton size="sm" variant="ghost">
-        <NbIcon name="sparkle" :size="14" />
-      </NbButton>
+      <NbButton variant="ghost" size="sm" icon="sparkle" label="Translate" />
     </template>
   </NbTextInput>
+</template>
+```
+
+## Clear and password reveal
+
+`clearable` shows an `x` button once the field has a value. It empties the field, emits `clear` and keeps focus in the field, and <kbd>Escape</kbd> does the same. `revealable` on a `type="password"` field puts an eye at the far right that shows and hides the characters. Both buttons are named from the string catalogue (`textInputClear`, `textInputShowPassword`, `textInputHidePassword`).
+
+<preview dir="row">
+  <NbTextInput v-model="clearVal" label="Project name" clearable style="width: 300px" />
+  <NbTextInput v-model="passwordVal" label="Password" type="password" revealable autocomplete="new-password" style="width: 300px" />
+</preview>
+
+```vue
+<template>
+  <NbTextInput v-model="name" label="Project name" clearable />
+  <NbTextInput
+    v-model="password"
+    label="Password"
+    type="password"
+    revealable
+    autocomplete="new-password"
+  />
 </template>
 ```
 
@@ -79,32 +97,35 @@ The `#dropdown` slot holds a popup anchored to the field. For autocomplete (an @
 
 ## Props
 
-| Prop          | Type                   | Default     | Description                                            |
-| ------------- | ---------------------- | ----------- | ------------------------------------------------------ |
-| `modelValue`  | `string \| number`     | `''`        | Bound value (`v-model`)                                |
-| `variant`     | `'default' \| 'fluid'` | `'default'` | Layout variant                                         |
-| `size`        | `'sm' \| 'md' \| 'lg'` | `'md'`      | Field height, aligned with buttons and other inputs    |
-| `type`        | `string`               | `'text'`    | Native input type                                      |
-| `label`       | `string`               | -           | Label text                                             |
-| `placeholder` | `string`               | -           | Input placeholder                                      |
-| `helper`      | `string`               | -           | Helper message (shown when no error or warning)        |
-| `error`       | `string`               | -           | Error message: highest priority                        |
-| `warning`     | `string`               | -           | Warning message: priority over helper                  |
-| `required`    | `boolean`              | `false`     | Marks field as required (adds asterisk)                |
-| `disabled`    | `boolean`              | `false`     | Disables the input                                     |
-| `readonly`    | `boolean`              | `false`     | Makes the input read-only                              |
-| `multiline`   | `boolean`              | `false`     | Render a `<textarea>` instead of `<input>`             |
-| `rows`        | `number`               | -           | Initial textarea row count (multiline only)            |
-| `id`          | `string`               | auto        | Explicit input ID                                      |
-| `name`        | `string`               | -           | Native `name` attribute                                |
-| `maxlength`   | `number`               | -           | Maximum character length                               |
-| `showCount`   | `boolean`              | `false`     | Shows `12/200` under the field when `maxlength` is set |
+| Prop          | Type                           | Default     | Description                                                     |
+| ------------- | ------------------------------ | ----------- | --------------------------------------------------------------- |
+| `modelValue`  | `string \| number`             | `''`        | Bound value (`v-model`)                                         |
+| `variant`     | `'default' \| 'fluid'`         | `'default'` | Layout variant                                                  |
+| `size`        | `'xs' \| 'sm' \| 'md' \| 'lg'` | `'md'`      | Field height: 24, 32, 40 or 48px, the same as `NbButton`        |
+| `type`        | `string`                       | `'text'`    | Native input type                                               |
+| `label`       | `string`                       | -           | Label text                                                      |
+| `placeholder` | `string`                       | -           | Input placeholder                                               |
+| `helper`      | `string`                       | -           | Helper message (shown when no error or warning)                 |
+| `error`       | `string`                       | -           | Error message: highest priority                                 |
+| `warning`     | `string`                       | -           | Warning message: priority over helper                           |
+| `required`    | `boolean`                      | `false`     | Marks field as required (adds asterisk)                         |
+| `disabled`    | `boolean`                      | `false`     | Disables the input                                              |
+| `readonly`    | `boolean`                      | `false`     | Makes the input read-only                                       |
+| `multiline`   | `boolean`                      | `false`     | Render a `<textarea>` instead of `<input>`                      |
+| `rows`        | `number`                       | -           | Initial textarea row count (multiline only)                     |
+| `id`          | `string`                       | auto        | Explicit input ID                                               |
+| `name`        | `string`                       | -           | Native `name` attribute                                         |
+| `maxlength`   | `number`                       | -           | Maximum character length                                        |
+| `showCount`   | `boolean`                      | `false`     | Shows `12/200` under the field when `maxlength` is set          |
+| `clearable`   | `boolean`                      | `false`     | A clear button while there is a value, and Escape clears        |
+| `revealable`  | `boolean`                      | `false`     | With `type="password"`, an eye button that shows the characters |
 
 ## Events
 
-| Event               | Payload            | Description                |
-| ------------------- | ------------------ | -------------------------- |
-| `update:modelValue` | `string \| number` | Emitted on every keystroke |
+| Event               | Payload            | Description                                  |
+| ------------------- | ------------------ | -------------------------------------------- |
+| `update:modelValue` | `string \| number` | Emitted on every keystroke                   |
+| `clear`             | -                  | The clear button or Escape emptied the field |
 
 ## Slots
 

@@ -77,6 +77,7 @@
             @input="model = ($event.target as HTMLInputElement).value"
             @focus="focused = true"
             @blur="focused = false"
+            @keydown.esc="onEscape"
           />
         </div>
 
@@ -109,7 +110,7 @@
             :aria-invalid="invalid"
             :aria-describedby="describedBy"
             class="nb-text-input__field"
-            :type="type"
+            :type="inputType"
             :placeholder="placeholder"
             :disabled="disabled"
             :readonly="readonly"
@@ -121,6 +122,7 @@
             :maxlength="maxlength"
             @focus="focused = true"
             @blur="focused = false"
+            @keydown.esc="onEscape"
           />
         </template>
 
@@ -136,6 +138,37 @@
              (AI suggest, password toggle, clear, etc.) -->
         <div v-if="$slots.actions" class="nb-text-input__actions">
           <slot name="actions" />
+        </div>
+
+        <!-- Built-in controls, last so the reveal toggle sits at the far
+             right, where Carbon puts it. They keep the caret in the field
+             on a click (mousedown is prevented) and are still tab stops. -->
+        <div v-if="showClear || showReveal" class="nb-text-input__controls">
+          <NbButton
+            v-if="showClear"
+            variant="ghost"
+            icon="x"
+            :size="size"
+            :label="nbStrings.textInputClear"
+            class="nb-text-input__control nb-text-input__clear"
+            @mousedown.prevent
+            @click="clear"
+          />
+          <NbButton
+            v-if="showReveal"
+            variant="ghost"
+            :icon="revealed ? 'eye-slash' : 'eye'"
+            :size="size"
+            :label="
+              revealed
+                ? nbStrings.textInputHidePassword
+                : nbStrings.textInputShowPassword
+            "
+            :disabled="disabled"
+            class="nb-text-input__control nb-text-input__reveal"
+            @mousedown.prevent
+            @click="revealed = !revealed"
+          />
         </div>
       </div>
 
@@ -231,6 +264,7 @@ import { computed, nextTick, provide, ref, useAttrs, watch } from 'vue'
 import type { IReadableFieldComponent } from '@/types/Props.d'
 import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
+import NbButton from './Button.vue'
 import { NB_TEXT_INPUT_CONTEXT } from './TextInput.context'
 import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { useStableId } from '@/composables/useStableId.composable'
@@ -267,6 +301,18 @@ export interface ITextInputProps extends IReadableFieldComponent {
    * :highlight="(t) => t.replace(/(\{[^}]+\})/g, '<span class=\"hl-var\">$1</span>')"
    */
   highlight?: (text: string) => string
+  /**
+   * Shows a clear button (`x`) at the trailing edge while the field has a
+   * value. It empties the field, emits `clear` and keeps focus in the field.
+   * Escape does the same from the keyboard. Single-line only.
+   */
+  clearable?: boolean
+  /**
+   * With `type="password"`, shows an eye button at the far right that shows
+   * and hides the characters. Its name ("Show password", "Hide password")
+   * comes from the string catalogue. Single-line only.
+   */
+  revealable?: boolean
 }
 
 const props = withDefaults(defineProps<ITextInputProps>(), {
@@ -291,7 +337,14 @@ const props = withDefaults(defineProps<ITextInputProps>(), {
   multiline: false,
   rows: 3,
   highlight: undefined,
+  clearable: false,
+  revealable: false,
 })
+
+const emit = defineEmits<{
+  /** The field was emptied by its clear button or by Escape. */
+  clear: []
+}>()
 
 const model = defineModel<string>({ default: '' })
 
@@ -322,6 +375,42 @@ defineExpose({
 provide(NB_TEXT_INPUT_CONTEXT, { field: nativeRef })
 
 const focused = ref(false)
+
+// ─── Clear and reveal ──────────────────────────────────────
+const showClear = computed(
+  () =>
+    props.clearable &&
+    !props.multiline &&
+    !props.disabled &&
+    !props.readonly &&
+    !!model.value,
+)
+const showReveal = computed(
+  () => props.revealable && !props.multiline && props.type === 'password',
+)
+const revealed = ref(false)
+// Revealing swaps the native type, and only for a password: any other type
+// is left exactly as the caller set it.
+const inputType = computed(() =>
+  showReveal.value && revealed.value ? 'text' : props.type,
+)
+
+function clear() {
+  model.value = ''
+  emit('clear')
+  nativeRef.value?.focus()
+}
+
+/*
+ * Escape clears a clearable field, as Carbon's search does. It is stopped
+ * only when it cleared something, so an Escape on an empty field still
+ * reaches the dialog or menu around it.
+ */
+function onEscape(event: KeyboardEvent) {
+  if (!showClear.value) return
+  event.stopPropagation()
+  clear()
+}
 
 // Positional on purpose: two forms on one page can share a field name, and
 // a name-derived id would then collide and break the label's `for`.
@@ -644,6 +733,23 @@ const wrapperClasses = computed(() => ({
     gap: 4px;
     flex-shrink: 0;
     z-index: 2; // above the transparent overlay input
+  }
+
+  /*
+   * The built-in clear and reveal buttons: NbButtons, ghost and icon-only,
+   * the field's size, each a square of the field's inner height so the box
+   * does not grow. They bring the shared hover, focus ring and tooltip.
+   */
+  &__controls {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    z-index: 2; // above the transparent overlay input
+  }
+
+  &__controls &__control {
+    width: var(--nb-text-input-inner-h);
+    height: var(--nb-text-input-inner-h);
   }
 
   // The AI label slot, beside the trailing actions.
