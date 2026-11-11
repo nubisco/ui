@@ -11,7 +11,7 @@
         v-else-if="label"
         :for="inputId"
         :required="required"
-        :disabled="disabled"
+        :disabled="isDisabled"
         >{{ label }}</NbLabel
       >
 
@@ -24,11 +24,11 @@
           role="combobox"
           :aria-expanded="isOpen"
           :aria-haspopup="'listbox'"
-          :aria-disabled="disabled || undefined"
+          :aria-disabled="isDisabled || undefined"
           :aria-required="required || undefined"
-          :aria-invalid="invalid"
-          :aria-describedby="messageId"
-          :disabled="disabled || undefined"
+          :aria-invalid="ariaInvalid"
+          :aria-describedby="describedBy"
+          :disabled="isDisabled || undefined"
           @click="toggleDropdown"
           @focus="focused = true"
           @blur="focused = false"
@@ -133,11 +133,11 @@
           role="combobox"
           :aria-expanded="isOpen"
           :aria-haspopup="'listbox'"
-          :aria-disabled="disabled || undefined"
+          :aria-disabled="isDisabled || undefined"
           :aria-required="required || undefined"
-          :aria-invalid="invalid"
-          :aria-describedby="messageId"
-          :disabled="disabled || undefined"
+          :aria-invalid="ariaInvalid"
+          :aria-describedby="describedBy"
+          :disabled="isDisabled || undefined"
           @click="toggleDropdown"
           @focus="focused = true"
           @blur="focused = false"
@@ -366,7 +366,11 @@ import NbGrid from './Grid.vue'
 import NbIcon from './Icon.vue'
 import NbButton from './Button.vue'
 import { useNbStrings } from '@/composables/useNbStrings.composable'
-import { useFieldMessage } from '@/composables/useFieldMessage.composable'
+import {
+  joinDescribedBy,
+  useFieldMessage,
+} from '@/composables/useFieldMessage.composable'
+import { useInputGroupField } from './InputGroup.context'
 import {
   ref,
   computed,
@@ -476,7 +480,11 @@ const dropdownStyle = ref({
 })
 
 const autoId = `nb-select-${useId()}`
-const inputId = computed(() => props.id ?? autoId)
+// Inside an NbInputGroup the group's size, disabled state and message win,
+// and the first field takes the id the group's label points at.
+const group = useInputGroupField(props, autoId)
+const inputId = group.id
+const isDisabled = group.disabled
 const {
   ids,
   messageId,
@@ -484,6 +492,13 @@ const {
   live: messageLive,
   key: messageKey,
 } = useFieldMessage(props, inputId)
+const describedBy = computed(() =>
+  joinDescribedBy(messageId.value, group.describedBy.value),
+)
+const ariaInvalid = computed(
+  () => invalid.value ?? (group.status.value === 'error' ? 'true' : undefined),
+)
+const hasError = computed(() => !!props.error || group.status.value === 'error')
 const listboxId = computed(() => `${inputId.value}-listbox`)
 const optionId = (index: number) => `${inputId.value}-option-${index}`
 
@@ -656,7 +671,7 @@ function updateDropdownPosition() {
 }
 
 function openDropdown() {
-  if (props.disabled) return
+  if (isDisabled.value) return
   isOpen.value = true
   updateDropdownPosition()
   const opts = props.options ?? []
@@ -811,7 +826,7 @@ const resolvedClearLabel = computed(
 )
 
 const showClear = computed(
-  () => props.clearable && !props.disabled && selectedValues.value.length > 0,
+  () => props.clearable && !isDisabled.value && selectedValues.value.length > 0,
 )
 
 function clearSelection() {
@@ -827,12 +842,13 @@ function clearSelection() {
 const rootClasses = computed(() => [
   'nb-select',
   `nb-select--${props.variant}`,
-  `nb-select--${props.size}`,
+  `nb-select--${group.size.value}`,
   {
     'nb-select--open': isOpen.value,
     'nb-select--focused': focused.value && !isOpen.value,
-    'nb-select--error': !!props.error,
-    'nb-select--warning': !props.error && !!props.warning,
+    'nb-select--error': hasError.value,
+    'nb-select--warning':
+      !hasError.value && (!!props.warning || group.status.value === 'warning'),
     'nb-select--multiple': props.multiple,
     'nb-select--bare': !!slots.trigger,
   },
@@ -845,6 +861,7 @@ defineExpose({
 </script>
 
 <style lang="scss">
+@use '../styles/logic/field' as field;
 @use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
 @use '../styles/variables/breakpoints' as bp;
@@ -1150,7 +1167,7 @@ defineExpose({
     border: var(--nb-field-border-width, 0) solid var(--nb-c-field-border);
     // Always 1px, and the only edge square draws.
     border-bottom: 1px solid var(--nb-c-field-border);
-    border-radius: var(--nb-field-radius, 0);
+    @include field.radius;
     cursor: pointer;
     user-select: none;
     font: inherit;

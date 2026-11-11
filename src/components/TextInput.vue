@@ -4,7 +4,7 @@
     :class="[
       'nb-text-input',
       `nb-text-input--${variant}`,
-      `nb-text-input--${size}`,
+      `nb-text-input--${resolvedSize}`,
       { 'nb-text-input--multiline': multiline },
     ]"
   >
@@ -16,7 +16,7 @@
         v-else-if="label"
         :for="inputId"
         :required="required"
-        :disabled="disabled"
+        :disabled="isDisabled"
       >
         {{ label }}
       </NbLabel>
@@ -41,12 +41,12 @@
             :id="inputId"
             ref="nativeRef"
             v-bind="$attrs"
-            :aria-invalid="invalid"
+            :aria-invalid="ariaInvalid"
             :aria-describedby="describedBy"
             class="nb-text-input__field--transparent"
             :value="model"
             :placeholder="placeholder"
-            :disabled="disabled"
+            :disabled="isDisabled"
             :readonly="readonly"
             :name="name"
             :maxlength="maxlength"
@@ -63,13 +63,13 @@
             :id="inputId"
             ref="nativeRef"
             v-bind="$attrs"
-            :aria-invalid="invalid"
+            :aria-invalid="ariaInvalid"
             :aria-describedby="describedBy"
             type="text"
             class="nb-text-input__field--transparent"
             :value="model"
             :placeholder="placeholder"
-            :disabled="disabled"
+            :disabled="isDisabled"
             :readonly="readonly"
             :name="name"
             :maxlength="maxlength"
@@ -89,11 +89,11 @@
             ref="nativeRef"
             v-bind="$attrs"
             v-model="model"
-            :aria-invalid="invalid"
+            :aria-invalid="ariaInvalid"
             :aria-describedby="describedBy"
             class="nb-text-input__field"
             :placeholder="placeholder"
-            :disabled="disabled"
+            :disabled="isDisabled"
             :readonly="readonly"
             :name="name"
             :maxlength="maxlength"
@@ -107,12 +107,12 @@
             ref="nativeRef"
             v-bind="$attrs"
             v-model="model"
-            :aria-invalid="invalid"
+            :aria-invalid="ariaInvalid"
             :aria-describedby="describedBy"
             class="nb-text-input__field"
             :type="inputType"
             :placeholder="placeholder"
-            :disabled="disabled"
+            :disabled="isDisabled"
             :readonly="readonly"
             :required="required"
             :name="name"
@@ -148,7 +148,7 @@
             v-if="showClear"
             variant="ghost"
             icon="x"
-            :size="size"
+            :size="resolvedSize"
             :label="nbStrings.textInputClear"
             class="nb-text-input__control nb-text-input__clear"
             @mousedown.prevent
@@ -158,13 +158,13 @@
             v-if="showReveal"
             variant="ghost"
             :icon="revealed ? 'eye-slash' : 'eye'"
-            :size="size"
+            :size="resolvedSize"
             :label="
               revealed
                 ? nbStrings.textInputHidePassword
                 : nbStrings.textInputShowPassword
             "
-            :disabled="disabled"
+            :disabled="isDisabled"
             class="nb-text-input__control nb-text-input__reveal"
             @mousedown.prevent
             @click="revealed = !revealed"
@@ -235,12 +235,12 @@
           ref="nativeRef"
           v-bind="$attrs"
           v-model="model"
-          :aria-invalid="invalid"
+          :aria-invalid="ariaInvalid"
           :aria-describedby="describedBy"
           class="nb-text-input__field"
           :type="type"
           :placeholder="placeholder"
-          :disabled="disabled"
+          :disabled="isDisabled"
           :readonly="readonly"
           :required="required"
           :name="name"
@@ -266,6 +266,7 @@ import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
 import NbButton from './Button.vue'
 import { NB_TEXT_INPUT_CONTEXT } from './TextInput.context'
+import { useInputGroupField } from './InputGroup.context'
 import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { useStableId } from '@/composables/useStableId.composable'
 import {
@@ -381,7 +382,7 @@ const showClear = computed(
   () =>
     props.clearable &&
     !props.multiline &&
-    !props.disabled &&
+    !isDisabled.value &&
     !props.readonly &&
     !!model.value,
 )
@@ -415,7 +416,12 @@ function onEscape(event: KeyboardEvent) {
 // Positional on purpose: two forms on one page can share a field name, and
 // a name-derived id would then collide and break the label's `for`.
 const autoId = useStableId({})
-const inputId = computed(() => props.id ?? autoId)
+// Inside an NbInputGroup the group's size, disabled state and message win,
+// and the first field takes the id the group's label points at.
+const group = useInputGroupField(props, autoId)
+const inputId = group.id
+const resolvedSize = group.size
+const isDisabled = group.disabled
 
 // Overlay mode: active when a highlight function is provided
 const useOverlay = computed(() => !!props.highlight)
@@ -455,14 +461,23 @@ const describedBy = computed(() =>
   joinDescribedBy(
     attrs['aria-describedby'] as string | undefined,
     messageId.value,
+    group.describedBy.value,
   ),
+)
+const ariaInvalid = computed(
+  () => invalid.value ?? (group.status.value === 'error' ? 'true' : undefined),
+)
+const hasError = computed(() => !!props.error || group.status.value === 'error')
+const hasWarning = computed(
+  () =>
+    !hasError.value && (!!props.warning || group.status.value === 'warning'),
 )
 
 const wrapperClasses = computed(() => ({
   'nb-text-input__field-wrapper--focused': focused.value,
-  'nb-text-input__field-wrapper--error': !!props.error,
-  'nb-text-input__field-wrapper--warning': !props.error && !!props.warning,
-  'nb-text-input__field-wrapper--disabled': props.disabled,
+  'nb-text-input__field-wrapper--error': hasError.value,
+  'nb-text-input__field-wrapper--warning': hasWarning.value,
+  'nb-text-input__field-wrapper--disabled': isDisabled.value,
   'nb-text-input__field-wrapper--readonly': props.readonly,
   'nb-text-input__field-wrapper--overlay': useOverlay.value,
   'nb-text-input__field-wrapper--multiline': props.multiline,
@@ -471,6 +486,7 @@ const wrapperClasses = computed(() => ({
 
 <style scoped lang="scss">
 @use '../styles/logic/touch' as touch;
+@use '../styles/logic/field' as field;
 
 .nb-text-input {
   font-family: var(--nb-font-family-sans);
@@ -524,7 +540,7 @@ const wrapperClasses = computed(() => ({
     border: var(--nb-field-border-width, 0) solid var(--nb-c-field-border);
     // Always 1px, and the only edge square draws.
     border-bottom: 1px solid var(--nb-c-field-border);
-    border-radius: var(--nb-field-radius, 0);
+    @include field.radius;
     transition:
       border-color var(--nb-motion-short),
       box-shadow var(--nb-motion-short);

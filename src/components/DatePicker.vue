@@ -1163,6 +1163,7 @@ defineExpose({
 <style lang="scss">
 @use '../styles/logic/radius' as radius;
 @use '../styles/logic/touch' as touch;
+@use '../styles/logic/field' as field;
 @use '../styles/variables/breakpoints' as bp;
 
 .nb-date-picker {
@@ -1225,7 +1226,7 @@ defineExpose({
   border: var(--nb-field-border-width, 0) solid var(--nb-c-field-border);
   // Always 1px, and the only edge square draws.
   border-bottom: 1px solid var(--nb-c-field-border);
-  border-radius: var(--nb-field-radius, 0);
+  @include field.radius;
   transition:
     border-color var(--nb-motion-short),
     box-shadow var(--nb-motion-short);

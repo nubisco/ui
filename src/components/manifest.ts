@@ -94,6 +94,7 @@ export const COMPONENT_MANIFEST = {
   NbSuggestionList: 'SuggestionList',
   NbInlineEdit: 'InlineEdit',
   NbInlineLoading: 'InlineLoading',
+  NbInputGroup: 'InputGroup',
   NbSkeleton: 'Skeleton',
   NbSparkline: 'Charts/Sparkline',
   NbSwitch: 'Switch',
