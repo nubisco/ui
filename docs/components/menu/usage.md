@@ -88,7 +88,8 @@ Give a disabled item a `disabled-reason` to say why it does not apply. The
 reason is printed as a muted second line under the label, so it reads the
 same with a mouse, a finger or a keyboard, and the arrow keys stop on the
 item so a screen reader announces it. Items without a reason keep their
-single-line height.
+single-line height. `NbSubmenu` takes a `disabled-reason` the same way, for a
+whole branch that does not apply: it reads the same and does not open.
 
 <preview>
   <NbButton ref="disabledTrigger" @click="openDisabledMenu">Edit</NbButton>

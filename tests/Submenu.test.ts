@@ -223,3 +223,109 @@ describe('NbSubmenu pointer', () => {
     expect(open.value).toBe(false)
   })
 })
+
+describe('NbSubmenu disabledReason', () => {
+  async function mountExplained() {
+    const open = ref(false)
+    const Host = defineComponent({
+      setup() {
+        return () =>
+          h(
+            NbMenu,
+            {
+              open: open.value,
+              'onUpdate:open': (value: boolean) => (open.value = value),
+            },
+            () => [
+              h(NbMenuItem, { label: 'New file' }),
+              h(
+                NbSubmenu,
+                {
+                  label: 'Export',
+                  disabled: true,
+                  disabledReason: 'Save the file before exporting it',
+                },
+                () => [h(NbMenuItem, { label: 'Markdown' })],
+              ),
+              h(NbMenuItem, { label: 'Save' }),
+            ],
+          )
+      },
+    })
+    const wrapper = mount(Host, { attachTo: document.body })
+    mounted.push(wrapper)
+    open.value = true
+    await vi.waitFor(() => {
+      if (focusedLabel() !== 'New file') throw new Error('menu not open yet')
+    })
+  }
+
+  it('prints the reason under the label and names it as the description', async () => {
+    await mountExplained()
+    const reason = trigger().querySelector('.nb-menu-item__reason')!
+    expect(reason.textContent).toBe('Save the file before exporting it')
+    expect(trigger().getAttribute('aria-describedby')).toBe(reason.id)
+    expect(trigger().getAttribute('aria-disabled')).toBe('true')
+    expect(trigger().classList).toContain('nb-menu-item--explained')
+  })
+
+  it('is a stop for the arrow keys, and still does not open', async () => {
+    await mountExplained()
+    await settle()
+    press(document.activeElement!, 'ArrowDown')
+    await settle()
+    expect(document.activeElement).toBe(trigger())
+    for (const key of ['ArrowRight', 'Enter', ' ']) {
+      press(trigger(), key)
+      await settle()
+      expect(submenu()).toBeNull()
+    }
+  })
+
+  it('stays silent without disabled', () => {
+    const w = mount(NbSubmenu, {
+      props: { label: 'Export', disabledReason: 'Stale' },
+    })
+    mounted.push(w)
+    expect(w.find('.nb-menu-item__reason').exists()).toBe(false)
+    expect(w.find('li').attributes('aria-describedby')).toBeUndefined()
+  })
+
+  it('lets the arrow keys stop on an explained item inside the submenu', async () => {
+    const open = ref(false)
+    const Host = defineComponent({
+      setup() {
+        return () =>
+          h(
+            NbMenu,
+            {
+              open: open.value,
+              'onUpdate:open': (value: boolean) => (open.value = value),
+            },
+            () => [
+              h(NbMenuItem, { label: 'New file' }),
+              h(NbSubmenu, { label: 'Export' }, () => [
+                h(NbMenuItem, {
+                  label: 'PDF',
+                  disabled: true,
+                  disabledReason: 'Needs the print add-on',
+                }),
+                h(NbMenuItem, { label: 'Markdown' }),
+              ]),
+            ],
+          )
+      },
+    })
+    const wrapper = mount(Host, { attachTo: document.body })
+    mounted.push(wrapper)
+    open.value = true
+    await vi.waitFor(() => {
+      if (focusedLabel() !== 'New file') throw new Error('menu not open yet')
+    })
+    await settle()
+    trigger().focus()
+    press(trigger(), 'ArrowRight')
+    await settle()
+    expect(focusedLabel()).toBe('PDF')
+  })
+})

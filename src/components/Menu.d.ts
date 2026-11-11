@@ -66,6 +66,13 @@ export interface ISubmenuProps {
   label: string
   /** Disables the submenu trigger */
   disabled?: boolean
+  /**
+   * Why the submenu is unavailable, as on `NbMenuItem`: a muted second line
+   * under the label, the trigger's description, and a row the arrow keys
+   * still stop on. The submenu still does not open. Read only while
+   * `disabled`.
+   */
+  disabledReason?: string
 }
 
 export interface IMenuBarProps {

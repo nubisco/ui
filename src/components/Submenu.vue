@@ -4,12 +4,15 @@
     class="nb-menu-item nb-submenu-trigger"
     :class="{
       'nb-menu-item--disabled': disabled,
+      'nb-menu-item--explained': explained,
       'nb-menu-item--highlighted': isOpen,
     }"
     role="menuitem"
     :aria-haspopup="'menu'"
     :aria-expanded="isOpen"
     :aria-disabled="disabled || undefined"
+    :aria-describedby="explained ? reasonId : undefined"
+    :data-nb-explained="explained || undefined"
     :tabindex="-1"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
@@ -21,7 +24,14 @@
     @click="onActivate"
   >
     <NbIcon v-if="icon" :name="icon" :size="16" class="nb-menu-item__icon" />
-    <span class="nb-menu-item__label">{{ label }}</span>
+    <!-- A reason reads as on NbMenuItem: a second line, not a tooltip. -->
+    <span v-if="explained" class="nb-menu-item__text">
+      <span class="nb-menu-item__label">{{ label }}</span>
+      <span :id="reasonId" class="nb-menu-item__reason">{{
+        disabledReason
+      }}</span>
+    </span>
+    <span v-else class="nb-menu-item__label">{{ label }}</span>
     <NbIcon name="caret-right" size="sm" class="nb-submenu-trigger__caret" />
   </li>
 
@@ -46,7 +56,15 @@
 
 <script setup lang="ts">
 import NbIcon from './Icon.vue'
-import { ref, computed, inject, nextTick, onBeforeUnmount, watch } from 'vue'
+import {
+  ref,
+  computed,
+  inject,
+  nextTick,
+  onBeforeUnmount,
+  watch,
+  useId,
+} from 'vue'
 import type { ISubmenuProps, IMenuContext } from './Menu.d'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 
@@ -59,7 +77,11 @@ const menuZ = () =>
 const props = withDefaults(defineProps<ISubmenuProps>(), {
   icon: undefined,
   disabled: false,
+  disabledReason: undefined,
 })
+
+const explained = computed(() => props.disabled && !!props.disabledReason)
+const reasonId = `nb-submenu-reason-${useId()}`
 
 const triggerRef = ref<HTMLElement | null>(null)
 const submenuRef = ref<HTMLElement | null>(null)
@@ -155,10 +177,15 @@ function submenuItems(): HTMLElement[] {
   )
 }
 
+// Stops where the top-level menu does: an enabled item, or a disabled one
+// that says why.
 function focusEnabled(from: number, step: 1 | -1) {
   const items = submenuItems()
   for (let i = from; i >= 0 && i < items.length; i += step) {
-    if (items[i].getAttribute('aria-disabled') !== 'true') {
+    if (
+      items[i].getAttribute('aria-disabled') !== 'true' ||
+      items[i].hasAttribute('data-nb-explained')
+    ) {
       items[i].focus()
       return
     }

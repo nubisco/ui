@@ -154,11 +154,12 @@ No props. Renders a horizontal separator.
 
 ### Props
 
-| Prop       | Type      | Default     | Description                  |
-| ---------- | --------- | ----------- | ---------------------------- |
-| `label`    | `string`  | required    | Trigger label                |
-| `icon`     | `string`  | `undefined` | Phosphor icon name           |
-| `disabled` | `boolean` | `false`     | Disables the submenu trigger |
+| Prop             | Type      | Default     | Description                                                                                      |
+| ---------------- | --------- | ----------- | ------------------------------------------------------------------------------------------------ |
+| `label`          | `string`  | required    | Trigger label                                                                                    |
+| `icon`           | `string`  | `undefined` | Phosphor icon name                                                                               |
+| `disabled`       | `boolean` | `false`     | Disables the submenu trigger                                                                     |
+| `disabledReason` | `string`  | `undefined` | Why the submenu is unavailable, as on `NbMenuItem`. It does not open. Read only while `disabled` |
 
 ### Slots
 
