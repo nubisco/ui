@@ -24,6 +24,8 @@
           role="combobox"
           :aria-expanded="isOpen"
           :aria-haspopup="'listbox'"
+          :aria-controls="isOpen ? listboxId : undefined"
+          :aria-activedescendant="triggerActiveDescendant"
           :aria-disabled="isDisabled || undefined"
           :aria-required="required || undefined"
           :aria-invalid="ariaInvalid"
@@ -133,6 +135,8 @@
           role="combobox"
           :aria-expanded="isOpen"
           :aria-haspopup="'listbox'"
+          :aria-controls="isOpen ? listboxId : undefined"
+          :aria-activedescendant="triggerActiveDescendant"
           :aria-disabled="isDisabled || undefined"
           :aria-required="required || undefined"
           :aria-invalid="ariaInvalid"
@@ -508,6 +512,14 @@ const hasError = computed(
 )
 const listboxId = computed(() => `${inputId.value}-listbox`)
 const optionId = (index: number) => `${inputId.value}-option-${index}`
+// Where a screen reader is told the highlight is while focus stays on the
+// trigger. A searchable list moves focus into its search box on open, and
+// that box carries the reference itself, so the trigger stays silent there.
+const triggerActiveDescendant = computed(() =>
+  isOpen.value && !props.searchable && highlighted.value >= 0
+    ? optionId(highlighted.value)
+    : undefined,
+)
 
 const selectedValues = computed<Array<string | number>>(() => {
   if (props.modelValue == null) return []
@@ -820,6 +832,7 @@ const triggerSlot = computed(() => ({
     'aria-expanded': isOpen.value,
     'aria-haspopup': 'listbox' as const,
     'aria-controls': isOpen.value ? listboxId.value : undefined,
+    'aria-activedescendant': triggerActiveDescendant.value,
     'aria-invalid': invalid.value,
     onClick: toggleDropdown,
   },

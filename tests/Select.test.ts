@@ -90,6 +90,87 @@ describe('Select', () => {
     wrapper.unmount()
   })
 
+  // The built-in trigger names the list it opens and, while it keeps
+  // focus, the option the arrows have reached. Without them a screen reader
+  // hears nothing as the highlight moves.
+  describe('the trigger as a combobox', () => {
+    const cases = [
+      { variant: 'default', multiple: false },
+      { variant: 'default', multiple: true },
+      { variant: 'fluid', multiple: false },
+      { variant: 'fluid', multiple: true },
+    ]
+
+    for (const { variant, multiple } of cases) {
+      const name = `${variant}, ${multiple ? 'multiple' : 'single'}`
+
+      it(`controls the open list (${name})`, async () => {
+        const wrapper = createWrapper({ variant, multiple, label: 'Fruit' })
+        const trigger = wrapper.find('.nb-select__trigger')
+        expect(trigger.attributes('aria-controls')).toBeUndefined()
+        await trigger.trigger('click')
+        const listId = trigger.attributes('aria-controls')!
+        expect(document.getElementById(listId)?.getAttribute('role')).toBe(
+          'listbox',
+        )
+        wrapper.unmount()
+      })
+
+      it(`points at the highlighted option (${name})`, async () => {
+        const wrapper = createWrapper({ variant, multiple, label: 'Fruit' })
+        const trigger = wrapper.find('.nb-select__trigger')
+        await trigger.trigger('click')
+        await press(wrapper, 'ArrowDown')
+        await press(wrapper, 'ArrowDown')
+        const active = document.getElementById(
+          trigger.attributes('aria-activedescendant')!,
+        )!
+        expect(active.getAttribute('role')).toBe('option')
+        expect(active.className).toContain('nb-select__option--highlighted')
+        expect(active.textContent).toContain('Banana')
+        wrapper.unmount()
+      })
+
+      it(`leaves the reference to the search box (${name}, searchable)`, async () => {
+        const wrapper = createWrapper({
+          variant,
+          multiple,
+          label: 'Fruit',
+          searchable: true,
+        })
+        const trigger = wrapper.find('.nb-select__trigger')
+        await trigger.trigger('click')
+        await wrapper.vm.$nextTick()
+        expect(trigger.attributes('aria-controls')).toBeTruthy()
+        const search = document.querySelector('.nb-select__search-input')!
+        search.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+        )
+        search.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+        )
+        await wrapper.vm.$nextTick()
+        expect(trigger.attributes('aria-activedescendant')).toBeUndefined()
+        const active = document.getElementById(
+          search.getAttribute('aria-activedescendant')!,
+        )!
+        expect(active.className).toContain('nb-select__option--highlighted')
+        wrapper.unmount()
+      })
+    }
+
+    it('clears both once the list closes', async () => {
+      const wrapper = createWrapper()
+      const trigger = wrapper.find('.nb-select__trigger')
+      await trigger.trigger('click')
+      await press(wrapper, 'ArrowDown')
+      await press(wrapper, 'Escape')
+      expect(trigger.attributes('aria-controls')).toBeUndefined()
+      expect(trigger.attributes('aria-activedescendant')).toBeUndefined()
+      wrapper.unmount()
+    })
+  })
+
   describe('grouped options', () => {
     /**
      * The case this was built for: two groups holding the same values, in a

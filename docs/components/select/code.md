@@ -173,7 +173,8 @@ select is faster.
 Fill the `trigger` slot to open the same list from a control of your own: a
 chevron in a breadcrumb, an icon in a toolbar. The list, the search and the
 keyboard stay `NbSelect`'s. Spread the slot's `attrs` on your button: it carries
-`aria-expanded`, `aria-haspopup` and the click handler. Pass `anchor` (an element,
+`aria-expanded`, `aria-haspopup`, `aria-controls`, `aria-activedescendant` and the
+click handler. Pass `anchor` (an element,
 or a function that returns one) to hang the list under a larger thing than the
 button, and `selected-mark="check"` to mark the chosen row with a check instead of
 filling it, as a menu of places to go does. `NbBreadcrumbs` uses all three for
