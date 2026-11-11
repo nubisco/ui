@@ -66,6 +66,6 @@ A date picker joins a group like any other field: the group's height, state and 
 
 ## Works with
 
-`NbTextInput`, `NbNumberInput`, `NbSelect`, `NbSearch` and `NbDatePicker` take the group's size, state and message, and render no label or message of their own. `NbButton` in any variant. Put one field in a group: two fields side by side are two controls, and belong in an `NbGrid`.
+`NbTextInput`, `NbNumberInput`, `NbSelect`, `NbSearch` and `NbDatePicker` take the group's size, state and message, and render no label or message of their own. A `label`, `helper`, `error` or `warning` passed to the field itself is ignored, with a warning in development that names it: pass it to the group. `NbButton` in any variant. Put one field in a group: two fields side by side are two controls, and belong in an `NbGrid`.
 
 <!--@include: ./_shared.md-->

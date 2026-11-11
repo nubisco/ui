@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { h } from 'vue'
+import { defineComponent, h, nextTick } from 'vue'
 import InputGroup from '../src/components/InputGroup.vue'
 import TextInput from '../src/components/TextInput.vue'
 import Select from '../src/components/Select.vue'
@@ -263,5 +263,30 @@ describe('NbInputGroup styles', () => {
       )
       expect(css, file).toContain('@include field.radius')
     }
+  })
+})
+
+describe('NbInputGroup owns the label and message', () => {
+  it('hides a member field’s own label and message, and says so', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const w = mount(
+      defineComponent({
+        components: { InputGroup, TextInput, Select },
+        template: `
+          <InputGroup label="Address">
+            <TextInput label="Street" error="Required" />
+            <Select label="Country" helper="Pick one" :options="[]" />
+          </InputGroup>`,
+      }),
+    )
+    await nextTick()
+    expect(w.text()).not.toContain('Street')
+    expect(w.text()).not.toContain('Required')
+    expect(w.text()).not.toContain('Country')
+    expect(w.text()).not.toContain('Pick one')
+    expect(
+      warn.mock.calls.filter((c) => String(c[0]).includes('[NbInputGroup]')),
+    ).toHaveLength(2)
+    warn.mockRestore()
   })
 })

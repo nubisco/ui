@@ -11,9 +11,9 @@
     <!-- ── DEFAULT variant ───────────────────────────────────── -->
     <template v-if="variant === 'default'">
       <!-- Label row: either a custom #label slot or the built-in NbLabel -->
-      <slot v-if="$slots.label" name="label" />
+      <slot v-if="$slots.label && !grouped" name="label" />
       <NbLabel
-        v-else-if="label"
+        v-else-if="label && !grouped"
         :for="inputId"
         :required="required"
         :disabled="isDisabled"
@@ -469,6 +469,8 @@ const group = useInputGroupField(props, autoId)
 const inputId = group.id
 const resolvedSize = group.size
 const isDisabled = group.disabled
+// Inside a group, the group's label and message are the only ones.
+const grouped = group.grouped
 
 /*
  * The buttons are the field's size, so each is one square of the same
@@ -511,23 +513,26 @@ const {
   key: messageKey,
 } = useFieldMessage(props, inputId)
 const messageVariant = computed(() => fieldMessageVariant.value ?? 'helper')
-const hasMessage = computed(() => !!messageText.value)
+const hasMessage = computed(() => !grouped && !!messageText.value)
 
 const attrs = useAttrs()
 const describedBy = computed(() =>
   joinDescribedBy(
     attrs['aria-describedby'] as string | undefined,
-    messageId.value,
+    grouped ? undefined : messageId.value,
     group.describedBy.value,
   ),
 )
 const ariaInvalid = computed(
   () => invalid.value ?? (group.status.value === 'error' ? 'true' : undefined),
 )
-const hasError = computed(() => !!props.error || group.status.value === 'error')
+const hasError = computed(
+  () => (!grouped && !!props.error) || group.status.value === 'error',
+)
 const hasWarning = computed(
   () =>
-    !hasError.value && (!!props.warning || group.status.value === 'warning'),
+    !hasError.value &&
+    ((!grouped && !!props.warning) || group.status.value === 'warning'),
 )
 
 const slots = useSlots()

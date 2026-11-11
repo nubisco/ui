@@ -6,9 +6,9 @@
 
     <!-- DEFAULT variant -->
     <template v-else-if="variant === 'default'">
-      <slot v-if="$slots.label" name="label" />
+      <slot v-if="$slots.label && !grouped" name="label" />
       <NbLabel
-        v-else-if="label"
+        v-else-if="label && !grouped"
         :for="inputId"
         :required="required"
         :disabled="isDisabled"
@@ -94,7 +94,7 @@
       </SelectControl>
 
       <NbMessage
-        v-if="error"
+        v-if="error && !grouped"
         :id="ids.error"
         :key="messageKey"
         variant="error"
@@ -103,7 +103,7 @@
         >{{ error }}</NbMessage
       >
       <NbMessage
-        v-else-if="warning"
+        v-else-if="warning && !grouped"
         :id="ids.warning"
         :key="messageKey"
         variant="warning"
@@ -112,7 +112,7 @@
         >{{ warning }}</NbMessage
       >
       <NbMessage
-        v-else-if="helper"
+        v-else-if="helper && !grouped"
         :id="ids.helper"
         :key="messageKey"
         variant="helper"
@@ -485,6 +485,8 @@ const autoId = `nb-select-${useId()}`
 const group = useInputGroupField(props, autoId)
 const inputId = group.id
 const isDisabled = group.disabled
+// Inside a group, the group's label and message are the only ones.
+const grouped = group.grouped
 const {
   ids,
   messageId,
@@ -493,12 +495,17 @@ const {
   key: messageKey,
 } = useFieldMessage(props, inputId)
 const describedBy = computed(() =>
-  joinDescribedBy(messageId.value, group.describedBy.value),
+  joinDescribedBy(
+    grouped ? undefined : messageId.value,
+    group.describedBy.value,
+  ),
 )
 const ariaInvalid = computed(
   () => invalid.value ?? (group.status.value === 'error' ? 'true' : undefined),
 )
-const hasError = computed(() => !!props.error || group.status.value === 'error')
+const hasError = computed(
+  () => (!grouped && !!props.error) || group.status.value === 'error',
+)
 const listboxId = computed(() => `${inputId.value}-listbox`)
 const optionId = (index: number) => `${inputId.value}-option-${index}`
 
@@ -848,7 +855,8 @@ const rootClasses = computed(() => [
     'nb-select--focused': focused.value && !isOpen.value,
     'nb-select--error': hasError.value,
     'nb-select--warning':
-      !hasError.value && (!!props.warning || group.status.value === 'warning'),
+      !hasError.value &&
+      ((!grouped && !!props.warning) || group.status.value === 'warning'),
     'nb-select--multiple': props.multiple,
     'nb-select--bare': !!slots.trigger,
   },
