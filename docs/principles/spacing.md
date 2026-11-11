@@ -317,7 +317,7 @@ Until that is fixed, verify `xs` visually on every control type you put in a den
 :::
 
 ::: warning `NbButton` sizes are not field sizes
-`NbButton` implements seven sizes (`xxs` `xs` `sm` `md` `lg` `xl` `xxl`) at 16, 24, 32, 40, 48, 64 and 128 pixels. Three of them coincide with field heights: `sm` is 32, `md` is 40, `lg` is 48. **`xs` does not.** A `size="xs"` button next to a `size="xs"` text input is 24px against 28px, and the mismatch is visible.
+`NbButton` implements seven sizes (`xxs` `xs` `sm` `md` `lg` `xl` `xxl`) at 16, 24, 32, 40, 48, 64 and 80 pixels (`xl` and `xxl` are minimum heights, where a long label wraps). Three of them coincide with field heights: `sm` is 32, `md` is 40, `lg` is 48. **`xs` does not.** A `size="xs"` button next to a `size="xs"` text input is 24px against 28px, and the mismatch is visible.
 
 In an `xs` field row, use `size="sm"` on the button and accept 32 against 28, or set an explicit height. Do not assume the two scales are the same scale, because they are not.
 :::

@@ -13,7 +13,7 @@ Application code and component code name roles. Only `src/styles/_theme.scss` na
 ::: danger Name a role, never a ramp
 A rebrand or a theme switch re-points roles. It never changes a ramp. Anything that names a ramp directly keeps the vendor's colour after a rebrand, and keeps the same tint after a switch to dark, and the only way for the product to escape it is to hardcode its own hex, which no later library release can reach.
 
-So every colour the library paints goes through a role: chart series through `--nb-c-chart-1` to `-8`, the ghost button's hover through `--nb-c-primary-hover`. Your code follows the same rule.
+So every colour the library paints goes through a role: chart series through `--nb-c-chart-1` to `-8`, the ghost button's hover through `--nb-c-surface-hover`. Your code follows the same rule.
 :::
 
 ## The ramps
@@ -82,7 +82,7 @@ These are **fills**: colours you set a background to, with the matching `-a11y` 
 | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--nb-c-primary`                                            | The single action this screen wants. One per view. Also feeds `--nb-c-focus-ring` and the shell's sidebar accent.                                     |
 | `--nb-c-primary-hover`, `-active`                           | Pointer over, and pointer down.                                                                                                                       |
-| `--nb-c-primary-subtle`                                     | A pale wash of the brand for an edge drawn **on** a primary fill. One consumer today: the ghost button's hover border.                                |
+| `--nb-c-primary-subtle`                                     | A pale wash of the brand for an edge drawn **on** a primary fill.                                                                                     |
 | `--nb-c-secondary`                                          | The neutral action next to the primary one. A grey, not a second brand hue, and deliberately so: two saturated buttons side by side is two primaries. |
 | `--nb-c-secondary-hover`, `-active`                         | As above.                                                                                                                                             |
 | `--nb-c-success`                                            | A fill for an action whose meaning is completion. Not for reporting that something succeeded (that is a status surface).                              |
