@@ -89,6 +89,7 @@ import NbSuggestionList from './SuggestionList.vue'
 import NbInlineEdit from './InlineEdit.vue'
 import NbInlineLoading from './InlineLoading.vue'
 import NbInputGroup from './InputGroup.vue'
+import NbSearch from './Search.vue'
 import NbSkeleton from './Skeleton.vue'
 import NbSparkline from './Charts/Sparkline.vue'
 import NbSwitch from './Switch.vue'
@@ -200,6 +201,7 @@ const components = {
   NbInlineEdit,
   NbInlineLoading,
   NbInputGroup,
+  NbSearch,
   NbSkeleton,
   NbSparkline,
   NbSwitch,

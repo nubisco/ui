@@ -95,6 +95,7 @@ export const COMPONENT_MANIFEST = {
   NbInlineEdit: 'InlineEdit',
   NbInlineLoading: 'InlineLoading',
   NbInputGroup: 'InputGroup',
+  NbSearch: 'Search',
   NbSkeleton: 'Skeleton',
   NbSparkline: 'Charts/Sparkline',
   NbSwitch: 'Switch',

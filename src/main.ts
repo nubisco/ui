@@ -460,6 +460,8 @@ export {
   useInputGroupField,
 } from './components/InputGroup.context'
 export type { IInputGroupContext } from './components/InputGroup.context'
+export { default as NbSearch } from './components/Search.vue'
+export type { ISearchProps } from './components/Search.d'
 export { default as NbSkeleton } from './components/Skeleton.vue'
 export type { ISkeletonProps, TSkeletonTypeSet } from './components/Skeleton.d'
 export { ESkeletonVariant } from './components/Skeleton.d'
