@@ -1,6 +1,8 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import TextInput from '../src/components/TextInput.vue'
 import {
   provideNbStrings,
@@ -115,6 +117,87 @@ describe('NbTextInput revealable', () => {
     )
     expect(w.find('.nb-text-input__reveal').attributes('aria-label')).toBe(
       'Mostrar senha',
+    )
+  })
+})
+
+describe('NbTextInput clear and reveal in both variants', () => {
+  for (const variant of ['default', 'fluid'] as const) {
+    it(`${variant}: clears, keeps focus and stops Escape`, async () => {
+      const w = mount(TextInput, {
+        props: { variant, label: 'Name', clearable: true, modelValue: 'abc' },
+        attachTo: document.body,
+      })
+      const clear = w.find('.nb-text-input__clear')
+      expect(clear.attributes('aria-label')).toBe('Clear')
+      await clear.trigger('click')
+      expect(w.emitted('update:modelValue')?.[0]).toEqual([''])
+      expect(w.emitted('clear')).toHaveLength(1)
+      expect(document.activeElement).toBe(w.find('input').element)
+
+      await w.setProps({ modelValue: 'again' })
+      await w.find('input').trigger('keydown', { key: 'Escape' })
+      expect(w.emitted('clear')).toHaveLength(2)
+      w.unmount()
+    })
+
+    it(`${variant}: reveals a password, the last button at the trailing edge`, async () => {
+      const w = mount(TextInput, {
+        props: {
+          variant,
+          label: 'Password',
+          type: 'password',
+          revealable: true,
+          clearable: true,
+          modelValue: 'secret',
+        },
+      })
+      const controls = w.findAll('.nb-text-input__controls .nb-button')
+      expect(controls).toHaveLength(2)
+      expect(controls.at(-1)?.classes()).toContain('nb-text-input__reveal')
+      // The controls come after the input in the same line, so they sit at
+      // its trailing edge.
+      const input = w.find('input').element
+      const box = w.find('.nb-text-input__controls').element
+      expect(input.parentElement).toBe(box.parentElement)
+      expect(input.nextElementSibling).toBe(box)
+
+      expect(w.find('input').attributes('type')).toBe('password')
+      await w.find('.nb-text-input__reveal').trigger('click')
+      expect(w.find('input').attributes('type')).toBe('text')
+      expect(w.find('.nb-text-input__reveal').attributes('aria-label')).toBe(
+        'Hide password',
+      )
+    })
+  }
+
+  it('fluid: the buttons are sm whatever the field size', () => {
+    const w = mount(TextInput, {
+      props: {
+        variant: 'fluid',
+        size: 'lg',
+        clearable: true,
+        modelValue: 'abc',
+      },
+    })
+    expect(w.find('.nb-text-input__clear').classes()).toContain('nb-button--sm')
+  })
+
+  it('fluid: the buttons centre on the value line and add no height', () => {
+    const css = readFileSync(
+      resolve(__dirname, '../src/components/TextInput.vue'),
+      'utf8',
+    )
+    const fluid = css.slice(css.indexOf('// ─── FLUID variant'))
+    // The line carries the space under the text, so the input and the
+    // buttons beside it share one centre.
+    expect(fluid).toMatch(
+      /\.nb-text-input__fluid-row \{[^}]*align-items: center;[^}]*padding-bottom: 10px;/,
+    )
+    // A zero-height box: the 32px buttons spill over the line evenly
+    // rather than making the field taller.
+    expect(fluid).toMatch(
+      /\.nb-text-input__controls \{[^}]*align-self: center;[^}]*height: 0;/,
     )
   })
 })

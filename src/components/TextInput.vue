@@ -154,7 +154,7 @@
             v-if="showClear"
             variant="ghost"
             icon="x"
-            :size="resolvedSize"
+            :size="controlSize"
             :label="nbStrings.textInputClear"
             class="nb-text-input__control nb-text-input__clear"
             @mousedown.prevent
@@ -164,7 +164,7 @@
             v-if="showReveal"
             variant="ghost"
             :icon="revealed ? 'eye-slash' : 'eye'"
-            :size="resolvedSize"
+            :size="controlSize"
             :label="
               revealed
                 ? nbStrings.textInputHidePassword
@@ -236,27 +236,60 @@
           }}</span>
         </div>
 
-        <input
-          :id="inputId"
-          ref="nativeRef"
-          v-bind="$attrs"
-          v-model="model"
-          :aria-invalid="ariaInvalid"
-          :aria-describedby="describedBy"
-          class="nb-text-input__field"
-          :type="type"
-          :placeholder="placeholder"
-          :disabled="isDisabled"
-          :readonly="readonly"
-          :required="required"
-          :name="name"
-          :min="min"
-          :max="max"
-          :step="step"
-          :maxlength="maxlength"
-          @focus="focused = true"
-          @blur="focused = false"
-        />
+        <!-- The value line: the input, then the clear and reveal buttons at
+             the trailing edge, centred on the text rather than on the box. -->
+        <div class="nb-text-input__fluid-row">
+          <input
+            :id="inputId"
+            ref="nativeRef"
+            v-bind="$attrs"
+            v-model="model"
+            :aria-invalid="ariaInvalid"
+            :aria-describedby="describedBy"
+            class="nb-text-input__field"
+            :type="inputType"
+            :placeholder="placeholder"
+            :disabled="isDisabled"
+            :readonly="readonly"
+            :required="required"
+            :name="name"
+            :min="min"
+            :max="max"
+            :step="step"
+            :maxlength="maxlength"
+            @focus="focused = true"
+            @blur="focused = false"
+            @keydown.esc="onEscape"
+          />
+
+          <div v-if="showClear || showReveal" class="nb-text-input__controls">
+            <NbButton
+              v-if="showClear"
+              variant="ghost"
+              icon="x"
+              :size="controlSize"
+              :label="nbStrings.textInputClear"
+              class="nb-text-input__control nb-text-input__clear"
+              @mousedown.prevent
+              @click="clear"
+            />
+            <NbButton
+              v-if="showReveal"
+              variant="ghost"
+              :icon="revealed ? 'eye-slash' : 'eye'"
+              :size="controlSize"
+              :label="
+                revealed
+                  ? nbStrings.textInputHidePassword
+                  : nbStrings.textInputShowPassword
+              "
+              :disabled="isDisabled"
+              class="nb-text-input__control nb-text-input__reveal"
+              @mousedown.prevent
+              @click="revealed = !revealed"
+            />
+          </div>
+        </div>
       </div>
 
       <slot name="dropdown" />
@@ -436,6 +469,16 @@ const group = useInputGroupField(props, autoId)
 const inputId = group.id
 const resolvedSize = group.size
 const isDisabled = group.disabled
+
+/*
+ * The buttons are the field's size, so each is one square of the same
+ * scale. A fluid field is taller than its size (the label sits inside it),
+ * so its buttons stay at sm beside the value line, as NbDatePicker's
+ * calendar button does.
+ */
+const controlSize = computed(() =>
+  props.variant === 'fluid' ? 'sm' : resolvedSize.value,
+)
 
 // Overlay mode: active when a highlight function is provided
 const useOverlay = computed(() => !!props.highlight)
@@ -894,12 +937,39 @@ const wrapperClasses = computed(() => ({
       color: var(--nb-c-danger);
     }
 
+    /*
+     * The value line. Its bottom padding is the space below the text that
+     * the input used to carry itself, moved here so the line and the
+     * buttons beside it share one centre.
+     */
+    .nb-text-input__fluid-row {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      padding-bottom: 10px;
+    }
+
     .nb-text-input__field {
       height: auto;
       flex: 1;
-      padding: 0 var(--nb-field-padding-h) 10px;
+      padding: 0 var(--nb-field-padding-h);
       font-size: var(--nb-type-body-compact-size);
       @include touch.touch-field-text;
+    }
+
+    /*
+     * The buttons are 32px, taller than the text line. The row they sit in
+     * has no height of its own, so they centre on the text and spill over
+     * it evenly without making the line, and so the field, any taller.
+     */
+    .nb-text-input__controls {
+      align-self: center;
+      height: 0;
+    }
+
+    .nb-text-input__controls .nb-text-input__control {
+      width: calc(var(--nb-base-unit) * 4);
+      height: calc(var(--nb-base-unit) * 4);
     }
   }
 }
