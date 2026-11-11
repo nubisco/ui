@@ -17,25 +17,31 @@
       :trigger-props="triggerProps"
       :set-trigger-ref="setTriggerRef"
     >
-      <button
+      <!-- An icon-only ghost NbButton at sm, 32px with its 16px icon, the same
+           as every other header action. `label` is the short tooltip. The
+           `aria-label` in triggerProps wins for the name, because it carries
+           the unread count. -->
+      <NbButton
         :ref="setTriggerRef"
-        type="button"
         class="nb-notification-center__trigger"
         :class="{ 'nb-notification-center__trigger--active': isOpen }"
+        variant="ghost"
+        size="sm"
+        :icon="resolvedIcon"
+        :label="label"
         v-bind="triggerProps"
         @click="toggle"
+      />
+      <!-- The number is decoration: the same count is already in the
+           button's accessible name, uncapped, so a reader hears "142
+           unread" where the badge only has room for "99+". A sibling of the
+           button rather than inside it, so the button stays icon-only. -->
+      <span
+        v-if="unreadCount > 0"
+        class="nb-notification-center__badge"
+        aria-hidden="true"
+        >{{ badgeText }}</span
       >
-        <NbIcon :name="resolvedIcon" :size="18" />
-        <!-- The number is decoration: the same count is already in the
-             button's accessible name, uncapped, so a reader hears "142
-             unread" where the badge only has room for "99+". -->
-        <span
-          v-if="unreadCount > 0"
-          class="nb-notification-center__badge"
-          aria-hidden="true"
-          >{{ badgeText }}</span
-        >
-      </button>
     </slot>
 
     <Teleport to="body">
@@ -100,13 +106,11 @@
             <!-- The sheet covers the whole screen, so there is nothing
                  outside it left to tap: it carries its own way out. Phone
                  only, where the panel is that sheet. -->
-            <NbButton
+            <NbCloseButton
               v-if="sheet"
               class="nb-notification-center__close"
-              variant="ghost"
               size="lg"
-              icon="x"
-              :aria-label="closeLabel"
+              :label="closeLabel ?? nbStrings.notificationCenterClose"
               @click="close()"
             />
           </div>
@@ -413,6 +417,8 @@ import {
 } from 'vue'
 import * as iconBell from '@nubisco/ui/icons/bell'
 import NbButton from './Button.vue'
+import NbCloseButton from './CloseButton.vue'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import NbEmptyState from './EmptyState.vue'
 import NbIcon from './Icon.vue'
 import NbNotificationCenterItem from './NotificationCenterItem.vue'
@@ -425,6 +431,8 @@ import type {
   INotificationTriggerProps,
 } from './NotificationCenter.d'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
+
+const nbStrings = useNbStrings()
 
 const props = withDefaults(defineProps<INotificationCenterProps>(), {
   items: () => [],
@@ -447,7 +455,7 @@ const props = withDefaults(defineProps<INotificationCenterProps>(), {
   showRetry: true,
   maxCount: 99,
   width: 360,
-  closeLabel: 'Close notifications',
+  closeLabel: undefined,
   maxHeight: 384,
   align: 'end',
   side: 'vertical',
@@ -1235,42 +1243,17 @@ defineExpose({ show, close, toggle, isOpen, unreadCount })
   display: inline-flex;
 }
 
-.nb-notification-center__trigger {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 1px solid transparent;
-  background: none;
-  color: var(--nb-c-text-muted);
-  cursor: pointer;
-
-  &:hover:not(:disabled) {
-    background: var(--nb-c-layer-hover-1);
-    color: var(--nb-c-text);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--nb-c-focus-ring);
-    outline-offset: 1px;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: default;
-  }
-
-  &--active {
-    background: var(--nb-c-layer-hover-1);
-    color: var(--nb-c-text);
-  }
+// The trigger is an NbButton, so its size, hover and focus ring are the
+// button's. Only the open state is drawn here: the panel it owns is showing.
+.nb-notification-center__trigger.nb-notification-center__trigger--active {
+  background: var(--nb-c-surface-hover);
 }
 
 .nb-notification-center__badge {
   position: absolute;
+  // Above the button it sits on, and never in the way of its click.
+  z-index: 1;
+  pointer-events: none;
   top: 1px;
   right: 0;
   min-width: 15px;

@@ -185,6 +185,11 @@ export { default as NbButton } from './components/Button.vue'
 export type { IButtonProps, TButtonSize } from './components/Button.d'
 export { EButtonType } from './components/Button.d'
 export type { TButtonVariant } from './components/Button.d'
+export { default as NbCloseButton } from './components/CloseButton.vue'
+export type {
+  ICloseButtonProps,
+  TCloseButtonSize,
+} from './components/CloseButton.d'
 export { default as NbDatePicker } from './components/DatePicker.vue'
 export type { IDatePickerProps } from './components/DatePicker.d'
 export { default as NbNubiscoMark } from './components/NubiscoMark.vue'

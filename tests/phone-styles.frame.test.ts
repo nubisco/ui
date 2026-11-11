@@ -105,11 +105,13 @@ describe('frame phone styles stay behind the gates', () => {
   it('NbShell: the touch sizes and the dismiss inset are collapsed only', () => {
     const desktop = outsideMedia(compiled('Shell.vue'))
     expect(
-      rule(
-        desktop,
-        '.nb-shell--collapsed .nb-shell__nav-toggle,\n.nb-shell--collapsed .nb-shell__inspector-dismiss',
-      ),
+      rule(desktop, '.nb-shell--collapsed .nb-shell__nav-toggle'),
     ).toContain('width: 44px')
+    // The inspector's dismiss is NbCloseButton at lg, 48px at every width,
+    // so it needs no touch size of its own.
+    expect(desktop).not.toMatch(
+      /\.nb-shell--collapsed \.nb-shell__inspector-dismiss\s*\{/,
+    )
     expect(
       rule(desktop, '.nb-shell--collapsed .nb-shell__contextbar-toggle'),
     ).toContain('min-block-size: 44px')

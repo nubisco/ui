@@ -27,15 +27,12 @@
     <div v-if="hasActionSlot" class="nb-banner__actions">
       <slot name="action" />
     </div>
-    <button
+    <NbCloseButton
       v-if="canDismiss"
-      type="button"
       class="nb-banner__close"
-      :aria-label="props.closeLabel"
+      :label="props.closeLabel"
       @click="dismiss"
-    >
-      <NbIcon name="x" size="sm" />
-    </button>
+    />
   </div>
 </template>
 
@@ -47,6 +44,7 @@ import * as iconXCircle from '@nubisco/ui/icons/x-circle'
 import * as iconNote from '@nubisco/ui/icons/note'
 import { computed, ref, useSlots } from 'vue'
 import NbIcon from './Icon.vue'
+import NbCloseButton from './CloseButton.vue'
 import { EBannerStatus, EBannerVariant, IBannerProps } from './Banner.d'
 
 const props = withDefaults(
@@ -57,7 +55,7 @@ const props = withDefaults(
     dismissible: false,
     hideIcon: false,
     flush: false,
-    closeLabel: 'Close',
+    closeLabel: undefined,
   },
 )
 
@@ -99,6 +97,7 @@ const iconMap = {
 
 <style scoped lang="scss">
 @use '../styles/logic/radius' as radius;
+@use '../styles/logic/focus' as focus;
 
 .nb-banner {
   display: flex;
@@ -223,37 +222,30 @@ const iconMap = {
     align-self: center;
   }
 
-  // Not an NbButton: ghost's hover fills with the PRIMARY colour, which lands a
-  // purple rectangle inside a red banner. Same treatment NbToast gives its own
-  // close button, tinted from the banner rather than from the theme.
-  &__close {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  /*
+   * NbCloseButton at sm, the inline close every toast and banner shares, in
+   * the banner's own ink. A ghost draws the page's text colour on the page's
+   * hover grey, and neither belongs inside a tinted status ground: the grey is
+   * a patch of the wrong surface in a red banner. So the glyph takes the
+   * banner's foreground, which each status already pairs with its ground at
+   * AA, and the hover is that same foreground mixed into the ground, which
+   * stays legible whatever the status. The focus ring's inner band is the
+   * banner's ground rather than the page's surface, for the same reason.
+   */
+  .nb-banner__close.nb-button--ghost {
     flex-shrink: 0;
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    border: none;
-    @include radius.standalone(control);
-    background: none;
-    color: currentColor;
-    cursor: pointer;
-    opacity: 0.7;
-    transition:
-      background-color var(--nb-motion-short) ease,
-      opacity var(--nb-motion-short) ease;
-    margin-block-start: calc((1.5em - 22px) / 2);
+    color: var(--nb-banner-fg);
+    // Centred on the first line, like the icon: (1.5em line box - 32px) / 2.
+    margin-block: calc((1.5em - 32px) / 2);
 
-    &:hover {
-      opacity: 1;
-      background: color-mix(in srgb, currentColor 12%, transparent);
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--nb-banner-fg) 12%, transparent);
     }
-
+    &:active:not(:disabled) {
+      background: color-mix(in srgb, var(--nb-banner-fg) 20%, transparent);
+    }
     &:focus-visible {
-      outline: 2px solid currentColor;
-      outline-offset: 1px;
-      opacity: 1;
+      @include focus.ring(var(--nb-banner-bg));
     }
   }
 }

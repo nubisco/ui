@@ -22,6 +22,7 @@ import NbBriefingDestination from './BriefingDestination.vue'
 import NbDatePicker from './DatePicker.vue'
 import NbCheckbox from './Checkbox.vue'
 import NbCheckboxGroup from './CheckboxGroup.vue'
+import NbCloseButton from './CloseButton.vue'
 import NbColorStrip from './ColorStrip.vue'
 import NbDataTable from './DataTable.vue'
 import NbDefinitionList from './DefinitionList.vue'
@@ -134,6 +135,7 @@ const components = {
   NbDatePicker,
   NbCheckbox,
   NbCheckboxGroup,
+  NbCloseButton,
   NbDefinitionList,
   NbDefinitionListItem,
   NbPageLayout,

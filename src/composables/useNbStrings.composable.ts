@@ -56,6 +56,12 @@ export interface INbStrings {
   selectionCount: (count: number) => string
   // NbModal
   modalClose: string
+  // NbCloseButton, and every close or dismiss control built on it
+  close: string
+  // NbShell, the inspector sheet's own dismiss
+  shellInspectorClose: string
+  // NbNotificationCenter
+  notificationCenterClose: string
   // NbTextInput `showCount`
   textInputCount: (length: number, max: number) => string
   // NbNumberInput
@@ -139,6 +145,9 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   dataTableError: 'Could not load the data',
   selectionCount: (count: number) => `${count} selected`,
   modalClose: 'Close',
+  close: 'Close',
+  shellInspectorClose: 'Close inspector',
+  notificationCenterClose: 'Close notifications',
   textInputCount: (length: number, max: number) => `${length}/${max}`,
   numberInputDecrease: 'Decrease',
   numberInputIncrease: 'Increase',

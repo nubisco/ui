@@ -24,29 +24,15 @@
       </span>
       <p v-if="title" class="nb-toast__title">{{ title }}</p>
       <p class="nb-toast__message">{{ message }}</p>
-      <button
-        v-if="cta"
-        class="nb-toast__cta"
-        type="button"
-        @click="
-          () => {
-            cta && cta.action()
-            emit('action')
-            emit('close')
-          }
-        "
-      >
+      <NbButton v-if="cta" class="nb-toast__cta" variant="link" @click="onCta">
         {{ cta.label }}
-      </button>
+      </NbButton>
     </div>
-    <button
+    <NbCloseButton
       class="nb-toast__close"
-      type="button"
-      :aria-label="closeLabel"
+      :label="closeLabel ?? nbStrings.close"
       @click="emit('close')"
-    >
-      <NbIcon name="x" size="sm" />
-    </button>
+    />
     <div
       v-if="duration"
       :key="cycle"
@@ -67,6 +53,9 @@ import * as iconWarning from '@nubisco/ui/icons/warning'
 import * as iconInfo from '@nubisco/ui/icons/info'
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import NbIcon from './Icon.vue'
+import NbButton from './Button.vue'
+import NbCloseButton from './CloseButton.vue'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 
 export type TToastVariant = 'success' | 'error' | 'warning' | 'info'
 
@@ -104,7 +93,10 @@ const props = withDefaults(
      * empty string to suppress it.
      */
     statusLabel?: string
-    /** Accessible name of the close button. Translate it per application. */
+    /**
+     * Accessible name of the close button. Falls back to the string
+     * catalogue's `close`.
+     */
     closeLabel?: string
     /**
      * `true` when a host owns the clock. The toast then runs no timer of its
@@ -125,7 +117,7 @@ const props = withDefaults(
     role: 'alert',
     ariaLive: undefined,
     statusLabel: undefined,
-    closeLabel: 'Close',
+    closeLabel: undefined,
     managed: false,
     paused: false,
     cycle: 0,
@@ -146,19 +138,27 @@ const iconMap: Record<TToastVariant, TIconSource> = {
   info: iconInfo,
 }
 
-/** English defaults. Every one of them is overridable per toast. */
-const statusWords: Record<TToastVariant, string> = {
-  success: 'Success',
-  error: 'Error',
-  warning: 'Warning',
-  info: 'Information',
-}
+const nbStrings = useNbStrings()
+
+/** From the string catalogue. Every one of them is overridable per toast. */
+const statusWords = computed<Record<TToastVariant, string>>(() => ({
+  success: nbStrings.value.toastSuccess,
+  error: nbStrings.value.toastError,
+  warning: nbStrings.value.toastWarning,
+  info: nbStrings.value.toastInfo,
+}))
 
 const resolvedStatusLabel = computed(() =>
   props.statusLabel === undefined
-    ? statusWords[props.variant]
+    ? statusWords.value[props.variant]
     : props.statusLabel,
 )
+
+function onCta() {
+  props.cta?.action()
+  emit('action')
+  emit('close')
+}
 
 const resolvedAriaLive = computed(
   () => props.ariaLive ?? (props.variant === 'error' ? 'assertive' : 'polite'),
@@ -330,55 +330,23 @@ watch(
   overflow-wrap: anywhere;
 }
 
+// A link-variant NbButton: it takes the message's font and adds only the
+// weight. A link's colour is AA on every layer, which the hand-made primary
+// text it replaces never measured.
 .nb-toast__cta {
+  align-self: flex-start;
   margin-top: var(--nb-spacing-4);
-  padding: 0;
-  border: none;
-  background: none;
-  font-family: inherit;
   font-size: var(--nb-type-body-sm-size);
   font-weight: var(--nb-font-weight-semibold);
-  color: var(--nb-c-primary);
-  cursor: pointer;
-  text-align: left;
-  line-height: var(--nb-line-height-none);
-
-  &:hover {
-    text-decoration: underline;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--nb-c-focus-ring);
-    outline-offset: 2px;
-  }
 }
 
+// NbCloseButton at sm, 32px, the inline close every toast, banner and panel
+// shares. Pulled up and out by the toast's own padding so the 32px box does
+// not make a one-line toast taller than its text.
 .nb-toast__close {
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--nb-spacing-24);
-  height: var(--nb-spacing-24);
-  border: none;
-  background: transparent;
-  @include radius.standalone(control);
-  color: var(--nb-c-text-subtle);
-  cursor: pointer;
-  transition:
-    background var(--nb-motion-medium),
-    color var(--nb-motion-medium);
-  margin-top: -1px;
-
-  &:hover {
-    background: var(--nb-c-bg-soft);
-    color: var(--nb-c-text);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--nb-c-focus-ring);
-    outline-offset: 1px;
-  }
+  margin-block: calc(var(--nb-spacing-12) * -1 + var(--nb-spacing-4)) 0;
+  margin-inline-end: calc(var(--nb-spacing-8) * -1);
 }
 
 /*

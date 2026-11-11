@@ -284,18 +284,15 @@
                  covered every control the product might have used to close it.
                  First child, so it is also the first thing Tab reaches inside
                  the sheet. -->
-            <button
+            <NbCloseButton
               v-if="inspectorOverlay"
               ref="inspectorDismissRef"
-              type="button"
               class="nb-shell__inspector-dismiss"
-              :aria-label="inspectorCloseLabel"
+              size="lg"
+              :label="inspectorCloseLabel ?? nbStrings.shellInspectorClose"
+              tooltip-position="left"
               @click="setInspectorVisible(false)"
-            >
-              <span class="nb-shell__inspector-dismiss-glyph" aria-hidden="true"
-                >&times;</span
-              >
-            </button>
+            />
             <div
               v-if="resizable && inspectorOpen && !collapsed"
               class="nb-shell__inspector-resize"
@@ -348,10 +345,13 @@ import {
 } from '@/composables/useShellSlot.composable'
 import { NB_SHELL_LAYOUT_KEY } from '@/composables/useShellLayout.composable'
 import SurfaceLayerScope from './SurfaceLayerScope.vue'
+import NbCloseButton from './CloseButton.vue'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { motion } from '@/tokens/motion'
 import { prefersReducedMotion } from '@/composables/useReducedMotion.composable'
 
 const slots = useSlots()
+const nbStrings = useNbStrings()
 
 /** Check if a named slot has renderable content */
 function hasSlotContent(name: string): boolean {
@@ -442,7 +442,7 @@ const props = withDefaults(defineProps<IShellProps>(), {
   frame: 'attached',
   collapseAt: 'md',
   navToggleLabel: 'Navigation',
-  inspectorCloseLabel: 'Close inspector',
+  inspectorCloseLabel: undefined,
   skipToContent: true,
   skipToContentLabel: 'Skip to content',
   sidebarLabel: 'Primary',
@@ -851,7 +851,7 @@ watch(collapsed, (isCollapsed) => {
 // Focus follows the sheet the same way it follows the drawer: into the dismiss
 // control when the sheet opens (the body behind it is inert, so leaving focus
 // there would strand it), back to whatever opened it when it closes.
-const inspectorDismissRef = ref<HTMLElement | null>(null)
+const inspectorDismissRef = ref<InstanceType<typeof NbCloseButton> | null>(null)
 const inspectorReturnFocus = ref<HTMLElement | null>(null)
 
 watch(inspectorOverlay, async (isOverlay) => {
@@ -2108,12 +2108,13 @@ defineExpose({
 // same focus ring as the drawer toggle, because they are the two controls the
 // frame itself owns at small widths.
 .nb-shell__inspector-dismiss {
-  // In the flow of the sheet's column rather than absolute, so the sheet can
+  // NbCloseButton at lg, 48px, the close every sheet and dialog shares. In
+  // the flow of the sheet's column rather than absolute, so the sheet can
   // scroll and the button stays where a thumb expects it: sticky to the top,
   // at the end of its row. The negative bottom margin pulls the content up
   // under it, so the first thing in the sheet still starts at the top and the
   // published dismiss inset still describes exactly what the button covers.
-  --nb-shell-inspector-dismiss-size: calc(var(--nb-base-unit) * 5); // 40px
+  --nb-shell-inspector-dismiss-size: calc(var(--nb-base-unit) * 6); // 48px
   position: sticky;
   top: calc(var(--nb-base-unit) * 1);
   align-self: flex-end;
@@ -2121,31 +2122,6 @@ defineExpose({
   margin: calc(var(--nb-base-unit) * 1) calc(var(--nb-base-unit) * 1)
     calc(-1 * (var(--nb-shell-inspector-dismiss-size) + var(--nb-base-unit))) 0;
   z-index: 6;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--nb-shell-inspector-dismiss-size);
-  height: var(--nb-shell-inspector-dismiss-size);
-  padding: 0;
-  border: 0;
-  border-radius: 2px;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-
-  &:hover {
-    background: var(--nb-c-surface-raised);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--nb-c-primary);
-    outline-offset: -2px;
-  }
-}
-
-.nb-shell__inspector-dismiss-glyph {
-  font-size: var(--nb-type-heading-02-size);
-  line-height: 1;
 }
 
 // ── Navigation drawer toggle ──────────────────────────────────────────────────
@@ -2284,9 +2260,8 @@ defineExpose({
 // small-tablet range, so they take the 44px a finger needs. The desktop layout
 // never renders them.
 .nb-shell--collapsed {
-  .nb-shell__nav-toggle,
-  .nb-shell__inspector-dismiss {
-    --nb-shell-inspector-dismiss-size: 44px;
+  // The inspector's dismiss is already 48px, NbCloseButton's lg.
+  .nb-shell__nav-toggle {
     width: 44px;
     height: 44px;
   }
@@ -2308,7 +2283,7 @@ defineExpose({
   // Set only on the overlay, so anywhere else it is unset and a product's
   // `var(--nb-shell-inspector-dismiss-inset, 0px)` reads as nothing.
   .nb-shell__inspector--overlay {
-    --nb-shell-inspector-dismiss-inset: calc(var(--nb-base-unit) * 1 + 44px);
+    --nb-shell-inspector-dismiss-inset: calc(var(--nb-base-unit) * 7);
   }
 }
 

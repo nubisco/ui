@@ -29,6 +29,7 @@ import Card from './components/Card.vue'
 import CardGrid from './components/CardGrid.vue'
 import Checkbox from './components/Checkbox.vue'
 import CheckboxGroup from './components/CheckboxGroup.vue'
+import CloseButton from './components/CloseButton.vue'
 import ColorStrip from './components/ColorStrip.vue'
 import CommandPalette from './components/CommandPalette.vue'
 import Confirm from './components/Confirm.vue'
@@ -148,6 +149,7 @@ declare module 'vue' {
     NbCardGrid: typeof CardGrid
     NbCheckbox: typeof Checkbox
     NbCheckboxGroup: typeof CheckboxGroup
+    NbCloseButton: typeof CloseButton
     NbColorStrip: typeof ColorStrip
     NbCommandPalette: typeof CommandPalette
     NbConfirm: typeof Confirm
