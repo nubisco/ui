@@ -161,3 +161,30 @@ describe('NbContainedListItem', () => {
     ).toBeUndefined()
   })
 })
+
+describe('NbContainedListItem lineClamp', () => {
+  it('keeps one line by default', () => {
+    const w = mount(ContainedListItem, {
+      props: {
+        title: 'Install',
+        line: 'Add the package and import the styles',
+      },
+    })
+    const line = w.find('.nb-contained-list-item__line')
+    expect(line.classes()).not.toContain('nb-contained-list-item__line--wraps')
+    expect(line.attributes('style')).toBeUndefined()
+  })
+
+  it('wraps up to lineClamp lines and keeps inline markup', () => {
+    const w = mount(ContainedListItem, {
+      props: { title: 'Install', lineClamp: 3 },
+      slots: { line: 'Add the <mark>package</mark> and import the styles' },
+    })
+    const line = w.find('.nb-contained-list-item__line')
+    expect(line.classes()).toContain('nb-contained-list-item__line--wraps')
+    expect(line.attributes('style')).toContain(
+      '--nb-contained-list-item-line-clamp: 3',
+    )
+    expect(line.find('mark').text()).toBe('package')
+  })
+})

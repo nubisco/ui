@@ -48,6 +48,18 @@ doubled heading the hierarchy rules are there to stop.
 </NbContainedList>
 ```
 
+## A line that wraps
+
+`line-clamp` lets the line under the title wrap onto more lines before it ends in an ellipsis. Keep the default, one line, for a list people scan. Raise it for text people read, such as the matching passage of a search result, where one line cuts the match off. The `#line` slot keeps its inline markup, so a highlighted match stays highlighted, and the row keeps its padding and its whole-row target as it grows.
+
+```vue
+<NbContainedListItem :title="hit.title" :href="hit.url" :line-clamp="3">
+  <template #line>
+    <span v-html="hit.highlightedExcerpt" />
+  </template>
+</NbContainedListItem>
+```
+
 ## NbContainedList props
 
 | Prop           | Type                   | Default     | Description                                                                   |
@@ -73,6 +85,7 @@ doubled heading the hierarchy rules are there to stop.
 | `title`     | `string`           | `undefined` | The row's name. The default slot replaces it.                                         |
 | `itemKey`   | `string`           | `undefined` | A short identifier before the title, mono and subtle. Not `key`: Vue reserves it.     |
 | `line`      | `string`           | `undefined` | One line of context under the title.                                                  |
+| `lineClamp` | `number`           | `1`         | How many lines `line` may wrap onto before it ends in an ellipsis.                    |
 | `to`        | `string \| object` | `undefined` | Target route. A `<RouterLink>` with vue-router, a plain link for a string without it. |
 | `href`      | `string`           | `undefined` | Renders the row as a link.                                                            |
 | `target`    | `string`           | `undefined` | Link target. `_blank` also sets `rel="noopener"`.                                     |

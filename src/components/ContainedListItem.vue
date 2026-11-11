@@ -28,7 +28,16 @@
             <slot>{{ title }}</slot>
           </span>
         </span>
-        <span v-if="line || $slots.line" class="nb-contained-list-item__line">
+        <span
+          v-if="line || $slots.line"
+          class="nb-contained-list-item__line"
+          :class="{ 'nb-contained-list-item__line--wraps': lineClamp > 1 }"
+          :style="
+            lineClamp > 1
+              ? { '--nb-contained-list-item-line-clamp': lineClamp }
+              : undefined
+          "
+        >
           <slot name="line">{{ line }}</slot>
         </span>
       </span>
@@ -48,6 +57,7 @@ const props = withDefaults(defineProps<IContainedListItemProps>(), {
   title: undefined,
   itemKey: undefined,
   line: undefined,
+  lineClamp: 1,
   to: undefined,
   href: undefined,
   target: undefined,
@@ -179,6 +189,22 @@ const ariaCurrent = computed(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/*
+ * A line that wraps, up to `lineClamp` lines, then an ellipsis: a search
+ * result's matching passage, where one line cuts the match off. Inline
+ * markup in the slot (a <mark> around the matched words) flows with the
+ * text. The row has a minimum height, not a fixed one, so it grows with the
+ * line and keeps its padding and its whole-row target.
+ */
+.nb-contained-list-item__line--wraps {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--nb-contained-list-item-line-clamp);
+  line-clamp: var(--nb-contained-list-item-line-clamp);
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 // A row that acts is a whole-row target. On a phone touch screen it grows to

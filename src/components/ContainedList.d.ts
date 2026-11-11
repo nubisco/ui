@@ -42,6 +42,13 @@ export interface IContainedListItemProps {
   itemKey?: string
   /** One line under the title, `body-sm`, muted. */
   line?: string
+  /**
+   * How many lines the line under the title may wrap onto before it ends in
+   * an ellipsis. `1` (the default) keeps it to one line. Raise it for text
+   * that is read rather than scanned, such as the matching passage of a
+   * search result. The `#line` slot keeps its inline markup either way.
+   */
+  lineClamp?: number
   /** Target route, as on `NbButton`: a `<RouterLink>` when a router exists. */
   to?: string | Record<string, unknown>
   /** Renders the row as a link. */
