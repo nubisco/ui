@@ -47,6 +47,7 @@ export const COMPONENT_MANIFEST = {
   NbGanttChart: 'Charts/GanttChart',
   NbFlag: 'Flag',
   NbFloatingToolbar: 'FloatingToolbar',
+  NbToolbar: 'Toolbar',
   NbForm: 'Form',
   NbGrid: 'Grid',
   NbIcon: 'Icon',

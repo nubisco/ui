@@ -38,6 +38,7 @@ import NbFileUploader from './FileUploader.vue'
 import NbGanttChart from './Charts/GanttChart.vue'
 import NbFlag from './Flag.vue'
 import NbFloatingToolbar from './FloatingToolbar.vue'
+import NbToolbar from './Toolbar.vue'
 import NbForm from './Form.vue'
 import NbGrid from './Grid.vue'
 import NbIcon from './Icon.vue'
@@ -152,6 +153,7 @@ const components = {
   NbGanttChart,
   NbFlag,
   NbFloatingToolbar,
+  NbToolbar,
   NbForm,
   NbGrid,
   NbIcon,
