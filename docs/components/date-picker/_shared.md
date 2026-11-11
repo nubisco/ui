@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 const simpleDate = ref<string | null>(null)
 const singleDate = ref<string | null>(null)
@@ -20,6 +20,10 @@ const lgDate = ref<string | null>(null)
 const fluidDate = ref<string | null>(null)
 const fluidErrDate = ref<string | null>(null)
 const sundayDate = ref<string | null>(null)
+const groupDate = ref<string | null>(null)
+const groupDateError = computed(() =>
+  groupDate.value ? '' : 'Choose a due date.',
+)
 
 function isWeekend(iso: string): boolean {
   const day = new Date(iso + 'T00:00:00').getDay()

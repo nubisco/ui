@@ -51,8 +51,21 @@ Give `label`, `helper`, `error` and `warning` to the group, not to the fields in
   </NbInputGroup>
 </preview>
 
+## A date and its button
+
+A date picker joins a group like any other field: the group's height, state and message, and the calendar button inside it sized to match.
+
+<preview dir="col">
+  <NbInputGroup label="Due date" helper="The reminder goes out the day before." style="max-width: 360px">
+    <template #default="{ size }">
+      <NbDatePicker v-model="due" />
+      <NbButton variant="primary" :size="size">Set</NbButton>
+    </template>
+  </NbInputGroup>
+</preview>
+
 ## Works with
 
-`NbTextInput`, `NbNumberInput`, `NbSelect` and `NbSearch` take the group's size, state and message. `NbButton` in any variant. Put one field in a group: two fields side by side are two controls, and belong in an `NbGrid`.
+`NbTextInput`, `NbNumberInput`, `NbSelect`, `NbSearch` and `NbDatePicker` take the group's size, state and message, and render no label or message of their own. `NbButton` in any variant. Put one field in a group: two fields side by side are two controls, and belong in an `NbGrid`.
 
 <!--@include: ./_shared.md-->

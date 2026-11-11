@@ -2,12 +2,14 @@
   <div ref="rootRef" :class="rootClasses">
     <!-- DEFAULT variant -->
     <template v-if="variant === 'default'">
-      <slot v-if="$slots.label" name="label" />
+      <!-- Inside an NbInputGroup the group owns the label and the message,
+           so the field is bare and its box lines up with the buttons. -->
+      <slot v-if="$slots.label && !grouped" name="label" />
       <NbLabel
-        v-else-if="label && !perFieldLabels"
+        v-else-if="label && !perFieldLabels && !grouped"
         :for="inputId"
         :required="required"
-        :disabled="disabled"
+        :disabled="isDisabled"
       >
         {{ label }}
       </NbLabel>
@@ -20,10 +22,10 @@
         <!-- Start / single date input -->
         <div class="nb-date-picker__col">
           <NbLabel
-            v-if="perFieldLabels && label"
+            v-if="perFieldLabels && label && !grouped"
             :for="inputId"
             :required="required"
-            :disabled="disabled"
+            :disabled="isDisabled"
           >
             {{ label }}
           </NbLabel>
@@ -39,11 +41,11 @@
               class="nb-date-picker__field"
               :value="displayValue"
               :placeholder="placeholder || dateFormatHint"
-              :disabled="disabled"
+              :disabled="isDisabled"
               :readonly="readonly"
               :required="required"
               :name="name"
-              :aria-invalid="error ? true : undefined"
+              :aria-invalid="startInvalid"
               :aria-describedby="startDescribedBy"
               @input="onTextInput($event)"
               @focus="onFocus"
@@ -56,7 +58,7 @@
               icon="calendar"
               :size="fieldButtonSize"
               class="nb-date-picker__icon"
-              :disabled="disabled || readonly"
+              :disabled="isDisabled || readonly"
               tabindex="-1"
               :label="
                 modelValue
@@ -71,10 +73,10 @@
         <!-- End date input (range only) -->
         <div v-if="type === 'range'" class="nb-date-picker__col">
           <NbLabel
-            v-if="perFieldLabels"
+            v-if="perFieldLabels && !grouped"
             :for="endInputId"
             :required="required"
-            :disabled="disabled"
+            :disabled="isDisabled"
           >
             {{ endLabel }}
           </NbLabel>
@@ -86,10 +88,10 @@
               class="nb-date-picker__field"
               :value="endDisplayValue"
               :placeholder="endPlaceholder || dateFormatHint"
-              :disabled="disabled"
+              :disabled="isDisabled"
               :readonly="readonly"
               :required="required"
-              :aria-invalid="endError ? true : undefined"
+              :aria-invalid="endInvalid"
               :aria-describedby="endDescribedBy"
               @input="onEndTextInput($event)"
               @focus="onFocus"
@@ -101,7 +103,7 @@
               icon="calendar"
               :size="fieldButtonSize"
               class="nb-date-picker__icon"
-              :disabled="disabled || readonly"
+              :disabled="isDisabled || readonly"
               tabindex="-1"
               :label="
                 endValue
@@ -117,21 +119,21 @@
       </NbGrid>
 
       <NbMessage
-        v-if="startMessage"
+        v-if="startMessage && !grouped"
         :id="startMsgId"
         :variant="startMessage.variant"
         class="nb-date-picker__message"
         >{{ startMessage.text }}</NbMessage
       >
       <NbMessage
-        v-if="endMessage"
+        v-if="endMessage && !grouped"
         :id="endMsgId"
         :variant="endMessage.variant"
         class="nb-date-picker__message"
         >{{ endMessage.text }}</NbMessage
       >
       <NbMessage
-        v-if="!startMessage && !endMessage && helper"
+        v-if="!startMessage && !endMessage && helper && !grouped"
         :id="helperId"
         variant="helper"
         class="nb-date-picker__message"
@@ -182,11 +184,12 @@
               class="nb-date-picker__field"
               :value="displayValue"
               :placeholder="placeholder || dateFormatHint"
-              :disabled="disabled"
+              :disabled="isDisabled"
               :readonly="readonly"
               :required="required"
               :name="name"
-              :aria-invalid="error ? true : undefined"
+              :aria-invalid="startInvalid"
+              :aria-describedby="startDescribedBy"
               @input="onTextInput($event)"
               @focus="onFocus"
               @blur="onBlur"
@@ -198,7 +201,7 @@
               icon="calendar"
               :size="fieldButtonSize"
               class="nb-date-picker__icon"
-              :disabled="disabled || readonly"
+              :disabled="isDisabled || readonly"
               tabindex="-1"
               :label="
                 modelValue
@@ -245,10 +248,11 @@
               class="nb-date-picker__field"
               :value="endDisplayValue"
               :placeholder="endPlaceholder || dateFormatHint"
-              :disabled="disabled"
+              :disabled="isDisabled"
               :readonly="readonly"
               :required="required"
-              :aria-invalid="endError ? true : undefined"
+              :aria-invalid="endInvalid"
+              :aria-describedby="endDescribedBy"
               @input="onEndTextInput($event)"
               @focus="onFocus"
               @blur="onBlur"
@@ -259,7 +263,7 @@
               icon="calendar"
               :size="fieldButtonSize"
               class="nb-date-picker__icon"
-              :disabled="disabled || readonly"
+              :disabled="isDisabled || readonly"
               tabindex="-1"
               :label="
                 endValue
@@ -408,7 +412,15 @@
 
 <script setup lang="ts">
 import { useNbStrings } from '@/composables/useNbStrings.composable'
-import { ref, computed, watch, nextTick, onBeforeUnmount, useId } from 'vue'
+import {
+  ref,
+  computed,
+  watch,
+  nextTick,
+  onBeforeUnmount,
+  useAttrs,
+  useId,
+} from 'vue'
 import type { IDatePickerProps } from './DatePicker.d'
 import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
@@ -418,6 +430,8 @@ import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import { useMenuSurface } from '@/composables/useMenuSurface.composable'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 import { useVisualViewportVar } from '@/composables/useVisualViewportVar.composable'
+import { joinDescribedBy } from '@/composables/useFieldMessage.composable'
+import { useInputGroupField } from './InputGroup.context'
 
 const nbStrings = useNbStrings()
 
@@ -463,7 +477,14 @@ const emit = defineEmits<{
 }>()
 
 const autoId = `nb-date-picker-${useId()}`
-const inputId = computed(() => props.id ?? autoId)
+// Inside an NbInputGroup the group's size, disabled state and message win,
+// and the first field takes the id the group's label points at. The label
+// and message are the group's, so the picker renders neither of its own.
+const group = useInputGroupField(props, autoId)
+const grouped = group.grouped
+const inputId = group.id
+const resolvedSize = group.size
+const isDisabled = group.disabled
 const endInputId = computed(() => `${inputId.value}-end`)
 const helperId = computed(() => `${inputId.value}-helper`)
 const startMsgId = computed(() => `${inputId.value}-message`)
@@ -575,17 +596,48 @@ const startFluidMessage = computed<IFieldMessage | null>(() => {
   return null
 })
 
-const startDescribedBy = computed(() => {
-  if (props.variant !== 'default') return undefined
-  if (startMessage.value) return startMsgId.value
+// The fluid variant shows its message as an icon in the header, which
+// describes nothing, and a grouped picker shows no message of its own.
+function ownDescribedBy(message: IFieldMessage | null, id: string) {
+  if (props.variant !== 'default' || grouped) return undefined
+  if (message) return id
   return props.helper ? helperId.value : undefined
-})
+}
 
-const endDescribedBy = computed(() => {
-  if (props.variant !== 'default') return undefined
-  if (endMessage.value) return endMsgId.value
-  return props.helper ? helperId.value : undefined
-})
+// A group's message describes both fields of a range: it is one control.
+// The caller's own `aria-describedby` reaches the start field through
+// $attrs, and the explicit binding would otherwise replace it.
+const attrs = useAttrs()
+const startDescribedBy = computed(() =>
+  joinDescribedBy(
+    attrs['aria-describedby'] as string | undefined,
+    ownDescribedBy(startMessage.value, startMsgId.value),
+    group.describedBy.value,
+  ),
+)
+
+const endDescribedBy = computed(() =>
+  joinDescribedBy(
+    ownDescribedBy(endMessage.value, endMsgId.value),
+    group.describedBy.value,
+  ),
+)
+
+// The group's error or warning marks every field in it, as it does for
+// NbTextInput and NbSelect. An error, the field's or the group's, wins over
+// a warning.
+const groupError = computed(() => group.status.value === 'error')
+const groupWarning = computed(() => group.status.value === 'warning')
+const startError = computed(() => !!props.error || groupError.value)
+const startWarning = computed(
+  () => !startError.value && (!!props.warning || groupWarning.value),
+)
+const endHasError = computed(() => !!props.endError || groupError.value)
+const endHasWarning = computed(
+  () => !endHasError.value && (!!props.endWarning || groupWarning.value),
+)
+const startInvalid = computed(() => (startError.value ? true : undefined))
+const endInvalid = computed(() => (endHasError.value ? true : undefined))
 
 // Range with an explicit endLabel renders one label per field
 const perFieldLabels = computed(
@@ -764,7 +816,7 @@ function updateCalendarPosition() {
 }
 
 function openCalendar() {
-  if (props.disabled || props.readonly || props.type === 'simple') return
+  if (isDisabled.value || props.readonly || props.type === 'simple') return
   if (calendarOpen.value) return
 
   calendarOpen.value = true
@@ -1115,41 +1167,40 @@ const calRows = computed(() => {
 // scale. A fluid field is taller than its size (the label sits inside it),
 // so its button stays at sm beside the value row.
 const fieldButtonSize = computed(() =>
-  props.variant === 'fluid' ? 'sm' : (props.size ?? 'md'),
+  props.variant === 'fluid' ? 'sm' : resolvedSize.value,
 )
 
 const rootClasses = computed(() => [
   'nb-date-picker',
   `nb-date-picker--${props.variant}`,
-  `nb-date-picker--${props.size}`,
+  `nb-date-picker--${resolvedSize.value}`,
   `nb-date-picker--${props.type}`,
   {
     'nb-date-picker--focused': focused.value,
     'nb-date-picker--open': calendarOpen.value,
-    'nb-date-picker--error': !!props.error || !!props.endError,
+    'nb-date-picker--error': startError.value || endHasError.value,
     'nb-date-picker--warning':
-      !props.error &&
-      !props.endError &&
-      (!!props.warning || !!props.endWarning),
-    'nb-date-picker--disabled': props.disabled,
+      !startError.value &&
+      !endHasError.value &&
+      (startWarning.value || endHasWarning.value),
+    'nb-date-picker--disabled': isDisabled.value,
     'nb-date-picker--readonly': props.readonly,
   },
 ])
 
 const startWrapperClasses = computed(() => ({
   'nb-date-picker__input-wrapper--focused': focusedField.value === 'start',
-  'nb-date-picker__input-wrapper--error': !!props.error,
-  'nb-date-picker__input-wrapper--warning': !props.error && !!props.warning,
-  'nb-date-picker__input-wrapper--disabled': props.disabled,
+  'nb-date-picker__input-wrapper--error': startError.value,
+  'nb-date-picker__input-wrapper--warning': startWarning.value,
+  'nb-date-picker__input-wrapper--disabled': isDisabled.value,
   'nb-date-picker__input-wrapper--readonly': props.readonly,
 }))
 
 const endWrapperClasses = computed(() => ({
   'nb-date-picker__input-wrapper--focused': focusedField.value === 'end',
-  'nb-date-picker__input-wrapper--error': !!props.endError,
-  'nb-date-picker__input-wrapper--warning':
-    !props.endError && !!props.endWarning,
-  'nb-date-picker__input-wrapper--disabled': props.disabled,
+  'nb-date-picker__input-wrapper--error': endHasError.value,
+  'nb-date-picker__input-wrapper--warning': endHasWarning.value,
+  'nb-date-picker__input-wrapper--disabled': isDisabled.value,
   'nb-date-picker__input-wrapper--readonly': props.readonly,
 }))
 

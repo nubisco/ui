@@ -8,6 +8,7 @@ import TextInput from '../src/components/TextInput.vue'
 import Select from '../src/components/Select.vue'
 import NumberInput from '../src/components/NumberInput.vue'
 import Button from '../src/components/Button.vue'
+import DatePicker from '../src/components/DatePicker.vue'
 
 const options = [
   { value: 'a', label: 'A' },
@@ -120,6 +121,119 @@ describe('NbInputGroup', () => {
     const w = mount(TextInput, { props: { modelValue: '', size: 'lg' } })
     expect(w.classes()).toContain('nb-text-input--lg')
     expect(w.find('input').attributes('aria-describedby')).toBeUndefined()
+  })
+})
+
+describe('NbInputGroup with a date picker', () => {
+  it('takes the group size over its own, the calendar button too', () => {
+    const w = group({ size: 'sm' }, () => [
+      h(DatePicker, { modelValue: null, size: 'lg' }),
+      h(Button, { variant: 'primary', size: 'sm' }, () => 'Apply'),
+    ])
+    expect(w.find('.nb-date-picker').classes()).toContain('nb-date-picker--sm')
+    expect(w.find('.nb-date-picker').classes()).not.toContain(
+      'nb-date-picker--lg',
+    )
+    expect(w.find('.nb-date-picker__icon').classes()).toContain('nb-button--sm')
+    w.unmount()
+  })
+
+  it('shows the group error state and points at the group message', () => {
+    const w = group({ id: 'due', error: 'Pick a later date.' }, () => [
+      h(DatePicker, { modelValue: null }),
+    ])
+    const input = w.find('.nb-date-picker__field')
+    expect(input.attributes('id')).toBe('due')
+    expect(input.attributes('aria-invalid')).toBe('true')
+    expect(input.attributes('aria-describedby')).toContain('due-error')
+    expect(w.find('.nb-date-picker__input-wrapper').classes()).toContain(
+      'nb-date-picker__input-wrapper--error',
+    )
+    expect(w.find('.nb-date-picker').classes()).toContain(
+      'nb-date-picker--error',
+    )
+    w.unmount()
+  })
+
+  it('shows the group warning state', () => {
+    const w = group({ warning: 'That is a weekend.' }, () => [
+      h(DatePicker, { modelValue: null }),
+    ])
+    expect(w.find('.nb-date-picker__input-wrapper').classes()).toContain(
+      'nb-date-picker__input-wrapper--warning',
+    )
+    w.unmount()
+  })
+
+  it('renders no label or message of its own', () => {
+    const w = group({ label: 'Due date', error: 'Required.' }, () => [
+      h(DatePicker, {
+        modelValue: null,
+        label: 'Ignored',
+        helper: 'Ignored',
+        error: 'Ignored',
+      }),
+    ])
+    expect(w.findAll('label')).toHaveLength(1)
+    expect(w.find('label').text()).toContain('Due date')
+    expect(w.findAll('.nb-date-picker__message')).toHaveLength(0)
+    expect(w.text()).not.toContain('Ignored')
+    w.unmount()
+  })
+
+  it('takes the group disabled state', () => {
+    const w = group({ disabled: true }, () => [
+      h(DatePicker, { modelValue: null }),
+    ])
+    expect(
+      w.find('.nb-date-picker__field').attributes('disabled'),
+    ).toBeDefined()
+    expect(w.find('.nb-date-picker').classes()).toContain(
+      'nb-date-picker--disabled',
+    )
+    w.unmount()
+  })
+
+  it('lines up with a button beside it: both are the group height', () => {
+    const w = group({ size: 'md' }, () => [
+      h(DatePicker, { modelValue: null }),
+      h(Button, { variant: 'primary' }, () => 'Apply'),
+    ])
+    // The picker's root is the only box in its cell: no label above it and
+    // no message below, so its top and bottom are its field's.
+    const root = w.find('.nb-date-picker').element
+    expect(root.firstElementChild?.classList).toContain(
+      'nb-date-picker__fields',
+    )
+    expect(root.children).toHaveLength(1)
+    // Its box is --field-h tall, the height the group holds a button to.
+    const picker = readFileSync(
+      resolve(__dirname, '../src/components/DatePicker.vue'),
+      'utf8',
+    )
+    expect(picker).toContain(
+      'height: calc(var(--field-h) - 1px - var(--nb-field-border-width, 0px))',
+    )
+    const groupCss = readFileSync(
+      resolve(__dirname, '../src/components/InputGroup.vue'),
+      'utf8',
+    )
+    expect(groupCss).toMatch(
+      /> :deep\(\.nb-button\) \{[^}]*height: var\(--field-h\);/,
+    )
+    w.unmount()
+  })
+
+  it('leaves a picker outside a group exactly as it was', () => {
+    const w = mount(DatePicker, {
+      props: { modelValue: null, size: 'lg', label: 'Due', helper: 'Hint' },
+    })
+    expect(w.find('.nb-date-picker').classes()).toContain('nb-date-picker--lg')
+    expect(w.find('label').text()).toContain('Due')
+    expect(w.find('.nb-date-picker__message').text()).toContain('Hint')
+    expect(
+      w.find('.nb-date-picker__field').attributes('aria-describedby'),
+    ).toMatch(/-helper$/)
   })
 })
 
