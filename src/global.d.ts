@@ -11,6 +11,7 @@ import BackToTop from './components/BackToTop.vue'
 import Badge from './components/Badge.vue'
 import Banner from './components/Banner.vue'
 import BarChart from './components/Charts/BarChart.vue'
+import BatchActions from './components/BatchActions.vue'
 import Blueprint from './components/Blueprint.vue'
 import BlueprintBackground from './components/BlueprintBackground.vue'
 import BlueprintCard from './components/BlueprintCard.vue'
@@ -30,12 +31,14 @@ import Card from './components/Card.vue'
 import CardGrid from './components/CardGrid.vue'
 import Checkbox from './components/Checkbox.vue'
 import CheckboxGroup from './components/CheckboxGroup.vue'
+import ChipGroup from './components/ChipGroup.vue'
 import CloseButton from './components/CloseButton.vue'
 import ColorStrip from './components/ColorStrip.vue'
 import CommandPalette from './components/CommandPalette.vue'
 import Confirm from './components/Confirm.vue'
 import ContainedList from './components/ContainedList.vue'
 import ContainedListItem from './components/ContainedListItem.vue'
+import ContentSwitcher from './components/ContentSwitcher.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataTable from './components/DataTable.vue'
 import DatePicker from './components/DatePicker.vue'
@@ -56,6 +59,7 @@ import ImagePicker from './components/ImagePicker.vue'
 import InfoHint from './components/InfoHint.vue'
 import InlineEdit from './components/InlineEdit.vue'
 import InlineLoading from './components/InlineLoading.vue'
+import InputGroup from './components/InputGroup.vue'
 import InterpolationChart from './components/Charts/InterpolationChart.vue'
 import JsonTree from './components/JsonTree.vue'
 import Label from './components/Label.vue'
@@ -73,6 +77,7 @@ import NotificationCenterItem from './components/NotificationCenterItem.vue'
 import NubiscoMark from './components/NubiscoMark.vue'
 import NubiscoPlatformMark from './components/NubiscoPlatformMark.vue'
 import NumberInput from './components/NumberInput.vue'
+import OverflowMenu from './components/OverflowMenu.vue'
 import PageHeader from './components/PageHeader.vue'
 import PageLayout from './components/PageLayout.vue'
 import Pagination from './components/Pagination.vue'
@@ -82,6 +87,7 @@ import PrimaryActionScope from './components/PrimaryActionScope.vue'
 import ProgressBar from './components/ProgressBar.vue'
 import Radio from './components/Radio.vue'
 import ReorderList from './components/ReorderList.vue'
+import Search from './components/Search.vue'
 import Select from './components/Select.vue'
 import Shell from './components/Shell.vue'
 import ShellPanel from './components/ShellPanel.vue'
@@ -112,6 +118,7 @@ import Tabs from './components/Tabs.vue'
 import TextInput from './components/TextInput.vue'
 import Toast from './components/Toast.vue'
 import Toaster from './components/Toaster.vue'
+import Toolbar from './components/Toolbar.vue'
 import Tree from './components/Tree.vue'
 import TreeNode from './components/TreeNode.vue'
 import UserMenu from './components/UserMenu.vue'
@@ -132,6 +139,7 @@ declare module 'vue' {
     NbBadge: typeof Badge
     NbBanner: typeof Banner
     NbBarChart: typeof BarChart
+    NbBatchActions: typeof BatchActions
     NbBlueprint: typeof Blueprint
     NbBlueprintBackground: typeof BlueprintBackground
     NbBlueprintCard: typeof BlueprintCard
@@ -151,12 +159,14 @@ declare module 'vue' {
     NbCardGrid: typeof CardGrid
     NbCheckbox: typeof Checkbox
     NbCheckboxGroup: typeof CheckboxGroup
+    NbChipGroup: typeof ChipGroup
     NbCloseButton: typeof CloseButton
     NbColorStrip: typeof ColorStrip
     NbCommandPalette: typeof CommandPalette
     NbConfirm: typeof Confirm
     NbContainedList: typeof ContainedList
     NbContainedListItem: typeof ContainedListItem
+    NbContentSwitcher: typeof ContentSwitcher
     NbCopyButton: typeof CopyButton
     NbDataTable: typeof DataTable
     NbDatePicker: typeof DatePicker
@@ -177,6 +187,7 @@ declare module 'vue' {
     NbInfoHint: typeof InfoHint
     NbInlineEdit: typeof InlineEdit
     NbInlineLoading: typeof InlineLoading
+    NbInputGroup: typeof InputGroup
     NbInterpolationChart: typeof InterpolationChart
     NbJsonTree: typeof JsonTree
     NbLabel: typeof Label
@@ -194,6 +205,7 @@ declare module 'vue' {
     NbNubiscoMark: typeof NubiscoMark
     NbNubiscoPlatformMark: typeof NubiscoPlatformMark
     NbNumberInput: typeof NumberInput
+    NbOverflowMenu: typeof OverflowMenu
     NbPageHeader: typeof PageHeader
     NbPageLayout: typeof PageLayout
     NbPagination: typeof Pagination
@@ -203,6 +215,7 @@ declare module 'vue' {
     NbProgressBar: typeof ProgressBar
     NbRadio: typeof Radio
     NbReorderList: typeof ReorderList
+    NbSearch: typeof Search
     NbSelect: typeof Select
     NbShell: typeof Shell
     NbShellPanel: typeof ShellPanel
@@ -233,6 +246,7 @@ declare module 'vue' {
     NbTextInput: typeof TextInput
     NbToast: typeof Toast
     NbToaster: typeof Toaster
+    NbToolbar: typeof Toolbar
     NbTree: typeof Tree
     NbTreeNode: typeof TreeNode
     NbUserMenu: typeof UserMenu
