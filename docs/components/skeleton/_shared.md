@@ -10,6 +10,7 @@ const availableProps = [
       { value: 'heading', label: 'heading' },
       { value: 'block', label: 'block' },
       { value: 'circle', label: 'circle' },
+      { value: 'button', label: 'button' },
     ],
   },
   {

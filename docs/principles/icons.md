@@ -30,7 +30,8 @@ already drifting. Pick one name per concept and use it every time: delete is
 
 **Meaning.** An icon is decorative unless it carries meaning no text next to it
 repeats; then it is named with `label`. An icon that does something is a button:
-`NbButton variant="ghost"` with `icon`, named with `v-nb-tooltip`.
+`NbButton variant="ghost"` with `icon`, named with `label` (which is also its
+tooltip).
 
 ## Pictograms
 

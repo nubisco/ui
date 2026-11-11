@@ -98,6 +98,39 @@ export interface INbStrings {
   blueprintRemoveCard: string
   blueprintInputs: (count: number) => string
   blueprintOutputs: (count: number) => string
+  /** The card header's collapse button, named with the card's title. */
+  blueprintExpandCard: (title: string) => string
+  blueprintCollapseCard: (title: string) => string
+  /** The remove button's spoken name. `blueprintRemoveCard` is its tooltip. */
+  blueprintRemoveCardNamed: (title: string) => string
+  // NbCopyButton
+  copyButtonCopy: string
+  copyButtonCopied: string
+  // NbBackToTop
+  backToTop: string
+  // NbImagePicker
+  imagePickerAdd: string
+  imagePickerDrop: string
+  imagePickerReplace: string
+  imagePickerRemove: string
+  // NbVideo
+  videoPlay: string
+  videoPause: string
+  // NbInfoHint
+  infoHintLabel: string
+  /** NbAccordionItem's hint, named after its section. */
+  accordionAbout: (title: string) => string
+  // NbBreadcrumbs switcher
+  breadcrumbsSwitch: (label: string) => string
+  breadcrumbsFind: string
+  breadcrumbsNoResults: string
+  // NbCommandPalette
+  commandPaletteLabel: string
+  commandPalettePlaceholder: string
+  commandPaletteSearching: string
+  commandPaletteNoMatches: string
+  commandPaletteHint: string
+  commandPaletteClose: string
   // Charts
   chartBar: string
   chartLine: string
@@ -188,6 +221,30 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
     pluralize(count, { one: '{count} input', other: '{count} inputs' }),
   blueprintOutputs: (count: number) =>
     pluralize(count, { one: '{count} output', other: '{count} outputs' }),
+  blueprintExpandCard: (title: string) => `Expand ${title}`,
+  blueprintCollapseCard: (title: string) => `Collapse ${title}`,
+  blueprintRemoveCardNamed: (title: string) => `Remove ${title}`,
+  copyButtonCopy: 'Copy',
+  copyButtonCopied: 'Copied',
+  backToTop: 'Back to top',
+  imagePickerAdd: 'Add image',
+  imagePickerDrop: 'Drop to upload',
+  imagePickerReplace: 'Replace image',
+  imagePickerRemove: 'Remove image',
+  videoPlay: 'Play video',
+  videoPause: 'Pause video',
+  infoHintLabel: 'More information',
+  accordionAbout: (title: string) =>
+    title ? `About ${title}` : 'About this section',
+  breadcrumbsSwitch: (label: string) => `Switch ${label}`,
+  breadcrumbsFind: 'Find',
+  breadcrumbsNoResults: 'No results',
+  commandPaletteLabel: 'Command palette',
+  commandPalettePlaceholder: 'Search commands...',
+  commandPaletteSearching: 'Searching...',
+  commandPaletteNoMatches: 'No matches',
+  commandPaletteHint: 'Type to search commands',
+  commandPaletteClose: 'Close command palette',
   chartBar: 'Bar chart',
   chartLine: 'Line chart',
   chartPie: 'Pie chart',

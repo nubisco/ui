@@ -31,6 +31,7 @@ export const COMPONENT_MANIFEST = {
   NbDatePicker: 'DatePicker',
   NbCheckbox: 'Checkbox',
   NbCheckboxGroup: 'CheckboxGroup',
+  NbChipGroup: 'ChipGroup',
   NbDefinitionList: 'DefinitionList',
   NbDefinitionListItem: 'DefinitionListItem',
   NbPageLayout: 'PageLayout',

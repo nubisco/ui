@@ -4,8 +4,8 @@
   <Transition name="nb-back-to-top">
     <div v-if="visible" class="nb-back-to-top">
       <NbButton
-        v-nb-tooltip="{ body: label, aria: 'none', position: 'left' }"
-        :aria-label="label"
+        :label="label ?? strings.backToTop"
+        tooltip-position="left"
         class="nb-back-to-top__button"
         variant="secondary"
         :icon="iconArrowUp"
@@ -20,12 +20,15 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import * as iconArrowUp from '@nubisco/ui/icons/arrow-up'
 import NbButton from './Button.vue'
 import type { IBackToTopProps } from './BackToTop.d'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { prefersReducedMotion } from '@/composables/useReducedMotion.composable'
 
 const props = withDefaults(defineProps<IBackToTopProps>(), {
   threshold: undefined,
-  label: 'Back to top',
+  label: undefined,
 })
+
+const strings = useNbStrings()
 
 const visible = ref(false)
 let frame = 0

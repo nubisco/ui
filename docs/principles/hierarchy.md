@@ -62,14 +62,14 @@ temporary, and they are not part of this count.
 
 ## Emphasis: one filled button per region
 
-| Rung      | Write                             | Use for                                                                                                     |
-| --------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Primary   | `variant="primary"`               | The one action the page or region exists for. Once per page header, once per region header.                 |
-| Tertiary  | `variant="tertiary"`              | Primary outlined. A standalone action of lower rank: a sub-task, an independent action beside a primary.    |
-| Secondary | `variant="secondary"`             | **Only beside a primary**, as its negative half: Cancel, Discard, Back. Never a standalone positive action. |
-| Ghost     | `variant="ghost"`                 | Rows, toolbars and dashboard tiles. Icon buttons with a tooltip, per the row-action standard.               |
-| Link      | `variant="link"`                  | An action that reads as part of a sentence.                                                                 |
-| Danger    | `variant="danger"`, or `outlined` | Destructive controls only. Filled where it is the region's one action, outlined everywhere else.            |
+| Rung      | Write                                       | Use for                                                                                                     |
+| --------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Primary   | `variant="primary"`                         | The one action the page or region exists for. Once per page header, once per region header.                 |
+| Tertiary  | `variant="tertiary"`                        | Primary outlined. A standalone action of lower rank: a sub-task, an independent action beside a primary.    |
+| Secondary | `variant="secondary"`                       | **Only beside a primary**, as its negative half: Cancel, Discard, Back. Never a standalone positive action. |
+| Ghost     | `variant="ghost"`                           | Rows, toolbars and dashboard tiles. Icon-only buttons with a `label`, per the row-action standard.          |
+| Link      | `variant="link"`                            | An action that reads as part of a sentence.                                                                 |
+| Danger    | `danger`, `danger-tertiary`, `danger-ghost` | Destructive controls only. Filled where it is the region's one action, tertiary or ghost everywhere else.   |
 
 - **One primary per page, in its header.** The page header (or `topbar-right`,
   see [The app frame](/patterns/app-frame)) carries it. See
@@ -81,10 +81,56 @@ temporary, and they are not part of this count.
   become tertiary or ghost, so the page's own action stays the loudest.
 - **Past three actions, prefer tertiary and ghost to secondary.** A row of
   heavy buttons is a toolbar that has lost its ranking.
-- **Rows and tables use ghost icon buttons.** That is the row-action standard,
-  and it is the one place a bare `ghost` is right. A labelled action anywhere
-  else (an inspector's Bind, a form's Apply) is never bare ghost: it reads as
-  grey text at rest. See [Building an inspector](/patterns/inspectors#controls-that-look-like-controls).
+- **Rows and tables use ghost icon buttons.** That is the
+  [row-action standard](#the-row-action-standard) below, and it is the one
+  place a bare `ghost` is right. A labelled action anywhere else (an
+  inspector's Bind, a form's Apply) is never bare ghost: it reads as grey text
+  at rest. See [Building an inspector](/patterns/inspectors#controls-that-look-like-controls).
+- **Cancel is `secondary`, beside a primary.** Never ghost and never danger.
+
+### The row-action standard
+
+The actions on a row of a table, a list or a board, and on a dashboard tile,
+are drawn the same way in every product, so a person who has learned one
+table has learned them all.
+
+- **Ghost, `sm`, icon-only, with a `label`.** The icon makes it read as a
+  control at rest, and the `label` is both its accessible name and its
+  tooltip. Name the row as well as the action ("Edit invoice 2026/014"), since
+  a screen reader lists row actions out of context.
+- **An action that does not apply to a row stays, disabled, and its tooltip
+  says why.** Every row keeps its actions in the same places, so the eye does
+  not hunt, and the reason ("Already sent", "Only an owner can remove a
+  member") tells the person what would make the action available. Removing it
+  makes the other actions jump from row to row and hides that the action
+  exists. `disabled-reason` on `NbButton` does it: the button stays focusable,
+  cannot be pressed, and shows the reason on hover and keyboard focus.
+- **More than three go into an overflow menu.** Up to three icon buttons on a
+  row. From the fourth, the less frequent ones go behind one `dots-three`
+  [NbOverflowMenu](/components/overflow-menu/usage), last on the row.
+- **The same order on every row**, the most frequent action first, the
+  overflow menu last.
+
+```vue
+<template #row-actions="{ row }">
+  <NbButton
+    variant="ghost"
+    size="sm"
+    icon="pencil-simple"
+    :label="`Edit invoice ${row.number}`"
+    @click="edit(row)"
+  />
+  <NbButton
+    variant="ghost"
+    size="sm"
+    icon="paper-plane-tilt"
+    :label="`Send invoice ${row.number}`"
+    :disabled="row.sent"
+    :disabled-reason="row.sent ? 'Already sent' : undefined"
+    @click="send(row)"
+  />
+</template>
+```
 
 ## Type: one size per role
 

@@ -308,7 +308,7 @@ describe('link variant', () => {
   it('underlines on hover and on keyboard focus, with a focus ring', () => {
     expect(
       bodiesOf(
-        '.nb-button--link:hover:not(:disabled), .nb-button--link:focus-visible',
+        '.nb-button--link:hover:not(:disabled):not([aria-disabled=true]), .nb-button--link:focus-visible',
       ),
     ).toMatch(/text-decoration:\s*underline/)
     expect(bodiesOf('.nb-button--link:focus-visible')).toMatch(

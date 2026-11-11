@@ -124,6 +124,35 @@ The card picks its element from its behaviour, so each case gets the right keybo
 />
 ```
 
+## Drawing the border on hover
+
+`hover-effect="draw"` is for a wall of destination cards, where the whole card is the call to action: a hub of products, a picker of starting points. On hover and on keyboard focus the surface lifts as usual and the border draws itself in. Two strokes leave the top-left corner at the same speed, one along the top and down the right, the other down the left and along the bottom, and they meet at the bottom-right corner.
+
+Both strokes arrive together whatever the card's shape: the card measures itself and gives the horizontal edge its share of the time, `width / (width + height)`. The border snaps off when the pointer leaves. Under reduced motion it appears whole, at once.
+
+Only an interactive card draws (`href`, `to` or `clickable`). A static card renders exactly the same with or without the prop, so a grid can set it on every card and let the data decide which ones are links.
+
+```vue
+<NbCardGrid min="260px">
+  <NbCard
+    v-for="guide in guides"
+    :key="guide.slug"
+    :title="guide.title"
+    :description="guide.summary"
+    :href="guide.url"
+    hover-effect="draw"
+  />
+</NbCardGrid>
+```
+
+<preview>
+  <NbCardGrid min="220px" style="width: 100%">
+    <NbCard title="Getting started" description="Install, configure and ship a first page." href="#card-grid" hover-effect="draw" />
+    <NbCard title="Theming" description="Colours, type and the layer model." href="#card-grid" hover-effect="draw" />
+    <NbCard title="Release notes" description="What changed, version by version." clickable hover-effect="draw" />
+  </NbCardGrid>
+</preview>
+
 ## Tiles at a ratio
 
 `ratio` holds every tile at `'1:1'`, `'2:1'`, `'2:3'`, `'3:2'`, `'4:3'` or
@@ -194,6 +223,7 @@ Use it for supporting tiles beside the one raised region a page is for. See
 | `clickable`    | `boolean`                    | `false`      | Renders as a button and emits `select`. Ignored when `href` or `to` is set.                                         |
 | `selected`     | `boolean`                    | `false`      | Draws the card as chosen.                                                                                           |
 | `disabled`     | `boolean`                    | `false`      | Inert and muted.                                                                                                    |
+| `hoverEffect`  | `'fill' \| 'draw'`           | `'fill'`     | How an interactive card answers hover and focus. `draw` also draws the border in. A static card ignores it.         |
 
 ## NbCard events
 
@@ -216,11 +246,14 @@ Use it for supporting tiles beside the one raised region a page is for. See
 
 ## NbCard custom properties
 
-| Property                | Default  | Description                                                     |
-| ----------------------- | -------- | --------------------------------------------------------------- |
-| `--nb-card-media-width` | `96px`   | Width of the thumbnail in a horizontal card. `72px` on a phone. |
-| `--nb-card-image-ratio` | `16 / 9` | Shape of the media box. Set by `imageRatio`.                    |
-| `--nb-card-image-fit`   | `cover`  | `object-fit` of the image. Set by `imageFit`.                   |
-| Typography              |          | Title `heading-compact`, subtitle and body `body-sm`.           |
+| Property                  | Default                | Description                                                                                   |
+| ------------------------- | ---------------------- | --------------------------------------------------------------------------------------------- |
+| `--nb-card-media-width`   | `96px`                 | Width of the thumbnail in a horizontal card. `72px` on a phone.                               |
+| `--nb-card-image-ratio`   | `16 / 9`               | Shape of the media box. Set by `imageRatio`.                                                  |
+| `--nb-card-image-fit`     | `cover`                | `object-fit` of the image. Set by `imageFit`.                                                 |
+| `--nb-card-draw-duration` | `420ms`                | How long the border takes to draw, corner to corner.                                          |
+| `--nb-card-draw-stroke`   | `2px`                  | Width of the drawn border.                                                                    |
+| `--nb-card-draw-color`    | `--nb-c-selected-edge` | Colour of the drawn border. Keep it at 3:1 against the layer: it is also the focus indicator. |
+| Typography                |                        | Title `heading-compact`, subtitle and body `body-sm`.                                         |
 
 <!--@include: ./_shared.md-->

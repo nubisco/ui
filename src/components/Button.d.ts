@@ -86,6 +86,15 @@ interface IButtonProps {
    * "Delete"). Ignored on a labelled button, whose text is its name.
    */
   label?: string
+  /**
+   * Why the button is disabled: "Only the latest invoice can be deleted".
+   * With `disabled`, the button stays focusable (it carries `aria-disabled`
+   * rather than native `disabled`), cannot be pressed, and shows the reason
+   * as its tooltip and accessible description, on hover and on keyboard
+   * focus. The row-action standard: an action that does not apply stays in
+   * its place, disabled, and says why.
+   */
+  disabledReason?: string
   /** Where the icon-only tooltip opens. Defaults to `bottom`, as Carbon's. */
   tooltipPosition?: 'top' | 'bottom' | 'left' | 'right'
   /**

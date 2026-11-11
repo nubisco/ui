@@ -30,7 +30,12 @@
       variant="secondary"
       size="sm"
       :icon="playing ? iconPause : iconPlay"
-      :aria-label="playing ? pauseLabel : playLabel"
+      :label="
+        playing
+          ? (pauseLabel ?? strings.videoPause)
+          : (playLabel ?? strings.videoPlay)
+      "
+      tooltip-position="top"
       @click="toggle"
     />
   </div>
@@ -42,6 +47,7 @@ import * as iconPlay from '@nubisco/ui/icons/play'
 import * as iconPause from '@nubisco/ui/icons/pause'
 import NbButton from './Button.vue'
 import type { IVideoProps } from './Video.d'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { prefersReducedMotion } from '@/composables/useReducedMotion.composable'
 
 const props = withDefaults(defineProps<IVideoProps>(), {
@@ -52,9 +58,11 @@ const props = withDefaults(defineProps<IVideoProps>(), {
   height: undefined,
   fit: 'cover',
   loop: true,
-  playLabel: 'Play video',
-  pauseLabel: 'Pause video',
+  playLabel: undefined,
+  pauseLabel: undefined,
 })
+
+const strings = useNbStrings()
 
 const root = ref<HTMLElement | null>(null)
 const video = ref<HTMLVideoElement | null>(null)

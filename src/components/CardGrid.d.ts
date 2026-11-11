@@ -131,4 +131,19 @@ export interface ICardProps {
   selected?: boolean
   /** Non-interactive and muted. */
   disabled?: boolean
+  /**
+   * How an interactive card answers the pointer and keyboard focus.
+   *
+   * `fill` (the default) lifts the surface to its hover layer. `draw` does
+   * that and draws the border in: two strokes leave the top-left corner at
+   * the same speed, one along the top and down the right, the other down the
+   * left and along the bottom, and they meet at the bottom-right. For a wall
+   * of destination cards (a hub, a product picker), where the card is the
+   * whole call to action. It snaps off when the pointer leaves, and under
+   * reduced motion the full border appears at once.
+   *
+   * Only interactive cards (`href`, `to` or `clickable`) respond. A static
+   * card renders exactly the same whatever this is set to.
+   */
+  hoverEffect?: 'fill' | 'draw'
 }

@@ -40,6 +40,7 @@ import {
   ISkeletonProps,
   TSkeletonTypeSet,
 } from './Skeleton.d'
+import type { TButtonSize } from './Button.d'
 
 const props = withDefaults(defineProps<ISkeletonProps>(), {
   id: undefined,
@@ -49,6 +50,8 @@ const props = withDefaults(defineProps<ISkeletonProps>(), {
   lastLineWidth: '60%',
   width: undefined,
   height: undefined,
+  size: 'md',
+  iconOnly: false,
   radius: 'sm',
   animated: true,
   label: undefined,
@@ -168,6 +171,31 @@ const lineStyles = computed(() =>
   }),
 )
 
+/*
+ * A button's height in base units, per size: the same scale NbButton draws
+ * (16, 24, 32, 40, 48, 64 and 80px). xl and xxl are minimum heights on the
+ * real button, where a long label wraps, and the placeholder takes the one
+ * line height every short label has.
+ */
+const BUTTON_UNITS: Record<TButtonSize, number> = {
+  xxs: 2,
+  xs: 3,
+  sm: 4,
+  md: 5,
+  lg: 6,
+  xl: 8,
+  xxl: 10,
+}
+
+/*
+ * A labelled button is 16px of start padding, its label, and 64px reserved
+ * at the end for the icon. 150px is that frame around a 70px label, the
+ * width of a typical two-word action ("Save changes"), and it is the width
+ * Carbon's button skeleton uses. Pass `width` when the real label is known
+ * to be longer, or when the button fills a set.
+ */
+const BUTTON_LABELLED_WIDTH = 'calc(var(--nb-base-unit) * 18.75)'
+
 const rootClasses = computed(() => [
   'nb-skeleton',
   `nb-skeleton--${props.variant}`,
@@ -188,6 +216,18 @@ const rootStyle = computed(() => {
     style['--nb-skeleton-font-size'] = `var(--nb-type-${typeSet.value}-size)`
     style['--nb-skeleton-line-height'] =
       `var(--nb-type-${typeSet.value}-line-height)`
+  }
+
+  if (props.variant === ESkeletonVariant.Button) {
+    const units = BUTTON_UNITS[props.size] ?? BUTTON_UNITS.md
+    const height = `calc(var(--nb-base-unit) * ${units})`
+    style['--nb-skeleton-height'] = height
+    // An icon-only button is square at every size, so it has no width of
+    // its own to override.
+    style.width = props.iconOnly
+      ? height
+      : (toLength(props.width) ?? BUTTON_LABELLED_WIDTH)
+    return style
   }
 
   if (props.variant === ESkeletonVariant.Circle) {
@@ -285,8 +325,16 @@ const rootStyle = computed(() => {
   }
 
   &--block &__line,
-  &--circle &__line {
+  &--circle &__line,
+  &--button &__line {
     height: var(--nb-skeleton-height);
+  }
+
+  // A button sits in a row of buttons, so its placeholder does too.
+  &--button {
+    display: inline-flex;
+    flex-shrink: 0;
+    vertical-align: middle;
   }
 
   &--circle {
@@ -317,8 +365,15 @@ const rootStyle = computed(() => {
   }
 
   &--block &__fill,
-  &--circle &__fill {
+  &--circle &__fill,
+  &--button &__fill {
     height: 100%;
+  }
+
+  // The radius a real button has, whatever `radius` says, so the swap does
+  // not change the corners.
+  &--button &__fill {
+    border-radius: var(--nb-radius-control);
   }
 
   // `circle` names its own shape, so it keeps it at every appearance.
