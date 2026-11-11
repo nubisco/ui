@@ -572,7 +572,7 @@ in that surface. Mixed sizes in one column read as a rendering bug.
 
 | Surface                                    | `size` | Height |
 | ------------------------------------------ | ------ | -----: |
-| Inspectors, toolbars, dense property grids | `xs`   |   28px |
+| Inspectors, toolbars, dense property grids | `xs`   |   24px |
 | Compact forms, table filter rows, popovers | `sm`   |   32px |
 | Standalone forms (the default)             | `md`   |   40px |
 | Touch-first or hero forms                  | `lg`   |   48px |
@@ -1351,7 +1351,7 @@ changes.
 
 | Token                                                      | What it controls                                                                          |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `--nb-field-height-xs/sm/md/lg`                            | Control heights (28 / 32 / 40 / 48 at the 8px base unit)                                  |
+| `--nb-field-height-xs/sm/md/lg`                            | Control heights (24 / 32 / 40 / 48 at the 8px base unit), the same as `NbButton`'s        |
 | `--nb-field-padding-h`                                     | Horizontal padding inside a control                                                       |
 | `--nb-field-font-size`                                     | Value text size                                                                           |
 | `--nb-field-label-gap`                                     | Gap between a label and its control, shared by every control so mixed rows align          |

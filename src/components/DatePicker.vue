@@ -1166,6 +1166,12 @@ defineExpose({
   font-family: var(--nb-font-family-sans, sans-serif);
   --field-h: var(--nb-field-height-md);
 
+  // It accepted `size="xs"` from the shared field interface and then fell
+  // back to md, so a date sat 16px taller than the xs fields beside it.
+  &--xs {
+    --field-h: var(--nb-field-height-xs);
+    --nb-field-font-size: var(--nb-type-body-compact-size);
+  }
   &--sm {
     --field-h: var(--nb-field-height-sm);
   }

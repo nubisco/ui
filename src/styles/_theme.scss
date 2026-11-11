@@ -420,10 +420,17 @@
     --nb-c-port-border: var(--nb-c-field-border);
     // Parameter rows inside a card: one layer deeper than the card itself.
     --nb-c-node-row-bg: var(--nb-c-layer-2);
-    // xs is the compact size for dense surfaces (inspectors, toolbars).
-    // Distinctly smaller than sm; pair with a 13px field font. See the
-    // "Building an inspector" guide in the docs before reaching for it.
-    --nb-field-height-xs: calc(var(--nb-base-unit) * 3.5);
+    // One control-height scale, shared with NbButton: a field and a button
+    // of the same `size` are the same height, so one can sit flush beside
+    // the other (NbInputGroup) without either being nudged. NbButton reads
+    // the same base-unit multiples (xs 3, sm 4, md 5, lg 6).
+    //
+    // xs is the compact size for dense surfaces (inspectors, toolbars). It
+    // was 3.5 units (28px), the one step where a field and a button of the
+    // same size disagreed, against the 24px xs button. At 24px it sits
+    // exactly on the WCAG 2.5.8 target minimum, so it is for dense surfaces
+    // only. See the "Building an inspector" guide before reaching for it.
+    --nb-field-height-xs: calc(var(--nb-base-unit) * 3);
     --nb-field-height-sm: calc(var(--nb-base-unit) * 4);
     --nb-field-height-md: calc(var(--nb-base-unit) * 5);
     --nb-field-height-lg: calc(var(--nb-base-unit) * 6);
