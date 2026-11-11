@@ -2,30 +2,38 @@
   <div class="nb-calendar" v-bind="layerProps">
     <!-- Header: month navigation -->
     <div class="nb-calendar__header">
-      <button class="nb-calendar__today-btn" @click="goToday">Today</button>
-      <button class="nb-calendar__nav" @click="prevMonth">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path
-            d="M10 12L6 8l4-4"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </button>
-      <button class="nb-calendar__nav" @click="nextMonth">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path
-            d="M6 4l4 4-4 4"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </button>
-      <span class="nb-calendar__title">{{ monthLabel }}</span>
+      <!-- Ghost NbButtons at sm: real buttons with a type, a name and the
+           library's focus ring. The arrows are icon-only, so `label` names
+           them and is their tooltip. -->
+      <NbButton
+        class="nb-calendar__today-btn"
+        variant="ghost"
+        size="sm"
+        @click="goToday"
+      >
+        {{ nbStrings.calendarToday }}
+      </NbButton>
+      <NbButton
+        class="nb-calendar__nav"
+        variant="ghost"
+        size="sm"
+        :icon="iconCaretLeft"
+        :label="nbStrings.calendarPreviousMonth"
+        @click="prevMonth"
+      />
+      <NbButton
+        class="nb-calendar__nav"
+        variant="ghost"
+        size="sm"
+        :icon="iconCaretRight"
+        :label="nbStrings.calendarNextMonth"
+        @click="nextMonth"
+      />
+      <!-- Announced when the arrows change it, so a screen reader user who
+           pressed Next hears which month they landed on. -->
+      <span class="nb-calendar__title" aria-live="polite">{{
+        monthLabel
+      }}</span>
     </div>
 
     <!-- Day-of-week headers -->
@@ -68,9 +76,15 @@
 </template>
 
 <script setup lang="ts">
+import * as iconCaretLeft from '@nubisco/ui/icons/caret-left'
+import * as iconCaretRight from '@nubisco/ui/icons/caret-right'
 import { ref, computed, watch } from 'vue'
 import type { ICalendarProps, ICalendarEvent } from './Calendar.d'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
+import NbButton from './Button.vue'
+
+const nbStrings = useNbStrings()
 
 const props = withDefaults(defineProps<ICalendarProps>(), {
   events: () => [],
@@ -259,45 +273,18 @@ function getEventsForDate(dateStr: string): ICalendarEvent[] {
 .nb-calendar__header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  gap: var(--nb-spacing-4);
+  // The ghost buttons bring their own 16px of inline padding, so the header
+  // only adds enough to keep their hover box off the border.
+  padding: var(--nb-spacing-8);
   border-bottom: 1px solid var(--nb-c-border);
 }
 
-.nb-calendar__nav {
-  background: none;
-  border: none;
-  color: var(--nb-c-text-muted);
-  cursor: pointer;
-  padding: 0.25rem;
-  display: flex;
-  align-items: center;
-  transition: color var(--nb-motion-short);
-
-  &:hover {
-    color: var(--nb-c-text);
-  }
-}
-
 .nb-calendar__title {
+  margin-inline-start: var(--nb-spacing-4);
   font-size: var(--nb-type-heading-compact-size);
   font-weight: 600;
   color: var(--nb-c-text);
-}
-
-.nb-calendar__today-btn {
-  background: none;
-  border: none;
-  color: var(--nb-c-primary);
-  cursor: pointer;
-  padding: 0;
-  font-size: var(--nb-type-heading-compact-size);
-  font-weight: 600;
-  transition: color var(--nb-motion-short);
-
-  &:hover {
-    color: var(--nb-c-primary-hover, var(--nb-c-primary));
-  }
 }
 
 .nb-calendar__weekdays {

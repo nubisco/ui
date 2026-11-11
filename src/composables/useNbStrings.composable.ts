@@ -75,6 +75,10 @@ export interface INbStrings {
   bottomPanelSize: string
   // NbNotificationCenter
   notificationCenterClose: string
+  // NbCalendar
+  calendarToday: string
+  calendarPreviousMonth: string
+  calendarNextMonth: string
   // NbWalkthrough
   walkthroughBack: string
   walkthroughNext: string
@@ -178,6 +182,9 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   shellPanelMaximize: 'Maximize',
   bottomPanelSize: 'Panel size',
   notificationCenterClose: 'Close notifications',
+  calendarToday: 'Today',
+  calendarPreviousMonth: 'Previous month',
+  calendarNextMonth: 'Next month',
   walkthroughBack: 'Back',
   walkthroughNext: 'Next',
   walkthroughSkip: 'Skip',
