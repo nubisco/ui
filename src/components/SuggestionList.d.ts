@@ -31,6 +31,14 @@ interface ISuggestionListProps<T = unknown> {
    * the bottom of a panel, where a list below would fall off the screen.
    */
   placement?: 'bottom' | 'top'
+  /**
+   * The group an item belongs to, for a list of results from several sources
+   * ("Docs", "Guides"). Consecutive items with the same group are drawn under
+   * one heading, so give `items` already sorted by group: the list never
+   * reorders them, because the arrow keys must walk the rows in the order
+   * they are drawn. The heading is the `#group` slot when one is given.
+   */
+  itemGroup?: (item: T) => string
   /** Accessible name of the list, for example "People" or "Keys". */
   label?: string
   /**

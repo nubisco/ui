@@ -100,6 +100,19 @@ Inside the `#dropdown` slot the list finds its field. Anywhere else, give it the
 </div>
 ```
 
+## Grouped results
+
+When results come from several sources, `item-group` names the group of each item and the list draws a heading over each run. Give the items already sorted by group. The list never reorders them, because the arrow keys walk the rows in the order they are drawn. Each run is a `role="group"` named by its heading, so a screen reader announces the group as the active row moves into it.
+
+```vue
+<NbSuggestionList
+  :items="results"
+  :item-group="(hit) => hit.source"
+  :item-label="(hit) => hit.title"
+  label="Search results"
+/>
+```
+
 ## Props
 
 | Prop          | Type                                           | Default                  | Description                                                                                  |
@@ -112,6 +125,7 @@ Inside the `#dropdown` slot the list finds its field. Anywhere else, give it the
 | `loading`     | `boolean`                                      | `false`                  | Results are pending. The list stays open and shows `loadingText` instead of the empty state. |
 | `loadingText` | `string`                                       | `''`                     | Shown while `loading`. Present tense: "Searching".                                           |
 | `placement`   | `'bottom' \| 'top'`                            | `'bottom'`               | Which side of the field the list opens on.                                                   |
+| `itemGroup`   | `(item: T) => string`                          | -                        | The group of an item. Consecutive items in one group share a heading.                        |
 | `label`       | `string`                                       | `''`                     | Accessible name of the list.                                                                 |
 | `for`         | `string`                                       | —                        | Id of the field, when the list is not in an `NbTextInput`.                                   |
 | `id`          | `string`                                       | generated                | Id of the list.                                                                              |
@@ -129,6 +143,7 @@ Inside the `#dropdown` slot the list finds its field. Anywhere else, give it the
 | Slot      | Props                     | Description               |
 | --------- | ------------------------- | ------------------------- |
 | `item`    | `{ item, index, active }` | One row.                  |
+| `group`   | `{ group }`               | A group heading.          |
 | `empty`   | —                         | Replaces `empty-text`.    |
 | `loading` | —                         | Replaces the loading row. |
 

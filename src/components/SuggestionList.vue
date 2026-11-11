@@ -9,27 +9,48 @@
     :aria-label="label || undefined"
     :aria-busy="loading || undefined"
   >
-    <div
-      v-for="(item, index) in items"
-      :id="optionId(index)"
-      :key="keyOf(item, index)"
-      class="nb-suggestion-list__item"
-      :class="{ 'nb-suggestion-list__item--active': index === activeIndex }"
-      role="option"
-      :aria-selected="index === activeIndex"
-      @mousedown.prevent
-      @mousemove="activeIndex = index"
-      @click="choose(index)"
-    >
-      <slot
-        name="item"
-        :item="item"
-        :index="index"
-        :active="index === activeIndex"
+    <!-- Groups are runs of consecutive items that share a group name, in the
+         order the host gave them, so the arrow keys still walk the items in
+         the order they are drawn. Without `itemGroup` there is one run with no
+         heading, and the markup is what it always was inside it. -->
+    <template v-for="section in sections" :key="section.key">
+      <div
+        :role="section.name ? 'group' : undefined"
+        :aria-labelledby="section.name ? section.headingId : undefined"
+        :class="{ 'nb-suggestion-list__section': section.name }"
+        :style="section.name ? undefined : { display: 'contents' }"
       >
-        {{ labelOf(item) }}
-      </slot>
-    </div>
+        <div
+          v-if="section.name"
+          :id="section.headingId"
+          class="nb-suggestion-list__group"
+          role="presentation"
+        >
+          <slot name="group" :group="section.name">{{ section.name }}</slot>
+        </div>
+        <div
+          v-for="{ item, index } in section.entries"
+          :id="optionId(index)"
+          :key="keyOf(item, index)"
+          class="nb-suggestion-list__item"
+          :class="{ 'nb-suggestion-list__item--active': index === activeIndex }"
+          role="option"
+          :aria-selected="index === activeIndex"
+          @mousedown.prevent
+          @mousemove="activeIndex = index"
+          @click="choose(index)"
+        >
+          <slot
+            name="item"
+            :item="item"
+            :index="index"
+            :active="index === activeIndex"
+          >
+            {{ labelOf(item) }}
+          </slot>
+        </div>
+      </div>
+    </template>
     <!-- While results are pending the empty state is not the truth, so the
          loading row takes its place. Both are presentation: neither is an
          option, and the live region in the loading row says what is happening. -->
@@ -88,6 +109,7 @@ const props = withDefaults(defineProps<ISuggestionListProps<T>>(), {
   loadingText: '',
   placement: 'bottom',
   label: '',
+  itemGroup: undefined,
   for: undefined,
   id: undefined,
 })
@@ -100,6 +122,7 @@ const emit = defineEmits<{
 
 defineSlots<{
   item?: (scope: { item: T; index: number; active: boolean }) => unknown
+  group?: (scope: { group: string }) => unknown
   empty?: () => unknown
   loading?: () => unknown
 }>()
@@ -116,6 +139,32 @@ const visible = computed(
   () =>
     props.open && (props.items.length > 0 || hasEmpty.value || props.loading),
 )
+
+interface ISection {
+  key: string
+  name: string
+  headingId: string
+  entries: { item: T; index: number }[]
+}
+
+const sections = computed<ISection[]>(() => {
+  const runs: ISection[] = []
+  props.items.forEach((item, index) => {
+    const name = props.itemGroup?.(item) ?? ''
+    const last = runs[runs.length - 1]
+    if (last && last.name === name) {
+      last.entries.push({ item, index })
+      return
+    }
+    runs.push({
+      key: `${runs.length}:${name}`,
+      name,
+      headingId: `${listId}-group-${runs.length}`,
+      entries: [{ item, index }],
+    })
+  })
+  return runs
+})
 
 function labelOf(item: T): string {
   if (props.itemLabel) return props.itemLabel(item)
@@ -323,6 +372,17 @@ defineExpose({
   &--top {
     bottom: calc(100% + 4px);
   }
+}
+
+.nb-suggestion-list__group {
+  padding: calc(var(--nb-base-unit) * 1.25) calc(var(--nb-base-unit) * 2)
+    calc(var(--nb-base-unit) * 0.5);
+  font-size: var(--nb-type-label-size);
+  letter-spacing: var(--nb-type-label-letter-spacing);
+  color: var(--nb-c-text-muted);
+  // Not a choice, so it does not take the pointer's hover or a click.
+  pointer-events: none;
+  user-select: none;
 }
 
 .nb-suggestion-list__item {

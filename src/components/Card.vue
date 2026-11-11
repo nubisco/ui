@@ -1,6 +1,7 @@
 <template>
   <component
     :is="tag"
+    ref="root"
     class="nb-card"
     :class="{
       'nb-card--horizontal': orientation === 'horizontal',
@@ -10,6 +11,7 @@
       'nb-card--disabled': disabled,
       'nb-card--decorated': !!$slots.decorator,
       'nb-card--flat': flat,
+      'nb-card--draw': drawsBorder,
     }"
     v-bind="{ ...attrs, ...layerProps }"
     @click="onClick"
@@ -99,7 +101,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, provide, ref, useSlots, watch } from 'vue'
+import {
+  computed,
+  onBeforeUnmount,
+  provide,
+  ref,
+  useSlots,
+  watch,
+  type ComponentPublicInstance,
+} from 'vue'
 import * as iconImage from '@nubisco/ui/icons/image'
 import type { ICardProps } from './CardGrid.d'
 import NbIcon from './Icon.vue'
@@ -131,6 +141,7 @@ const props = withDefaults(defineProps<ICardProps>(), {
   clickable: false,
   selected: false,
   disabled: false,
+  hoverEffect: 'fill',
 })
 
 const emit = defineEmits<{
@@ -206,6 +217,54 @@ const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
   props,
   (event) => emit('select', event),
 )
+
+/*
+ * The border draw. Both strokes travel at the same speed, so the horizontal
+ * leg takes width / (width + height) of the duration and the vertical leg the
+ * rest. That share depends on the card's shape, which only layout knows, so a
+ * ResizeObserver writes it to `--nb-card-draw-ratio` and the stylesheet does
+ * the timing. Observed only on a card that draws: a static card or a `fill`
+ * card costs nothing.
+ */
+const drawsBorder = computed(
+  () => props.hoverEffect === 'draw' && isInteractive.value && !props.disabled,
+)
+const root = ref<HTMLElement | ComponentPublicInstance | null>(null)
+let observer: ResizeObserver | null = null
+
+function elementOf(
+  target: HTMLElement | ComponentPublicInstance | null,
+): HTMLElement | null {
+  if (!target) return null
+  if (target instanceof HTMLElement) return target
+  return (target.$el as HTMLElement | null) ?? null
+}
+
+function stopObserving() {
+  observer?.disconnect()
+  observer = null
+}
+
+watch(
+  [drawsBorder, root],
+  ([draws, target]) => {
+    stopObserving()
+    const el = elementOf(target)
+    if (!draws || !el || typeof ResizeObserver === 'undefined') return
+    observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect
+      if (width + height > 0) {
+        el.style.setProperty(
+          '--nb-card-draw-ratio',
+          String(width / (width + height)),
+        )
+      }
+    })
+    observer.observe(el)
+  },
+  { flush: 'post' },
+)
+onBeforeUnmount(stopObserving)
 </script>
 
 <style scoped lang="scss">
@@ -498,8 +557,103 @@ const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
   }
 }
 
+// ── Border draw ─────────────────────────────────────────────────────────
+//
+// Four strokes painted as gradients on ::after, each grown by its own
+// registered percentage so the browser can transition it. 1 and 2 are the
+// top edge then the right edge, 3 and 4 the left edge then the bottom edge.
+// At rest they are all 0% and the transition is instant, so leaving snaps
+// the border off. On hover and focus the horizontal and vertical legs run
+// back to back, each for its share of `--nb-card-draw-duration`.
+@property --nb-card-draw-1 {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+@property --nb-card-draw-2 {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+@property --nb-card-draw-3 {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+@property --nb-card-draw-4 {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+.nb-card--draw {
+  --nb-card-draw-ratio: 0.6;
+  --nb-card-draw-duration: 420ms;
+  --nb-card-draw-stroke: 2px;
+  // The selected edge rather than the raw primary, for the same reason the
+  // selected card uses it: it holds 3:1 on every layer in both themes, and
+  // the drawn border is also the keyboard focus indicator here.
+  --nb-card-draw-color: var(--nb-c-selected-edge);
+  position: relative;
+  isolation: isolate;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    z-index: 1;
+    pointer-events: none;
+    border-radius: inherit;
+    $c: var(--nb-card-draw-color);
+    $s: var(--nb-card-draw-stroke);
+    background:
+      linear-gradient(#{$c}, #{$c}) top left / var(--nb-card-draw-1) #{$s}
+        no-repeat,
+      linear-gradient(#{$c}, #{$c}) top right / #{$s} var(--nb-card-draw-2)
+        no-repeat,
+      linear-gradient(#{$c}, #{$c}) top left / #{$s} var(--nb-card-draw-3)
+        no-repeat,
+      linear-gradient(#{$c}, #{$c}) bottom left / var(--nb-card-draw-4) #{$s}
+        no-repeat;
+    transition:
+      --nb-card-draw-1 0s,
+      --nb-card-draw-2 0s,
+      --nb-card-draw-3 0s,
+      --nb-card-draw-4 0s;
+  }
+
+  // The drawn border replaces the hover border and the focus outline, so
+  // the card does not show two edges at once.
+  &:hover {
+    border-color: var(--nb-c-border);
+  }
+  &:focus-visible {
+    outline: none;
+  }
+
+  &:hover::after,
+  &:focus-visible::after {
+    $d: var(--nb-card-draw-duration);
+    $r: var(--nb-card-draw-ratio);
+    --nb-card-draw-1: 100%;
+    --nb-card-draw-2: 100%;
+    --nb-card-draw-3: 100%;
+    --nb-card-draw-4: 100%;
+    transition:
+      --nb-card-draw-1 calc(#{$d} * #{$r}) linear 0s,
+      --nb-card-draw-2 calc(#{$d} * (1 - #{$r})) linear calc(#{$d} * #{$r}),
+      --nb-card-draw-3 calc(#{$d} * (1 - #{$r})) linear 0s,
+      --nb-card-draw-4 calc(#{$d} * #{$r}) linear calc(#{$d} * (1 - #{$r}));
+  }
+}
+
 @include motion.reduced {
   .nb-card--interactive {
+    transition: none;
+  }
+
+  .nb-card--draw:hover::after,
+  .nb-card--draw:focus-visible::after {
     transition: none;
   }
 }
