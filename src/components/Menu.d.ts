@@ -10,7 +10,18 @@ export interface IMenuProps {
   minWidth?: number
   /** Maximum width in px */
   maxWidth?: number
+  /**
+   * Which edge of the trigger the menu lines up with when it is placed with
+   * `setPosition`. `'start'` (the default) puts its left edge under the
+   * trigger's left edge, `'end'` its right edge under the trigger's right
+   * edge, for a trigger at the end of a row (an overflow menu in a table
+   * row or a toolbar corner). Either way it is kept on screen, and it opens
+   * above the trigger when there is no room below.
+   */
+  align?: TMenuAlign
 }
+
+export type TMenuAlign = 'start' | 'end'
 
 export interface IMenuItemProps {
   /** Phosphor icon name */

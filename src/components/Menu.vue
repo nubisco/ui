@@ -28,12 +28,14 @@ import {
 import type { IMenuProps, IMenuContext } from './Menu.d'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 import { openModalSurfaces } from '@/composables/useFocusTrap.composable'
+import { NB_TOOLBAR } from './Toolbar.context'
 
 const props = withDefaults(defineProps<IMenuProps>(), {
   open: false,
   size: 'md',
   minWidth: 160,
   maxWidth: 288,
+  align: 'start',
 })
 
 const emit = defineEmits<{
@@ -70,18 +72,41 @@ const menuStyle = computed(() => ({
 
 const position = reactive({ top: 0, left: 0 })
 
+/**
+ * The trigger the menu was placed against, kept so the clamp can do more
+ * than push the menu back on screen. With it, `align: 'end'` lines the
+ * menu's right edge up with the trigger's (which needs the menu's own width,
+ * only known once it renders), and a menu with no room below opens above
+ * the trigger instead of being shoved up over it. A menu placed at a point
+ * (`setPositionXY`, a context menu) has no trigger, and is only clamped.
+ */
+let anchor: {
+  top: number
+  bottom: number
+  left: number
+  right: number
+} | null = null
+
 function setPosition(rect: {
   top: number
   left: number
   bottom: number
   width: number
+  right?: number
 }) {
+  anchor = {
+    top: rect.top,
+    bottom: rect.bottom,
+    left: rect.left,
+    right: rect.right ?? rect.left + rect.width,
+  }
   position.top = rect.bottom
   position.left = rect.left
   reclampIfOpen()
 }
 
 function setPositionXY(x: number, y: number) {
+  anchor = null
   position.top = y
   position.left = x
   reclampIfOpen()
@@ -126,6 +151,10 @@ function registerSurface(el: HTMLElement) {
 function unregisterSurface(el: HTMLElement) {
   surfaces.delete(el)
 }
+
+// A menu opened from a toolbar is not part of the toolbar: a button in a
+// form inside the menu keeps its own size rather than the toolbar's.
+provide(NB_TOOLBAR, null)
 
 provide<IMenuContext>('nb-menu', {
   size: props.size,
@@ -250,18 +279,41 @@ function onClickOutside(e: MouseEvent) {
 
 function adjustPosition() {
   if (!menuRef.value) return
-  const rect = menuRef.value.getBoundingClientRect()
-  // Flip left if overflowing right
-  if (rect.right > window.innerWidth) {
-    position.left = Math.max(8, window.innerWidth - rect.width - 8)
+  const el = menuRef.value
+  // Measured at its natural height: a max-height left over from the last
+  // opening would hide how much room the menu really needs.
+  el.style.maxHeight = ''
+  const rect = el.getBoundingClientRect()
+
+  if (anchor && props.align === 'end') {
+    position.left = anchor.right - rect.width
+  } else if (anchor) {
+    position.left = anchor.left
   }
-  // Flip up if overflowing bottom
-  if (rect.bottom > window.innerHeight) {
-    position.top = Math.max(8, window.innerHeight - rect.height - 8)
+  // Keep it on screen horizontally, 8px from either edge.
+  if (position.left + rect.width > window.innerWidth - 8) {
+    position.left = window.innerWidth - rect.width - 8
   }
-  // Clamp max-height so the menu never extends beyond the viewport
-  const availableHeight = window.innerHeight - position.top - 8
-  menuRef.value.style.maxHeight = `${availableHeight}px`
+  position.left = Math.max(8, position.left)
+
+  // Vertically: below the trigger when it fits, above it when it does not
+  // and there is more room there, and pinned to the bottom edge otherwise.
+  if (position.top + rect.height > window.innerHeight - 8) {
+    const roomAbove = anchor ? anchor.top - 8 : 0
+    const roomBelow = window.innerHeight - 8 - position.top
+    if (anchor && rect.height <= roomAbove) {
+      position.top = anchor.top - rect.height
+    } else if (anchor && roomAbove > roomBelow) {
+      position.top = 8
+    } else if (!anchor) {
+      position.top = Math.max(8, window.innerHeight - rect.height - 8)
+    }
+  }
+  // Whatever is left over scrolls inside the menu: it never extends past the
+  // viewport, and when it opened upwards it never covers its trigger.
+  const limit =
+    anchor && position.top < anchor.top ? anchor.top : window.innerHeight - 8
+  el.style.maxHeight = `${Math.max(0, limit - position.top)}px`
 }
 
 /*

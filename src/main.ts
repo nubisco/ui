@@ -352,8 +352,11 @@ export type {
   ISubmenuProps,
   IMenuBarProps,
   TMenuItemSize,
+  TMenuAlign,
 } from './components/Menu.d'
 export type { IMenuContext } from './components/Menu.d'
+export { default as NbOverflowMenu } from './components/OverflowMenu.vue'
+export type { IOverflowMenuProps } from './components/OverflowMenu.d'
 export type {
   ICommand,
   ICommandPaletteProps,

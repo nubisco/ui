@@ -71,6 +71,7 @@ export const COMPONENT_MANIFEST = {
   NbNotificationCenter: 'NotificationCenter',
   NbNotificationCenterItem: 'NotificationCenterItem',
   NbNumberInput: 'NumberInput',
+  NbOverflowMenu: 'OverflowMenu',
   NbLayer: 'Layer',
   NbPanel: 'Panel',
   NbPieChart: 'Charts/PieChart',

@@ -54,6 +54,10 @@ export interface INbStrings {
   dataTableError: string
   // NbDataTable and NbBoard batch bars
   selectionCount: (count: number) => string
+  // NbOverflowMenu, NbBatchActions and the row actions they serve
+  overflowMenuLabel: string
+  batchActionsCancel: string
+  dataTableRowActions: string
   // NbModal
   modalClose: string
   // NbTextInput `showCount`
@@ -138,6 +142,9 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   dataTableEmpty: 'No data to display',
   dataTableError: 'Could not load the data',
   selectionCount: (count: number) => `${count} selected`,
+  overflowMenuLabel: 'More actions',
+  batchActionsCancel: 'Cancel',
+  dataTableRowActions: 'Row actions',
   modalClose: 'Close',
   textInputCount: (length: number, max: number) => `${length}/${max}`,
   numberInputDecrease: 'Decrease',

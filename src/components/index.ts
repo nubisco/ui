@@ -64,6 +64,7 @@ import NbConfirm from './Confirm.vue'
 import NbNotificationCenter from './NotificationCenter.vue'
 import NbNotificationCenterItem from './NotificationCenterItem.vue'
 import NbNumberInput from './NumberInput.vue'
+import NbOverflowMenu from './OverflowMenu.vue'
 import NbLayer from './Layer.vue'
 import NbPanel from './Panel.vue'
 import NbPieChart from './Charts/PieChart.vue'
@@ -175,6 +176,7 @@ const components = {
   NbNotificationCenter,
   NbNotificationCenterItem,
   NbNumberInput,
+  NbOverflowMenu,
   NbLayer,
   NbPanel,
   NbPieChart,
