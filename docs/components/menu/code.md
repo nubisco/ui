@@ -120,17 +120,18 @@ A menu can hold fields instead of items: a filter panel, or a quick edit opened 
 
 ### Props
 
-| Prop         | Type             | Default     | Description                                                                            |
-| ------------ | ---------------- | ----------- | -------------------------------------------------------------------------------------- |
-| `label`      | `string`         | required    | Display text                                                                           |
-| `icon`       | `string`         | `undefined` | Phosphor icon name                                                                     |
-| `picture`    | `string \| null` | `undefined` | A picture in the icon's place, as a 16px `NbAvatar`. `null` draws the label's initials |
-| `shortcut`   | `string`         | `undefined` | Keyboard shortcut display text                                                         |
-| `disabled`   | `boolean`        | `false`     | Disables the item                                                                      |
-| `danger`     | `boolean`        | `false`     | Destructive action styling                                                             |
-| `selectable` | `boolean`        | `false`     | Checkbox-style toggle                                                                  |
-| `selected`   | `boolean`        | `false`     | Whether selectable item is checked                                                     |
-| `radioGroup` | `string`         | `undefined` | Radio group name                                                                       |
+| Prop             | Type             | Default     | Description                                                                                                                            |
+| ---------------- | ---------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `label`          | `string`         | required    | Display text                                                                                                                           |
+| `icon`           | `string`         | `undefined` | Phosphor icon name                                                                                                                     |
+| `picture`        | `string \| null` | `undefined` | A picture in the icon's place, as a 16px `NbAvatar`. `null` draws the label's initials                                                 |
+| `shortcut`       | `string`         | `undefined` | Keyboard shortcut display text                                                                                                         |
+| `disabled`       | `boolean`        | `false`     | Disables the item                                                                                                                      |
+| `disabledReason` | `string`         | `undefined` | Why the item is disabled: a muted second line, its `aria-describedby`, and the arrow keys still stop on it. Read only while `disabled` |
+| `danger`         | `boolean`        | `false`     | Destructive action styling                                                                                                             |
+| `selectable`     | `boolean`        | `false`     | Checkbox-style toggle                                                                                                                  |
+| `selected`       | `boolean`        | `false`     | Whether selectable item is checked                                                                                                     |
+| `radioGroup`     | `string`         | `undefined` | Radio group name                                                                                                                       |
 
 ### Events
 

@@ -17,6 +17,9 @@ a11y:
   words), with `aria-haspopup="menu"` and `aria-expanded`.
 - Enter, Space and ArrowDown open the menu, and focus moves to its first
   row. The arrow keys, Home, End and first-letter typeahead move inside it.
+- A disabled item with a `disabledReason` stays reachable by the arrow keys,
+  cannot be chosen, and carries the reason as its description. A disabled
+  item without one is skipped.
 - Escape, a choice or a press outside closes it, and focus goes back to the
   trigger.
 - Name the trigger after what it acts on when a page has several ("More

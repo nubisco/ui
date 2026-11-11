@@ -19,7 +19,11 @@ pageTabs: ['usage', 'code', 'accessibility']
 | `Escape` (top level)             | Close menu                                                      |
 | `Tab`                            | Close the menu, from any level                                  |
 
-Disabled items are skipped. Opening a submenu on hover leaves focus where it
+A disabled item with a `disabledReason` is not skipped: it takes focus like
+any other item (`aria-disabled="true"`), Enter, Space and a click do
+nothing, and the reason is its description (`aria-describedby`), so a
+screen reader reads it when the item is reached. A disabled item without a
+reason is skipped by the arrow keys and typeahead. Opening a submenu on hover leaves focus where it
 is, so pointer users are not interrupted.
 
 <!--@include: ./_shared.md-->
