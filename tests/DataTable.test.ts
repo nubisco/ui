@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import { stubPhone, unstubPhone } from './__mocks__/phoneLayout'
-import { h } from 'vue'
+import { h, nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import DataTable from '../src/components/DataTable.vue'
 import NbButton from '../src/components/Button.vue'
@@ -712,6 +712,35 @@ describe('NbDataTable rowActions', () => {
       'c',
       'd',
     ])
+  })
+
+  it('carries the reason of a folded action into its menu row', async () => {
+    const many = (): IActionGroupItem[] => [
+      ...['a', 'b', 'c'].map((id) => ({ id, label: id, icon: 'star' })),
+      {
+        id: 'delete',
+        label: 'Delete',
+        icon: 'trash',
+        disabled: true,
+        disabledReason: 'Paid invoices cannot be deleted',
+      },
+    ]
+    const wrapper = mountTable(
+      { rowActions: many },
+      { attachTo: document.body },
+    )
+    const cell = wrapper.findAll('td.nb-data-table__actions-cell')[0]
+    await cell.findComponent(NbOverflowMenu).find('button').trigger('click')
+    await nextTick()
+    await nextTick()
+    const row = Array.from(
+      document.body.querySelectorAll<HTMLElement>('[role="menuitem"]'),
+    ).find((r) => r.textContent?.includes('Delete'))
+    expect(row?.getAttribute('aria-disabled')).toBe('true')
+    const reason = row?.querySelector('.nb-menu-item__reason')
+    expect(reason?.textContent).toBe('Paid invoices cannot be deleted')
+    expect(row?.getAttribute('aria-describedby')).toBe(reason?.id)
+    wrapper.unmount()
   })
 
   it('disables every row action while the batch bar is up', () => {

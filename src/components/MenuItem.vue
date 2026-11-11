@@ -4,6 +4,8 @@
     :class="rootClasses"
     :role="computedRole"
     :aria-disabled="disabled || undefined"
+    :aria-describedby="explained ? reasonId : undefined"
+    :data-nb-explained="explained || undefined"
     :aria-checked="selectable || radioGroup ? selected : undefined"
     :tabindex="-1"
     @click="onActivate"
@@ -39,7 +41,22 @@
       />
     </slot>
 
-    <span class="nb-menu-item__label" :title="label || undefined">{{
+    <!-- A disabled item that says why carries the reason as a second line
+         under its label, rather than in a tooltip. A menu row has no hover on
+         a touch screen, and a tooltip opened by focus would cover the very
+         rows the arrow keys are about to move to. Printed text is there on
+         every input alike, the item names it as its description for a screen
+         reader, and the menu still stops on the item so it can be read. A row
+         without a reason keeps exactly the markup and fixed height it had. -->
+    <span v-if="explained" class="nb-menu-item__text">
+      <span class="nb-menu-item__label" :title="label || undefined">{{
+        label
+      }}</span>
+      <span :id="reasonId" class="nb-menu-item__reason">{{
+        disabledReason
+      }}</span>
+    </span>
+    <span v-else class="nb-menu-item__label" :title="label || undefined">{{
       label
     }}</span>
 
@@ -52,7 +69,7 @@
 <script setup lang="ts">
 import NbIcon from './Icon.vue'
 import NbAvatar from './Avatar.vue'
-import { ref, computed, inject, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, inject, onMounted, onBeforeUnmount, useId } from 'vue'
 import type { IMenuItemProps, IMenuContext } from './Menu.d'
 
 const props = withDefaults(defineProps<IMenuItemProps>(), {
@@ -60,6 +77,7 @@ const props = withDefaults(defineProps<IMenuItemProps>(), {
   picture: undefined,
   shortcut: undefined,
   disabled: false,
+  disabledReason: undefined,
   danger: false,
   selectable: false,
   selected: false,
@@ -74,6 +92,11 @@ const emit = defineEmits<{
 const itemRef = ref<HTMLElement | null>(null)
 const menuContext = inject<IMenuContext | null>('nb-menu', null)
 
+// Only read while disabled, as on NbButton: a reason left on an item that
+// has become available again says nothing.
+const explained = computed(() => props.disabled && !!props.disabledReason)
+const reasonId = `nb-menu-item-reason-${useId()}`
+
 const computedRole = computed(() => {
   if (props.radioGroup) return 'menuitemradio'
   if (props.selectable) return 'menuitemcheckbox'
@@ -84,6 +107,7 @@ const rootClasses = computed(() => [
   'nb-menu-item',
   {
     'nb-menu-item--disabled': props.disabled,
+    'nb-menu-item--explained': explained.value,
     'nb-menu-item--danger': props.danger,
     'nb-menu-item--selected': props.selected,
   },
@@ -148,14 +172,37 @@ defineExpose({ el: itemRef })
     outline-offset: -2px;
   }
 
+  // The dimming is on what the row holds, not on the row, so the focus ring
+  // of a disabled item the keyboard can stop on stays at full strength, and
+  // the reason, which has to be read, keeps the muted colour's contrast.
   &--disabled {
     color: var(--nb-c-text-muted);
     cursor: not-allowed;
-    opacity: 0.5;
+
+    > :not(.nb-menu-item__text),
+    .nb-menu-item__label {
+      opacity: 0.5;
+    }
 
     &:hover {
       background: transparent;
     }
+  }
+
+  // Two lines: the row grows to fit them instead of clipping the reason, and
+  // the size's height stays its floor so it never looks shorter than its
+  // neighbours.
+  &--explained {
+    height: auto;
+    min-height: var(--nb-menu-item-h);
+    padding-block: 6px;
+  }
+
+  &__text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
   }
 
   &--danger {
@@ -204,6 +251,18 @@ defineExpose({ el: itemRef })
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  // Wraps rather than truncating: a reason cut off with an ellipsis is a
+  // reason nobody can read, and the menu's max width keeps it to a few lines.
+  &__reason {
+    // The same role as a field's helper text: secondary words about the
+    // control directly above them.
+    font-size: var(--nb-type-helper-text-size);
+    line-height: var(--nb-type-helper-text-line-height);
+    letter-spacing: var(--nb-type-helper-text-letter-spacing);
+    color: var(--nb-c-text-muted);
+    white-space: normal;
   }
 
   &__shortcut {

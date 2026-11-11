@@ -39,6 +39,16 @@ export interface IMenuItemProps {
   shortcut?: string
   /** Disables the item */
   disabled?: boolean
+  /**
+   * Why the item is disabled ("Paid invoices cannot be deleted"). Printed
+   * as a muted second line under the label and named as the item's
+   * description (`aria-describedby`), and the arrow keys still stop on the
+   * item, so it explains itself on a pointer, a touch screen, a keyboard and
+   * a screen reader alike. It still cannot be chosen. Read only while
+   * `disabled`: a disabled item without one is skipped by the arrow keys,
+   * as before.
+   */
+  disabledReason?: string
   /** Renders with danger/destructive styling */
   danger?: boolean
   /** Makes this a checkbox-style selectable item */
