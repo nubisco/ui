@@ -36,6 +36,7 @@
               padding: 'var(--nb-base-unit)',
               ...(backgroundColor && { backgroundColor: backgroundColor }),
             }"
+            ref="slotGrid"
             :class="previewClasses"
             tabindex="-1"
             grow
@@ -171,10 +172,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useSlots, provide, reactive, watch, ref } from 'vue'
+import {
+  computed,
+  useSlots,
+  provide,
+  reactive,
+  watch,
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+} from 'vue'
 import { useRoute, useRouter } from 'vitepress'
 import { PreviewProps, PreviewDirection } from './Preview.d'
 import { useTheme } from '../../../../src/composables/useTheme.composable'
+import { usePhoneLayout } from '../../../../src/composables/usePhoneLayout.composable'
 
 const slots = useSlots()
 const route = useRoute()
@@ -219,8 +231,51 @@ function pinTheme(mode: string) {
   themeClass.value = mode
 }
 
+/**
+ * On a phone the frame is about 260px wide, and some demos cannot get that
+ * narrow: a calendar's seven columns, a number input, a pair of panels side by
+ * side. Left alone they widened the page, and the browser zoomed the whole
+ * page out to fit them. Such a frame scrolls sideways instead, like a code
+ * block. Only a frame measured to be too wide does, and only on a phone,
+ * because a scrolling box also clips vertically and a demo that fits keeps
+ * its dropdowns free to spill out of the frame. A desktop never gets it.
+ */
+const { phone } = usePhoneLayout()
+const slotGrid = ref<{ $el?: HTMLElement } | null>(null)
+const scrolls = ref(false)
+let observer: ResizeObserver | null = null
+
+function measure() {
+  const el = slotGrid.value?.$el
+  if (!el || !phone.value) {
+    scrolls.value = false
+    return
+  }
+  // Measured without the scroll, so the answer is the content's own width.
+  const was = el.style.overflowX
+  el.style.overflowX = 'visible'
+  scrolls.value = el.scrollWidth > el.clientWidth + 1
+  el.style.overflowX = was
+}
+
+function observe() {
+  observer?.disconnect()
+  const el = slotGrid.value?.$el
+  if (!el || typeof ResizeObserver === 'undefined') return
+  observer = new ResizeObserver(() => measure())
+  observer.observe(el)
+  for (const child of Array.from(el.children))
+    observer.observe(child as Element)
+  measure()
+}
+
+onMounted(() => nextTick(observe))
+onBeforeUnmount(() => observer?.disconnect())
+watch(phone, () => nextTick(observe))
+
 const previewClasses = computed(() => ({
   'preview--slot': true,
+  'preview--scrolls': scrolls.value,
   [themeClass.value]: true,
 }))
 
@@ -312,6 +367,8 @@ const previewWrapperClasses = computed(() => ({
 </script>
 
 <style lang="scss" scoped>
+@use '../../../../src/styles/variables/breakpoints' as *;
+
 .preview {
   position: relative;
   background: var(--nb-c-surface);
@@ -332,6 +389,17 @@ const previewWrapperClasses = computed(() => ({
     > :deep(* + *) {
       margin-top: calc(var(--nb-base-unit) * 2);
     }
+  }
+  // On a phone a row demo breaks onto more lines rather than running off the
+  // frame, whether or not it asked to with `wrap`. Phone only: on a desktop
+  // a row that fits by letting its items shrink keeps that layout.
+  @include phone {
+    .preview--slot.row {
+      flex-wrap: wrap;
+    }
+  }
+  .preview--slot.preview--scrolls {
+    overflow-x: auto;
   }
   // The boolean control is a switch, not a full-width field, so keep it from
   // being stretched by the distributed row of controls.

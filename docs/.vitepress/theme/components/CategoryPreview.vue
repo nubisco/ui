@@ -100,6 +100,10 @@ const snippet = computed(() => {
 <style scoped lang="scss">
 .category-preview {
   display: grid;
+  // One column that never grows past the page. An implicit column is sized
+  // to its widest content, so the snippet's longest line (557px) widened the
+  // page on a phone. At desktop width the column is the full width either way.
+  grid-template-columns: minmax(0, 1fr);
   gap: calc(var(--nb-base-unit) * 2);
   margin: calc(var(--nb-base-unit) * 3) 0;
 }
@@ -225,5 +229,6 @@ const snippet = computed(() => {
 
 .category-preview__snippet {
   margin: 0;
+  overflow-x: auto;
 }
 </style>
