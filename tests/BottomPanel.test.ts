@@ -38,6 +38,30 @@ describe('BottomPanel', () => {
     expect(w.emitted('update:size')?.[0]).toEqual(['half'])
   })
 
+  it('draws the size controls as named, pressed icon buttons', () => {
+    const w = createWrapper({ size: 'half' })
+    const buttons = w.findAll('.nb-bottom-panel__size-btn')
+    expect(buttons.map((b) => b.attributes('aria-label'))).toEqual([
+      'Minimize',
+      'Default',
+      'Half',
+      'Maximize',
+    ])
+    expect(buttons.map((b) => b.attributes('aria-pressed'))).toEqual([
+      'false',
+      'false',
+      'true',
+      'false',
+    ])
+    for (const b of buttons) {
+      expect(b.attributes('type')).toBe('button')
+      expect(b.classes()).toContain('nb-button--icon-only')
+    }
+    expect(
+      w.find('.nb-bottom-panel__header-right').attributes('aria-label'),
+    ).toBe('Panel size')
+  })
+
   it('renders toolbar slot', () => {
     const w = createWrapper({}, { toolbar: () => 'Toolbar' })
     expect(w.find('.nb-bottom-panel__toolbar').text()).toContain('Toolbar')

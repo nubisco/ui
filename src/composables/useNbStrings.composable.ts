@@ -65,6 +65,14 @@ export interface INbStrings {
   confirmTypeToConfirm: (phrase: string) => string
   // NbShell, the inspector sheet's own dismiss
   shellInspectorClose: string
+  // NbShellPanel size controls
+  shellPanelSize: string
+  shellPanelSizeFor: (title: string) => string
+  shellPanelMinimize: string
+  shellPanelRestore: string
+  shellPanelMaximize: string
+  // NbBottomPanel size group
+  bottomPanelSize: string
   // NbNotificationCenter
   notificationCenterClose: string
   // NbWalkthrough
@@ -163,6 +171,12 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   confirmBusy: 'Working',
   confirmTypeToConfirm: (phrase: string) => `Type ${phrase} to confirm`,
   shellInspectorClose: 'Close inspector',
+  shellPanelSize: 'Panel size',
+  shellPanelSizeFor: (title: string) => `${title} panel size`,
+  shellPanelMinimize: 'Minimize',
+  shellPanelRestore: 'Restore',
+  shellPanelMaximize: 'Maximize',
+  bottomPanelSize: 'Panel size',
   notificationCenterClose: 'Close notifications',
   walkthroughBack: 'Back',
   walkthroughNext: 'Next',

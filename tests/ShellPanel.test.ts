@@ -54,6 +54,30 @@ describe('ShellPanel', () => {
     w.unmount()
   })
 
+  it('draws the size controls as named, pressed icon buttons', () => {
+    const w = mount(ShellPanel, { props: { title: 'Fields', size: 'full' } })
+    const buttons = w.findAll('.nb-shell-panel__size-btn')
+    expect(buttons.map((b) => b.attributes('aria-label'))).toEqual([
+      'Minimize',
+      'Restore',
+      'Maximize',
+    ])
+    for (const b of buttons) {
+      expect(b.classes()).toContain('nb-button--ghost')
+      expect(b.classes()).toContain('nb-button--icon-only')
+    }
+    expect(buttons.map((b) => b.attributes('aria-pressed'))).toEqual([
+      'false',
+      'false',
+      'true',
+    ])
+    expect(
+      w.find('.nb-shell-panel__header-right').attributes('aria-label'),
+    ).toBe('Fields panel size')
+    expect(w.find('svg').exists()).toBe(false)
+    w.unmount()
+  })
+
   // A long title ran under the size buttons: the row let nothing shrink but
   // the buttons. jsdom does no layout, so these read the rules that make the
   // title give way instead, and the full text that stays reachable.
