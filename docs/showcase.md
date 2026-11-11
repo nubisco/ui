@@ -91,7 +91,7 @@ A complete form using `NbTextInput`, `NbSelect`, `NbCheckbox`, `NbSwitch`, and `
 
 Seven variants, seven sizes, icon support, and loading/disabled states. All from a single `NbButton` component.
 
-<preview dir="row">
+<preview dir="row" wrap>
   <NbButton variant="primary">Primary</NbButton>
   <NbButton variant="secondary">Secondary</NbButton>
   <NbButton variant="ghost">Ghost</NbButton>

@@ -28,7 +28,7 @@ A button's variant is its rank. Each region of a page has **one** button at
 the top rung, and everything else steps down from it. If two buttons on one
 screen are equally loud, neither is the point.
 
-<preview dir="row">
+<preview dir="row" wrap>
   <NbButton variant="primary">Publish</NbButton>
   <NbButton variant="tertiary">Export</NbButton>
   <NbButton variant="secondary">Cancel</NbButton>

@@ -14,7 +14,7 @@ The library moves on one scale and one family of curves ([Style](/principles/mot
 
 Motion in a Nubisco application is doing one of exactly three things. If you cannot name which, you have decoration.
 
-<preview dir="row" gap="lg">
+<preview dir="row" gap="lg" wrap>
   <div style="display: grid; gap: 12px; justify-items: start; min-width: 180px;">
     <strong style="font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--nb-c-text-secondary);">Continuity</strong>
     <NbButton ref="jobTrigger" size="sm" variant="secondary" @click="openJobMenu">Actions</NbButton>

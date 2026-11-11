@@ -245,7 +245,7 @@ A `<span>`, an `<svg>` or a `<td>` is not focusable, so its tooltip is unreachab
 
 `position` is a preference. The chip is placed on the requested side, and if it would leave the viewport it flips to the opposite side, then tries the orthogonal pair, then clamps itself inside the viewport with the arrow re-aimed at the anchor. This is what makes it safe in a shell rail, a fixed topbar or a scrolled table.
 
-<preview dir="row">
+<preview dir="row" wrap>
   <NbButton v-nb-tooltip="{ body: 'Above the anchor', position: 'top' }">top</NbButton>
   <NbButton v-nb-tooltip="{ body: 'Right of the anchor', position: 'right' }">right</NbButton>
   <NbButton v-nb-tooltip="{ body: 'Below the anchor', position: 'bottom' }">bottom</NbButton>
@@ -359,7 +359,7 @@ This is not a nicety. WCAG 2.1 AA **1.4.13 Content on Hover or Focus** requires 
 
 ## Tone
 
-<preview dir="row">
+<preview dir="row" wrap>
   <NbButton v-nb-tooltip="{ body: 'Neutral, inverted surface' }">default</NbButton>
   <NbButton v-nb-tooltip="{ body: 'Primary', status: 'primary' }">primary</NbButton>
   <NbButton v-nb-tooltip="{ body: 'Extra context', status: 'info' }">info</NbButton>

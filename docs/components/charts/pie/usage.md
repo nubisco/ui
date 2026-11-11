@@ -34,7 +34,7 @@ const data = [
 
 Choose between percentage (default), absolute value, or no labels.
 
-<preview dir="row">
+<preview dir="row" wrap>
   <NbPieChart height="220" :data="trafficData" labels="percent" />
   <NbPieChart height="220" :data="trafficData" labels="value" />
   <NbPieChart height="220" :data="trafficData" labels="none" />

@@ -18,7 +18,7 @@ pageTabs: ['usage', 'style', 'code', 'accessibility']
   ruler overlay draws its dimension label OUTSIDE the measured element, so each
   label landed on the next button along.
 -->
-<preview dir="row" gap="xxl">
+<preview dir="row" gap="xxl" wrap>
   <measure>
     <NbButton variant="primary" icon="plus" size="xxs">xxs</NbButton>
   </measure>
@@ -246,7 +246,7 @@ colour. It is moved away from the surface (darker in light mode, lighter in
 dark) until it clears WCAG AA on every layer. Under the pointer an outlined
 button fills with its own colour, the way Carbon's tertiary does.
 
-<preview dir="row">
+<preview dir="row" wrap>
   <NbButton variant="tertiary">Export</NbButton>
   <NbButton variant="danger-tertiary">Delete</NbButton>
   <NbButton variant="success" outlined>Mark as paid</NbButton>

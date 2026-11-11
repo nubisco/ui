@@ -30,6 +30,7 @@
           <NbGrid
             :dir="dir"
             :gap="gap"
+            :wrap="wrap ? 'wrap' : null"
             :style="{
               width: '100%',
               padding: 'var(--nb-base-unit)',
@@ -187,6 +188,7 @@ const props = withDefaults(defineProps<PreviewProps>(), {
   backgroundColor: undefined,
   dir: PreviewDirection.Column,
   gap: 'md',
+  wrap: false,
   raw: true,
   constrained: false,
   props: () => [],

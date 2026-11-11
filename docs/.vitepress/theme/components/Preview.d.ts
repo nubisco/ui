@@ -116,6 +116,15 @@ export interface PreviewProps {
    * measures, so a tight row puts each label on top of the next item.
    */
   gap?: TGapSize
+  /**
+   * Let a row demo break onto more lines when its items do not fit.
+   *
+   * Off by default, because most rows fit by letting their items shrink and
+   * must keep that layout. Turn it on for a row whose items cannot shrink
+   * (a ladder of button sizes, every variant side by side): unwrapped, such a
+   * row spills out of the frame and can push the whole page sideways.
+   */
+  wrap?: boolean
   raw?: boolean
   constrained?: boolean
   props?: PreviewPropDef[]

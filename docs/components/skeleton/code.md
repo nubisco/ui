@@ -108,7 +108,7 @@ longer, or `width="100%"` when the button fills a set. `iconOnly` makes it a
 square at the height of `size`, the shape every icon-only button has, and
 ignores `width`.
 
-<preview dir="row" gap="md">
+<preview dir="row" gap="md" wrap>
   <NbSkeleton variant="button" size="sm" />
   <NbSkeleton variant="button" size="md" />
   <NbSkeleton variant="button" size="lg" />
