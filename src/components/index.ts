@@ -12,6 +12,7 @@ import NbBarChart from './Charts/BarChart.vue'
 import NbBoard from './Board.vue'
 import NbBreadcrumbs from './Breadcrumbs.vue'
 import NbButton from './Button.vue'
+import NbButtonSet from './ButtonSet.vue'
 import NbCalendar from './Calendar.vue'
 import NbCard from './Card.vue'
 import NbCardGrid from './CardGrid.vue'
@@ -23,6 +24,7 @@ import NbDatePicker from './DatePicker.vue'
 import NbCheckbox from './Checkbox.vue'
 import NbCheckboxGroup from './CheckboxGroup.vue'
 import NbChipGroup from './ChipGroup.vue'
+import NbCloseButton from './CloseButton.vue'
 import NbColorStrip from './ColorStrip.vue'
 import NbDataTable from './DataTable.vue'
 import NbDefinitionList from './DefinitionList.vue'
@@ -127,6 +129,7 @@ const components = {
   NbBoard,
   NbBreadcrumbs,
   NbButton,
+  NbButtonSet,
   NbCalendar,
   NbCard,
   NbCardGrid,
@@ -138,6 +141,7 @@ const components = {
   NbCheckbox,
   NbCheckboxGroup,
   NbChipGroup,
+  NbCloseButton,
   NbDefinitionList,
   NbDefinitionListItem,
   NbPageLayout,

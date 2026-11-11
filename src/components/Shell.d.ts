@@ -249,6 +249,7 @@ interface IShellProps {
    * `collapseAt`. The button is rendered only in that overlay state, where the
    * sheet covers the topbar and therefore any close control the product put
    * there.
+   * Falls back to the string catalogue's `shellInspectorClose`.
    * @default 'Close inspector'
    */
   inspectorCloseLabel?: string

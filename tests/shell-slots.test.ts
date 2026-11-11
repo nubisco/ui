@@ -724,7 +724,7 @@ describe('ShellPanel size controls', () => {
       w
         .findAll('.nb-shell-panel__size-btn')
         .map((b) => b.attributes('aria-label')),
-    ).toEqual(['Minimize', 'Default', 'Maximize'])
+    ).toEqual(['Minimize', 'Restore', 'Maximize'])
     for (const svg of w.findAll('.nb-shell-panel__size-btn svg')) {
       expect(svg.attributes('aria-hidden')).toBe('true')
     }

@@ -18,29 +18,6 @@
             <span :id="titleId" class="nb-modal--title">
               <slot name="header">{{ title }}</slot>
             </span>
-            <!-- closeAppearance="button": the same ghost icon button that
-                 closes panels and drawers, so a product can have one close
-                 control everywhere. Off by default. -->
-            <NbButton
-              v-if="closeAppearance === 'button'"
-              class="nb-modal--close-button"
-              size="sm"
-              variant="ghost"
-              icon="x"
-              :aria-label="nbStrings.modalClose"
-              :disabled="closeDisabled"
-              @click="emit('close')"
-            />
-            <button
-              v-else
-              class="nb-modal--close"
-              :aria-label="nbStrings.modalClose"
-              :disabled="closeDisabled"
-              :aria-disabled="closeDisabled ? 'true' : undefined"
-              @click="emit('close')"
-            >
-              <NbIcon name="x" />
-            </button>
           </header>
           <main
             ref="bodyRef"
@@ -55,15 +32,28 @@
           >
             <slot />
           </main>
-          <NbGrid
-            is="footer"
-            v-if="$slots.footer"
-            justify="end"
-            class="nb-modal--footer"
-            distributed
-          >
-            <slot name="footer" />
-          </NbGrid>
+          <!-- Carbon's footer: xl buttons that bleed to the dialog's edges,
+               the secondary on the left and the primary on the right, which
+               NbButtonSet places whatever order the slot is written in. -->
+          <footer v-if="$slots.footer" class="nb-modal--footer">
+            <NbButtonSet fluid size="xl" class="nb-modal--actions">
+              <slot name="footer" />
+            </NbButtonSet>
+          </footer>
+          <!-- The close control is drawn in the top right corner and written
+               last, so the tab order is Carbon's: the body, the primary, the
+               secondary, and then the close. A form's first field, or the
+               primary of a dialog without one, is where focus lands on open,
+               not the way out. -->
+          <NbCloseButton
+            v-if="hasHeader"
+            class="nb-modal--close"
+            size="lg"
+            :label="nbStrings.modalClose"
+            :disabled="closeDisabled"
+            :aria-disabled="closeDisabled ? 'true' : undefined"
+            @click="emit('close')"
+          />
         </div>
       </div>
     </Transition>
@@ -72,9 +62,8 @@
 
 <script setup lang="ts">
 import { useNbStrings } from '@/composables/useNbStrings.composable'
-import NbIcon from './Icon.vue'
-import NbButton from './Button.vue'
-import NbGrid from './Grid.vue'
+import NbButtonSet from './ButtonSet.vue'
+import NbCloseButton from './CloseButton.vue'
 import {
   computed,
   nextTick,
@@ -91,7 +80,10 @@ import {
   acquireScrollLock,
   releaseScrollLock,
 } from '@/composables/useScrollLock.composable'
-import { useFocusTrap } from '@/composables/useFocusTrap.composable'
+import {
+  focusablesWithin,
+  useFocusTrap,
+} from '@/composables/useFocusTrap.composable'
 import { useVisualViewportVar } from '@/composables/useVisualViewportVar.composable'
 import { floatingSelector } from './Confirm.env'
 import type { IModalProps } from './Modal.d'
@@ -150,9 +142,27 @@ function onOverlayClick() {
  */
 function resolveInitialFocus(): HTMLElement | null {
   const target = props.initialFocus
-  if (!target) return null
+  if (!target) return safeFirstStop()
   if (typeof target === 'function') return target()
   return contentRef.value?.querySelector<HTMLElement>(target) ?? null
+}
+
+/**
+ * The default landing, which is the first tab stop with one exception.
+ *
+ * The footer's primary comes before its secondary in the tab order, so a
+ * dialog with no fields opens on its primary, as Carbon's does. When that
+ * primary is a filled danger button, Carbon puts first focus on Cancel
+ * instead: a destructive default one Space away from a stray keypress is the
+ * one landing a dialog must never pick. So the danger button is stepped over
+ * to the next stop, which in a footer is the secondary.
+ */
+function safeFirstStop(): HTMLElement | null {
+  const stops = focusablesWithin(contentRef.value)
+  const first = stops[0]
+  if (!first?.classList.contains('nb-button--danger')) return null
+  if (first.classList.contains('nb-button--outlined')) return null
+  return stops[1] ?? null
 }
 
 useFocusTrap({
@@ -297,7 +307,6 @@ defineExpose({ dialogEl: () => contentRef.value, bodyEl: () => bodyRef.value })
 <style scoped lang="scss">
 @use '../styles/logic/motion' as motion;
 @use '../styles/logic/radius' as radius;
-@use '../styles/logic/touch' as touch;
 @use '../styles/variables/breakpoints' as bp;
 
 @use 'sass:list';
@@ -319,6 +328,8 @@ $modal-margin: 20px;
 }
 
 .nb-modal--content {
+  // The containing block for the close button in its corner.
+  position: relative;
   background: var(--nb-c-surface);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   width: 100%;
@@ -381,20 +392,15 @@ $modal-sizes: (
 .nb-modal--header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   flex-shrink: 0;
-  /*
-   * The close control is inset from the dialog's edge rather than flush in
-   * the corner. Flush was tolerable while every corner was square; against a
-   * rounded corner the button's own hover and focus rectangle cuts across the
-   * arc. Nothing sits hard against a rounded parent's border.
-   */
-  padding: var(--nb-overlay-inset, 0);
-  padding-inline-start: 0;
 }
 
 .nb-modal--title {
   padding: 16px 20px;
+  // Clear of the close button, which sits over the header's end.
+  padding-inline-end: calc(
+    var(--nb-base-unit) * 6 + var(--nb-overlay-inset, 0px)
+  );
   font-size: var(--nb-type-heading-01-size);
   font-weight: var(--nb-type-heading-01-weight);
   line-height: var(--nb-type-heading-01-line-height);
@@ -402,58 +408,18 @@ $modal-sizes: (
   color: var(--nb-c-text);
 }
 
-/* closeAppearance="button": inset beside the title like a panel's close, so
-   it lines up with the header's padding instead of filling the corner. */
-.nb-modal--close-button {
-  flex: none;
-  align-self: center;
-  margin-inline-end: var(--nb-spacing-12);
-}
-
+/*
+ * NbCloseButton at lg, 48px, Carbon's close for a dialog. Written last in the
+ * DOM for the tab order and placed in the top right corner here. It is inset
+ * from the corner by the overlay inset rather than flush in it: flush was
+ * tolerable while every corner was square, and against a rounded corner the
+ * button's hover and focus rectangle cuts across the arc.
+ */
 .nb-modal--close {
-  /*
-   * As tall as the title row (16px padding, 24px line, 16px padding), so it
-   * fills the header's corner. A shorter button is centred in the taller row
-   * and leaves a strip of surface above its highlight, which reads as a gap
-   * against the dialog's top edge. Pinned to the start so a title that wraps
-   * to a second line cannot pull it back down out of the corner.
-   */
-  width: calc(var(--nb-base-unit) * 7);
-  height: calc(var(--nb-base-unit) * 7);
-  align-self: flex-start;
-  border: none;
-  background: transparent;
-  /*
-   * Its highlight is ours, and it is concentric with the dialog: the dialog's
-   * corner, less the inset the header holds it at.
-   */
-  @include radius.inset(var(--nb-overlay-inset, 0px));
-  font-size: var(--nb-type-heading-02-size);
-  line-height: 1;
-  color: var(--nb-c-text-muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    background var(--nb-motion-short),
-    color var(--nb-motion-short);
-  flex-shrink: 0;
-  // The square is 28px, which a thumb misses. The target grows, the square
-  // does not.
-  @include touch.hit-area;
-
-  &:hover {
-    background: var(--nb-c-bg-soft);
-    color: var(--nb-c-text);
-  }
-
-  // Without this the browser draws its own ring, which is a square box in the
-  // dialog's corner and belongs to no design language we control.
-  &:focus-visible {
-    outline: 2px solid var(--nb-c-focus-ring);
-    outline-offset: -2px;
-  }
+  position: absolute;
+  inset-block-start: var(--nb-overlay-inset, 0px);
+  inset-inline-end: var(--nb-overlay-inset, 0px);
+  z-index: 1;
 }
 
 .nb-modal--body {
@@ -463,11 +429,35 @@ $modal-sizes: (
   color: var(--nb-c-text);
 }
 
+/*
+ * Carbon's footer. The buttons are xl (64px), bleed to the dialog's edges and
+ * have square corners even under the rounded appearance: they are the bottom
+ * edge of the dialog, not buttons placed on it, and the dialog's own corner
+ * clips the outer two. One button spans the right half. Two share the row.
+ * Three are a quarter each for the two on the left and the right half for
+ * the primary.
+ */
 .nb-modal--footer {
   flex-shrink: 0;
+}
 
+.nb-modal--footer .nb-modal--actions {
+  :deep(> .nb-button) {
+    border-radius: 0;
+  }
+
+  // One button: the right half. The row runs from the right, so it is the
+  // first (and only) item that is capped.
   :deep(> :only-child) {
-    max-width: 50%;
+    flex: 0 0 50%;
+  }
+
+  // Three buttons: 25 / 25 / 50, the primary being the 50.
+  :deep(> :first-child:nth-last-child(3)) {
+    flex: 0 0 50%;
+  }
+  :deep(> :first-child:nth-last-child(3) ~ *) {
+    flex: 0 0 25%;
   }
 }
 

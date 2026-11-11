@@ -373,7 +373,7 @@ import type { TConfirmFn } from '@nubisco/ui'
 | `--nb-spacing-2` to `--nb-spacing-12`      | Gaps and strip padding.                         |
 | `--nb-letter-spacing-wide`                 | The subject strip's kind label.                 |
 
-Every one of them is theme-aware, so the dialog is correct under `.dark` without a second rule. The confirm and cancel buttons take their colour from `NbButton`'s `danger`, `primary` and `ghost` variants.
+Every one of them is theme-aware, so the dialog is correct under `.dark` without a second rule. The confirm and cancel buttons take their colour from `NbButton`'s `danger`, `primary` and `secondary` variants.
 
 ## Branded overrides
 

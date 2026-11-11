@@ -262,8 +262,9 @@ focus placement, the `type-to-confirm`, the busy state and the
 `role="alertdialog"`.
 
 `NbConfirm` gets this right and is the reason to use it rather than assembling a
-dialog: the cancel is a ghost button that holds initial focus, and the confirm
-carries the danger variant and sits where the hand rests but nothing lands.
+dialog: the cancel is a secondary button that holds initial focus, and the
+confirm carries the danger variant and sits where the hand rests but nothing
+lands.
 
 ::: warning Never `window.confirm`
 It is a documented no-op inside a Tauri webview and cannot be driven by a

@@ -558,8 +558,8 @@ hand, primary-styled destructive button included. The right one is `useConfirm()
         <template #header>Confirm Action</template>
         <p style="margin: 0">Are you sure you want to continue?</p>
         <template #footer>
-          <NbButton size="lg" variant="ghost" @click="handRolledOpen = false">Cancel</NbButton>
-          <NbButton size="lg" variant="primary" @click="handRolledOpen = false">Confirm</NbButton>
+          <NbButton variant="secondary" @click="handRolledOpen = false">Cancel</NbButton>
+          <NbButton variant="primary" @click="handRolledOpen = false">Confirm</NbButton>
         </template>
       </NbModal>
       <p class="nfx-note">The confirm button is the same blue as Save, the heading names no action and no record, and nothing on screen says which environment is about to go. Everything the user needs in order to answer is missing from the question.</p>
@@ -585,7 +585,7 @@ the same sentence without stopping anybody:
         <template #header>Export finished</template>
         <p style="margin: 0">Your export finished with 3 skipped rows.</p>
         <template #footer>
-          <NbButton size="lg" variant="primary" @click="infoDialogOpen = false">OK</NbButton>
+          <NbButton variant="primary" @click="infoDialogOpen = false">OK</NbButton>
         </template>
       </NbModal>
       <p class="nfx-note">One control, and it closes the dialog. The count is gone the moment it is acknowledged, so the only thing the interruption bought was the acknowledgement.</p>

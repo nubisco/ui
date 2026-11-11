@@ -119,8 +119,16 @@ describe('phone styles stay behind the phone gate', () => {
     expect(desktop).not.toContain('translateY(100%)')
   })
 
-  it('NbModal: the close square takes 44px of taps on a touch phone', () => {
-    expect(phoneTouchOf('Modal.vue')).toContain('.nb-modal--close::after')
+  // The close used to be a hand-made square that grew a hit area on a
+  // touch phone. It is NbCloseButton at lg now, 48px everywhere, which is
+  // already past a fingertip's 44.
+  it('NbModal: the close button is 48px, so it needs no touch hit area', () => {
+    const source = readFileSync(
+      join(__dirname, '../src/components/Modal.vue'),
+      'utf8',
+    )
+    expect(source).toMatch(/<NbCloseButton[^>]*size="lg"/s)
+    expect(phoneTouchOf('Modal.vue')).not.toContain('.nb-modal--close::after')
   })
 
   it('NbMenuItem: rows are at least 44px on a touch phone', () => {

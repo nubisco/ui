@@ -56,6 +56,36 @@ export interface INbStrings {
   selectionCount: (count: number) => string
   // NbModal
   modalClose: string
+  // NbCloseButton, and every close or dismiss control built on it
+  close: string
+  // NbConfirm
+  confirmConfirm: string
+  confirmCancel: string
+  confirmBusy: string
+  confirmTypeToConfirm: (phrase: string) => string
+  // NbShell, the inspector sheet's own dismiss
+  shellInspectorClose: string
+  // NbShellPanel size controls
+  shellPanelSize: string
+  shellPanelSizeFor: (title: string) => string
+  shellPanelMinimize: string
+  shellPanelRestore: string
+  shellPanelMaximize: string
+  // NbBottomPanel size group
+  bottomPanelSize: string
+  // NbNotificationCenter
+  notificationCenterClose: string
+  // NbCalendar
+  calendarToday: string
+  calendarPreviousMonth: string
+  calendarNextMonth: string
+  // NbWalkthrough
+  walkthroughBack: string
+  walkthroughNext: string
+  walkthroughSkip: string
+  walkthroughDone: string
+  walkthroughProgress: (current: number, total: number) => string
+  walkthroughDialog: string
   // NbTextInput `showCount`
   textInputCount: (length: number, max: number) => string
   // NbTextInput `clearable` and `revealable`
@@ -190,6 +220,29 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   dataTableError: 'Could not load the data',
   selectionCount: (count: number) => `${count} selected`,
   modalClose: 'Close',
+  close: 'Close',
+  confirmConfirm: 'Confirm',
+  confirmCancel: 'Cancel',
+  confirmBusy: 'Working',
+  confirmTypeToConfirm: (phrase: string) => `Type ${phrase} to confirm`,
+  shellInspectorClose: 'Close inspector',
+  shellPanelSize: 'Panel size',
+  shellPanelSizeFor: (title: string) => `${title} panel size`,
+  shellPanelMinimize: 'Minimize',
+  shellPanelRestore: 'Restore',
+  shellPanelMaximize: 'Maximize',
+  bottomPanelSize: 'Panel size',
+  notificationCenterClose: 'Close notifications',
+  calendarToday: 'Today',
+  calendarPreviousMonth: 'Previous month',
+  calendarNextMonth: 'Next month',
+  walkthroughBack: 'Back',
+  walkthroughNext: 'Next',
+  walkthroughSkip: 'Skip',
+  walkthroughDone: 'Done',
+  walkthroughProgress: (current: number, total: number) =>
+    `Step ${current} of ${total}`,
+  walkthroughDialog: 'Product walkthrough',
   textInputCount: (length: number, max: number) => `${length}/${max}`,
   textInputClear: 'Clear',
   textInputShowPassword: 'Show password',

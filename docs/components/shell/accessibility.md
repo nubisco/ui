@@ -59,13 +59,13 @@ The drawer is not a focus trap. It is a navigation region, not a dialog: tabbing
 
 ### The inspector sheet is a covering overlay, so the body goes inert
 
-Below `collapse-at` the inspector covers the content row, topbar included. While it does, `.nb-shell__body` carries both `inert` and `aria-hidden`, so Tab cannot reach the page under the sheet and a screen reader does not read it. The sheet renders its own `<button>` to close (named by `inspector-close-label`), <kbd>Esc</kbd> closes it, focus moves to that button when the sheet opens and returns to the opener when it closes.
+Below `collapse-at` the inspector covers the content row, topbar included. While it does, `.nb-shell__body` carries both `inert` and `aria-hidden`, so Tab cannot reach the page under the sheet and a screen reader does not read it. The sheet renders its own [`NbCloseButton`](/components/close-button/usage) at `lg` to close (named by `inspector-close-label`, else the catalogue's `shellInspectorClose`), <kbd>Esc</kbd> closes it, focus moves to that button when the sheet opens and returns to the opener when it closes.
 
 The dismiss button is not decoration: because the body is inert, and because the body is where the drawer toggle and `topbar-right` live, it is the only control the frame can guarantee is reachable. Above the breakpoint none of this applies and none of it renders.
 
 ### Panel size controls
 
-`NbShellPanel`'s default minimize / default / maximize buttons are `type="button"` (they are commonly inside a form in an inspector), carry `aria-pressed` for the active size, sit in a named `role="group"`, and their glyphs are `aria-hidden`. Replacing the `controls` slot replaces all of that, so name your own buttons.
+`NbShellPanel`'s default minimize / restore / maximize buttons are icon-only `NbButton`s: `type="button"` (they are commonly inside a form in an inspector), named from the string catalogue, with `aria-pressed` for the active size and the library's focus ring, in a named `role="group"`. Replacing the `controls` slot replaces all of that, so name your own buttons.
 
 ### Motion
 

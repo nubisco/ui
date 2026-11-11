@@ -59,38 +59,62 @@ describe('Modal', () => {
     expect(wrapper.emitted('close')).toBeTruthy()
   })
 
-  describe('closeAppearance', () => {
-    it('keeps the corner close by default', () => {
+  describe('close control', () => {
+    it('is NbCloseButton at lg, named from the catalogue', async () => {
       const wrapper = createWrapper({ open: true, title: 'T' })
-      expect(wrapper.find('.nb-modal--close').exists()).toBe(true)
-      expect(wrapper.find('.nb-modal--close-button').exists()).toBe(false)
+      const close = wrapper.find('.nb-modal--close')
+      expect(close.exists()).toBe(true)
+      expect(close.classes()).toContain('nb-button--ghost')
+      expect(close.classes()).toContain('nb-button--lg')
+      expect(close.classes()).toContain('nb-button--icon-only')
+      expect(close.attributes('aria-label')).toBe('Close')
+      await close.trigger('click')
+      expect(wrapper.emitted('close')).toBeTruthy()
     })
 
-    it('renders a ghost icon button when asked', async () => {
-      const wrapper = createWrapper({
+    // The two appearances used to be a 56px corner square and a 32px ghost
+    // button. Both are now the one close control, so the deprecated prop
+    // still compiles and changes nothing.
+    it('renders the same control whatever closeAppearance says', () => {
+      const corner = createWrapper({
+        open: true,
+        title: 'T',
+        closeAppearance: 'corner',
+      })
+      const button = createWrapper({
         open: true,
         title: 'T',
         closeAppearance: 'button',
       })
-      expect(wrapper.find('.nb-modal--close').exists()).toBe(false)
-      const button = wrapper.find('.nb-modal--close-button')
-      expect(button.exists()).toBe(true)
-      expect(button.classes()).toContain('nb-button')
-      expect(button.attributes('aria-label')).toBe('Close')
-      await button.trigger('click')
-      expect(wrapper.emitted('close')).toBeTruthy()
+      expect(corner.find('.nb-modal--close').classes()).toEqual(
+        button.find('.nb-modal--close').classes(),
+      )
+      expect(button.find('.nb-modal--close-button').exists()).toBe(false)
     })
 
     it('honours closeDisabled', () => {
       const wrapper = createWrapper({
         open: true,
         title: 'T',
-        closeAppearance: 'button',
         closeDisabled: true,
       })
       expect(
-        wrapper.find('.nb-modal--close-button').attributes('disabled'),
+        wrapper.find('.nb-modal--close').attributes('disabled'),
       ).toBeDefined()
+    })
+
+    // Carbon's tab order is the body, the primary, the secondary and then
+    // the close, so the close is the dialog's last element.
+    it('comes after the footer in the DOM', () => {
+      const wrapper = createWrapper(
+        { open: true, title: 'T' },
+        {
+          footer:
+            '<button class="cancel">Cancel</button><button class="save">Save</button>',
+        },
+      )
+      const content = wrapper.find('.nb-modal--content').element
+      expect(content.lastElementChild?.classList).toContain('nb-modal--close')
     })
   })
 

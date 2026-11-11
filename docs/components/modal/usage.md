@@ -21,8 +21,8 @@ The fix is not a better footer. It is [`useConfirm()`](/composables/use-confirm)
     <template #header>Rename workspace</template>
     <p style="margin: 0">Body content inside a modal.</p>
     <template #footer>
-      <NbButton size="lg" variant="ghost" @click="openBasic = false">Cancel</NbButton>
-      <NbButton size="lg" variant="primary" @click="openBasic = false">Rename</NbButton>
+      <NbButton variant="secondary" @click="openBasic = false">Cancel</NbButton>
+      <NbButton variant="primary" @click="openBasic = false">Rename</NbButton>
     </template>
   </NbModal>
 </preview>
@@ -34,10 +34,8 @@ The fix is not a better footer. It is [`useConfirm()`](/composables/use-confirm)
     <template #header>Rename workspace</template>
     <NbTextInput v-model="name" label="Name" />
     <template #footer>
-      <NbButton size="lg" variant="ghost" @click="open = false"
-        >Cancel</NbButton
-      >
-      <NbButton size="lg" variant="primary" @click="rename">Rename</NbButton>
+      <NbButton variant="secondary" @click="open = false">Cancel</NbButton>
+      <NbButton variant="primary" @click="rename">Rename</NbButton>
     </template>
   </NbModal>
 </template>
@@ -60,11 +58,11 @@ Seven parts, and every rule further down this page is about one of them. The cla
 | 2   | Dialog box    | `.nb-modal--content` | The component        | `role="dialog"` (or `alertdialog`), `aria-modal="true"`, `tabindex="-1"`. Also carries `.nb-modal--content--{size}`, which is where the caps live |
 | 3   | Header        | `.nb-modal--header`  | `title` or `#header` | Rendered only when one of the two is given. Without it the dialog has no accessible name and no close control                                     |
 | 4   | Title         | `.nb-modal--title`   | `title` or `#header` | Carries the generated id the dialog is `aria-labelledby`-ed to, unless you override it with `labelledBy`                                          |
-| 5   | Close control | `.nb-modal--close`   | The component        | The X. Always present when there is a header, always emits `close`, disabled by `closeDisabled`                                                   |
+| 5   | Close control | `.nb-modal--close`   | The component        | `NbCloseButton` at `lg`, 48px, in the top right corner and last in the tab order. Present when there is a header, disabled by `closeDisabled`     |
 | 6   | Body          | `.nb-modal--body`    | The default slot     | The only scrolling region. Becomes a labelled, focusable `role="region"` while it overflows                                                       |
-| 7   | Footer        | `.nb-modal--footer`  | `#footer`            | An `NbGrid` with `justify="end"` and `distributed`, rendered only when the slot has content. It is an action bar already, see below               |
+| 7   | Footer        | `.nb-modal--footer`  | `#footer`            | A fluid `NbButtonSet` of xl buttons, rendered only when the slot has content. It is an action bar already, see below                              |
 
-Two of those are not yours to build. The header lays out its own title and X, and the footer is already a grid, so anything you put inside either one is a child of an existing layout rather than the start of a new one. That is the single most common way this component is misused.
+Two of those are not yours to build. The header lays out its own title and X, and the footer is already a button set, so anything you put inside either one is a child of an existing layout rather than the start of a new one. That is the single most common way this component is misused.
 
 ## When to use
 

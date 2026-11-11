@@ -49,9 +49,12 @@ interface IModalProps {
    */
   closeDisabled?: boolean
   /**
-   * How the close control looks. 'corner' (the default) is the modal's own
-   * square in the header corner. 'button' is a ghost icon NbButton, matching
-   * the close control of panels and drawers.
+   * How the close control looks.
+   *
+   * @deprecated Both values now render the same control: NbCloseButton at
+   * `lg` (48px) in the top right corner, the close every dialog, side panel
+   * and sheet shares. The prop is still accepted so existing callers keep
+   * compiling, and it no longer changes anything. Drop it.
    */
   closeAppearance?: 'corner' | 'button'
   /**
@@ -76,10 +79,11 @@ interface IModalProps {
    * Where focus lands when the dialog opens. A CSS selector resolved inside
    * the dialog, or a function returning the element.
    *
-   * The default is the first focusable control, which in a dialog with a
-   * header is the close button. That is a fine landing for a dialog you only
-   * read, and the wrong one for a form: point this at the first field so the
-   * user can start typing.
+   * The default is the first focusable control in the tab order, which is
+   * Carbon's: the body, then the footer's primary, then its secondary, and
+   * the close button last. A form therefore opens on its first field, and a
+   * dialog with no fields on its primary. Point this elsewhere when the first
+   * field is not the one the user starts with.
    *
    * ```vue
    * <NbModal :open="open" initial-focus=".name-field input" @close="..." />

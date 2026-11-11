@@ -14,90 +14,24 @@
         </div>
       </div>
 
-      <div class="nb-bottom-panel__header-right">
-        <!-- Size controls -->
-        <button
+      <div
+        class="nb-bottom-panel__header-right"
+        role="group"
+        :aria-label="nbStrings.bottomPanelSize"
+      >
+        <!-- Icon-only ghost NbButtons at xs, the size that fits the 28px
+             header, with the size the panel is at marked `pressed`. -->
+        <NbButton
+          v-for="control in sizeControls"
+          :key="control.size"
           class="nb-bottom-panel__size-btn"
-          :class="{ active: currentSize === 'collapsed' }"
-          :title="nbStrings.bottomPanelMinimize"
-          @click="setSize('collapsed')"
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12">
-            <line
-              x1="2"
-              y1="10"
-              x2="10"
-              y2="10"
-              stroke="currentColor"
-              stroke-width="1.5"
-            />
-          </svg>
-        </button>
-        <button
-          class="nb-bottom-panel__size-btn"
-          :class="{ active: currentSize === 'default' }"
-          :title="nbStrings.bottomPanelDefault"
-          @click="setSize('default')"
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12">
-            <rect
-              x="1"
-              y="5"
-              width="10"
-              height="6"
-              rx="1"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.2"
-            />
-          </svg>
-        </button>
-        <button
-          class="nb-bottom-panel__size-btn"
-          :class="{ active: currentSize === 'half' }"
-          :title="nbStrings.bottomPanelHalf"
-          @click="setSize('half')"
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12">
-            <rect
-              x="1"
-              y="3"
-              width="10"
-              height="8"
-              rx="1"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.2"
-            />
-          </svg>
-        </button>
-        <button
-          class="nb-bottom-panel__size-btn"
-          :class="{ active: currentSize === 'full' }"
-          :title="nbStrings.bottomPanelMaximize"
-          @click="setSize('full')"
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12">
-            <rect
-              x="1"
-              y="1"
-              width="10"
-              height="10"
-              rx="1"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.2"
-            />
-            <line
-              x1="1"
-              y1="3.5"
-              x2="11"
-              y2="3.5"
-              stroke="currentColor"
-              stroke-width="1.2"
-            />
-          </svg>
-        </button>
+          variant="ghost"
+          size="xs"
+          :icon="control.icon"
+          :label="control.label"
+          :pressed="currentSize === control.size"
+          @click="setSize(control.size)"
+        />
       </div>
     </div>
 
@@ -109,9 +43,15 @@
 </template>
 
 <script setup lang="ts">
+import * as iconMinus from '@nubisco/ui/icons/minus'
+import * as iconCornersIn from '@nubisco/ui/icons/corners-in'
+import * as iconSquareHalfBottom from '@nubisco/ui/icons/square-half-bottom'
+import * as iconCornersOut from '@nubisco/ui/icons/corners-out'
 import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { computed } from 'vue'
+import type { TIconSource } from '@/types/Glyph.d'
 import type { TBottomPanelSize, IBottomPanelProps } from './BottomPanel.d'
+import NbButton from './Button.vue'
 
 const nbStrings = useNbStrings()
 
@@ -129,6 +69,36 @@ const currentSize = computed({
   set: (v) => emit('update:size', v),
 })
 
+/*
+ * The four sizes as data: one NbButton in a loop instead of four hand-drawn
+ * 12px SVGs that had no focus ring and were named by `title` alone. Glyph
+ * modules, because names in script are invisible to the compile-time plugin.
+ */
+const sizeControls = computed<
+  { size: TBottomPanelSize; icon: TIconSource; label: string }[]
+>(() => [
+  {
+    size: 'collapsed',
+    icon: iconMinus,
+    label: nbStrings.value.bottomPanelMinimize,
+  },
+  {
+    size: 'default',
+    icon: iconCornersIn,
+    label: nbStrings.value.bottomPanelDefault,
+  },
+  {
+    size: 'half',
+    icon: iconSquareHalfBottom,
+    label: nbStrings.value.bottomPanelHalf,
+  },
+  {
+    size: 'full',
+    icon: iconCornersOut,
+    label: nbStrings.value.bottomPanelMaximize,
+  },
+])
+
 function setSize(size: TBottomPanelSize) {
   currentSize.value = size
 }
@@ -137,8 +107,6 @@ defineExpose({ setSize })
 </script>
 
 <style scoped lang="scss">
-@use '../styles/logic/radius' as radius;
-
 .nb-bottom-panel {
   // --nb-bottom-panel-* defaults live at :root in styles/_theme.scss so consumer
   // apps can override them on :root without fighting scoped-style specificity.
@@ -207,31 +175,9 @@ defineExpose({ setSize })
   gap: 4px;
 }
 
+// NbButton draws the size controls. The row only has to keep them whole.
 .nb-bottom-panel__size-btn {
-  width: 22px;
-  height: 22px;
-  border: none;
-  // a small square icon affordance
-  @include radius.standalone(control-sm);
-  background: transparent;
-  color: var(--nb-c-text-muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    background var(--nb-motion-quick),
-    color var(--nb-motion-quick);
-
-  &:hover {
-    background: var(--nb-c-surface-hover, rgba(255, 255, 255, 0.08));
-    color: var(--nb-c-text);
-  }
-
-  &.active {
-    background: var(--nb-c-surface-hover, rgba(255, 255, 255, 0.12));
-    color: var(--nb-c-text);
-  }
+  flex-shrink: 0;
 }
 
 .nb-bottom-panel__content {

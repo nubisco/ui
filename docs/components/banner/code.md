@@ -95,16 +95,16 @@ Put the way to resolve the banner in the `action` slot. Keep it to one or two co
 
 ## Props
 
-| Prop          | Type                                                       | Default     | Description                                              |
-| ------------- | ---------------------------------------------------------- | ----------- | -------------------------------------------------------- |
-| `status`      | `'info' \| 'success' \| 'warning' \| 'error' \| 'neutral'` | `'info'`    | The tone. Picks the ground, the ink and the icon.        |
-| `variant`     | `'inline' \| 'callout'`                                    | `'inline'`  | Reports an outcome, or states a standing fact.           |
-| `title`       | `string`                                                   | `undefined` | Short and declarative, no full stop.                     |
-| `dismissible` | `boolean`                                                  | `false`     | Shows a close button. Ignored when `variant="callout"`.  |
-| `icon`        | `string`                                                   | `undefined` | Overrides the icon that `status` would pick.             |
-| `hideIcon`    | `boolean`                                                  | `false`     | Removes the icon. Colour must then not be the only cue.  |
-| `flush`       | `boolean`                                                  | `false`     | Drops the radius and side borders, for edge-to-edge use. |
-| `closeLabel`  | `string`                                                   | `'Close'`   | Accessible label for the close button.                   |
+| Prop          | Type                                                       | Default     | Description                                                                         |
+| ------------- | ---------------------------------------------------------- | ----------- | ----------------------------------------------------------------------------------- |
+| `status`      | `'info' \| 'success' \| 'warning' \| 'error' \| 'neutral'` | `'info'`    | The tone. Picks the ground, the ink and the icon.                                   |
+| `variant`     | `'inline' \| 'callout'`                                    | `'inline'`  | Reports an outcome, or states a standing fact.                                      |
+| `title`       | `string`                                                   | `undefined` | Short and declarative, no full stop.                                                |
+| `dismissible` | `boolean`                                                  | `false`     | Shows a close button. Ignored when `variant="callout"`.                             |
+| `icon`        | `string`                                                   | `undefined` | Overrides the icon that `status` would pick.                                        |
+| `hideIcon`    | `boolean`                                                  | `false`     | Removes the icon. Colour must then not be the only cue.                             |
+| `flush`       | `boolean`                                                  | `false`     | Drops the radius and side borders, for edge-to-edge use.                            |
+| `closeLabel`  | `string`                                                   | catalogue   | Accessible label for the close button. Falls back to the string catalogue's `close` |
 
 ## Slots
 
@@ -148,6 +148,6 @@ Every rule reads from one pair of custom properties, so one banner can be retint
 - `status="error"` renders `role="alert"` with `aria-live="assertive"`, so it interrupts. Every other status uses `role="status"` with `aria-live="polite"`.
 - The title and body are one `<p>`, so a screen reader announces the banner as a single sentence rather than two fragments.
 - The icon is `aria-hidden`; the text carries the meaning.
-- The close button takes its accessible name from `closeLabel`.
+- The close button is an [`NbCloseButton`](/components/close-button/usage) at `sm` in the banner's own ink, so it stays legible on every status. It takes its accessible name from `closeLabel`, else the catalogue's `close`.
 
 <!--@include: ./_shared.md-->

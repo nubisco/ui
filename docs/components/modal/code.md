@@ -65,29 +65,26 @@ The whole decision (when to confirm, when confirming is itself the bug, what the
 
 ## The footer is already an action bar
 
-Wrapping the footer buttons breaks this in a way you can see: a single half-width button floating in the middle of the dialog.
+Wrapping the footer buttons breaks this in a way you can see: a group squeezed into the right half of the dialog with padding fighting its edges.
 
-`Modal.vue` renders the `#footer` slot inside a grid that is already a right-aligned, distributed action bar:
+`Modal.vue` renders the `#footer` slot inside a fluid [`NbButtonSet`](/components/button-set/usage) of xl buttons, Carbon's dialog footer:
 
 ```vue
-<NbGrid
-  is="footer"
-  v-if="$slots.footer"
-  justify="end"
-  class="nb-modal--footer"
-  distributed
->
-  <slot name="footer" />
-</NbGrid>
+<footer v-if="$slots.footer" class="nb-modal--footer">
+  <NbButtonSet fluid size="xl" class="nb-modal--actions">
+    <slot name="footer" />
+  </NbButtonSet>
+</footer>
 ```
 
-Three consequences follow, and they are the whole contract:
+Four consequences follow, and they are the whole contract:
 
-- **`distributed` gives every direct child `flex: 1`.** Two buttons become two equal columns filling the footer, edge to edge. That is the bar, and it is why footer buttons carry `size="lg"`.
-- **A single child is capped at half the width** (`:only-child { max-width: 50% }`) and pushed to the end by `justify="end"`. One button is deliberately a half-width button on the right, not a full-bleed one.
-- **A wrapper counts as one child.** Wrapping your buttons in an `NbPanel` or an `NbGrid` makes the whole group the only child, so the group is squeezed to 50%, the padding you added fights the bar's own edges, and the nesting buys nothing that was not already there.
+- **Every button is xl, 64px, with square corners.** The set gives each `NbButton` its size, so footer buttons carry no `size` of their own, and the corners stay square under the rounded appearance because the buttons are the dialog's bottom edge. The dialog's own corner clips the outer two.
+- **The widths are Carbon's.** One button spans the right half. Two share the row equally. Three are a quarter each for the two on the left and the right half for the primary.
+- **The primary goes on the right, whatever order you write.** The set reads each button's `variant`: a filled `primary` or `danger` is drawn rightmost and comes first in the tab order, then the secondary, then the close button. Write Cancel first and the commit second, as it reads.
+- **A wrapper counts as one child.** Wrapping your buttons in an `NbPanel` or an `NbGrid` makes the whole group the only child, so the group is squeezed to the right half and the nesting buys nothing that was not already there.
 
-So the buttons go in bare. Cancel first, commit second, both `size="lg"`.
+So the buttons go in bare: a `secondary` Cancel and a `primary` (or `danger`) commit, no size.
 
 | Don't                                              | Do                                                                |
 | -------------------------------------------------- | ----------------------------------------------------------------- |
@@ -149,10 +146,8 @@ A dialog that closes on a failed submit has thrown the user's typing away and to
       @update:model-value="emailError = ''"
     />
     <template #footer>
-      <NbButton size="lg" variant="ghost" @click="close">Cancel</NbButton>
-      <NbButton size="lg" variant="primary" @click="submit"
-        >Send invite</NbButton
-      >
+      <NbButton variant="secondary" @click="close">Cancel</NbButton>
+      <NbButton variant="primary" @click="submit">Send invite</NbButton>
     </template>
   </NbModal>
 </template>
@@ -215,10 +210,10 @@ Once the commit has been fired, the dialog owes the user three things, and they 
 >
   <p>Every entry, release and API key in {{ name }} is deleted.</p>
   <template #footer>
-    <NbButton size="lg" variant="ghost" :disabled="saving" @click="open = false">
+    <NbButton variant="secondary" :disabled="saving" @click="open = false">
       Cancel
     </NbButton>
-    <NbButton size="lg" variant="danger" :loading="saving" :disabled="saving" @click="commit">
+    <NbButton variant="danger" :loading="saving" :disabled="saving" @click="commit">
       Delete environment
     </NbButton>
   </template>
@@ -255,7 +250,7 @@ neither can overflow the viewport or push the page into horizontal scroll.
       Scrollable body content line {{ n }}.
     </p>
     <template #footer>
-      <NbButton size="lg" @click="openSize = null">Close</NbButton>
+      <NbButton variant="primary" @click="openSize = null">Close</NbButton>
     </template>
   </NbModal>
 </preview>
@@ -306,7 +301,7 @@ Open the same four-column comparison at each size to see the difference:
       </NbPanel>
     </NbGrid>
     <template #footer>
-      <NbButton size="lg" @click="openWide = null">Close</NbButton>
+      <NbButton variant="primary" @click="openWide = null">Close</NbButton>
     </template>
   </NbModal>
 </preview>
@@ -338,17 +333,17 @@ Open the same four-column comparison at each size to see the difference:
 | `busy`           | `boolean`                                     | `false`     | Marks the dialog `aria-busy` while work it started is in flight. Set it with `closeDisabled`, never alone                                                                                                                 |
 | `closeDisabled`  | `boolean`                                     | `false`     | Disables the header close control (`disabled` and `aria-disabled`) **and switches off the <kbd>Esc</kbd> route**: the key handler returns early on it, so a dialog with it set and no footer exit has no keyboard way out |
 
-::: warning No prop for the close button's name
-The header X carries a hardcoded `aria-label="Close"`. Unlike [`NbToast`](/components/toast/usage), which exposes `closeLabel`, there is nothing to translate it with. Render your own control in `#header` if that matters to you.
-:::
+The close button is [`NbCloseButton`](/components/close-button/usage) at `lg`. Its name comes from the string catalogue's `modalClose`, so translate it with `provideNbStrings({ modalClose: '...' })`.
+
+`closeAppearance` is deprecated. `'corner'` and `'button'` used to draw a 56px square and a 32px ghost button. Both now render the same 48px `NbCloseButton`, so the prop still compiles and changes nothing.
 
 ## Slots
 
-| Slot      | Description                                                                                       |
-| --------- | ------------------------------------------------------------------------------------------------- |
-| `header`  | Title area. Rendering either this or `title` is what gives the dialog its accessible name         |
-| `default` | Body. Scrolls, and becomes a focusable labelled region when it overflows                          |
-| `footer`  | Action bar. Put buttons in bare: the slot is already inside a right-aligned, distributed `NbGrid` |
+| Slot      | Description                                                                                     |
+| --------- | ----------------------------------------------------------------------------------------------- |
+| `header`  | Title area. Rendering either this or `title` is what gives the dialog its accessible name       |
+| `default` | Body. Scrolls, and becomes a focusable labelled region when it overflows                        |
+| `footer`  | Action bar. Put buttons in bare: the slot is already inside a fluid `NbButtonSet` of xl buttons |
 
 ## Events
 

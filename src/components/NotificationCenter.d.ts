@@ -132,7 +132,8 @@ export interface INotificationCenterProps {
   width?: number
   /**
    * Accessible name of the close button the panel carries on a phone, where
-   * it is a full-screen sheet and nothing outside it is left to tap.
+   * it is a full-screen sheet and nothing outside it is left to tap. Falls
+   * back to the string catalogue's `notificationCenterClose`.
    */
   closeLabel?: string
   /** Tallest the scrolling list may get, in px. Clamped further when the

@@ -47,9 +47,13 @@ stands in for it.
 
 #### Directing initial focus
 
-The default landing is the first focusable control, which in a dialog with a
-header is the close button. That is right for a dialog you only read and wrong
-for a form, so point `initialFocus` at the field:
+The tab order is Carbon's: the body, then the footer's primary, then its
+secondary, and the close button last. The default landing is the first stop in
+that order, so a form opens on its first field and a dialog with no fields on
+its primary. The one exception is a `danger` primary: the default steps over it
+to the secondary, because a destructive button one <kbd>Space</kbd> from a
+stray keypress is the one landing a dialog must never pick. Point
+`initialFocus` elsewhere when the first field is not where the user starts:
 
 ```vue
 <NbModal :open="open" title="Invite teammate" initial-focus="input" @close="open = false">
@@ -96,8 +100,8 @@ again. The readout is `document.activeElement`.
       <NbTextInput v-model="trapNotes" label="Notes" />
     </NbGrid>
     <template #footer>
-      <NbButton size="lg" variant="ghost" @click="openTrap = false">Cancel</NbButton>
-      <NbButton size="lg" variant="primary" @click="openTrap = false">Save</NbButton>
+      <NbButton variant="secondary" @click="openTrap = false">Cancel</NbButton>
+      <NbButton variant="primary" @click="openTrap = false">Save</NbButton>
     </template>
   </NbModal>
 </preview>

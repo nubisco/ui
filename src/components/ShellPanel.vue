@@ -25,84 +25,25 @@
       <div
         class="nb-shell-panel__header-right"
         role="group"
-        :aria-label="title ? `${title} panel size` : 'Panel size'"
+        :aria-label="
+          title ? nbStrings.shellPanelSizeFor(title) : nbStrings.shellPanelSize
+        "
       >
         <slot name="controls">
-          <!-- Minimize -->
-          <button
-            type="button"
+          <!-- Icon-only ghost NbButtons at xs, the one size that fits the
+               28px header. `pressed` marks the size the panel is at, and
+               `label` names each one and is its tooltip. -->
+          <NbButton
+            v-for="control in sizeControls"
+            :key="control.size"
             class="nb-shell-panel__size-btn"
-            :class="{ active: currentSize === 'collapsed' }"
-            :aria-pressed="currentSize === 'collapsed'"
-            :title="'Minimize'"
-            :aria-label="'Minimize'"
-            @click="setSize('collapsed')"
-          >
-            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
-              <line
-                x1="2"
-                y1="10"
-                x2="10"
-                y2="10"
-                stroke="currentColor"
-                stroke-width="1.5"
-              />
-            </svg>
-          </button>
-          <!-- Default (share space) -->
-          <button
-            type="button"
-            class="nb-shell-panel__size-btn"
-            :class="{ active: currentSize === 'default' }"
-            :aria-pressed="currentSize === 'default'"
-            :title="'Default'"
-            :aria-label="'Default'"
-            @click="setSize('default')"
-          >
-            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
-              <rect
-                x="1"
-                y="5"
-                width="10"
-                height="6"
-                rx="1"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.2"
-              />
-            </svg>
-          </button>
-          <!-- Maximize -->
-          <button
-            type="button"
-            class="nb-shell-panel__size-btn"
-            :class="{ active: currentSize === 'full' }"
-            :aria-pressed="currentSize === 'full'"
-            :title="'Maximize'"
-            :aria-label="'Maximize'"
-            @click="setSize('full')"
-          >
-            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
-              <rect
-                x="1"
-                y="1"
-                width="10"
-                height="10"
-                rx="1"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.2"
-              />
-              <line
-                x1="1"
-                y1="3.5"
-                x2="11"
-                y2="3.5"
-                stroke="currentColor"
-                stroke-width="1.2"
-              />
-            </svg>
-          </button>
+            variant="ghost"
+            size="xs"
+            :icon="control.icon"
+            :label="control.label"
+            :pressed="currentSize === control.size"
+            @click="setSize(control.size)"
+          />
         </slot>
       </div>
     </div>
@@ -115,9 +56,15 @@
 </template>
 
 <script setup lang="ts">
+import * as iconMinus from '@nubisco/ui/icons/minus'
+import * as iconCornersIn from '@nubisco/ui/icons/corners-in'
+import * as iconCornersOut from '@nubisco/ui/icons/corners-out'
 import { computed, ref, watch } from 'vue'
+import type { TIconSource } from '@/types/Glyph.d'
 import type { TShellPanelSize, IShellPanelProps } from './ShellPanel.d'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
+import NbButton from './Button.vue'
 
 const props = withDefaults(defineProps<IShellPanelProps>(), {
   size: 'default',
@@ -150,6 +97,34 @@ const currentSize = computed({
     emit('update:size', v)
   },
 })
+
+const nbStrings = useNbStrings()
+
+/*
+ * The three sizes as data, so the buttons are one NbButton in a loop rather
+ * than three copies of a hand-drawn 12px SVG. The glyphs are imported as
+ * modules because the names live in script, where the compile-time plugin
+ * cannot see them.
+ */
+const sizeControls = computed<
+  { size: TShellPanelSize; icon: TIconSource; label: string }[]
+>(() => [
+  {
+    size: 'collapsed',
+    icon: iconMinus,
+    label: nbStrings.value.shellPanelMinimize,
+  },
+  {
+    size: 'default',
+    icon: iconCornersIn,
+    label: nbStrings.value.shellPanelRestore,
+  },
+  {
+    size: 'full',
+    icon: iconCornersOut,
+    label: nbStrings.value.shellPanelMaximize,
+  },
+])
 
 function setSize(size: TShellPanelSize) {
   currentSize.value = size
@@ -308,31 +283,9 @@ defineExpose({ setSize })
   gap: 4px;
 }
 
+// NbButton draws the size controls. The row only has to keep them whole.
 .nb-shell-panel__size-btn {
   flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  border: none;
-  border-radius: 3px;
-  background: transparent;
-  color: var(--nb-c-text-muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    background var(--nb-motion-quick),
-    color var(--nb-motion-quick);
-
-  &:hover {
-    background: var(--nb-c-surface-hover, rgba(255, 255, 255, 0.08));
-    color: var(--nb-c-text);
-  }
-
-  &.active {
-    background: var(--nb-c-surface-hover, rgba(255, 255, 255, 0.12));
-    color: var(--nb-c-text);
-  }
 }
 
 .nb-shell-panel__content {
@@ -355,13 +308,11 @@ defineExpose({ setSize })
   overflow: auto;
 }
 
-// The dimmed-header fade and the size-button hover tint are decorative
-// transitions on states the panel reaches either way, so the preference can
-// remove them outright. The library asks consumers to gate their animations;
-// it does not get to exempt its own.
+// The dimmed-header fade is a decorative transition on a state the panel
+// reaches either way, so the preference can remove it outright. The library
+// asks consumers to gate their animations. It does not get to exempt its own.
 @include motion.reduced {
-  .nb-shell-panel.collapsed .nb-shell-panel__header,
-  .nb-shell-panel__size-btn {
+  .nb-shell-panel.collapsed .nb-shell-panel__header {
     transition: none;
   }
 }
