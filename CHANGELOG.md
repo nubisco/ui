@@ -1,3 +1,19 @@
+# [5.52.0](https://github.com/nubisco/ui/compare/v5.51.0...v5.52.0) (2026-11-12)
+
+
+### Bug Fixes
+
+* **bar-chart:** keep the top value label inside the chart, as the line chart does ([36a6a59](https://github.com/nubisco/ui/commit/36a6a593e997213b8f874c118e67be3c92ab6d1f))
+* **button:** centre the icon of an icon-only button in every variant ([38af483](https://github.com/nubisco/ui/commit/38af483a336489da9638c823eef66c5e2b338a1d))
+* **stat:** name the hint after its tile ([384a47e](https://github.com/nubisco/ui/commit/384a47e0bfae24f8802de8baa25aebe0b98372ca))
+
+
+### Features
+
+* **charts:** opt-in entrance animation for bar, line, pie and sparkline, and a total row for the bar tooltip ([654bd9a](https://github.com/nubisco/ui/commit/654bd9a42c486e8462f283bb6c5d318dd069f298))
+* **panel:** optional icon before the title ([b64bb6b](https://github.com/nubisco/ui/commit/b64bb6b3014ac15a65634d78a1104d4c1ec204c5))
+* **stat:** hint, icon and link arrow, with the hint beside the link rather than inside it ([37429b6](https://github.com/nubisco/ui/commit/37429b6b4326e1caa4947856cad5609db68906a2))
+
 # [5.51.0](https://github.com/nubisco/ui/compare/v5.50.1...v5.51.0) (2026-11-11)
 
 
