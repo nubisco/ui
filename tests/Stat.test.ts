@@ -167,4 +167,109 @@ describe('NbStat', () => {
     })
     expect(w.findComponent(Skeleton).props('height')).toBe(20)
   })
+
+  describe('hint, icon and arrow', () => {
+    it('renders no extra markup without the new props', () => {
+      const w = mount(Stat, { props: { label: 'Keys', value: 4, href: '/k' } })
+      expect(w.find('.nb-stat__head').exists()).toBe(false)
+      expect(w.find('.nb-stat__link').exists()).toBe(false)
+      expect(w.find('.nb-info-hint').exists()).toBe(false)
+      expect(w.find('.nb-stat__label').attributes('id')).toBeUndefined()
+      expect(w.element.tagName).toBe('A')
+    })
+
+    it('shows an info hint beside the label on a plain tile', () => {
+      const w = mount(Stat, {
+        props: {
+          label: 'Keys',
+          value: 4,
+          hint: 'Keys created this month',
+          hintTitle: 'Keys',
+        },
+      })
+      expect(w.element.tagName).toBe('DIV')
+      expect(w.find('.nb-stat__head .nb-stat__label').exists()).toBe(true)
+      expect(w.find('.nb-stat__head .nb-info-hint').exists()).toBe(true)
+    })
+
+    it('keeps the hint out of the link: they are siblings, never nested', () => {
+      const w = mount(Stat, {
+        props: {
+          label: 'Keys',
+          value: 4,
+          href: '/keys',
+          hint: 'What it counts',
+        },
+      })
+      expect(w.element.tagName).toBe('DIV')
+      const link = w.find('a.nb-stat__link')
+      expect(link.exists()).toBe(true)
+      expect(link.attributes('href')).toBe('/keys')
+      expect(link.find('button').exists()).toBe(false)
+      expect(link.element.contains(w.find('.nb-info-hint').element)).toBe(false)
+      expect(w.find('a button').exists()).toBe(false)
+      expect(w.find('button button').exists()).toBe(false)
+      // The link is named by the label and the figure.
+      const labelled = link.attributes('aria-labelledby')!.split(' ')
+      expect(labelled).toHaveLength(2)
+      for (const id of labelled) {
+        expect(w.element.querySelector(`[id="${id}"]`)).not.toBeNull()
+      }
+    })
+
+    it('clicking the hint does not select a clickable tile', async () => {
+      const w = mount(Stat, {
+        props: { label: 'Visitors', clickable: true, hint: 'About' },
+      })
+      const overlay = w.find('.nb-stat__link')
+      expect(overlay.attributes('role')).toBe('button')
+      expect(overlay.attributes('tabindex')).toBe('0')
+      await w.find('.nb-info-hint--trigger').trigger('click')
+      expect(w.emitted('select')).toBeUndefined()
+      await overlay.trigger('click')
+      await overlay.trigger('keydown', { key: 'Enter' })
+      expect(w.emitted('select')).toHaveLength(2)
+    })
+
+    it('keeps two separate tab stops: the tile and the hint', () => {
+      const w = mount(Stat, {
+        props: { label: 'Keys', href: '/k', hint: 'About' },
+      })
+      expect(w.find('a.nb-stat__link').exists()).toBe(true)
+      expect(w.find('button.nb-info-hint--trigger').exists()).toBe(true)
+      expect(w.find('a.nb-stat__link').attributes('tabindex')).toBeUndefined()
+    })
+
+    it('a disabled tile with a hint is a plain tile', () => {
+      const w = mount(Stat, {
+        props: { label: 'Keys', href: '/k', hint: 'About', disabled: true },
+      })
+      expect(w.find('.nb-stat__link').exists()).toBe(false)
+      expect(w.find('.nb-info-hint').exists()).toBe(true)
+    })
+
+    it('draws an icon before the label', () => {
+      const w = mount(Stat, { props: { label: 'Keys', icon: 'key' } })
+      const kids = [...w.find('.nb-stat__head').element.children]
+      expect(kids[0].classList.contains('nb-stat__icon')).toBe(true)
+      expect(kids[1].classList.contains('nb-stat__label')).toBe(true)
+    })
+
+    it('draws the trailing arrow only on a link, and only when asked', () => {
+      const link = { label: 'Keys', href: '/k' }
+      expect(
+        mount(Stat, { props: link }).find('.nb-stat__arrow').exists(),
+      ).toBe(false)
+      expect(
+        mount(Stat, { props: { ...link, arrow: true } })
+          .find('.nb-stat__arrow')
+          .exists(),
+      ).toBe(true)
+      expect(
+        mount(Stat, { props: { label: 'Keys', arrow: true } })
+          .find('.nb-stat__arrow')
+          .exists(),
+      ).toBe(false)
+    })
+  })
 })

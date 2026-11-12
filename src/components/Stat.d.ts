@@ -1,3 +1,5 @@
+import type { TIconSource } from '@/types/Glyph.d'
+
 /**
  * The colour of a tile. `neutral` is a plain surface; the others fill the tile
  * with that status's quiet ground and set the number in its ink, for counts
@@ -54,6 +56,23 @@ interface IStatProps {
   selected?: boolean
   /** Non-interactive and muted. */
   disabled?: boolean
+  /**
+   * Explains what the figure counts, in an info button beside the label. It
+   * works on an interactive tile too: the link or button is then a sibling of
+   * the hint, stretched over the tile, so the hint never sits inside it and
+   * its click does not navigate.
+   */
+  hint?: string
+  /** Bold heading above the hint's text. Only meaningful with `hint`. */
+  hintTitle?: string
+  /** An icon drawn before the label, small and muted. Any NbIcon source. */
+  icon?: TIconSource
+  /**
+   * Draws an arrow at the trailing edge of a tile that links somewhere (`to`
+   * or `href`), as the affordance that it can be opened. Off by default so
+   * existing tiles do not change.
+   */
+  arrow?: boolean
 }
 
 export { IStatProps, TStatStatus, TStatTrend }

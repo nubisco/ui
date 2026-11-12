@@ -1,6 +1,6 @@
 <template>
   <component
-    :is="tag"
+    :is="split ? 'div' : tag"
     class="nb-stat"
     :class="[
       `nb-stat--${status}`,
@@ -9,18 +9,60 @@
         'nb-stat--interactive': isInteractive,
         'nb-stat--selected': selected,
         'nb-stat--disabled': disabled,
+        'nb-stat--split': split,
       },
     ]"
-    v-bind="{ ...attrs, ...layerProps }"
+    v-bind="rootProps"
     :aria-busy="loading ? true : undefined"
-    @click="onClick"
-    @keydown="onKeydown"
   >
-    <span class="nb-stat__label">
+    <!-- With a hint on an interactive tile the link or button is a sibling of
+         the hint, stretched over the tile. An info button inside an <a> or a
+         <button> is invalid HTML, and its click would also navigate. -->
+    <component
+      :is="tag"
+      v-if="split"
+      class="nb-stat__link"
+      v-bind="attrs"
+      :aria-labelledby="`${statId}-label ${statId}-value`"
+      @click="onClick"
+      @keydown="onKeydown"
+    />
+
+    <span v-if="hasHead" class="nb-stat__head">
+      <NbIcon
+        v-if="icon"
+        :name="icon"
+        :size="16"
+        class="nb-stat__icon"
+        aria-hidden="true"
+      />
+      <span :id="split ? `${statId}-label` : undefined" class="nb-stat__label">
+        <slot name="label">{{ label }}</slot>
+      </span>
+      <NbInfoHint
+        v-if="hint"
+        class="nb-stat__hint"
+        :text="hint"
+        :title="hintTitle"
+        :size="16"
+      />
+      <NbIcon
+        v-if="showArrow"
+        :name="iconArrowRight"
+        :size="16"
+        class="nb-stat__arrow"
+        aria-hidden="true"
+      />
+    </span>
+    <span
+      v-else
+      :id="split ? `${statId}-label` : undefined"
+      class="nb-stat__label"
+    >
       <slot name="label">{{ label }}</slot>
     </span>
 
-    <span class="nb-stat__value">
+    <span :id="split ? `${statId}-value` : undefined" class="nb-stat__value">
       <NbSkeleton
         v-if="loading"
         variant="block"
@@ -68,11 +110,14 @@ import { computed } from 'vue'
 import * as iconArrowUpRight from '@nubisco/ui/icons/arrow-up-right'
 import * as iconArrowDownRight from '@nubisco/ui/icons/arrow-down-right'
 import * as iconMinus from '@nubisco/ui/icons/minus'
+import * as iconArrowRight from '@nubisco/ui/icons/arrow-right'
 import NbIcon from './Icon.vue'
 import NbSkeleton from './Skeleton.vue'
+import NbInfoHint from './InfoHint.vue'
 import type { IStatProps } from './Stat.d'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import { useSurfaceLink } from './Card.link'
+import { useStableId } from '@/composables/useStableId.composable'
 
 const props = withDefaults(defineProps<IStatProps>(), {
   value: undefined,
@@ -89,6 +134,10 @@ const props = withDefaults(defineProps<IStatProps>(), {
   clickable: false,
   selected: false,
   disabled: false,
+  hint: undefined,
+  hintTitle: undefined,
+  icon: undefined,
+  arrow: false,
 })
 
 const emit = defineEmits<{
@@ -99,9 +148,26 @@ const emit = defineEmits<{
 // A tile is a surface, so it takes part in the layer system as NbCard does.
 const { layerProps } = useSurfaceLayer()
 
-const { tag, attrs, isInteractive, onClick, onKeydown } = useSurfaceLink(
-  props,
-  (event) => emit('select', event),
+const { tag, attrs, isLink, isInteractive, onClick, onKeydown } =
+  useSurfaceLink(props, (event) => emit('select', event))
+
+const statId = useStableId({})
+
+// An interactive tile that carries a hint splits in two: a plain <div> tile,
+// with the link or button as a stretched sibling of the hint. Every other tile
+// keeps being the link or button itself, exactly as before.
+const split = computed(() => isInteractive.value && !!props.hint)
+const showArrow = computed(() => props.arrow && isLink.value)
+const hasHead = computed(() => !!props.icon || !!props.hint || showArrow.value)
+const rootProps = computed(() =>
+  split.value
+    ? { ...layerProps.value }
+    : {
+        ...attrs.value,
+        ...layerProps.value,
+        onClick,
+        onKeydown,
+      },
 )
 
 // The placeholder stands where the figure will be, at the figure's own height,
@@ -156,6 +222,71 @@ const tone = computed<'positive' | 'negative' | 'neutral'>(() => {
       border-color: var(--nb-c-#{$status}-surface-border);
       color: var(--nb-c-on-#{$status}-surface);
     }
+  }
+}
+
+// The row that holds the optional icon, the label, the hint and the arrow.
+// Rendered only when one of them is asked for.
+.nb-stat__head {
+  display: flex;
+  align-items: center;
+  gap: var(--nb-spacing-4);
+  min-width: 0;
+  color: var(--nb-c-text-subtle);
+
+  .nb-stat:not(.nb-stat--neutral) & {
+    color: inherit;
+  }
+}
+
+.nb-stat__head > .nb-stat__label {
+  min-width: 0;
+  color: inherit;
+}
+
+.nb-stat__icon,
+.nb-stat__arrow {
+  flex: none;
+}
+
+// The arrow sits at the trailing edge and is quiet until the tile is hovered
+// or focused.
+.nb-stat__arrow {
+  margin-inline-start: auto;
+  opacity: 0.6;
+  transition: opacity var(--nb-motion-micro) linear;
+}
+
+.nb-stat--interactive:hover .nb-stat__arrow,
+.nb-stat--interactive:focus-visible .nb-stat__arrow,
+.nb-stat--interactive:has(.nb-stat__link:focus-visible) .nb-stat__arrow {
+  opacity: 1;
+}
+
+// The hint stays above the stretched link, so it takes its own clicks.
+.nb-stat__hint {
+  position: relative;
+  z-index: 1;
+  flex: none;
+}
+
+.nb-stat--split {
+  position: relative;
+}
+
+.nb-stat__link {
+  position: absolute;
+  // Over the border too, so the focus ring wraps the whole tile.
+  inset: -1px;
+  z-index: 0;
+  border-radius: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  outline: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--nb-c-focus-ring);
+    outline-offset: 1px;
   }
 }
 
@@ -281,7 +412,8 @@ const tone = computed<'positive' | 'negative' | 'neutral'>(() => {
 }
 
 @include motion.reduced {
-  .nb-stat--interactive {
+  .nb-stat--interactive,
+  .nb-stat__arrow {
     transition: none;
   }
 }

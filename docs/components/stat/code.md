@@ -97,6 +97,10 @@ A tile behaves exactly like an `NbCard`, and picks its element the same way:
 | `clickable`   | `boolean`                                                   | `false`     | Renders as a button and emits `select`. Ignored when `to` or `href` is set.        |
 | `selected`    | `boolean`                                                   | `false`     | Draws the tile as chosen.                                                          |
 | `disabled`    | `boolean`                                                   | `false`     | Inert and muted.                                                                   |
+| `hint`        | `string`                                                    | —           | An info button beside the label that explains what the figure counts.              |
+| `hintTitle`   | `string`                                                    | —           | Bold heading above the hint's text.                                                |
+| `icon`        | `TIconSource`                                               | —           | A small, muted icon before the label.                                              |
+| `arrow`       | `boolean`                                                   | `false`     | An arrow at the trailing edge of a tile that links (`to` or `href`).               |
 
 ## Events
 
@@ -117,5 +121,30 @@ A tile behaves exactly like an `NbCard`, and picks its element the same way:
 - The label comes first in the markup, so a link tile is announced as "Needs review, 12, link".
 - The arrow is decorative. Write the sign into `delta` (`+12%`, `-3%`), so the direction does not depend on the arrow or the colour.
 - A link or button tile has the focus ring every interactive surface in the library has.
+
+## Explaining the figure
+
+`hint` puts an `NbInfoHint` beside the label, so a tile can say what it counts without a legend. `hintTitle` adds a heading to it. `icon` draws a small muted icon before the label, and `arrow` marks a tile that links with an arrow at its trailing edge.
+
+<preview>
+  <NbCardGrid min="200px" style="width: 100%">
+    <NbStat icon="tray" label="Open items" value="318" hint="Items that are not yet closed, across every project." hint-title="Open items" />
+    <NbStat icon="tray" label="Needs review" value="12" status="warning" href="#explaining-the-figure" arrow hint="Waiting for someone to approve them." />
+    <NbStat label="Visitors" value="8,312" clickable hint="Unique visitors in the last 7 days." />
+  </NbCardGrid>
+</preview>
+
+```vue
+<NbStat
+  icon="tray"
+  label="Needs review"
+  :value="pending"
+  :to="{ name: 'review' }"
+  arrow
+  hint="Waiting for someone to approve them."
+/>
+```
+
+On a tile that links or acts, the hint is not inside the link. The tile becomes a plain container, and the link or button is a sibling of the hint, stretched over the whole tile. Tab reaches the tile and the hint as two stops, clicking the hint opens it without navigating, and the tile is named by its label and figure. A tile without `hint` is still the link or button itself, as before.
 
 <!--@include: ./_shared.md-->
