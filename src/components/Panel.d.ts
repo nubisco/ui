@@ -1,3 +1,4 @@
+import type { TIconSource } from '@/types/Glyph.d'
 import type { TLayerLevel } from '@/composables/useSurfaceLayer.composable'
 
 /** The element a panel, card or list renders its title as. */
@@ -16,6 +17,11 @@ export interface IPanelProps {
    * and the panel renders no header at all, exactly as before.
    */
   title?: string
+  /**
+   * An icon drawn before the title, muted, at 20px to sit with `heading-01`.
+   * Decorative: the title names the panel. Any NbIcon source.
+   */
+  icon?: TIconSource
   /** One line of support under the title, at `body-sm`, muted. */
   description?: string
   /**

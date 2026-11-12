@@ -87,6 +87,7 @@ Panels are commonly used as a container for modal or form action buttons, keepin
 | -------------- | ------------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `layer`        | `0 \| 1 \| 2 \| 3` | `undefined` | Pins the panel to an absolute layer. Leave unset to derive the level from nesting.                                         |
 | `title`        | `string`           | `undefined` | The panel's title, in a header at `heading-01`. Unset (with no description, meta or actions), the panel renders no header. |
+| `icon`         | `TIconSource`      | `undefined` | A muted 20px icon before the title. Decorative.                                                                            |
 | `description`  | `string`           | `undefined` | One line of support under the title, `body-sm` muted.                                                                      |
 | `headingLevel` | `'h1'` to `'h6'`   | `'h2'`      | The element the title renders as. Match the page outline.                                                                  |
 | `flat`         | `boolean`          | `false`     | Keep the border and padding, paint no surface, and do not deepen the contents.                                             |

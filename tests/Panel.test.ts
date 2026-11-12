@@ -229,3 +229,44 @@ describe('Card header and flat', () => {
     wrapper.unmount()
   })
 })
+
+describe('NbPanel icon and hint', () => {
+  it('draws no icon markup without the prop', () => {
+    const w = mount(Panel, { props: { title: 'Members' } })
+    expect(w.find('.nb-panel__lead').exists()).toBe(false)
+    expect(w.find('.nb-panel__icon').exists()).toBe(false)
+    expect(w.find('h2.nb-panel__title').text()).toBe('Members')
+  })
+
+  it('draws a decorative icon before the title', () => {
+    const w = mount(Panel, { props: { title: 'Members', icon: 'users' } })
+    const kids = [...w.find('.nb-panel__lead').element.children]
+    expect(kids[0].classList.contains('nb-panel__icon')).toBe(true)
+    expect(kids[0].getAttribute('aria-hidden')).toBe('true')
+    expect(kids[1].tagName).toBe('H2')
+    expect(w.find('h2').text()).toBe('Members')
+  })
+
+  it('puts an NbInfoHint from the meta slot right after the title', () => {
+    const w = mount(Panel, {
+      props: { title: 'Members', icon: 'users' },
+      slots: { meta: '<span class="probe-hint">?</span>' },
+    })
+    const row = w.find('.nb-panel__title-row').element
+    expect(row.children[0].classList.contains('nb-panel__lead')).toBe(true)
+    expect(row.children[1].classList.contains('nb-panel__meta')).toBe(true)
+    expect(w.find('.nb-panel__meta .probe-hint').exists()).toBe(true)
+  })
+
+  it('renders a real NbInfoHint in the meta slot', async () => {
+    const InfoHint = (await import('../src/components/InfoHint.vue')).default
+    const w = mount(
+      defineComponent({
+        components: { Panel, InfoHint },
+        template:
+          '<Panel title="Members"><template #meta><InfoHint text="Who can open this" /></template></Panel>',
+      }),
+    )
+    expect(w.find('.nb-panel__meta .nb-info-hint').exists()).toBe(true)
+  })
+})

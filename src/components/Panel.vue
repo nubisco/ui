@@ -7,7 +7,22 @@
     <div v-if="hasHeader" class="nb-panel__header">
       <div class="nb-panel__heading">
         <div v-if="title || $slots.meta" class="nb-panel__title-row">
-          <component :is="headingLevel" v-if="title" class="nb-panel__title">
+          <span v-if="icon && title" class="nb-panel__lead">
+            <NbIcon
+              :name="icon"
+              :size="20"
+              class="nb-panel__icon"
+              aria-hidden="true"
+            />
+            <component :is="headingLevel" class="nb-panel__title">
+              {{ title }}
+            </component>
+          </span>
+          <component
+            :is="headingLevel"
+            v-else-if="title"
+            class="nb-panel__title"
+          >
             {{ title }}
           </component>
           <span v-if="$slots.meta" class="nb-panel__meta">
@@ -37,10 +52,12 @@ import {
 } from '@/composables/useSurfaceLayer.composable'
 import type { IPanelProps } from './Panel.d'
 import PrimaryActionScope from './PrimaryActionScope.vue'
+import NbIcon from './Icon.vue'
 
 const props = withDefaults(defineProps<IPanelProps>(), {
   layer: undefined,
   title: undefined,
+  icon: undefined,
   description: undefined,
   headingLevel: 'h2',
   flat: false,
@@ -116,6 +133,19 @@ provide(
   flex-wrap: wrap;
   align-items: center;
   gap: var(--nb-spacing-4) var(--nb-spacing-8);
+}
+
+// The optional icon and the title stay together when the row wraps.
+.nb-panel__lead {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nb-spacing-8);
+  min-inline-size: 0;
+}
+
+.nb-panel__icon {
+  flex: none;
+  color: var(--nb-c-text-subtle);
 }
 
 // Under the header, not bare: a prose stylesheet around the panel (a docs

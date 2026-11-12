@@ -47,6 +47,22 @@ apart. A panel without any of these renders no header at all.
 </NbPanel>
 ```
 
+`icon` draws a small muted icon before the title, and an `NbInfoHint` in `meta` sits right after it:
+
+<preview>
+  <NbPanel title="Members" icon="users" style="width: 100%">
+    <template #meta><NbInfoHint text="Everyone who can open this project." /></template>
+    <p style="margin: 0">The list goes here.</p>
+  </NbPanel>
+</preview>
+
+```vue
+<NbPanel title="Members" icon="users">
+  <template #meta><NbInfoHint text="Everyone who can open this project." /></template>
+  ...
+</NbPanel>
+```
+
 One filled button per header: a second `primary` in the same `actions` slot
 warns in development. See
 [Information hierarchy](/principles/hierarchy#emphasis-one-filled-button-per-region).
