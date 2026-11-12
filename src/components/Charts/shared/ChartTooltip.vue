@@ -22,6 +22,14 @@
           <span class="nb-chart__tooltip-label">{{ row.label }}</span>
           <span class="nb-chart__tooltip-value">{{ row.value }}</span>
         </li>
+        <li
+          v-if="total"
+          class="nb-chart__tooltip-row nb-chart__tooltip-row--total"
+        >
+          <span />
+          <span class="nb-chart__tooltip-label">{{ total.label }}</span>
+          <span class="nb-chart__tooltip-value">{{ total.value }}</span>
+        </li>
       </ul>
     </div>
   </Transition>
@@ -40,6 +48,7 @@ defineProps<{
   y: number
   title?: string
   rows: ITooltipRow[]
+  total?: { label: string; value: string | number }
 }>()
 </script>
 
@@ -80,6 +89,13 @@ defineProps<{
     grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 6px;
+  }
+
+  // The sum, set off from the series above it by a rule.
+  &-row--total {
+    margin-top: 2px;
+    padding-top: 4px;
+    border-top: 1px solid var(--nb-c-component-plain-border);
   }
 
   &-swatch {

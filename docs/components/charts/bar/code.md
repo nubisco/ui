@@ -115,6 +115,33 @@ baseline rather than cancelling the positive ones out.
 </template>
 ```
 
+`show-total` adds a total row to the tooltip, the sum of every series in the hovered category. It is off by default, and a single series has nothing to add up, so it gets no row.
+
+<preview>
+  <NbBarChart
+    height="240"
+    stacked
+    show-total
+    :series="groupedSeries"
+  />
+</preview>
+
+```vue
+<NbBarChart stacked show-total :series="series" />
+```
+
+## Entrance animation
+
+`animate` makes the bars grow from the baseline when the chart first renders and again when its data changes, each category a touch after the one before. It works for grouped, stacked, horizontal and negative bars alike. It is off by default and is switched off entirely under `prefers-reduced-motion: reduce`, where the chart just appears.
+
+<preview>
+  <NbBarChart height="240" animate :series="groupedSeries" />
+</preview>
+
+```vue
+<NbBarChart animate :series="series" />
+```
+
 ## Reacting to a click
 
 Bind `@select` to make the bars a way into the data behind them, typically a
@@ -306,6 +333,8 @@ const series = [
 | `showBaseline`       | `boolean`                   | `true`           | Draw the zero line along the category axis                           |
 | `showValueAxis`      | `boolean`                   | `true`           | Draw the value tick labels, and reserve their gutter                 |
 | `categoryLabelEvery` | `number`                    | `1`              | Label only every Nth category, starting with the first               |
+| `showTotal`          | `boolean`                   | `false`          | Add a total row (the sum of all series) to the tooltip               |
+| `animate`            | `boolean`                   | `false`          | Grow the bars from the baseline on first render and on data change   |
 
 ## Events
 

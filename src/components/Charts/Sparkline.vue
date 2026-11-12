@@ -1,6 +1,7 @@
 <template>
   <svg
     class="nb-sparkline"
+    :class="{ 'nb-sparkline--animate': animate }"
     :style="rootStyle"
     :viewBox="viewBox"
     preserveAspectRatio="none"
@@ -13,11 +14,27 @@
         <stop offset="0%" :stop-color="color" stop-opacity="0.3" />
         <stop offset="100%" :stop-color="color" stop-opacity="0" />
       </linearGradient>
+      <!-- The wipe: a rectangle that grows from the left edge and reveals the
+           line and its fill. It is wider than the viewBox on every side, so
+           the stroke is never clipped, and it is attached only while the
+           wipe runs. -->
+      <clipPath v-if="animate" :id="clipId">
+        <rect
+          :key="runKey"
+          class="nb-sparkline__wipe"
+          x="-5"
+          y="-5"
+          :width="VIEW_W + 10"
+          :height="VIEW_H + 10"
+          @animationend="wiping = false"
+        />
+      </clipPath>
     </defs>
     <path
       v-if="fill && paths.area"
       :d="paths.area"
       :fill="`url(#${gradientId})`"
+      :clip-path="clip"
       stroke="none"
     />
     <path
@@ -25,6 +42,7 @@
       :d="paths.line"
       :stroke="color"
       :stroke-width="strokeWidth"
+      :clip-path="clip"
       vector-effect="non-scaling-stroke"
       fill="none"
       stroke-linecap="round"
@@ -35,7 +53,8 @@
 
 <script setup lang="ts">
 import { useNbStrings } from '@/composables/useNbStrings.composable'
-import { computed, useId } from 'vue'
+import { computed, ref, useId, watch } from 'vue'
+import { useChartEntrance } from './shared/useChartEntrance'
 import type { ISparklineProps } from './Sparkline.d'
 
 const nbStrings = useNbStrings()
@@ -47,6 +66,7 @@ const props = withDefaults(defineProps<ISparklineProps>(), {
   strokeWidth: 1.5,
   fill: true,
   smooth: true,
+  animate: false,
 })
 
 // Internal viewBox space. Paths are computed in 0..VIEW_W by 0..VIEW_H,
@@ -58,6 +78,22 @@ const viewBox = `0 0 ${VIEW_W} ${VIEW_H}`
 // Per-instance gradient id, prevents collisions when several sparklines
 // render on the same page.
 const gradientId = `nb-sparkline-grad-${useId()}`
+
+const clipId = `nb-sparkline-wipe-${useId()}`
+
+// The wipe replays when the data changes: see useChartEntrance. `wiping` keeps
+// the clip on only for as long as the wipe runs.
+const { runKey } = useChartEntrance(
+  () => props.animate,
+  () => props.data,
+)
+const wiping = ref(true)
+const clip = computed(() =>
+  props.animate && wiping.value ? `url(#${clipId})` : undefined,
+)
+watch(runKey, () => {
+  wiping.value = true
+})
 
 const rootStyle = computed(() => ({
   width: typeof props.width === 'number' ? `${props.width}px` : props.width,
@@ -108,8 +144,34 @@ const paths = computed(() => {
 </script>
 
 <style lang="scss" scoped>
+@use '../../styles/logic/motion' as motion;
+
 .nb-sparkline {
   display: block;
   overflow: visible;
+}
+
+// Entrance: opt-in through `animate`. The clip grows from the left edge.
+// `backwards` holds the empty first frame and lets go at the end.
+.nb-sparkline__wipe {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  animation: nb-sparkline-wipe var(--nb-motion-long) var(--nb-ease-enter)
+    backwards;
+}
+
+@keyframes nb-sparkline-wipe {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@include motion.reduced {
+  .nb-sparkline__wipe {
+    animation: none;
+  }
 }
 </style>

@@ -75,6 +75,16 @@ interface IChartCategoricalSelection {
 
 type TChartSelection = IChartSeriesSelection | IChartCategoricalSelection
 
+/** The opt-in entrance animation, for the charts that have one. */
+interface IChartAnimateProps {
+  /**
+   * Plays an entrance animation when the chart first renders and again when
+   * its data changes. Off by default. Disabled under `prefers-reduced-motion:
+   * reduce`, where the chart simply appears.
+   */
+  animate?: boolean
+}
+
 interface IChartCommonProps {
   title?: string
   subtitle?: string
@@ -93,6 +103,7 @@ export {
   IChartMargins,
   TChartValueFormatter,
   IChartCommonProps,
+  IChartAnimateProps,
   IChartSeriesSelection,
   IChartCategoricalSelection,
   TChartSelection,

@@ -10,7 +10,10 @@
         :width="size.width"
         :height="size.height"
         class="nb-chart__svg"
-        :class="{ 'nb-chart__svg--selectable': isSelectable() }"
+        :class="{
+          'nb-chart__svg--selectable': isSelectable(),
+          'nb-chart__svg--animate': animate,
+        }"
         :role="isSelectable() ? 'group' : 'img'"
         :aria-label="title || nbStrings.chartBar"
         @mouseleave="hoverIndex = null"
@@ -78,7 +81,11 @@
           />
         </g>
 
-        <g v-for="(_, ci) in categories" :key="`g-${ci}`">
+        <g
+          v-for="(_, ci) in categories"
+          :key="`g-${runKey}-${ci}`"
+          v-bind="animate ? groupAttrs(ci) : undefined"
+        >
           <!-- Rounded bars are paths, so only the free end is rounded and the
                end on the baseline (or on the segment below) stays square. -->
           <template v-if="rounded">
@@ -134,6 +141,7 @@
         :y="tooltipPos.y"
         :title="hoverIndex !== null ? String(categories[hoverIndex]) : ''"
         :rows="tooltipRows"
+        :total="tooltipTotal"
       />
     </div>
 
@@ -154,6 +162,7 @@ import ChartTooltip from './shared/ChartTooltip.vue'
 import { band, linear, padDomain } from './shared/scales'
 import { colorAt, DEFAULT_PALETTE } from './shared/palette'
 import { useChartSize } from './shared/useChartSize'
+import { useChartEntrance } from './shared/useChartEntrance'
 import type { IBarChartProps } from './BarChart.d'
 import type { IChartMargins, IChartSeriesSelection } from './shared/types.d'
 
@@ -175,6 +184,8 @@ const props = withDefaults(defineProps<IBarChartProps>(), {
   showBaseline: true,
   showValueAxis: true,
   categoryLabelEvery: 1,
+  animate: false,
+  showTotal: false,
 })
 
 const emit = defineEmits<{ select: [selection: IChartSeriesSelection] }>()
@@ -183,6 +194,12 @@ const root = ref<HTMLElement | null>(null)
 const size = useChartSize(root, { width: 480, height: 240 })
 
 const horizontal = computed(() => props.orientation === 'horizontal')
+
+// The entrance replays when the data changes: see useChartEntrance.
+const { runKey } = useChartEntrance(
+  () => props.animate,
+  () => props.series,
+)
 
 const resolvedSeries = computed(() =>
   props.series.map((s, i) => ({
@@ -413,6 +430,29 @@ const emptyRect = (ci: number) => {
       }
 }
 
+// Each category grows from the zero line, so a stack, a group and a bar below
+// zero all rise from the same baseline. The origin is in the svg's own
+// coordinates, and the stagger is one micro step per category, capped so a long
+// axis does not take longer to arrive than a short one.
+const STAGGER_CAP = 12
+// Spread from `v-bind` rather than bound as `:class`, so a chart without
+// `animate` gets no `class` attribute at all, not an empty one.
+const groupAttrs = (ci: number) => {
+  const zero = valueScale.value(0)
+  return {
+    class: [
+      'nb-chart__bar-group',
+      horizontal.value
+        ? 'nb-chart__bar-group--horizontal'
+        : 'nb-chart__bar-group--vertical',
+    ],
+    style: {
+      '--nb-chart-i': Math.min(ci, STAGGER_CAP),
+      transformOrigin: horizontal.value ? `${zero}px 0px` : `0px ${zero}px`,
+    },
+  }
+}
+
 const bandRect = (ci: number) => {
   const start = categoryStart(ci)
   const thickness = categoryScale.value.bandwidth
@@ -545,9 +585,21 @@ const tooltipRows = computed(() => {
     }
   })
 })
+
+// The sum of every series in the hovered category, when asked for. A single
+// series has nothing to add up, so it gets no row.
+const tooltipTotal = computed(() => {
+  if (!props.showTotal || hoverIndex.value === null) return undefined
+  if (resolvedSeries.value.length < 2) return undefined
+  const ci = hoverIndex.value
+  const sum = resolvedSeries.value.reduce((n, s) => n + (s.data[ci]?.y ?? 0), 0)
+  return { label: nbStrings.value.chartTotal, value: printValue(sum) }
+})
 </script>
 
 <style lang="scss" scoped>
+@use '../../styles/logic/motion' as motion;
+
 .nb-bar-chart {
   position: relative;
   width: 100%;
@@ -601,5 +653,47 @@ const tooltipRows = computed(() => {
 // cursor. Bars underneath would never get to show one.
 .nb-chart__svg--selectable .nb-chart__hover-layer rect {
   cursor: pointer;
+}
+
+// Entrance: opt-in through `animate`. Each category grows from the zero line.
+// `backwards` holds the first frame during the stagger delay and lets go at
+// the end, so the resting state is the plain, unanimated drawing.
+.nb-chart__bar-group {
+  transform-box: view-box;
+  animation-duration: var(--nb-motion-long);
+  animation-timing-function: var(--nb-ease-enter);
+  animation-delay: calc(var(--nb-motion-micro) * var(--nb-chart-i, 0));
+  animation-fill-mode: backwards;
+
+  &--vertical {
+    animation-name: nb-chart-bar-grow-y;
+  }
+  &--horizontal {
+    animation-name: nb-chart-bar-grow-x;
+  }
+}
+
+@keyframes nb-chart-bar-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes nb-chart-bar-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@include motion.reduced {
+  .nb-chart__bar-group {
+    animation: none;
+  }
 }
 </style>

@@ -10,6 +10,7 @@
         :width="size.width"
         :height="size.height"
         class="nb-chart__svg"
+        :class="{ 'nb-chart__svg--animate': animate }"
         role="img"
         :aria-label="title || nbStrings.chartLine"
         @mouseleave="hoverIndex = null"
@@ -60,16 +61,19 @@
           :y2="size.height - margin.bottom"
         />
 
-        <g v-for="(s, si) in resolvedSeries" :key="`s-${si}`">
+        <g v-for="(s, si) in resolvedSeries" :key="`s-${runKey}-${si}`">
           <path
             v-if="area"
             class="nb-chart__area"
+            :class="{ 'nb-chart__area--enter': animate }"
             :d="areaPath(s.data)"
             :fill="s.color"
             opacity="0.18"
           />
           <path
             class="nb-chart__line"
+            :class="{ 'nb-chart__line--draw': animate }"
+            :pathLength="animate ? 1 : undefined"
             :d="linePath(s.data)"
             :stroke="s.color"
             fill="none"
@@ -86,6 +90,7 @@
               :r="hoverIndex === di ? 4 : 3"
               :fill="s.color"
               class="nb-chart__point"
+              :class="{ 'nb-chart__point--enter': animate }"
             />
           </template>
         </g>
@@ -134,6 +139,7 @@ import { linear, padDomain } from './shared/scales'
 import { colorAt, DEFAULT_PALETTE } from './shared/palette'
 import { useChartSize } from './shared/useChartSize'
 import { layoutXLabels } from './shared/xLabels'
+import { useChartEntrance } from './shared/useChartEntrance'
 import type { ILineChartProps } from './LineChart.d'
 import type { IChartPoint } from './shared/types.d'
 
@@ -151,7 +157,14 @@ const props = withDefaults(defineProps<ILineChartProps>(), {
   area: false,
   points: false,
   curve: 'smooth',
+  animate: false,
 })
+
+// The entrance replays when the data changes: see useChartEntrance.
+const { runKey } = useChartEntrance(
+  () => props.animate,
+  () => props.series,
+)
 
 const margin = { top: 12, right: 16, bottom: 28, left: 44 }
 
@@ -367,6 +380,8 @@ const tooltipRows = computed(() => {
 </script>
 
 <style lang="scss" scoped>
+@use '../../styles/logic/motion' as motion;
+
 .nb-line-chart {
   position: relative;
   width: 100%;
@@ -409,5 +424,50 @@ const tooltipRows = computed(() => {
   stroke-dasharray: 2 3;
   stroke-width: 1;
   pointer-events: none;
+}
+
+// Entrance: opt-in through `animate`. The line is drawn in from the left, with
+// `pathLength="1"` so the dash maths does not depend on the line's real
+// length. The area and the points arrive once the line is under way. `backwards`
+// holds the first frame during a delay and lets go at the end, so the resting
+// state is the plain, unanimated drawing.
+.nb-chart__line--draw {
+  stroke-dasharray: 1 1;
+  animation: nb-chart-line-draw var(--nb-motion-long) var(--nb-ease-enter)
+    backwards;
+}
+
+.nb-chart__area--enter,
+.nb-chart__point--enter {
+  animation: nb-chart-line-fade var(--nb-motion-medium) var(--nb-ease-enter)
+    var(--nb-motion-short) backwards;
+}
+
+@keyframes nb-chart-line-draw {
+  from {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  1% {
+    opacity: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes nb-chart-line-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@include motion.reduced {
+  .nb-chart__line--draw,
+  .nb-chart__area--enter,
+  .nb-chart__point--enter {
+    animation: none;
+  }
 }
 </style>

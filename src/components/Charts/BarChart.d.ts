@@ -1,4 +1,5 @@
 import type {
+  IChartAnimateProps,
   IChartCommonProps,
   IChartSeries,
   TChartValueFormatter,
@@ -6,7 +7,7 @@ import type {
 
 type TBarOrientation = 'vertical' | 'horizontal'
 
-interface IBarChartProps extends IChartCommonProps {
+interface IBarChartProps extends IChartCommonProps, IChartAnimateProps {
   series?: IChartSeries[]
   // Which screen axis carries the categories. Horizontal gives each category
   // the full panel width for its label, which is the reason to reach for it.
@@ -31,6 +32,9 @@ interface IBarChartProps extends IChartCommonProps {
   // Label only every Nth category (the first, then every Nth after it), for
   // dense axes such as 24 hours. The bars are unaffected.
   categoryLabelEvery?: number
+  // Adds a total row to the tooltip: the sum of every series in the hovered
+  // category. Off by default. Needs more than one series to show.
+  showTotal?: boolean
 }
 
 export type { IBarChartProps, TBarOrientation }

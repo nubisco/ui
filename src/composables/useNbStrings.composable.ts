@@ -198,6 +198,7 @@ export interface INbStrings {
   chartBar: string
   chartLine: string
   chartPie: string
+  chartTotal: string
   chartGantt: string
   chartInterpolation: string
   chartSparkline: string
@@ -357,6 +358,7 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   chartBar: 'Bar chart',
   chartLine: 'Line chart',
   chartPie: 'Pie chart',
+  chartTotal: 'Total',
   chartGantt: 'Gantt chart',
   chartInterpolation: 'Interpolation chart',
   chartSparkline: 'Sparkline',

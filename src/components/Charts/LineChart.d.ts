@@ -1,4 +1,5 @@
 import type {
+  IChartAnimateProps,
   IChartCommonProps,
   IChartSeries,
   TChartValueFormatter,
@@ -6,7 +7,7 @@ import type {
 
 type TLineCurve = 'linear' | 'smooth' | 'step'
 
-interface ILineChartProps extends IChartCommonProps {
+interface ILineChartProps extends IChartCommonProps, IChartAnimateProps {
   series?: IChartSeries[]
   // Render filled area under each line.
   area?: boolean

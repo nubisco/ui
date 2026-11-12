@@ -54,17 +54,30 @@ const data = [
 
 ## Props
 
-| Prop          | Type                             | Default         | Description                                      |
-| ------------- | -------------------------------- | --------------- | ------------------------------------------------ |
-| `data`        | `ICategoricalDatum[]`            | `[]`            | Slice values and labels                          |
-| `title`       | `string`                         | -               | Chart title                                      |
-| `subtitle`    | `string`                         | -               | Secondary descriptive line                       |
-| `height`      | `number \| string`               | `280`           | Container height                                 |
-| `innerRadius` | `number`                         | `0`             | Ring radius ratio (0 to 1) for donut mode        |
-| `labels`      | `'none' \| 'percent' \| 'value'` | `'percent'`     | Label rendering style on each slice              |
-| `showLegend`  | `boolean`                        | `true`          | Render a legend below the chart                  |
-| `showTooltip` | `boolean`                        | `true`          | Show hover tooltip                               |
-| `colors`      | `string[]`                       | default palette | Per-slice colors (overridden by per-datum color) |
+| Prop          | Type                             | Default         | Description                                            |
+| ------------- | -------------------------------- | --------------- | ------------------------------------------------------ |
+| `data`        | `ICategoricalDatum[]`            | `[]`            | Slice values and labels                                |
+| `title`       | `string`                         | -               | Chart title                                            |
+| `subtitle`    | `string`                         | -               | Secondary descriptive line                             |
+| `height`      | `number \| string`               | `280`           | Container height                                       |
+| `innerRadius` | `number`                         | `0`             | Ring radius ratio (0 to 1) for donut mode              |
+| `labels`      | `'none' \| 'percent' \| 'value'` | `'percent'`     | Label rendering style on each slice                    |
+| `showLegend`  | `boolean`                        | `true`          | Render a legend below the chart                        |
+| `showTooltip` | `boolean`                        | `true`          | Show hover tooltip                                     |
+| `colors`      | `string[]`                       | default palette | Per-slice colors (overridden by per-datum color)       |
+| `animate`     | `boolean`                        | `false`         | Sweep the slices in on first render and on data change |
+
+## Entrance animation
+
+`animate` sweeps the slices in clockwise from twelve o'clock, on a pie and on a donut, when the chart first renders and again when its data changes. It is off by default and is switched off entirely under `prefers-reduced-motion: reduce`.
+
+<preview>
+  <NbPieChart height="240" animate :inner-radius="0.6" :data="trafficData" />
+</preview>
+
+```vue
+<NbPieChart animate :inner-radius="0.6" :data="data" />
+```
 
 ## Events
 

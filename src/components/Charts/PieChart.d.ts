@@ -1,6 +1,11 @@
-import type { IChartCommonProps, ICategoricalDatum } from './shared/types.d'
+import type {
+  IChartAnimateProps,
+  IChartCommonProps,
+  ICategoricalDatum,
+} from './shared/types.d'
 
-interface IPieChartProps extends Omit<IChartCommonProps, 'showGrid'> {
+interface IPieChartProps
+  extends Omit<IChartCommonProps, 'showGrid'>, IChartAnimateProps {
   data?: ICategoricalDatum[]
   // Inner radius ratio (0-1). > 0 produces a donut chart.
   innerRadius?: number

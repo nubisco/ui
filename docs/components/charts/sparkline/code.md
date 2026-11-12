@@ -29,15 +29,30 @@ Pass any valid CSS color, including design-system tokens.
 
 ## Props
 
-| Prop          | Type               | Default               | Description                                         |
-| ------------- | ------------------ | --------------------- | --------------------------------------------------- |
-| `data`        | `number[]`         | required              | Values to plot. Needs at least 2 entries to render. |
-| `color`       | `string`           | `var(--nb-c-primary)` | Line and gradient color. Any CSS color string.      |
-| `height`      | `number \| string` | `40`                  | SVG height. Numbers are interpreted as pixels.      |
-| `width`       | `number \| string` | `'100%'`              | SVG width. Numbers are interpreted as pixels.       |
-| `strokeWidth` | `number`           | `1.5`                 | Line thickness in pixels (non-scaling-stroke).      |
-| `fill`        | `boolean`          | `true`                | Render the gradient area under the line.            |
-| `smooth`      | `boolean`          | `true`                | Use bezier smoothing between data points.           |
+| Prop          | Type               | Default               | Description                                                        |
+| ------------- | ------------------ | --------------------- | ------------------------------------------------------------------ |
+| `data`        | `number[]`         | required              | Values to plot. Needs at least 2 entries to render.                |
+| `color`       | `string`           | `var(--nb-c-primary)` | Line and gradient color. Any CSS color string.                     |
+| `height`      | `number \| string` | `40`                  | SVG height. Numbers are interpreted as pixels.                     |
+| `width`       | `number \| string` | `'100%'`              | SVG width. Numbers are interpreted as pixels.                      |
+| `strokeWidth` | `number`           | `1.5`                 | Line thickness in pixels (non-scaling-stroke).                     |
+| `fill`        | `boolean`          | `true`                | Render the gradient area under the line.                           |
+| `smooth`      | `boolean`          | `true`                | Use bezier smoothing between data points.                          |
+| `animate`     | `boolean`          | `false`               | Draw the line in from the left on first render and on data change. |
+
+## Entrance animation
+
+`animate` draws the line, and the fill under it, in from the left when the sparkline first renders and again when its data changes. It is off by default and is switched off entirely under `prefers-reduced-motion: reduce`.
+
+<preview>
+  <div style="width: 240px">
+    <NbSparkline animate :data="kpiUp" />
+  </div>
+</preview>
+
+```vue
+<NbSparkline animate :data="values" />
+```
 
 ## Notes
 

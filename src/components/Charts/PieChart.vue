@@ -10,12 +10,43 @@
         :width="size.width"
         :height="size.height"
         class="nb-chart__svg"
-        :class="{ 'nb-chart__svg--selectable': isSelectable() }"
+        :class="{
+          'nb-chart__svg--selectable': isSelectable(),
+          'nb-chart__svg--animate': animate,
+        }"
         :role="isSelectable() ? 'group' : 'img'"
         :aria-label="title || nbStrings.chartPie"
         @mouseleave="hoverIndex = null"
       >
-        <g :transform="`translate(${cx}, ${cy})`">
+        <!-- The sweep: a ring stroked around the centre, drawn clockwise from
+             twelve o'clock, reveals the slices as a mask. It is attached only
+             while the sweep runs, so a settled chart carries no mask. -->
+        <defs v-if="animate">
+          <mask
+            :id="maskId"
+            maskUnits="userSpaceOnUse"
+            :x="-radius"
+            :y="-radius"
+            :width="radius * 2"
+            :height="radius * 2"
+          >
+            <circle
+              :key="runKey"
+              class="nb-chart__sweep"
+              :r="radius / 2"
+              fill="none"
+              stroke="white"
+              :stroke-width="radius"
+              pathLength="1"
+              transform="rotate(-90)"
+              @animationend="sweeping = false"
+            />
+          </mask>
+        </defs>
+        <g
+          :transform="`translate(${cx}, ${cy})`"
+          :mask="animate && sweeping ? `url(#${maskId})` : undefined"
+        >
           <path
             v-for="(slice, i) in slices"
             :key="`slice-${i}`"
@@ -68,12 +99,13 @@
 
 <script setup lang="ts">
 import { useNbStrings } from '@/composables/useNbStrings.composable'
-import { computed, getCurrentInstance, ref } from 'vue'
+import { computed, getCurrentInstance, ref, useId, watch } from 'vue'
 import ChartFrame from './shared/ChartFrame.vue'
 import ChartLegend from './shared/ChartLegend.vue'
 import ChartTooltip from './shared/ChartTooltip.vue'
 import { colorAt, DEFAULT_PALETTE } from './shared/palette'
 import { useChartSize } from './shared/useChartSize'
+import { useChartEntrance } from './shared/useChartEntrance'
 import type { IPieChartProps } from './PieChart.d'
 import type { IChartCategoricalSelection } from './shared/types.d'
 
@@ -89,6 +121,7 @@ const props = withDefaults(defineProps<IPieChartProps>(), {
   data: () => [],
   innerRadius: 0,
   labels: 'percent',
+  animate: false,
 })
 
 const emit = defineEmits<{ select: [selection: IChartCategoricalSelection] }>()
@@ -118,6 +151,18 @@ const onSliceKeydown = (e: KeyboardEvent, index: number) => {
   e.preventDefault()
   onSelect(index)
 }
+
+// The sweep replays when the data changes: see useChartEntrance. `sweeping`
+// keeps the mask on only for as long as the sweep runs.
+const { runKey } = useChartEntrance(
+  () => props.animate,
+  () => props.data,
+)
+const maskId = `nb-pie-sweep-${useId()}`
+const sweeping = ref(true)
+watch(runKey, () => {
+  sweeping.value = true
+})
 
 const root = ref<HTMLElement | null>(null)
 const size = useChartSize(root, { width: 280, height: 240 })
@@ -258,6 +303,8 @@ const tooltipRows = computed(() => {
 </script>
 
 <style lang="scss" scoped>
+@use '../../styles/logic/motion' as motion;
+
 .nb-pie-chart {
   position: relative;
   width: 100%;
@@ -289,5 +336,29 @@ const tooltipRows = computed(() => {
   font-size: var(--nb-type-body-sm-size);
   font-weight: 600;
   pointer-events: none;
+}
+
+// Entrance: opt-in through `animate`. The mask's ring is drawn clockwise from
+// the top, which sweeps the slices into view. `backwards` holds the empty
+// first frame and lets go at the end.
+.nb-chart__sweep {
+  stroke-dasharray: 1 1;
+  animation: nb-chart-pie-sweep var(--nb-motion-long) var(--nb-ease-enter)
+    backwards;
+}
+
+@keyframes nb-chart-pie-sweep {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@include motion.reduced {
+  .nb-chart__sweep {
+    animation: none;
+  }
 }
 </style>
