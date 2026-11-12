@@ -190,6 +190,12 @@ describe('NbStat', () => {
       expect(w.element.tagName).toBe('DIV')
       expect(w.find('.nb-stat__head .nb-stat__label').exists()).toBe(true)
       expect(w.find('.nb-stat__head .nb-info-hint').exists()).toBe(true)
+      // Named after its tile, so a row of hints reads as different buttons.
+      expect(
+        w
+          .find('.nb-info-hint [aria-label], .nb-info-hint[aria-label]')
+          .attributes('aria-label'),
+      ).toBe('More information: Keys')
     })
 
     it('keeps the hint out of the link: they are siblings, never nested', () => {

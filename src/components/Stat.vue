@@ -44,6 +44,7 @@
         class="nb-stat__hint"
         :text="hint"
         :title="hintTitle"
+        :label="`${strings.infoHintLabel}: ${label}`"
         :size="16"
       />
       <NbIcon
@@ -114,6 +115,7 @@ import * as iconArrowRight from '@nubisco/ui/icons/arrow-right'
 import NbIcon from './Icon.vue'
 import NbSkeleton from './Skeleton.vue'
 import NbInfoHint from './InfoHint.vue'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 import type { IStatProps } from './Stat.d'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import { useSurfaceLink } from './Card.link'
@@ -139,6 +141,8 @@ const props = withDefaults(defineProps<IStatProps>(), {
   icon: undefined,
   arrow: false,
 })
+// The hint is named after its tile, so four hints in a row are four different buttons to a screen reader.
+const strings = useNbStrings()
 
 const emit = defineEmits<{
   /** Activated by a click, Enter or Space. The event carries the modifier keys. */
