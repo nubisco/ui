@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
+import BarChart from '../src/components/Charts/BarChart.vue'
 import LineChart from '../src/components/Charts/LineChart.vue'
 import {
   defaultXLabelIndices,
@@ -289,5 +290,28 @@ describe('NbLineChart y-axis tick labels', () => {
       delete proto.getComputedTextLength
       delete proto.getBBox
     }
+  })
+})
+
+describe('NbBarChart value-axis tick labels', () => {
+  it('keeps the top tick label inside the chart, as the line chart does', () => {
+    // 7 padded by 5% makes a domain of 7.35, and the nice ticks reach 8, above the plot.
+    const w = mount(BarChart, {
+      props: {
+        series: [
+          {
+            name: 'Notes',
+            data: [
+              { x: 'Mon', y: 2 },
+              { x: 'Tue', y: 7 },
+            ],
+          },
+        ],
+      },
+    })
+    const labels = w.findAll('.nb-chart__axis')[0].findAll('text')
+    expect(labels.at(-1)!.text()).toBe('8')
+    const y = labels.map((t) => Number(t.attributes('y')))
+    expect(y.every((v) => v >= 7)).toBe(true)
   })
 })

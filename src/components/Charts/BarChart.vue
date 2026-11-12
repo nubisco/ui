@@ -37,7 +37,7 @@
             v-for="t in valueTicks"
             :key="`vt-${t}`"
             :x="horizontal ? valueScale(t) : plot.x0 - 6"
-            :y="horizontal ? plot.y1 + 14 : valueScale(t)"
+            :y="horizontal ? plot.y1 + 14 : tickLabelY(t)"
             :text-anchor="horizontal ? 'middle' : 'end'"
             :dominant-baseline="horizontal ? 'auto' : 'middle'"
           >
@@ -298,6 +298,12 @@ const valueScale = computed(() =>
 )
 
 const valueTicks = computed(() => valueScale.value.ticks(5))
+
+// The top tick can sit above the plot, past the svg's top edge, as on
+// NbLineChart. Its label moves down just enough to show in full (half the 11px
+// axis font's line box). The tick, its gridline and every other label stay put.
+const TICK_TEXT_TOP = 7
+const tickLabelY = (t: number) => Math.max(valueScale.value(t), TICK_TEXT_TOP)
 
 const categoryStart = (ci: number) =>
   categoryScale.value(String(categories.value[ci]))
