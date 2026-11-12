@@ -390,3 +390,48 @@ describe('Button accessible name warning', () => {
     expect(calls()).toHaveLength(0)
   })
 })
+
+describe('icon-only alignment', () => {
+  const css = (() => {
+    const path = join(__dirname, '../src/components/Button.vue')
+    const { descriptor } = parse(readFileSync(path, 'utf8'))
+    return descriptor.styles
+      .map((s) => compileString(s.content, { url: pathToFileURL(path) }).css)
+      .join('\n')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+  })()
+
+  function block(selector: string): string {
+    const escaped = selector.replace(/[.\-:()[\]]/g, '\\$&')
+    const re = new RegExp(`(?:^|[}\\n])\\s*${escaped}\\s*\\{([^}]*)\\}`, 'g')
+    return [...css.matchAll(re)].map((m) => m[1]).join('\n')
+  }
+
+  it('variants that start-align their content set it at one class', () => {
+    expect(block('.nb-button--ghost, .nb-button--danger-ghost')).toMatch(
+      /justify-content:\s*flex-start/,
+    )
+  })
+
+  it('icon-only centres at a higher specificity than any variant', () => {
+    // Two classes beat the variants' single class, whatever the source order.
+    expect(block('.nb-button--icon-only.nb-button')).toMatch(
+      /justify-content:\s*center/,
+    )
+  })
+
+  it('every variant that sets justify-content is outranked by icon-only', () => {
+    const selectors = [
+      ...css.matchAll(/(?:^|[}\n])\s*([^{}]+)\{([^}]*justify-content[^}]*)\}/g),
+    ].map((m) => m[1].trim())
+    for (const sel of selectors) {
+      if (sel.includes('.nb-button--icon-only')) continue
+      if (sel.includes('__decorations')) continue
+      if (sel === '.nb-button') continue
+      // Only plain single-class variant selectors need outranking.
+      expect(
+        sel.split(',').every((p) => /^\.nb-button--[\w-]+$/.test(p.trim())),
+      ).toBe(true)
+    }
+  })
+})

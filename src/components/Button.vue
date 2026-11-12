@@ -475,6 +475,17 @@ onMounted(() => {
     justify-content: center;
     max-width: none;
 
+    /*
+     * Variants set their own `justify-content` later in this sheet (ghost and
+     * danger-ghost start-align, link too) and, at one class each, the later
+     * rule won over the one above, so an icon-only ghost drew its icon at the
+     * left of the square. Doubling the class here outranks every variant, so
+     * an icon-only button centres its icon whatever its variant.
+     */
+    &.nb-button {
+      justify-content: center;
+    }
+
     &.nb-button--xxs {
       width: 16px;
       --nb-button-icon-size: 16px;
