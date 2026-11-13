@@ -1,3 +1,10 @@
+## [5.52.1](https://github.com/nubisco/ui/compare/v5.52.0...v5.52.1) (2026-11-13)
+
+
+### Bug Fixes
+
+* **briefing:** say what turning AI writing off does, true in either state ([#17](https://github.com/nubisco/ui/issues/17)) ([dd5cbbf](https://github.com/nubisco/ui/commit/dd5cbbf7c1f6080d35cef5a7d32aa848f16b61bf))
+
 # [5.52.0](https://github.com/nubisco/ui/compare/v5.51.0...v5.52.0) (2026-11-12)
 
 
