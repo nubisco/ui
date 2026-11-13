@@ -36,7 +36,7 @@
           <span class="nb-briefing__ai-text">
             <strong>Written by AI</strong> <NbAiLabel static size="sm" />
             <span class="nb-briefing__ai-hint">
-              Off, it is the plain version built from the facts.
+              When off, it sends the plain version built from the facts.
             </span>
           </span>
         </div>
