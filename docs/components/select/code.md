@@ -242,6 +242,10 @@ function onCreate(value: string) {
 | `id`                | `string`                                            | auto           | Native input id (auto-generated if omitted)     |
 | `name`              | `string`                                            | -              | Native form name                                |
 
+Other attributes, such as a `class`, a `style` or a `data-` attribute, land on
+the field's root element, so `<NbSelect class="w-40" />` sizes the field. The
+open list takes the field's width, so keep it wide enough for the options.
+
 ## An icon per option
 
 Give an option an `icon` when people recognise it by mark before they read the

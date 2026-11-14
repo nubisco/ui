@@ -804,3 +804,25 @@ describe('Select', () => {
     })
   })
 })
+
+describe('Select attributes', () => {
+  afterEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  // Two root nodes, so Vue cannot pass these through on its own. They belong
+  // on the field, which is what a consumer sizes.
+  it('puts a class and a data- attribute on the field root', () => {
+    const wrapper = mount(Select, {
+      props: { options },
+      attrs: { class: 'narrow', 'data-test': 'pick' },
+      attachTo: document.body,
+    })
+    const root = document.querySelector('.nb-select')!
+    expect(root.classList).toContain('narrow')
+    expect(root.getAttribute('data-test')).toBe('pick')
+    // The field's own classes are kept.
+    expect(root.className).toMatch(/nb-select--/)
+    wrapper.unmount()
+  })
+})

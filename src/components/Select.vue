@@ -1,5 +1,5 @@
 <template>
-  <div ref="rootRef" :class="rootClasses" @keydown="onKeydown">
+  <div ref="rootRef" v-bind="$attrs" :class="rootClasses" @keydown="onKeydown">
     <!-- Your own trigger: the list, search and keyboard are this component's,
          the thing that opens it is yours. See `anchor`. -->
     <slot v-if="$slots.trigger" name="trigger" v-bind="triggerSlot" />
@@ -388,6 +388,13 @@ import {
 } from 'vue'
 import { ISelectOption, ISelectProps } from './Select'
 import { useMenuSurface } from '../composables/useMenuSurface.composable'
+
+/*
+ * Two root nodes (the field and the teleported list), so Vue cannot pass a
+ * `class` or a `data-` attribute through on its own and drops it with a
+ * warning. They belong on the field, which is what a consumer sizes.
+ */
+defineOptions({ inheritAttrs: false })
 
 const props = withDefaults(defineProps<ISelectProps>(), {
   modelValue: null,
