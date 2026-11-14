@@ -470,7 +470,7 @@ async function onSkip() {
 
 function bindWindowListeners() {
   window.addEventListener('resize', measure)
-  // capture: true so scrolls inside nested containers reach us too — a target
+  // capture: true so scrolls inside nested containers reach us too. A target
   // living in a scrollable panel is the common case, not the exception.
   window.addEventListener('scroll', measure, true)
 }
@@ -582,7 +582,10 @@ defineExpose({
   // --nb-c-surface / --nb-c-border come from the nb-layer-* class that
   // useSurfaceLayer binds, so this reads them rather than naming a depth.
   position: absolute;
-  width: calc(var(--nb-base-unit) * 40); // 320px
+  // 360px: wide enough that a middle step's three buttons (Skip, Back,
+  // Next, about 320px at Carbon's small size) fit on one row inside the
+  // padding. At 320px they did not, and Next stuck out past the edge.
+  width: calc(var(--nb-base-unit) * 45);
   max-width: calc(100vw - var(--nb-base-unit) * 4);
   padding: calc(var(--nb-base-unit) * 2);
   border: 1px solid var(--nb-c-border);
@@ -635,8 +638,11 @@ defineExpose({
   }
 }
 
+// Wraps, so the progress line takes a row of its own when the buttons need
+// the full width.
 .nb-walkthrough--footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--nb-base-unit);
@@ -661,10 +667,13 @@ defineExpose({
   white-space: nowrap;
 }
 
-// NbButtonSet lays the buttons out. It only has to stay its own width
-// beside the progress line.
+// NbButtonSet lays the buttons out, at the end of the row. When even a row
+// of their own is too narrow (longer translations, a phone, where the
+// popover is capped at the viewport), they wrap rather than overflow.
 .nb-walkthrough--actions {
-  flex-shrink: 0;
+  flex-wrap: wrap;
+  min-width: 0;
+  margin-inline-start: auto;
 }
 
 // Opacity only: the centred variant carries a translate(-50%, -50%) of its
