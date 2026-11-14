@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { defineComponent, h, nextTick, ref } from 'vue'
+import { computed, defineComponent, h, nextTick, ref } from 'vue'
 import ButtonSet from '../src/components/ButtonSet.vue'
 import Button from '../src/components/Button.vue'
 import Modal from '../src/components/Modal.vue'
@@ -189,6 +189,40 @@ describe('NbButtonSet props', () => {
         b.classes().find((c) => /^nb-button--(xs|sm|md|lg|xl)$/.test(c)),
       )
     expect(sizes).toEqual(['nb-button--xl', 'nb-button--xl'])
+  })
+})
+
+describe('NbButtonSet inside a v-for', () => {
+  /*
+   * The list hands in a new item object on every change, so the buttons are
+   * only right if the set ranks them again on the parent's re-render.
+   */
+  const Host = defineComponent({
+    components: { NbButtonSet: ButtonSet, NbButton: Button },
+    setup() {
+      const n = ref(0)
+      const clicked = ref<number[]>([])
+      const items = computed(() => [{ k: 'a', v: n.value }])
+      return { n, clicked, items }
+    },
+    template: `
+      <div v-for="i in items" :key="i.k">
+        <NbButtonSet>
+          <NbButton variant="primary" @click="clicked.push(i.v)">v{{ i.v }}</NbButton>
+          <NbButton v-if="i.v === 0">zero</NbButton>
+        </NbButtonSet>
+      </div>`,
+  })
+
+  it('follows a new item: its label, its v-if and its click handler', async () => {
+    const w = mount(Host)
+    expect(labels(w.element)).toEqual(['zero', 'v0'])
+    ;(w.vm as unknown as { n: number }).n = 1
+    await nextTick()
+    expect(labels(w.element)).toEqual(['v1'])
+
+    await w.find('.nb-button').trigger('click')
+    expect((w.vm as unknown as { clicked: number[] }).clicked).toEqual([1])
   })
 })
 

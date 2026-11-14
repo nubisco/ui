@@ -9,7 +9,7 @@
       { 'nb-button-set--stacked': stacked },
     ]"
   >
-    <Ordered />
+    <component :is="node" v-for="node in ordered()" :key="node.key" />
   </div>
 </template>
 
@@ -140,11 +140,14 @@ function warnTooMany(n: number) {
 }
 
 /*
- * Rendered by a functional child rather than in a computed, so the slot is
- * read inside a render and stays reactive: a button that appears behind a
- * `v-if` is ranked on the render that adds it.
+ * Called from the template, so the slot is read inside this component's own
+ * render: a button behind a `v-if` is ranked on the render that adds it, and
+ * a parent that re-renders with a new v-for item re-ranks the buttons from
+ * it. A functional child with no props did the first and not the second: Vue
+ * never patches a child whose props and children did not change, so it kept
+ * the old labels, a button that should have gone, and stale click handlers.
  */
-function Ordered() {
+function ordered() {
   const ranked = order(slots.default?.() ?? [])
   warnTooMany(ranked.length)
   return ranked
