@@ -1,3 +1,13 @@
+## [5.52.2](https://github.com/nubisco/ui/compare/v5.52.1...v5.52.2) (2026-11-14)
+
+
+### Bug Fixes
+
+* **button-set:** follow a new v-for item instead of keeping the old buttons ([9428999](https://github.com/nubisco/ui/commit/9428999eee560382665feb71ba42aadedfb1f08e))
+* **select:** put class and other attributes on the field ([91ead46](https://github.com/nubisco/ui/commit/91ead46262d746a1a671f4021012d23062f22e61))
+* **vite:** pre-bundle the components and icons the plugin imports ([89cb97e](https://github.com/nubisco/ui/commit/89cb97eb6b123f52142d6c4480560805405d4ca8))
+* **walkthrough:** keep a middle step's buttons inside the popover ([ba8b9a5](https://github.com/nubisco/ui/commit/ba8b9a5b62ad67d09defa60eebe315b86330b2e6))
+
 ## [5.52.1](https://github.com/nubisco/ui/compare/v5.52.0...v5.52.1) (2026-11-13)
 
 
