@@ -69,6 +69,21 @@ export interface INubiscoUIOptions {
    */
   styles?: boolean
   /**
+   * Pre-bundle in dev what this plugin makes the app import. Defaults to
+   * every component and every icon. Pass `false` to leave `optimizeDeps`
+   * alone, or an object to choose.
+   */
+  optimizeDeps?:
+    | boolean
+    | {
+        /** Every component entry point. Defaults to true. */
+        components?: boolean
+        /** Every icon module. Defaults to true. */
+        icons?: boolean
+        /** Every flag module. Defaults to false: few apps show flags. */
+        flags?: boolean
+      }
+  /**
    * Where the built library lives. Only the library's own build sets this.
    */
   distRoot?: string
@@ -100,11 +115,78 @@ const RESOLVER_ENTRIES = Object.entries(COMPONENT_MANIFEST) as [
 const FULL_SHEET =
   /(?:^|["'\s(])@nubisco\/ui\/(?:css|dist\/ui\.css)(?=["'\s)]|$)/m
 
+/** The glyph names the library ships, or none if the list is missing. */
+function loadGlyphNames(distRoot: string, kind: 'icon' | 'flag'): string[] {
+  const file = path.join(distRoot, `${kind}s`, 'names.json')
+  if (!existsSync(file)) return []
+  return JSON.parse(readFileSync(file, 'utf8'))
+}
+
+/**
+ * The deep imports this plugin writes into the app, for Vite to pre-bundle.
+ *
+ * The rewrites happen in `transform`, after Vite's start-up scan has read
+ * the app's source, so the scan never sees `@nubisco/ui/components/Button`
+ * or `@nubisco/ui/icons/house`. The first page that reaches one Vite has not
+ * bundled logs "optimized dependencies changed. reloading" and reloads the
+ * whole page: a nav click that seems to do nothing, or an app that restarts
+ * under the user. Listing them up front means the first bundle has them.
+ *
+ * Icons are listed by name because `'@nubisco/ui/icons/*'` cannot be: Vite
+ * expands a glob in `include` from the first value of the export, which is
+ * the one shared `module.d.ts`, so the pattern matches nothing.
+ */
+export function prebundleIds(
+  options: Pick<INubiscoUIOptions, 'components' | 'glyphs' | 'optimizeDeps'>,
+  distRoot: string,
+): string[] {
+  const choice = options.optimizeDeps ?? true
+  if (choice === false) return []
+  const want = {
+    components: true,
+    icons: true,
+    flags: false,
+    ...(typeof choice === 'object' ? choice : {}),
+  }
+  const glyphs = typeof options.glyphs === 'object' ? options.glyphs : {}
+  const pkg = '@nubisco/ui'
+  const ids: string[] = []
+  if (want.components && options.components !== false) {
+    for (const file of new Set(RESOLVER_ENTRIES.map(([, f]) => f))) {
+      ids.push(`${pkg}/components/${file}`)
+    }
+  }
+  for (const kind of ['icon', 'flag'] as const) {
+    if (!want[`${kind}s`] || options.glyphs === false) continue
+    if (glyphs[`${kind}s`] === false) continue
+    for (const name of loadGlyphNames(distRoot, kind)) {
+      ids.push(`${pkg}/${kind}s/${name}`)
+    }
+  }
+  return ids
+}
+
 export function nubiscoUI(options: INubiscoUIOptions = {}): Plugin[] {
   const { components = true, glyphs = true, styles = true } = options
   const componentOptions = typeof components === 'object' ? components : {}
   const plugins: Plugin[] = []
   let resolvedComponents = 0
+  const distRoot = options.distRoot ?? defaultDistRoot()
+
+  plugins.push({
+    name: 'nubisco-ui:optimize-deps',
+    apply: 'serve',
+    config() {
+      /*
+       * Only for an installed copy. A package linked from a workspace is
+       * served as source, which is what makes its edits hot-reload, and
+       * listing it here would bundle it and lose that.
+       */
+      if (!distRoot.split(path.sep).includes('node_modules')) return
+      const include = prebundleIds(options, distRoot)
+      if (include.length) return { optimizeDeps: { include } }
+    },
+  })
 
   if (glyphs !== false) {
     plugins.push(nubiscoGlyphs(typeof glyphs === 'object' ? glyphs : {}))
@@ -114,9 +196,7 @@ export function nubiscoUI(options: INubiscoUIOptions = {}): Plugin[] {
     const lookup = new Map(RESOLVER_ENTRIES)
     // Set by the first non-vendor module found importing the full sheet.
     let fullSheetImporter: string | null = null
-    const styleManifest = styles
-      ? loadStyleManifest(options.distRoot ?? defaultDistRoot())
-      : {}
+    const styleManifest = styles ? loadStyleManifest(distRoot) : {}
 
     plugins.push(
       nubiscoImports({

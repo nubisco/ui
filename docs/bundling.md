@@ -229,6 +229,29 @@ import '@nubisco/ui/css'
 See [Upgrading](/upgrading) for what changes about the cascade when styles are
 split, and how to tell whether it affects you.
 
+## Dev server pre-bundling
+
+The plugin turns a tag or an icon name into a deep import
+(`@nubisco/ui/components/Button`, `@nubisco/ui/icons/house`) while it compiles
+the file, which is after Vite's start-up scan has looked for dependencies. A
+dependency found that late makes Vite log "optimized dependencies changed.
+reloading" and reload the page, the first time any route reaches a component or
+an icon it has not bundled yet.
+
+So in dev the plugin adds every component and every icon to
+`optimizeDeps.include` itself, and the first bundle has them all. You need no
+`optimizeDeps` of your own for the library. Icons add about half a second to a
+cold start. Flags are left out unless you ask:
+
+```ts
+nubiscoUI({ optimizeDeps: { flags: true } })
+```
+
+`optimizeDeps: { icons: false }` leaves the icons out, and
+`optimizeDeps: false` turns the whole thing off. Nothing is added when the
+library is linked from a workspace rather than installed, so its source keeps
+hot-reloading.
+
 ## Importing components by hand
 
 You do not have to rely on auto-import. If you prefer explicit imports, write
