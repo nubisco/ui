@@ -34,6 +34,26 @@ describe('BlueprintCard', () => {
     expect(tag.text()).toContain('off')
   })
 
+  it('keeps the toggle by default, and hides it when not toggleable', () => {
+    const w = createWrapper({ category: 'effect' })
+    expect(w.find('.nb-blueprint-card__toggle').exists()).toBe(true)
+    expect(w.attributes('aria-label')).toBe('Test Card, effect, enabled')
+
+    const fixed = createWrapper({ category: 'effect', toggleable: false })
+    expect(fixed.find('.nb-blueprint-card__toggle').exists()).toBe(false)
+    expect(fixed.attributes('aria-label')).toBe('Test Card, effect')
+  })
+
+  it('drops the off wording from a card that cannot be switched', () => {
+    const w = createWrapper({
+      category: 'effect',
+      enabled: false,
+      toggleable: false,
+    })
+    expect(w.find('.nb-blueprint-card__tag').text()).toBe('effect')
+    expect(w.attributes('aria-label')).toBe('Test Card, effect')
+  })
+
   it('applies color as CSS custom property', () => {
     const w = createWrapper({ color: '#ff0000' })
     expect(w.attributes('style')).toContain('--nb-card-color: #ff0000')

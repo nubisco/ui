@@ -114,6 +114,11 @@ const canvasProps: Pick<
   canConnect: (from: IBlueprintConnectionEnd, to: IBlueprintConnectionEnd) =>
     from.type === 'output' && to.dataType !== 'midi',
 }
+const fixedCard: Pick<IBlueprintCardProps, 'id' | 'title' | 'toggleable'> = {
+  id: 'f',
+  title: 'F',
+  toggleable: false,
+}
 // prettier-ignore
 // @ts-expect-error - 'running' is not a TBlueprintCardStatus
 const badStatus: TBlueprintCardStatus = 'running'
@@ -168,6 +173,7 @@ const badMessage: IChatMessageProps = { text: 'hi' }
 const badMonogram: ISidebarBrandProps = { title: 'X', monogram: 2 }
 
 export {
+  fixedCard,
   threadProps,
   messageProps,
   logLevel,

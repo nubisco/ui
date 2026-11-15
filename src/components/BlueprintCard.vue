@@ -272,7 +272,7 @@
           </svg>
 
           <label
-            v-if="enabled !== undefined"
+            v-if="toggleable && enabled !== undefined"
             class="nb-blueprint-card__toggle"
             @mousedown.stop
             @click.stop
@@ -440,6 +440,7 @@ const nbStrings = useNbStrings()
 const props = withDefaults(defineProps<IBlueprintCardProps>(), {
   color: undefined,
   enabled: true,
+  toggleable: true,
   selected: false,
   category: '',
   ports: () => [],
@@ -641,11 +642,13 @@ const cardAriaLabel = computed(() => {
   if (props.category) parts.push(props.category)
   if (props.status && props.status !== 'none')
     parts.push(statusLabel(props.status))
-  parts.push(
-    props.enabled
-      ? nbStrings.value.blueprintCardEnabled
-      : nbStrings.value.blueprintCardDisabled,
-  )
+  // A card that cannot be switched off has no on or off to speak of.
+  if (props.toggleable)
+    parts.push(
+      props.enabled
+        ? nbStrings.value.blueprintCardEnabled
+        : nbStrings.value.blueprintCardDisabled,
+    )
   return parts.join(', ')
 })
 
@@ -745,7 +748,7 @@ const hasLabelsOnSide = computed(() => ({
 // Category display: append " · off" when disabled
 const displayCategory = computed(() => {
   const base = props.category || ''
-  if (!props.enabled && base) return `${base} · off`
+  if (props.toggleable && !props.enabled && base) return `${base} · off`
   return base
 })
 

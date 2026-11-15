@@ -211,6 +211,13 @@ export interface IBlueprintCardProps {
   color?: string
   /** Whether the card is enabled (shows toggle) */
   enabled?: boolean
+  /**
+   * Whether the card can be switched on and off. `false` hides the header
+   * toggle, and drops the enabled or disabled word from the card's
+   * accessible name and the " · off" from its category, for a card that is
+   * never switched off. Default `true`, which keeps the toggle.
+   */
+  toggleable?: boolean
   /** Whether the card is currently selected */
   selected?: boolean
   /** Category label shown below the title */
