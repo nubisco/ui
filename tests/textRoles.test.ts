@@ -58,6 +58,12 @@ describe.each(['light', 'dark'] as Theme[])('%s text roles', (theme) => {
     expect(worst(need('--nb-c-text-error'), grounds)).toBeGreaterThanOrEqual(AA)
   })
 
+  it('carries warning text at AA on every layer and hover', () => {
+    expect(worst(need('--nb-c-text-warning'), grounds)).toBeGreaterThanOrEqual(
+      AA,
+    )
+  })
+
   it.each(['--nb-c-icon', '--nb-c-status-info', '--nb-c-status-neutral'])(
     '%s clears 3:1 on every layer and hover',
     (name) => {

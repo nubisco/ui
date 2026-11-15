@@ -67,6 +67,7 @@ import JsonTree from './components/JsonTree.vue'
 import Label from './components/Label.vue'
 import Layer from './components/Layer.vue'
 import LineChart from './components/Charts/LineChart.vue'
+import LogView from './components/LogView.vue'
 import Menu from './components/Menu.vue'
 import MenuBar from './components/MenuBar.vue'
 import MenuBarItem from './components/MenuBarItem.vue'
@@ -197,6 +198,7 @@ declare module 'vue' {
     NbLabel: typeof Label
     NbLayer: typeof Layer
     NbLineChart: typeof LineChart
+    NbLogView: typeof LogView
     NbMenu: typeof Menu
     NbMenuBar: typeof MenuBar
     NbMenuBarItem: typeof MenuBarItem

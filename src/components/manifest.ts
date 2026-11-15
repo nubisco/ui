@@ -63,6 +63,7 @@ export const COMPONENT_MANIFEST = {
   NbImageCropper: 'ImageCropper',
   NbImagePicker: 'ImagePicker',
   NbJsonTree: 'JsonTree',
+  NbLogView: 'LogView',
   NbLabel: 'Label',
   NbField: 'Field',
   NbLineChart: 'Charts/LineChart',

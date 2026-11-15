@@ -31,6 +31,9 @@ import type {
   TBlueprintPinDataType,
   IChatThreadProps,
   IChatMessageProps,
+  ILogLine,
+  ILogViewProps,
+  TLogLevel,
 } from '@nubisco/ui'
 
 interface Member {
@@ -137,12 +140,29 @@ const messageProps: IChatMessageProps = {
   aiExplain: 'Written by the workspace model.',
   time: new Date(),
 }
+const logLevel: TLogLevel = 'warning'
+const logLines: ILogLine[] = [
+  { text: 'started', time: Date.now(), level: 'info' },
+  { id: 2, text: 'failed', level: 'error', marker: 'stderr' },
+]
+const logProps: ILogViewProps = { lines: ['plain', ...logLines], maxLines: 500 }
+// prettier-ignore
+// @ts-expect-error - 'fatal' is not a TLogLevel
+const badLogLevel: TLogLevel = 'fatal'
+// prettier-ignore
+// @ts-expect-error - a log line needs its text
+const badLogLine: ILogLine = { level: 'error' }
 // prettier-ignore
 // @ts-expect-error - a message needs its author
 const badMessage: IChatMessageProps = { text: 'hi' }
 export {
   threadProps,
   messageProps,
+  logLevel,
+  logLines,
+  logProps,
+  badLogLevel,
+  badLogLine,
   badMessage,
   legacyPort,
   customPort,

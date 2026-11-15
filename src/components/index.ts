@@ -54,6 +54,7 @@ import NbInterpolationChart from './Charts/InterpolationChart.vue'
 import NbImageCropper from './ImageCropper.vue'
 import NbImagePicker from './ImagePicker.vue'
 import NbJsonTree from './JsonTree.vue'
+import NbLogView from './LogView.vue'
 import NbLineChart from './Charts/LineChart.vue'
 import NbLabel from './Label.vue'
 import NbField from './Field.vue'
@@ -178,6 +179,7 @@ const components = {
   NbImageCropper,
   NbImagePicker,
   NbJsonTree,
+  NbLogView,
   NbLabel,
   NbField,
   NbLineChart,

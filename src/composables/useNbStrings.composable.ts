@@ -188,6 +188,16 @@ export interface INbStrings {
   chatThreadPlaceholder: string
   chatThreadSend: string
   chatThreadStop: string
+  // NbLogView
+  /** The log's accessible name. */
+  logViewLabel: string
+  logViewEmpty: string
+  logViewCopy: string
+  /** Said before the lines that are not rendered, at the top of the log. */
+  logViewHidden: (count: number) => string
+  /** The marker an error or warning line shows when it carries none. */
+  logViewError: string
+  logViewWarning: string
   // NbImagePicker
   imagePickerAdd: string
   imagePickerDrop: string
@@ -363,6 +373,16 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   chatThreadPlaceholder: 'Write a message',
   chatThreadSend: 'Send',
   chatThreadStop: 'Stop',
+  logViewLabel: 'Log',
+  logViewEmpty: 'No output yet',
+  logViewCopy: 'Copy log',
+  logViewHidden: (count: number) =>
+    pluralize(count, {
+      one: '{count} earlier line not shown',
+      other: '{count} earlier lines not shown',
+    }),
+  logViewError: 'error',
+  logViewWarning: 'warning',
   imagePickerAdd: 'Add image',
   imagePickerDrop: 'Drop to upload',
   imagePickerReplace: 'Replace image',
