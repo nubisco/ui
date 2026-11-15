@@ -34,6 +34,7 @@ import type {
   ILogLine,
   ILogViewProps,
   TLogLevel,
+  ISidebarMenuItemProps,
 } from '@nubisco/ui'
 
 interface Member {
@@ -146,6 +147,11 @@ const logLines: ILogLine[] = [
   { id: 2, text: 'failed', level: 'error', marker: 'stderr' },
 ]
 const logProps: ILogViewProps = { lines: ['plain', ...logLines], maxLines: 500 }
+const liveItem: Pick<ISidebarMenuItemProps, 'label' | 'live' | 'liveLabel'> = {
+  label: 'Runs',
+  live: true,
+  liveLabel: 'Running',
+}
 // prettier-ignore
 // @ts-expect-error - 'fatal' is not a TLogLevel
 const badLogLevel: TLogLevel = 'fatal'
@@ -161,6 +167,7 @@ export {
   logLevel,
   logLines,
   logProps,
+  liveItem,
   badLogLevel,
   badLogLine,
   badMessage,

@@ -198,6 +198,9 @@ export interface INbStrings {
   /** The marker an error or warning line shows when it carries none. */
   logViewError: string
   logViewWarning: string
+  // NbSidebarMenuItem
+  /** The accessible text of the item's `live` indicator. */
+  sidebarMenuItemLive: string
   // NbImagePicker
   imagePickerAdd: string
   imagePickerDrop: string
@@ -383,6 +386,7 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
     }),
   logViewError: 'error',
   logViewWarning: 'warning',
+  sidebarMenuItemLive: 'Running',
   imagePickerAdd: 'Add image',
   imagePickerDrop: 'Drop to upload',
   imagePickerReplace: 'Replace image',

@@ -54,6 +54,9 @@ const LOOPS: Record<string, string[]> = {
     'nb-blueprint-card-status-spin',
     'nb-blueprint-card-status-breathe',
   ],
+  // The sidebar item's `live` dot: a ring pulsing out every 1600ms, the same
+  // pace as the spinner's breathe, stopped under reduced motion.
+  'src/components/SidebarMenuItem.vue': ['nb-sidebar-menu-item-live'],
   // The decorative icon animations (the `animation` prop). Every one of them
   // is a loop, and the icon component owns them.
   'src/components/Icon.vue': ['*'],
