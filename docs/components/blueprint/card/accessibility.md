@@ -25,3 +25,7 @@ Connecting by keyboard walks the same two-step path the mouse does and goes thro
 Nudging is routed through the parent `NbBlueprint`, so it reports itself with the same `move` event a drag does, and nudging a card that is part of the selection moves the whole selection, again matching the mouse. Positions have one path out of the component, not two.
 
 Focusing a card also selects it, so the inspector and the canvas agree about what the user is looking at.
+
+On a [read-only](/components/blueprint/usage#read-only) canvas the card and its controls stay focusable and keep their names, so a reader can still walk the graph, but the arrow keys do not move the card and <kbd>Enter</kbd> on a port starts nothing.
+
+The `active` and `pending` statuses are spoken as "In progress" and "Pending" (`blueprintStatusActive` and `blueprintStatusPending` in the strings, so a product can translate or reword them). The turning arc of `active` respects reduced motion: it becomes a ring that breathes in opacity, with no rotation.

@@ -109,6 +109,10 @@ Compatibility is deliberately loose, because a graph editor that refuses plausib
 - Identical types connect.
 - Members of a family connect: `audio:mono` reaches `audio:stereo` and `audio:bus`, because they share the segment before the colon. `midi` reaches neither.
 
+The same rule applies to a data type the library does not know: `doc:draft` reaches `doc:final` and not `image`.
+
+A host that needs a stricter rule passes [`canConnect`](/components/blueprint/code#props) to `NbBlueprint`. It is consulted on top of the rule above, so it can only narrow it: a pin it refuses dims like any other invalid target, and a drop on it emits no `connect`.
+
 ### Collapsed cards
 
 A collapsed card keeps its header: the chevron, the title, the status glyph and the toggle. Its width floor is derived from that chrome plus a readable amount of title, so the title is never the thing squeezed out to make room for the controls.
@@ -415,26 +419,26 @@ across a whole canvas does not move a single wire.
 
 ## Props
 
-| Prop             | Type                        | Default               | Description                                                                                                                                                |
-| ---------------- | --------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`             | `string`                    | _(required)_          | Unique card identifier. Used in connection records and the `data-port` attribute.                                                                          |
-| `title`          | `string`                    | _(required)_          | Card title (rendered as the dominant element in the header).                                                                                               |
-| `color`          | `string`                    | `var(--nb-c-primary)` | Node identity colour: the left rail, the selected border, connected pin fill, meter fill.                                                                  |
-| `enabled`        | `boolean`                   | `true`                | Shows the header toggle. Omit to hide the toggle entirely.                                                                                                 |
-| `selected`       | `boolean`                   | `false`               | Draws the card's border in its own colour, with a matching inset line.                                                                                     |
-| `category`       | `string`                    | `''`                  | Uppercase label below the title, in neutral text. Also moves the first pin down to line up with the taller header.                                         |
-| `ports`          | `IBlueprintPort[]`          | `[]`                  | Port definitions. `input` ports render on the left edge, `output` on the right.                                                                            |
-| `connectedPorts` | `string[]`                  | `[]`                  | IDs of pins that are currently connected. Use `${port.id}/${channel.id}` for channel pins.                                                                 |
-| `parameters`     | `IBlueprintCardParameter[]` | `[]`                  | Structured parameter rows displayed in the card body.                                                                                                      |
-| `x`              | `number`                    | `0`                   | Canvas X position (documentary: the parent positions the card).                                                                                            |
-| `y`              | `number`                    | `0`                   | Canvas Y position (documentary: the parent positions the card).                                                                                            |
-| `removable`      | `boolean`                   | `false`               | Shows a remove button in the header. Emits `remove` when clicked.                                                                                          |
-| `collapsed`      | `boolean`                   | `false`               | Collapses the body, showing only the header row.                                                                                                           |
-| `status`         | `TBlueprintCardStatus`      | `'none'`              | Status glyph in the header: a ringed check, a warning triangle, or a filled error circle. Shape carries the meaning, so the three stay apart in greyscale. |
-| `preview`        | `string`                    | `''`                  | Compact monospaced preview text shown in the body.                                                                                                         |
-| `showPortLabels` | `TBlueprintPortLabelMode`   | `false`               | Card-level default for inline port labels: `'left'`, `'right'`, `'both'`, or `false`.                                                                      |
-| `portLevels`     | `Record<string, number>`    | `{}`                  | Signal level per port id, 0 to 1. Listed pins render as meters; see [Signal level and activity](#signal-level-and-activity).                               |
-| `density`        | `TBlueprintDensity`         | inherited             | `'default'` or `'compact'`. Inherited from the parent `NbBlueprint` when unset. Chrome only: it never moves a pin.                                         |
+| Prop             | Type                        | Default               | Description                                                                                                                                                                                                                                           |
+| ---------------- | --------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`             | `string`                    | _(required)_          | Unique card identifier. Used in connection records and the `data-port` attribute.                                                                                                                                                                     |
+| `title`          | `string`                    | _(required)_          | Card title (rendered as the dominant element in the header).                                                                                                                                                                                          |
+| `color`          | `string`                    | `var(--nb-c-primary)` | Node identity colour: the left rail, the selected border, connected pin fill, meter fill.                                                                                                                                                             |
+| `enabled`        | `boolean`                   | `true`                | Shows the header toggle. Omit to hide the toggle entirely.                                                                                                                                                                                            |
+| `selected`       | `boolean`                   | `false`               | Draws the card's border in its own colour, with a matching inset line.                                                                                                                                                                                |
+| `category`       | `string`                    | `''`                  | Uppercase label below the title, in neutral text. Also moves the first pin down to line up with the taller header.                                                                                                                                    |
+| `ports`          | `IBlueprintPort[]`          | `[]`                  | Port definitions. `input` ports render on the left edge, `output` on the right.                                                                                                                                                                       |
+| `connectedPorts` | `string[]`                  | `[]`                  | IDs of pins that are currently connected. Use `${port.id}/${channel.id}` for channel pins.                                                                                                                                                            |
+| `parameters`     | `IBlueprintCardParameter[]` | `[]`                  | Structured parameter rows displayed in the card body.                                                                                                                                                                                                 |
+| `x`              | `number`                    | `0`                   | Canvas X position (documentary: the parent positions the card).                                                                                                                                                                                       |
+| `y`              | `number`                    | `0`                   | Canvas Y position (documentary: the parent positions the card).                                                                                                                                                                                       |
+| `removable`      | `boolean`                   | `false`               | Shows a remove button in the header. Emits `remove` when clicked.                                                                                                                                                                                     |
+| `collapsed`      | `boolean`                   | `false`               | Collapses the body, showing only the header row.                                                                                                                                                                                                      |
+| `status`         | `TBlueprintCardStatus`      | `'none'`              | Status glyph in the header: a ringed check (`valid`), a warning triangle (`warning`), a filled error circle (`error`), a ring with a turning arc (`active`), or a clock face (`pending`). Shape carries the meaning, so they stay apart in greyscale. |
+| `preview`        | `string`                    | `''`                  | Compact monospaced preview text shown in the body.                                                                                                                                                                                                    |
+| `showPortLabels` | `TBlueprintPortLabelMode`   | `false`               | Card-level default for inline port labels: `'left'`, `'right'`, `'both'`, or `false`.                                                                                                                                                                 |
+| `portLevels`     | `Record<string, number>`    | `{}`                  | Signal level per port id, 0 to 1. Listed pins render as meters; see [Signal level and activity](#signal-level-and-activity).                                                                                                                          |
+| `density`        | `TBlueprintDensity`         | inherited             | `'default'` or `'compact'`. Inherited from the parent `NbBlueprint` when unset. Chrome only: it never moves a pin.                                                                                                                                    |
 
 ## Events
 
@@ -456,7 +460,8 @@ across a whole canvas does not move a single wire.
 ## Types
 
 ```ts
-type TBlueprintPinDataType =
+/** The data types the library ships a colour and signal kind for. */
+type TBlueprintKnownPinDataType =
   | 'geometry'
   | 'celestial'
   | 'lighting'
@@ -475,6 +480,17 @@ type TBlueprintPinDataType =
   | 'color'
   | 'asset'
   | 'any'
+
+/** Any string, with editor autocomplete for the known ones. */
+type TBlueprintPinDataType = TBlueprintKnownPinDataType | (string & {})
+
+type TBlueprintCardStatus =
+  | 'valid'
+  | 'warning'
+  | 'error'
+  | 'active' // work in progress
+  | 'pending' // waiting or queued
+  | 'none'
 
 type TBlueprintPortLabelMode = 'left' | 'right' | 'both' | false
 
@@ -532,6 +548,22 @@ Every data type renders as the same pill. A pin is the target a user aims a wire
 | `color`              | `#fb923c` | digital | Colour value.                                  |
 | `asset`              | `#a78bfa` | digital | Asset reference (texture, sample, plugin).     |
 | `any`                | `#64748b` | analog  | Untyped / wildcard.                            |
+
+`dataType` accepts any string, so a consumer can describe its own domain without waiting for the library to learn it. A type that is not in this table styles like `any` (grey, analog) unless the port sets its own `color`, `shape` or `signal`, see [Per-port style overrides](#per-port-style-overrides). It connects by the same rule as every other type, see [Drop targets](#drop-targets).
+
+```ts
+const ports: IBlueprintPort[] = [
+  // Not a type the library knows: styled like `any`, compared by family.
+  {
+    id: 'draft',
+    label: 'Draft',
+    type: 'output',
+    dataType: 'doc:draft',
+    color: '#0ea5e9',
+    signal: 'digital',
+  },
+]
+```
 
 ## Analog and digital
 
@@ -654,4 +686,4 @@ Sub-pins (channels of a multi-channel port) render shorter than a root pin so a 
 | `--nb-blueprint-port-hit`    | `24px`                   | Hit-target width.                                                                                                 |
 | `--nb-blueprint-rail-width`  | `3px`                    | Width of the identity rail on the card's left edge.                                                               |
 
-The card reads these theme tokens rather than any literal colour, so retheming it is a token change and never a component change: `--nb-c-port-bg`, `--nb-c-port-border`, `--nb-c-port-signal`, `--nb-c-node-row-bg`, and `--nb-c-status-valid` / `-warning` / `-error`.
+The card reads these theme tokens rather than any literal colour, so retheming it is a token change and never a component change: `--nb-c-port-bg`, `--nb-c-port-border`, `--nb-c-port-signal`, `--nb-c-node-row-bg`, and `--nb-c-status-valid` / `-warning` / `-error` / `-info` (the `active` status) / `-neutral` (the `pending` status).

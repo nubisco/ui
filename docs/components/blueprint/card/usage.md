@@ -82,13 +82,24 @@ When `enabled` is passed, a compact accent-tinted toggle renders in the header. 
 
 ## Status
 
-Three states, each a distinct glyph so they stay apart in greyscale, for a reader with a colour vision deficiency, and at the zoom levels where a coloured dot would be sub-pixel.
+Five states, each a distinct glyph so they stay apart in greyscale, for a reader with a colour vision deficiency, and at the zoom levels where a coloured dot would be sub-pixel.
+
+Three report the outcome of a check: `valid`, `warning` and `error`.
 
 <preview>
   <div style="padding: 2rem 3rem; background: var(--nb-c-layer-0, var(--nb-c-bg)); border-radius: 2px; display: flex; justify-content: center; gap: 3.5rem; flex-wrap: wrap;">
     <NbBlueprintCard id="sv" title="Loaded" category="plugin" color="#22c55e" status="valid" />
     <NbBlueprintCard id="sw" title="Latency" category="plugin" color="#f59e0b" status="warning" />
     <NbBlueprintCard id="se" title="Missing" category="plugin" color="#dc2626" status="error" />
+  </div>
+</preview>
+
+Two report where a node is in a piece of work, for a graph that shows something running: `active` (work in progress, a ring with a turning arc) and `pending` (waiting or queued, a clock face). Under reduced motion the arc stops turning and the ring breathes instead, so an active node still looks alive without anything travelling.
+
+<preview>
+  <div style="padding: 2rem 3rem; background: var(--nb-c-layer-0, var(--nb-c-bg)); border-radius: 2px; display: flex; justify-content: center; gap: 3.5rem; flex-wrap: wrap;">
+    <NbBlueprintCard id="sa" title="Building" category="step" color="#3b82f6" status="active" />
+    <NbBlueprintCard id="sp" title="Deploy" category="step" color="#64748b" status="pending" />
   </div>
 </preview>
 

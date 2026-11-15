@@ -94,12 +94,63 @@ A pin can accept a wire when it is on a different card, faces the other way,
 and carries a compatible `dataType`. Compatibility rules and the family
 matching are documented under
 [Drop targets](/components/blueprint/card/code#drop-targets) on the card page.
+`dataType` accepts any string, and a type the library does not know is
+compared by the same rule.
+
+### Restricting connections
+
+When the built-in rule is not strict enough, pass `canConnect`. It receives
+both ends of the prospective wire, always the output end first and the input
+end second, and returns whether the wire is allowed. It is consulted on top of
+the built-in rule: a pin it refuses dims while the wire is over it, exactly
+like a pin of the wrong type, and releasing on it emits no `connect`. Once
+`canConnect` is given, a drop that fails the built-in type rule is refused as
+well, so what lights up as valid is exactly what connects.
+
+```vue
+<NbBlueprint
+  :connections="connections"
+  :can-connect="(from, to) => !hasPath(to.nodeId, from.nodeId)"
+  @connect="addConnection"
+/>
+```
+
+Without `canConnect`, connecting behaves as it always has.
 
 ## Card dragging
 
 Cards are now draggable directly. When you drag a selected card, all selected cards move together. When you drag an unselected card, it becomes selected first.
 
 On drag end, the blueprint emits `move` with an array of `{ id, x, y }` objects. The consumer should update their data model with these positions so they persist across re-renders.
+
+## Read-only
+
+Set `readonly` to show a graph that people can look at but not change, for
+example a consumer that shows a live pipeline whose shape is owned elsewhere.
+
+| Still works                                           | Locked                                                    |
+| ----------------------------------------------------- | --------------------------------------------------------- |
+| Pan, zoom, `fitToView`, `centerView`, `resetView`     | Dragging cards, by pointer or keyboard nudge              |
+| Clicking, Shift+click and marquee selection           | Creating or rewiring wires, by pointer or keyboard        |
+| `selection-change` and `focus`                        | The wire context menu, and so `disconnect`                |
+| Hover, `wire-mouseover`, `wire-mouseout`, tooltips    | Drop-on-wire                                              |
+| Live activity: `activePorts`, `portLevels`, animation | Align, distribute and auto-layout (exposed or in toolbar) |
+
+`move`, `connect`, `disconnect` and `drop-on-wire` never emit while it is set.
+Cards and pins drop their grab and crosshair cursors, and
+`NbBlueprintControls` hides its alignment and auto-layout buttons. Switching
+`readonly` on in the middle of a gesture ends the gesture.
+
+```vue
+<NbBlueprint :cards="cards" :connections="connections" readonly>
+  <template #card="{ card }">
+    <NbBlueprintCard v-bind="card" />
+  </template>
+</NbBlueprint>
+```
+
+`readonly` is independent of `editable`, which stays an advisory flag for
+chrome and locks nothing.
 
 ## Focus and selection
 
@@ -131,7 +182,7 @@ When multiple cards are selected, you can align or distribute them using exposed
 | `distributeHorizontally()` | Space selected cards evenly along the X axis          |
 | `distributeVertically()`   | Space selected cards evenly along the Y axis          |
 
-All alignment/distribution methods emit `move` so the consumer can persist the new positions.
+All alignment/distribution methods emit `move` so the consumer can persist the new positions. On a [read-only](#read-only) canvas they do nothing.
 
 ## View controls
 
