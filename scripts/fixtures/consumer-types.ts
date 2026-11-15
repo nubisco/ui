@@ -35,6 +35,7 @@ import type {
   ILogViewProps,
   TLogLevel,
   ISidebarMenuItemProps,
+  ISidebarBrandProps,
 } from '@nubisco/ui'
 
 interface Member {
@@ -152,6 +153,7 @@ const liveItem: Pick<ISidebarMenuItemProps, 'label' | 'live' | 'liveLabel'> = {
   live: true,
   liveLabel: 'Running',
 }
+const brandFallback: ISidebarBrandProps = { title: 'Ledger', monogram: 'Lg' }
 // prettier-ignore
 // @ts-expect-error - 'fatal' is not a TLogLevel
 const badLogLevel: TLogLevel = 'fatal'
@@ -161,6 +163,10 @@ const badLogLine: ILogLine = { level: 'error' }
 // prettier-ignore
 // @ts-expect-error - a message needs its author
 const badMessage: IChatMessageProps = { text: 'hi' }
+// prettier-ignore
+// @ts-expect-error - monogram is a boolean or the letters, not a number
+const badMonogram: ISidebarBrandProps = { title: 'X', monogram: 2 }
+
 export {
   threadProps,
   messageProps,
@@ -168,9 +174,11 @@ export {
   logLines,
   logProps,
   liveItem,
+  brandFallback,
   badLogLevel,
   badLogLine,
   badMessage,
+  badMonogram,
   legacyPort,
   customPort,
   knownType,
