@@ -389,6 +389,37 @@ In the verbose variant, the `#sidebar-logo` slot has room for more than just a m
 </template>
 ```
 
+### A product with no logo yet
+
+Until a product has a mark, `monogram` draws a neutral one: a 24px tile in the app's primary colour (`--nb-c-primary`, with its readable ink `--nb-c-primary-a11y`) holding the title's initials, up to two from its first two words. Pass a string to choose the letters (`monogram="Lg"`). It is drawn only when there is no `icon` and no `#icon` slot, so adding it is safe before the logo arrives and harmless after. Without it, a brand with no icon renders no mark, as before. The tile's corner follows the appearance. Collapsed, where the title is hidden, the tile carries the title as its accessible name.
+
+```vue
+<template #sidebar-logo>
+  <NbSidebarBrand title="Ledger" subtitle="Workspace" monogram />
+</template>
+```
+
+| Prop       | Type                | Default | Description                                                                        |
+| ---------- | ------------------- | ------- | ---------------------------------------------------------------------------------- |
+| `monogram` | `boolean \| string` | `false` | Draws the initials tile when there is no icon. A string supplies up to two letters |
+
+### Something running: `live`
+
+`NbSidebarMenuItem` takes `live` for a destination where something is running right now (a job, an agent, a sync). It draws an 8px dot in the rail's active colour with a ring pulsing out of it: at the end of the label, before any badge, on the expanded rail, and on the icon's top-right corner on the collapsed rail, where a count would go. When the item also has a badge, the badge keeps the top corner and the dot moves to the bottom-right. Reduced motion stops the pulse and keeps the dot.
+
+The dot is named for assistive technology by `live-label`, which defaults to the string catalogue's `sidebarMenuItemLive` ("Running"): spoken after the label on the expanded rail, and appended to the row's name on the collapsed one ("Runs, Running"). Absent by default.
+
+```vue
+<NbSidebarMenuItem icon="play" label="Runs" to="/runs" :live="hasActiveRun" />
+```
+
+| Prop        | Type      | Default   | Description                                                  |
+| ----------- | --------- | --------- | ------------------------------------------------------------ |
+| `live`      | `boolean` | `false`   | Shows the pulsing in-progress dot                            |
+| `liveLabel` | `string`  | catalogue | The dot's accessible text. Defaults to `sidebarMenuItemLive` |
+
+Retint the dot with `--nb-shell-sidebar-live-color` (defaults to `--nb-shell-sidebar-link-active-color`).
+
 ### Badge variants
 
 `NbSidebarMenuItem` accepts a `badge` (string or number) plus an optional `badge-variant`:
@@ -1412,6 +1443,7 @@ Read only while `frame="detached"`; an attached frame never looks at them.
 | `--nb-shell-sidebar-badge-color`       | `--nb-shell-sidebar-bg`                                          | Colour of the count on a folded rail row                                                                                                                                                                                                                      |
 | `--nb-shell-sidebar-link-active-bg`    | 25% `--nb-c-primary`                                             | Sidebar link active background                                                                                                                                                                                                                                |
 | `--nb-shell-sidebar-link-active-color` | 60% `--nb-c-primary` mixed into white                            | Sidebar link active colour                                                                                                                                                                                                                                    |
+| `--nb-shell-sidebar-live-color`        | `--nb-shell-sidebar-link-active-color`                           | The `live` dot on a sidebar menu item                                                                                                                                                                                                                         |
 | `--nb-shell-inspector-width`           | `calc(var(--nb-base-unit) * 70)` (560px)                         | Inspector panel width. **Not settable at `:root`**: it is re-declared on the inspector element itself, once per `inspectorSize`, so an inherited value never reaches it. Width comes from `inspectorSize`, or from `resizable` with `v-model:inspector-width` |
 | `--nb-shell-inspector-expanded-width`  | `50vw`                                                           | Inspector width when expanded                                                                                                                                                                                                                                 |
 | `--nb-shell-inspector-max-width`       | `max(calc(var(--nb-base-unit) * 36), 50vw)`                      | Ceiling on a visible inspector's width, whatever set it. Never below the 288px resize floor, so the announced and rendered widths cannot disagree. Set `none` to opt out. `lg`, `xl` and `inspector-expanded` opt out already                                 |

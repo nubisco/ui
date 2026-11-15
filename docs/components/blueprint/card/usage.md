@@ -53,6 +53,8 @@ Pass `selected` to draw the card's border in its own identity colour, with a mat
 
 When `enabled` is passed, a compact accent-tinted toggle renders in the header. Disabled cards drop to 55% opacity, collapse the body, and append " . off" to the category tag.
 
+A card that is never switched off takes `:toggleable="false"`: the toggle goes, and so does the on or off wording, from the category tag and from the card's accessible name.
+
 <preview>
   <div style="padding: 2rem; background: var(--nb-c-layer-0, var(--nb-c-bg)); border-radius: 8px; display: flex; justify-content: center; gap: 1rem;">
     <NbBlueprintCard

@@ -94,7 +94,7 @@ These are **fills**: colours you set a background to, with the matching `-a11y` 
 ::: danger A fill is not an ink
 `--nb-c-warning` measures **2.06 : 1** against layer 1 in the light theme. As a background under `--nb-c-warning-a11y` it is fine. As a text colour it is illegible, and as a 1px outline it fails WCAG 1.4.11.
 
-The same fill as text on its own 12% tint measures **1.88 : 1** in light. That is why `NbBadge` takes intents (`neutral`, `info`, `success`, `warning`, `danger`, `primary`) that paint the status surface pairs, 8.04 : 1 or better in light, and the colour names are deprecated aliases of them. For coloured text on a surface use `--nb-c-status-*` or `--nb-c-text-error`, and for a filled block use a status surface pair.
+The same fill as text on its own 12% tint measures **1.88 : 1** in light. That is why `NbBadge` takes intents (`neutral`, `info`, `success`, `warning`, `danger`, `primary`) that paint the status surface pairs, 8.04 : 1 or better in light, and the colour names are deprecated aliases of them. For coloured text on a surface use `--nb-c-status-*`, `--nb-c-text-error` or `--nb-c-text-warning`, and for a filled block use a status surface pair.
 :::
 
 ### Status: grounds, inks and glyphs
@@ -153,7 +153,7 @@ These were gaps through 5.47 and are now roles, each measured on every ground it
 | `--nb-c-surface-selected`, `-selected-hover`, `-active`, `-accent`, `-accent-hover`         | State and supporting surfaces, per plane. See [The per-plane set](/theming#the-per-plane-set). |
 | `--nb-c-border-strong`                                                                      | A structural edge, 3:1 on its plane                                                            |
 | `--nb-c-field-bg`, `--nb-c-field-border`                                                    | Now per plane: a field on plane N takes the next plane's fill                                  |
-| `--nb-c-text-placeholder`, `--nb-c-text-error`, `--nb-c-icon`                               | Text roles beyond the three tiers                                                              |
+| `--nb-c-text-placeholder`, `--nb-c-text-error`, `--nb-c-text-warning`, `--nb-c-icon`        | Text roles beyond the three tiers                                                              |
 | `--nb-c-link`, `-hover`, `-visited`                                                         | The primary drawn as ink, AA on every layer and hover                                          |
 | `--nb-c-status-info`, `--nb-c-status-neutral`                                               | The glyph tier's missing two, 3:1 on every layer, measured on dark layer 3                     |
 | `--nb-c-bg-inverse`, `--nb-c-text-inverse`, `--nb-c-border-inverse`, `--nb-c-focus-inverse` | An inverted chip (the tooltip reads these)                                                     |

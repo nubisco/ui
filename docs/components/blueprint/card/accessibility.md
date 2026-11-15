@@ -9,7 +9,7 @@ pageTabs: ['usage', 'code', 'accessibility']
 
 ## Keyboard and assistive technology
 
-The card is a focusable `role="group"`, labelled with its title, category, status and enabled state. Every control inside it is a real button with its own accessible name.
+The card is a focusable `role="group"`, labelled with its title, category, status and enabled state (left out with `:toggleable="false"`, where there is no state to report). Every control inside it is a real button with its own accessible name.
 
 | Key                                                                     | Where                            | Does                                                   |
 | ----------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------ |
