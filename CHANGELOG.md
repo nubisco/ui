@@ -1,3 +1,10 @@
+# [5.53.0](https://github.com/nubisco/ui/compare/v5.52.2...v5.53.0) (2026-11-15)
+
+
+### Features
+
+* read-only blueprints, chat thread, log view, live rail items, brand monogram ([#18](https://github.com/nubisco/ui/issues/18)) ([5f42ab5](https://github.com/nubisco/ui/commit/5f42ab506c99c8dfe0b6d5c5df0cf5d99cf5dbde))
+
 ## [5.52.2](https://github.com/nubisco/ui/compare/v5.52.1...v5.52.2) (2026-11-14)
 
 
