@@ -291,12 +291,32 @@ const BUILT_IN: Record<string, Record<string, string>> = {
   },
 }
 
-const { t: globalT, te, locale } = useI18n({ useScope: 'global' })
+interface II18nLike {
+  t: (key: string) => string
+  te: (key: string) => boolean
+  locale: { value: string }
+}
+
+/**
+ * The product's vue-i18n, when it installed one. A product without vue-i18n still gets a
+ * working menu in the built-in strings, the way NbSidebarHeaderToggle already does, rather
+ * than a setup error that leaves the rail with no account menu at all.
+ */
+function tryI18n(): II18nLike | null {
+  try {
+    return useI18n({ useScope: 'global' }) as unknown as II18nLike
+  } catch {
+    return null
+  }
+}
+const i18n = tryI18n()
 
 function t(fullKey: string): string {
-  if (te(fullKey)) return globalT(fullKey)
+  if (i18n?.te(fullKey)) return i18n.t(fullKey)
   const key = fullKey.slice('userMenu.'.length)
-  const lang = String(locale.value).toLowerCase().split('-')[0]
+  const lang = String(i18n?.locale.value ?? 'en')
+    .toLowerCase()
+    .split('-')[0]
   return BUILT_IN[lang]?.[key] ?? BUILT_IN.en[key] ?? fullKey
 }
 
