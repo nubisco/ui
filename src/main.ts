@@ -596,6 +596,7 @@ export type {
   IBlueprintCanvasPoint,
   IBlueprintScreenPoint,
   IBlueprintCardPaint,
+  IBlueprintConnectionEnd,
   TBlueprintRenderer,
   TBlueprintBackground,
 } from './components/Blueprint.types'
@@ -626,6 +627,9 @@ export type {
   IBlueprintPort,
   IBlueprintCardProps,
   IBlueprintCardParameter,
+  TBlueprintCardStatus,
+  TBlueprintPinDataType,
+  TBlueprintKnownPinDataType,
 } from './components/BlueprintCard.types'
 export { default as NbBlueprintBackground } from './components/BlueprintBackground.vue'
 export type {

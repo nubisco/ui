@@ -48,6 +48,12 @@ const LOOPS: Record<string, string[]> = {
     'nb-wire-flow',
     'nb-wire-breathe',
   ],
+  // The card's `active` status: a turning arc, a breathing ring under reduced
+  // motion, tuned like NbSpinner's so it reads as the same kind of "working".
+  'src/components/BlueprintCard.vue': [
+    'nb-blueprint-card-status-spin',
+    'nb-blueprint-card-status-breathe',
+  ],
   // The decorative icon animations (the `animation` prop). Every one of them
   // is a loop, and the icon component owns them.
   'src/components/Icon.vue': ['*'],

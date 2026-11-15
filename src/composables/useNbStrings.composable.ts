@@ -155,6 +155,10 @@ export interface INbStrings {
   blueprintStatusValid: string
   blueprintStatusWarning: string
   blueprintStatusError: string
+  /** Work on the node is in progress (`status="active"`). */
+  blueprintStatusActive: string
+  /** The node is waiting or queued (`status="pending"`). */
+  blueprintStatusPending: string
   /** The last part of the card's spoken name. */
   blueprintCardEnabled: string
   blueprintCardDisabled: string
@@ -326,6 +330,8 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   blueprintStatusValid: 'Valid',
   blueprintStatusWarning: 'Warning',
   blueprintStatusError: 'Error',
+  blueprintStatusActive: 'In progress',
+  blueprintStatusPending: 'Pending',
   blueprintCardEnabled: 'enabled',
   blueprintCardDisabled: 'disabled',
   blueprintEnableCard: (title: string) => `Enable ${title}`,

@@ -81,6 +81,29 @@ describe('NbBlueprintControls', () => {
     await w.vm.$nextTick()
     expect(w.find('.nb-blueprint-controls').exists()).toBe(true)
   })
+
+  it('offers no layout actions on a read-only canvas, but keeps the view ones', async () => {
+    const isReadonly = ref(true)
+    const ctrl = stubController({
+      isReadonly,
+      selectedIds: ref(new Set(['a', 'b'])),
+    })
+    const w = mountWith(BlueprintControls, ctrl)
+    expect(w.find('[aria-label="Align left"]').exists()).toBe(false)
+    expect(w.find('[aria-label="Auto layout"]').exists()).toBe(false)
+    expect(w.find('[aria-label="Zoom in"]').exists()).toBe(true)
+    expect(w.find('[aria-label="Fit to view"]').exists()).toBe(true)
+    isReadonly.value = false
+    await w.vm.$nextTick()
+    expect(w.find('[aria-label="Align left"]').exists()).toBe(true)
+    expect(w.find('[aria-label="Auto layout"]').exists()).toBe(true)
+  })
+
+  it('keeps its layout actions with a controller that predates isReadonly', () => {
+    const ctrl = stubController({ selectedIds: ref(new Set(['a', 'b'])) })
+    const w = mountWith(BlueprintControls, ctrl)
+    expect(w.find('[aria-label="Align left"]').exists()).toBe(true)
+  })
 })
 
 describe('NbBlueprintMinimap', () => {

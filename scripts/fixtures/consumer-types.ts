@@ -22,6 +22,13 @@ import type {
   TDataTableSelectable,
   TSortDirection,
   IPaginationProps,
+  IBlueprintPort,
+  IBlueprintProps,
+  IBlueprintCardProps,
+  IBlueprintConnectionEnd,
+  TBlueprintCardStatus,
+  TBlueprintKnownPinDataType,
+  TBlueprintPinDataType,
 } from '@nubisco/ui'
 
 interface Member {
@@ -68,7 +75,59 @@ const badAlign: IDataTableColumn<Member> = { key: 'n', header: 'N', align: 'midd
 // @ts-expect-error - 'sideways' is not a TSortDirection
 const badDirection: IDataTableSortState = { key: 'n', direction: 'sideways' }
 
+// Blueprint: the pin data type is open (a known type, or any string), the
+// card status gained `active` and `pending`, and the canvas takes `readonly`
+// and `canConnect`. A port written before any of that must still check.
+const legacyPort: IBlueprintPort = {
+  id: 'in',
+  label: 'In',
+  type: 'input',
+  dataType: 'audio:stereo',
+}
+const customPort: IBlueprintPort = {
+  id: 'doc',
+  label: 'Doc',
+  type: 'output',
+  dataType: 'doc:draft',
+}
+const knownType: TBlueprintKnownPinDataType = 'midi'
+const openType: TBlueprintPinDataType = 'anything-at-all'
+const workStatus: TBlueprintCardStatus = 'active'
+const cardProps: Pick<IBlueprintCardProps, 'id' | 'title' | 'status'> = {
+  id: 'c',
+  title: 'C',
+  status: 'pending',
+}
+const canvasProps: Pick<
+  IBlueprintProps,
+  'readonly' | 'canConnect' | 'editable'
+> = {
+  readonly: true,
+  editable: false,
+  canConnect: (from: IBlueprintConnectionEnd, to: IBlueprintConnectionEnd) =>
+    from.type === 'output' && to.dataType !== 'midi',
+}
+// prettier-ignore
+// @ts-expect-error - 'running' is not a TBlueprintCardStatus
+const badStatus: TBlueprintCardStatus = 'running'
+// prettier-ignore
+// @ts-expect-error - an arbitrary string is not a known pin data type
+const badKnownType: TBlueprintKnownPinDataType = 'doc:draft'
+// prettier-ignore
+// @ts-expect-error - a number is not a pin data type
+const badPinType: TBlueprintPinDataType = 3
+
 export {
+  legacyPort,
+  customPort,
+  knownType,
+  openType,
+  workStatus,
+  cardProps,
+  canvasProps,
+  badStatus,
+  badKnownType,
+  badPinType,
   columns,
   sort,
   direction,
