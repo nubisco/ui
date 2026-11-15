@@ -17,6 +17,8 @@ import NbButtonSet from './ButtonSet.vue'
 import NbCalendar from './Calendar.vue'
 import NbCard from './Card.vue'
 import NbCardGrid from './CardGrid.vue'
+import NbChatMessage from './ChatMessage.vue'
+import NbChatThread from './ChatThread.vue'
 import NbCopyButton from './CopyButton.vue'
 import NbBackToTop from './BackToTop.vue'
 import NbBriefing from './Briefing.vue'
@@ -138,6 +140,8 @@ const components = {
   NbCalendar,
   NbCard,
   NbCardGrid,
+  NbChatMessage,
+  NbChatThread,
   NbCopyButton,
   NbBackToTop,
   NbBriefing,

@@ -29,6 +29,8 @@ import ButtonSet from './components/ButtonSet.vue'
 import Calendar from './components/Calendar.vue'
 import Card from './components/Card.vue'
 import CardGrid from './components/CardGrid.vue'
+import ChatMessage from './components/ChatMessage.vue'
+import ChatThread from './components/ChatThread.vue'
 import Checkbox from './components/Checkbox.vue'
 import CheckboxGroup from './components/CheckboxGroup.vue'
 import ChipGroup from './components/ChipGroup.vue'
@@ -157,6 +159,8 @@ declare module 'vue' {
     NbCalendar: typeof Calendar
     NbCard: typeof Card
     NbCardGrid: typeof CardGrid
+    NbChatMessage: typeof ChatMessage
+    NbChatThread: typeof ChatThread
     NbCheckbox: typeof Checkbox
     NbCheckboxGroup: typeof CheckboxGroup
     NbChipGroup: typeof ChipGroup

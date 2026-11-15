@@ -29,6 +29,8 @@ import type {
   TBlueprintCardStatus,
   TBlueprintKnownPinDataType,
   TBlueprintPinDataType,
+  IChatThreadProps,
+  IChatMessageProps,
 } from '@nubisco/ui'
 
 interface Member {
@@ -117,7 +119,31 @@ const badKnownType: TBlueprintKnownPinDataType = 'doc:draft'
 // @ts-expect-error - a number is not a pin data type
 const badPinType: TBlueprintPinDataType = 3
 
+const threadProps: Pick<
+  IChatThreadProps,
+  'working' | 'composer' | 'disabled' | 'disabledReason' | 'stoppable'
+> = {
+  working: true,
+  composer: true,
+  disabled: true,
+  disabledReason: 'The agent is not running',
+  stoppable: true,
+}
+const messageProps: IChatMessageProps = {
+  author: 'Assistant',
+  picture: null,
+  own: false,
+  ai: true,
+  aiExplain: 'Written by the workspace model.',
+  time: new Date(),
+}
+// prettier-ignore
+// @ts-expect-error - a message needs its author
+const badMessage: IChatMessageProps = { text: 'hi' }
 export {
+  threadProps,
+  messageProps,
+  badMessage,
   legacyPort,
   customPort,
   knownType,

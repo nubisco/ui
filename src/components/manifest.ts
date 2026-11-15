@@ -25,6 +25,8 @@ export const COMPONENT_MANIFEST = {
   NbCalendar: 'Calendar',
   NbCard: 'Card',
   NbCardGrid: 'CardGrid',
+  NbChatMessage: 'ChatMessage',
+  NbChatThread: 'ChatThread',
   NbCopyButton: 'CopyButton',
   NbBackToTop: 'BackToTop',
   NbBriefing: 'Briefing',
