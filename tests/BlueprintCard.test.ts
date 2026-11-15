@@ -34,6 +34,26 @@ describe('BlueprintCard', () => {
     expect(tag.text()).toContain('off')
   })
 
+  it('keeps the toggle by default, and hides it when not toggleable', () => {
+    const w = createWrapper({ category: 'effect' })
+    expect(w.find('.nb-blueprint-card__toggle').exists()).toBe(true)
+    expect(w.attributes('aria-label')).toBe('Test Card, effect, enabled')
+
+    const fixed = createWrapper({ category: 'effect', toggleable: false })
+    expect(fixed.find('.nb-blueprint-card__toggle').exists()).toBe(false)
+    expect(fixed.attributes('aria-label')).toBe('Test Card, effect')
+  })
+
+  it('drops the off wording from a card that cannot be switched', () => {
+    const w = createWrapper({
+      category: 'effect',
+      enabled: false,
+      toggleable: false,
+    })
+    expect(w.find('.nb-blueprint-card__tag').text()).toBe('effect')
+    expect(w.attributes('aria-label')).toBe('Test Card, effect')
+  })
+
   it('applies color as CSS custom property', () => {
     const w = createWrapper({ color: '#ff0000' })
     expect(w.attributes('style')).toContain('--nb-card-color: #ff0000')
@@ -869,6 +889,254 @@ describe('BlueprintCard analog and digital ports', () => {
     // has to be told apart from its immediate neighbours.
     expect(pinOf({ ports: portsFor({ shape: 'circle' }) }).classes()).toContain(
       'nb-blueprint-card__port--circle',
+    )
+  })
+})
+
+// ── Open pin data types ───────────────────────────────────────────────
+describe('BlueprintCard open pin data types', () => {
+  const pinOf = (port: Record<string, unknown>) =>
+    mount(BlueprintCard, {
+      props: {
+        id: 'c',
+        title: 'C',
+        ports: [{ id: 'p', label: 'P', type: 'input' as const, ...port }],
+      },
+    }).find('.nb-blueprint-card__port')
+
+  const ANY_COLOR = '#64748b'
+
+  it('styles an unknown data type like `any`', () => {
+    const pin = pinOf({ dataType: 'artifact:report' })
+    expect(pin.attributes('style')).toContain(`--pin-color: ${ANY_COLOR}`)
+    expect(pin.classes()).toContain('nb-blueprint-card__port--pill')
+    expect(pin.classes()).toContain('nb-blueprint-card__port--analog')
+    // The declared type is still published, so the canvas can compare it.
+    expect(pin.attributes('data-port-data-type')).toBe('artifact:report')
+  })
+
+  it('never reads an Object.prototype member as a style', () => {
+    for (const dataType of ['constructor', 'toString', '__proto__']) {
+      const pin = pinOf({ dataType })
+      expect(pin.attributes('style')).toContain(`--pin-color: ${ANY_COLOR}`)
+      expect(pin.classes()).toContain('nb-blueprint-card__port--analog')
+    }
+  })
+
+  it('lets a port with an unknown type set its own colour, shape and signal', () => {
+    const pin = pinOf({
+      dataType: 'ticket',
+      color: '#ff0000',
+      shape: 'square',
+      signal: 'digital',
+    })
+    expect(pin.attributes('style')).toContain('--pin-color: #ff0000')
+    expect(pin.classes()).toContain('nb-blueprint-card__port--square')
+    expect(pin.classes()).toContain('nb-blueprint-card__port--digital')
+  })
+
+  it('keeps the known types styled as before', () => {
+    expect(pinOf({ dataType: 'audio' }).attributes('style')).toContain(
+      '--pin-color: #22c55e',
+    )
+    expect(pinOf({ dataType: 'midi' }).classes()).toContain(
+      'nb-blueprint-card__port--digital',
+    )
+  })
+
+  describe('drop targets', () => {
+    const dragOrigin = ref<IBlueprintCardPortEvent | null>(null)
+    const mountWithDrag = (
+      ports: Record<string, unknown>[],
+      extra: Record<string, unknown> = {},
+    ) =>
+      mount(BlueprintCard, {
+        props: { id: 'target', title: 'Target', ports },
+        global: {
+          provide: {
+            [NB_BLUEPRINT_CONTEXT as symbol]: {
+              onPortDown: vi.fn(),
+              onPortUp: vi.fn(),
+              dragOrigin,
+              ...extra,
+            },
+          },
+        },
+      })
+    const classesFor = (w: ReturnType<typeof mount>, portId: string) =>
+      w.find(`[data-port="target:${portId}"]`).classes()
+
+    it('applies the family rule to types the library does not know', async () => {
+      dragOrigin.value = {
+        nodeId: 'other',
+        portId: 'src',
+        type: 'output',
+        dataType: 'doc:draft',
+      }
+      const w = mountWithDrag([
+        { id: 'same', label: 'S', type: 'input', dataType: 'doc:draft' },
+        { id: 'family', label: 'F', type: 'input', dataType: 'doc:final' },
+        { id: 'other', label: 'O', type: 'input', dataType: 'image' },
+        { id: 'any', label: 'A', type: 'input', dataType: 'any' },
+        { id: 'untyped', label: 'U', type: 'input' },
+      ])
+      await nextTick()
+      for (const id of ['same', 'family', 'any', 'untyped']) {
+        expect(classesFor(w, id)).toContain(
+          'nb-blueprint-card__port--target-valid',
+        )
+      }
+      expect(classesFor(w, 'other')).toContain(
+        'nb-blueprint-card__port--target-invalid',
+      )
+      dragOrigin.value = null
+    })
+
+    it("dims a pin the host's canConnect refuses, on top of the type rule", async () => {
+      dragOrigin.value = {
+        nodeId: 'other',
+        portId: 'src',
+        type: 'output',
+        dataType: 'audio',
+      }
+      const allowsConnection = vi.fn(
+        (_o: IBlueprintCardPortEvent, t: IBlueprintCardPortEvent) =>
+          t.portId !== 'blocked',
+      )
+      const w = mountWithDrag(
+        [
+          { id: 'open', label: 'O', type: 'input', dataType: 'audio' },
+          { id: 'blocked', label: 'B', type: 'input', dataType: 'audio' },
+          { id: 'midi', label: 'M', type: 'input', dataType: 'midi' },
+        ],
+        { allowsConnection },
+      )
+      await nextTick()
+      expect(classesFor(w, 'open')).toContain(
+        'nb-blueprint-card__port--target-valid',
+      )
+      expect(classesFor(w, 'blocked')).toContain(
+        'nb-blueprint-card__port--target-invalid',
+      )
+      // The host can only narrow the built-in rule, never widen it.
+      expect(classesFor(w, 'midi')).toContain(
+        'nb-blueprint-card__port--target-invalid',
+      )
+      expect(allowsConnection).toHaveBeenCalledWith(dragOrigin.value, {
+        nodeId: 'target',
+        portId: 'blocked',
+        type: 'input',
+        dataType: 'audio',
+      })
+      dragOrigin.value = null
+    })
+  })
+})
+
+// ── Read-only canvas ──────────────────────────────────────────────────
+describe('BlueprintCard on a read-only canvas', () => {
+  const ports = [
+    { id: 'in', label: 'In', type: 'input' as const },
+    { id: 'out', label: 'Out', type: 'output' as const },
+  ]
+  const mountIn = (readonly: boolean) => {
+    const ctx = {
+      onPortDown: vi.fn(),
+      onPortUp: vi.fn(),
+      nudge: vi.fn(),
+      dragOrigin: ref<IBlueprintCardPortEvent | null>(null),
+      readonly: ref(readonly),
+    }
+    const w = mount(BlueprintCard, {
+      props: { id: 'c', title: 'C', ports },
+      global: { provide: { [NB_BLUEPRINT_CONTEXT as symbol]: ctx } },
+    })
+    return { w, ctx }
+  }
+
+  it('starts and finishes no wire, by mouse or keyboard', async () => {
+    const { w, ctx } = mountIn(true)
+    const hits = w.findAll('.nb-blueprint-card__port-hit')
+    for (const hit of hits) {
+      await hit.trigger('mousedown')
+      await hit.trigger('mouseup')
+      await hit.trigger('keydown', { key: 'Enter' })
+    }
+    expect(ctx.onPortDown).not.toHaveBeenCalled()
+    expect(ctx.onPortUp).not.toHaveBeenCalled()
+    expect(w.emitted('port-mousedown')).toBeUndefined()
+    expect(w.emitted('port-mouseup')).toBeUndefined()
+  })
+
+  it('takes no keyboard nudge and leaves the arrow key alone', async () => {
+    const { w, ctx } = mountIn(true)
+    const event = new KeyboardEvent('keydown', {
+      key: 'ArrowRight',
+      cancelable: true,
+    })
+    w.element.dispatchEvent(event)
+    expect(ctx.nudge).not.toHaveBeenCalled()
+    expect(event.defaultPrevented).toBe(false)
+  })
+
+  it('marks itself read-only so it drops the grab and connect cursors', () => {
+    expect(mountIn(true).w.classes()).toContain('nb-blueprint-card--readonly')
+    expect(mountIn(false).w.classes()).not.toContain(
+      'nb-blueprint-card--readonly',
+    )
+  })
+
+  it('is fully interactive when the canvas is not read-only', async () => {
+    const { w, ctx } = mountIn(false)
+    await w.find('.nb-blueprint-card__port-hit').trigger('mousedown')
+    expect(ctx.onPortDown).toHaveBeenCalledTimes(1)
+    await w.trigger('keydown', { key: 'ArrowRight' })
+    expect(ctx.nudge).toHaveBeenCalledWith('c', 1, 0)
+  })
+})
+
+// ── Work statuses ─────────────────────────────────────────────────────
+describe('BlueprintCard active and pending statuses', () => {
+  const statusOf = (status: string) =>
+    mount(BlueprintCard, {
+      props: {
+        id: 'c',
+        title: 'Build',
+        status: status as 'active' | 'pending',
+      },
+    })
+
+  it('draws `active` as a titled glyph with a turning arc', () => {
+    const w = statusOf('active')
+    const glyph = w.find('.nb-blueprint-card__status')
+    expect(glyph.classes()).toContain('nb-blueprint-card__status--active')
+    expect(glyph.attributes('aria-label')).toBe('In progress')
+    expect(glyph.find('title').text()).toBe('In progress')
+    expect(glyph.find('.nb-blueprint-card__status-arc').exists()).toBe(true)
+    expect(w.attributes('aria-label')).toBe('Build, In progress, enabled')
+  })
+
+  it('draws `pending` as a titled, static glyph', () => {
+    const w = statusOf('pending')
+    const glyph = w.find('.nb-blueprint-card__status')
+    expect(glyph.classes()).toContain('nb-blueprint-card__status--pending')
+    expect(glyph.attributes('aria-label')).toBe('Pending')
+    expect(glyph.find('.nb-blueprint-card__status-arc').exists()).toBe(false)
+    expect(w.attributes('aria-label')).toBe('Build, Pending, enabled')
+  })
+
+  it('keeps the existing statuses as they were', () => {
+    for (const [status, label] of [
+      ['valid', 'Valid'],
+      ['warning', 'Warning'],
+      ['error', 'Error'],
+    ]) {
+      const glyph = statusOf(status).find('.nb-blueprint-card__status')
+      expect(glyph.attributes('aria-label')).toBe(label)
+      expect(glyph.find('.nb-blueprint-card__status-arc').exists()).toBe(false)
+    }
+    expect(statusOf('none').find('.nb-blueprint-card__status').exists()).toBe(
+      false,
     )
   })
 })

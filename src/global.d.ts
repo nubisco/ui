@@ -29,6 +29,8 @@ import ButtonSet from './components/ButtonSet.vue'
 import Calendar from './components/Calendar.vue'
 import Card from './components/Card.vue'
 import CardGrid from './components/CardGrid.vue'
+import ChatMessage from './components/ChatMessage.vue'
+import ChatThread from './components/ChatThread.vue'
 import Checkbox from './components/Checkbox.vue'
 import CheckboxGroup from './components/CheckboxGroup.vue'
 import ChipGroup from './components/ChipGroup.vue'
@@ -65,6 +67,7 @@ import JsonTree from './components/JsonTree.vue'
 import Label from './components/Label.vue'
 import Layer from './components/Layer.vue'
 import LineChart from './components/Charts/LineChart.vue'
+import LogView from './components/LogView.vue'
 import Menu from './components/Menu.vue'
 import MenuBar from './components/MenuBar.vue'
 import MenuBarItem from './components/MenuBarItem.vue'
@@ -157,6 +160,8 @@ declare module 'vue' {
     NbCalendar: typeof Calendar
     NbCard: typeof Card
     NbCardGrid: typeof CardGrid
+    NbChatMessage: typeof ChatMessage
+    NbChatThread: typeof ChatThread
     NbCheckbox: typeof Checkbox
     NbCheckboxGroup: typeof CheckboxGroup
     NbChipGroup: typeof ChipGroup
@@ -193,6 +198,7 @@ declare module 'vue' {
     NbLabel: typeof Label
     NbLayer: typeof Layer
     NbLineChart: typeof LineChart
+    NbLogView: typeof LogView
     NbMenu: typeof Menu
     NbMenuBar: typeof MenuBar
     NbMenuBarItem: typeof MenuBarItem

@@ -36,7 +36,7 @@
         @click="bp.centerView()"
       />
       <NbButton
-        v-if="autoLayout"
+        v-if="autoLayout && !isReadonly"
         variant="ghost"
         :size="sm"
         icon="tree-structure"
@@ -131,8 +131,11 @@ const props = withDefaults(defineProps<IBlueprintControlsProps>(), {
 const bp = useBlueprint()
 
 const visible = computed(() => props.show === 'always' || bp.isEditMode.value)
+// A read-only canvas refuses every layout change, so the buttons that would
+// ask for one are not offered at all rather than shown and ignored.
+const isReadonly = computed(() => !!bp.isReadonly?.value)
 const showAlignment = computed(
-  () => props.alignment && bp.selectedIds.value.size >= 2,
+  () => props.alignment && !isReadonly.value && bp.selectedIds.value.size >= 2,
 )
 </script>
 

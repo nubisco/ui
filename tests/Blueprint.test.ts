@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { h, nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import Blueprint from '../src/components/Blueprint.vue'
@@ -949,5 +949,326 @@ describe('Blueprint drag origin', () => {
 
     ctx.cancelPortDrag()
     expect(ctx.dragOrigin.value).toBeNull()
+  })
+})
+
+// ── Read-only, canConnect, and the defaults they must not disturb ─────
+describe('Blueprint readonly and canConnect', () => {
+  const twoCardsWithPorts = `
+    <div style="position: absolute; left: 0px; top: 0px;">
+      <NbBlueprintCard
+        id="src"
+        title="Source"
+        :ports="[{ id: 'out', label: 'Out', type: 'output', dataType: 'audio' }]"
+      />
+    </div>
+    <div style="position: absolute; left: 300px; top: 0px;">
+      <NbBlueprintCard
+        id="dst"
+        title="Dest"
+        :ports="[
+          { id: 'in', label: 'In', type: 'input', dataType: 'audio' },
+          { id: 'midi', label: 'MIDI', type: 'input', dataType: 'midi' },
+          { id: 'any', label: 'Any', type: 'input', dataType: 'any' },
+        ]"
+      />
+    </div>
+  `
+  const mountGraph = (props: Record<string, unknown> = {}) =>
+    mount(Blueprint, {
+      props: { connections: [], ...props },
+      slots: { default: twoCardsWithPorts },
+      global: { components: { NbBlueprintCard: BlueprintCard } },
+      attachTo: document.body,
+    })
+  const portEl = (w: ReturnType<typeof mount>, key: string) =>
+    w.get(`[data-port="${key}"]`)
+
+  const dragCard = async (w: ReturnType<typeof mount>, id: string) => {
+    await w.get(`[data-card-id="${id}"]`).trigger('mousedown', {
+      button: 0,
+      clientX: 10,
+      clientY: 10,
+    })
+    await nextTick()
+    document.dispatchEvent(
+      new MouseEvent('mousemove', { bubbles: true, clientX: 60, clientY: 40 }),
+    )
+    document.dispatchEvent(
+      new MouseEvent('mouseup', { bubbles: true, clientX: 60, clientY: 40 }),
+    )
+  }
+
+  const cardContextOf = (w: ReturnType<typeof mount>) => {
+    const provided = (
+      w.vm.$ as unknown as { provides: Record<symbol, unknown> }
+    ).provides
+    const key = Object.getOwnPropertySymbols(provided).find(
+      (s) => 'nudge' in ((provided[s] ?? {}) as object),
+    )!
+    return provided[key] as {
+      nudge: (id: string, dx: number, dy: number) => void
+      onPortDown: (e: unknown) => void
+      dragOrigin: { value: unknown }
+      readonly?: { value: boolean }
+    }
+  }
+
+  const conn = { fromNode: 'src', fromPort: 'out', toNode: 'dst', toPort: 'in' }
+
+  describe('by default (no readonly, no canConnect)', () => {
+    it('still drags cards and emits move', async () => {
+      const w = mountGraph()
+      expect(w.classes()).not.toContain('nb-blueprint--readonly')
+      await dragCard(w, 'src')
+      expect(w.emitted('move')?.length).toBeGreaterThan(0)
+      w.unmount()
+    })
+
+    it('still connects port to port, even across data types', async () => {
+      const w = mountGraph()
+      await portEl(w, 'src:out').trigger('mousedown')
+      await portEl(w, 'dst:in').trigger('mouseup')
+      expect(w.emitted('connect')?.[0]?.[0]).toEqual(conn)
+      // The type rule only drives the affordance today, never the drop.
+      await portEl(w, 'src:out').trigger('mousedown')
+      await portEl(w, 'dst:midi').trigger('mouseup')
+      expect(w.emitted('connect')?.[1]?.[0]).toMatchObject({ toPort: 'midi' })
+      w.unmount()
+    })
+
+    it('still nudges and lays out', async () => {
+      const w = mountGraph()
+      cardContextOf(w).nudge('src', 5, 0)
+      expect(w.emitted('move')?.at(-1)?.[0]).toEqual([
+        { id: 'src', x: 5, y: 0 },
+      ])
+      w.unmount()
+    })
+
+    it('still opens the wire menu', async () => {
+      const w = mountGraph()
+      w.findComponent(BlueprintDomRenderer).vm.$emit(
+        'wire-contextmenu',
+        new MouseEvent('contextmenu', { clientX: 5, clientY: 5 }),
+        conn,
+      )
+      await nextTick()
+      expect(w.find('.nb-blueprint__wire-menu').exists()).toBe(true)
+      w.unmount()
+    })
+  })
+
+  describe('readonly', () => {
+    it('marks the canvas and its cards read-only', () => {
+      const w = mountGraph({ readonly: true })
+      expect(w.classes()).toContain('nb-blueprint--readonly')
+      for (const card of w.findAll('.nb-blueprint-card')) {
+        expect(card.classes()).toContain('nb-blueprint-card--readonly')
+      }
+      w.unmount()
+    })
+
+    it('selects and focuses on click but never moves a card', async () => {
+      const w = mountGraph({ readonly: true })
+      await dragCard(w, 'src')
+      expect(w.emitted('move')).toBeUndefined()
+      expect(w.emitted('drop-on-wire')).toBeUndefined()
+      expect(w.emitted('selection-change')?.at(-1)?.[0]).toEqual(['src'])
+      expect(w.emitted('focus')?.at(-1)?.[0]).toBe('src')
+      w.unmount()
+    })
+
+    it('creates no wire, by pointer or by the injected handlers', async () => {
+      const w = mountGraph({ readonly: true })
+      await portEl(w, 'src:out').trigger('mousedown')
+      await portEl(w, 'dst:in').trigger('mouseup')
+      const ctx = cardContextOf(w)
+      ctx.onPortDown({ nodeId: 'src', portId: 'out', type: 'output' })
+      expect(ctx.dragOrigin.value).toBeNull()
+      expect(w.emitted('connect')).toBeUndefined()
+      w.unmount()
+    })
+
+    it('ignores keyboard nudge, align, distribute and auto-layout', async () => {
+      const w = mountGraph({ readonly: true })
+      const vm = w.vm as unknown as Record<string, () => void>
+      vm.selectAll()
+      await nextTick()
+      cardContextOf(w).nudge('src', 5, 0)
+      for (const action of [
+        'alignLeft',
+        'alignCenter',
+        'alignRight',
+        'alignTop',
+        'alignMiddle',
+        'alignBottom',
+        'distributeHorizontally',
+        'distributeVertically',
+        'autoLayout',
+      ]) {
+        vm[action]()
+      }
+      expect(w.emitted('move')).toBeUndefined()
+      // Selection itself is unaffected.
+      expect(w.emitted('selection-change')?.at(-1)?.[0]).toEqual(['src', 'dst'])
+      w.unmount()
+    })
+
+    it('opens no wire menu and emits no disconnect', async () => {
+      const w = mountGraph({ readonly: true, connections: [conn] })
+      const renderer = w.findComponent(BlueprintDomRenderer)
+      renderer.vm.$emit(
+        'wire-contextmenu',
+        new MouseEvent('contextmenu', { clientX: 5, clientY: 5 }),
+        conn,
+      )
+      renderer.vm.$emit(
+        'wire-mousedown',
+        new MouseEvent('mousedown', { button: 0 }),
+        conn,
+      )
+      await nextTick()
+      expect(w.find('.nb-blueprint__wire-menu').exists()).toBe(false)
+      expect(cardContextOf(w).dragOrigin.value).toBeNull()
+      expect(w.emitted('disconnect')).toBeUndefined()
+      w.unmount()
+    })
+
+    it('still pans, zooms and reports wire hover', async () => {
+      const w = mountGraph({ readonly: true, wheelMode: 'zoom' })
+      const vm = w.vm as unknown as {
+        zoom: number
+        panX: number
+        setCamera: (c: { panX: number }) => void
+      }
+      const before = vm.zoom
+      w.element.dispatchEvent(
+        new WheelEvent('wheel', {
+          deltaY: -100,
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+      await nextTick()
+      expect(vm.zoom).not.toBe(before)
+      vm.setCamera({ panX: 42 })
+      expect(vm.panX).toBe(42)
+      w.findComponent(BlueprintDomRenderer).vm.$emit(
+        'wire-mousemove',
+        new MouseEvent('mousemove', { clientX: 1, clientY: 2 }),
+        conn,
+      )
+      expect(w.emitted('wire-mouseover')?.[0]).toEqual([conn, 1, 2])
+      w.unmount()
+    })
+
+    it('ends a wire drag and closes the menu when it switches on mid-gesture', async () => {
+      const w = mountGraph()
+      const ctx = cardContextOf(w)
+      ctx.onPortDown({ nodeId: 'src', portId: 'out', type: 'output' })
+      w.findComponent(BlueprintDomRenderer).vm.$emit(
+        'wire-contextmenu',
+        new MouseEvent('contextmenu', { clientX: 5, clientY: 5 }),
+        conn,
+      )
+      await nextTick()
+      expect(ctx.dragOrigin.value).not.toBeNull()
+      expect(w.find('.nb-blueprint__wire-menu').exists()).toBe(true)
+
+      await w.setProps({ readonly: true })
+      expect(ctx.dragOrigin.value).toBeNull()
+      expect(w.find('.nb-blueprint__wire-menu').exists()).toBe(false)
+      expect(ctx.readonly?.value).toBe(true)
+      w.unmount()
+    })
+
+    it('leaves editable advisory and independent', () => {
+      const w = mountGraph({ readonly: true, editable: true })
+      const provided = (
+        w.vm.$ as unknown as { provides: Record<symbol, unknown> }
+      ).provides
+      const controllerKey = Object.getOwnPropertySymbols(provided).find(
+        (s) => 'isEditMode' in ((provided[s] ?? {}) as object),
+      )!
+      const controller = provided[controllerKey] as {
+        isEditMode: { value: boolean }
+        isReadonly: { value: boolean }
+      }
+      expect(controller.isEditMode.value).toBe(true)
+      expect(controller.isReadonly.value).toBe(true)
+      w.unmount()
+    })
+  })
+
+  describe('canConnect', () => {
+    it('emits connect when it allows, with both ends oriented output to input', async () => {
+      const canConnect = vi.fn(() => true)
+      const w = mountGraph({ canConnect })
+      // Start from the input end: the ends still arrive as (output, input).
+      await portEl(w, 'dst:in').trigger('mousedown')
+      await portEl(w, 'src:out').trigger('mouseup')
+      expect(canConnect).toHaveBeenCalledWith(
+        { nodeId: 'src', portId: 'out', type: 'output', dataType: 'audio' },
+        { nodeId: 'dst', portId: 'in', type: 'input', dataType: 'audio' },
+      )
+      expect(w.emitted('connect')?.[0]?.[0]).toEqual(conn)
+      w.unmount()
+    })
+
+    it('refuses the drop, and ends the drag, when it returns false', async () => {
+      const canConnect = vi.fn(() => false)
+      const w = mountGraph({ canConnect })
+      await portEl(w, 'src:out').trigger('mousedown')
+      await portEl(w, 'dst:in').trigger('mouseup')
+      expect(w.emitted('connect')).toBeUndefined()
+      expect(cardContextOf(w).dragOrigin.value).toBeNull()
+      w.unmount()
+    })
+
+    it('reads `any` as undeclared in the ends it receives', async () => {
+      const canConnect = vi.fn(() => true)
+      const w = mountGraph({ canConnect })
+      await portEl(w, 'src:out').trigger('mousedown')
+      await portEl(w, 'dst:any').trigger('mouseup')
+      expect(canConnect).toHaveBeenCalledWith(
+        expect.objectContaining({ portId: 'out' }),
+        { nodeId: 'dst', portId: 'any', type: 'input', dataType: undefined },
+      )
+      w.unmount()
+    })
+
+    it('also refuses what the built-in type rule refuses, so the affordance is the rule', async () => {
+      const canConnect = vi.fn(() => true)
+      const w = mountGraph({ canConnect })
+      await portEl(w, 'src:out').trigger('mousedown')
+      await nextTick()
+      // While the wire is in flight the pins already say which drop will work.
+      expect(portEl(w, 'dst:in').classes()).toContain(
+        'nb-blueprint-card__port--target-valid',
+      )
+      expect(portEl(w, 'dst:midi').classes()).toContain(
+        'nb-blueprint-card__port--target-invalid',
+      )
+      await portEl(w, 'dst:midi').trigger('mouseup')
+      expect(w.emitted('connect')).toBeUndefined()
+      w.unmount()
+    })
+
+    it('dims the pins it refuses while the wire is in flight', async () => {
+      const w = mountGraph({
+        canConnect: (_from: unknown, to: { portId: string }) =>
+          to.portId !== 'in',
+      })
+      await portEl(w, 'src:out').trigger('mousedown')
+      await nextTick()
+      expect(portEl(w, 'dst:in').classes()).toContain(
+        'nb-blueprint-card__port--target-invalid',
+      )
+      expect(portEl(w, 'dst:any').classes()).toContain(
+        'nb-blueprint-card__port--target-valid',
+      )
+      w.unmount()
+    })
   })
 })

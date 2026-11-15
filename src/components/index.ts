@@ -17,6 +17,8 @@ import NbButtonSet from './ButtonSet.vue'
 import NbCalendar from './Calendar.vue'
 import NbCard from './Card.vue'
 import NbCardGrid from './CardGrid.vue'
+import NbChatMessage from './ChatMessage.vue'
+import NbChatThread from './ChatThread.vue'
 import NbCopyButton from './CopyButton.vue'
 import NbBackToTop from './BackToTop.vue'
 import NbBriefing from './Briefing.vue'
@@ -52,6 +54,7 @@ import NbInterpolationChart from './Charts/InterpolationChart.vue'
 import NbImageCropper from './ImageCropper.vue'
 import NbImagePicker from './ImagePicker.vue'
 import NbJsonTree from './JsonTree.vue'
+import NbLogView from './LogView.vue'
 import NbLineChart from './Charts/LineChart.vue'
 import NbLabel from './Label.vue'
 import NbField from './Field.vue'
@@ -138,6 +141,8 @@ const components = {
   NbCalendar,
   NbCard,
   NbCardGrid,
+  NbChatMessage,
+  NbChatThread,
   NbCopyButton,
   NbBackToTop,
   NbBriefing,
@@ -174,6 +179,7 @@ const components = {
   NbImageCropper,
   NbImagePicker,
   NbJsonTree,
+  NbLogView,
   NbLabel,
   NbField,
   NbLineChart,

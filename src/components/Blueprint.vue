@@ -5,6 +5,7 @@
     :class="{
       'is-panning': isPanning,
       'is-space': spaceHeld,
+      'nb-blueprint--readonly': readonly,
     }"
     @mousedown="onCanvasMouseDown"
     @wheel="onWheel"
@@ -185,15 +186,18 @@ import type {
   IBlueprintCard,
   IBlueprintCardMove,
   IBlueprintCardPortEvent,
+  IBlueprintConnectionEnd,
   IBlueprintProps,
 } from './Blueprint.types'
 import type { TBlueprintPinDataType } from './BlueprintCard.types'
+import { arePinTypesCompatible } from './blueprint-connect'
 
 const props = withDefaults(defineProps<IBlueprintProps>(), {
   connections: () => [],
   animateConnections: 'never',
   wheelMode: 'auto',
   editable: false,
+  readonly: false,
   renderer: 'auto',
   background: 'dots',
   density: 'default',
@@ -647,7 +651,8 @@ function onCanvasMouseDown(e: MouseEvent) {
   // Left click on a card = select + drag
   const cardEl = target?.closest('.nb-blueprint-card') as HTMLElement | null
   if (cardEl) {
-    onCardMouseDown(e, cardEl, !isCardDragBlocked(target))
+    // Read-only still selects and focuses the card, it just never picks it up.
+    onCardMouseDown(e, cardEl, !props.readonly && !isCardDragBlocked(target))
     return
   }
 
@@ -867,7 +872,7 @@ function onCardMouseDown(e: MouseEvent, cardEl: HTMLElement, allowDrag = true) {
 }
 
 function emitDragPositions() {
-  if (!containerRef.value) return
+  if (!containerRef.value || props.readonly) return
   const moves: IBlueprintCardMove[] = []
   for (const id of dragStartPositions.keys()) {
     const el = containerRef.value.querySelector(
@@ -976,7 +981,7 @@ function onCardDragEnd(e?: MouseEvent) {
     // drop it on a wire to splice", not "move a selection over a wire".
     // Host decides what to do with the event (typical: splice via
     // its existing wire-bundle / planSplice helpers).
-    if (e && dragStartPositions.size === 1) {
+    if (e && dragStartPositions.size === 1 && !props.readonly) {
       const [draggedId] = dragStartPositions.keys()
       if (draggedId) {
         const conn = wireUnderPoint(e.clientX, e.clientY)
@@ -1171,6 +1176,7 @@ const dragRewireOriginal = ref<IBlueprintConnection | null>(null)
 const REWIRE_GRAB_THRESHOLD = 40 // canvas units from endpoint to count as a grab
 
 function onPortMouseDown(data: IBlueprintCardPortEvent) {
+  if (props.readonly) return
   dragFrom.value = data
   dragRewireOriginal.value = null
   document.addEventListener('mousemove', onWireDrag)
@@ -1188,7 +1194,9 @@ function onWireMouseDown(event: MouseEvent, conn: IBlueprintConnection) {
   // Always halt the canvas's marquee/pan path. The wire owns this
   // mousedown — even if we don't end up starting a rewire below.
   event.stopPropagation()
-  if (!containerRef.value) return
+  // Read-only: the wire still owns the press (no marquee from inside it), but
+  // grabbing an endpoint to rewire it is a structural change.
+  if (!containerRef.value || props.readonly) return
 
   const rect = containerRef.value.getBoundingClientRect()
   const cx = (event.clientX - rect.left - panX.value) / zoom.value
@@ -1255,6 +1263,8 @@ provide(NB_BLUEPRINT_CONTEXT, {
   density: computed(() => props.density),
   nudge: nudgeCards,
   cancelPortDrag: onWireDragEnd,
+  readonly: computed(() => props.readonly),
+  allowsConnection,
 })
 
 /**
@@ -1266,7 +1276,7 @@ provide(NB_BLUEPRINT_CONTEXT, {
  */
 function nudgeCards(id: string, dx: number, dy: number) {
   const container = containerRef.value
-  if (!container) return
+  if (!container || props.readonly) return
   let infos: TSelectedCardInfo[]
   if (selectedIds.value.has(id)) {
     infos = getSelectedCardInfos()
@@ -1313,6 +1323,7 @@ function canvasToScreen(x: number, y: number) {
 // Advisory edit-mode flag for optional chrome (controls toolbar). Does not
 // gate pan/zoom/selection, which are always interactive.
 const isEditMode = computed(() => props.editable)
+const isReadonly = computed(() => props.readonly)
 
 // Full controller for sibling chrome (background, minimap, controls) and
 // host apps, consumed via `useBlueprint()`. Superset of the card context
@@ -1344,12 +1355,26 @@ provide(NB_BLUEPRINT_CONTROLLER, {
   screenToCanvas,
   canvasToScreen,
   isEditMode,
+  isReadonly,
   viewportSize,
   isTransforming,
   live: liveData,
   onPortDown: (e: IBlueprintCardPortEvent) => onPortMouseDown(e),
   onPortUp: (e: IBlueprintCardPortEvent) => onPortMouseUp(e),
 })
+
+// Switching to read-only mid-gesture ends the gesture rather than letting it
+// finish: a card being dragged stays where it is (no further `move`), a wire
+// in flight is dropped, and an open wire menu closes.
+watch(
+  () => props.readonly,
+  (locked) => {
+    if (!locked) return
+    onCardDragEnd()
+    onWireDragEnd()
+    closeWireMenu()
+  },
+)
 
 // ── Wire context menu (right-click on a wire) ─────────────────────────
 
@@ -1360,7 +1385,9 @@ const wireMenu = ref<{
 } | null>(null)
 
 function onWireContextMenu(event: MouseEvent, conn: IBlueprintConnection) {
-  if (!containerRef.value) return
+  // The menu's job is to change the graph (Disconnect, or whatever a host
+  // slots in), so a read-only canvas does not open it.
+  if (!containerRef.value || props.readonly) return
   const rect = containerRef.value.getBoundingClientRect()
   wireMenu.value = {
     x: event.clientX - rect.left,
@@ -1386,6 +1413,10 @@ function closeWireMenu() {
 }
 
 function disconnectFromMenu(conn: IBlueprintConnection) {
+  if (props.readonly) {
+    closeWireMenu()
+    return
+  }
   emit('disconnect', conn)
   closeWireMenu()
 }
@@ -1410,7 +1441,33 @@ function portDataTypeOf(
   el: HTMLElement | null,
 ): TBlueprintPinDataType | undefined {
   const raw = el?.getAttribute('data-port-data-type')
-  return raw && raw !== 'any' ? (raw as TBlueprintPinDataType) : undefined
+  return raw && raw !== 'any' ? raw : undefined
+}
+
+/** One end of a prospective wire as the `canConnect` prop receives it. `'any'`
+ *  reads as undeclared, the same as everywhere else a data type is compared. */
+function connectionEnd(e: IBlueprintCardPortEvent): IBlueprintConnectionEnd {
+  return {
+    nodeId: e.nodeId,
+    portId: e.portId,
+    type: e.type,
+    dataType: e.dataType && e.dataType !== 'any' ? e.dataType : undefined,
+  }
+}
+
+/** The host's verdict (the `canConnect` prop) on a wire between the drag
+ *  origin and a candidate pin, oriented output to input. True when the host
+ *  gave no `canConnect`, or when the pair is not a wire at all (same
+ *  direction), which the built-in rule already rejects. */
+function allowsConnection(
+  origin: IBlueprintCardPortEvent,
+  target: IBlueprintCardPortEvent,
+): boolean {
+  const check = props.canConnect
+  if (!check || origin.type === target.type) return true
+  const from = origin.type === 'output' ? origin : target
+  const to = origin.type === 'output' ? target : origin
+  return check(connectionEnd(from), connectionEnd(to))
 }
 
 function onWireDrag(e: MouseEvent) {
@@ -1445,6 +1502,7 @@ function onWireDragEnd() {
 }
 
 function onPortMouseUp(data: IBlueprintCardPortEvent) {
+  if (props.readonly) return
   const origin = dragFrom.value
   if (!origin) return
   if (origin.nodeId === data.nodeId) return
@@ -1452,6 +1510,19 @@ function onPortMouseUp(data: IBlueprintCardPortEvent) {
 
   const from = origin.type === 'output' ? origin : data
   const to = origin.type === 'output' ? data : origin
+
+  // A host veto turns the drop-target affordance into the rule: a pin that
+  // dimmed while the wire was over it refuses the drop, and the drag ends
+  // without a wire. Without `canConnect` nothing here runs, so the drop
+  // behaves exactly as it always has.
+  if (
+    props.canConnect &&
+    (!arePinTypesCompatible(from.dataType, to.dataType) ||
+      !allowsConnection(origin, data))
+  ) {
+    onWireDragEnd()
+    return
+  }
   const newConn: IBlueprintConnection = {
     fromNode: from.nodeId,
     fromPort: from.portId,
@@ -1929,6 +2000,9 @@ function getSelectedCardInfos(): TSelectedCardInfo[] {
 }
 
 function applyPositions(infos: TSelectedCardInfo[]) {
+  // Every layout action (align, distribute, auto-layout, keyboard nudge) ends
+  // here, so this is where read-only stops them.
+  if (props.readonly) return
   const moves: IBlueprintCardMove[] = []
   for (const info of infos) {
     // Write the DOM only for mounted cards; unmounted ones (windowed mode)
@@ -2035,7 +2109,7 @@ function autoLayout(options?: {
   gapY?: number
   padding?: number
 }) {
-  if (!containerRef.value) return
+  if (!containerRef.value || props.readonly) return
 
   const gapY = options?.gapY ?? 40
   const padding = options?.padding ?? 60
@@ -2281,6 +2355,12 @@ defineExpose({
 
   &.is-panning {
     cursor: grabbing;
+  }
+
+  // Read-only: a wire cannot be grabbed, so it does not offer a hand. It still
+  // highlights on hover, because hover is how a reader traces it.
+  &.nb-blueprint--readonly :deep(.nb-blueprint__wire-hitregion) {
+    cursor: default;
   }
 }
 

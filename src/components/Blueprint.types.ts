@@ -123,7 +123,7 @@ export interface IBlueprintCardPaint {
   color?: string
   /** Category label under the title. */
   category?: string
-  /** Status dot (valid / warning / error / none). */
+  /** Status dot (valid / warning / error / active / pending / none). */
   status?: TBlueprintCardStatus
   /** Whether the card is collapsed (header only). */
   collapsed?: boolean
@@ -223,6 +223,35 @@ export interface IBlueprintProps {
    */
   editable?: boolean
   /**
+   * Locks the graph's structure and layout while keeping it viewable. When
+   * true the user cannot move cards (pointer drag or keyboard nudge), create,
+   * rewire or disconnect wires (pin drag, keyboard connect, the wire menu),
+   * drop a card on a wire, or run align, distribute or auto-layout. `move`,
+   * `connect`, `disconnect` and `drop-on-wire` never emit.
+   *
+   * Everything that only looks still works: pan, zoom, fit, selection (and
+   * `selection-change` / `focus`), hover, tooltips and live activity
+   * (`activePorts`, levels, animated wires). Right for a monitor of a running
+   * graph, or any view where the shape is owned elsewhere.
+   *
+   * Independent of `editable`, which stays purely advisory. Default false.
+   */
+  readonly?: boolean
+  /**
+   * Host veto for new wires, consulted in addition to the built-in data-type
+   * rule. `from` is always the output end and `to` the input end. Return
+   * false to refuse: the pin shows as an invalid target while a wire is
+   * dragged over it, and releasing on it emits no `connect`.
+   *
+   * When it is given, a drop that fails the built-in type rule is refused
+   * too, so what lights up as valid is exactly what connects. Omit it and
+   * connecting behaves as it always has.
+   */
+  canConnect?: (
+    from: IBlueprintConnectionEnd,
+    to: IBlueprintConnectionEnd,
+  ) => boolean
+  /**
    * Which rendering backend to draw the scene with.
    *
    *   - `'auto'` (default): use the PixiJS (WebGL) renderer when a
@@ -256,6 +285,21 @@ export interface IBlueprintProps {
   layoutEdgeKind?: (
     conn: IBlueprintConnection,
   ) => 'signal' | 'control' | 'ignore'
+}
+
+/**
+ * One end of a prospective connection, as handed to the `canConnect` prop.
+ */
+export interface IBlueprintConnectionEnd {
+  /** The card the port belongs to. */
+  nodeId: string
+  /** The port id (for a channel pin, `${port.id}/${channel.id}`). */
+  portId: string
+  /** The port's direction. `from` is always `'output'`, `to` `'input'`. */
+  type: 'input' | 'output'
+  /** The port's declared data type. Undefined when it declares none or
+   *  declares `'any'`. */
+  dataType?: TBlueprintPinDataType
 }
 
 /** A point in canvas space (the same units as card `x`/`y` and the
@@ -335,6 +379,10 @@ export interface IBlueprintController {
   canvasToScreen: (x: number, y: number) => IBlueprintScreenPoint
   /** Live edit-mode flag, derived from the `editable` prop. */
   isEditMode: Ref<boolean>
+  /** Live read-only flag, derived from the `readonly` prop. Chrome reads it
+   *  to hide actions that would change the layout. Optional so a controller
+   *  built by hand (in a test, say) still type-checks. */
+  isReadonly?: Ref<boolean>
   /** Live viewport size in screen px (the blueprint container). Used by the
    *  minimap to draw the visible-area rectangle. */
   viewportSize: Ref<{ w: number; h: number }>
@@ -400,4 +448,20 @@ export interface IBlueprintCardContext {
   /** Abandon an in-flight wire drag without connecting anything. Bound to
    *  Escape so a keyboard user can back out of a connection they started. */
   cancelPortDrag: () => void
+  /**
+   * Whether the canvas is read-only (the `readonly` prop). A read-only card
+   * starts no wire, takes no keyboard nudge and drops its grab and connect
+   * cursors. Optional, so a context provided by hand keeps type-checking.
+   */
+  readonly?: Ref<boolean>
+  /**
+   * The host's verdict on a wire from `origin` (where the drag started) to
+   * `target` (the pin being asked), from the `canConnect` prop. True when no
+   * `canConnect` was given. Cards combine it with the built-in type rule for
+   * the drop-target affordance.
+   */
+  allowsConnection?: (
+    origin: IBlueprintCardPortEvent,
+    target: IBlueprintCardPortEvent,
+  ) => boolean
 }

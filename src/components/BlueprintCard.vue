@@ -11,6 +11,7 @@
         'nb-blueprint-card--has-port-labels-left': hasLabelsOnSide.left,
         'nb-blueprint-card--has-port-labels-right': hasLabelsOnSide.right,
         'nb-blueprint-card--dragging-wire': isWireDragging,
+        'nb-blueprint-card--readonly': isReadonly,
       },
     ]"
     :data-card-id="id"
@@ -213,6 +214,49 @@
               />
               <circle cx="8" cy="12.2" r="0.9" fill="currentColor" />
             </template>
+            <template v-else-if="status === 'active'">
+              <!-- A ring with a turning arc: work under way. Under reduced
+                   motion the arc stops turning and the ring breathes. -->
+              <circle
+                cx="8"
+                cy="8"
+                r="6.25"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-opacity="0.3"
+              />
+              <circle
+                class="nb-blueprint-card__status-arc"
+                cx="8"
+                cy="8"
+                r="6.25"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+            </template>
+            <template v-else-if="status === 'pending'">
+              <!-- A clock face: waiting its turn. Static on purpose, since
+                   nothing is happening yet. -->
+              <circle
+                cx="8"
+                cy="8"
+                r="7"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              />
+              <polyline
+                points="8 4.5 8 8 10.5 9.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </template>
             <template v-else>
               <circle cx="8" cy="8" r="7" fill="currentColor" />
               <line
@@ -228,7 +272,7 @@
           </svg>
 
           <label
-            v-if="enabled !== undefined"
+            v-if="toggleable && enabled !== undefined"
             class="nb-blueprint-card__toggle"
             @mousedown.stop
             @click.stop
@@ -381,12 +425,14 @@ import type {
   IBlueprintPortChannel,
   TBlueprintCardStatus,
   TBlueprintDensity,
+  TBlueprintKnownPinDataType,
   TBlueprintPinDataType,
   TBlueprintPortShape,
   TBlueprintPortSignal,
 } from './BlueprintCard.types'
 import type { IBlueprintCardPortEvent } from './Blueprint.types'
 import { NB_BLUEPRINT_CONTEXT } from './Blueprint.context'
+import { arePinTypesCompatible } from './blueprint-connect'
 import { useReducedMotion } from '../composables/useReducedMotion.composable'
 
 const nbStrings = useNbStrings()
@@ -394,6 +440,7 @@ const nbStrings = useNbStrings()
 const props = withDefaults(defineProps<IBlueprintCardProps>(), {
   color: undefined,
   enabled: true,
+  toggleable: true,
   selected: false,
   category: '',
   ports: () => [],
@@ -427,12 +474,19 @@ const emit = defineEmits<{
 // the events so callers can wire them up by hand.
 const blueprintCtx = inject(NB_BLUEPRINT_CONTEXT, null)
 
+// A read-only canvas (NbBlueprint `readonly`) locks structure: its pins start
+// and finish no wire, and the card takes no keyboard nudge. Outside a canvas,
+// or in a canvas that does not say, the card is as interactive as ever.
+const isReadonly = computed(() => !!blueprintCtx?.readonly?.value)
+
 function onPortDown(data: IBlueprintCardPortEvent) {
+  if (isReadonly.value) return
   emit('port-mousedown', data)
   blueprintCtx?.onPortDown(data)
 }
 
 function onPortUp(data: IBlueprintCardPortEvent) {
+  if (isReadonly.value) return
   emit('port-mouseup', data)
   blueprintCtx?.onPortUp(data)
 }
@@ -449,6 +503,7 @@ function onPortActivate(data: IBlueprintCardPortEvent) {
 }
 
 function onPortKeydown(event: KeyboardEvent, data: IBlueprintCardPortEvent) {
+  if (isReadonly.value) return
   if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault()
     event.stopPropagation()
@@ -478,20 +533,8 @@ const resolvedDensity = computed<TBlueprintDensity>(
 // or silence, and the user had to infer the rule from the silence.
 const isWireDragging = computed(() => !!blueprintCtx?.dragOrigin?.value)
 
-/**
- * Whether a wire leaving `from` could land on a port of `toType` carrying
- * `toDataType`. Undeclared and `'any'` types connect to anything, an exact
- * match connects, and a family matches its own members so `audio:mono` can
- * reach `audio:stereo` while `midi` cannot reach either.
- */
-function arePinTypesCompatible(
-  a: TBlueprintPinDataType | undefined,
-  b: TBlueprintPinDataType | undefined,
-): boolean {
-  if (!a || !b || a === 'any' || b === 'any') return true
-  if (a === b) return true
-  return a.split(':')[0] === b.split(':')[0]
-}
+// The type rule (`arePinTypesCompatible`) is shared with the canvas, which
+// applies it on drop when the host supplies `canConnect`.
 
 function targetClass(
   pin: IRenderedPin,
@@ -504,7 +547,14 @@ function targetClass(
   const ok =
     origin.nodeId !== props.id &&
     origin.type !== type &&
-    arePinTypesCompatible(origin.dataType, pin.port.dataType)
+    arePinTypesCompatible(origin.dataType, pin.port.dataType) &&
+    (blueprintCtx?.allowsConnection?.(origin, {
+      nodeId: props.id,
+      portId: pin.portId,
+      type,
+      dataType: pin.port.dataType,
+    }) ??
+      true)
   return ok
     ? 'nb-blueprint-card__port--target-valid'
     : 'nb-blueprint-card__port--target-invalid'
@@ -574,6 +624,8 @@ function statusLabel(status: Exclude<TBlueprintCardStatus, 'none'>): string {
   const strings = nbStrings.value
   if (status === 'valid') return strings.blueprintStatusValid
   if (status === 'warning') return strings.blueprintStatusWarning
+  if (status === 'active') return strings.blueprintStatusActive
+  if (status === 'pending') return strings.blueprintStatusPending
   return strings.blueprintStatusError
 }
 
@@ -590,11 +642,13 @@ const cardAriaLabel = computed(() => {
   if (props.category) parts.push(props.category)
   if (props.status && props.status !== 'none')
     parts.push(statusLabel(props.status))
-  parts.push(
-    props.enabled
-      ? nbStrings.value.blueprintCardEnabled
-      : nbStrings.value.blueprintCardDisabled,
-  )
+  // A card that cannot be switched off has no on or off to speak of.
+  if (props.toggleable)
+    parts.push(
+      props.enabled
+        ? nbStrings.value.blueprintCardEnabled
+        : nbStrings.value.blueprintCardDisabled,
+    )
   return parts.join(', ')
 })
 
@@ -612,7 +666,7 @@ const NUDGE_KEYS: Record<string, [number, number]> = {
 
 function onKeydown(event: KeyboardEvent) {
   const delta = NUDGE_KEYS[event.key]
-  if (!delta || !blueprintCtx?.nudge) return
+  if (!delta || !blueprintCtx?.nudge || isReadonly.value) return
   event.preventDefault()
   const step = event.shiftKey ? NUDGE_STEP_COARSE : NUDGE_STEP
   blueprintCtx.nudge(props.id, delta[0] * step, delta[1] * step)
@@ -694,7 +748,7 @@ const hasLabelsOnSide = computed(() => ({
 // Category display: append " · off" when disabled
 const displayCategory = computed(() => {
   const base = props.category || ''
-  if (!props.enabled && base) return `${base} · off`
+  if (props.toggleable && !props.enabled && base) return `${base} · off`
   return base
 })
 
@@ -748,8 +802,10 @@ function pinLabel(pin: IRenderedPin): string {
   return pin.channel ? pin.channel.label : pin.port.label
 }
 
-// Pin visual style based on data type
-const PIN_COLORS: Record<TBlueprintPinDataType, string> = {
+// Pin visual style based on data type. The tables are exhaustive over the
+// known types. Any other string a consumer declares styles like `any`, see
+// `styleKey`.
+const PIN_COLORS: Record<TBlueprintKnownPinDataType, string> = {
   geometry: '#6366f1',
   celestial: '#f97316',
   lighting: '#f59e0b',
@@ -777,7 +833,7 @@ const PIN_COLORS: Record<TBlueprintPinDataType, string> = {
 // MIDI and control pins fiddlier to hit for no information the stripe pattern
 // does not carry better. `shape` is still honoured when a consumer sets it
 // explicitly; it is simply never derived.
-const PIN_SHAPES: Record<TBlueprintPinDataType, TBlueprintPortShape> = {
+const PIN_SHAPES: Record<TBlueprintKnownPinDataType, TBlueprintPortShape> = {
   geometry: 'pill',
   celestial: 'pill',
   lighting: 'pill',
@@ -801,7 +857,7 @@ const PIN_SHAPES: Record<TBlueprintPinDataType, TBlueprintPortShape> = {
 // Which data types carry a continuous quantity and which carry events. This
 // is what the stripe pattern and the choice of activity treatment key off.
 // A consumer's explicit `signal` beats it.
-const PIN_SIGNALS: Record<TBlueprintPinDataType, TBlueprintPortSignal> = {
+const PIN_SIGNALS: Record<TBlueprintKnownPinDataType, TBlueprintPortSignal> = {
   geometry: 'analog',
   celestial: 'analog',
   lighting: 'analog',
@@ -822,16 +878,28 @@ const PIN_SIGNALS: Record<TBlueprintPinDataType, TBlueprintPortSignal> = {
   any: 'analog',
 }
 
+/** The style-table key for a data type: the type itself when the library
+ *  knows it, `any` otherwise (and when the port declares none). An own-key
+ *  check, not a plain lookup, so a type named like an Object.prototype member
+ *  (`constructor`, `toString`) cannot pull a function out of the table. */
+function styleKey(
+  dataType: TBlueprintPinDataType | undefined,
+): TBlueprintKnownPinDataType {
+  return dataType && Object.prototype.hasOwnProperty.call(PIN_COLORS, dataType)
+    ? (dataType as TBlueprintKnownPinDataType)
+    : 'any'
+}
+
 /** Resolved colour for a single pin. Per-port `color` override beats
  *  the `dataType`-derived default. */
 function pinColor(port: IBlueprintPort): string {
-  return port.color ?? PIN_COLORS[port.dataType ?? 'any'] ?? PIN_COLORS.any
+  return port.color ?? PIN_COLORS[styleKey(port.dataType)]
 }
 
 /** Resolved shape for a single pin. Per-port `shape` override beats
  *  the `dataType`-derived default. */
 function pinShape(port: IBlueprintPort): string {
-  return port.shape ?? PIN_SHAPES[port.dataType ?? 'any'] ?? 'pill'
+  return port.shape ?? PIN_SHAPES[styleKey(port.dataType)]
 }
 
 /** Resolved size for a single pin. Default `'md'`. */
@@ -842,7 +910,7 @@ function pinSize(port: IBlueprintPort): string {
 /** Whether a pin carries a continuous quantity or discrete events. Per-port
  *  `signal` override beats the `dataType`-derived default. */
 function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
-  return port.signal ?? PIN_SIGNALS[port.dataType ?? 'any'] ?? 'analog'
+  return port.signal ?? PIN_SIGNALS[styleKey(port.dataType)]
 }
 </script>
 
@@ -936,6 +1004,14 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   &--selected {
     border-color: var(--nb-card-color);
     box-shadow: inset 0 0 0 1px var(--nb-card-color);
+  }
+
+  // Read-only canvas: the card cannot be picked up and its pins start no
+  // wire, so neither offers a grab or crosshair cursor. Clicking still
+  // selects, which the default arrow says well enough.
+  &--readonly,
+  &--readonly .nb-blueprint-card__port-hit {
+    cursor: default;
   }
 
   // A 2px ring, which is what the rest of the library uses and what the card
@@ -1091,6 +1167,40 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
   }
   &--error {
     color: var(--nb-c-status-error);
+  }
+  &--active {
+    color: var(--nb-c-status-info);
+  }
+  &--pending {
+    color: var(--nb-c-status-neutral);
+  }
+}
+
+// The turning arc of the `active` glyph. A quarter of the ring's
+// circumference (2 * pi * 6.25, about 39.3) is drawn and the rest is gap, and
+// the arc turns about its own centre. It is a loop, so its duration is a
+// literal, tuned like NbSpinner's ring.
+.nb-blueprint-card__status-arc {
+  stroke-dasharray: 9.8 29.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: nb-blueprint-card-status-spin 1200ms linear infinite;
+}
+
+@keyframes nb-blueprint-card-status-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes nb-blueprint-card-status-breathe {
+  0%,
+  100% {
+    stroke-opacity: 0.35;
+  }
+
+  50% {
+    stroke-opacity: 1;
   }
 }
 
@@ -1713,6 +1823,13 @@ function pinSignal(port: IBlueprintPort): TBlueprintPortSignal {
 
   .nb-blueprint-card__port--ping::after {
     display: none;
+  }
+
+  // A frozen arc would read as stuck. The arc closes into a full ring that
+  // breathes in opacity instead: no rotation, still visibly alive.
+  .nb-blueprint-card__status-arc {
+    stroke-dasharray: none;
+    animation: nb-blueprint-card-status-breathe 1600ms ease-in-out infinite;
   }
 }
 </style>

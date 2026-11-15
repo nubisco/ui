@@ -1,5 +1,8 @@
-/** Data type for a pin (determines shape and color) */
-export type TBlueprintPinDataType =
+/**
+ * The pin data types the library ships a style for (colour and signal kind).
+ * The style tables in NbBlueprintCard are exhaustive over this list.
+ */
+export type TBlueprintKnownPinDataType =
   | 'geometry'
   | 'celestial'
   | 'lighting'
@@ -18,6 +21,20 @@ export type TBlueprintPinDataType =
   | 'color'
   | 'asset'
   | 'any'
+
+/**
+ * Data type for a pin (determines its default color and signal kind, and which
+ * pins it can connect to).
+ *
+ * Any string is accepted, so a consumer can describe its own domain without
+ * waiting for the library to learn it. The known types keep editor
+ * autocomplete (`string & {}` stops the union collapsing into plain `string`).
+ * A type the library does not know styles like `'any'` unless the port sets
+ * its own `color`, `shape` or `signal`, and connects by the same rule as every
+ * other type: undeclared or `'any'` reaches anything, an exact match connects,
+ * and types that share the family before the first `:` connect.
+ */
+export type TBlueprintPinDataType = TBlueprintKnownPinDataType | (string & {})
 
 /** A single sub-channel within a multi-channel bundle port. */
 export interface IBlueprintPortChannel {
@@ -150,8 +167,21 @@ export interface IBlueprintPort {
   signal?: TBlueprintPortSignal
 }
 
-/** Status indicator level */
-export type TBlueprintCardStatus = 'valid' | 'warning' | 'error' | 'none'
+/**
+ * Status indicator level.
+ *
+ *   - `'valid'`, `'warning'`, `'error'`: the outcome of a check.
+ *   - `'active'`: work is in progress on this node right now.
+ *   - `'pending'`: the node is waiting or queued, nothing has started yet.
+ *   - `'none'` (default): no indicator.
+ */
+export type TBlueprintCardStatus =
+  | 'valid'
+  | 'warning'
+  | 'error'
+  | 'active'
+  | 'pending'
+  | 'none'
 
 /** Parameter row displayed inside the card body */
 export interface IBlueprintCardParameter {
@@ -181,6 +211,13 @@ export interface IBlueprintCardProps {
   color?: string
   /** Whether the card is enabled (shows toggle) */
   enabled?: boolean
+  /**
+   * Whether the card can be switched on and off. `false` hides the header
+   * toggle, and drops the enabled or disabled word from the card's
+   * accessible name and the " · off" from its category, for a card that is
+   * never switched off. Default `true`, which keeps the toggle.
+   */
+  toggleable?: boolean
   /** Whether the card is currently selected */
   selected?: boolean
   /** Category label shown below the title */
@@ -203,7 +240,7 @@ export interface IBlueprintCardProps {
   removable?: boolean
   /** Whether the card is collapsed (shows only title bar) */
   collapsed?: boolean
-  /** Status indicator (valid, warning, error) */
+  /** Status indicator (valid, warning, error, active, pending) */
   status?: TBlueprintCardStatus
   /** Compact preview text shown on the card body */
   preview?: string

@@ -47,6 +47,22 @@ interface ISidebarMenuItemProps {
    * - 'success' | 'warning' | 'danger': semantic colours
    */
   badgeVariant?: 'neutral' | 'accent' | 'success' | 'warning' | 'danger'
+  /**
+   * Something behind this destination is running right now: a job, an
+   * agent, a sync. Draws a small pulsing dot at the end of the label, before
+   * any badge. On the collapsed rail it sits on the icon's top-right corner,
+   * where a count would go, or on its bottom-right corner when the item
+   * also has a badge. Reduced motion stops the pulse and keeps the dot.
+   *
+   * The dot is named by `liveLabel` for assistive technology. Absent by
+   * default, and the row is then exactly as it was.
+   */
+  live?: boolean
+  /**
+   * The live dot's accessible text. Defaults to the string catalogue's
+   * `sidebarMenuItemLive` ("Running").
+   */
+  liveLabel?: string
 }
 
 export { ISidebarMenuItemProps }

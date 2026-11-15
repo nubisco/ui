@@ -357,6 +357,10 @@
     // glyph's 3:1, so it is one step darker than the error glyph. Worst case
     // 5.84 over the layers and their hovers.
     --nb-c-text-error: var(--nb-c-chicken-comb-650);
+    // Warning TEXT, a warning line in a log: held to 4.5:1 like error text,
+    // so it sits steps darker than the warning glyph. Checked over the layers
+    // and their hovers in tests/textRoles.
+    --nb-c-text-warning: var(--nb-c-phoenix-flames-750);
 
     // == Data visualisation roles ==========================================
     // Charts address colour by ROLE, never by ramp: a series is "chart-3",
@@ -1002,6 +1006,7 @@
     --nb-c-status-info: #{colors.get-color('the-blues-brothers', 300)};
     --nb-c-status-neutral: #{colors.get-color('nouveau-gray', 350)};
     --nb-c-text-error: #{colors.get-color('chicken-comb', 250)};
+    --nb-c-text-warning: #{colors.get-color('phoenix-flames', 250)};
 
     // Data visualisation roles, dark. Same eight hues, stepped up their
     // ramps, exactly as --nb-c-primary and the status colours are stepped

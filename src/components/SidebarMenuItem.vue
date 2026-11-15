@@ -56,6 +56,14 @@
       <template v-if="variant === 'verbose'">
         <span class="nb-sidebar-menu-item__label">{{ label }}</span>
         <span
+          v-if="live"
+          class="nb-sidebar-menu-item__live"
+          data-nb-sidebar-live
+          ><span class="nb-sidebar-menu-item__live-text">{{
+            resolvedLiveLabel
+          }}</span></span
+        >
+        <span
           v-if="badge !== undefined"
           class="nb-sidebar-menu-item__badge"
           :class="[`nb-sidebar-menu-item__badge--${badgeVariant}`]"
@@ -86,6 +94,18 @@
         :class="[`nb-sidebar-menu-item__badge-dot--${badgeVariant}`]"
         :title="String(badge)"
       />
+      <!-- Collapsed, the live dot takes the icon's top-right corner, or its
+           bottom-right when a badge holds the top. The row's aria-label
+           names it, so the dot itself is hidden. -->
+      <span
+        v-if="live && variant === 'compact'"
+        class="nb-sidebar-menu-item__live nb-sidebar-menu-item__live--compact"
+        :class="{
+          'nb-sidebar-menu-item__live--below': badge !== undefined,
+        }"
+        data-nb-sidebar-live
+        aria-hidden="true"
+      />
     </component>
 
     <!-- Verbose: inline expansion -->
@@ -112,6 +132,12 @@
       >
         <div class="nb-sidebar-menu-item__flyout-header">
           <span class="nb-sidebar-menu-item__flyout-label">{{ label }}</span>
+          <span
+            v-if="live"
+            class="nb-sidebar-menu-item__live"
+            :title="resolvedLiveLabel"
+            aria-hidden="true"
+          />
           <span
             v-if="badge !== undefined"
             class="nb-sidebar-menu-item__badge"
@@ -152,6 +178,7 @@ import NbAvatar from './Avatar.vue'
 import SidebarVariantScope from './SidebarVariantScope.vue'
 import { useRouterLink } from '@/composables/useRouterLink.composable'
 import { hasRenderableContent } from '@/utils/slotContent.helper'
+import { useNbStrings } from '@/composables/useNbStrings.composable'
 
 const props = withDefaults(defineProps<ISidebarMenuItemProps>(), {
   icon: undefined,
@@ -163,6 +190,8 @@ const props = withDefaults(defineProps<ISidebarMenuItemProps>(), {
   defaultExpanded: false,
   badge: undefined,
   badgeVariant: 'neutral',
+  live: false,
+  liveLabel: undefined,
 })
 
 const emit = defineEmits<{ click: [event: MouseEvent] }>()
@@ -184,10 +213,18 @@ const compactCount = computed<string | undefined>(() => {
   return n > 99 ? '99+' : String(n)
 })
 
-// The overlaid count is hidden from assistive tech, so the row names it.
-const compactAriaLabel = computed(() =>
-  props.badge === undefined ? props.label : `${props.label} (${props.badge})`,
+const strings = useNbStrings()
+const resolvedLiveLabel = computed(
+  () => props.liveLabel ?? strings.value.sidebarMenuItemLive,
 )
+
+// The overlaid count and live dot are hidden from assistive tech, so the row
+// names them.
+const compactAriaLabel = computed(() => {
+  const base =
+    props.badge === undefined ? props.label : `${props.label} (${props.badge})`
+  return props.live ? `${base}, ${resolvedLiveLabel.value}` : base
+})
 
 const hasChildren = computed(() => {
   const content = slots.default?.()
@@ -631,6 +668,77 @@ onBeforeUnmount(() => {
   }
   &--danger {
     background: var(--nb-c-danger, #ef4444);
+  }
+}
+
+// The live dot: 8px, in the rail's active colour, with a ring that pulses
+// out from it. Expanded, it sits after the label, before any badge.
+.nb-sidebar-menu-item__live {
+  position: relative;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  @include radius.circular;
+  background: var(
+    --nb-shell-sidebar-live-color,
+    var(--nb-shell-sidebar-link-active-color)
+  );
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: inherit;
+    // A loop, so a literal duration: slow enough to read as "still going",
+    // not as an alert.
+    animation: nb-sidebar-menu-item-live 1600ms var(--nb-ease-standard) infinite;
+  }
+
+  // Collapsed, on the icon's corner like the count, anchored to the centre
+  // of the square row so it hugs the 18px icon at any row size.
+  &--compact {
+    position: absolute;
+    top: 6px;
+    left: calc(50% + 5px);
+    pointer-events: none;
+  }
+
+  &--below {
+    top: auto;
+    bottom: 6px;
+  }
+}
+
+// The words are for assistive technology only: the dot says it to the eye.
+.nb-sidebar-menu-item__live-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes nb-sidebar-menu-item-live {
+  from {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+// Reduced motion stops the pulse. The dot stays, so the state still shows.
+@include motion.reduced {
+  .nb-sidebar-menu-item__live::after {
+    animation: none;
+    opacity: 0;
   }
 }
 

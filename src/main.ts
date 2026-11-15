@@ -85,6 +85,12 @@ export { default as NbCardGrid } from './components/CardGrid.vue'
 export type { ICardProps, ICardGridProps } from './components/CardGrid.d'
 export { default as NbCopyButton } from './components/CopyButton.vue'
 export type { ICopyButtonProps } from './components/CopyButton.d'
+export { default as NbChatThread } from './components/ChatThread.vue'
+export type { IChatThreadProps } from './components/ChatThread.d'
+export { default as NbChatMessage } from './components/ChatMessage.vue'
+export type { IChatMessageProps } from './components/ChatMessage.d'
+export { default as NbLogView } from './components/LogView.vue'
+export type { ILogLine, ILogViewProps, TLogLevel } from './components/LogView.d'
 export { default as NbBackToTop } from './components/BackToTop.vue'
 export type { IBackToTopProps } from './components/BackToTop.d'
 export { default as NbAiProvider } from './components/AiProvider.vue'
@@ -596,6 +602,7 @@ export type {
   IBlueprintCanvasPoint,
   IBlueprintScreenPoint,
   IBlueprintCardPaint,
+  IBlueprintConnectionEnd,
   TBlueprintRenderer,
   TBlueprintBackground,
 } from './components/Blueprint.types'
@@ -626,6 +633,9 @@ export type {
   IBlueprintPort,
   IBlueprintCardProps,
   IBlueprintCardParameter,
+  TBlueprintCardStatus,
+  TBlueprintPinDataType,
+  TBlueprintKnownPinDataType,
 } from './components/BlueprintCard.types'
 export { default as NbBlueprintBackground } from './components/BlueprintBackground.vue'
 export type {

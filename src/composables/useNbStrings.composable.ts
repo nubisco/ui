@@ -155,6 +155,10 @@ export interface INbStrings {
   blueprintStatusValid: string
   blueprintStatusWarning: string
   blueprintStatusError: string
+  /** Work on the node is in progress (`status="active"`). */
+  blueprintStatusActive: string
+  /** The node is waiting or queued (`status="pending"`). */
+  blueprintStatusPending: string
   /** The last part of the card's spoken name. */
   blueprintCardEnabled: string
   blueprintCardDisabled: string
@@ -171,6 +175,32 @@ export interface INbStrings {
   copyButtonCopied: string
   // NbBackToTop
   backToTop: string
+  // NbChatThread and NbLogView
+  /** The button that scrolls a followed log back to its newest entry. */
+  jumpToNewest: string
+  // NbChatThread
+  /** The conversation's accessible name. */
+  chatThreadLabel: string
+  /** Shown while the other side is working on a reply. */
+  chatThreadWorking: string
+  /** The composer field's accessible name. */
+  chatThreadMessage: string
+  chatThreadPlaceholder: string
+  chatThreadSend: string
+  chatThreadStop: string
+  // NbLogView
+  /** The log's accessible name. */
+  logViewLabel: string
+  logViewEmpty: string
+  logViewCopy: string
+  /** Said before the lines that are not rendered, at the top of the log. */
+  logViewHidden: (count: number) => string
+  /** The marker an error or warning line shows when it carries none. */
+  logViewError: string
+  logViewWarning: string
+  // NbSidebarMenuItem
+  /** The accessible text of the item's `live` indicator. */
+  sidebarMenuItemLive: string
   // NbImagePicker
   imagePickerAdd: string
   imagePickerDrop: string
@@ -326,6 +356,8 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   blueprintStatusValid: 'Valid',
   blueprintStatusWarning: 'Warning',
   blueprintStatusError: 'Error',
+  blueprintStatusActive: 'In progress',
+  blueprintStatusPending: 'Pending',
   blueprintCardEnabled: 'enabled',
   blueprintCardDisabled: 'disabled',
   blueprintEnableCard: (title: string) => `Enable ${title}`,
@@ -337,6 +369,24 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   copyButtonCopy: 'Copy',
   copyButtonCopied: 'Copied',
   backToTop: 'Back to top',
+  jumpToNewest: 'Jump to newest',
+  chatThreadLabel: 'Conversation',
+  chatThreadWorking: 'Working',
+  chatThreadMessage: 'Message',
+  chatThreadPlaceholder: 'Write a message',
+  chatThreadSend: 'Send',
+  chatThreadStop: 'Stop',
+  logViewLabel: 'Log',
+  logViewEmpty: 'No output yet',
+  logViewCopy: 'Copy log',
+  logViewHidden: (count: number) =>
+    pluralize(count, {
+      one: '{count} earlier line not shown',
+      other: '{count} earlier lines not shown',
+    }),
+  logViewError: 'error',
+  logViewWarning: 'warning',
+  sidebarMenuItemLive: 'Running',
   imagePickerAdd: 'Add image',
   imagePickerDrop: 'Drop to upload',
   imagePickerReplace: 'Replace image',
