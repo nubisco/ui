@@ -170,3 +170,42 @@ describe('NbButton disabledReason', () => {
     expect(w.attributes('disabled')).toBeDefined()
   })
 })
+
+describe('NbButton align', () => {
+  it('starts the label by default, as Carbon does', () => {
+    const w = mount(Button, { slots: { default: 'Buy' } })
+    expect(w.classes()).not.toContain('nb-button--centered')
+  })
+
+  it('centres the label when asked', () => {
+    const w = mount(Button, {
+      props: { align: 'center' },
+      slots: { default: 'Buy' },
+    })
+    expect(w.classes()).toContain('nb-button--centered')
+  })
+
+  it('takes the app default from the plugin, and a button can still opt out', async () => {
+    const { default: NubiscoUI } = await import('../src/main')
+    const global = {
+      plugins: [[NubiscoUI, { button: { align: 'center' } }]] as never,
+    }
+    const centred = mount(Button, { slots: { default: 'Buy' }, global })
+    expect(centred.classes()).toContain('nb-button--centered')
+    const start = mount(Button, {
+      props: { align: 'start' },
+      slots: { default: 'Filter' },
+      global,
+    })
+    expect(start.classes()).not.toContain('nb-button--centered')
+  })
+
+  it('leaves buttons alone when the plugin is installed without a default', async () => {
+    const { default: NubiscoUI } = await import('../src/main')
+    const w = mount(Button, {
+      slots: { default: 'Save' },
+      global: { plugins: [NubiscoUI] },
+    })
+    expect(w.classes()).not.toContain('nb-button--centered')
+  })
+})

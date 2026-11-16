@@ -1,6 +1,10 @@
 import type { App, Component } from 'vue'
 import directives from './directives/index'
 import { NbCommandPalettePlugin } from './plugins/commandPalette'
+import {
+  NB_BUTTON_DEFAULTS,
+  type IButtonDefaults,
+} from './components/Button.context'
 
 export interface INubiscoUIOptions {
   /**
@@ -20,6 +24,12 @@ export interface INubiscoUIOptions {
    * `import NubiscoUI from '@nubisco/ui/all'`.
    */
   components?: Record<string, Component>
+  /**
+   * Defaults for every NbButton in the app. `{ align: 'center' }` centres the
+   * label of every labelled button, for a website. A button's own `align`
+   * still wins. Omitted, buttons follow the Carbon anatomy (label at the start).
+   */
+  button?: IButtonDefaults
 }
 
 /**
@@ -39,6 +49,7 @@ export default {
         app.component(name, component)
       }
     }
+    app.provide(NB_BUTTON_DEFAULTS, { ...options.button })
     app.use(directives)
     app.use(NbCommandPalettePlugin)
   },
@@ -196,6 +207,8 @@ export { default as NbButton } from './components/Button.vue'
 export type { IButtonProps, TButtonSize } from './components/Button.d'
 export { EButtonType } from './components/Button.d'
 export type { TButtonVariant } from './components/Button.d'
+export type { TButtonAlign, IButtonDefaults } from './components/Button.context'
+export { NB_BUTTON_DEFAULTS } from './components/Button.context'
 export { default as NbButtonSet } from './components/ButtonSet.vue'
 export type {
   IButtonSetProps,
