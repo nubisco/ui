@@ -420,6 +420,13 @@ describe('icon-only alignment', () => {
     )
   })
 
+  it('centred outranks the start-aligned variants, and leaves links alone', () => {
+    // Two classes beat ghost's and danger-ghost's one.
+    expect(block('.nb-button--centered:not(.nb-button--link)')).toMatch(
+      /justify-content:\s*center/,
+    )
+  })
+
   it('every variant that sets justify-content is outranked by icon-only', () => {
     const selectors = [
       ...css.matchAll(/(?:^|[}\n])\s*([^{}]+)\{([^}]*justify-content[^}]*)\}/g),
@@ -428,6 +435,12 @@ describe('icon-only alignment', () => {
       if (sel.includes('.nb-button--icon-only')) continue
       if (sel.includes('__decorations')) continue
       if (sel === '.nb-button') continue
+      // Centred (align="center") is two classes too, and it centres, so it
+      // agrees with icon-only rather than fighting it.
+      if (sel.startsWith('.nb-button--centered')) {
+        expect(block(sel)).toMatch(/justify-content:\s*center/)
+        continue
+      }
       // Only plain single-class variant selectors need outranking.
       expect(
         sel.split(',').every((p) => /^\.nb-button--[\w-]+$/.test(p.trim())),

@@ -82,6 +82,37 @@ The two primary buttons above are the same width: the second has no icon, and
 keeps the space for one. That is what lets the spinner replace the icon while
 a button loads without the button changing size.
 
+## Centred, for a website
+
+The anatomy above is for apps, where a button lines up with the fields, rows
+and panels around it. On a website a call to action stands on its own in a
+hero or a card, and the 64px kept for an icon reads as a label pushed off
+centre. `align="center"` centres the label with 16px on both sides, and an
+icon follows the label 8px later, as on a ghost.
+
+<preview dir="row" gap="xxl">
+  <measure>
+    <NbButton variant="primary" size="lg" align="center">Buy</NbButton>
+  </measure>
+  <measure>
+    <NbButton variant="primary" size="lg" align="center" icon="arrow-right">Try it free</NbButton>
+  </measure>
+  <measure>
+    <NbButton variant="ghost" size="lg" align="center">See pricing</NbButton>
+  </measure>
+</preview>
+
+A website sets it once for every button, and a button can still opt back out
+with `align="start"`:
+
+```ts
+app.use(NubiscoUI, { button: { align: 'center' } })
+```
+
+A width set by the layout (a full-width button on a phone, a button in a set)
+keeps the label in the middle. Link buttons are text in a line and keep their
+start alignment.
+
 ## Wrapping at xl and xxl
 
 Up to `lg` a button is one line tall. At `xl` and `xxl` the height is a

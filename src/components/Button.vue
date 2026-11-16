@@ -15,6 +15,7 @@
       { 'nb-button--pressed': pressed },
       { 'nb-button--flush': toolbar?.flush.value },
       { 'nb-button--explained': explained },
+      { 'nb-button--centered': resolvedAlign === 'center' },
     ]"
     :to="useRouter ? to : undefined"
     v-bind="anchorAttrs"
@@ -75,10 +76,13 @@ import {
 import { useRouterLink } from '@/composables/useRouterLink.composable'
 import { NB_PRIMARY_ACTION_SCOPE } from './PrimaryAction.context'
 import { NB_TOOLBAR } from './Toolbar.context'
+import { NB_BUTTON_DEFAULTS } from './Button.context'
 
 const props = withDefaults(defineProps<IButtonProps>(), {
   variant: undefined,
   outlined: false,
+  // Unset, so the app's default (NubiscoUI's `button.align`) can apply.
+  align: undefined,
   // Unset rather than `md`, so a button inside an NbToolbar can tell it was
   // given no size and take the toolbar's. Everywhere else it is still `md`.
   size: undefined,
@@ -127,6 +131,12 @@ const resolvedOutlined = computed(
 const toolbar = inject(NB_TOOLBAR, null)
 const resolvedSize = computed(
   () => props.size ?? toolbar?.size.value ?? ESize.Medium,
+)
+
+// The label's place: the button's own `align`, else the app's, else Carbon's.
+const buttonDefaults = inject(NB_BUTTON_DEFAULTS, {})
+const resolvedAlign = computed(
+  () => props.align ?? buttonDefaults.align ?? 'start',
 )
 
 // Inside a header's actions slot (NbPanel, NbCard, NbPageHeader), a filled
@@ -466,6 +476,21 @@ onMounted(() => {
   }
   &--xxl {
     min-height: calc(var(--nb-base-unit) * 10);
+  }
+
+  /*
+   * Centred, for a website (the `align` prop, or the app-wide default). The
+   * label sits in the middle with 16px on both sides, and an icon follows it
+   * 8px later, as on a ghost. The `:not()` adds a class, so it outranks the
+   * variants that start-align (ghost, danger-ghost) at one class each. A
+   * link is text in a line and keeps its start alignment, and an icon-only
+   * button is centred already.
+   */
+  &--centered:not(.nb-button--link) {
+    --nb-button-pad-end: var(--nb-button-pad-start);
+    --nb-button-icon-gap: var(--nb-base-unit);
+    justify-content: center;
+    text-align: center;
   }
 
   // Icon-only: no slot content, so a square button with the icon centred.

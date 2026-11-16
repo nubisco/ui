@@ -1,6 +1,7 @@
 import type { TIconSource } from '@/types/Glyph.d'
 import { ESize } from '@/types/Size.d'
 import type { EWeight } from './Icon.d'
+import type { TButtonAlign } from './Button.context'
 
 enum EButtonType {
   Button = 'button',
@@ -61,6 +62,15 @@ interface IButtonProps {
    */
   variant?: TButtonVariant
   outlined?: boolean
+  /**
+   * Where the label sits. `start` (the default) is the Carbon anatomy: label
+   * at the left edge, icon pinned right, 64px kept at the end. `center`
+   * centres the label with even padding, and an icon follows it: for a
+   * website, where a call to action stands on its own. Set it for a whole app
+   * with `app.use(NubiscoUI, { button: { align: 'center' } })`. Ignored by
+   * link and icon-only buttons.
+   */
+  align?: TButtonAlign
   size?: TButtonSize
   disabled?: boolean
   loading?: boolean
