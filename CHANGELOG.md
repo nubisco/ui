@@ -1,3 +1,10 @@
+# [5.54.0](https://github.com/nubisco/ui/compare/v5.53.0...v5.54.0) (2026-11-16)
+
+
+### Features
+
+* **button:** align="center", and an app-wide default for websites ([#19](https://github.com/nubisco/ui/issues/19)) ([0cf2c6b](https://github.com/nubisco/ui/commit/0cf2c6b3a385b081c7daff9fc83135ce74c19dcb))
+
 # [5.53.0](https://github.com/nubisco/ui/compare/v5.52.2...v5.53.0) (2026-11-15)
 
 
