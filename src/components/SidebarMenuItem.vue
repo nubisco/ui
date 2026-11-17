@@ -119,7 +119,11 @@
     </ul>
 
     <!-- Compact: teleported flyout with label + (optionally) children -->
-    <Teleport v-if="variant === 'compact' && flyoutVisible" to="body">
+    <Teleport
+      v-if="variant === 'compact' && flyoutVisible"
+      to="body"
+      :disabled="!teleportReady"
+    >
       <div
         ref="flyoutRef"
         class="nb-sidebar-menu-item__flyout"
@@ -161,6 +165,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTeleportReady } from '@/composables/useTeleportReady.composable'
 import {
   computed,
   inject,
@@ -179,6 +184,8 @@ import SidebarVariantScope from './SidebarVariantScope.vue'
 import { useRouterLink } from '@/composables/useRouterLink.composable'
 import { hasRenderableContent } from '@/utils/slotContent.helper'
 import { useNbStrings } from '@/composables/useNbStrings.composable'
+
+const teleportReady = useTeleportReady()
 
 const props = withDefaults(defineProps<ISidebarMenuItemProps>(), {
   icon: undefined,

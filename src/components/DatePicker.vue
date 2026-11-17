@@ -283,7 +283,7 @@
   </div>
 
   <!-- Calendar dialog teleported to body -->
-  <Teleport to="body">
+  <Teleport to="body" :disabled="!teleportReady">
     <!-- Phone only: the calendar is a sheet, and the page behind it is
          dimmed and takes no taps. A tap here closes the sheet. -->
     <div
@@ -413,6 +413,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTeleportReady } from '@/composables/useTeleportReady.composable'
 import { useNbStrings } from '@/composables/useNbStrings.composable'
 import {
   ref,
@@ -434,6 +435,8 @@ import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 import { useVisualViewportVar } from '@/composables/useVisualViewportVar.composable'
 import { joinDescribedBy } from '@/composables/useFieldMessage.composable'
 import { useInputGroupField } from './InputGroup.context'
+
+const teleportReady = useTeleportReady()
 
 const nbStrings = useNbStrings()
 

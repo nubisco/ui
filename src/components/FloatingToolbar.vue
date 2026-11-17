@@ -1,5 +1,5 @@
 <template>
-  <Teleport :to="teleportTo">
+  <Teleport :to="teleportTo" :disabled="!teleportReady">
     <div
       v-if="open && anchor"
       ref="toolbarRef"
@@ -27,6 +27,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTeleportReady } from '@/composables/useTeleportReady.composable'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
@@ -42,6 +43,8 @@ import type {
   IFloatingToolbarProps,
   TFloatingToolbarAnchor,
 } from './FloatingToolbar.d'
+
+const teleportReady = useTeleportReady()
 
 const props = withDefaults(defineProps<IFloatingToolbarProps>(), {
   open: false,

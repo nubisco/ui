@@ -42,7 +42,7 @@
 
     <!-- The explanation. Teleported, so DOM events inside it never reach the
          button, and a click in it is not a click on the label. -->
-    <Teleport v-if="explains" :to="teleportTo">
+    <Teleport v-if="explains" :to="teleportTo" :disabled="!teleportReady">
       <div
         v-if="isOpen && phone"
         class="nb-ai-label--scrim"
@@ -90,6 +90,7 @@
 </template>
 
 <script lang="ts" setup>
+import { useTeleportReady } from '@/composables/useTeleportReady.composable'
 import {
   computed,
   nextTick,
@@ -111,6 +112,8 @@ import {
   type TAnchorSide,
 } from '@/utils/anchorPosition.helper'
 import { EAiLabelVariant, EAiLabelSize, type IAiLabelProps } from './AiLabel.d'
+
+const teleportReady = useTeleportReady()
 
 const props = withDefaults(defineProps<IAiLabelProps>(), {
   variant: EAiLabelVariant.Default,

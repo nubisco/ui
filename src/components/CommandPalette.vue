@@ -1,5 +1,5 @@
 <template>
-  <Teleport to="body">
+  <Teleport to="body" :disabled="!teleportReady">
     <Transition name="nb-command-palette">
       <div
         v-if="state.isOpen"
@@ -146,6 +146,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTeleportReady } from '@/composables/useTeleportReady.composable'
 import NbIcon from './Icon.vue'
 import NbButton from './Button.vue'
 import {
@@ -172,6 +173,8 @@ import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 // The palette takes the page's scrollbar while it is open. It holds a share of
 // the same counted lock NbModal and NbSpinner's page overlay use, so a palette
 // opened over a dialog cannot hand the page back its scrollbar when it closes.
+const teleportReady = useTeleportReady()
+
 const { lock: lockScroll, unlock: unlockScroll } = useScrollLock()
 
 const props = withDefaults(defineProps<ICommandPaletteProps>(), {

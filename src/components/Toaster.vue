@@ -1,5 +1,5 @@
 <template>
-  <Teleport :to="teleportTo" :disabled="props.to === false">
+  <Teleport :to="teleportTo" :disabled="!teleportReady || props.to === false">
     <!--
       The announcer is mounted for the life of the host, empty, whether or not
       anything is on screen. A live region and its first message inserted into
@@ -107,6 +107,7 @@ function countInstance(target: IToastQueue, delta: number) {
 </script>
 
 <script setup lang="ts">
+import { useTeleportReady } from '@/composables/useTeleportReady.composable'
 import {
   computed,
   inject,
@@ -125,6 +126,8 @@ import {
   type IToastRecord,
   type TToastDismissReason,
 } from '../composables/useToast.composable'
+
+const teleportReady = useTeleportReady()
 
 const props = withDefaults(defineProps<IToasterProps>(), {
   queue: undefined,

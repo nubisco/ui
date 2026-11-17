@@ -136,7 +136,7 @@
          to the foot of the screen, which a bar inside the board cannot be:
          the board is a size container, and that makes it the containing
          block of anything fixed inside it. So there it moves to <body>. -->
-    <Teleport to="body" :disabled="!phone">
+    <Teleport to="body" :disabled="!teleportReady || !phone">
       <NbBatchActions
         v-if="showBatch"
         class="nb-board__batch"
@@ -176,6 +176,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTeleportReady } from '@/composables/useTeleportReady.composable'
 import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { computed, nextTick, ref, useSlots } from 'vue'
 import NbBatchActions from './BatchActions.vue'
@@ -192,6 +193,8 @@ import type {
 import { useSurfaceLayer } from '@/composables/useSurfaceLayer.composable'
 import { useStableId } from '@/composables/useStableId.composable'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
+
+const teleportReady = useTeleportReady()
 
 const nbStrings = useNbStrings()
 

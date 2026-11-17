@@ -21,7 +21,7 @@
       <NbIcon :name="resolvedIcon" :size="size" weight="regular" />
     </button>
 
-    <Teleport :to="teleportTo">
+    <Teleport :to="teleportTo" :disabled="!teleportReady">
       <div
         v-if="isOpen"
         :id="popoverId"
@@ -49,6 +49,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTeleportReady } from '@/composables/useTeleportReady.composable'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import * as iconInfo from '@nubisco/ui/icons/info'
 import NbIcon from './Icon.vue'
@@ -62,6 +63,8 @@ import {
 } from '@/utils/anchorPosition.helper'
 import type { IInfoHintProps } from './InfoHint.d'
 import { useNbStrings } from '@/composables/useNbStrings.composable'
+
+const teleportReady = useTeleportReady()
 
 const props = withDefaults(defineProps<IInfoHintProps>(), {
   text: undefined,

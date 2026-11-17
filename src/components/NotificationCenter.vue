@@ -44,7 +44,7 @@
       >
     </slot>
 
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!teleportReady">
       <Transition name="nb-notification-center-pop">
         <div
           v-if="isOpen"
@@ -406,6 +406,7 @@ export function isAnchorInViewport(
 </script>
 
 <script setup lang="ts">
+import { useTeleportReady } from '@/composables/useTeleportReady.composable'
 import {
   computed,
   nextTick,
@@ -431,6 +432,8 @@ import type {
   INotificationTriggerProps,
 } from './NotificationCenter.d'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
+
+const teleportReady = useTeleportReady()
 
 const nbStrings = useNbStrings()
 

@@ -1,5 +1,5 @@
 <template>
-  <Teleport to="body" :disabled="!isPageOverlay">
+  <Teleport to="body" :disabled="!teleportReady || !isPageOverlay">
     <div
       v-if="visible"
       v-bind="$attrs"
@@ -59,6 +59,7 @@ let warnedUnnamed = false
 </script>
 
 <script setup lang="ts">
+import { useTeleportReady } from '@/composables/useTeleportReady.composable'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useStableId } from '@/composables/useStableId.composable'
 import { useReducedMotion } from '@/composables/useReducedMotion.composable'
@@ -81,6 +82,8 @@ import { useNbStrings } from '@/composables/useNbStrings.composable'
 // through to. Binding $attrs on the ring's own wrapper keeps `class`, `style`
 // and every aria-* a caller passes landing where they did before the page
 // overlay learned to leave the tree.
+const teleportReady = useTeleportReady()
+
 defineOptions({ inheritAttrs: false })
 
 const props = withDefaults(defineProps<ISpinnerProps>(), {

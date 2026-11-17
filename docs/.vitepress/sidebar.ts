@@ -18,6 +18,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Introduction', link: '/introduction' },
       { text: 'Quickstart', link: '/quickstart' },
       { text: 'What ships in your bundle', link: '/bundling' },
+      { text: 'Server rendering', link: '/server-rendering' },
       { text: 'Upgrading', link: '/upgrading' },
       { text: 'Showcase', link: '/showcase' },
     ],
