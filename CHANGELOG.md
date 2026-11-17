@@ -1,3 +1,10 @@
+# [5.55.0](https://github.com/nubisco/ui/compare/v5.54.0...v5.55.0) (2026-11-17)
+
+
+### Features
+
+* **ssr:** teleports render in place until the app has hydrated ([#20](https://github.com/nubisco/ui/issues/20)) ([b1341ba](https://github.com/nubisco/ui/commit/b1341bab4ddb1ac3453ad10be5cd07e362f4a412))
+
 # [5.54.0](https://github.com/nubisco/ui/compare/v5.53.0...v5.54.0) (2026-11-16)
 
 
