@@ -67,7 +67,7 @@
       </button>
     </slot>
 
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!teleportReady">
       <Transition name="nb-user-menu-pop">
         <div
           v-if="open"
@@ -234,6 +234,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTeleportReady } from '@/composables/useTeleportReady.composable'
 import {
   computed,
   inject,
@@ -260,6 +261,8 @@ import { initialsOf } from '@/utils/initials.helper'
 // active language, else built-in English. This keeps the menu correct in any
 // host while letting products override or add locales without touching the
 // library.
+const teleportReady = useTeleportReady()
+
 const BUILT_IN: Record<string, Record<string, string>> = {
   en: {
     ACCOUNT_MENU: 'Account menu',

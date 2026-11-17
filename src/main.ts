@@ -1,10 +1,11 @@
-import type { App, Component } from 'vue'
+import { ref, type App, type Component } from 'vue'
 import directives from './directives/index'
 import { NbCommandPalettePlugin } from './plugins/commandPalette'
 import {
   NB_BUTTON_DEFAULTS,
   type IButtonDefaults,
 } from './components/Button.context'
+import { NB_HYDRATION } from './composables/useTeleportReady.composable'
 
 export interface INubiscoUIOptions {
   /**
@@ -30,6 +31,14 @@ export interface INubiscoUIOptions {
    * still wins. Omitted, buttons follow the Carbon anatomy (label at the start).
    */
   button?: IButtonDefaults
+  /**
+   * The app is rendered on the server (SSR or prerendering) and hydrated in
+   * the browser. Teleports (Modal, Select, Menu and the other overlays) then
+   * render in place until the app has hydrated, so the browser finds exactly
+   * the markup the server sent. Leave it off for an app that only renders in
+   * the browser: nothing changes there. See useTeleportReady.composable.ts.
+   */
+  ssr?: boolean
 }
 
 /**
@@ -50,6 +59,19 @@ export default {
       }
     }
     app.provide(NB_BUTTON_DEFAULTS, { ...options.button })
+    if (options.ssr) {
+      // Pending until mount() returns: on the server it never does, and in the
+      // browser mount() is the hydration. Overlays created after it teleport
+      // at once.
+      const pending = ref(true)
+      app.provide(NB_HYDRATION, { pending })
+      const mount = app.mount.bind(app)
+      app.mount = ((...args: Parameters<App['mount']>) => {
+        const instance = mount(...args)
+        pending.value = false
+        return instance
+      }) as App['mount']
+    }
     app.use(directives)
     app.use(NbCommandPalettePlugin)
   },
@@ -209,6 +231,11 @@ export { EButtonType } from './components/Button.d'
 export type { TButtonVariant } from './components/Button.d'
 export type { TButtonAlign, IButtonDefaults } from './components/Button.context'
 export { NB_BUTTON_DEFAULTS } from './components/Button.context'
+export {
+  NB_HYDRATION,
+  useTeleportReady,
+  type INbHydration,
+} from './composables/useTeleportReady.composable'
 export { default as NbButtonSet } from './components/ButtonSet.vue'
 export type {
   IButtonSetProps,

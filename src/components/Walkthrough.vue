@@ -1,5 +1,5 @@
 <template>
-  <Teleport :to="teleportTo">
+  <Teleport :to="teleportTo" :disabled="!teleportReady">
     <div
       v-if="controller.active.value"
       class="nb-walkthrough"
@@ -148,6 +148,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTeleportReady } from '@/composables/useTeleportReady.composable'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import NbButton from './Button.vue'
 import NbButtonSet from './ButtonSet.vue'
@@ -168,6 +169,8 @@ import type {
   IWalkthroughProps,
   IWalkthroughStep,
 } from './Walkthrough.d'
+
+const teleportReady = useTeleportReady()
 
 const props = withDefaults(defineProps<IWalkthroughProps>(), {
   walkthrough: undefined,

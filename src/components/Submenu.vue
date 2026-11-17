@@ -35,7 +35,7 @@
     <NbIcon name="caret-right" size="sm" class="nb-submenu-trigger__caret" />
   </li>
 
-  <Teleport to="body">
+  <Teleport to="body" :disabled="!teleportReady">
     <Transition name="nb-submenu">
       <ul
         v-if="isOpen"
@@ -55,6 +55,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTeleportReady } from '@/composables/useTeleportReady.composable'
 import NbIcon from './Icon.vue'
 import {
   ref,
@@ -70,6 +71,8 @@ import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 
 // The same tier as the menu it opens from: on a phone that menu stacks above
 // the inspector sheet and dialogs, and a submenu below it would be hidden.
+const teleportReady = useTeleportReady()
+
 const { phone } = usePhoneLayout()
 const menuZ = () =>
   phone.value ? 'var(--nb-zindex-modal-dropdown)' : 'var(--nb-zindex-menu)'

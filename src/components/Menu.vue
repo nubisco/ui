@@ -1,5 +1,5 @@
 <template>
-  <Teleport to="body">
+  <Teleport to="body" :disabled="!teleportReady">
     <Transition name="nb-menu">
       <ul
         v-if="open"
@@ -16,6 +16,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTeleportReady } from '@/composables/useTeleportReady.composable'
 import {
   ref,
   computed,
@@ -29,6 +30,8 @@ import type { IMenuProps, IMenuContext } from './Menu.d'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 import { openModalSurfaces } from '@/composables/useFocusTrap.composable'
 import { NB_TOOLBAR } from './Toolbar.context'
+
+const teleportReady = useTeleportReady()
 
 const props = withDefaults(defineProps<IMenuProps>(), {
   open: false,

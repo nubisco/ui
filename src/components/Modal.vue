@@ -1,5 +1,5 @@
 <template>
-  <Teleport to="body">
+  <Teleport to="body" :disabled="!teleportReady">
     <Transition name="nb-modal">
       <div v-if="open" class="nb-modal--overlay" @click.self="onOverlayClick">
         <div
@@ -67,6 +67,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTeleportReady } from '@/composables/useTeleportReady.composable'
 import { useNbStrings } from '@/composables/useNbStrings.composable'
 import NbButtonSet from './ButtonSet.vue'
 import NbCloseButton from './CloseButton.vue'
@@ -93,6 +94,8 @@ import {
 import { useVisualViewportVar } from '@/composables/useVisualViewportVar.composable'
 import { floatingSelector } from './Confirm.env'
 import type { IModalProps } from './Modal.d'
+
+const teleportReady = useTeleportReady()
 
 const nbStrings = useNbStrings()
 

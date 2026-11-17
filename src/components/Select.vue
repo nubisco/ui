@@ -240,7 +240,7 @@
   </div>
 
   <!-- Dropdown teleported to body to escape overflow:hidden parents -->
-  <Teleport to="body">
+  <Teleport to="body" :disabled="!teleportReady">
     <Transition name="nb-select-pop">
       <div
         v-if="isOpen"
@@ -364,6 +364,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTeleportReady } from '@/composables/useTeleportReady.composable'
 import NbLabel from './Label.vue'
 import NbMessage from './Message.vue'
 import NbGrid from './Grid.vue'
@@ -388,6 +389,8 @@ import {
 } from 'vue'
 import { ISelectOption, ISelectProps } from './Select'
 import { useMenuSurface } from '../composables/useMenuSurface.composable'
+
+const teleportReady = useTeleportReady()
 
 /*
  * Two root nodes (the field and the teleported list), so Vue cannot pass a
