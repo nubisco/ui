@@ -609,11 +609,354 @@ describe('NbSpreadsheet fixed grid adopter', () => {
     w.unmount()
   })
 
+  it('keeps labels, the browser menu and every column by default', async () => {
+    const w = mountGrid()
+    expect(w.find('.nb-spreadsheet__header--letters').exists()).toBe(false)
+    const ev = new MouseEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+    })
+    w.find('[data-cell="d-3::1"]').element.dispatchEvent(ev)
+    expect(ev.defaultPrevented).toBe(false)
+    expect(document.querySelector('.nb-menu')).toBeNull()
+    expect(w.find('.nb-spreadsheet__unhide').exists()).toBe(false)
+    w.unmount()
+  })
+
   it('is still registered by the labs plugin', async () => {
     const { createApp } = await import('vue')
     const { default: labs } = await import('../src/labs')
     const app = createApp({})
     app.use(labs)
     expect(app.component('NbSpreadsheet')).toBe(Spreadsheet)
+  })
+})
+
+describe('NbSpreadsheet column letters', () => {
+  const cols = [
+    { id: 'name', label: 'Name' },
+    { id: 'qty', label: 'Quantity', type: 'number' as const, sortable: true },
+    { id: 'price', label: 'Price', type: 'number' as const },
+  ]
+  const data = [
+    { id: 'a', values: { name: 'Bolt', qty: 2, price: 1 } },
+    { id: 'b', values: { name: 'Nut', qty: 1, price: 2 } },
+  ]
+
+  it('shows A, B, C in place of the labels', () => {
+    const w = mount(Spreadsheet, {
+      props: { columns: cols, rows: data, columnHeaders: 'letters' },
+    })
+    const headers = w.findAll('.nb-spreadsheet__header')
+    expect(headers.map((h) => h.text())).toEqual(['A', 'B', 'C'])
+    // The label stays as the header's name and tooltip.
+    expect(headers[1].attributes('aria-label')).toBe('B Quantity')
+    expect(headers[1].find('span').attributes('title')).toBe('Quantity')
+  })
+
+  it('counts past Z as spreadsheets do', () => {
+    const many = Array.from({ length: 28 }, (_, i) => ({
+      id: `c${i}`,
+      label: `C${i}`,
+    }))
+    const w = mount(Spreadsheet, {
+      props: { columns: many, rows: data, columnHeaders: 'letters' },
+    })
+    const text = w.findAll('.nb-spreadsheet__header').map((h) => h.text())
+    expect(text.slice(24)).toEqual(['Y', 'Z', 'AA', 'AB'])
+  })
+
+  it('puts a row of letters above the labels with both', async () => {
+    const w = mount(Spreadsheet, {
+      props: { columns: cols, rows: data, columnHeaders: 'both' },
+    })
+    const rowEls = w.findAll('[role="row"]')
+    expect(rowEls.map((r) => r.attributes('aria-rowindex'))).toEqual([
+      '1',
+      '2',
+      '3',
+      '4',
+    ])
+    expect(
+      rowEls[0].findAll('[role="columnheader"]').map((h) => h.text()),
+    ).toEqual(['', 'A', 'B', 'C'])
+    expect(
+      rowEls[1].findAll('[role="columnheader"]').map((h) => h.text()),
+    ).toEqual(['Name', 'Quantity', 'Price'])
+    // The letter selects, the label under it sorts.
+    await rowEls[0].findAll('[role="columnheader"]')[2].trigger('mousedown')
+    expect(w.findAll('.nb-spreadsheet__cell--selected')).toHaveLength(2)
+    expect(
+      rowEls[1].find('[data-header-col="qty"]').attributes('aria-sort'),
+    ).toBe('none')
+    await w.find('[data-header-col="qty"]').trigger('mousedown')
+    expect(w.find('[data-header-col="qty"]').attributes('aria-sort')).toBe(
+      'ascending',
+    )
+  })
+
+  it("keeps a hidden column's letter", () => {
+    const w = mount(Spreadsheet, {
+      props: {
+        columns: cols,
+        rows: data,
+        columnHeaders: 'letters',
+        hiddenColumns: ['qty'],
+      },
+    })
+    expect(w.findAll('.nb-spreadsheet__header').map((h) => h.text())).toEqual([
+      'A',
+      'C',
+    ])
+  })
+})
+
+describe('NbSpreadsheet hidden columns and rows', () => {
+  const cols = [
+    { id: 'a', label: 'A1' },
+    { id: 'b', label: 'B1' },
+    { id: 'c', label: 'C1' },
+  ]
+  const data = () => [
+    { id: 'r1', values: { a: 1, b: 2, c: 3 } },
+    { id: 'r2', values: { a: 4, b: 5, c: 6 } },
+    { id: 'r3', values: { a: 7, b: 8, c: 9 } },
+  ]
+
+  it('leaves hidden columns and rows out, and keeps the row numbers', () => {
+    const w = mount(Spreadsheet, {
+      props: {
+        columns: cols,
+        rows: data(),
+        hiddenColumns: ['b'],
+        hiddenRows: ['r2'],
+      },
+    })
+    expect(w.find('[data-cell="r1::b"]').exists()).toBe(false)
+    expect(w.find('[data-cell="r2::a"]').exists()).toBe(false)
+    expect(w.findAll('.nb-spreadsheet__gutter').map((g) => g.text())).toEqual([
+      '1',
+      '3',
+    ])
+    const grid = w.find('[role="grid"]')
+    expect(grid.attributes('aria-rowcount')).toBe('3')
+    expect(grid.attributes('aria-colcount')).toBe('3')
+  })
+
+  it('skips hidden cells when moving, copying and clearing', async () => {
+    const w = mount(Spreadsheet, {
+      props: { columns: cols, rows: data(), hiddenColumns: ['b'] },
+      attachTo: document.body,
+    })
+    const scroller = w.find('.nb-spreadsheet__scroller')
+    await w.find('[data-cell="r1::a"]').trigger('mousedown')
+    await scroller.trigger('keydown', { key: 'ArrowRight' })
+    expect(
+      w.find('.nb-spreadsheet__cell--focused').attributes('data-cell'),
+    ).toBe('r1::c')
+    await w.find('.nb-spreadsheet__gutter').trigger('mousedown')
+    const setData = vi.fn()
+    const copy = new Event('copy', { bubbles: true, cancelable: true })
+    Object.assign(copy, { clipboardData: { setData } })
+    scroller.element.dispatchEvent(copy)
+    expect(setData).toHaveBeenCalledWith('text/plain', '1\t3')
+    await scroller.trigger('keydown', { key: 'Delete' })
+    const batch = w.emitted('change')!.at(-1)![0] as Array<{ columnId: string }>
+    expect(batch.map((c) => c.columnId)).toEqual(['a', 'c'])
+    w.unmount()
+  })
+
+  it('marks where columns and rows are hidden, and shows them on a click', async () => {
+    const w = mount(Spreadsheet, {
+      props: {
+        columns: cols,
+        rows: data(),
+        hiddenColumns: ['b', 'c'],
+        hiddenRows: ['r2'],
+        'onUpdate:hiddenColumns': (v: string[]) =>
+          w.setProps({ hiddenColumns: v }),
+        'onUpdate:hiddenRows': (v: string[]) => w.setProps({ hiddenRows: v }),
+      },
+    })
+    const colMark = w.find('.nb-spreadsheet__unhide--col-end')
+    expect(colMark.attributes('aria-label')).toBe('Show 2 hidden columns')
+    const rowMark = w.find('.nb-spreadsheet__unhide--row-start')
+    expect(rowMark.attributes('aria-label')).toBe('Show hidden row')
+    await colMark.trigger('click')
+    await rowMark.trigger('click')
+    expect(w.emitted('update:hiddenColumns')!.at(-1)).toEqual([[]])
+    expect(w.emitted('update:hiddenRows')!.at(-1)).toEqual([[]])
+    expect(w.find('.nb-spreadsheet__unhide').exists()).toBe(false)
+    expect(w.findAll('.nb-spreadsheet__gutter')).toHaveLength(3)
+  })
+
+  it('moves the focus off a column as it is hidden', async () => {
+    const w = mount(Spreadsheet, {
+      props: { columns: cols, rows: data() },
+      attachTo: document.body,
+    })
+    await w.find('[data-cell="r2::b"]').trigger('mousedown')
+    ;(w.vm as unknown as { hideColumns: (ids: string[]) => void }).hideColumns([
+      'b',
+    ])
+    await nextTick()
+    await nextTick()
+    expect(
+      w.find('.nb-spreadsheet__cell--focused').attributes('data-cell'),
+    ).toBe('r2::c')
+    w.unmount()
+  })
+
+  it('never hides the last column', async () => {
+    const w = mount(Spreadsheet, {
+      props: { columns: cols, rows: data(), hiddenColumns: ['a', 'b'] },
+    })
+    ;(w.vm as unknown as { hideColumns: (ids: string[]) => void }).hideColumns([
+      'c',
+    ])
+    expect(w.emitted('update:hiddenColumns')).toBeUndefined()
+  })
+})
+
+describe('NbSpreadsheet context menu', () => {
+  const cols = [
+    { id: 'a', label: 'Alpha' },
+    { id: 'b', label: 'Beta', sortable: true },
+  ]
+  const data = () => [
+    { id: 'r1', values: { a: 1, b: 2 } },
+    { id: 'r2', values: { a: 3, b: 4 } },
+  ]
+  const menuLabels = () =>
+    Array.from(document.querySelectorAll('.nb-menu [role="menuitem"]')).map(
+      (el) => el.querySelector('.nb-menu-item__label')?.textContent?.trim(),
+    )
+
+  afterEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  it('opens on a column header with the column actions', async () => {
+    const w = mount(Spreadsheet, {
+      props: { columns: cols, rows: data(), contextMenu: true },
+      attachTo: document.body,
+    })
+    const ev = new MouseEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+    })
+    w.find('[data-header-col="b"]').element.dispatchEvent(ev)
+    await nextTick()
+    await nextTick()
+    expect(ev.defaultPrevented).toBe(true)
+    expect(menuLabels()).toEqual([
+      'Cut',
+      'Copy',
+      'Paste',
+      'Clear contents',
+      'Sort ascending',
+      'Sort descending',
+      'Hide column',
+    ])
+    // The right click selected the column it landed on.
+    expect(w.findAll('.nb-spreadsheet__cell--selected')).toHaveLength(2)
+    const hide = Array.from(
+      document.querySelectorAll<HTMLElement>('.nb-menu [role="menuitem"]'),
+    ).find((el) => el.textContent?.includes('Hide column'))!
+    hide.click()
+    expect(w.emitted('update:hiddenColumns')!.at(-1)).toEqual([['b']])
+    w.unmount()
+  })
+
+  it('keeps a selection it is opened inside, and offers rows from the gutter', async () => {
+    const w = mount(Spreadsheet, {
+      props: {
+        columns: cols,
+        rows: data(),
+        contextMenu: true,
+        hiddenRows: [],
+      },
+      attachTo: document.body,
+    })
+    await w.find('.nb-spreadsheet__corner').trigger('mousedown')
+    const gutter = w.findAll('.nb-spreadsheet__gutter')[0]
+    gutter.element.dispatchEvent(
+      new MouseEvent('contextmenu', { bubbles: true, cancelable: true }),
+    )
+    await nextTick()
+    await nextTick()
+    // A whole-sheet selection is not a row selection, so the row is chosen.
+    expect(w.findAll('.nb-spreadsheet__cell--selected')).toHaveLength(2)
+    expect(menuLabels()).toContain('Hide row')
+    expect(menuLabels()).not.toContain('Hide column')
+    w.unmount()
+  })
+
+  it('opens from the keyboard at the active cell', async () => {
+    const w = mount(Spreadsheet, {
+      props: { columns: cols, rows: data(), contextMenu: true },
+      attachTo: document.body,
+    })
+    await w.find('[data-cell="r1::a"]').trigger('mousedown')
+    await w
+      .find('.nb-spreadsheet__scroller')
+      .trigger('keydown', { key: 'F10', shiftKey: true })
+    await nextTick()
+    await nextTick()
+    expect(menuLabels()).toContain('Hide column')
+    expect(menuLabels()).toContain('Hide row')
+    w.unmount()
+  })
+})
+
+describe('NbSpreadsheet column resize', () => {
+  const cols = [
+    { id: 'a', label: 'Alpha', width: 100, minWidth: 90 },
+    { id: 'b', label: 'Beta' },
+  ]
+  const data = [{ id: 'r1', values: { a: 1, b: 2 } }]
+
+  it('resizes the active column from the keyboard and says so', async () => {
+    const w = mount(Spreadsheet, { props: { columns: cols, rows: data } })
+    await w.find('[data-cell="r1::a"]').trigger('mousedown')
+    const scroller = w.find('.nb-spreadsheet__scroller')
+    await scroller.trigger('keydown', {
+      key: 'ArrowRight',
+      altKey: true,
+      shiftKey: true,
+    })
+    expect(w.emitted('column-resize')![0][0]).toEqual({
+      columnId: 'a',
+      width: 108,
+    })
+    // It did not move the active cell or grow the selection.
+    expect(
+      w.find('.nb-spreadsheet__cell--focused').attributes('data-cell'),
+    ).toBe('r1::a')
+    for (let i = 0; i < 4; i++)
+      await scroller.trigger('keydown', {
+        key: 'ArrowLeft',
+        altKey: true,
+        shiftKey: true,
+      })
+    // Never under the column's minWidth, and silent once it is there.
+    const sizes = w
+      .emitted('column-resize')!
+      .map((e) => (e[0] as { width: number }).width)
+    expect(sizes).toEqual([108, 100, 92, 90])
+  })
+
+  it('reports a drag once, when it ends', async () => {
+    const w = mount(Spreadsheet, { props: { columns: cols, rows: data } })
+    await w
+      .find('.nb-spreadsheet__resize-handle')
+      .trigger('mousedown', { clientX: 100 })
+    window.dispatchEvent(new MouseEvent('mousemove', { clientX: 130 }))
+    window.dispatchEvent(new MouseEvent('mousemove', { clientX: 140 }))
+    expect(w.emitted('column-resize')).toBeUndefined()
+    window.dispatchEvent(new MouseEvent('mouseup'))
+    expect(w.emitted('column-resize')).toEqual([
+      [{ columnId: 'a', width: 140 }],
+    ])
   })
 })

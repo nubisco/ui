@@ -84,6 +84,36 @@ A touch phone keeps the full row height, so every cell stays a target a finger c
 
 Give columns a `shortLabel` when their labels are long. While any `label` does not fit its column, every column with a `shortLabel` shows it instead, so the header row never mixes "January" with "Feb", and the full label stays as the header's tooltip.
 
+## Column letters
+
+A sheet people refer to by position, such as one that is read out loud or checked against a printout, can name its columns A, B, C, as a desktop spreadsheet does. Set `column-headers` to `'letters'` to show the letters in place of the labels, which stay as each header's tooltip and accessible name, or to `'both'` for a compact row of letters above the labels. A column's letter is its place in the sheet, so hiding column C leaves A, B, D, and the row numbers skip hidden rows the same way. The default, `'label'`, shows the labels alone.
+
+Letters are a way to find a cell, not a replacement for a good label. Keep the labels whenever the columns have names.
+
+## Hiding columns and rows
+
+Hidden columns and rows are `v-model:hidden-columns` and `v-model:hidden-rows`, arrays of ids. Bind them to keep what a person hid between visits, or leave them unbound and the sheet keeps them for as long as it is on the page. A hidden column or row leaves a double rule on the edge it was on, and a click on the rule shows it again. Hidden cells are skipped by the arrow keys, the selection, the clipboard and `Delete`, so nothing changes out of sight.
+
+A sheet always keeps one column and one row in view.
+
+## Context menu
+
+Set `context-menu` and a right click, `Shift+F10` or the menu key opens the sheet's own menu in place of the browser's: cut, copy, paste, clear, sorting for a sortable column, and hiding and showing columns and rows. It works on the selection. A right click inside the selection keeps it, and one outside selects the cell, column or row under the pointer first, so a click on a column header offers that column. The menu is off by default, since it replaces the browser's own.
+
+<preview>
+  <NbSpreadsheet
+    v-model:hidden-columns="budgetHiddenColumns"
+    v-model:hidden-rows="budgetHiddenRows"
+    :columns="budgetColumns"
+    :rows="budgetRows"
+    column-headers="both"
+    context-menu
+    locale="en-GB"
+    aria-label="Budget"
+    @commit="onBudgetCommit"
+  />
+</preview>
+
 ## Sorting
 
 Set `column.sortable` to let a header click sort the rows. The first click sorts ascending, the second descending, the third clears it. Only the unpinned rows move: pinned rows keep their place. The arrows appear when the header is hovered, and stay on the sorted column.
@@ -113,12 +143,16 @@ Drag across cells, or hold `Shift` while clicking or moving, to select a range. 
 | Select the column        | `Ctrl+Space` / click its header                                 |
 | Select the row           | `Shift+Space` / click its gutter cell                           |
 | Select everything        | `Cmd/Ctrl+A` / click the corner                                 |
+| Narrow / widen column    | `Alt+Shift+←` / `Alt+Shift+→`, 8px a step                       |
+| Open the context menu    | `Shift+F10` / the menu key / right click (with `context-menu`)  |
 | Copy / cut / paste (TSV) | `Cmd/Ctrl+C` / `Cmd/Ctrl+X` / `Cmd/Ctrl+V`                      |
 | Undo / redo              | `Cmd/Ctrl+Z` / `Cmd/Ctrl+Shift+Z`                               |
 
 Editing has the two states of a desktop spreadsheet. A cell opened by typing into it takes every arrow key as "commit and move", so a column of numbers is keyed in as `8`, `↓`, `8`, `↓` without touching the mouse. A cell opened with `F2`, a double click or a tap keeps `←` and `→` for moving the caret inside the text.
 
 Moving the active cell scrolls the sheet only as far as needed to bring it clear of the sticky header, the pinned rows and the pinned columns. Starting or finishing an edit never scrolls it.
+
+Columns are resized by dragging the right edge of a header, or from the keyboard with `Alt+Shift` and the arrows. The sheet emits `column-resize` with the new width when a drag ends and on each key, so the app can keep it.
 
 Clipboard payloads are tab-separated values, so copy and paste round-trip with other spreadsheet applications.
 

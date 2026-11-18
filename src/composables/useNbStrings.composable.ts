@@ -198,6 +198,22 @@ export interface INbStrings {
   /** The marker an error or warning line shows when it carries none. */
   logViewError: string
   logViewWarning: string
+  // NbSpreadsheet context menu, and the marks hidden columns and rows leave
+  spreadsheetCut: string
+  spreadsheetCopy: string
+  spreadsheetPaste: string
+  /** Why Paste is unavailable where the page cannot read the clipboard. */
+  spreadsheetPasteWithKeys: string
+  spreadsheetClear: string
+  spreadsheetSortAscending: string
+  spreadsheetSortDescending: string
+  spreadsheetHideColumns: (count: number) => string
+  spreadsheetHideRows: (count: number) => string
+  spreadsheetShowColumns: (count: number) => string
+  spreadsheetShowRows: (count: number) => string
+  /** Why the selected columns cannot be hidden: they are all that is left. */
+  spreadsheetKeepOneColumn: string
+  spreadsheetKeepOneRow: string
   // NbSidebarMenuItem
   /** The accessible text of the item's `live` indicator. */
   sidebarMenuItemLive: string
@@ -386,6 +402,29 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
     }),
   logViewError: 'error',
   logViewWarning: 'warning',
+  spreadsheetCut: 'Cut',
+  spreadsheetCopy: 'Copy',
+  spreadsheetPaste: 'Paste',
+  spreadsheetPasteWithKeys: 'Press Ctrl+V or Cmd+V to paste here',
+  spreadsheetClear: 'Clear contents',
+  spreadsheetSortAscending: 'Sort ascending',
+  spreadsheetSortDescending: 'Sort descending',
+  spreadsheetHideColumns: (count: number) =>
+    pluralize(count, { one: 'Hide column', other: 'Hide {count} columns' }),
+  spreadsheetHideRows: (count: number) =>
+    pluralize(count, { one: 'Hide row', other: 'Hide {count} rows' }),
+  spreadsheetShowColumns: (count: number) =>
+    pluralize(count, {
+      one: 'Show hidden column',
+      other: 'Show {count} hidden columns',
+    }),
+  spreadsheetShowRows: (count: number) =>
+    pluralize(count, {
+      one: 'Show hidden row',
+      other: 'Show {count} hidden rows',
+    }),
+  spreadsheetKeepOneColumn: 'A sheet keeps at least one column',
+  spreadsheetKeepOneRow: 'A sheet keeps at least one row',
   sidebarMenuItemLive: 'Running',
   imagePickerAdd: 'Add image',
   imagePickerDrop: 'Drop to upload',

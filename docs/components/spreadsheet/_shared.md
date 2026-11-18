@@ -164,6 +164,29 @@ const sortableRows = ref<ISpreadsheetRow[]>([
   { id: 's4', values: { name: 'Germany', pop: 83.2, gdp: 52800 } },
   { id: 's5', values: { name: 'Switzerland', pop: 8.7, gdp: 99300 } },
 ])
+
+// ── Letters, hiding and the context menu ────────────────────────────────────
+const budgetColumns: ISpreadsheetColumn[] = [
+  { id: 'line', label: 'Budget line', width: 180 },
+  { id: 'q1', label: 'Q1', type: 'number', width: 96 },
+  { id: 'q2', label: 'Q2', type: 'number', width: 96 },
+  { id: 'q3', label: 'Q3', type: 'number', width: 96 },
+  { id: 'q4', label: 'Q4', type: 'number', width: 96 },
+  { id: 'note', label: 'Note', width: 180 },
+]
+const budgetRows = ref<ISpreadsheetRow[]>([
+  { id: 'b1', values: { line: 'Salaries', q1: 42000, q2: 42000, q3: 44000, q4: 44000, note: '' } },
+  { id: 'b2', values: { line: 'Office rent', q1: 6000, q2: 6000, q3: 6000, q4: 6000, note: 'Fixed until 2028' } },
+  { id: 'b3', values: { line: 'Equipment', q1: 3500, q2: 800, q3: 1200, q4: 4100, note: '' } },
+  { id: 'b4', values: { line: 'Travel', q1: 1800, q2: 2400, q3: 900, q4: 2100, note: '' } },
+  { id: 'b5', values: { line: 'Training', q1: 1200, q2: 0, q3: 1500, q4: 0, note: 'Two courses' } },
+])
+const budgetHiddenColumns = ref<string[]>(['note'])
+const budgetHiddenRows = ref<string[]>(['b2'])
+function onBudgetCommit(c: ISpreadsheetChange) {
+  const r = budgetRows.value.find((x) => x.id === c.rowId)
+  if (r) r.values[c.columnId] = c.after
+}
 </script>
 
 <style scoped>

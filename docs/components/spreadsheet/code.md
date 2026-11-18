@@ -158,6 +158,31 @@ const columns = months.map((m, i) => ({
 </style>
 ```
 
+## Hidden columns and rows
+
+Bind the two models to keep what a person hid, for example in their preferences. Ids that name no column or row are ignored, so a stored list survives a column being removed.
+
+```vue
+<NbSpreadsheet
+  v-model:hidden-columns="hiddenColumns"
+  v-model:hidden-rows="hiddenRows"
+  :columns="columns"
+  :rows="rows"
+  column-headers="both"
+  context-menu
+  @column-resize="({ columnId, width }) => saveWidth(columnId, width)"
+/>
+```
+
+```ts
+const hiddenColumns = ref<string[]>(prefs.hiddenColumns ?? [])
+const hiddenRows = ref<string[]>([])
+```
+
+The exposed `hideColumns`, `showColumns`, `hideRows` and `showRows` do the same from code, for a toolbar button or a saved view.
+
+The context menu's words, and the names of the marks hidden columns and rows leave, come from the library's string catalogue (`spreadsheetCut`, `spreadsheetHideColumns` and the rest), so an app translates them where it translates every other built-in string.
+
 ## Theming
 
 The sheet is built on the surface tokens, so it follows any `.nb-layer-N` parent and the dark theme without overrides.
@@ -174,12 +199,13 @@ The sheet is built on the surface tokens, so it follows any `.nb-layer-N` parent
 
 A few component-local properties tune a single sheet. Prefer `size` to setting the heights by hand.
 
-| Property                | Default                  | Purpose                         |
-| ----------------------- | ------------------------ | ------------------------------- |
-| `--nbss-row-height`     | from `size` (`32px`)     | Data row height                 |
-| `--nbss-header-height`  | from `size` (`32px`)     | Header row height               |
-| `--nbss-cell-padding-x` | `0.625rem`               | Horizontal padding inside cells |
-| `--nbss-focus-ring`     | `var(--nb-c-focus-ring)` | The active cell's ring          |
+| Property                | Default                  | Purpose                          |
+| ----------------------- | ------------------------ | -------------------------------- |
+| `--nbss-row-height`     | from `size` (`32px`)     | Data row height                  |
+| `--nbss-header-height`  | from `size` (`32px`)     | Header row height                |
+| `--nbss-letter-height`  | `24px`                   | The letters row above the labels |
+| `--nbss-cell-padding-x` | `0.625rem`               | Horizontal padding inside cells  |
+| `--nbss-focus-ring`     | `var(--nb-c-focus-ring)` | The active cell's ring           |
 
 ## Props
 
@@ -197,6 +223,10 @@ A few component-local properties tune a single sheet. Prefer `size` to setting t
 | `windowRows`     | `number`                                                          | `80`      | Approximate visible rows used by the row virtualization                                                                |
 | `locale`         | `string`                                                          | `'pt-PT'` | Locale for the default number and date formatting. The next major defaults to the runtime's locale                     |
 | `fit`            | `boolean`                                                         | `false`   | Fill the parent: columns share the spare width and rows shrink, down to 20px, to fit the height (not on a touch phone) |
+| `columnHeaders`  | `'label' \| 'letters' \| 'both'`                                  | `'label'` | What the headers show: labels, A, B, C letters, or letters above the labels                                            |
+| `contextMenu`    | `boolean`                                                         | `false`   | Replace the browser's menu with the sheet's: clipboard, clear, sort, hide and show                                     |
+| `hiddenColumns`  | `string[]`                                                        | `[]`      | Ids of hidden columns. `v-model:hidden-columns`, or kept by the sheet when unbound                                     |
+| `hiddenRows`     | `string[]`                                                        | `[]`      | Ids of hidden rows. `v-model:hidden-rows`, or kept by the sheet when unbound                                           |
 | `rowReorderable` | `boolean`                                                         | `false`   | Deprecated. Never implemented and has no effect. Removed in the next major                                             |
 
 ## Column interface
@@ -245,13 +275,16 @@ interface ISpreadsheetCellAttrs {
 
 ## Events
 
-| Event         | Payload                                       | Description                                             |
-| ------------- | --------------------------------------------- | ------------------------------------------------------- |
-| `commit`      | `ISpreadsheetChange`                          | One cell was committed (edit, paste, clear, undo, redo) |
-| `change`      | `ISpreadsheetChange[]`                        | The batch of changes from one action                    |
-| `selection`   | `ISpreadsheetSelection \| null`               | The selected range changed                              |
-| `focus`       | `{ rowId: string; columnId: string } \| null` | The active cell changed                                 |
-| `row-reorder` | `{ rowId: string; toIndex: number }`          | Deprecated with `rowReorderable`. Never emitted         |
+| Event                  | Payload                                       | Description                                               |
+| ---------------------- | --------------------------------------------- | --------------------------------------------------------- |
+| `commit`               | `ISpreadsheetChange`                          | One cell was committed (edit, paste, clear, undo, redo)   |
+| `change`               | `ISpreadsheetChange[]`                        | The batch of changes from one action                      |
+| `selection`            | `ISpreadsheetSelection \| null`               | The selected range changed                                |
+| `focus`                | `{ rowId: string; columnId: string } \| null` | The active cell changed                                   |
+| `column-resize`        | `{ columnId: string; width: number }`         | A column was resized, at the end of a drag or on each key |
+| `update:hiddenColumns` | `string[]`                                    | Columns were hidden or shown                              |
+| `update:hiddenRows`    | `string[]`                                    | Rows were hidden or shown                                 |
+| `row-reorder`          | `{ rowId: string; toIndex: number }`          | Deprecated with `rowReorderable`. Never emitted           |
 
 ## Change interface
 
@@ -283,6 +316,7 @@ sheet.value?.focus(rowId, columnId) // make a cell active
 sheet.value?.selectColumn(columnId) // select a whole column
 sheet.value?.selectRow(rowId) // select a whole row
 sheet.value?.selectAll()
+sheet.value?.hideColumns(['note']) // and showColumns, hideRows, showRows
 sheet.value?.getSelection()
 sheet.value?.undo()
 sheet.value?.redo()

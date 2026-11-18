@@ -20,6 +20,10 @@ a11y:
 - The cell editor is a text field labelled with the column's label and the row's label or number.
 - Name the sheet with `aria-label`. A page with two sheets must name both.
 - The active cell draws a 2px `--nb-c-focus-ring` inside the cell, and the grid draws the same ring on its inner edge when it has keyboard focus, so nothing around it moves.
+- With `column-headers="both"` the letters and the labels are two header rows. With `'letters'` alone, each letter header is named with its letter and its label ("B Quantity"), so the label is not lost to a screen reader.
+- The marks hidden columns and rows leave are buttons named for what they show ("Show 2 hidden columns"), out of the tab order like every other part of the grid. From the keyboard, the context menu shows hidden columns and rows, and it opens with `Shift+F10` or the menu key.
+- The context menu is `NbMenu`, so it has the menu's own keyboard model: the arrow keys, typeahead, `Esc` to close, and the focus back on the sheet afterwards.
+- Every column resizes from the keyboard with `Alt+Shift+←` and `Alt+Shift+→`, as well as by dragging.
 - On a touch screen a tap on the active cell opens it, since there is no key to type into it, and the editor's text is at least 16px so the page does not zoom.
 
 ## Keyboard

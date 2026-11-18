@@ -10,6 +10,12 @@ export type TSpreadsheetPinRow = 'top' | 'bottom'
 export type TSpreadsheetSortDir = 'asc' | 'desc'
 /** Carbon's row heights: 24, 32, 40 and 48px. The header matches the row. */
 export type TSpreadsheetSize = 'xs' | 'sm' | 'md' | 'lg'
+/**
+ * What the column headers show: each column's `label`, its letter (A, B, C,
+ * from its place in the sheet), or the letters in a compact row above the
+ * labels.
+ */
+export type TSpreadsheetColumnHeaders = 'label' | 'letters' | 'both'
 
 export interface ISpreadsheetColumn {
   /** Stable id used for selection, sort, and host commits. */
@@ -135,4 +141,20 @@ export interface ISpreadsheetProps {
   size?: TSpreadsheetSize
   /** Accessible name of the grid. Name every sheet on a page that has two. */
   ariaLabel?: string
+  /**
+   * What the column headers show. Default 'label'. 'letters' shows A, B, C in
+   * place of the labels, which stay as each header's tooltip and accessible
+   * name. 'both' adds a compact row of letters above the labels.
+   *
+   * Hidden columns and rows are `v-model:hidden-columns` and
+   * `v-model:hidden-rows` (arrays of ids). Left unbound, the sheet keeps them
+   * itself.
+   */
+  columnHeaders?: TSpreadsheetColumnHeaders
+  /**
+   * Replace the browser's menu on a right click, `Shift+F10` and the menu key
+   * with the sheet's own: cut, copy, paste, clear, sort, and hiding and
+   * showing columns and rows. Default false.
+   */
+  contextMenu?: boolean
 }

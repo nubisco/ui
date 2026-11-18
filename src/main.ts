@@ -928,4 +928,5 @@ export type {
   TSpreadsheetPinRow,
   TSpreadsheetSortDir,
   TSpreadsheetSize,
+  TSpreadsheetColumnHeaders,
 } from './components/Spreadsheet.d'
