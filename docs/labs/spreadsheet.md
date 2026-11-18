@@ -200,6 +200,40 @@ const rows: ISpreadsheetRow[] = [
 <NbSpreadsheet :columns="columns" :rows="rows" :gutter-width="96" />
 ```
 
+## Filling the page
+
+By default the sheet is as wide as its columns and scrolls inside a box capped at 70% of the viewport. A sheet that is the page, such as a year of hours with a day per row, should use the room it has instead. Set `fit` and the sheet fills its parent: the columns share the width beyond their own `width`, which becomes the least each one gets, and the rows shrink, down to 20px, until every row fits the height. When even 20px rows do not fit, the sheet scrolls as usual. Pinned columns keep their width.
+
+A touch phone keeps the full row height, so every cell stays a target a finger can hit, and the sheet scrolls there instead.
+
+The parent has to give the sheet a height to fill: make it a flex column that reaches the bottom of the page, or give it a set height.
+
+Give columns a `shortLabel` when their labels are long. While any `label` does not fit its column, every column with a `shortLabel` shows it instead, so the header row never mixes "January" with "Feb", and the full label stays as the header's tooltip. With `fit`, set `width` to the least a column can take with its short label, and the sheet shows the long ones whenever there is room.
+
+```ts
+const columns = months.map((m, i) => ({
+  id: String(i + 1),
+  label: m, // "September"
+  shortLabel: short.format(new Date(2000, i, 1)), // "Sep"
+  width: 72,
+}))
+```
+
+```vue
+<div class="sheet-page">
+  <NbSpreadsheet :columns="columns" :rows="rows" :gutter-width="96" fit />
+</div>
+
+<style scoped>
+.sheet-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+</style>
+```
+
 ## Pinned columns and pinned rows
 
 Set `column.pinned` to `'left'` or `'right'` to keep a column visible while the user scrolls horizontally. Set `row.pinned` to `'top'` or `'bottom'` to do the same vertically. Multiple columns or rows can be pinned at the same edge. The order they appear in the array is preserved, and rows pinned to the same edge stack, so two totals rows under a sheet are both always in view.
@@ -269,18 +303,19 @@ The component publishes per-instance CSS custom properties for the few decisions
 
 ## Props
 
-| Prop             | Type                                                              | Default   | Description                                                                 |
-| ---------------- | ----------------------------------------------------------------- | --------- | --------------------------------------------------------------------------- |
-| `columns`        | `ISpreadsheetColumn[]`                                            | -         | Column definitions, ordered left-to-right                                   |
-| `rows`           | `ISpreadsheetRow[]`                                               | -         | Row data. Pinned rows can appear anywhere in the array                      |
-| `cellAttrs`      | `(rowId, columnId, row, column) => ISpreadsheetCellAttrs \| void` | -         | Per-cell read-only / class / tooltip / display override                     |
-| `computed`       | `(rowId, columnId, get) => unknown`                               | -         | Returns the derived value for cells that are not in `row.values`            |
-| `resizable`      | `boolean`                                                         | `true`    | Allow column resize from the right edge of the header                       |
-| `rowReorderable` | `boolean`                                                         | `false`   | Allow row drag-reorder via the gutter (Labs follow-up; emits `row-reorder`) |
-| `showGutter`     | `boolean`                                                         | `true`    | Show the row-index gutter on the left                                       |
-| `gutterWidth`    | `number`                                                          | `44`      | Gutter width in pixels. Widen it when rows carry a `label`                  |
-| `windowRows`     | `number`                                                          | `80`      | Approximate visible rows used for the simple row virtualization             |
-| `locale`         | `string`                                                          | `'pt-PT'` | Default locale for Intl-based number/date formatting                        |
+| Prop             | Type                                                              | Default   | Description                                                                                                            |
+| ---------------- | ----------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `columns`        | `ISpreadsheetColumn[]`                                            | -         | Column definitions, ordered left-to-right                                                                              |
+| `rows`           | `ISpreadsheetRow[]`                                               | -         | Row data. Pinned rows can appear anywhere in the array                                                                 |
+| `cellAttrs`      | `(rowId, columnId, row, column) => ISpreadsheetCellAttrs \| void` | -         | Per-cell read-only / class / tooltip / display override                                                                |
+| `computed`       | `(rowId, columnId, get) => unknown`                               | -         | Returns the derived value for cells that are not in `row.values`                                                       |
+| `resizable`      | `boolean`                                                         | `true`    | Allow column resize from the right edge of the header                                                                  |
+| `rowReorderable` | `boolean`                                                         | `false`   | Allow row drag-reorder via the gutter (Labs follow-up; emits `row-reorder`)                                            |
+| `showGutter`     | `boolean`                                                         | `true`    | Show the row-index gutter on the left                                                                                  |
+| `gutterWidth`    | `number`                                                          | `44`      | Gutter width in pixels. Widen it when rows carry a `label`                                                             |
+| `windowRows`     | `number`                                                          | `80`      | Approximate visible rows used for the simple row virtualization                                                        |
+| `locale`         | `string`                                                          | `'pt-PT'` | Default locale for Intl-based number/date formatting                                                                   |
+| `fit`            | `boolean`                                                         | `false`   | Fill the parent: columns share the spare width and rows shrink, down to 20px, to fit the height (not on a touch phone) |
 
 ## Column interface
 
@@ -288,6 +323,7 @@ The component publishes per-instance CSS custom properties for the few decisions
 interface ISpreadsheetColumn {
   id: string // stable id
   label: string // header text
+  shortLabel?: string // shown while any label does not fit its column
   width?: number // default 120
   minWidth?: number // default 60
   pinned?: 'left' | 'right' // freeze the column

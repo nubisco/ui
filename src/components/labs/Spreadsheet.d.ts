@@ -15,6 +15,11 @@ export interface ISpreadsheetColumn {
   id: string
   /** Header label. */
   label: string
+  /**
+   * A shorter header label ("Sep" for "September"), shown while `label` does
+   * not fit the column's width. The full label stays as the header's tooltip.
+   */
+  shortLabel?: string
   /** Initial pixel width. Default 120. */
   width?: number
   /** Minimum width when the user resizes. Default 60. */
@@ -109,4 +114,13 @@ export interface ISpreadsheetProps {
   windowRows?: number
   /** Locale used for default Intl-based number/date formatting. */
   locale?: string
+  /**
+   * Fill the parent instead of sizing to the columns. The columns share the
+   * width beyond their own (`width` becomes the least they get), and the rows
+   * shrink, down to 20px, until every row fits the height. Below that the
+   * sheet scrolls as usual. A touch phone keeps the full row height, so every
+   * cell stays a target a finger can hit. The parent has to give the sheet a
+   * height: a flex column, or a box with a set height.
+   */
+  fit?: boolean
 }
