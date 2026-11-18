@@ -1,3 +1,10 @@
+# [5.58.0](https://github.com/nubisco/ui/compare/v5.57.0...v5.58.0) (2026-11-18)
+
+
+### Features
+
+* **spreadsheet:** column letters, hidden columns and rows, context menu, keyboard resize ([e8f1d5e](https://github.com/nubisco/ui/commit/e8f1d5e0ea7a021a7f974988e9ccdd1936948858))
+
 # [5.57.0](https://github.com/nubisco/ui/compare/v5.56.1...v5.57.0) (2026-11-18)
 
 
