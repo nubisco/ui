@@ -185,6 +185,7 @@ describe('NbButton align', () => {
     expect(w.classes()).toContain('nb-button--centered')
   })
 
+  // The first import of the whole library can pass 5s under a full parallel run.
   it('takes the app default from the plugin, and a button can still opt out', async () => {
     const { default: NubiscoUI } = await import('../src/main')
     const global = {
@@ -198,7 +199,7 @@ describe('NbButton align', () => {
       global,
     })
     expect(start.classes()).not.toContain('nb-button--centered')
-  })
+  }, 20_000)
 
   it('leaves buttons alone when the plugin is installed without a default', async () => {
     const { default: NubiscoUI } = await import('../src/main')
