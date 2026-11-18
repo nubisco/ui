@@ -1,6 +1,11 @@
-import { describe, it, expect } from 'vitest'
+import { afterEach, describe, it, expect, vi } from 'vitest'
+import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import Spreadsheet from '../src/components/labs/Spreadsheet.vue'
+import {
+  NB_PHONE_TOUCH_QUERY,
+  resetPhoneLayoutForTests,
+} from '../src/composables/usePhoneLayout.composable'
 
 const columns = [
   {
@@ -259,5 +264,115 @@ describe('NbSpreadsheet keyboard entry', () => {
     await target.trigger('mousedown')
     expect(w.find('.nb-spreadsheet__editor').exists()).toBe(true)
     w.unmount()
+  })
+})
+
+describe('NbSpreadsheet fit', () => {
+  // jsdom has no layout: give the scroller a height and the header its own.
+  function stubLayout(scrollerHeight: number, touch = false) {
+    resetPhoneLayoutForTests()
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: touch && query === NB_PHONE_TOUCH_QUERY,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }))
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockImplementation(
+      function (this: HTMLElement) {
+        return this.classList.contains('nb-spreadsheet__scroller')
+          ? scrollerHeight
+          : 0
+      },
+    )
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(
+      function (this: HTMLElement) {
+        return this.classList.contains('nb-spreadsheet__header') ? 36 : 0
+      },
+    )
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+    resetPhoneLayoutForTests()
+  })
+
+  it('lets unpinned columns share the width and keeps pinned ones fixed', async () => {
+    stubLayout(600)
+    const w = mount(Spreadsheet, { props: { columns, rows, fit: true } })
+    await nextTick()
+    const grid = w.find('.nb-spreadsheet__grid').attributes('style')
+    expect(grid).toContain('44px 120px minmax(120px, 1fr) minmax(120px, 1fr)')
+  })
+
+  it('shrinks the rows until every row fits the height', async () => {
+    // (126 - 36) / 3 rows = 30px each
+    stubLayout(126)
+    const w = mount(Spreadsheet, { props: { columns, rows, fit: true } })
+    await nextTick()
+    expect(w.find('.nb-spreadsheet').attributes('style')).toContain(
+      '--nbss-row-height: 30px',
+    )
+  })
+
+  it('never grows a row past the default, nor shrinks it under 20px', async () => {
+    stubLayout(2000)
+    const tall = mount(Spreadsheet, { props: { columns, rows, fit: true } })
+    await nextTick()
+    expect(tall.find('.nb-spreadsheet').attributes('style')).toContain(
+      '--nbss-row-height: 32px',
+    )
+    stubLayout(60)
+    const short = mount(Spreadsheet, { props: { columns, rows, fit: true } })
+    await nextTick()
+    expect(short.find('.nb-spreadsheet').attributes('style')).toContain(
+      '--nbss-row-height: 20px',
+    )
+  })
+
+  it('keeps the full row height on a touch phone', async () => {
+    stubLayout(126, true)
+    const w = mount(Spreadsheet, { props: { columns, rows, fit: true } })
+    await nextTick()
+    expect(w.find('.nb-spreadsheet').attributes('style') ?? '').not.toContain(
+      '--nbss-row-height',
+    )
+  })
+
+  it('renders as before without fit', async () => {
+    stubLayout(126)
+    const w = mount(Spreadsheet, { props: { columns, rows } })
+    await nextTick()
+    expect(w.classes()).not.toContain('nb-spreadsheet--fit')
+    expect(w.find('.nb-spreadsheet').attributes('style')).toBeUndefined()
+    expect(w.find('.nb-spreadsheet__grid').attributes('style')).toContain(
+      '44px 120px 120px 120px',
+    )
+  })
+
+  it('shows every short label while any full one does not fit', async () => {
+    stubLayout(600)
+    // jsdom has no layout: "February" needs 90px, every label gets 60px.
+    vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockImplementation(
+      function (this: HTMLElement) {
+        return this.textContent === 'February' ? 90 : 40
+      },
+    )
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(60)
+    const months = [
+      { id: 'jan', label: 'Jan', shortLabel: 'J', type: 'number' as const },
+      {
+        id: 'feb',
+        label: 'February',
+        shortLabel: 'Feb',
+        type: 'number' as const,
+      },
+    ]
+    const w = mount(Spreadsheet, { props: { columns: months, rows } })
+    await nextTick()
+    await nextTick()
+    const labels = w.findAll('.nb-spreadsheet__header-label')
+    expect(labels.map((l) => l.text())).toEqual(['J', 'Feb'])
+    expect(labels[1]!.attributes('title')).toBe('February')
   })
 })

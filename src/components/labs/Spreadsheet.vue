@@ -1,5 +1,12 @@
 <template>
-  <div class="nb-spreadsheet" :class="{ 'nb-spreadsheet--editing': !!editing }">
+  <div
+    class="nb-spreadsheet"
+    :class="{
+      'nb-spreadsheet--editing': !!editing,
+      'nb-spreadsheet--fit': fit,
+    }"
+    :style="rootStyle"
+  >
     <div v-if="$slots.toolbar" class="nb-spreadsheet__toolbar">
       <slot name="toolbar" />
     </div>
@@ -29,10 +36,15 @@
           :key="`h-${col.id}`"
           class="nb-spreadsheet__header"
           :class="headerClass(col)"
+          :data-header-col="col.id"
           :style="headerStyle(col, ci)"
           @click="onHeaderClick(col)"
         >
-          <span class="nb-spreadsheet__header-label">{{ col.label }}</span>
+          <span
+            class="nb-spreadsheet__header-label"
+            :title="compactHeaders.has(col.id) ? col.label : undefined"
+            >{{ compactHeaders.has(col.id) ? col.shortLabel : col.label }}</span
+          >
           <span
             v-if="sortBy && sortBy.columnId === col.id"
             class="nb-spreadsheet__sort"
@@ -99,8 +111,17 @@
 <script setup lang="ts">
 // The `computed` prop (ISpreadsheetProps.computed) intentionally shares a name
 // with Vue's `computed`; the rule can't tell them apart in <script setup>.
-// eslint-disable-next-line vue/no-dupe-keys
-import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue'
+import {
+  // eslint-disable-next-line vue/no-dupe-keys
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  useTemplateRef,
+  watch,
+} from 'vue'
+import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
 import type {
   ISpreadsheetProps,
   ISpreadsheetColumn,
@@ -118,6 +139,7 @@ const props = withDefaults(defineProps<ISpreadsheetProps>(), {
   gutterWidth: 44,
   windowRows: 80,
   locale: 'pt-PT',
+  fit: false,
 })
 
 const emit = defineEmits<{
@@ -175,14 +197,105 @@ function widthOf(col: ISpreadsheetColumn): number {
 // Defaults of --nbss-header-height and --nbss-row-height. Only the row
 // virtualization estimates with them: scrolling measures the rendered cells.
 const headerHeight = 36
-const rowHeight = 32
+const defaultRowHeight = 32
+// The least a fitted row shrinks to. Below it the text crowds the borders.
+const minFitRowHeight = 20
 
+// ─── Fit: fill the parent ──────────────────────────────────────────────────
+const { phoneTouch } = usePhoneLayout()
+const fitRowHeight = ref<number | null>(null)
+const rowHeight = computed(() => fitRowHeight.value ?? defaultRowHeight)
+
+// The scroller's height is the parent's, never its content's, so shrinking
+// the rows cannot feed back into the space they are measured against.
+function measureFit() {
+  const view = scrollerRef.value
+  if (!props.fit || phoneTouch.value || !view || !props.rows.length) {
+    fitRowHeight.value = null
+    return
+  }
+  const headerH = measuredHeight('.nb-spreadsheet__header') || headerHeight
+  const each = Math.floor((view.clientHeight - headerH) / props.rows.length)
+  fitRowHeight.value = Math.min(
+    defaultRowHeight,
+    Math.max(minFitRowHeight, each),
+  )
+}
+
+let sizeObserver: ResizeObserver | null = null
+watch(
+  () => [props.fit, props.rows.length, phoneTouch.value],
+  () => measureFit(),
+)
+
+const rootStyle = computed(() =>
+  fitRowHeight.value === null
+    ? undefined
+    : { '--nbss-row-height': `${fitRowHeight.value}px` },
+)
+
+// A fitted column is at least its width and takes an equal share of what is
+// left. Pinned columns keep their width, so the sticky offsets stay exact.
 const gridStyle = computed(() => {
   const cols =
     (props.showGutter ? `${props.gutterWidth}px ` : '') +
-    orderedColumns.value.map((c) => `${widthOf(c)}px`).join(' ')
-  return { gridTemplateColumns: cols }
+    orderedColumns.value
+      .map((c) =>
+        props.fit && !c.pinned
+          ? `minmax(${widthOf(c)}px, 1fr)`
+          : `${widthOf(c)}px`,
+      )
+      .join(' ')
+  // The first track is the header's own height. Left to the auto rows, it
+  // was a row tall and the header covered the top of the first row.
+  return {
+    gridTemplateColumns: cols,
+    gridTemplateRows: 'var(--nbss-header-height)',
+  }
 })
+
+// ─── Short header labels ───────────────────────────────────────────────────
+// While any `label` does not fit its column, every column with a `shortLabel`
+// shows it, so a header row never mixes "January" with "Feb". A label's
+// natural width is measured while it is the one rendered, so the choice does
+// not flip back and forth as the short one takes its place.
+const compactHeaders = ref<Set<string>>(new Set())
+const fullLabelWidths = new Map<string, number>()
+
+function measureHeaders() {
+  const view = scrollerRef.value
+  if (!view) return
+  const shortened: string[] = []
+  let tooNarrow = false
+  let unmeasured = false
+  for (const col of props.columns) {
+    if (!col.shortLabel) continue
+    const el = view.querySelector<HTMLElement>(
+      `[data-header-col="${quoteAttr(col.id)}"] .nb-spreadsheet__header-label`,
+    )
+    if (!el) continue
+    const key = `${col.id}::${col.label}`
+    if (!compactHeaders.value.has(col.id)) {
+      fullLabelWidths.set(key, el.scrollWidth)
+    }
+    const natural = fullLabelWidths.get(key)
+    if (natural === undefined) {
+      // The label changed while the short one showed: show it to measure it.
+      unmeasured = true
+      continue
+    }
+    shortened.push(col.id)
+    if (natural > el.clientWidth) tooNarrow = true
+  }
+  compactHeaders.value = new Set(tooNarrow ? shortened : [])
+  if (unmeasured) void nextTick(measureHeaders)
+}
+
+watch(
+  () => [props.columns, columnWidths.value],
+  () => void nextTick(measureHeaders),
+  { deep: true },
+)
 
 // ─── Sorted + windowed rows ────────────────────────────────────────────────
 const sortedDataRows = computed(() => {
@@ -217,11 +330,11 @@ const renderRows = computed<IRenderRow[]>(() => {
   // Lightweight virtualization for the unpinned section.
   const visibleCount = Math.max(
     1,
-    Math.ceil((scrollerRef.value?.clientHeight ?? 600) / rowHeight),
+    Math.ceil((scrollerRef.value?.clientHeight ?? 600) / rowHeight.value),
   )
   const buffer = Math.max(10, Math.floor(props.windowRows / 4))
   const startRaw =
-    Math.floor(scrollTop.value / rowHeight) -
+    Math.floor(scrollTop.value / rowHeight.value) -
     pinnedTopRows.value.length -
     buffer
   const start = Math.max(0, startRaw)
@@ -345,6 +458,8 @@ function headerClass(col: ISpreadsheetColumn) {
     'nb-spreadsheet__header--sortable': !!col.sortable,
     'nb-spreadsheet__header--pinned-left': col.pinned === 'left',
     'nb-spreadsheet__header--pinned-right': col.pinned === 'right',
+    'nb-spreadsheet__header--last':
+      col.id === orderedColumns.value[orderedColumns.value.length - 1]?.id,
   }
 }
 
@@ -606,7 +721,7 @@ function scrollIntoView(rowId: string, columnId?: string) {
     // arithmetic once the rendered sizes are measured. That also holds for a
     // row the virtualization has not rendered yet.
     const headerH = measuredHeight('.nb-spreadsheet__header') || headerHeight
-    const rowH = measuredHeight('.nb-spreadsheet__cell') || rowHeight
+    const rowH = measuredHeight('.nb-spreadsheet__cell') || rowHeight.value
     const top = headerH + (pinnedTopRows.value.length + idx) * rowH
     const coverTop = headerH + stickyRowsHeight(pinnedTopRows.value)
     const coverBottom = stickyRowsHeight(pinnedBottomRows.value)
@@ -1016,7 +1131,18 @@ function redo() {
 
 onMounted(() => {
   focusScroller()
+  measureFit()
+  measureHeaders()
+  if (typeof ResizeObserver !== 'undefined' && scrollerRef.value) {
+    sizeObserver = new ResizeObserver(() => {
+      measureFit()
+      measureHeaders()
+    })
+    sizeObserver.observe(scrollerRef.value)
+  }
 })
+
+onBeforeUnmount(() => sizeObserver?.disconnect())
 
 // Expose for parents
 defineExpose({
@@ -1084,6 +1210,26 @@ defineExpose({
   max-height: 70vh;
   outline: none;
 }
+// Fit: the sheet takes the parent's height, and the scroller all of it below
+// the toolbar, so the rows are measured against the space there is.
+.nb-spreadsheet--fit {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+.nb-spreadsheet--fit .nb-spreadsheet__scroller {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+// A fitted grid is the scroller's width, and only its columns' least widths
+// push it wider. At max-content the shared columns would grow to their
+// longest label first, and the sheet would scroll where it could have fit.
+.nb-spreadsheet--fit .nb-spreadsheet__grid {
+  width: auto;
+  min-width: min-content;
+}
+
 .nb-spreadsheet__scroller:focus-visible {
   box-shadow: inset 0 0 0 2px var(--nbss-focus-ring);
 }
@@ -1175,6 +1321,12 @@ defineExpose({
   &:hover::after {
     background: var(--nb-c-primary, #6a40d0);
   }
+}
+
+// The last handle stays inside the sheet. Hanging past its edge it made the
+// grid a few pixels wider than the scroller, which scrolled for nothing.
+.nb-spreadsheet__header--last .nb-spreadsheet__resize-handle {
+  right: 0;
 }
 
 // ─── Row gutter (left index column) ──────────────────────────────────────
