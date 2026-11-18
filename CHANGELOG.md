@@ -1,3 +1,10 @@
+# [5.57.0](https://github.com/nubisco/ui/compare/v5.56.1...v5.57.0) (2026-11-18)
+
+
+### Features
+
+* **spreadsheet:** graduate NbSpreadsheet out of labs ([7f4d2fb](https://github.com/nubisco/ui/commit/7f4d2fbc9e54ab357d86cc468bd76e6b83da30b3))
+
 ## [5.56.1](https://github.com/nubisco/ui/compare/v5.56.0...v5.56.1) (2026-11-18)
 
 
