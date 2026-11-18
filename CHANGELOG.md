@@ -1,3 +1,10 @@
+# [5.56.0](https://github.com/nubisco/ui/compare/v5.55.0...v5.56.0) (2026-11-18)
+
+
+### Features
+
+* **spreadsheet:** fit fills the parent, and short header labels ([#21](https://github.com/nubisco/ui/issues/21)) ([b9e70e2](https://github.com/nubisco/ui/commit/b9e70e258974ebb24d5c916f78fef70be60e0dd4))
+
 # [5.55.0](https://github.com/nubisco/ui/compare/v5.54.0...v5.55.0) (2026-11-17)
 
 
