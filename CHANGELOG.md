@@ -1,3 +1,10 @@
+# [5.59.0](https://github.com/nubisco/ui/compare/v5.58.0...v5.59.0) (2026-11-18)
+
+
+### Features
+
+* **spreadsheet:** sheet mode with v-model:cells, extent, column windowing and fill handle ([5b22129](https://github.com/nubisco/ui/commit/5b22129a6ffeb8bc960664fdcfbe46ee82299ae5))
+
 # [5.58.0](https://github.com/nubisco/ui/compare/v5.57.0...v5.58.0) (2026-11-18)
 
 
