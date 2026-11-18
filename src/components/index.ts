@@ -91,6 +91,7 @@ import NbSidebarMenuGroup from './SidebarMenuGroup.vue'
 import NbSidebarMenuItem from './SidebarMenuItem.vue'
 import NbSidebarStatus from './SidebarStatus.vue'
 import NbSlider from './Slider.vue'
+import NbSpreadsheet from './Spreadsheet.vue'
 import NbStepper from './Stepper.vue'
 import NbStepperStep from './StepperStep.vue'
 import NbSpinner from './Spinner.vue'
@@ -213,6 +214,7 @@ const components = {
   NbSidebarMenuItem,
   NbSidebarStatus,
   NbSlider,
+  NbSpreadsheet,
   NbStepper,
   NbStepperStep,
   NbSpinner,

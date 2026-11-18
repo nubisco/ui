@@ -914,7 +914,7 @@ export { NbCommandPalettePlugin } from './plugins/commandPalette'
 
 // Labs plugin (experimental components)
 export { default as NubiscoUILabs } from './labs'
-export { default as NbSpreadsheet } from './components/labs/Spreadsheet.vue'
+export { default as NbSpreadsheet } from './components/Spreadsheet.vue'
 export type {
   ISpreadsheetProps,
   ISpreadsheetColumn,
@@ -927,4 +927,5 @@ export type {
   TSpreadsheetPinCol,
   TSpreadsheetPinRow,
   TSpreadsheetSortDir,
-} from './components/labs/Spreadsheet.d'
+  TSpreadsheetSize,
+} from './components/Spreadsheet.d'

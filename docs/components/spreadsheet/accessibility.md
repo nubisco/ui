@@ -1,0 +1,29 @@
+---
+layout: nubisco
+title: Spreadsheet
+intro: '`NbSpreadsheet` is an editable grid of cells for data people key in: dense rows, a sticky header, row numbers or labels in a gutter, keyboard entry like a desktop spreadsheet, range selection, clipboard, and undo. The app owns the data: the sheet renders it, captures input and emits the changes.'
+source: src/components/Spreadsheet.vue
+tab: accessibility
+pageTabs: ['usage', 'code', 'accessibility']
+a11y:
+  automated: not recorded
+  keyboard: tested
+  screenReader: not recorded
+---
+
+## Accessibility
+
+- The sheet is an ARIA `grid`. The header and every data row are `row`s, the column labels are `columnheader`s, the gutter cells are `rowheader`s, and the cells are `gridcell`s. Each row and cell carries `aria-rowindex` and `aria-colindex`, and the grid carries `aria-rowcount` and `aria-colcount`, so a screen reader reports the right position while the rows outside the view are not rendered.
+- The grid is one tab stop. It keeps the keyboard focus while the person moves around it and names the active cell with `aria-activedescendant`, so no cell is in the tab order and `Tab` inside the sheet moves between cells, as in a desktop spreadsheet.
+- Cells in a selected range carry `aria-selected="true"`, and the grid is `aria-multiselectable`. Read-only and computed cells carry `aria-readonly`.
+- A sortable column header carries `aria-sort` (`none`, `ascending` or `descending`).
+- The cell editor is a text field labelled with the column's label and the row's label or number.
+- Name the sheet with `aria-label`. A page with two sheets must name both.
+- The active cell draws a 2px `--nb-c-focus-ring` inside the cell, and the grid draws the same ring on its inner edge when it has keyboard focus, so nothing around it moves.
+- On a touch screen a tap on the active cell opens it, since there is no key to type into it, and the editor's text is at least 16px so the page does not zoom.
+
+## Keyboard
+
+Every action is on the keyboard. The full table is on [Usage](/components/spreadsheet/usage#keyboard-mouse-and-clipboard). The selection keys are the ones desktop spreadsheets use: `Ctrl+Space` for the column, `Shift+Space` for the row and `Cmd/Ctrl+A` for everything.
+
+<!--@include: ./_shared.md-->

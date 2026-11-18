@@ -2,82 +2,120 @@
   <div
     ref="rootRef"
     class="nb-spreadsheet"
-    :class="{
-      'nb-spreadsheet--editing': !!editing,
-      'nb-spreadsheet--fit': fit,
-    }"
+    :class="[
+      `nb-spreadsheet--${size}`,
+      {
+        'nb-spreadsheet--editing': !!editing,
+        'nb-spreadsheet--fit': fit,
+      },
+    ]"
     :style="rootStyle"
   >
     <div v-if="$slots.toolbar" class="nb-spreadsheet__toolbar">
       <slot name="toolbar" />
     </div>
 
+    <!-- The scroller is the grid a screen reader sees. It keeps the focus
+         while the person moves around, and names the active cell through
+         aria-activedescendant, so no cell is ever in the tab order. -->
     <div
       ref="scrollerRef"
       class="nb-spreadsheet__scroller"
       tabindex="0"
+      role="grid"
+      aria-multiselectable="true"
+      :aria-label="ariaLabel"
+      :aria-rowcount="allRows.length + 1"
+      :aria-colcount="orderedColumns.length + (showGutter ? 1 : 0)"
+      :aria-activedescendant="activeCellId"
       @keydown="onKeydown"
       @copy="onCopy"
       @cut="onCut"
       @paste="onPaste"
       @scroll="onScroll"
     >
-      <!-- ── CSS-grid layout: rows = header + body, columns = gutter + cols ── -->
+      <!-- ── CSS-grid layout: rows = header + body, columns = gutter + cols ──
+           Each row is a `display: contents` box, so it carries the row role
+           without taking a place in the grid: its cells are the grid items. -->
       <div class="nb-spreadsheet__grid" :style="gridStyle">
-        <!-- Header gutter cell -->
-        <div
-          v-if="showGutter"
-          class="nb-spreadsheet__corner"
-          :style="{ gridRow: 1, gridColumn: 1 }"
-        />
-
-        <!-- Header cells -->
-        <div
-          v-for="(col, ci) in orderedColumns"
-          :key="`h-${col.id}`"
-          class="nb-spreadsheet__header"
-          :class="headerClass(col)"
-          :data-header-col="col.id"
-          :style="headerStyle(col, ci)"
-          @click="onHeaderClick(col)"
-        >
-          <span
-            class="nb-spreadsheet__header-label"
-            :title="compactHeaders.has(col.id) ? col.label : undefined"
-            >{{ compactHeaders.has(col.id) ? col.shortLabel : col.label }}</span
-          >
-          <span
-            v-if="sortBy && sortBy.columnId === col.id"
-            class="nb-spreadsheet__sort"
-            aria-hidden="true"
-          >
-            {{ sortBy.direction === 'asc' ? '▲' : '▼' }}
-          </span>
-          <span
-            v-if="resizable"
-            class="nb-spreadsheet__resize-handle"
-            @mousedown.stop="startResize($event, col)"
+        <div class="nb-spreadsheet__row" role="row" aria-rowindex="1">
+          <!-- Header gutter cell: a click selects the whole sheet -->
+          <div
+            v-if="showGutter"
+            class="nb-spreadsheet__corner"
+            role="columnheader"
+            aria-colindex="1"
+            :style="{ gridRow: 1, gridColumn: 1 }"
+            @mousedown.prevent="onCornerMouseDown"
           />
+
+          <!-- Header cells -->
+          <div
+            v-for="(col, ci) in orderedColumns"
+            :key="`h-${col.id}`"
+            class="nb-spreadsheet__header"
+            :class="headerClass(col, ci)"
+            role="columnheader"
+            :aria-colindex="ci + colOffset + 1"
+            :aria-sort="ariaSortFor(col)"
+            :data-header-col="col.id"
+            :style="headerStyle(col, ci)"
+            @mousedown="onHeaderMouseDown($event, col)"
+          >
+            <span
+              class="nb-spreadsheet__header-label"
+              :title="compactHeaders.has(col.id) ? col.label : undefined"
+              >{{
+                compactHeaders.has(col.id) ? col.shortLabel : col.label
+              }}</span
+            >
+            <NbIcon
+              v-if="col.sortable"
+              :name="sortIcon(col)"
+              class="nb-spreadsheet__sort"
+              aria-hidden="true"
+            />
+            <span
+              v-if="resizable"
+              class="nb-spreadsheet__resize-handle"
+              @mousedown.stop="startResize($event, col)"
+            />
+          </div>
         </div>
 
         <!-- Row gutter + data cells -->
-        <template v-for="row in renderRows" :key="`r-${row.id}`">
+        <div
+          v-for="row in renderRows"
+          :key="`r-${row.id}`"
+          class="nb-spreadsheet__row"
+          role="row"
+          :aria-rowindex="row.__virtualIndex + 2"
+        >
           <div
             v-if="showGutter"
             class="nb-spreadsheet__gutter"
             :class="{
               'nb-spreadsheet__gutter--pinned-top': row.pinned === 'top',
               'nb-spreadsheet__gutter--pinned-bottom': row.pinned === 'bottom',
+              'nb-spreadsheet__gutter--selected': isRowInSelection(row.id),
             }"
+            role="rowheader"
+            aria-colindex="1"
             :style="gutterStyle(row)"
+            @mousedown.prevent="onGutterMouseDown($event, row)"
           >
             {{ gutterText(row) }}
           </div>
           <div
             v-for="(col, ci) in orderedColumns"
+            :id="cellId(row.id, col.id)"
             :key="`c-${row.id}-${col.id}`"
             class="nb-spreadsheet__cell"
             :class="cellClass(row, col)"
+            role="gridcell"
+            :aria-colindex="ci + colOffset + 1"
+            :aria-selected="isCellInSelection(row.id, col.id)"
+            :aria-readonly="isReadOnly(row, col) || undefined"
             :style="cellStyle(row, col, ci)"
             :title="cellTitle(row, col)"
             :data-cell="`${row.id}::${col.id}`"
@@ -90,7 +128,7 @@
           >
             <span>{{ cellDisplay(row, col) }}</span>
           </div>
-        </template>
+        </div>
       </div>
 
       <!-- Edit input overlay -->
@@ -101,6 +139,7 @@
         class="nb-spreadsheet__editor"
         :style="editorStyle"
         :inputmode="editorInputMode"
+        :aria-label="editorLabel"
         enterkeyhint="next"
         @blur="commitEdit(false)"
         @keydown.stop="onEditorKeydown"
@@ -122,7 +161,12 @@ import {
   useTemplateRef,
   watch,
 } from 'vue'
+import * as iconArrowsDownUp from '@nubisco/ui/icons/arrows-down-up'
+import * as iconArrowUp from '@nubisco/ui/icons/arrow-up'
+import * as iconArrowDown from '@nubisco/ui/icons/arrow-down'
+import NbIcon from './Icon.vue'
 import { usePhoneLayout } from '@/composables/usePhoneLayout.composable'
+import { useStableId } from '@/composables/useStableId.composable'
 import type {
   ISpreadsheetProps,
   ISpreadsheetColumn,
@@ -130,6 +174,7 @@ import type {
   ISpreadsheetCellAttrs,
   ISpreadsheetChange,
   ISpreadsheetSelection,
+  TSpreadsheetSize,
   TSpreadsheetSortDir,
 } from './Spreadsheet.d'
 
@@ -141,6 +186,8 @@ const props = withDefaults(defineProps<ISpreadsheetProps>(), {
   windowRows: 80,
   locale: 'pt-PT',
   fit: false,
+  size: 'sm',
+  ariaLabel: undefined,
 })
 
 const emit = defineEmits<{
@@ -159,6 +206,7 @@ const columnWidths = ref<Record<string, number>>({})
 const sortBy = ref<{ columnId: string; direction: TSpreadsheetSortDir } | null>(
   null,
 )
+const baseId = useStableId({})
 
 interface IFocusCell {
   rowId: string
@@ -192,21 +240,42 @@ const orderedColumns = computed<ISpreadsheetColumn[]>(() => {
   return [...left, ...mid, ...right]
 })
 
+// The gutter is the first column a screen reader counts.
+const colOffset = computed(() => (props.showGutter ? 1 : 0))
+
+// Lookups by id. Every cell asks for its row, its column and its place in
+// the selection on each render, so a linear search there grows with the
+// square of the sheet.
+const rowsById = computed(
+  () => new Map(props.rows.map((r) => [r.id, r] as const)),
+)
+const columnsById = computed(
+  () => new Map(props.columns.map((c) => [c.id, c] as const)),
+)
+const colIndex = computed(
+  () => new Map(orderedColumns.value.map((c, i) => [c.id, i] as const)),
+)
+
 function widthOf(col: ISpreadsheetColumn): number {
   return columnWidths.value[col.id] ?? col.width ?? 120
 }
 
-// Defaults of --nbss-header-height and --nbss-row-height. Only the row
-// virtualization estimates with them: scrolling measures the rendered cells.
-const headerHeight = 36
-const defaultRowHeight = 32
+// Carbon's row heights. The header is as tall as a row, as Carbon's is. Only
+// the row virtualization estimates with them: scrolling measures the cells.
+const SIZE_PX: Record<TSpreadsheetSize, number> = {
+  xs: 24,
+  sm: 32,
+  md: 40,
+  lg: 48,
+}
+const defaultRowHeight = computed(() => SIZE_PX[props.size] ?? SIZE_PX.sm)
 // The least a fitted row shrinks to. Below it the text crowds the borders.
 const minFitRowHeight = 20
 
 // ─── Fit: fill the parent ──────────────────────────────────────────────────
 const { phoneTouch } = usePhoneLayout()
 const fitRowHeight = ref<number | null>(null)
-const rowHeight = computed(() => fitRowHeight.value ?? defaultRowHeight)
+const rowHeight = computed(() => fitRowHeight.value ?? defaultRowHeight.value)
 
 // The rows are measured against the root, whose height is the parent's and
 // never its content's, so shrinking them cannot feed back into the space
@@ -224,17 +293,18 @@ function measureFit() {
   // The scroller's borders, and a horizontal scrollbar when there is one.
   const chrome = view.offsetHeight - view.clientHeight
   const space = root.clientHeight - (toolbar?.offsetHeight ?? 0) - chrome
-  const headerH = measuredHeight('.nb-spreadsheet__header') || headerHeight
+  const headerH =
+    measuredHeight('.nb-spreadsheet__header') || defaultRowHeight.value
   const each = Math.floor((space - headerH) / props.rows.length)
   fitRowHeight.value = Math.min(
-    defaultRowHeight,
+    defaultRowHeight.value,
     Math.max(minFitRowHeight, each),
   )
 }
 
 let sizeObserver: ResizeObserver | null = null
 watch(
-  () => [props.fit, props.rows.length, phoneTouch.value],
+  () => [props.fit, props.rows.length, phoneTouch.value, props.size],
   () => measureFit(),
 )
 
@@ -311,7 +381,7 @@ watch(
 const sortedDataRows = computed(() => {
   const data = props.rows.filter((r) => !r.pinned)
   if (!sortBy.value) return data
-  const col = props.columns.find((c) => c.id === sortBy.value!.columnId)
+  const col = columnsById.value.get(sortBy.value.columnId)
   if (!col) return data
   const dir = sortBy.value.direction === 'asc' ? 1 : -1
   const cmp = (a: unknown, b: unknown) => {
@@ -329,6 +399,16 @@ const pinnedTopRows = computed(() =>
 )
 const pinnedBottomRows = computed(() =>
   props.rows.filter((r) => r.pinned === 'bottom'),
+)
+
+// Every row in the order the sheet shows it, and each row's place in it.
+const allRows = computed(() => [
+  ...pinnedTopRows.value,
+  ...sortedDataRows.value,
+  ...pinnedBottomRows.value,
+])
+const rowIndex = computed(
+  () => new Map(allRows.value.map((r, i) => [r.id, i] as const)),
 )
 
 interface IRenderRow extends ISpreadsheetRow {
@@ -407,7 +487,7 @@ function defaultParse(col: ISpreadsheetColumn, input: string): unknown {
 }
 
 function rawValue(rowId: string, columnId: string): unknown {
-  const row = props.rows.find((r) => r.id === rowId)
+  const row = rowsById.value.get(rowId)
   if (!row) return undefined
   // Prefer raw value, fall back to computed function
   const v = row.values[columnId]
@@ -463,14 +543,42 @@ function cellTitle(row: ISpreadsheetRow, col: ISpreadsheetColumn): string {
   return cellAttrsFor(row, col).tooltip ?? ''
 }
 
-function headerClass(col: ISpreadsheetColumn) {
+// Ids go into an attribute, so they are positions, not the host's own ids,
+// which may hold anything.
+function cellId(rowId: string, columnId: string): string {
+  return `${baseId}-r${rowIndex.value.get(rowId)}-c${colIndex.value.get(columnId)}`
+}
+
+const activeCellId = computed(() =>
+  focused.value
+    ? cellId(focused.value.rowId, focused.value.columnId)
+    : undefined,
+)
+
+function headerClass(col: ISpreadsheetColumn, ci: number) {
+  const bounds = selectionBounds.value
   return {
     'nb-spreadsheet__header--sortable': !!col.sortable,
+    'nb-spreadsheet__header--sorted': sortBy.value?.columnId === col.id,
+    'nb-spreadsheet__header--selected':
+      !!bounds && ci >= bounds.c1 && ci <= bounds.c2,
     'nb-spreadsheet__header--pinned-left': col.pinned === 'left',
     'nb-spreadsheet__header--pinned-right': col.pinned === 'right',
-    'nb-spreadsheet__header--last':
-      col.id === orderedColumns.value[orderedColumns.value.length - 1]?.id,
+    'nb-spreadsheet__header--last': ci === orderedColumns.value.length - 1,
   }
+}
+
+function ariaSortFor(col: ISpreadsheetColumn) {
+  if (!col.sortable) return undefined
+  if (sortBy.value?.columnId !== col.id) return 'none'
+  return sortBy.value.direction === 'asc' ? 'ascending' : 'descending'
+}
+
+// Carbon's three states: the unsorted arrows show on hover only, and the
+// sorted column keeps its arrow.
+function sortIcon(col: ISpreadsheetColumn) {
+  if (sortBy.value?.columnId !== col.id) return iconArrowsDownUp
+  return sortBy.value.direction === 'asc' ? iconArrowUp : iconArrowDown
 }
 
 function pinnedLeftOffset(col: ISpreadsheetColumn): number {
@@ -495,7 +603,7 @@ function pinnedRightOffset(col: ISpreadsheetColumn): number {
 }
 
 function headerStyle(col: ISpreadsheetColumn, ci: number) {
-  const baseCol = (props.showGutter ? 2 : 1) + ci
+  const baseCol = colOffset.value + 1 + ci
   const sticky: Record<string, string> = {}
   if (col.pinned === 'left') {
     sticky.position = 'sticky'
@@ -513,7 +621,7 @@ function headerStyle(col: ISpreadsheetColumn, ci: number) {
 // in the rendered window, so rows above the window keep their height and a
 // virtualized row lands where it belongs.
 function cellStyle(row: IRenderRow, col: ISpreadsheetColumn, ci: number) {
-  const baseCol = (props.showGutter ? 2 : 1) + ci
+  const baseCol = colOffset.value + 1 + ci
   const gridRow = row.__virtualIndex + 2
   const sticky: Record<string, string> = {}
   if (col.pinned === 'left') {
@@ -572,26 +680,37 @@ function gutterStyle(row: IRenderRow) {
 }
 
 // ─── Selection helpers ─────────────────────────────────────────────────────
+// The selection as row and column positions, worked out once per change
+// rather than once per cell.
+const selectionBounds = computed(() => {
+  const sel = selection.value
+  if (!sel) return null
+  const r1 = rowIndex.value.get(sel.startRowId) ?? -1
+  const r2 = rowIndex.value.get(sel.endRowId) ?? -1
+  const c1 = colIndex.value.get(sel.startColumnId) ?? -1
+  const c2 = colIndex.value.get(sel.endColumnId) ?? -1
+  if (r1 < 0 || r2 < 0 || c1 < 0 || c2 < 0) return null
+  return {
+    r1: Math.min(r1, r2),
+    r2: Math.max(r1, r2),
+    c1: Math.min(c1, c2),
+    c2: Math.max(c1, c2),
+  }
+})
+
 function isCellInSelection(rowId: string, columnId: string): boolean {
-  if (!selection.value) return false
-  const rowIds = [
-    ...pinnedTopRows.value,
-    ...sortedDataRows.value,
-    ...pinnedBottomRows.value,
-  ].map((r) => r.id)
-  const colIds = orderedColumns.value.map((c) => c.id)
-  const r1 = rowIds.indexOf(selection.value.startRowId)
-  const r2 = rowIds.indexOf(selection.value.endRowId)
-  const c1 = colIds.indexOf(selection.value.startColumnId)
-  const c2 = colIds.indexOf(selection.value.endColumnId)
-  const ri = rowIds.indexOf(rowId)
-  const ci = colIds.indexOf(columnId)
-  return (
-    ri >= Math.min(r1, r2) &&
-    ri <= Math.max(r1, r2) &&
-    ci >= Math.min(c1, c2) &&
-    ci <= Math.max(c1, c2)
-  )
+  const b = selectionBounds.value
+  if (!b) return false
+  const ri = rowIndex.value.get(rowId) ?? -1
+  const ci = colIndex.value.get(columnId) ?? -1
+  return ri >= b.r1 && ri <= b.r2 && ci >= b.c1 && ci <= b.c2
+}
+
+function isRowInSelection(rowId: string): boolean {
+  const b = selectionBounds.value
+  if (!b) return false
+  const ri = rowIndex.value.get(rowId) ?? -1
+  return ri >= b.r1 && ri <= b.r2
 }
 
 function setFocus(rowId: string, columnId: string, extendSelection = false) {
@@ -612,6 +731,57 @@ function setFocus(rowId: string, columnId: string, extendSelection = false) {
   }
   emit('focus', focused.value)
   emit('selection', selection.value)
+}
+
+// Selects whole rows and columns, as a spreadsheet's headers do. The active
+// cell is the first cell of the range's anchor, and Shift grows the range
+// from the anchor already there.
+function selectRange(
+  anchorRowId: string,
+  anchorColumnId: string,
+  start: ISpreadsheetSelection,
+) {
+  focused.value = { rowId: anchorRowId, columnId: anchorColumnId }
+  selection.value = start
+  emit('focus', focused.value)
+  emit('selection', selection.value)
+}
+
+function selectColumns(columnId: string, extend = false) {
+  const rows = allRows.value
+  if (!rows.length) return
+  const anchor =
+    extend && selection.value ? selection.value.startColumnId : columnId
+  selectRange(rows[0].id, anchor, {
+    startRowId: rows[0].id,
+    startColumnId: anchor,
+    endRowId: rows[rows.length - 1].id,
+    endColumnId: columnId,
+  })
+}
+
+function selectRows(rowId: string, extend = false) {
+  const cols = orderedColumns.value
+  if (!cols.length) return
+  const anchor = extend && selection.value ? selection.value.startRowId : rowId
+  selectRange(anchor, cols[0].id, {
+    startRowId: anchor,
+    startColumnId: cols[0].id,
+    endRowId: rowId,
+    endColumnId: cols[cols.length - 1].id,
+  })
+}
+
+function selectAll() {
+  const rows = allRows.value
+  const cols = orderedColumns.value
+  if (!rows.length || !cols.length) return
+  selectRange(rows[0].id, cols[0].id, {
+    startRowId: rows[0].id,
+    startColumnId: cols[0].id,
+    endRowId: rows[rows.length - 1].id,
+    endColumnId: cols[cols.length - 1].id,
+  })
 }
 
 // ─── Mouse selection ───────────────────────────────────────────────────────
@@ -665,6 +835,31 @@ function onCellDblClick(row: ISpreadsheetRow, col: ISpreadsheetColumn) {
   startEdit(row, col, raw == null ? '' : String(raw), 'edit')
 }
 
+// A sortable column's header sorts, as it always has. Any other header
+// selects its column, and the gutter selects its row.
+function onHeaderMouseDown(e: MouseEvent, col: ISpreadsheetColumn) {
+  if (e.button !== 0) return
+  e.preventDefault()
+  if (editing.value) commitEdit()
+  focusScroller()
+  if (col.sortable) toggleSort(col)
+  else selectColumns(col.id, e.shiftKey)
+}
+
+function onGutterMouseDown(e: MouseEvent, row: ISpreadsheetRow) {
+  if (e.button !== 0) return
+  if (editing.value) commitEdit()
+  focusScroller()
+  selectRows(row.id, e.shiftKey)
+}
+
+function onCornerMouseDown(e: MouseEvent) {
+  if (e.button !== 0) return
+  if (editing.value) commitEdit()
+  focusScroller()
+  selectAll()
+}
+
 // Focus never scrolls: the sheet decides what is in view, so moving focus
 // between the scroller and the editor cannot throw the view back to the top.
 function focusScroller() {
@@ -679,18 +874,12 @@ function moveBy(dRow: number, dCol: number, extendSelection = false) {
     if (first && firstRow) setFocus(firstRow.id, first.id)
     return
   }
-  const allRows = [
-    ...pinnedTopRows.value,
-    ...sortedDataRows.value,
-    ...pinnedBottomRows.value,
-  ]
-  const ri = allRows.findIndex((r) => r.id === focused.value!.rowId)
-  const ci = orderedColumns.value.findIndex(
-    (c) => c.id === focused.value!.columnId,
-  )
-  const nri = Math.max(0, Math.min(allRows.length - 1, ri + dRow))
+  const rows = allRows.value
+  const ri = rowIndex.value.get(focused.value.rowId) ?? 0
+  const ci = colIndex.value.get(focused.value.columnId) ?? 0
+  const nri = Math.max(0, Math.min(rows.length - 1, ri + dRow))
   const nci = Math.max(0, Math.min(orderedColumns.value.length - 1, ci + dCol))
-  const rowId = allRows[nri].id
+  const rowId = rows[nri].id
   const columnId = orderedColumns.value[nci].id
   setFocus(rowId, columnId, extendSelection)
   scrollIntoView(rowId, columnId)
@@ -730,7 +919,8 @@ function scrollIntoView(rowId: string, columnId?: string) {
     // Every row has the same height (grid-auto-rows), so the row's top is
     // arithmetic once the rendered sizes are measured. That also holds for a
     // row the virtualization has not rendered yet.
-    const headerH = measuredHeight('.nb-spreadsheet__header') || headerHeight
+    const headerH =
+      measuredHeight('.nb-spreadsheet__header') || defaultRowHeight.value
     const rowH = measuredHeight('.nb-spreadsheet__cell') || rowHeight.value
     const top = headerH + (pinnedTopRows.value.length + idx) * rowH
     const coverTop = headerH + stickyRowsHeight(pinnedTopRows.value)
@@ -739,9 +929,7 @@ function scrollIntoView(rowId: string, columnId?: string) {
     else if (top + rowH > view.scrollTop + view.clientHeight - coverBottom)
       view.scrollTop = top + rowH - view.clientHeight + coverBottom
   }
-  const col = columnId
-    ? orderedColumns.value.find((c) => c.id === columnId)
-    : undefined
+  const col = columnId ? columnsById.value.get(columnId) : undefined
   if (col && !col.pinned) {
     let left = props.showGutter ? props.gutterWidth : 0
     for (const c of orderedColumns.value) {
@@ -765,8 +953,8 @@ function onScroll() {
 
 function focusedCell() {
   if (!focused.value) return null
-  const r = props.rows.find((rr) => rr.id === focused.value!.rowId)
-  const c = props.columns.find((cc) => cc.id === focused.value!.columnId)
+  const r = rowsById.value.get(focused.value.rowId)
+  const c = columnsById.value.get(focused.value.columnId)
   return r && c ? { r, c } : null
 }
 
@@ -786,10 +974,26 @@ function onKeydown(e: KeyboardEvent) {
     }
     return
   }
-  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
+  const mod = e.metaKey || e.ctrlKey
+  if (mod && e.key.toLowerCase() === 'z') {
     e.preventDefault()
     if (e.shiftKey) redo()
     else undo()
+    return
+  }
+  if (mod && e.key.toLowerCase() === 'a') {
+    e.preventDefault()
+    selectAll()
+    return
+  }
+  // The spreadsheet keys for a whole column and a whole row. Shift+Space has
+  // to be caught here: it is printable, and would otherwise open the cell.
+  if (e.key === ' ' && (e.ctrlKey || e.shiftKey) && !e.metaKey && !e.altKey) {
+    const fc = focused.value
+    if (!fc) return
+    e.preventDefault()
+    if (e.ctrlKey) selectColumns(fc.columnId)
+    else selectRows(fc.rowId)
     return
   }
   switch (e.key) {
@@ -870,9 +1074,20 @@ function startEdit(
 
 const editorInputMode = computed(() => {
   if (!editing.value) return undefined
-  const col = props.columns.find((c) => c.id === editing.value!.columnId)
+  const col = columnsById.value.get(editing.value.columnId)
   if (col?.type === 'number') return 'decimal'
   return 'text'
+})
+
+// The editor sits outside the rows, so it names the cell it edits: the
+// column's label and the row's, as the headers show them.
+const editorLabel = computed(() => {
+  if (!editing.value) return undefined
+  const col = columnsById.value.get(editing.value.columnId)
+  const row = rowsById.value.get(editing.value.rowId)
+  const ri = rowIndex.value.get(editing.value.rowId) ?? 0
+  const rowName = row?.label ?? String(ri - pinnedTopRows.value.length + 1)
+  return [col?.label, rowName].filter(Boolean).join(' ')
 })
 
 // The editor is positioned inside the scroller's content, so a cell's place
@@ -938,7 +1153,7 @@ function commitEdit(refocus = true) {
   // Cleared first: focusing the scroller blurs the editor, and its blur
   // handler must find nothing left to commit.
   editing.value = null
-  const col = props.columns.find((c) => c.id === columnId)
+  const col = columnsById.value.get(columnId)
   if (!col) return
   let value: unknown
   try {
@@ -959,21 +1174,14 @@ function commitEdit(refocus = true) {
 
 // ─── Bulk clear / clipboard ────────────────────────────────────────────────
 function selectedCells(): Array<{ rowId: string; columnId: string }> {
-  if (!selection.value) return []
-  const allRows = [
-    ...pinnedTopRows.value,
-    ...sortedDataRows.value,
-    ...pinnedBottomRows.value,
-  ].map((r) => r.id)
-  const cols = orderedColumns.value.map((c) => c.id)
-  const r1 = allRows.indexOf(selection.value.startRowId)
-  const r2 = allRows.indexOf(selection.value.endRowId)
-  const c1 = cols.indexOf(selection.value.startColumnId)
-  const c2 = cols.indexOf(selection.value.endColumnId)
+  const b = selectionBounds.value
+  if (!b) return []
+  const rows = allRows.value
+  const cols = orderedColumns.value
   const out: Array<{ rowId: string; columnId: string }> = []
-  for (let r = Math.min(r1, r2); r <= Math.max(r1, r2); r++) {
-    for (let c = Math.min(c1, c2); c <= Math.max(c1, c2); c++) {
-      out.push({ rowId: allRows[r], columnId: cols[c] })
+  for (let r = b.r1; r <= b.r2; r++) {
+    for (let c = b.c1; c <= b.c2; c++) {
+      out.push({ rowId: rows[r].id, columnId: cols[c].id })
     }
   }
   return out
@@ -983,8 +1191,8 @@ function clearSelection() {
   const cells = selectedCells()
   const changes: ISpreadsheetChange[] = []
   for (const { rowId, columnId } of cells) {
-    const row = props.rows.find((r) => r.id === rowId)
-    const col = props.columns.find((c) => c.id === columnId)
+    const row = rowsById.value.get(rowId)
+    const col = columnsById.value.get(columnId)
     if (!row || !col || isReadOnly(row, col)) continue
     const before = rawValue(rowId, columnId)
     if (before === null || before === undefined || before === '') continue
@@ -997,35 +1205,15 @@ function clearSelection() {
 }
 
 function onCopy(e: ClipboardEvent) {
-  const cells = selectedCells()
-  if (cells.length === 0) return
-  const allRows = [
-    ...pinnedTopRows.value,
-    ...sortedDataRows.value,
-    ...pinnedBottomRows.value,
-  ].map((r) => r.id)
+  const b = selectionBounds.value
+  if (!b) return
+  const allRowIds = allRows.value.map((r) => r.id)
   const cols = orderedColumns.value.map((c) => c.id)
-  const r1 = Math.min(
-    allRows.indexOf(selection.value!.startRowId),
-    allRows.indexOf(selection.value!.endRowId),
-  )
-  const r2 = Math.max(
-    allRows.indexOf(selection.value!.startRowId),
-    allRows.indexOf(selection.value!.endRowId),
-  )
-  const c1 = Math.min(
-    cols.indexOf(selection.value!.startColumnId),
-    cols.indexOf(selection.value!.endColumnId),
-  )
-  const c2 = Math.max(
-    cols.indexOf(selection.value!.startColumnId),
-    cols.indexOf(selection.value!.endColumnId),
-  )
   const rows: string[] = []
-  for (let r = r1; r <= r2; r++) {
+  for (let r = b.r1; r <= b.r2; r++) {
     const parts: string[] = []
-    for (let c = c1; c <= c2; c++) {
-      const raw = rawValue(allRows[r], cols[c])
+    for (let c = b.c1; c <= b.c2; c++) {
+      const raw = rawValue(allRowIds[r], cols[c])
       parts.push(raw == null ? '' : String(raw))
     }
     rows.push(parts.join('\t'))
@@ -1048,22 +1236,18 @@ function onPaste(e: ClipboardEvent) {
     .replace(/\r\n?/g, '\n')
     .split('\n')
     .map((line) => line.split('\t'))
-  const allRows = [
-    ...pinnedTopRows.value,
-    ...sortedDataRows.value,
-    ...pinnedBottomRows.value,
-  ].map((r) => r.id)
+  const allRowIds = allRows.value.map((r) => r.id)
   const cols = orderedColumns.value.map((c) => c.id)
-  const baseR = allRows.indexOf(focused.value.rowId)
-  const baseC = cols.indexOf(focused.value.columnId)
+  const baseR = rowIndex.value.get(focused.value.rowId) ?? 0
+  const baseC = colIndex.value.get(focused.value.columnId) ?? 0
   const changes: ISpreadsheetChange[] = []
   matrix.forEach((line, dr) => {
     line.forEach((cellText, dc) => {
-      const rowId = allRows[baseR + dr]
+      const rowId = allRowIds[baseR + dr]
       const columnId = cols[baseC + dc]
       if (!rowId || !columnId) return
-      const row = props.rows.find((r) => r.id === rowId)
-      const col = props.columns.find((c) => c.id === columnId)
+      const row = rowsById.value.get(rowId)
+      const col = columnsById.value.get(columnId)
       if (!row || !col || isReadOnly(row, col)) return
       let value: unknown
       try {
@@ -1100,8 +1284,7 @@ function startResize(e: MouseEvent, col: ISpreadsheetColumn) {
 }
 
 // ─── Sort ──────────────────────────────────────────────────────────────────
-function onHeaderClick(col: ISpreadsheetColumn) {
-  if (!col.sortable) return
+function toggleSort(col: ISpreadsheetColumn) {
   if (sortBy.value?.columnId === col.id) {
     sortBy.value =
       sortBy.value.direction === 'asc'
@@ -1161,37 +1344,47 @@ defineExpose({
   undo,
   redo,
   getSelection: () => selection.value,
+  selectAll,
+  selectColumn: (columnId: string) => selectColumns(columnId),
+  selectRow: (rowId: string) => selectRows(rowId),
 })
 </script>
 
 <style lang="scss" scoped>
-@use '../../styles/variables/breakpoints' as bp;
+@use '../styles/variables/breakpoints' as bp;
 
-// ─── NbSpreadsheet — Carbon-aligned data spreadsheet ──────────────────────
+// ─── NbSpreadsheet: Carbon-aligned data spreadsheet ───────────────────────
 //
-// Visual language follows IBM Carbon's Data Spreadsheet:
-// - Compact 32px rows, hairline borders, dense typography.
-// - The active cell has a 2px primary outline (inside the cell, not around it).
-// - Header sits in --nb-c-surface and the body in --nb-c-surface-raised so the
-//   component reads correctly on any `.nb-layer-N` parent.
-// - Cell hover is a 1-level lift via --nb-c-surface-hover.
+// Carbon has no spreadsheet of its own (its data table guidelines rule that
+// use out), so the sheet takes the data table's rules and adds what a grid of
+// cells needs:
+// - Carbon's row sizes, xs to lg (24, 32, 40, 48px), with the header as tall
+//   as a row.
+// - The column and row headers are Carbon's column header: $layer-accent
+//   (--nb-c-surface-accent) and heading-compact-01, sentence case.
+// - Cells are body-compact-01 in tabular figures, hairline borders between.
+// - The active cell has a 2px focus ring inside the cell, not around it.
+// - A selected range is $layer-selected (--nb-c-surface-selected), neutral,
+//   not a brand tint.
 //
 // Token map (NubiscoUI surface API):
-//   --nb-c-surface         : header + footer base
-//   --nb-c-surface-raised  : body cell base
-//   --nb-c-surface-hover   : row/cell hover
+//   --nb-c-surface-accent  : column and row headers, the corner
+//   --nb-c-surface         : toolbar, read-only and computed cells
+//   --nb-c-surface-raised  : editable cells
+//   --nb-c-surface-hover   : cell hover
+//   --nb-c-surface-selected: a selected range and its headers
 //   --nb-c-border          : every line
 //   --nb-c-text / muted    : foreground hierarchy
-//   --nb-c-primary / 100   : focus + selection
+//   --nb-c-focus-ring      : the active cell and the editor
 //
-// Anything component-local (focus ring width, header height) is a CSS custom
-// property at the root scope so callers can override per instance.
+// Anything component-local (focus ring, row and header height) is a CSS
+// custom property at the root scope so callers can override per instance.
 
 .nb-spreadsheet {
   --nbss-row-height: 32px;
-  --nbss-header-height: 36px;
+  --nbss-header-height: 32px;
   --nbss-cell-padding-x: 0.625rem;
-  --nbss-focus-ring: var(--nb-c-primary, #6a40d0);
+  --nbss-focus-ring: var(--nb-c-focus-ring, var(--nb-c-primary));
 
   display: flex;
   flex-direction: column;
@@ -1203,6 +1396,20 @@ defineExpose({
   font-family: var(--nb-font-family-sans, system-ui);
   font-size: var(--nb-type-body-compact-size);
   line-height: var(--nb-type-body-compact-line-height);
+}
+
+// Carbon's sizes. The header always matches the row.
+.nb-spreadsheet--xs {
+  --nbss-row-height: 24px;
+  --nbss-header-height: 24px;
+}
+.nb-spreadsheet--md {
+  --nbss-row-height: 40px;
+  --nbss-header-height: 40px;
+}
+.nb-spreadsheet--lg {
+  --nbss-row-height: 48px;
+  --nbss-header-height: 48px;
 }
 
 .nb-spreadsheet__toolbar {
@@ -1272,16 +1479,22 @@ defineExpose({
   min-width: 100%;
 }
 
+// A row only carries the row role: its cells are the grid's items.
+.nb-spreadsheet__row {
+  display: contents;
+}
+
 // ─── Header row ──────────────────────────────────────────────────────────
 .nb-spreadsheet__corner {
   position: sticky;
   top: 0;
   left: 0;
   z-index: 5;
-  background: var(--nb-c-surface);
+  background: var(--nb-c-surface-accent);
   border-right: 1px solid var(--nb-c-border);
   border-bottom: 1px solid var(--nb-c-border);
   height: var(--nbss-header-height);
+  cursor: cell;
 }
 
 .nb-spreadsheet__header {
@@ -1291,35 +1504,53 @@ defineExpose({
   height: var(--nbss-header-height);
   display: flex;
   align-items: center;
+  gap: var(--nb-base-unit, 0.25rem);
   padding: 0 var(--nbss-cell-padding-x);
-  background: var(--nb-c-surface);
+  background: var(--nb-c-surface-accent);
   border-right: 1px solid var(--nb-c-border);
   border-bottom: 1px solid var(--nb-c-border);
-  font-weight: var(--nb-type-overline-weight);
-  font-size: var(--nb-type-overline-size);
-  letter-spacing: var(--nb-type-overline-letter-spacing);
-  text-transform: var(--nb-type-overline-text-transform);
+  font-size: var(--nb-type-heading-compact-size);
+  font-weight: var(--nb-type-heading-compact-weight);
+  line-height: var(--nb-type-heading-compact-line-height);
+  letter-spacing: var(--nb-type-heading-compact-letter-spacing);
   color: var(--nb-c-text);
+  cursor: cell;
   user-select: none;
+  transition: background var(--nb-motion-quick) ease;
 }
 
 .nb-spreadsheet__header--sortable {
   cursor: pointer;
 }
 .nb-spreadsheet__header--sortable:hover {
-  background: var(--nb-c-surface-hover, var(--nb-c-surface));
+  background: var(--nb-c-surface-accent-hover);
+}
+.nb-spreadsheet__header--selected {
+  background: var(--nb-c-surface-selected);
 }
 .nb-spreadsheet__header-label {
   flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+// Carbon's sort arrows: hidden until the header is hovered, and kept, in the
+// primary colour, on the sorted column.
 .nb-spreadsheet__sort {
-  margin-left: 0.25rem;
-  font-size: var(--nb-type-body-sm-size);
-  color: var(--nb-c-text-muted);
+  flex-shrink: 0;
+  font-size: var(--nb-type-body-compact-size);
+  color: var(--nb-c-text-subtle, var(--nb-c-text-muted));
+  opacity: 0;
+  transition: opacity var(--nb-motion-quick) ease;
+}
+.nb-spreadsheet__header--sortable:hover .nb-spreadsheet__sort {
+  opacity: 1;
+}
+.nb-spreadsheet__header--sorted .nb-spreadsheet__sort {
+  opacity: 1;
+  color: var(--nb-c-primary);
 }
 
 // Resize handle: absolutely anchored to the right edge of the header so it
@@ -1357,7 +1588,7 @@ defineExpose({
 
 // ─── Row gutter (left index column) ──────────────────────────────────────
 .nb-spreadsheet__gutter {
-  background: var(--nb-c-surface);
+  background: var(--nb-c-surface-accent);
   border-right: 1px solid var(--nb-c-border);
   border-bottom: 1px solid var(--nb-c-border);
   color: var(--nb-c-text-muted);
@@ -1369,6 +1600,7 @@ defineExpose({
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   overflow: hidden;
+  cursor: cell;
   user-select: none;
 }
 
@@ -1378,6 +1610,11 @@ defineExpose({
 .nb-spreadsheet__gutter--pinned-bottom {
   color: var(--nb-c-text);
   font-weight: 600;
+}
+
+.nb-spreadsheet__gutter--selected {
+  background: var(--nb-c-surface-selected);
+  color: var(--nb-c-text);
 }
 
 // ─── Data cells ──────────────────────────────────────────────────────────
@@ -1412,17 +1649,10 @@ defineExpose({
 }
 
 .nb-spreadsheet__cell--selected {
-  background: var(
-    --nb-c-primary-100,
-    color-mix(
-      in srgb,
-      var(--nb-c-primary, #6a40d0) 12%,
-      var(--nb-c-surface-raised, white)
-    )
-  );
+  background: var(--nb-c-surface-selected);
 }
 
-// Active cell: inset 2px primary outline, no offset, no jump on focus.
+// Active cell: inset 2px focus ring, no offset, no jump on focus.
 .nb-spreadsheet__cell--focused {
   box-shadow: inset 0 0 0 2px var(--nbss-focus-ring);
   z-index: 2;
@@ -1437,12 +1667,17 @@ defineExpose({
   color: var(--nb-c-text);
   font-weight: 600;
 }
+.nb-spreadsheet__cell--readonly.nb-spreadsheet__cell--selected,
+.nb-spreadsheet__cell--computed.nb-spreadsheet__cell--selected {
+  background: var(--nb-c-surface-selected);
+}
 .nb-spreadsheet__cell--pinned-bottom {
   font-weight: 600;
 }
 
 // Subtle shadow on the right edge of the rightmost pinned-left column
-// indicates "more content to the right" — same idea as Carbon's sticky cols.
+// indicates "more content to the right", the same idea as Carbon's sticky
+// columns.
 .nb-spreadsheet__cell[style*='position: sticky'][style*='left']
   + .nb-spreadsheet__cell:not([style*='position: sticky']) {
   box-shadow: -4px 0 4px -4px rgba(0, 0, 0, 0.12);

@@ -97,6 +97,7 @@ export const COMPONENT_MANIFEST = {
   NbSidebarMenuItem: 'SidebarMenuItem',
   NbSidebarStatus: 'SidebarStatus',
   NbSlider: 'Slider',
+  NbSpreadsheet: 'Spreadsheet',
   NbStepper: 'Stepper',
   NbStepperStep: 'StepperStep',
   NbSpinner: 'Spinner',

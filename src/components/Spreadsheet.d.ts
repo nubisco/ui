@@ -1,7 +1,6 @@
 /**
- * NbSpreadsheet — labs-tier spreadsheet-style data grid.
- *
- * Status: experimental. API may change. Use via `app.use(NubiscoUILabs)`.
+ * NbSpreadsheet: a spreadsheet-style data grid. The host owns the data, the
+ * sheet renders it, captures input and emits changes.
  */
 
 export type TSpreadsheetCellType = 'text' | 'number' | 'date'
@@ -9,6 +8,8 @@ export type TSpreadsheetAlign = 'left' | 'center' | 'right'
 export type TSpreadsheetPinCol = 'left' | 'right'
 export type TSpreadsheetPinRow = 'top' | 'bottom'
 export type TSpreadsheetSortDir = 'asc' | 'desc'
+/** Carbon's row heights: 24, 32, 40 and 48px. The header matches the row. */
+export type TSpreadsheetSize = 'xs' | 'sm' | 'md' | 'lg'
 
 export interface ISpreadsheetColumn {
   /** Stable id used for selection, sort, and host commits. */
@@ -104,7 +105,10 @@ export interface ISpreadsheetProps {
   ) => unknown
   /** Allow column resize. Default true. */
   resizable?: boolean
-  /** Allow row reorder by dragging the row header. Default false. */
+  /**
+   * @deprecated Never implemented: it has no effect and `row-reorder` is
+   * never emitted. It will be removed in the next major.
+   */
   rowReorderable?: boolean
   /** Show a row index gutter on the left. Default true. */
   showGutter?: boolean
@@ -112,7 +116,11 @@ export interface ISpreadsheetProps {
   gutterWidth?: number
   /** Approximate visible rows used for the simple virtualization. Default 80. */
   windowRows?: number
-  /** Locale used for default Intl-based number/date formatting. */
+  /**
+   * Locale used for default Intl-based number/date formatting. Default
+   * 'pt-PT'. The next major changes the default to the runtime's locale, so
+   * pass one explicitly when the formatting matters.
+   */
   locale?: string
   /**
    * Fill the parent instead of sizing to the columns. The columns share the
@@ -123,4 +131,8 @@ export interface ISpreadsheetProps {
    * height: a flex column, or a box with a set height.
    */
   fit?: boolean
+  /** Row and header height, from Carbon's sizes. Default 'sm' (32px). */
+  size?: TSpreadsheetSize
+  /** Accessible name of the grid. Name every sheet on a page that has two. */
+  ariaLabel?: string
 }

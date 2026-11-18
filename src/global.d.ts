@@ -107,6 +107,7 @@ import Skeleton from './components/Skeleton.vue'
 import Slider from './components/Slider.vue'
 import Sparkline from './components/Charts/Sparkline.vue'
 import Spinner from './components/Spinner.vue'
+import Spreadsheet from './components/Spreadsheet.vue'
 import Stat from './components/Stat.vue'
 import Stepper from './components/Stepper.vue'
 import StepperStep from './components/StepperStep.vue'
@@ -238,6 +239,7 @@ declare module 'vue' {
     NbSlider: typeof Slider
     NbSparkline: typeof Sparkline
     NbSpinner: typeof Spinner
+    NbSpreadsheet: typeof Spreadsheet
     NbStat: typeof Stat
     NbStepper: typeof Stepper
     NbStepperStep: typeof StepperStep

@@ -1,7 +1,7 @@
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
-import Spreadsheet from '../src/components/labs/Spreadsheet.vue'
+import Spreadsheet from '../src/components/Spreadsheet.vue'
 import {
   NB_PHONE_TOUCH_QUERY,
   resetPhoneLayoutForTests,
@@ -86,10 +86,158 @@ describe('NbSpreadsheet', () => {
     const headers = w.findAll('.nb-spreadsheet__header')
     const feb = headers.find((h) => h.text().includes('Feb'))
     expect(feb).toBeTruthy()
-    await feb!.trigger('click')
-    expect(w.html()).toContain('▲')
-    await feb!.trigger('click')
-    expect(w.html()).toContain('▼')
+    expect(feb!.attributes('aria-sort')).toBe('none')
+    await feb!.trigger('mousedown')
+    expect(feb!.attributes('aria-sort')).toBe('ascending')
+    await feb!.trigger('mousedown')
+    expect(feb!.attributes('aria-sort')).toBe('descending')
+    await feb!.trigger('mousedown')
+    expect(feb!.attributes('aria-sort')).toBe('none')
+  })
+
+  it('leaves aria-sort off a column that does not sort', () => {
+    const w = mount(Spreadsheet, { props: { columns, rows } })
+    const jan = w.find('[data-header-col="jan"]')
+    expect(jan.attributes('aria-sort')).toBeUndefined()
+  })
+
+  it('applies a size, with the header as tall as a row', () => {
+    const w = mount(Spreadsheet, { props: { columns, rows } })
+    expect(w.classes()).toContain('nb-spreadsheet--sm')
+    const lg = mount(Spreadsheet, { props: { columns, rows, size: 'lg' } })
+    expect(lg.classes()).toContain('nb-spreadsheet--lg')
+  })
+})
+
+describe('NbSpreadsheet grid semantics', () => {
+  it('exposes a grid of rows, headers and cells', () => {
+    const w = mount(Spreadsheet, {
+      props: { columns, rows, ariaLabel: 'Hours' },
+    })
+    const grid = w.find('[role="grid"]')
+    expect(grid.attributes('aria-label')).toBe('Hours')
+    // A header row and three data rows; the gutter counts as a column.
+    expect(grid.attributes('aria-rowcount')).toBe('4')
+    expect(grid.attributes('aria-colcount')).toBe('4')
+    const rowEls = w.findAll('[role="row"]')
+    expect(rowEls.map((r) => r.attributes('aria-rowindex'))).toEqual([
+      '1',
+      '2',
+      '3',
+      '4',
+    ])
+    expect(w.findAll('[role="columnheader"]')).toHaveLength(4)
+    expect(w.findAll('[role="rowheader"]')).toHaveLength(3)
+    const cells = rowEls[1].findAll('[role="gridcell"]')
+    expect(cells.map((c) => c.attributes('aria-colindex'))).toEqual([
+      '2',
+      '3',
+      '4',
+    ])
+    // The pinned read-only column says so.
+    expect(cells[0].attributes('aria-readonly')).toBe('true')
+    expect(cells[1].attributes('aria-readonly')).toBeUndefined()
+  })
+
+  it('names the active cell through aria-activedescendant', async () => {
+    const w = mount(Spreadsheet, { props: { columns, rows } })
+    const grid = w.find('[role="grid"]')
+    expect(grid.attributes('aria-activedescendant')).toBeUndefined()
+    await w.find('[data-cell="r2::jan"]').trigger('mousedown')
+    const id = grid.attributes('aria-activedescendant')
+    expect(id).toBeTruthy()
+    const active = w.find(`[id="${id}"]`)
+    expect(active.attributes('data-cell')).toBe('r2::jan')
+    expect(active.attributes('aria-selected')).toBe('true')
+  })
+})
+
+describe('NbSpreadsheet header selection', () => {
+  const lastSelection = (w: ReturnType<typeof mount>) => {
+    const events = w.emitted('selection') ?? []
+    return events[events.length - 1]?.[0]
+  }
+
+  it('selects a column from its header', async () => {
+    const w = mount(Spreadsheet, { props: { columns, rows } })
+    await w.find('[data-header-col="jan"]').trigger('mousedown')
+    expect(lastSelection(w)).toEqual({
+      startRowId: 'r1',
+      startColumnId: 'jan',
+      endRowId: 'totals',
+      endColumnId: 'jan',
+    })
+    expect(w.findAll('.nb-spreadsheet__cell--selected')).toHaveLength(3)
+    expect(w.find('[data-header-col="jan"]').classes()).toContain(
+      'nb-spreadsheet__header--selected',
+    )
+  })
+
+  it('grows a column selection with Shift', async () => {
+    const w = mount(Spreadsheet, { props: { columns, rows } })
+    await w.find('[data-header-col="day"]').trigger('mousedown')
+    await w
+      .find('[data-header-col="jan"]')
+      .trigger('mousedown', { shiftKey: true })
+    expect(lastSelection(w)).toMatchObject({
+      startColumnId: 'day',
+      endColumnId: 'jan',
+    })
+    expect(w.findAll('.nb-spreadsheet__cell--selected')).toHaveLength(6)
+  })
+
+  it('selects a row from the gutter, and everything from the corner', async () => {
+    const w = mount(Spreadsheet, { props: { columns, rows } })
+    await w.findAll('.nb-spreadsheet__gutter')[1].trigger('mousedown')
+    expect(lastSelection(w)).toEqual({
+      startRowId: 'r2',
+      startColumnId: 'day',
+      endRowId: 'r2',
+      endColumnId: 'feb',
+    })
+    expect(w.findAll('.nb-spreadsheet__gutter')[1].classes()).toContain(
+      'nb-spreadsheet__gutter--selected',
+    )
+    await w.find('.nb-spreadsheet__corner').trigger('mousedown')
+    expect(w.findAll('.nb-spreadsheet__cell--selected')).toHaveLength(9)
+  })
+
+  it('selects with Ctrl+A, Ctrl+Space and Shift+Space', async () => {
+    const w = mount(Spreadsheet, { props: { columns, rows } })
+    const scroller = w.find('.nb-spreadsheet__scroller')
+    await w.find('[data-cell="r2::jan"]').trigger('mousedown')
+    await scroller.trigger('keydown', { key: ' ', ctrlKey: true })
+    expect(lastSelection(w)).toMatchObject({
+      startRowId: 'r1',
+      endRowId: 'totals',
+      startColumnId: 'jan',
+      endColumnId: 'jan',
+    })
+    await w.find('[data-cell="r2::jan"]').trigger('mousedown')
+    await scroller.trigger('keydown', { key: ' ', shiftKey: true })
+    expect(lastSelection(w)).toMatchObject({
+      startRowId: 'r2',
+      endRowId: 'r2',
+      startColumnId: 'day',
+      endColumnId: 'feb',
+    })
+    // Shift+Space selected the row; it did not open the cell.
+    expect(w.find('.nb-spreadsheet__editor').exists()).toBe(false)
+    await scroller.trigger('keydown', { key: 'a', metaKey: true })
+    expect(w.findAll('.nb-spreadsheet__cell--selected')).toHaveLength(9)
+  })
+
+  it('clears a selected column, skipping read-only cells', async () => {
+    const w = mount(Spreadsheet, { props: { columns, rows } })
+    await w.find('[data-header-col="jan"]').trigger('mousedown')
+    await w.find('.nb-spreadsheet__scroller').trigger('keydown', {
+      key: 'Delete',
+    })
+    const batches = w.emitted('change') ?? []
+    expect(batches[batches.length - 1]?.[0]).toEqual([
+      { rowId: 'r1', columnId: 'jan', before: 8, after: null },
+      { rowId: 'r2', columnId: 'jan', before: 4, after: null },
+    ])
   })
 })
 
@@ -372,5 +520,100 @@ describe('NbSpreadsheet fit', () => {
     const labels = w.findAll('.nb-spreadsheet__header-label')
     expect(labels.map((l) => l.text())).toEqual(['J', 'Feb'])
     expect(labels[1]!.attributes('title')).toBe('February')
+  })
+})
+
+// The shape of an app that adopted the sheet in labs: a fixed grid of twelve
+// numeric columns and a row per day, each named in the gutter, with derived
+// totals pinned underneath. Nothing it relies on may change by default.
+describe('NbSpreadsheet fixed grid adopter', () => {
+  const months = Array.from({ length: 12 }, (_, i) => ({
+    id: String(i + 1),
+    label: `Month ${i + 1}`,
+    width: 96,
+    type: 'number' as const,
+    align: 'right' as const,
+  }))
+  const grid: Record<string, number> = { '1:1': 8, '2:1': 7.5, '1:2': 4 }
+  const dayRows = () => [
+    ...Array.from({ length: 31 }, (_, d) => ({
+      id: `d-${d + 1}`,
+      label: String(d + 1),
+      values: Object.fromEntries(
+        months.map((m) => [m.id, grid[`${d + 1}:${m.id}`] ?? null]),
+      ),
+    })),
+    ...['hours', 'extra', 'total'].map((id) => ({
+      id: `total-${id}`,
+      label: id,
+      pinned: 'bottom' as const,
+      computed: true,
+      className: 'totals',
+      values: {},
+    })),
+  ]
+  const computeCell = (rowId: string, columnId: string) =>
+    rowId.startsWith('total-')
+      ? Object.entries(grid)
+          .filter(([k]) => k.endsWith(`:${columnId}`))
+          .reduce((s, [, v]) => s + v, 0)
+      : undefined
+
+  function mountGrid() {
+    return mount(Spreadsheet, {
+      props: {
+        columns: months,
+        rows: dayRows(),
+        gutterWidth: 104,
+        cellAttrs: (rowId: string) =>
+          rowId === 'd-6' ? { readOnly: true, className: 'weekend' } : {},
+        computed: computeCell,
+      },
+      attachTo: document.body,
+    })
+  }
+
+  it('renders the grid it was given, and no more', () => {
+    const w = mountGrid()
+    expect(w.findAll('.nb-spreadsheet__header')).toHaveLength(12)
+    const gutter = w.findAll('.nb-spreadsheet__gutter').map((g) => g.text())
+    expect(gutter.slice(0, 3)).toEqual(['1', '2', '3'])
+    expect(gutter.slice(-3)).toEqual(['hours', 'extra', 'total'])
+    expect(w.find('[role="grid"]').attributes('aria-rowcount')).toBe('35')
+    w.unmount()
+  })
+
+  it('formats with the default locale and shows the derived totals', () => {
+    const w = mountGrid()
+    expect(w.find('[data-cell="d-2::1"]').text()).toBe('7,5')
+    expect(w.find('[data-cell="total-hours::1"]').text()).toBe('15,5')
+    expect(w.find('[data-cell="d-6::1"]').classes()).toContain('weekend')
+    w.unmount()
+  })
+
+  it('keys in a value and emits it for the app to store', async () => {
+    const w = mountGrid()
+    await w.find('[data-cell="d-3::1"]').trigger('mousedown')
+    const scroller = w.find('.nb-spreadsheet__scroller')
+    await scroller.trigger('keydown', { key: '8' })
+    await nextTick()
+    await w.find('.nb-spreadsheet__editor').trigger('keydown', {
+      key: 'ArrowDown',
+    })
+    expect(w.emitted('commit')?.[0]?.[0]).toEqual({
+      rowId: 'd-3',
+      columnId: '1',
+      before: null,
+      after: 8,
+    })
+    w.unmount()
+  })
+
+  it('is still registered by the labs plugin', async () => {
+    const { createApp } = await import('vue')
+    const { default: labs } = await import('../src/labs')
+    const app = createApp({})
+    app.use(labs)
+    expect(app.component('NbSpreadsheet')).toBe(Spreadsheet)
   })
 })

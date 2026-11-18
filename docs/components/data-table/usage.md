@@ -7,7 +7,7 @@ tab: usage
 pageTabs: ['usage', 'code', 'accessibility']
 ---
 
-It is deliberately **not** an editable spreadsheet. When cells need in-place editing, reach for [`NbSpreadsheet`](/labs/spreadsheet) instead.
+It is deliberately **not** an editable spreadsheet. When cells need in-place editing, reach for [`NbSpreadsheet`](/components/spreadsheet/usage) instead.
 
 ## Live demo
 

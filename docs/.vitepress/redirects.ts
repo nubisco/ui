@@ -48,6 +48,8 @@ const TABS = ['usage', 'style', 'code', 'accessibility']
 const OLD_NAME: Record<string, string> = {
   'components/button': 'components/button/button',
   'components/blueprint': 'components/blueprint/overview',
+  // Graduated out of labs: the old page was a single labs page.
+  'components/spreadsheet': 'labs/spreadsheet',
 }
 
 function pagesUnder(root: string, dir: string): string[] {

@@ -159,6 +159,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Sidebar Status', link: '/components/sidebar-status/usage' },
       { text: 'Skeleton', link: '/components/skeleton/usage' },
       { text: 'Slider', link: '/components/slider/usage' },
+      { text: 'Spreadsheet', link: '/components/spreadsheet/usage' },
       { text: 'Spinner', link: '/components/spinner/usage' },
       { text: 'Stat', link: '/components/stat/usage' },
       { text: 'Stepper', link: '/components/stepper/usage' },
@@ -234,9 +235,5 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Action labels', link: '/content/action-labels' },
       { text: 'Types, Interfaces & Enums', link: '/conventions/types' },
     ],
-  },
-  {
-    text: 'Labs',
-    items: [{ text: 'Spreadsheet', link: '/labs/spreadsheet' }],
   },
 ]

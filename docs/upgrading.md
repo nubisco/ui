@@ -1,5 +1,34 @@
 # Upgrading
 
+## To 5.57.0 from 5.56.x
+
+**`NbSpreadsheet` graduates out of labs.** Nothing in its API is renamed or
+removed, and nothing needs to change in an app that uses it:
+
+- It is a regular component now, resolved and styled like every other one, so
+  an app no longer has to import a stylesheet by hand for it.
+  `app.use(NubiscoUILabs)` still registers it, and `import { NbSpreadsheet }
+from '@nubisco/ui'` works as before.
+- **It looks different.** The column and row headers follow Carbon's column
+  header: `--nb-c-surface-accent`, 14px semibold, sentence case instead of
+  uppercase. The header is as tall as a row (32px, was 36px). Sort arrows are
+  icons that show on hover, and stay on the sorted column. A selected range
+  is the neutral `--nb-c-surface-selected` instead of a primary tint, and the
+  active cell's ring reads `--nb-c-focus-ring`. Check a real screen before you
+  ship. `--nbss-header-height` set on the sheet itself still overrides it.
+- **New, all opt-in or additive:** `size` (`xs`, `sm`, `md`, `lg`: 24 to 48px,
+  default `sm`), `ariaLabel`, and a real grid for screen readers (`role="grid"`
+  with rows, row and column headers, `aria-rowindex`, `aria-colindex`,
+  `aria-sort` and the active cell through `aria-activedescendant`). A click on
+  a header that does not sort selects its column, a click in the gutter
+  selects its row, the corner selects everything, and so do `Ctrl+Space`,
+  `Shift+Space` and `Cmd/Ctrl+A`. The exposed `selectAll`, `selectColumn` and
+  `selectRow` do the same from code. A sortable header still sorts.
+- **Deprecated:** `rowReorderable` was never implemented and does nothing. It
+  goes in the next major.
+- **Pass `locale` if the formatting matters.** It defaults to `'pt-PT'`, and
+  the next major changes the default to the runtime's locale.
+
 ## To 5.50.0 from 5.49.x
 
 Additive, with one behaviour to check:
