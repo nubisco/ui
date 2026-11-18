@@ -1,3 +1,10 @@
+## [5.56.1](https://github.com/nubisco/ui/compare/v5.56.0...v5.56.1) (2026-11-18)
+
+
+### Bug Fixes
+
+* **spreadsheet:** a fitted sheet ends at its last row ([#22](https://github.com/nubisco/ui/issues/22)) ([867b6b6](https://github.com/nubisco/ui/commit/867b6b6fd4366c237ed03cddd6c5734c936db59b))
+
 # [5.56.0](https://github.com/nubisco/ui/compare/v5.55.0...v5.56.0) (2026-11-18)
 
 
