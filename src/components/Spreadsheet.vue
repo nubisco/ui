@@ -8,6 +8,7 @@
         'nb-spreadsheet--editing': !!editing,
         'nb-spreadsheet--fit': fit,
         'nb-spreadsheet--two-headers': headerRows.length === 2,
+        'nb-spreadsheet--filling': !!fillTarget,
       },
     ]"
     :style="rootStyle"
@@ -62,28 +63,33 @@
 
           <!-- Header cells -->
           <div
-            v-for="(col, ci) in orderedColumns"
+            v-for="col in renderColumns"
             :key="`h-${kind}-${col.id}`"
             class="nb-spreadsheet__header"
-            :class="headerClass(col, ci, kind)"
+            :class="headerClass(col, ciOf(col), kind)"
             role="columnheader"
-            :aria-colindex="ci + colOffset + 1"
+            :aria-colindex="ciOf(col) + colOffset + 1"
             :aria-sort="kind === 'label' ? ariaSortFor(col) : undefined"
             :aria-label="
-              kind === 'letters' && headerRows.length === 1 && col.label
+              kind === 'letters' &&
+              headerRows.length === 1 &&
+              col.label &&
+              !sheetMode
                 ? `${columnLetter(col.id)} ${col.label}`
                 : undefined
             "
             :data-header-col="kind === 'label' ? col.id : undefined"
             :data-header-row="hi"
-            :style="headerStyle(col, ci, hi)"
+            :style="headerStyle(col, ciOf(col), hi)"
             @mousedown="onHeaderMouseDown($event, col, kind)"
             @contextmenu="onContextMenu($event, 'column', undefined, col.id)"
           >
             <span
               v-if="kind === 'letters'"
               class="nb-spreadsheet__header-letter"
-              :title="headerRows.length === 1 ? col.label : undefined"
+              :title="
+                headerRows.length === 1 && !sheetMode ? col.label : undefined
+              "
               >{{ columnLetter(col.id) }}</span
             >
             <template v-else>
@@ -125,7 +131,8 @@
               />
               <button
                 v-if="
-                  ci === orderedColumns.length - 1 && hiddenColumnsAfter.length
+                  ciOf(col) === orderedColumns.length - 1 &&
+                  hiddenColumnsAfter.length
                 "
                 type="button"
                 tabindex="-1"
@@ -201,16 +208,16 @@
             />
           </div>
           <div
-            v-for="(col, ci) in orderedColumns"
+            v-for="col in renderColumns"
             :id="cellId(row.id, col.id)"
             :key="`c-${row.id}-${col.id}`"
             class="nb-spreadsheet__cell"
             :class="cellClass(row, col)"
             role="gridcell"
-            :aria-colindex="ci + colOffset + 1"
+            :aria-colindex="ciOf(col) + colOffset + 1"
             :aria-selected="isCellInSelection(row.id, col.id)"
             :aria-readonly="isReadOnly(row, col) || undefined"
-            :style="cellStyle(row, col, ci)"
+            :style="cellStyle(row, col, ciOf(col))"
             :title="cellTitle(row, col)"
             :data-cell="`${row.id}::${col.id}`"
             :data-row="row.id"
@@ -222,6 +229,14 @@
             @contextmenu="onContextMenu($event, 'cell', row.id, col.id)"
           >
             <span>{{ cellDisplay(row, col) }}</span>
+            <!-- The fill handle: a mouse affordance, with Ctrl+D and Ctrl+R
+                 doing the same from the keyboard. -->
+            <span
+              v-if="isFillHandleCell(row.id, col.id)"
+              class="nb-spreadsheet__fill-handle"
+              aria-hidden="true"
+              @mousedown.stop.prevent="startFill"
+            />
           </div>
         </div>
       </div>
@@ -339,12 +354,16 @@ import type {
   ISpreadsheetCellAttrs,
   ISpreadsheetChange,
   ISpreadsheetSelection,
+  TSpreadsheetCells,
   TSpreadsheetColumnHeaders,
   TSpreadsheetSize,
   TSpreadsheetSortDir,
+  TSpreadsheetValue,
 } from './Spreadsheet.d'
 
 const props = withDefaults(defineProps<ISpreadsheetProps>(), {
+  columns: () => [],
+  rows: () => [],
   resizable: true,
   rowReorderable: false,
   showGutter: true,
@@ -356,6 +375,8 @@ const props = withDefaults(defineProps<ISpreadsheetProps>(), {
   ariaLabel: undefined,
   columnHeaders: 'label',
   contextMenu: false,
+  extent: 'data',
+  fillHandle: undefined,
 })
 
 // The ids of the hidden columns and rows. Bind them to keep them, or leave
@@ -364,6 +385,11 @@ const hiddenColumns = defineModel<string[]>('hiddenColumns', {
   default: () => [],
 })
 const hiddenRows = defineModel<string[]>('hiddenRows', { default: () => [] })
+
+// Sheet mode: bound, the cells are the data, keyed 'A1', and the sheet makes
+// its own columns and rows over them. Left unbound, the sheet is in table
+// mode and the host's `columns` and `rows` are the data.
+const cells = defineModel<TSpreadsheetCells>('cells')
 
 const emit = defineEmits<{
   commit: [change: ISpreadsheetChange]
@@ -410,14 +436,104 @@ let lastPointerType = ''
 const undoStack = ref<ISpreadsheetChange[][]>([])
 const redoStack = ref<ISpreadsheetChange[][]>([])
 
+// ─── Sheet mode ────────────────────────────────────────────────────────────
+const sheetMode = computed(() => cells.value !== undefined)
+
+// A CSS grid lays out at most 10,000 lines in some browsers, so a sheet that
+// grows on its own stops short of that. 'infinite' grows by a block at a time
+// as the person scrolls towards its end.
+const SHEET_MAX_ROWS = 9_000
+const SHEET_MAX_COLUMNS = 1_000
+const GROW_ROWS = 100
+const GROW_COLUMNS = 26
+
+// 'A' is 0, 'Z' is 25, 'AA' is 26: the inverse of indexToLetters.
+function lettersToIndex(letters: string): number {
+  let n = 0
+  for (const ch of letters) n = n * 26 + (ch.charCodeAt(0) - 64)
+  return n - 1
+}
+
+// The last filled row and column, as counts.
+const dataBounds = computed(() => {
+  let rows = 0
+  let columns = 0
+  for (const key of Object.keys(cells.value ?? {})) {
+    const m = /^([A-Z]+)(\d+)$/.exec(key)
+    if (!m) continue
+    rows = Math.max(rows, Number(m[2]))
+    columns = Math.max(columns, lettersToIndex(m[1]) + 1)
+  }
+  return { rows, columns }
+})
+
+const grownRows = ref(GROW_ROWS)
+const grownColumns = ref(GROW_COLUMNS)
+
+// The most a sheet can grow to by typing, pasting or filling.
+const sheetLimit = computed(() => {
+  const ext = props.extent
+  if (typeof ext === 'object')
+    return {
+      rows: Math.min(SHEET_MAX_ROWS, ext.maxRows ?? SHEET_MAX_ROWS),
+      columns: Math.min(SHEET_MAX_COLUMNS, ext.maxColumns ?? SHEET_MAX_COLUMNS),
+    }
+  return { rows: SHEET_MAX_ROWS, columns: SHEET_MAX_COLUMNS }
+})
+
+const sheetSize = computed(() => {
+  const ext = props.extent
+  const data = dataBounds.value
+  const limit = sheetLimit.value
+  let rows = data.rows
+  let columns = data.columns
+  if (ext === 'infinite') {
+    rows = Math.max(rows, grownRows.value)
+    columns = Math.max(columns, grownColumns.value)
+  } else if (typeof ext === 'object') {
+    rows = Math.max(rows, ext.minRows ?? 1)
+    columns = Math.max(columns, ext.minColumns ?? 1)
+  }
+  return {
+    rows: Math.max(1, Math.min(limit.rows, rows)),
+    columns: Math.max(1, Math.min(limit.columns, columns)),
+  }
+})
+
+const NO_VALUES: Record<string, unknown> = Object.freeze({}) as Record<
+  string,
+  unknown
+>
+
+// In sheet mode a column's id is its letter and a row's id is its number, so
+// a cell's reference is the two side by side.
+const sourceColumns = computed<ISpreadsheetColumn[]>(() => {
+  if (!sheetMode.value) return props.columns
+  return Array.from({ length: sheetSize.value.columns }, (_, i) => {
+    const id = indexToLetters(i)
+    return { id, label: id }
+  })
+})
+const sourceRows = computed<ISpreadsheetRow[]>(() => {
+  if (!sheetMode.value) return props.rows
+  return Array.from({ length: sheetSize.value.rows }, (_, i) => ({
+    id: String(i + 1),
+    values: NO_VALUES,
+  }))
+})
+
+function cellRef(rowId: string, columnId: string): string {
+  return `${columnId}${rowId}`
+}
+
 // ─── Derived: column ordering with pinned-left first, pinned-right last ────
 // Every column in the order the sheet lays them out, hidden ones included.
 // A column's letter is its place here, so hiding C leaves A, B, D, as in a
 // desktop spreadsheet.
 const allOrderedColumns = computed<ISpreadsheetColumn[]>(() => {
-  const left = props.columns.filter((c) => c.pinned === 'left')
-  const right = props.columns.filter((c) => c.pinned === 'right')
-  const mid = props.columns.filter((c) => !c.pinned)
+  const left = sourceColumns.value.filter((c) => c.pinned === 'left')
+  const right = sourceColumns.value.filter((c) => c.pinned === 'right')
+  const mid = sourceColumns.value.filter((c) => !c.pinned)
   return [...left, ...mid, ...right]
 })
 
@@ -437,7 +553,7 @@ const effectiveHiddenColumns = computed(() =>
     .map((c) => c.id),
 )
 const effectiveHiddenRows = computed(() =>
-  props.rows.filter((r) => hiddenRowSet.value.has(r.id)).map((r) => r.id),
+  sourceRows.value.filter((r) => hiddenRowSet.value.has(r.id)).map((r) => r.id),
 )
 
 // ─── Column letters ────────────────────────────────────────────────────────
@@ -466,7 +582,8 @@ function columnLetter(columnId: string): string {
 
 const headerRows = computed<Array<'letters' | 'label'>>(() => {
   const mode: TSpreadsheetColumnHeaders = props.columnHeaders
-  if (mode === 'letters') return ['letters']
+  // A sheet-mode column has no name but its letter.
+  if (sheetMode.value || mode === 'letters') return ['letters']
   if (mode === 'both') return ['letters', 'label']
   return ['label']
 })
@@ -502,10 +619,10 @@ const colOffset = computed(() => (props.showGutter ? 1 : 0))
 // the selection on each render, so a linear search there grows with the
 // square of the sheet.
 const rowsById = computed(
-  () => new Map(props.rows.map((r) => [r.id, r] as const)),
+  () => new Map(sourceRows.value.map((r) => [r.id, r] as const)),
 )
 const columnsById = computed(
-  () => new Map(props.columns.map((c) => [c.id, c] as const)),
+  () => new Map(sourceColumns.value.map((c) => [c.id, c] as const)),
 )
 const colIndex = computed(
   () => new Map(orderedColumns.value.map((c, i) => [c.id, i] as const)),
@@ -577,15 +694,44 @@ const gridStyle = computed(() => {
       )
       .join(' ')
   // The first track is the header's own height. Left to the auto rows, it
-  // was a row tall and the header covered the top of the first row.
+  // was a row tall and the header covered the top of the first row. Every
+  // row then has a track of its own, so the grid is its full height while
+  // the virtualization renders only the rows in view.
+  const head =
+    headerRows.value.length === 2
+      ? 'var(--nbss-letter-height) var(--nbss-header-height)'
+      : 'var(--nbss-header-height)'
   return {
     gridTemplateColumns: cols,
-    gridTemplateRows:
-      headerRows.value.length === 2
-        ? 'var(--nbss-letter-height) var(--nbss-header-height)'
-        : 'var(--nbss-header-height)',
+    gridTemplateRows: `${head} repeat(${Math.max(1, allRows.value.length)}, var(--nbss-row-height))`,
   }
 })
+
+// ─── Column window ─────────────────────────────────────────────────────────
+// A wide sheet renders the columns in view, a screen either side, and the
+// pinned ones. Every column keeps its track, so the grid is its full width.
+// A fitted sheet shares out the width, so it renders every column.
+const COLUMN_WINDOW_FROM = 50
+
+const renderColumns = computed<ISpreadsheetColumn[]>(() => {
+  const cols = orderedColumns.value
+  if (props.fit || cols.length <= COLUMN_WINDOW_FROM) return cols
+  const view = scrollerRef.value?.clientWidth || 1200
+  const from = scrollLeft.value - view
+  const to = scrollLeft.value + view * 2
+  let x = props.showGutter ? props.gutterWidth : 0
+  const out: ISpreadsheetColumn[] = []
+  for (const c of cols) {
+    const w = widthOf(c)
+    if (c.pinned || (x + w >= from && x <= to)) out.push(c)
+    x += w
+  }
+  return out
+})
+
+function ciOf(col: ISpreadsheetColumn): number {
+  return colIndex.value.get(col.id) ?? 0
+}
 
 // ─── Short header labels ───────────────────────────────────────────────────
 // While any `label` does not fit its column, every column with a `shortLabel`
@@ -601,7 +747,7 @@ function measureHeaders() {
   const shortened: string[] = []
   let tooNarrow = false
   let unmeasured = false
-  for (const col of props.columns) {
+  for (const col of sourceColumns.value) {
     if (!col.shortLabel) continue
     const el = view.querySelector<HTMLElement>(
       `[data-header-col="${quoteAttr(col.id)}"] .nb-spreadsheet__header-label`,
@@ -634,7 +780,7 @@ watch(
 // Every unpinned row in sorted order, hidden ones included. A row's number
 // is its place here, so hiding row 3 leaves 1, 2, 4.
 const sortedAllDataRows = computed(() => {
-  const data = props.rows.filter((r) => !r.pinned)
+  const data = sourceRows.value.filter((r) => !r.pinned)
   if (!sortBy.value) return data
   const col = columnsById.value.get(sortBy.value.columnId)
   if (!col) return data
@@ -656,10 +802,10 @@ const rowNumbers = computed(
 const isShown = (r: ISpreadsheetRow) => !hiddenRowSet.value.has(r.id)
 const sortedDataRows = computed(() => sortedAllDataRows.value.filter(isShown))
 const pinnedTopRows = computed(() =>
-  props.rows.filter((r) => r.pinned === 'top' && isShown(r)),
+  sourceRows.value.filter((r) => r.pinned === 'top' && isShown(r)),
 )
 const pinnedBottomRows = computed(() =>
-  props.rows.filter((r) => r.pinned === 'bottom' && isShown(r)),
+  sourceRows.value.filter((r) => r.pinned === 'bottom' && isShown(r)),
 )
 
 // Where hidden data rows sit, as for columns. A hidden pinned row has no
@@ -774,7 +920,47 @@ function defaultParse(col: ISpreadsheetColumn, input: string): unknown {
   return input
 }
 
+// A sheet-mode cell takes what is typed as a number when it reads as one,
+// in the sheet's locale or with a point, and as text otherwise.
+const decimalSeparator = computed(
+  () =>
+    new Intl.NumberFormat(props.locale)
+      .formatToParts(1.5)
+      .find((p) => p.type === 'decimal')?.value ?? '.',
+)
+
+function parseSheetInput(input: string): TSpreadsheetValue {
+  const text = input.trim()
+  if (text === '') return null
+  if (/^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(text)) return Number(text)
+  if (decimalSeparator.value === ',' && /^[-+]?(\d+,?\d*|,\d+)$/.test(text))
+    return Number(text.replace(',', '.'))
+  return input
+}
+
+function formatSheetValue(raw: unknown): string {
+  if (raw === null || raw === undefined) return ''
+  if (typeof raw === 'number')
+    return new Intl.NumberFormat(props.locale, {
+      maximumFractionDigits: 10,
+    }).format(raw)
+  if (typeof raw === 'boolean') return raw ? 'TRUE' : 'FALSE'
+  return String(raw)
+}
+
+function parseInput(col: ISpreadsheetColumn, input: string): unknown {
+  if (col.parse) return col.parse(input)
+  if (sheetMode.value) return parseSheetInput(input)
+  return defaultParse(col, input)
+}
+
 function rawValue(rowId: string, columnId: string): unknown {
+  if (sheetMode.value) {
+    const v = cells.value?.[cellRef(rowId, columnId)]
+    if (v !== undefined) return v
+    if (props.computed) return props.computed(rowId, columnId, rawValue)
+    return undefined
+  }
   const row = rowsById.value.get(rowId)
   if (!row) return undefined
   // Prefer raw value, fall back to computed function
@@ -796,7 +982,8 @@ function cellDisplay(row: ISpreadsheetRow, col: ISpreadsheetColumn): string {
   const attrs = cellAttrsFor(row, col)
   if (attrs.display !== undefined) return attrs.display
   const raw = rawValue(row.id, col.id)
-  return col.format ? col.format(raw, row) : defaultFormat(col, raw)
+  if (col.format) return col.format(raw, row)
+  return sheetMode.value ? formatSheetValue(raw) : defaultFormat(col, raw)
 }
 
 function cellClass(row: ISpreadsheetRow, col: ISpreadsheetColumn) {
@@ -806,7 +993,13 @@ function cellClass(row: ISpreadsheetRow, col: ISpreadsheetColumn) {
   const isInSelection = isCellInSelection(row.id, col.id)
   const alignClass =
     col.align ??
-    (col.type === 'number' || col.type === 'date' ? 'right' : 'left')
+    (sheetMode.value
+      ? typeof rawValue(row.id, col.id) === 'number'
+        ? 'right'
+        : 'left'
+      : col.type === 'number' || col.type === 'date'
+        ? 'right'
+        : 'left')
   return {
     [`nb-spreadsheet__cell--${alignClass}`]: true,
     'nb-spreadsheet__cell--focused': isFocused,
@@ -815,6 +1008,8 @@ function cellClass(row: ISpreadsheetRow, col: ISpreadsheetColumn) {
     'nb-spreadsheet__cell--computed': !!attrs.computed || !!row.computed,
     'nb-spreadsheet__cell--pinned-top': row.pinned === 'top',
     'nb-spreadsheet__cell--pinned-bottom': row.pinned === 'bottom',
+    'nb-spreadsheet__cell--fill': isCellInFill(row.id, col.id),
+    'nb-spreadsheet__cell--fill-anchor': isFillHandleCell(row.id, col.id),
     [attrs.className ?? '']: !!attrs.className,
     [row.className ?? '']: !!row.className,
   }
@@ -1123,6 +1318,10 @@ function onCellMouseDown(
 }
 
 function onCellMouseEnter(row: ISpreadsheetRow, col: ISpreadsheetColumn) {
+  if (fillTarget.value) {
+    onFillEnter(row.id, col.id)
+    return
+  }
   if (!isSelecting.value || !selection.value) return
   selection.value = {
     ...selection.value,
@@ -1273,8 +1472,29 @@ function scrollIntoView(rowId: string, columnId?: string) {
 }
 
 function onScroll() {
-  scrollTop.value = scrollerRef.value?.scrollTop ?? 0
-  scrollLeft.value = scrollerRef.value?.scrollLeft ?? 0
+  const view = scrollerRef.value
+  scrollTop.value = view?.scrollTop ?? 0
+  scrollLeft.value = view?.scrollLeft ?? 0
+  if (view) growNearEnd(view)
+}
+
+// An infinite sheet adds a block of rows or columns once the view comes
+// within a screen of its end.
+function growNearEnd(view: HTMLElement) {
+  if (!sheetMode.value || props.extent !== 'infinite') return
+  const { rows, columns } = sheetSize.value
+  if (
+    view.clientHeight > 0 &&
+    view.scrollTop + view.clientHeight * 2 >= view.scrollHeight &&
+    rows < SHEET_MAX_ROWS
+  )
+    grownRows.value = Math.min(SHEET_MAX_ROWS, rows + GROW_ROWS)
+  if (
+    view.clientWidth > 0 &&
+    view.scrollLeft + view.clientWidth * 2 >= view.scrollWidth &&
+    columns < SHEET_MAX_COLUMNS
+  )
+    grownColumns.value = Math.min(SHEET_MAX_COLUMNS, columns + GROW_COLUMNS)
 }
 
 function focusedCell() {
@@ -1310,6 +1530,17 @@ function onKeydown(e: KeyboardEvent) {
   if (mod && e.key.toLowerCase() === 'a') {
     e.preventDefault()
     selectAll()
+    return
+  }
+  if (
+    mod &&
+    fillEnabled.value &&
+    !e.shiftKey &&
+    !e.altKey &&
+    (e.key.toLowerCase() === 'd' || e.key.toLowerCase() === 'r')
+  ) {
+    e.preventDefault()
+    fillFromEdge(e.key.toLowerCase() === 'd' ? 'down' : 'right')
     return
   }
   // The spreadsheet keys for a whole column and a whole row. Shift+Space has
@@ -1432,6 +1663,8 @@ const editorInputMode = computed(() => {
 // column's label and the row's, as the headers show them.
 const editorLabel = computed(() => {
   if (!editing.value) return undefined
+  if (sheetMode.value)
+    return cellRef(editing.value.rowId, editing.value.columnId)
   const col = columnsById.value.get(editing.value.columnId)
   const row = rowsById.value.get(editing.value.rowId)
   const rowName =
@@ -1506,19 +1739,52 @@ function commitEdit(refocus = true) {
   if (!col) return
   let value: unknown
   try {
-    value = col.parse ? col.parse(draft) : defaultParse(col, draft)
+    value = parseInput(col, draft)
   } catch {
     if (refocus) focusScroller()
     return
   }
   const before = rawValue(rowId, columnId)
-  if (before !== value) {
-    const change: ISpreadsheetChange = { rowId, columnId, before, after: value }
+  if (!sameValue(before, value)) {
+    const change = makeChange(rowId, columnId, before, value)
     pushUndo([change])
-    emit('commit', change)
-    emit('change', [change])
+    applyChanges([change])
   }
   if (refocus) focusScroller()
+}
+
+// An empty cell reads as undefined in sheet mode and is written as null, so
+// the two are the same value.
+function sameValue(a: unknown, b: unknown): boolean {
+  return a === b || ((a === undefined || a === null) && b === null)
+}
+
+function makeChange(
+  rowId: string,
+  columnId: string,
+  before: unknown,
+  after: unknown,
+): ISpreadsheetChange {
+  const change: ISpreadsheetChange = { rowId, columnId, before, after }
+  if (sheetMode.value) change.cell = cellRef(rowId, columnId)
+  return change
+}
+
+// The host applies a table-mode change. A sheet-mode change is written into
+// the cells here, and the host hears about it the same way.
+function applyChanges(changes: ISpreadsheetChange[]) {
+  if (sheetMode.value) {
+    const next: TSpreadsheetCells = { ...cells.value }
+    for (const ch of changes) {
+      const key = cellRef(ch.rowId, ch.columnId)
+      if (ch.after === null || ch.after === undefined || ch.after === '')
+        delete next[key]
+      else next[key] = ch.after as TSpreadsheetValue
+    }
+    cells.value = next
+  }
+  for (const ch of changes) emit('commit', ch)
+  emit('change', changes)
 }
 
 // ─── Bulk clear / clipboard ────────────────────────────────────────────────
@@ -1545,12 +1811,11 @@ function clearSelection() {
     if (!row || !col || isReadOnly(row, col)) continue
     const before = rawValue(rowId, columnId)
     if (before === null || before === undefined || before === '') continue
-    changes.push({ rowId, columnId, before, after: null })
+    changes.push(makeChange(rowId, columnId, before, null))
   }
   if (changes.length === 0) return
   pushUndo(changes)
-  for (const ch of changes) emit('commit', ch)
-  emit('change', changes)
+  applyChanges(changes)
 }
 
 // The selection as tab-separated values, the format other spreadsheets
@@ -1598,8 +1863,15 @@ function pasteText(text: string) {
     .replace(/\r\n?/g, '\n')
     .split('\n')
     .map((line) => line.split('\t'))
-  const allRowIds = allRows.value.map((r) => r.id)
-  const cols = orderedColumns.value.map((c) => c.id)
+  const width = Math.max(...matrix.map((line) => line.length))
+  const allRowIds = growRowIds(
+    allRows.value.map((r) => r.id),
+    (rowIndex.value.get(focused.value.rowId) ?? 0) + matrix.length,
+  )
+  const cols = growColumnIds(
+    orderedColumns.value.map((c) => c.id),
+    (colIndex.value.get(focused.value.columnId) ?? 0) + width,
+  )
   const baseR = rowIndex.value.get(focused.value.rowId) ?? 0
   const baseC = colIndex.value.get(focused.value.columnId) ?? 0
   const changes: ISpreadsheetChange[] = []
@@ -1608,24 +1880,217 @@ function pasteText(text: string) {
       const rowId = allRowIds[baseR + dr]
       const columnId = cols[baseC + dc]
       if (!rowId || !columnId) return
-      const row = rowsById.value.get(rowId)
-      const col = columnsById.value.get(columnId)
-      if (!row || !col || isReadOnly(row, col)) return
+      // A row or column the paste grows the sheet into has no entry yet.
+      const row = rowsById.value.get(rowId) ?? { id: rowId, values: NO_VALUES }
+      const col = columnsById.value.get(columnId) ?? {
+        id: columnId,
+        label: columnId,
+      }
+      if (isReadOnly(row, col)) return
       let value: unknown
       try {
-        value = col.parse ? col.parse(cellText) : defaultParse(col, cellText)
+        value = parseInput(col, cellText)
       } catch {
         return
       }
       const before = rawValue(rowId, columnId)
-      if (before === value) return
-      changes.push({ rowId, columnId, before, after: value })
+      if (sameValue(before, value)) return
+      changes.push(makeChange(rowId, columnId, before, value))
     })
   })
   if (changes.length === 0) return
   pushUndo(changes)
-  for (const ch of changes) emit('commit', ch)
-  emit('change', changes)
+  applyChanges(changes)
+}
+
+// A paste past the end of a sheet-mode sheet grows it, up to its limit, as
+// a desktop spreadsheet does. A table-mode sheet ends where its rows do.
+function growRowIds(ids: string[], needed: number): string[] {
+  if (!sheetMode.value || needed <= ids.length) return ids
+  const out = [...ids]
+  const rows = sortedAllDataRows.value
+  let next = Number(rows[rows.length - 1]?.id ?? 0) + 1
+  while (out.length < needed && next <= sheetLimit.value.rows)
+    out.push(String(next++))
+  return out
+}
+
+function growColumnIds(ids: string[], needed: number): string[] {
+  if (!sheetMode.value || needed <= ids.length) return ids
+  const out = [...ids]
+  let next = allOrderedColumns.value.length
+  while (out.length < needed && next < sheetLimit.value.columns)
+    out.push(indexToLetters(next++))
+  return out
+}
+
+// ─── Fill ──────────────────────────────────────────────────────────────────
+// The fill handle sits on the selection's last cell. Dragging it down, up or
+// sideways fills the cells it passes: numbers that step evenly carry the
+// series on, and anything else repeats. Ctrl+D and Ctrl+R copy the first row
+// or column of the selection over the rest, for the keyboard.
+const fillEnabled = computed(() => props.fillHandle ?? sheetMode.value)
+
+interface IBounds {
+  r1: number
+  r2: number
+  c1: number
+  c2: number
+}
+const fillTarget = ref<IBounds | null>(null)
+
+function isFillHandleCell(rowId: string, columnId: string): boolean {
+  const b = selectionBounds.value
+  if (!fillEnabled.value || !b || editing.value) return false
+  return (
+    rowIndex.value.get(rowId) === b.r2 && colIndex.value.get(columnId) === b.c2
+  )
+}
+
+function isCellInFill(rowId: string, columnId: string): boolean {
+  const t = fillTarget.value
+  if (!t) return false
+  const ri = rowIndex.value.get(rowId) ?? -1
+  const ci = colIndex.value.get(columnId) ?? -1
+  return (
+    ri >= t.r1 &&
+    ri <= t.r2 &&
+    ci >= t.c1 &&
+    ci <= t.c2 &&
+    !isCellInSelection(rowId, columnId)
+  )
+}
+
+function startFill(e: MouseEvent) {
+  if (e.button !== 0) return
+  fillTarget.value = selectionBounds.value ? { ...selectionBounds.value } : null
+  document.addEventListener('mouseup', endFill, { once: true })
+}
+
+// The fill grows along one axis only: the one the pointer has moved further
+// past the selection on.
+function onFillEnter(rowId: string, columnId: string) {
+  const b = selectionBounds.value
+  if (!b || !fillTarget.value) return
+  const ri = rowIndex.value.get(rowId) ?? -1
+  const ci = colIndex.value.get(columnId) ?? -1
+  const dr = ri > b.r2 ? ri - b.r2 : ri < b.r1 ? ri - b.r1 : 0
+  const dc = ci > b.c2 ? ci - b.c2 : ci < b.c1 ? ci - b.c1 : 0
+  if (Math.abs(dr) >= Math.abs(dc))
+    fillTarget.value = {
+      ...b,
+      r1: Math.min(b.r1, b.r1 + dr),
+      r2: Math.max(b.r2, b.r2 + dr),
+    }
+  else
+    fillTarget.value = {
+      ...b,
+      c1: Math.min(b.c1, b.c1 + dc),
+      c2: Math.max(b.c2, b.c2 + dc),
+    }
+}
+
+function endFill() {
+  const b = selectionBounds.value
+  const t = fillTarget.value
+  fillTarget.value = null
+  if (!b || !t) return
+  fillRange(b, t)
+  const rows = allRows.value
+  const cols = orderedColumns.value
+  selection.value = {
+    startRowId: rows[t.r1].id,
+    startColumnId: cols[t.c1].id,
+    endRowId: rows[t.r2].id,
+    endColumnId: cols[t.c2].id,
+  }
+  emit('selection', selection.value)
+}
+
+// The values that follow `source` for `count` cells. Two or more numbers
+// with the same step between them carry on the series, either way.
+function seriesValues(
+  source: unknown[],
+  count: number,
+  backward: boolean,
+): unknown[] {
+  const k = source.length
+  const numeric =
+    k >= 2 && source.every((v) => typeof v === 'number' && Number.isFinite(v))
+  const nums = source as number[]
+  const step = numeric ? (nums[k - 1] - nums[0]) / (k - 1) : 0
+  const even =
+    numeric && nums.every((v, i) => Math.abs(v - (nums[0] + step * i)) < 1e-9)
+  return Array.from({ length: count }, (_, i) => {
+    if (even) {
+      const v = backward
+        ? nums[0] - step * (i + 1)
+        : nums[k - 1] + step * (i + 1)
+      return Math.round(v * 1e10) / 1e10
+    }
+    return backward ? source[k - 1 - (i % k)] : source[i % k]
+  })
+}
+
+// Fills `target`, which extends `source` along one axis.
+function fillRange(source: IBounds, target: IBounds) {
+  const rows = allRows.value
+  const cols = orderedColumns.value
+  const changes: ISpreadsheetChange[] = []
+  const write = (ri: number, ci: number, value: unknown) => {
+    const row = rows[ri]
+    const col = cols[ci]
+    if (!row || !col || isReadOnly(row, col)) return
+    const before = rawValue(row.id, col.id)
+    const after = value === undefined ? null : value
+    if (!sameValue(before, after))
+      changes.push(makeChange(row.id, col.id, before, after))
+  }
+  const vertical = target.r1 !== source.r1 || target.r2 !== source.r2
+  if (vertical) {
+    const backward = target.r1 < source.r1
+    const count = backward ? source.r1 - target.r1 : target.r2 - source.r2
+    for (let c = source.c1; c <= source.c2; c++) {
+      const src: unknown[] = []
+      for (let r = source.r1; r <= source.r2; r++)
+        src.push(rawValue(rows[r].id, cols[c].id))
+      seriesValues(src, count, backward).forEach((v, i) =>
+        write(backward ? source.r1 - 1 - i : source.r2 + 1 + i, c, v),
+      )
+    }
+  } else {
+    const backward = target.c1 < source.c1
+    const count = backward ? source.c1 - target.c1 : target.c2 - source.c2
+    if (count <= 0) return
+    for (let r = source.r1; r <= source.r2; r++) {
+      const src: unknown[] = []
+      for (let c = source.c1; c <= source.c2; c++)
+        src.push(rawValue(rows[r].id, cols[c].id))
+      seriesValues(src, count, backward).forEach((v, i) =>
+        write(r, backward ? source.c1 - 1 - i : source.c2 + 1 + i, v),
+      )
+    }
+  }
+  if (!changes.length) return
+  pushUndo(changes)
+  applyChanges(changes)
+}
+
+// Ctrl+D copies the selection's first row down over the rest of it, and
+// Ctrl+R its first column to the right. On a single row or column they copy
+// the one before it in. One row or column of source always repeats.
+function fillFromEdge(direction: 'down' | 'right') {
+  const b = selectionBounds.value
+  if (!b) return
+  if (direction === 'down') {
+    const top = b.r1 === b.r2 ? b.r1 - 1 : b.r1
+    if (top < 0) return
+    fillRange({ ...b, r1: top, r2: top }, { ...b, r1: top, r2: b.r2 })
+  } else {
+    const left = b.c1 === b.c2 ? b.c1 - 1 : b.c1
+    if (left < 0) return
+    fillRange({ ...b, c1: left, c2: left }, { ...b, c1: left, c2: b.c2 })
+  }
 }
 
 // ─── Resize ────────────────────────────────────────────────────────────────
@@ -1729,9 +2194,9 @@ watch([orderedColumns, allRows], () => {
     return
   }
   const everyRow = [
-    ...props.rows.filter((r) => r.pinned === 'top'),
+    ...sourceRows.value.filter((r) => r.pinned === 'top'),
     ...sortedAllDataRows.value,
-    ...props.rows.filter((r) => r.pinned === 'bottom'),
+    ...sourceRows.value.filter((r) => r.pinned === 'bottom'),
   ]
   const columnId = colShown
     ? fc.columnId
@@ -1868,16 +2333,14 @@ function undo() {
     before: ch.after,
     after: ch.before,
   }))
-  for (const ch of reverted) emit('commit', ch)
-  emit('change', reverted)
+  applyChanges(reverted)
   redoStack.value.push(group)
 }
 
 function redo() {
   const group = redoStack.value.pop()
   if (!group) return
-  for (const ch of group) emit('commit', ch)
-  emit('change', group)
+  applyChanges(group)
   undoStack.value.push(group)
 }
 
@@ -2351,6 +2814,31 @@ defineExpose({
 .nb-spreadsheet__cell[style*='position: sticky'][style*='left']
   + .nb-spreadsheet__cell:not([style*='position: sticky']) {
   box-shadow: -4px 0 4px -4px rgba(0, 0, 0, 0.12);
+}
+
+// The fill handle: a square on the selection's last corner, in the focus
+// ring's colour. The cells a drag will fill take a dashed outline.
+.nb-spreadsheet__cell--fill-anchor {
+  position: relative;
+}
+.nb-spreadsheet__fill-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 6px;
+  height: 6px;
+  background: var(--nbss-focus-ring);
+  box-shadow: 0 0 0 1px var(--nb-c-surface-raised, var(--nb-c-surface));
+  cursor: crosshair;
+  z-index: 3;
+}
+.nb-spreadsheet__cell--fill {
+  outline: 1px dashed var(--nb-c-border-strong);
+  outline-offset: -2px;
+}
+.nb-spreadsheet--filling,
+.nb-spreadsheet--filling .nb-spreadsheet__cell {
+  cursor: crosshair;
 }
 
 .nb-spreadsheet__editor {

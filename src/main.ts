@@ -929,4 +929,8 @@ export type {
   TSpreadsheetSortDir,
   TSpreadsheetSize,
   TSpreadsheetColumnHeaders,
+  TSpreadsheetValue,
+  TSpreadsheetCells,
+  TSpreadsheetExtent,
+  ISpreadsheetExtent,
 } from './components/Spreadsheet.d'

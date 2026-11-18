@@ -9,6 +9,8 @@ pageTabs: ['usage', 'code', 'accessibility']
 
 Use it when people edit many values in place: hours per day, quantities per month, a budget. For a list people read, sort and act on row by row, use [`NbDataTable`](/components/data-table/usage) instead.
 
+The sheet has two modes. In **table mode**, the default, the app gives it named columns and rows, and the shape of the grid is the app's. In **sheet mode** the app binds a map of cells instead, keyed `A1`, `B2`, and the grid is a desktop spreadsheet's: columns A, B, C, rows 1, 2, 3, and a size that follows the data. See [Sheet mode](#sheet-mode).
+
 <preview>
   <NbSpreadsheet
     :columns="basicColumns"
@@ -114,6 +116,29 @@ Set `context-menu` and a right click, `Shift+F10` or the menu key opens the shee
   />
 </preview>
 
+## Sheet mode
+
+Bind `v-model:cells` and the sheet makes its own columns and rows over the cells, writes what is typed, pasted, filled and cleared back into them, and keeps undo. A value that reads as a number in the sheet's `locale` is stored as one and set to the right. Anything else is text. An empty cell has no key, so the map stays as small as the data.
+
+`extent` sets how far the grid reaches:
+
+- **`'data'`**, the default, ends at the last filled row and column. A paste past the end grows it.
+- **An object** sets bounds: `{ minRows: 20, minColumns: 8 }` shows an empty 20 by 8 grid to start with, and `maxRows` and `maxColumns` stop a paste or a fill from going further.
+- **`'infinite'`** starts at A to Z and a hundred rows, and adds more as the view nears the end, up to 9,000 rows and 1,000 columns.
+
+An infinite grid is never the default. Pick it for a scratch sheet, and bounds for anything with a known shape.
+
+<preview>
+  <NbSpreadsheet
+    v-model:cells="sheetCells"
+    :extent="{ minRows: 8, minColumns: 6 }"
+    locale="en-GB"
+    aria-label="Weekly visits"
+  />
+</preview>
+
+Select a range and drag the square on its last corner to fill the cells beyond it. Numbers that step evenly, such as 1, 2 or 10, 20, carry the series on, and anything else repeats. `Ctrl+D` copies the selection's top row down over the rest of it, and `Ctrl+R` its first column to the right. The fill handle is on in sheet mode, and `fill-handle` turns it on in table mode too.
+
 ## Sorting
 
 Set `column.sortable` to let a header click sort the rows. The first click sorts ascending, the second descending, the third clears it. Only the unpinned rows move: pinned rows keep their place. The arrows appear when the header is hovered, and stay on the sorted column.
@@ -146,6 +171,7 @@ Drag across cells, or hold `Shift` while clicking or moving, to select a range. 
 | Narrow / widen column    | `Alt+Shift+←` / `Alt+Shift+→`, 8px a step                       |
 | Open the context menu    | `Shift+F10` / the menu key / right click (with `context-menu`)  |
 | Copy / cut / paste (TSV) | `Cmd/Ctrl+C` / `Cmd/Ctrl+X` / `Cmd/Ctrl+V`                      |
+| Fill down / right        | `Cmd/Ctrl+D` / `Cmd/Ctrl+R` (with the fill handle)              |
 | Undo / redo              | `Cmd/Ctrl+Z` / `Cmd/Ctrl+Shift+Z`                               |
 
 Editing has the two states of a desktop spreadsheet. A cell opened by typing into it takes every arrow key as "commit and move", so a column of numbers is keyed in as `8`, `↓`, `8`, `↓` without touching the mouse. A cell opened with `F2`, a double click or a tap keeps `←` and `→` for moving the caret inside the text.

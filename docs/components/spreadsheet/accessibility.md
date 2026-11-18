@@ -24,6 +24,9 @@ a11y:
 - The marks hidden columns and rows leave are buttons named for what they show ("Show 2 hidden columns"), out of the tab order like every other part of the grid. From the keyboard, the context menu shows hidden columns and rows, and it opens with `Shift+F10` or the menu key.
 - The context menu is `NbMenu`, so it has the menu's own keyboard model: the arrow keys, typeahead, `Esc` to close, and the focus back on the sheet afterwards.
 - Every column resizes from the keyboard with `Alt+Shift+←` and `Alt+Shift+→`, as well as by dragging.
+- In sheet mode the column headers are the letters, and the cell editor is labelled with the cell's reference ("B3").
+- The fill handle is a mouse affordance and is hidden from assistive technology. `Ctrl+D` and `Ctrl+R` fill from the keyboard.
+- An infinite sheet reports the rows and columns it has grown to in `aria-rowcount` and `aria-colcount`, which rise as the person moves towards the end.
 - On a touch screen a tap on the active cell opens it, since there is no key to type into it, and the editor's text is at least 16px so the page does not zoom.
 
 ## Keyboard

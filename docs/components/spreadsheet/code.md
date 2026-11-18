@@ -183,6 +183,33 @@ The exposed `hideColumns`, `showColumns`, `hideRows` and `showRows` do the same 
 
 The context menu's words, and the names of the marks hidden columns and rows leave, come from the library's string catalogue (`spreadsheetCut`, `spreadsheetHideColumns` and the rest), so an app translates them where it translates every other built-in string.
 
+## Sheet mode
+
+Bind `v-model:cells` in place of `columns` and `rows`. The sheet writes every edit into the map itself, so the host has nothing to apply. It still emits `commit` and `change`, with each change's `cell` reference, for an app that saves deltas rather than the whole map.
+
+```vue
+<NbSpreadsheet
+  v-model:cells="cells"
+  :extent="{ minRows: 50, minColumns: 10, maxRows: 2000 }"
+  locale="en-GB"
+  aria-label="Scratch sheet"
+  @change="(changes) => save(changes)"
+/>
+```
+
+```ts
+const cells = ref<TSpreadsheetCells>({
+  A1: 'Region',
+  B1: 'Total',
+  A2: 'North',
+  B2: 1200,
+})
+```
+
+In sheet mode a column's id is its letter and a row's id is its number, so `hiddenColumns: ['C']`, `focus('3', 'B')` and `cellAttrs` all speak in references. Columns are not sortable, since sorting would move rows the references point at.
+
+A wide sheet renders only the columns in view, as every sheet does with its rows. Every column keeps its track, so the scrollbar is true to the sheet's size.
+
 ## Theming
 
 The sheet is built on the surface tokens, so it follows any `.nb-layer-N` parent and the dark theme without overrides.
@@ -209,25 +236,28 @@ A few component-local properties tune a single sheet. Prefer `size` to setting t
 
 ## Props
 
-| Prop             | Type                                                              | Default   | Description                                                                                                            |
-| ---------------- | ----------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `columns`        | `ISpreadsheetColumn[]`                                            | -         | Column definitions, ordered left to right                                                                              |
-| `rows`           | `ISpreadsheetRow[]`                                               | -         | Row data. Pinned rows can appear anywhere in the array                                                                 |
-| `cellAttrs`      | `(rowId, columnId, row, column) => ISpreadsheetCellAttrs \| void` | -         | Per-cell read-only, class, tooltip or display override                                                                 |
-| `computed`       | `(rowId, columnId, get) => unknown`                               | -         | Returns the value of cells that are not in `row.values`                                                                |
-| `size`           | `'xs' \| 'sm' \| 'md' \| 'lg'`                                    | `'sm'`    | Row and header height: 24, 32, 40 or 48px                                                                              |
-| `ariaLabel`      | `string`                                                          | -         | Accessible name of the grid                                                                                            |
-| `resizable`      | `boolean`                                                         | `true`    | Allow column resize from the right edge of the header                                                                  |
-| `showGutter`     | `boolean`                                                         | `true`    | Show the row gutter on the left                                                                                        |
-| `gutterWidth`    | `number`                                                          | `44`      | Gutter width in pixels. Widen it when rows carry a `label`                                                             |
-| `windowRows`     | `number`                                                          | `80`      | Approximate visible rows used by the row virtualization                                                                |
-| `locale`         | `string`                                                          | `'pt-PT'` | Locale for the default number and date formatting. The next major defaults to the runtime's locale                     |
-| `fit`            | `boolean`                                                         | `false`   | Fill the parent: columns share the spare width and rows shrink, down to 20px, to fit the height (not on a touch phone) |
-| `columnHeaders`  | `'label' \| 'letters' \| 'both'`                                  | `'label'` | What the headers show: labels, A, B, C letters, or letters above the labels                                            |
-| `contextMenu`    | `boolean`                                                         | `false`   | Replace the browser's menu with the sheet's: clipboard, clear, sort, hide and show                                     |
-| `hiddenColumns`  | `string[]`                                                        | `[]`      | Ids of hidden columns. `v-model:hidden-columns`, or kept by the sheet when unbound                                     |
-| `hiddenRows`     | `string[]`                                                        | `[]`      | Ids of hidden rows. `v-model:hidden-rows`, or kept by the sheet when unbound                                           |
-| `rowReorderable` | `boolean`                                                         | `false`   | Deprecated. Never implemented and has no effect. Removed in the next major                                             |
+| Prop             | Type                                                              | Default    | Description                                                                                                            |
+| ---------------- | ----------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `columns`        | `ISpreadsheetColumn[]`                                            | -          | Table mode: column definitions, ordered left to right                                                                  |
+| `rows`           | `ISpreadsheetRow[]`                                               | -          | Table mode: row data. Pinned rows can appear anywhere in the array                                                     |
+| `cellAttrs`      | `(rowId, columnId, row, column) => ISpreadsheetCellAttrs \| void` | -          | Per-cell read-only, class, tooltip or display override                                                                 |
+| `computed`       | `(rowId, columnId, get) => unknown`                               | -          | Returns the value of cells that are not in `row.values`                                                                |
+| `size`           | `'xs' \| 'sm' \| 'md' \| 'lg'`                                    | `'sm'`     | Row and header height: 24, 32, 40 or 48px                                                                              |
+| `ariaLabel`      | `string`                                                          | -          | Accessible name of the grid                                                                                            |
+| `resizable`      | `boolean`                                                         | `true`     | Allow column resize from the right edge of the header                                                                  |
+| `showGutter`     | `boolean`                                                         | `true`     | Show the row gutter on the left                                                                                        |
+| `gutterWidth`    | `number`                                                          | `44`       | Gutter width in pixels. Widen it when rows carry a `label`                                                             |
+| `windowRows`     | `number`                                                          | `80`       | Approximate visible rows used by the row virtualization                                                                |
+| `locale`         | `string`                                                          | `'pt-PT'`  | Locale for the default number and date formatting. The next major defaults to the runtime's locale                     |
+| `fit`            | `boolean`                                                         | `false`    | Fill the parent: columns share the spare width and rows shrink, down to 20px, to fit the height (not on a touch phone) |
+| `columnHeaders`  | `'label' \| 'letters' \| 'both'`                                  | `'label'`  | What the headers show: labels, A, B, C letters, or letters above the labels                                            |
+| `contextMenu`    | `boolean`                                                         | `false`    | Replace the browser's menu with the sheet's: clipboard, clear, sort, hide and show                                     |
+| `hiddenColumns`  | `string[]`                                                        | `[]`       | Ids of hidden columns. `v-model:hidden-columns`, or kept by the sheet when unbound                                     |
+| `hiddenRows`     | `string[]`                                                        | `[]`       | Ids of hidden rows. `v-model:hidden-rows`, or kept by the sheet when unbound                                           |
+| `cells`          | `TSpreadsheetCells`                                               | -          | Sheet mode: the cells, keyed `A1`. `v-model:cells`. Leave unbound for table mode                                       |
+| `extent`         | `'data' \| 'infinite' \| ISpreadsheetExtent`                      | `'data'`   | Sheet mode: how far the grid reaches. `{ minRows, minColumns, maxRows, maxColumns }` sets bounds                       |
+| `fillHandle`     | `boolean`                                                         | sheet mode | The fill handle, and `Ctrl+D` and `Ctrl+R`. On in sheet mode, off in table mode                                        |
+| `rowReorderable` | `boolean`                                                         | `false`    | Deprecated. Never implemented and has no effect. Removed in the next major                                             |
 
 ## Column interface
 
@@ -275,16 +305,17 @@ interface ISpreadsheetCellAttrs {
 
 ## Events
 
-| Event                  | Payload                                       | Description                                               |
-| ---------------------- | --------------------------------------------- | --------------------------------------------------------- |
-| `commit`               | `ISpreadsheetChange`                          | One cell was committed (edit, paste, clear, undo, redo)   |
-| `change`               | `ISpreadsheetChange[]`                        | The batch of changes from one action                      |
-| `selection`            | `ISpreadsheetSelection \| null`               | The selected range changed                                |
-| `focus`                | `{ rowId: string; columnId: string } \| null` | The active cell changed                                   |
-| `column-resize`        | `{ columnId: string; width: number }`         | A column was resized, at the end of a drag or on each key |
-| `update:hiddenColumns` | `string[]`                                    | Columns were hidden or shown                              |
-| `update:hiddenRows`    | `string[]`                                    | Rows were hidden or shown                                 |
-| `row-reorder`          | `{ rowId: string; toIndex: number }`          | Deprecated with `rowReorderable`. Never emitted           |
+| Event                  | Payload                                       | Description                                                     |
+| ---------------------- | --------------------------------------------- | --------------------------------------------------------------- |
+| `commit`               | `ISpreadsheetChange`                          | One cell was committed (edit, paste, clear, undo, redo)         |
+| `change`               | `ISpreadsheetChange[]`                        | The batch of changes from one action                            |
+| `selection`            | `ISpreadsheetSelection \| null`               | The selected range changed                                      |
+| `focus`                | `{ rowId: string; columnId: string } \| null` | The active cell changed                                         |
+| `column-resize`        | `{ columnId: string; width: number }`         | A column was resized, at the end of a drag or on each key       |
+| `update:hiddenColumns` | `string[]`                                    | Columns were hidden or shown                                    |
+| `update:hiddenRows`    | `string[]`                                    | Rows were hidden or shown                                       |
+| `update:cells`         | `TSpreadsheetCells`                           | Sheet mode: the cells after an edit, paste, fill, clear or undo |
+| `row-reorder`          | `{ rowId: string; toIndex: number }`          | Deprecated with `rowReorderable`. Never emitted                 |
 
 ## Change interface
 
@@ -292,8 +323,24 @@ interface ISpreadsheetCellAttrs {
 interface ISpreadsheetChange {
   rowId: string
   columnId: string
+  cell?: string // sheet mode: the reference, such as 'B3'
   before: unknown
   after: unknown
+}
+```
+
+## Sheet mode types
+
+```typescript
+type TSpreadsheetValue = string | number | boolean | null
+type TSpreadsheetCells = Record<string, TSpreadsheetValue>
+type TSpreadsheetExtent = 'data' | 'infinite' | ISpreadsheetExtent
+
+interface ISpreadsheetExtent {
+  minRows?: number // the least shown, filled or not (default 1)
+  minColumns?: number
+  maxRows?: number // the most a paste or fill grows to
+  maxColumns?: number
 }
 ```
 

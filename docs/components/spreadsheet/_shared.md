@@ -4,6 +4,7 @@ import type {
   ISpreadsheetColumn,
   ISpreadsheetRow,
   ISpreadsheetChange,
+  TSpreadsheetCells,
 } from '@nubisco/ui'
 
 // ── Basic example ───────────────────────────────────────────────────────────
@@ -187,6 +188,19 @@ function onBudgetCommit(c: ISpreadsheetChange) {
   const r = budgetRows.value.find((x) => x.id === c.rowId)
   if (r) r.values[c.columnId] = c.after
 }
+
+// ── Sheet mode ──────────────────────────────────────────────────────────────
+const sheetCells = ref<TSpreadsheetCells>({
+  A1: 'Week',
+  B1: 'Visits',
+  C1: 'Sign-ups',
+  A2: 1,
+  B2: 1200,
+  C2: 48,
+  A3: 2,
+  B3: 1350,
+  C3: 52,
+})
 </script>
 
 <style scoped>

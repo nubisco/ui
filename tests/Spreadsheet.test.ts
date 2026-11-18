@@ -960,3 +960,182 @@ describe('NbSpreadsheet column resize', () => {
     ])
   })
 })
+
+describe('NbSpreadsheet sheet mode', () => {
+  type TCells = Record<string, string | number | boolean | null>
+  // Mounts a sheet with v-model:cells bound, as a host would.
+  function sheet(cells: TCells, props: Record<string, unknown> = {}) {
+    const w = mount(Spreadsheet, {
+      props: {
+        cells,
+        locale: 'en-GB',
+        'onUpdate:cells': (v: TCells) => w.setProps({ cells: v }),
+        ...props,
+      },
+      attachTo: document.body,
+    })
+    return w
+  }
+  const model = (w: ReturnType<typeof sheet>) => w.props('cells') as TCells
+  const headers = (w: ReturnType<typeof sheet>) =>
+    w.findAll('.nb-spreadsheet__header').map((h) => h.text())
+  const gutter = (w: ReturnType<typeof sheet>) =>
+    w.findAll('.nb-spreadsheet__gutter').map((g) => g.text())
+
+  afterEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  it('lays out letters and numbers as far as the data reaches', () => {
+    const w = sheet({ A1: 'Rent', B3: 1250.5 })
+    expect(headers(w)).toEqual(['A', 'B'])
+    expect(gutter(w)).toEqual(['1', '2', '3'])
+    expect(w.find('[data-cell="1::A"]').text()).toBe('Rent')
+    const b3 = w.find('[data-cell="3::B"]')
+    expect(b3.text()).toBe('1,250.5')
+    expect(b3.classes()).toContain('nb-spreadsheet__cell--right')
+    expect(w.find('[data-cell="1::A"]').classes()).toContain(
+      'nb-spreadsheet__cell--left',
+    )
+  })
+
+  it('writes what is typed into the cells, as a number when it reads as one', async () => {
+    const w = sheet({}, { extent: { minRows: 3, minColumns: 3 } })
+    const scroller = w.find('.nb-spreadsheet__scroller')
+    await w.find('[data-cell="1::A"]').trigger('mousedown')
+    await scroller.trigger('keydown', { key: '4' })
+    const input = w.find<HTMLInputElement>('.nb-spreadsheet__editor')
+    expect(input.attributes('aria-label')).toBe('A1')
+    await input.setValue('42')
+    await input.trigger('keydown', { key: 'Enter' })
+    await scroller.trigger('keydown', { key: 'R' })
+    await w.find('.nb-spreadsheet__editor').setValue('Rent')
+    await w.find('.nb-spreadsheet__editor').trigger('keydown', { key: 'Tab' })
+    expect(model(w)).toEqual({ A1: 42, A2: 'Rent' })
+    const change = w.emitted('change')!.at(-1)![0] as Array<{ cell: string }>
+    expect(change[0].cell).toBe('A2')
+    // Clearing a cell drops its key, and undo puts it back.
+    await w.find('[data-cell="1::A"]').trigger('mousedown')
+    await scroller.trigger('keydown', { key: 'Delete' })
+    expect(model(w)).toEqual({ A2: 'Rent' })
+    await scroller.trigger('keydown', { key: 'z', ctrlKey: true })
+    expect(model(w)).toEqual({ A1: 42, A2: 'Rent' })
+  })
+
+  it('reads a decimal comma in a locale that writes one', async () => {
+    const w = sheet({}, { locale: 'pt-PT' })
+    await w.find('[data-cell="1::A"]').trigger('mousedown')
+    await w.find('.nb-spreadsheet__scroller').trigger('keydown', { key: '1' })
+    await w.find('.nb-spreadsheet__editor').setValue('1,5')
+    await w.find('.nb-spreadsheet__editor').trigger('keydown', { key: 'Enter' })
+    expect(model(w)).toEqual({ A1: 1.5 })
+  })
+
+  it('shows at least the bounds it is given, and grows no further', async () => {
+    const w = sheet(
+      { A1: 1 },
+      { extent: { minRows: 4, minColumns: 3, maxRows: 5, maxColumns: 3 } },
+    )
+    expect(headers(w)).toEqual(['A', 'B', 'C'])
+    expect(gutter(w)).toEqual(['1', '2', '3', '4'])
+    await w.find('[data-cell="4::B"]').trigger('mousedown')
+    const paste = new Event('paste', { bubbles: true, cancelable: true })
+    Object.assign(paste, {
+      clipboardData: { getData: () => 'a\tb\tc\nd\te\tf\ng\th\ti' },
+    })
+    w.find('.nb-spreadsheet__scroller').element.dispatchEvent(paste)
+    await nextTick()
+    // Row 5 is the most it reaches, and column C the widest.
+    expect(model(w)).toEqual({ A1: 1, B4: 'a', C4: 'b', B5: 'd', C5: 'e' })
+    expect(gutter(w)).toEqual(['1', '2', '3', '4', '5'])
+  })
+
+  it('grows to take a paste past its end', async () => {
+    const w = sheet({ A1: 'x' })
+    await w.find('[data-cell="1::A"]').trigger('mousedown')
+    const paste = new Event('paste', { bubbles: true, cancelable: true })
+    Object.assign(paste, { clipboardData: { getData: () => '1\t2\n3\t4' } })
+    w.find('.nb-spreadsheet__scroller').element.dispatchEvent(paste)
+    await nextTick()
+    expect(model(w)).toEqual({ A1: 1, B1: 2, A2: 3, B2: 4 })
+    expect(headers(w)).toEqual(['A', 'B'])
+    expect(gutter(w)).toEqual(['1', '2'])
+  })
+
+  it('starts an infinite sheet at A to Z and a hundred rows', () => {
+    const w = sheet({}, { extent: 'infinite' })
+    const grid = w.find('[role="grid"]')
+    expect(grid.attributes('aria-colcount')).toBe('27')
+    expect(grid.attributes('aria-rowcount')).toBe('101')
+    expect(headers(w).at(-1)).toBe('Z')
+  })
+
+  it('renders only the columns in view on a wide sheet', () => {
+    const w = sheet({}, { extent: { minColumns: 400 } })
+    const rendered = headers(w)
+    expect(rendered.length).toBeLessThan(400)
+    expect(rendered[0]).toBe('A')
+    // Every column keeps its track, so the grid is its full width.
+    const style = w.find('.nb-spreadsheet__grid').attributes('style')
+    expect(style.match(/120px/g)?.length).toBe(400)
+  })
+
+  it('carries a series on with the fill handle', async () => {
+    const w = sheet({ A1: 1, A2: 2, B1: 'x' }, { extent: { minRows: 5 } })
+    await w.find('[data-cell="1::A"]').trigger('mousedown')
+    await w.find('[data-cell="2::B"]').trigger('mousedown', { shiftKey: true })
+    const handle = w.find('[data-cell="2::B"] .nb-spreadsheet__fill-handle')
+    expect(handle.exists()).toBe(true)
+    await handle.trigger('mousedown')
+    await w.find('[data-cell="5::A"]').trigger('mouseenter')
+    expect(w.find('[data-cell="4::B"]').classes()).toContain(
+      'nb-spreadsheet__cell--fill',
+    )
+    document.dispatchEvent(new MouseEvent('mouseup'))
+    await nextTick()
+    // Numbers that step evenly carry on, anything else repeats.
+    expect(model(w)).toEqual({
+      A1: 1,
+      A2: 2,
+      A3: 3,
+      A4: 4,
+      A5: 5,
+      B1: 'x',
+      B3: 'x',
+      B5: 'x',
+    })
+    const sel = w.emitted('selection')!.at(-1)![0] as { endRowId: string }
+    expect(sel.endRowId).toBe('5')
+  })
+
+  it('fills down and right from the keyboard', async () => {
+    const w = sheet({ A1: 7 }, { extent: { minRows: 3, minColumns: 2 } })
+    const scroller = w.find('.nb-spreadsheet__scroller')
+    await w.find('[data-cell="1::A"]').trigger('mousedown')
+    await w.find('[data-cell="3::A"]').trigger('mousedown', { shiftKey: true })
+    await scroller.trigger('keydown', { key: 'd', ctrlKey: true })
+    expect(model(w)).toEqual({ A1: 7, A2: 7, A3: 7 })
+    await w.find('[data-cell="1::B"]').trigger('mousedown')
+    await scroller.trigger('keydown', { key: 'r', ctrlKey: true })
+    expect(model(w)).toEqual({ A1: 7, A2: 7, A3: 7, B1: 7 })
+  })
+
+  it('keeps the fill handle and its keys out of table mode by default', async () => {
+    const w = mount(Spreadsheet, {
+      props: { columns, rows },
+      attachTo: document.body,
+    })
+    await w.find('[data-cell="r1::jan"]').trigger('mousedown')
+    expect(w.find('.nb-spreadsheet__fill-handle').exists()).toBe(false)
+    const key = new KeyboardEvent('keydown', {
+      key: 'd',
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    })
+    w.find('.nb-spreadsheet__scroller').element.dispatchEvent(key)
+    expect(key.defaultPrevented).toBe(false)
+    expect(w.emitted('change')).toBeFalsy()
+    w.unmount()
+  })
+})

@@ -16,6 +16,28 @@ export type TSpreadsheetSize = 'xs' | 'sm' | 'md' | 'lg'
  * labels.
  */
 export type TSpreadsheetColumnHeaders = 'label' | 'letters' | 'both'
+/** A value in sheet mode: a number, text, or nothing. */
+export type TSpreadsheetValue = string | number | boolean | null
+/**
+ * The cells of a sheet-mode sheet, keyed by reference: `{ A1: 'Rent', B1: 950 }`.
+ * An empty cell has no key.
+ */
+export type TSpreadsheetCells = Record<string, TSpreadsheetValue>
+
+/** Bounds for a sheet-mode sheet. Each one is a count of rows or columns. */
+export interface ISpreadsheetExtent {
+  /** The least the sheet shows, filled or not. Default 1. */
+  minRows?: number
+  minColumns?: number
+  /** The most it grows to, by typing, pasting or filling. */
+  maxRows?: number
+  maxColumns?: number
+}
+/**
+ * How far a sheet-mode sheet reaches. 'data' ends at the last filled row and
+ * column. An object sets bounds. 'infinite' grows as it is scrolled.
+ */
+export type TSpreadsheetExtent = 'data' | 'infinite' | ISpreadsheetExtent
 
 export interface ISpreadsheetColumn {
   /** Stable id used for selection, sort, and host commits. */
@@ -78,6 +100,8 @@ export interface ISpreadsheetCellAttrs {
 export interface ISpreadsheetChange {
   rowId: string
   columnId: string
+  /** The cell's reference in sheet mode, such as 'B3'. */
+  cell?: string
   before: unknown
   after: unknown
 }
@@ -90,8 +114,10 @@ export interface ISpreadsheetSelection {
 }
 
 export interface ISpreadsheetProps {
-  columns: ISpreadsheetColumn[]
-  rows: ISpreadsheetRow[]
+  /** The columns of a table-mode sheet. Sheet mode makes its own. */
+  columns?: ISpreadsheetColumn[]
+  /** The rows of a table-mode sheet. Sheet mode makes its own. */
+  rows?: ISpreadsheetRow[]
   /** Per-cell metadata. Called lazily for visible cells. */
   cellAttrs?: (
     rowId: string,
@@ -157,4 +183,17 @@ export interface ISpreadsheetProps {
    * showing columns and rows. Default false.
    */
   contextMenu?: boolean
+  /**
+   * How far a sheet-mode sheet reaches. Default 'data': it ends at the last
+   * filled row and column. Ignored in table mode.
+   *
+   * Sheet mode is `v-model:cells`: bind it and the sheet makes columns A, B,
+   * C and rows 1, 2, 3 over the cells, and writes edits back into them.
+   */
+  extent?: TSpreadsheetExtent
+  /**
+   * Show the fill handle on the selection, and fill with `Ctrl+D` and
+   * `Ctrl+R`. Default: on in sheet mode, off in table mode.
+   */
+  fillHandle?: boolean
 }
