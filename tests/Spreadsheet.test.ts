@@ -268,8 +268,8 @@ describe('NbSpreadsheet keyboard entry', () => {
 })
 
 describe('NbSpreadsheet fit', () => {
-  // jsdom has no layout: give the scroller a height and the header its own.
-  function stubLayout(scrollerHeight: number, touch = false) {
+  // jsdom has no layout: give the sheet a height and the header its own.
+  function stubLayout(sheetHeight: number, touch = false) {
     resetPhoneLayoutForTests()
     vi.stubGlobal('matchMedia', (query: string) => ({
       matches: touch && query === NB_PHONE_TOUCH_QUERY,
@@ -279,9 +279,7 @@ describe('NbSpreadsheet fit', () => {
     }))
     vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockImplementation(
       function (this: HTMLElement) {
-        return this.classList.contains('nb-spreadsheet__scroller')
-          ? scrollerHeight
-          : 0
+        return this.classList.contains('nb-spreadsheet') ? sheetHeight : 0
       },
     )
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(

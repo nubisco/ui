@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="rootRef"
     class="nb-spreadsheet"
     :class="{
       'nb-spreadsheet--editing': !!editing,
@@ -151,6 +152,7 @@ const emit = defineEmits<{
 }>()
 
 // ─── State ─────────────────────────────────────────────────────────────────
+const rootRef = useTemplateRef<HTMLDivElement>('rootRef')
 const scrollerRef = useTemplateRef<HTMLDivElement>('scrollerRef')
 const editorRef = useTemplateRef<HTMLInputElement>('editorRef')
 const columnWidths = ref<Record<string, number>>({})
@@ -206,16 +208,24 @@ const { phoneTouch } = usePhoneLayout()
 const fitRowHeight = ref<number | null>(null)
 const rowHeight = computed(() => fitRowHeight.value ?? defaultRowHeight)
 
-// The scroller's height is the parent's, never its content's, so shrinking
-// the rows cannot feed back into the space they are measured against.
+// The rows are measured against the root, whose height is the parent's and
+// never its content's, so shrinking them cannot feed back into the space
+// they are measured against. The scroller is only as tall as its rows, so
+// the whole pixels the rounding leaves over fall outside the sheet instead
+// of showing as an empty band under its last row.
 function measureFit() {
+  const root = rootRef.value
   const view = scrollerRef.value
-  if (!props.fit || phoneTouch.value || !view || !props.rows.length) {
+  if (!props.fit || phoneTouch.value || !root || !view || !props.rows.length) {
     fitRowHeight.value = null
     return
   }
+  const toolbar = root.querySelector<HTMLElement>('.nb-spreadsheet__toolbar')
+  // The scroller's borders, and a horizontal scrollbar when there is one.
+  const chrome = view.offsetHeight - view.clientHeight
+  const space = root.clientHeight - (toolbar?.offsetHeight ?? 0) - chrome
   const headerH = measuredHeight('.nb-spreadsheet__header') || headerHeight
-  const each = Math.floor((view.clientHeight - headerH) / props.rows.length)
+  const each = Math.floor((space - headerH) / props.rows.length)
   fitRowHeight.value = Math.min(
     defaultRowHeight,
     Math.max(minFitRowHeight, each),
@@ -1139,6 +1149,7 @@ onMounted(() => {
       measureHeaders()
     })
     sizeObserver.observe(scrollerRef.value)
+    if (rootRef.value) sizeObserver.observe(rootRef.value)
   }
 })
 
@@ -1210,17 +1221,32 @@ defineExpose({
   max-height: 70vh;
   outline: none;
 }
-// Fit: the sheet takes the parent's height, and the scroller all of it below
-// the toolbar, so the rows are measured against the space there is.
+// Fit: the root takes the parent's height, which is what the rows are
+// measured against, and draws nothing. The sheet you see is the toolbar and
+// the scroller, which is as tall as its rows and scrolls once they do not fit.
 .nb-spreadsheet--fit {
   flex: 1 1 auto;
   min-height: 0;
   height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.nb-spreadsheet--fit .nb-spreadsheet__toolbar {
+  border: 1px solid var(--nb-c-border);
+  border-radius: 4px 4px 0 0;
 }
 .nb-spreadsheet--fit .nb-spreadsheet__scroller {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
   max-height: none;
+  border: 1px solid var(--nb-c-border);
+  border-radius: 4px;
+  background: var(--nb-c-surface-raised, var(--nb-c-surface));
+}
+.nb-spreadsheet--fit .nb-spreadsheet__toolbar + .nb-spreadsheet__scroller {
+  border-top: 0;
+  border-radius: 0 0 4px 4px;
 }
 // A fitted grid is the scroller's width, and only its columns' least widths
 // push it wider. At max-content the shared columns would grow to their
