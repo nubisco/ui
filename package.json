@@ -107,6 +107,12 @@
       "require": "./dist/composables/*.cjs",
       "default": "./dist/composables/*.mjs"
     },
+    "./formula": {
+      "types": "./dist/formula/index.d.ts",
+      "import": "./dist/formula/index.mjs",
+      "require": "./dist/formula/index.cjs",
+      "default": "./dist/formula/index.mjs"
+    },
     "./utils/*": {
       "types": "./dist/utils/*.d.ts",
       "import": "./dist/utils/*.mjs",

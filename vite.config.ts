@@ -34,6 +34,10 @@ for (const file of Object.values(COMPONENT_MANIFEST)) {
 // so `@nubisco/ui/composables/useTheme.composable` resolved its types and then
 // failed on its runtime. These need no wrapper: the source module already has
 // the right shape, so it is the entry.
+// The formula engine is its own subpath, `@nubisco/ui/formula`, so an app can
+// work out formulas without loading a component.
+entries['formula/index'] = resolve(__dirname, 'src/formula/index.ts')
+
 for (const directory of ['composables', 'utils']) {
   for (const file of readdirSync(resolve(__dirname, `src/${directory}`))) {
     if (!file.endsWith('.ts') || file.endsWith('.d.ts')) continue

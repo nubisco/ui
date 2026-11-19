@@ -89,6 +89,10 @@ export default defineNubiscoDocs({
             replacement: path.resolve(root, 'src/composables'),
           },
           {
+            find: /^@nubisco\/ui\/formula$/,
+            replacement: path.resolve(root, 'src/formula/index.ts'),
+          },
+          {
             find: '@nubisco/ui/utils',
             replacement: path.resolve(root, 'src/utils'),
           },
