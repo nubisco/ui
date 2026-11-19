@@ -253,6 +253,8 @@ const formats: ISpreadsheetConditionalFormat[] = [
 ]
 ```
 
+In table mode, bind `v-model:styles` to style a table the same way. Its keys are `rowId:columnId`, such as `'r1:qty'`, and conditional formats and merges stay with sheet mode, whose references they are written in.
+
 `applyStyle` sets keys on every selected cell and is one step of undo. A key passed as `undefined` or `false` is removed, so `applyStyle({ intent: undefined })` clears a colour, and `clearStyles()` clears them all.
 
 ## CSV
@@ -297,33 +299,33 @@ A few component-local properties tune a single sheet. Prefer `size` to setting t
 
 ## Props
 
-| Prop                 | Type                                                              | Default    | Description                                                                                                            |
-| -------------------- | ----------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `columns`            | `ISpreadsheetColumn[]`                                            | -          | Table mode: column definitions, ordered left to right                                                                  |
-| `rows`               | `ISpreadsheetRow[]`                                               | -          | Table mode: row data. Pinned rows can appear anywhere in the array                                                     |
-| `cellAttrs`          | `(rowId, columnId, row, column) => ISpreadsheetCellAttrs \| void` | -          | Per-cell read-only, class, tooltip or display override                                                                 |
-| `computed`           | `(rowId, columnId, get) => unknown`                               | -          | Returns the value of cells that are not in `row.values`                                                                |
-| `size`               | `'xs' \| 'sm' \| 'md' \| 'lg'`                                    | `'sm'`     | Row and header height: 24, 32, 40 or 48px                                                                              |
-| `ariaLabel`          | `string`                                                          | -          | Accessible name of the grid                                                                                            |
-| `resizable`          | `boolean`                                                         | `true`     | Allow column resize from the right edge of the header                                                                  |
-| `showGutter`         | `boolean`                                                         | `true`     | Show the row gutter on the left                                                                                        |
-| `gutterWidth`        | `number`                                                          | `44`       | Gutter width in pixels. Widen it when rows carry a `label`                                                             |
-| `windowRows`         | `number`                                                          | `80`       | Approximate visible rows used by the row virtualization                                                                |
-| `locale`             | `string`                                                          | `'pt-PT'`  | Locale for the default number and date formatting. The next major defaults to the runtime's locale                     |
-| `fit`                | `boolean`                                                         | `false`    | Fill the parent: columns share the spare width and rows shrink, down to 20px, to fit the height (not on a touch phone) |
-| `columnHeaders`      | `'label' \| 'letters' \| 'both'`                                  | `'label'`  | What the headers show: labels, A, B, C letters, or letters above the labels                                            |
-| `contextMenu`        | `boolean`                                                         | `false`    | Replace the browser's menu with the sheet's: clipboard, clear, sort, hide and show                                     |
-| `hiddenColumns`      | `string[]`                                                        | `[]`       | Ids of hidden columns. `v-model:hidden-columns`, or kept by the sheet when unbound                                     |
-| `hiddenRows`         | `string[]`                                                        | `[]`       | Ids of hidden rows. `v-model:hidden-rows`, or kept by the sheet when unbound                                           |
-| `cells`              | `TSpreadsheetCells`                                               | -          | Sheet mode: the cells, keyed `A1`. `v-model:cells`. Leave unbound for table mode                                       |
-| `extent`             | `'data' \| 'infinite' \| ISpreadsheetExtent`                      | `'data'`   | Sheet mode: how far the grid reaches. `{ minRows, minColumns, maxRows, maxColumns }` sets bounds                       |
-| `fillHandle`         | `boolean`                                                         | sheet mode | The fill handle, and `Ctrl+D` and `Ctrl+R`. On in sheet mode, off in table mode                                        |
-| `styles`             | `TSpreadsheetStyles`                                              | `{}`       | Sheet mode: each cell's look, keyed like `cells`. `v-model:styles`, or kept by the sheet when unbound                  |
-| `merges`             | `string[]`                                                        | `[]`       | Sheet mode: merged ranges, such as `'A1:C1'`. `v-model:merges`, or kept by the sheet when unbound                      |
-| `formulas`           | `boolean`                                                         | `true`     | Sheet mode: cells starting with `=` are formulas. See [Formulas](/components/spreadsheet/formulas)                     |
-| `formulaBar`         | `boolean`                                                         | sheet mode | The formula bar above the grid. On in sheet mode with formulas                                                         |
-| `conditionalFormats` | `ISpreadsheetConditionalFormat[]`                                 | -          | Sheet mode: styles applied while a range's cells pass a rule. Later entries win                                        |
-| `rowReorderable`     | `boolean`                                                         | `false`    | Deprecated. Never implemented and has no effect. Removed in the next major                                             |
+| Prop                 | Type                                                              | Default    | Description                                                                                                                                                       |
+| -------------------- | ----------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `columns`            | `ISpreadsheetColumn[]`                                            | -          | Table mode: column definitions, ordered left to right                                                                                                             |
+| `rows`               | `ISpreadsheetRow[]`                                               | -          | Table mode: row data. Pinned rows can appear anywhere in the array                                                                                                |
+| `cellAttrs`          | `(rowId, columnId, row, column) => ISpreadsheetCellAttrs \| void` | -          | Per-cell read-only, class, tooltip or display override                                                                                                            |
+| `computed`           | `(rowId, columnId, get) => unknown`                               | -          | Returns the value of cells that are not in `row.values`                                                                                                           |
+| `size`               | `'xs' \| 'sm' \| 'md' \| 'lg'`                                    | `'sm'`     | Row and header height: 24, 32, 40 or 48px                                                                                                                         |
+| `ariaLabel`          | `string`                                                          | -          | Accessible name of the grid                                                                                                                                       |
+| `resizable`          | `boolean`                                                         | `true`     | Allow column resize from the right edge of the header                                                                                                             |
+| `showGutter`         | `boolean`                                                         | `true`     | Show the row gutter on the left                                                                                                                                   |
+| `gutterWidth`        | `number`                                                          | `44`       | Gutter width in pixels. Widen it when rows carry a `label`                                                                                                        |
+| `windowRows`         | `number`                                                          | `80`       | Approximate visible rows used by the row virtualization                                                                                                           |
+| `locale`             | `string`                                                          | `'pt-PT'`  | Locale for the default number and date formatting. The next major defaults to the runtime's locale                                                                |
+| `fit`                | `boolean`                                                         | `false`    | Fill the parent: columns share the spare width and rows shrink, down to 20px, to fit the height (not on a touch phone)                                            |
+| `columnHeaders`      | `'label' \| 'letters' \| 'both'`                                  | `'label'`  | What the headers show: labels, A, B, C letters, or letters above the labels                                                                                       |
+| `contextMenu`        | `boolean`                                                         | `false`    | Replace the browser's menu with the sheet's: clipboard, clear, sort, hide and show                                                                                |
+| `hiddenColumns`      | `string[]`                                                        | `[]`       | Ids of hidden columns. `v-model:hidden-columns`, or kept by the sheet when unbound                                                                                |
+| `hiddenRows`         | `string[]`                                                        | `[]`       | Ids of hidden rows. `v-model:hidden-rows`, or kept by the sheet when unbound                                                                                      |
+| `cells`              | `TSpreadsheetCells`                                               | -          | Sheet mode: the cells, keyed `A1`. `v-model:cells`. Leave unbound for table mode                                                                                  |
+| `extent`             | `'data' \| 'infinite' \| ISpreadsheetExtent`                      | `'data'`   | Sheet mode: how far the grid reaches. `{ minRows, minColumns, maxRows, maxColumns }` sets bounds                                                                  |
+| `fillHandle`         | `boolean`                                                         | sheet mode | The fill handle, and `Ctrl+D` and `Ctrl+R`. On in sheet mode, off in table mode                                                                                   |
+| `styles`             | `TSpreadsheetStyles`                                              | `{}`       | Each cell's look, keyed like `cells`, or `rowId:columnId` in table mode. `v-model:styles`. Sheet mode keeps it when unbound, a table styles only once it is bound |
+| `merges`             | `string[]`                                                        | `[]`       | Sheet mode: merged ranges, such as `'A1:C1'`. `v-model:merges`, or kept by the sheet when unbound                                                                 |
+| `formulas`           | `boolean`                                                         | `true`     | Sheet mode: cells starting with `=` are formulas. See [Formulas](/components/spreadsheet/formulas)                                                                |
+| `formulaBar`         | `boolean`                                                         | sheet mode | The formula bar above the grid. On in sheet mode with formulas                                                                                                    |
+| `conditionalFormats` | `ISpreadsheetConditionalFormat[]`                                 | -          | Sheet mode: styles applied while a range's cells pass a rule. Later entries win                                                                                   |
+| `rowReorderable`     | `boolean`                                                         | `false`    | Deprecated. Never implemented and has no effect. Removed in the next major                                                                                        |
 
 ## Column interface
 
@@ -428,6 +430,9 @@ type TSpreadsheetNumberFormat =
   | { type: 'number'; decimals?: number; grouping?: boolean }
   | { type: 'percent'; decimals?: number }
   | { type: 'currency'; currency: string; decimals?: number }
+  | { type: 'date'; style?: 'short' | 'medium' | 'long' | 'full' } // a serial date
+  | { type: 'time'; style?: 'short' | 'medium' }
+  | { type: 'datetime'; style?: 'short' | 'medium' | 'long' }
 
 interface ISpreadsheetConditionalFormat {
   range: string // 'B2:B20', 'C:C', 'A1'

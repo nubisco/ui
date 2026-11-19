@@ -7,6 +7,7 @@ import type {
   TSpreadsheetRule,
 } from '../Spreadsheet.d'
 import { formatRef, parseRangeText, parseRef } from '@/formula/refs'
+import { fromSerial } from '@/formula'
 
 /**
  * A range as 0-based, inclusive sheet positions. A whole column runs to
@@ -53,6 +54,12 @@ export function formatNumber(
       ? { maximumFractionDigits: fallback }
       : { minimumFractionDigits: decimals, maximumFractionDigits: decimals }
   try {
+    if (
+      format?.type === 'date' ||
+      format?.type === 'time' ||
+      format?.type === 'datetime'
+    )
+      return formatSerial(value, format, locale)
     if (format?.type === 'percent')
       return new Intl.NumberFormat(locale, {
         style: 'percent',
@@ -72,9 +79,37 @@ export function formatNumber(
   } catch {
     // An unknown currency code throws. The number is still worth showing.
   }
-  return new Intl.NumberFormat(locale, { maximumFractionDigits: 10 }).format(
-    value,
+  return new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 10,
+    useGrouping: false,
+  }).format(value)
+}
+
+// A serial date in the locale's own form. The serial's parts are calendar
+// parts, not an instant, so they are formatted in UTC and no time zone moves
+// the day.
+function formatSerial(
+  value: number,
+  format: Extract<
+    TSpreadsheetNumberFormat,
+    { type: 'date' | 'time' | 'datetime' }
+  >,
+  locale: string,
+): string {
+  const p = fromSerial(value)
+  const at = new Date(
+    Date.UTC(p.year, p.month - 1, p.day, p.hours, p.minutes, p.seconds),
   )
+  // Years before 100 would be read as 1900 and up by Date.UTC.
+  at.setUTCFullYear(p.year)
+  const options: Intl.DateTimeFormatOptions = { timeZone: 'UTC' }
+  if (format.type === 'date') options.dateStyle = format.style ?? 'short'
+  else if (format.type === 'time') options.timeStyle = format.style ?? 'short'
+  else {
+    options.dateStyle = format.style ?? 'medium'
+    options.timeStyle = 'short'
+  }
+  return new Intl.DateTimeFormat(locale, options).format(at)
 }
 
 /** A computed error, which a cell shows as its code. */

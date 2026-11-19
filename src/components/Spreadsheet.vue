@@ -479,6 +479,7 @@
 import {
   // eslint-disable-next-line vue/no-dupe-keys
   computed,
+  getCurrentInstance,
   nextTick,
   onBeforeUnmount,
   onMounted,
@@ -511,6 +512,7 @@ import type {
   TSpreadsheetStyles,
   ISpreadsheetCellStyle,
   ISpreadsheetCsvOptions,
+  TSpreadsheetNumberFormat,
 } from './Spreadsheet.d'
 import {
   cleanStyle,
@@ -527,6 +529,9 @@ import { parseCsv, toCsv } from '@/utils/csv.helper'
 import {
   createFormulaSheet,
   findFunctions,
+  fromSerial,
+  parseDateText,
+  toSerial,
   FORMULA_FUNCTIONS,
   isFormula,
   referencesIn,
@@ -571,8 +576,9 @@ const hiddenRows = defineModel<string[]>('hiddenRows', { default: () => [] })
 // its own columns and rows over them. Left unbound, the sheet is in table
 // mode and the host's `columns` and `rows` are the data.
 const cells = defineModel<TSpreadsheetCells>('cells')
-// Sheet mode's look, `v-model:styles`, keyed like the cells: what people
-// set with Cmd/Ctrl+B, I and U and the exposed `applyStyle`. And its merged
+// The cells' look, `v-model:styles`, keyed like the cells in sheet mode and
+// `rowId:columnId` in a table: what people set with Cmd/Ctrl+B, I and U and
+// the exposed `applyStyle`. And sheet mode's merged
 // ranges, `v-model:merges`, such as ['A1:C1']: a merge shows its first cell
 // across the range, and keeps the cells under it out of sight. Unbound, the
 // sheet keeps both for as long as it is on the page.
@@ -889,16 +895,34 @@ const parsedFormats = computed(() => {
   return out
 })
 
-// A cell's look: its own style, then every conditional format that passes
-// for it, in order.
+// Table mode keys its styles `rowId:columnId`, and takes the style keys
+// only once the host binds `v-model:styles`. Until then a table's look is
+// the host's, and Cmd/Ctrl+B is still the browser's.
+const hostProps = getCurrentInstance()?.vnode.props ?? {}
+const stylesBound = 'styles' in hostProps || 'onUpdate:styles' in hostProps
+const stylesOn = computed(() => sheetMode.value || stylesBound)
+
+function styleKeyOf(rowId: string, columnId: string): string {
+  return sheetMode.value ? cellRef(rowId, columnId) : `${rowId}:${columnId}`
+}
+
+function sameStyle(
+  a: ISpreadsheetCellStyle | undefined,
+  b: ISpreadsheetCellStyle | undefined,
+): boolean {
+  return a === b || JSON.stringify(a ?? {}) === JSON.stringify(b ?? {})
+}
+
+// A cell's look: its own style, then, in sheet mode, every conditional
+// format that passes for it, in order.
 function cellLook(
   rowId: string,
   columnId: string,
 ): ISpreadsheetCellStyle | undefined {
-  if (!sheetMode.value) return undefined
+  if (!stylesOn.value) return undefined
   let look: ISpreadsheetCellStyle | undefined =
-    styles.value[cellRef(rowId, columnId)]
-  if (!parsedFormats.value.length) return look
+    styles.value[styleKeyOf(rowId, columnId)]
+  if (!sheetMode.value || !parsedFormats.value.length) return look
   const { r, c } = sheetPosition(rowId, columnId)
   for (const { range, format } of parsedFormats.value) {
     if (r < range.r1 || r > range.r2 || c < range.c1 || c > range.c2) continue
@@ -915,11 +939,11 @@ function cellLook(
 // Sets style keys on every selected cell. A key given as undefined or false
 // is removed, so `applyStyle({ intent: undefined })` clears a colour.
 function applyStyle(patch: Partial<ISpreadsheetCellStyle>) {
-  if (!sheetMode.value) return
+  if (!stylesOn.value) return
   const before = styles.value
   const after: TSpreadsheetStyles = { ...before }
   for (const { rowId, columnId } of selectedCells()) {
-    const key = cellRef(rowId, columnId)
+    const key = styleKeyOf(rowId, columnId)
     const next = cleanStyle({ ...before[key], ...patch })
     if (next) after[key] = next
     else delete after[key]
@@ -933,7 +957,7 @@ function applyStyle(patch: Partial<ISpreadsheetCellStyle>) {
 function toggleStyle(key: 'bold' | 'italic' | 'underline' | 'strike') {
   const fc = focused.value
   if (!fc) return
-  const on = !styles.value[cellRef(fc.rowId, fc.columnId)]?.[key]
+  const on = !styles.value[styleKeyOf(fc.rowId, fc.columnId)]?.[key]
   applyStyle({ [key]: on })
 }
 
@@ -991,12 +1015,18 @@ function exportCsv(options: ISpreadsheetCsvOptions = {}): string {
 function importCsv(text: string, delimiter?: string) {
   if (!sheetMode.value) return
   const next: TSpreadsheetCells = {}
+  const dates: Array<{ key: string; format: TSpreadsheetNumberFormat }> = []
   parseCsv(text, delimiter).forEach((line, r) => {
     line.forEach((field, c) => {
+      const key = `${indexToLetters(c)}${r + 1}`
       const value = parseSheetInput(field)
-      if (value !== null) next[`${indexToLetters(c)}${r + 1}`] = value
+      if (value === null) return
+      next[key] = value
+      const date = typeof value === 'number' ? readDate(field) : null
+      if (date) dates.push({ key, format: date.format })
     })
   })
+  const nextStyles = dateStyles(dates)
   const current = cells.value ?? {}
   const changes: ISpreadsheetChange[] = []
   for (const key of new Set([...Object.keys(current), ...Object.keys(next)])) {
@@ -1007,9 +1037,10 @@ function importCsv(text: string, delimiter?: string) {
     if (!sameValue(before, after))
       changes.push(makeChange(m[2], m[1], before, after))
   }
-  if (!changes.length) return
-  pushUndo(changes)
-  applyChanges(changes)
+  if (!changes.length && !nextStyles) return
+  pushUndo(changes, nextStyles ? { styles: [styles.value, nextStyles] } : {})
+  if (changes.length) applyChanges(changes)
+  if (nextStyles) styles.value = nextStyles
 }
 
 // ─── Derived: column ordering with pinned-left first, pinned-right last ────
@@ -1439,14 +1470,20 @@ function parseSheetInput(input: string): TSpreadsheetValue {
   if (/^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(text)) return Number(text)
   if (decimalSeparator.value === ',' && /^[-+]?(\d+,?\d*|,\d+)$/.test(text))
     return Number(text.replace(',', '.'))
+  const date = readDate(text)
+  if (date) return date.value
   return input
 }
 
+// A number without a format reads as a desktop spreadsheet's General: the
+// locale's decimal mark and no grouping, so a year is 2026, not 2,026. The
+// `number` format groups thousands.
 function formatSheetValue(raw: unknown): string {
   if (raw === null || raw === undefined) return ''
   if (typeof raw === 'number')
     return new Intl.NumberFormat(props.locale, {
       maximumFractionDigits: 10,
+      useGrouping: false,
     }).format(raw)
   if (typeof raw === 'boolean') return raw ? 'TRUE' : 'FALSE'
   return String(raw)
@@ -1493,10 +1530,100 @@ function textOf(rowId: string, columnId: string): string {
   if (typeof value === 'number')
     return formatNumber(
       value,
-      styles.value[cellRef(rowId, columnId)]?.format,
+      styles.value[cellRef(rowId, columnId)]?.format ??
+        formulaFormat(rawValue(rowId, columnId)),
       props.locale,
     )
   return formatSheetValue(value)
+}
+
+// A formula whose result is a date or a time shows as one until the cell is
+// given a format of its own, as a desktop spreadsheet shows =TODAY().
+const DATE_RESULT = /^=\s*(DATE|TODAY|EDATE|EOMONTH|WORKDAY|DATEVALUE)\s*\(/i
+const TIME_RESULT = /^=\s*(TIME|TIMEVALUE)\s*\(/i
+const DATETIME_RESULT = /^=\s*NOW\s*\(/i
+function formulaFormat(raw: unknown): TSpreadsheetNumberFormat | undefined {
+  if (!formulasOn.value || !isFormula(raw)) return undefined
+  if (DATE_RESULT.test(raw)) return { type: 'date' }
+  if (TIME_RESULT.test(raw)) return { type: 'time' }
+  if (DATETIME_RESULT.test(raw)) return { type: 'datetime' }
+  // A date plus or minus days is still a date: =A2+30 takes A2's format, as
+  // in a desktop spreadsheet.
+  const first = DATE_ARITHMETIC.exec(raw)
+  const format = first
+    ? styles.value[`${first[1]}${first[2]}`]?.format
+    : undefined
+  if (format?.type === 'date' || format?.type === 'datetime') return format
+  return undefined
+}
+const DATE_ARITHMETIC = /^=\s*\$?([A-Z]+)\$?(\d+)\s*[+-]\s*[\d.]+\s*$/
+
+// ── Dates typed into a cell ──
+// A date or a time typed into a sheet-mode cell is stored as a serial number,
+// the days since 1899-12-30 with the time of day as the fraction, and the cell
+// takes a date format so it still reads as a date. ISO dates always work, and
+// so does the sheet's locale's short form: 19/11/2026 in pt-PT, 11/19/2026 in
+// en-US.
+const dateOrder = computed(() => {
+  const parts = new Intl.DateTimeFormat(props.locale, {
+    timeZone: 'UTC',
+  }).formatToParts(new Date(Date.UTC(2006, 0, 2)))
+  return parts
+    .filter((p) => p.type === 'day' || p.type === 'month' || p.type === 'year')
+    .map((p) => p.type as 'day' | 'month' | 'year')
+})
+
+const LOCALE_DATE =
+  /^(\d{1,4})[./-](\d{1,2})[./-](\d{1,4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/
+
+function readDate(
+  text: string,
+): { value: number; format: TSpreadsheetNumberFormat } | null {
+  const trimmed = text.trim()
+  const iso = parseDateText(trimmed)
+  if (iso !== null) {
+    const hasDate = /^\d{4}-/.test(trimmed)
+    const hasTime = trimmed.includes(':')
+    return {
+      value: iso,
+      format: {
+        type: hasDate && hasTime ? 'datetime' : hasTime ? 'time' : 'date',
+      },
+    }
+  }
+  const m = LOCALE_DATE.exec(trimmed)
+  if (!m || dateOrder.value.length !== 3) return null
+  const fields: Record<string, number> = {}
+  dateOrder.value.forEach((part, i) => (fields[part] = Number(m[i + 1])))
+  let { year } = fields
+  const { month, day } = fields
+  if (year < 100) year += 2000
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null
+  const value = toSerial(
+    year,
+    month,
+    day,
+    Number(m[4] ?? 0),
+    Number(m[5] ?? 0),
+    Number(m[6] ?? 0),
+  )
+  // A day the month does not have, such as 31/02, is not a date.
+  if (fromSerial(value).day !== day) return null
+  return { value, format: { type: m[4] ? 'datetime' : 'date' } }
+}
+
+// The styles a set of typed or pasted dates add: a date format on each cell
+// that has no format yet. Null when there is nothing to add.
+function dateStyles(
+  dates: Array<{ key: string; format: TSpreadsheetNumberFormat }>,
+): TSpreadsheetStyles | null {
+  let next: TSpreadsheetStyles | null = null
+  for (const { key, format } of dates) {
+    if (styles.value[key]?.format) continue
+    next ??= { ...styles.value }
+    next[key] = { ...styles.value[key], format }
+  }
+  return next
 }
 
 // `typed` is a value a person typed, in which a formula is in the sheet's
@@ -1543,7 +1670,13 @@ function cellDisplay(row: ISpreadsheetRow, col: ISpreadsheetColumn): string {
   if (attrs.display !== undefined) return attrs.display
   const raw = rawValue(row.id, col.id)
   if (col.format) return col.format(raw, row)
-  return sheetMode.value ? textOf(row.id, col.id) : defaultFormat(col, raw)
+  if (sheetMode.value) return textOf(row.id, col.id)
+  const format = stylesOn.value
+    ? styles.value[styleKeyOf(row.id, col.id)]?.format
+    : undefined
+  if (format && typeof raw === 'number')
+    return formatNumber(raw, format, props.locale)
+  return defaultFormat(col, raw)
 }
 
 function cellClass(row: ISpreadsheetRow, col: ISpreadsheetColumn) {
@@ -2217,13 +2350,13 @@ function onKeydown(e: KeyboardEvent) {
     selectAll()
     return
   }
-  // Bold, italic and underline, the keys every editor shares. Sheet mode
-  // only: a table's look is the host's.
+  // Bold, italic and underline, the keys every editor shares, in sheet mode
+  // and in a table whose styles are bound.
   const styleKey = { b: 'bold', i: 'italic', u: 'underline' } as const
   const lower = e.key.toLowerCase()
   if (
     mod &&
-    sheetMode.value &&
+    stylesOn.value &&
     !e.shiftKey &&
     !e.altKey &&
     (lower === 'b' || lower === 'i' || lower === 'u')
@@ -2459,10 +2592,17 @@ function commitEdit(refocus = true) {
     return
   }
   const before = rawValue(rowId, columnId)
-  if (!sameValue(before, value)) {
+  const date =
+    sheetMode.value && typeof value === 'number' ? readDate(draft) : null
+  const nextStyles = date
+    ? dateStyles([{ key: cellRef(rowId, columnId), format: date.format }])
+    : null
+  if (!sameValue(before, value) || nextStyles) {
     const change = makeChange(rowId, columnId, before, value)
-    pushUndo([change])
-    applyChanges([change])
+    const changes = sameValue(before, value) ? [] : [change]
+    pushUndo(changes, nextStyles ? { styles: [styles.value, nextStyles] } : {})
+    if (changes.length) applyChanges(changes)
+    if (nextStyles) styles.value = nextStyles
   }
   if (refocus) focusScroller()
 }
@@ -2557,9 +2697,17 @@ function selectionText(): string | null {
 }
 
 // What this sheet last put on the clipboard, and from where. Pasting the
-// same text back moves its formulas by the distance pasted, as a desktop
-// spreadsheet does. A cut moves them unchanged.
-let lastCopy: { text: string; r: number; c: number; cut: boolean } | null = null
+// same text back moves its formulas by the distance pasted, and brings the
+// copied cells' styles, as a desktop spreadsheet does. A cut moves both: the
+// formulas unchanged, and the styles off the cells they came from.
+let lastCopy: {
+  text: string
+  r: number
+  c: number
+  cut: boolean
+  styles: Array<Array<ISpreadsheetCellStyle | undefined>>
+  keys: string[]
+} | null = null
 
 function onCopy(e: ClipboardEvent) {
   const text = selectionText()
@@ -2567,13 +2715,24 @@ function onCopy(e: ClipboardEvent) {
   e.preventDefault()
   e.clipboardData?.setData('text/plain', text)
   const b = selectionBounds.value
-  if (sheetMode.value && b) {
-    const at = sheetPosition(
-      allRows.value[b.r1].id,
-      orderedColumns.value[b.c1].id,
-    )
-    lastCopy = { text, r: at.r, c: at.c, cut: false }
+  if (!b || (!sheetMode.value && !stylesOn.value)) return
+  const rows = allRows.value
+  const cols = orderedColumns.value
+  const at = sheetMode.value
+    ? sheetPosition(rows[b.r1].id, cols[b.c1].id)
+    : { r: 0, c: 0 }
+  const copied: Array<Array<ISpreadsheetCellStyle | undefined>> = []
+  const keys: string[] = []
+  for (let r = b.r1; r <= b.r2; r++) {
+    const line: Array<ISpreadsheetCellStyle | undefined> = []
+    for (let c = b.c1; c <= b.c2; c++) {
+      const key = styleKeyOf(rows[r].id, cols[c].id)
+      keys.push(key)
+      line.push(stylesOn.value ? styles.value[key] : undefined)
+    }
+    copied.push(line)
   }
+  lastCopy = { text, r: at.r, c: at.c, cut: false, styles: copied, keys }
 }
 
 function onCut(e: ClipboardEvent) {
@@ -2611,10 +2770,21 @@ function pasteText(text: string) {
   const at = sheetMode.value
     ? sheetPosition(focused.value.rowId, focused.value.columnId)
     : null
+  const ours = lastCopy && lastCopy.text === text ? lastCopy : null
   const shift =
-    at && lastCopy && lastCopy.text === text && !lastCopy.cut
-      ? { r: at.r - lastCopy.r, c: at.c - lastCopy.c }
-      : null
+    at && ours && !ours.cut ? { r: at.r - ours.r, c: at.c - ours.c } : null
+  // The styles the paste brings: the copied cells' own, and a date format
+  // for a date read from text that came from elsewhere.
+  let nextStyles: TSpreadsheetStyles | null = null
+  if (ours?.cut && stylesOn.value) {
+    for (const key of ours.keys) {
+      if (!styles.value[key]) continue
+      nextStyles ??= { ...styles.value }
+      delete nextStyles[key]
+    }
+  }
+  const pastedDates: Array<{ key: string; format: TSpreadsheetNumberFormat }> =
+    []
   matrix.forEach((line, dr) => {
     line.forEach((cellText, dc) => {
       const rowId = allRowIds[baseR + dr]
@@ -2635,14 +2805,42 @@ function pasteText(text: string) {
       }
       if (shift && formulasOn.value && isFormula(value))
         value = shiftFormula(value, shift.r, shift.c)
+      if (ours && stylesOn.value) {
+        const key = styleKeyOf(rowId, columnId)
+        const style = ours.styles[dr]?.[dc]
+        const current = (nextStyles ?? styles.value)[key]
+        if (!sameStyle(current, style)) {
+          nextStyles ??= { ...styles.value }
+          if (style) nextStyles[key] = style
+          else delete nextStyles[key]
+        }
+      } else if (sheetMode.value && typeof value === 'number') {
+        const date = readDate(cellText)
+        if (date)
+          pastedDates.push({
+            key: cellRef(rowId, columnId),
+            format: date.format,
+          })
+      }
       const before = rawValue(rowId, columnId)
       if (sameValue(before, value)) return
       changes.push(makeChange(rowId, columnId, before, value))
     })
   })
-  if (changes.length === 0) return
-  pushUndo(changes)
-  applyChanges(changes)
+  if (pastedDates.length) {
+    const base = nextStyles ?? styles.value
+    for (const { key, format } of pastedDates) {
+      if (base[key]?.format) continue
+      nextStyles ??= { ...styles.value }
+      nextStyles[key] = { ...base[key], format }
+    }
+  }
+  if (changes.length === 0 && !nextStyles) return
+  pushUndo(changes, nextStyles ? { styles: [styles.value, nextStyles] } : {})
+  if (changes.length) applyChanges(changes)
+  if (nextStyles) styles.value = nextStyles
+  // A cut pastes once: the cells it came from are empty now.
+  if (ours?.cut) lastCopy = null
 }
 
 // A paste past the end of a sheet-mode sheet grows it, up to its limit, as
@@ -2804,7 +3002,15 @@ function fillRange(source: IBounds, target: IBounds) {
   const rows = allRows.value
   const cols = orderedColumns.value
   const changes: ISpreadsheetChange[] = []
-  const write = (ri: number, ci: number, value: unknown) => {
+  // A fill copies each source cell's style along with its value.
+  let nextStyles: TSpreadsheetStyles | null = null
+  const write = (
+    ri: number,
+    ci: number,
+    value: unknown,
+    fromRi: number,
+    fromCi: number,
+  ) => {
     const row = rows[ri]
     const col = cols[ci]
     if (!row || !col || isReadOnly(row, col)) return
@@ -2812,6 +3018,13 @@ function fillRange(source: IBounds, target: IBounds) {
     const after = value === undefined ? null : value
     if (!sameValue(before, after))
       changes.push(makeChange(row.id, col.id, before, after))
+    if (!stylesOn.value) return
+    const style = styles.value[styleKeyOf(rows[fromRi].id, cols[fromCi].id)]
+    const key = styleKeyOf(row.id, col.id)
+    if (sameStyle(styles.value[key], style)) return
+    nextStyles ??= { ...styles.value }
+    if (style) nextStyles[key] = style
+    else delete nextStyles[key]
   }
   const vertical = target.r1 !== source.r1 || target.r2 !== source.r2
   if (vertical) {
@@ -2825,7 +3038,7 @@ function fillRange(source: IBounds, target: IBounds) {
       seriesValues(src, count, backward).forEach((v, i) => {
         const to = backward ? source.r1 - 1 - i : source.r2 + 1 + i
         const from = backward ? source.r2 - (i % k) : source.r1 + (i % k)
-        write(to, c, movedFormula(v, from, c, to, c))
+        write(to, c, movedFormula(v, from, c, to, c), from, c)
       })
     }
   } else {
@@ -2840,13 +3053,15 @@ function fillRange(source: IBounds, target: IBounds) {
       seriesValues(src, count, backward).forEach((v, i) => {
         const to = backward ? source.c1 - 1 - i : source.c2 + 1 + i
         const from = backward ? source.c2 - (i % k) : source.c1 + (i % k)
-        write(r, to, movedFormula(v, r, from, r, to))
+        write(r, to, movedFormula(v, r, from, r, to), r, from)
       })
     }
   }
-  if (!changes.length) return
-  pushUndo(changes)
-  applyChanges(changes)
+  const restyled = nextStyles as TSpreadsheetStyles | null
+  if (!changes.length && !restyled) return
+  pushUndo(changes, restyled ? { styles: [styles.value, restyled] } : {})
+  if (changes.length) applyChanges(changes)
+  if (restyled) styles.value = restyled
 }
 
 // Ctrl+D copies the selection's first row down over the rest of it, and
@@ -3388,9 +3603,14 @@ function updateAssist() {
   // The innermost open call before the caret, and which argument it is on.
   const stack: Array<{ name: string | null; arg: number }> = []
   let previous: (typeof tokens)[number] | undefined
+  // Separators inside an array's braces part its values, not the call's.
+  let braces = 0
   for (const t of tokens) {
     if (t.start >= caret) break
-    if (t.type === 'paren' && t.text === '(')
+    if (t.text === '{') braces++
+    else if (t.text === '}') braces = Math.max(0, braces - 1)
+    else if (braces) continue
+    else if (t.type === 'paren' && t.text === '(')
       stack.push({
         name:
           previous?.type === 'function' ? previous.text.toUpperCase() : null,

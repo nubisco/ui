@@ -139,15 +139,19 @@ An infinite grid is never the default. Pick it for a scratch sheet, and bounds f
 
 A cell whose text starts with `=` is a formula, such as `=SUM(B2:B9)`: the sheet shows its result and keeps the formula, and the formula bar above the grid shows it as written. See [Formulas](/components/spreadsheet/formulas) for writing them and the functions there are.
 
-Select a range and drag the square on its last corner to fill the cells beyond it. Numbers that step evenly, such as 1, 2 or 10, 20, carry the series on, and anything else repeats. `Ctrl+D` copies the selection's top row down over the rest of it, and `Ctrl+R` its first column to the right. The fill handle is on in sheet mode, and `fill-handle` turns it on in table mode too.
+Select a range and drag the square on its last corner to fill the cells beyond it. Numbers that step evenly, such as 1, 2 or 10, 20, carry the series on, and anything else repeats. Each filled cell takes its source cell's style too, and a formula moves its references. `Ctrl+D` copies the selection's top row down over the rest of it, and `Ctrl+R` its first column to the right. The fill handle is on in sheet mode, and `fill-handle` turns it on in table mode too.
 
 ## Styles
 
-A sheet-mode cell can be bold, italic, underlined or struck through, aligned, coloured and given a number format. `Cmd/Ctrl+B`, `I` and `U` set the first three on the selection. The rest come from the app's own toolbar, through the exposed `applyStyle`, so the sheet never decides which controls a page shows. Build the toolbar from [`NbButton`](/components/button/usage) in the `toolbar` slot.
+A cell can be bold, italic, underlined or struck through, aligned, coloured and given a number format. Styles are built into sheet mode, and a table gets them once the app binds `v-model:styles`: until then a table's look is the app's own, through `cellAttrs`, and `Cmd/Ctrl+B` stays the browser's. `Cmd/Ctrl+B`, `I` and `U` set the first three on the selection. The rest come from the app's own toolbar, through the exposed `applyStyle`, so the sheet never decides which controls a page shows. Build the toolbar from [`NbButton`](/components/button/usage) in the `toolbar` slot.
 
 Colours are intents, not colours: `neutral`, `info`, `success`, `warning` and `danger` paint the library's status surfaces, so a coloured cell keeps its contrast in the dark theme. Use them for meaning, such as an overdue figure, and never for decoration.
 
-A number format changes the text, never the value: `{ type: 'currency', currency: 'EUR' }` shows `1200` as €1,200.00 and the cell still holds `1200`. `percent` multiplies by 100 for the text, as a desktop spreadsheet does, and `number` fixes the decimals and the grouping.
+A number format changes the text, never the value: `{ type: 'currency', currency: 'EUR' }` shows `1200` as €1,200.00 and the cell still holds `1200`. `percent` multiplies by 100 for the text, as a desktop spreadsheet does, and `number` fixes the decimals and groups the thousands. A number without a format shows as a desktop spreadsheet's General does, with the locale's decimal mark and no grouping, so a year reads 2026.
+
+Dates and times are numbers too: the days since 30 December 1899, with the time of day as the fraction, as desktop spreadsheets count them. Type `2026-11-19`, or the locale's own short form such as `19/11/2026` in `pt-PT`, and the cell stores the date's number and takes a `date` format, so it reads as a date and still works in arithmetic and date functions. `date`, `time` and `datetime` formats show the number in the sheet's locale, and a formula such as `=TODAY()` shows as a date until its cell has a format of its own.
+
+Copying and pasting within the sheet brings the cells' styles along, and a cut moves them.
 
 <preview>
   <NbSpreadsheet

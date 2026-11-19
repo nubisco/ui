@@ -53,11 +53,18 @@ export type TSpreadsheetIntent =
 /**
  * How a number is shown. The value stays the number: a format changes only
  * the text in the cell. `decimals` is fixed when set, up to 10 otherwise.
+ * Dates and times are serial numbers, the days since 1899-12-30 with the time
+ * of day as the fraction, shown in the sheet's locale: `style` is
+ * Intl's date and time style, 'short' by default for a date and a time, and
+ * 'medium' for the date half of a datetime.
  */
 export type TSpreadsheetNumberFormat =
   | { type: 'number'; decimals?: number; grouping?: boolean }
   | { type: 'percent'; decimals?: number }
   | { type: 'currency'; currency: string; decimals?: number }
+  | { type: 'date'; style?: 'short' | 'medium' | 'long' | 'full' }
+  | { type: 'time'; style?: 'short' | 'medium' }
+  | { type: 'datetime'; style?: 'short' | 'medium' | 'long' }
 
 /** The look of one cell in sheet mode. */
 export interface ISpreadsheetCellStyle {

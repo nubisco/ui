@@ -992,7 +992,7 @@ describe('NbSpreadsheet sheet mode', () => {
     expect(gutter(w)).toEqual(['1', '2', '3'])
     expect(w.find('[data-cell="1::A"]').text()).toBe('Rent')
     const b3 = w.find('[data-cell="3::B"]')
-    expect(b3.text()).toBe('1,250.5')
+    expect(b3.text()).toBe('1250.5')
     expect(b3.classes()).toContain('nb-spreadsheet__cell--right')
     expect(w.find('[data-cell="1::A"]').classes()).toContain(
       'nb-spreadsheet__cell--left',

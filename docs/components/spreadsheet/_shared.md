@@ -284,6 +284,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   statistical: 'Statistical',
   logical: 'Logical',
   text: 'Text',
+  date: 'Date and time',
   lookup: 'Lookup and reference',
   information: 'Information',
 }

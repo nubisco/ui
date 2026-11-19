@@ -42,9 +42,19 @@ While a formula is being edited, each reference has a colour, the same in the te
 
 Comparisons ignore the case of text, as a desktop spreadsheet's do. An empty cell is 0 in arithmetic and empty text when joined.
 
+## Dates and times
+
+A date is a number: the days since 30 December 1899, with the time of day as the fraction, so 19 November 2026 is `46345` and noon that day is `46345.5`. Dates subtract to a number of days and add days the same way: `=B2-A2` is the days between two dates and `=A2+30` the date a month on. A date typed into a cell, as `2026-11-19` or in the locale's short form, is stored as its number and given a date format, and a formula such as `=TODAY()` or `=DATE(2026,11,19)` shows as a date until its cell has a format of its own. Text such as `"2026-11-19"` reads as a date wherever a date is expected.
+
+`TODAY()` and `NOW()` read the clock when the sheet works its formulas out, which is whenever a cell changes.
+
+## Arrays
+
+A formula can hold a small table of constants in braces: `{1,2,3}` is a row, `{1;2;3}` a column, and `{1,2;3,4}` two rows of two. Any function that takes a range takes an array: `=SUM({1,2,3})`, `=INDEX({"Low","Mid","High"},2)`, `=VLOOKUP(B2,{0,"F";50,"C";70,"B";90,"A"},2)`. A cell shows one value, so a formula that ends in an array of more than one value is `#VALUE!`.
+
 ## Your locale's syntax
 
-A formula is typed and shown in the sheet's `locale`. Where the decimal separator is a comma, as in `pt-PT` or `de-DE`, arguments are separated with semicolons and decimals take the comma: `=ROUND(B2*1,23;2)`. The cell stores the formula in one canonical form, `=ROUND(B2*1.23,2)`, so the same cells read the same in every locale. Function names are always in English.
+A formula is typed and shown in the sheet's `locale`. Where the decimal separator is a comma, as in `pt-PT` or `de-DE`, arguments are separated with semicolons and decimals take the comma: `=ROUND(B2*1,23;2)`. Inside an array the columns are then separated with a backslash and the rows with a semicolon, `{1,5\2,5;3\4}`. The cell stores the formula in one canonical form, `=ROUND(B2*1.23,2)`, so the same cells read the same in every locale. Function names are always in English.
 
 ## Errors
 

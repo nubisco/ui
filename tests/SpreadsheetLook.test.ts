@@ -367,3 +367,171 @@ describe('NbSpreadsheet CSV', () => {
     )
   })
 })
+
+describe('NbSpreadsheet dates', () => {
+  it('stores a typed ISO or locale date as a serial with a date format', async () => {
+    const w = sheet(
+      {},
+      { locale: 'pt-PT', extent: { minRows: 3, minColumns: 2 } },
+    )
+    const scroller = w.find('.nb-spreadsheet__scroller')
+    const enter = async (ref: string, text: string) => {
+      await select(w, ref)
+      await scroller.trigger('keydown', { key: text[0] })
+      await nextTick()
+      const input = w.find<HTMLInputElement>(
+        '.nb-spreadsheet__editor:not(.nb-spreadsheet__mirror)',
+      )
+      input.element.value = text
+      await input.trigger('input')
+      await input.trigger('keydown', { key: 'Enter' })
+    }
+    await enter('A1', '2026-11-19')
+    await enter('A2', '19/11/2026')
+    await enter('A3', '31/02/2026')
+    const cells = w.props('cells') as TCells
+    expect(cells.A1).toBe(46345)
+    expect(cells.A2).toBe(46345)
+    expect(cells.A3).toBe('31/02/2026')
+    expect(w.props('styles')).toEqual({
+      A1: { format: { type: 'date' } },
+      A2: { format: { type: 'date' } },
+    })
+    expect(cell(w, 'A1').text()).toBe('19/11/26')
+    // One undo takes back the value and the format together.
+    api(w).undo()
+    api(w).undo()
+    await nextTick()
+    expect(w.props('styles')).toEqual({ A1: { format: { type: 'date' } } })
+    w.unmount()
+  })
+
+  it('shows a date formula as a date until the cell has a format', async () => {
+    const w = sheet(
+      {
+        A1: '=DATE(2026,11,19)',
+        A2: '=DATE(2026,11,19)+1',
+        A3: '=YEAR(A1)',
+        B1: 46345,
+        B2: '=B1+30',
+        B3: '=B1-B1',
+      },
+      { styles: { B1: { format: { type: 'date' } } } },
+    )
+    expect(cell(w, 'A1').text()).toBe('19/11/2026')
+    expect(cell(w, 'A2').text()).toBe('20/11/2026')
+    expect(cell(w, 'A3').text()).toBe('2026')
+    expect(cell(w, 'B2').text()).toBe('19/12/2026')
+    expect(cell(w, 'B3').text()).toBe('0')
+    await select(w, 'A1')
+    api(w).applyStyle({ format: { type: 'date', style: 'long' } })
+    await nextTick()
+    expect(cell(w, 'A1').text()).toBe('19 November 2026')
+    w.unmount()
+  })
+})
+
+describe('NbSpreadsheet styles that travel', () => {
+  it('fills styles along with values', async () => {
+    const w = sheet(
+      { A1: 1, A2: 2 },
+      {
+        styles: { A1: { bold: true }, A2: { intent: 'info' } },
+        extent: { minRows: 5, minColumns: 1 },
+      },
+    )
+    await select(w, 'A1', 'A2')
+    const handle = w.find('.nb-spreadsheet__fill-handle')
+    await handle.trigger('mousedown')
+    await cell(w, 'A5').trigger('mouseenter')
+    document.dispatchEvent(new MouseEvent('mouseup'))
+    await nextTick()
+    expect(w.props('cells')).toMatchObject({ A3: 3, A4: 4, A5: 5 })
+    expect(w.props('styles')).toMatchObject({
+      A3: { bold: true },
+      A4: { intent: 'info' },
+      A5: { bold: true },
+    })
+    api(w).undo()
+    await nextTick()
+    expect(w.props('styles')).toEqual({
+      A1: { bold: true },
+      A2: { intent: 'info' },
+    })
+    w.unmount()
+  })
+
+  it('pastes styles with a copy and moves them with a cut', async () => {
+    const w = sheet(
+      { A1: 'x' },
+      {
+        styles: { A1: { italic: true } },
+        extent: { minRows: 3, minColumns: 3 },
+      },
+    )
+    const scroller = w.find('.nb-spreadsheet__scroller')
+    const clip = (type: 'copy' | 'cut' | 'paste', text = '') => {
+      let out = text
+      const e = new Event(type, { bubbles: true, cancelable: true })
+      Object.assign(e, {
+        clipboardData: {
+          setData: (_k: string, v: string) => (out = v),
+          getData: () => text,
+        },
+      })
+      scroller.element.dispatchEvent(e)
+      return out
+    }
+    await select(w, 'A1')
+    const copied = clip('copy')
+    await select(w, 'B2')
+    clip('paste', copied)
+    await nextTick()
+    expect(w.props('styles')).toEqual({
+      A1: { italic: true },
+      B2: { italic: true },
+    })
+    await select(w, 'B2')
+    const cut = clip('cut')
+    await nextTick()
+    await select(w, 'C3')
+    clip('paste', cut)
+    await nextTick()
+    expect(w.props('styles')).toEqual({
+      A1: { italic: true },
+      C3: { italic: true },
+    })
+    w.unmount()
+  })
+})
+
+describe('NbSpreadsheet table-mode styles', () => {
+  it('styles a table once v-model:styles is bound, keyed rowId:columnId', async () => {
+    const w = mount(Spreadsheet, {
+      props: {
+        columns: [
+          { id: 'item', label: 'Item' },
+          { id: 'qty', label: 'Qty', type: 'number' as const },
+        ],
+        rows: [{ id: 'r1', values: { item: 'Apples', qty: 1200 } }],
+        styles: {},
+        locale: 'en-GB',
+        'onUpdate:styles': (v: unknown) => w.setProps({ styles: v as never }),
+      },
+      attachTo: document.body,
+    })
+    await w.find('[data-cell="r1::qty"]').trigger('mousedown')
+    await w
+      .find('.nb-spreadsheet__scroller')
+      .trigger('keydown', { key: 'b', metaKey: true })
+    expect(w.props('styles')).toEqual({ 'r1:qty': { bold: true } })
+    ;(w.vm as unknown as ISheetApi).applyStyle({
+      format: { type: 'currency', currency: 'EUR' },
+    })
+    await nextTick()
+    const qty = w.find('[data-cell="r1::qty"]')
+    expect(qty.classes()).toContain('nb-spreadsheet__cell--bold')
+    expect(qty.text()).toBe('€1,200.00')
+    w.unmount()
+  })
+})
