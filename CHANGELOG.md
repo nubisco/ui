@@ -1,3 +1,10 @@
+## [5.59.1](https://github.com/nubisco/ui/compare/v5.59.0...v5.59.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* **spreadsheet:** box selected ranges, add ranges with Cmd/Ctrl, drop the grid-wide focus ring ([9db0ab1](https://github.com/nubisco/ui/commit/9db0ab1a2bb70de2139f7c13db86bda726c9e3fa))
+
 # [5.59.0](https://github.com/nubisco/ui/compare/v5.58.0...v5.59.0) (2026-11-18)
 
 
