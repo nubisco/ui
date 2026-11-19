@@ -1,3 +1,11 @@
+# [5.61.0](https://github.com/nubisco/ui/compare/v5.60.0...v5.61.0) (2026-11-19)
+
+
+### Features
+
+* **formula:** date and time functions, TEXT and array literals ([a209021](https://github.com/nubisco/ui/commit/a2090218ad1ae2072b481c6decfa61c341ba5b20))
+* **spreadsheet:** dates, table-mode styles, and styles that fill and paste ([1b612cd](https://github.com/nubisco/ui/commit/1b612cd9b7135bfb5a6dc9f8e0ee808a261443a5))
+
 # [5.60.0](https://github.com/nubisco/ui/compare/v5.59.1...v5.60.0) (2026-11-19)
 
 
