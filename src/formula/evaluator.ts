@@ -138,6 +138,8 @@ export function evaluateNode(node: TAstNode, ctx: IEvalContext): TValue {
       })
     case 'range':
       return rangeMatrix(ctx, node.range)
+    case 'array':
+      return arrayMatrix(node.rows, node.cols, node.values)
     case 'unary': {
       const operand = evaluateNode(node.operand, ctx)
       return elementwise(operand, 0, (x) =>

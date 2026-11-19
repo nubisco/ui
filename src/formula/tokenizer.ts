@@ -57,6 +57,11 @@ const NUMBER_PATTERNS: Record<string, RegExp> = {
   ',': numberPattern(','),
 }
 
+/** The separator between the columns of an array literal: ',' or, in ';' locales, '\\'. */
+export function arrayColumnSeparator(syntax: IFormulaSyntax): string {
+  return syntax.separator === ';' ? '\\' : ','
+}
+
 /**
  * Splits a formula into tokens. It never throws: anything it cannot read
  * becomes an 'invalid' token, so the concatenated token texts are always
@@ -68,6 +73,10 @@ export function tokenize(
 ): IFormulaToken[] {
   const tokens: IFormulaToken[] = []
   const numberRe = NUMBER_PATTERNS[syntax.decimal] ?? NUMBER_PATTERNS['.']
+  // Inside braces, columns are separated by ',' and rows by ';'. Where ';'
+  // already separates arguments, columns take '\\' instead, as in Google Sheets.
+  const columnSeparator = arrayColumnSeparator(syntax)
+  let depth = 0
   let i = 0
   const push = (type: TFormulaTokenType, length: number) => {
     tokens.push({
@@ -127,6 +136,13 @@ export function tokenize(
       else push('name', word.length)
     } else if (char === '(' || char === ')') {
       push('paren', 1)
+    } else if (char === '{' || char === '}') {
+      depth = char === '{' ? depth + 1 : Math.max(0, depth - 1)
+      push('brace', 1)
+    } else if (depth > 0 && char === columnSeparator) {
+      push('separator', 1)
+    } else if (depth > 0 && char === ';') {
+      push('rowSeparator', 1)
     } else if (char === syntax.separator) {
       push('separator', 1)
     } else {

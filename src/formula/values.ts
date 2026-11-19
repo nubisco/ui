@@ -1,3 +1,4 @@
+import { parseDateText } from './dates'
 import { ERROR_LITERALS } from './tokenizer'
 import type {
   IEvalContext,
@@ -121,7 +122,9 @@ export function toNumber(value: TScalar): number | IFormulaError {
   if (typeof value === 'number') return value
   if (typeof value === 'boolean') return value ? 1 : 0
   if (typeof value === 'string') {
-    const parsed = parseNumericText(value)
+    // Date and time text counts as its serial number, as in Excel, so
+    // "2026-01-02"-"2026-01-01" is 1.
+    const parsed = parseNumericText(value) ?? parseDateText(value)
     return parsed === null
       ? formulaError('#VALUE!', 'Text cannot be used as a number')
       : parsed

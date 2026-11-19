@@ -1,4 +1,5 @@
 import type { IFormulaFunction } from '../types'
+import { DATE_FUNCTIONS } from './date'
 import type { IFunctionDefinition } from './define'
 import { INFORMATION_FUNCTIONS } from './information'
 import { LOGICAL_FUNCTIONS } from './logical'
@@ -14,6 +15,7 @@ const DEFINITIONS: IFunctionDefinition[] = [
   ...TEXT_FUNCTIONS,
   ...LOOKUP_FUNCTIONS,
   ...INFORMATION_FUNCTIONS,
+  ...DATE_FUNCTIONS,
 ].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
 
 /** The implementations, by upper-case name. */

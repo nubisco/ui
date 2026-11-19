@@ -304,3 +304,42 @@ describe('createFormulaSheet', () => {
     expect(code(calc(deep))).toBe('#ERROR!')
   })
 })
+
+describe('array literals', () => {
+  it('work wherever a range does', () => {
+    expect(calc('=SUM({1,2,3})')).toBe(6)
+    expect(calc('=SUM({1;2;3})')).toBe(6)
+    expect(calc('=INDEX({10,20,30},2)')).toBe(20)
+    expect(calc('=INDEX({1,2;3,4},2,1)')).toBe(3)
+    expect(calc('=MATCH(2,{1,2,3},0)')).toBe(2)
+    expect(calc('=VLOOKUP(2,{1,"a";2,"b"},2,FALSE)')).toBe('b')
+    expect(calc('=SUMPRODUCT({1,2},{3,4})')).toBe(11)
+    expect(calc('=SUM({1,2}*2)')).toBe(6)
+    expect(calc('=ROWS({1;2;3})')).toBe(3)
+    expect(calc('=COLUMNS({1,2;3,4})')).toBe(2)
+    expect(calc('=COUNTA({"a",TRUE,#N/A})')).toBe(3)
+    expect(calc('=SUM({-1,2,+3})')).toBe(4)
+    expect(calc('=SUM({--2})')).toBe(2)
+  })
+
+  it('propagate errors they hold', () => {
+    expect(code(calc('=SUM({1,#N/A})'))).toBe('#N/A')
+  })
+
+  it('show a single value and refuse to spill', () => {
+    expect(calc('={5}')).toBe(5)
+    expect(calc('={"Apples"}')).toBe('Apples')
+    expect(code(calc('={1,2}'))).toBe('#VALUE!')
+  })
+
+  it('reject ragged rows, empty arrays and anything but constants', () => {
+    expect(message(calc('={1,2;3}'))).toBe(
+      'Every row of an array needs the same number of values',
+    )
+    expect(code(calc('={}'))).toBe('#ERROR!')
+    expect(code(calc('={A1}'))).toBe('#ERROR!')
+    expect(code(calc('={1+1}'))).toBe('#ERROR!')
+    expect(code(calc('={1,2'))).toBe('#ERROR!')
+    expect(code(calc('={-"a"}'))).toBe('#ERROR!')
+  })
+})

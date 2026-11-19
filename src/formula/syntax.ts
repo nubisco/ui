@@ -1,4 +1,4 @@
-import { CANONICAL_SYNTAX, tokenize } from './tokenizer'
+import { arrayColumnSeparator, CANONICAL_SYNTAX, tokenize } from './tokenizer'
 import type { IFormulaSyntax } from './types'
 
 export { CANONICAL_SYNTAX }
@@ -26,11 +26,19 @@ function convert(
 ): string {
   if (from.decimal === to.decimal && from.separator === to.separator)
     return formula
+  // Separators inside braces divide array columns, which have their own
+  // character in each syntax.
+  let depth = 0
   return tokenize(formula, from)
     .map((token) => {
+      if (token.type === 'brace') {
+        depth = token.text === '{' ? depth + 1 : Math.max(0, depth - 1)
+      }
       if (token.type === 'number')
         return token.text.replace(from.decimal, to.decimal)
-      if (token.type === 'separator') return to.separator
+      if (token.type === 'separator') {
+        return depth > 0 ? arrayColumnSeparator(to) : to.separator
+      }
       return token.text
     })
     .join('')

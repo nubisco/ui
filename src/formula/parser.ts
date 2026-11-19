@@ -1,6 +1,7 @@
 import { normaliseRange, parseRangeText, parseRef } from './refs'
 import { CANONICAL_SYNTAX, tokenize } from './tokenizer'
 import type {
+  TScalar,
   IFormulaSyntax,
   IFormulaToken,
   TAstNode,
@@ -149,6 +150,9 @@ export function parseFormula(
         return { type: 'name', name: token.text }
       case 'function':
         return parseCall(token.text)
+      case 'brace':
+        if (token.text === '{') return parseArray()
+        return fail(describe(token))
       case 'paren':
         if (token.text === '(') {
           const inner = parseExpression(0)
@@ -171,6 +175,58 @@ export function parseFormula(
           return fail('A text value is missing its closing quote')
         return fail(describe(token))
     }
+  }
+
+  // An array literal holds constants only: numbers (with a sign), text,
+  // booleans and errors. Every row must have as many values as the first.
+  const parseArray = (): TAstNode => {
+    const rows: TScalar[][] = [[]]
+    for (;;) {
+      let token = next()
+      let sign = 1
+      while (
+        token?.type === 'operator' &&
+        (token.text === '-' || token.text === '+')
+      ) {
+        if (token.text === '-') sign = -sign
+        token = next()
+      }
+      if (!token) return fail('An array is missing its closing "}"')
+      if (token.type === 'brace' && token.text === '}' && sign === 1) {
+        return fail('An array needs at least one value')
+      }
+      const row = rows[rows.length - 1]
+      if (token.type === 'number') {
+        row.push(sign * Number(token.text.replace(syntax.decimal, '.')))
+      } else if (sign === 1 && token.type === 'string') {
+        row.push(token.text.slice(1, -1).replace(/""/g, '"'))
+      } else if (sign === 1 && token.type === 'boolean') {
+        row.push(token.text.toUpperCase() === 'TRUE')
+      } else if (sign === 1 && token.type === 'error') {
+        row.push(formulaError(token.text.toUpperCase() as TFormulaErrorCode))
+      } else {
+        return fail(
+          'An array can only hold numbers, text, TRUE, FALSE and errors',
+        )
+      }
+      const after = next()
+      if (after?.type === 'separator') continue
+      if (after?.type === 'rowSeparator') {
+        rows.push([])
+        continue
+      }
+      if (after?.type === 'brace' && after.text === '}') break
+      return fail(
+        after ? describe(after) : 'An array is missing its closing "}"',
+      )
+    }
+    const cols = rows[0].length
+    if (rows.some((row) => row.length !== cols)) {
+      return fail('Every row of an array needs the same number of values')
+    }
+    const values: TScalar[] = []
+    for (const row of rows) values.push(...row)
+    return { type: 'array', rows: rows.length, cols, values }
   }
 
   const isArgumentEnd = (token: IFormulaToken | undefined) =>

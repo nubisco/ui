@@ -59,6 +59,8 @@ export type TFormulaTokenType =
   | 'separator'
   | 'whitespace'
   | 'invalid'
+  | 'brace'
+  | 'rowSeparator'
 
 /** One token of a formula, with its position in the text it came from. */
 export interface IFormulaToken {
@@ -83,6 +85,7 @@ export type TFormulaCategory =
   | 'text'
   | 'lookup'
   | 'information'
+  | 'date'
 
 /** What autocomplete and the reference page know about a function. */
 export interface IFormulaFunction {
@@ -156,3 +159,4 @@ export type TAstNode =
   | { type: 'unary'; op: '-' | '+'; operand: TAstNode }
   | { type: 'percent'; operand: TAstNode }
   | { type: 'binary'; op: string; left: TAstNode; right: TAstNode }
+  | { type: 'array'; rows: number; cols: number; values: TScalar[] }

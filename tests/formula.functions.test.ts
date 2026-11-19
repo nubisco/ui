@@ -3,6 +3,7 @@ import {
   createFormulaSheet,
   FORMULA_FUNCTIONS,
   isFormulaError,
+  toSerial,
   type TFormulaCells,
   type TFormulaValue,
 } from '../src/formula'
@@ -439,6 +440,212 @@ describe('information', () => {
     expect(calc('=ISNA(NA())')).toBe(true)
     expect(calc('=ISNA(1/0)')).toBe(false)
     expect(code(calc('=NA()'))).toBe('#N/A')
+  })
+})
+
+describe('date', () => {
+  it('DATE rolls months and days over', () => {
+    covers('DATE')
+    expect(calc('=DATE(2026, 11, 19)')).toBe(46345)
+    expect(calc('=DATE(2026, 13, 1)')).toBe(toSerial(2027, 1, 1))
+    expect(calc('=DATE(2026, 1, 0)')).toBe(toSerial(2025, 12, 31))
+    expect(calc('=DATE(2026, -1, 15)')).toBe(toSerial(2025, 11, 15))
+    expect(calc('=DATE(99, 1, 1)')).toBe(toSerial(1999, 1, 1))
+    expect(code(calc('=DATE(10000, 1, 1)'))).toBe('#NUM!')
+  })
+
+  it('TIME, TIMEVALUE, DATEVALUE', () => {
+    covers('TIME', 'TIMEVALUE', 'DATEVALUE')
+    expect(calc('=TIME(12, 0, 0)')).toBe(0.5)
+    expect(calc('=TIME(25, 0, 0)')).toBeCloseTo(1 / 24)
+    expect(calc('=TIMEVALUE("18:00")')).toBe(0.75)
+    expect(calc('=TIMEVALUE("2026-11-19 06:00")')).toBe(0.25)
+    expect(calc('=DATEVALUE("2026-11-19 18:00")')).toBe(46345)
+    expect(code(calc('=DATEVALUE("next week")'))).toBe('#VALUE!')
+    expect(code(calc('=DATEVALUE(5)'))).toBe('#VALUE!')
+  })
+
+  it('TODAY and NOW read the local clock', () => {
+    covers('TODAY', 'NOW')
+    const now = new Date()
+    const today = toSerial(now.getFullYear(), now.getMonth() + 1, now.getDate())
+    expect(calc('=TODAY()')).toBe(today)
+    const fraction = (calc('=NOW()-TODAY()') as number) * 1
+    expect(fraction).toBeGreaterThanOrEqual(0)
+    expect(fraction).toBeLessThan(1)
+  })
+
+  it('YEAR, MONTH, DAY, HOUR, MINUTE, SECOND read serials and date text', () => {
+    covers('YEAR', 'MONTH', 'DAY', 'HOUR', 'MINUTE', 'SECOND')
+    expect(calc('=YEAR("2026-11-19")')).toBe(2026)
+    expect(calc('=MONTH(46345)')).toBe(11)
+    expect(calc('=DAY(A1)', { A1: '2024-02-29' })).toBe(29)
+    expect(calc('=HOUR(0.75)')).toBe(18)
+    expect(calc('=MINUTE("2026-11-19 14:30:15")')).toBe(30)
+    expect(calc('=SECOND("2026-11-19 14:30:15")')).toBe(15)
+    expect(code(calc('=YEAR(-1)'))).toBe('#NUM!')
+    expect(code(calc('=YEAR("soon")'))).toBe('#VALUE!')
+  })
+
+  it('WEEKDAY in each return type', () => {
+    covers('WEEKDAY')
+    // 2026-11-19 is a Thursday.
+    expect(calc('=WEEKDAY("2026-11-19")')).toBe(5)
+    expect(calc('=WEEKDAY("2026-11-19", 1)')).toBe(5)
+    expect(calc('=WEEKDAY("2026-11-19", 2)')).toBe(4)
+    expect(calc('=WEEKDAY("2026-11-19", 3)')).toBe(3)
+    expect(calc('=WEEKDAY("2026-11-22", 2)')).toBe(7)
+    expect(calc('=WEEKDAY("2026-11-22", 3)')).toBe(6)
+    expect(calc('=WEEKDAY("2026-11-19", 11)')).toBe(4)
+    expect(code(calc('=WEEKDAY("2026-11-19", 9)'))).toBe('#NUM!')
+  })
+
+  it('WEEKNUM, ISOWEEKNUM', () => {
+    covers('WEEKNUM', 'ISOWEEKNUM')
+    // 2026 starts on a Thursday, and 2026-01-04 is a Sunday.
+    expect(calc('=WEEKNUM("2026-01-03")')).toBe(1)
+    expect(calc('=WEEKNUM("2026-01-04")')).toBe(2)
+    expect(calc('=WEEKNUM("2026-01-04", 2)')).toBe(1)
+    expect(calc('=WEEKNUM("2026-01-05", 2)')).toBe(2)
+    expect(calc('=ISOWEEKNUM("2026-01-01")')).toBe(1)
+    expect(calc('=ISOWEEKNUM("2027-01-01")')).toBe(53)
+    expect(calc('=ISOWEEKNUM("2021-01-03")')).toBe(53)
+    expect(calc('=ISOWEEKNUM("2021-01-04")')).toBe(1)
+  })
+
+  it('EDATE, EOMONTH', () => {
+    covers('EDATE', 'EOMONTH')
+    expect(calc('=EDATE("2026-01-31", 1)')).toBe(toSerial(2026, 2, 28))
+    expect(calc('=EDATE("2024-03-31", -1)')).toBe(toSerial(2024, 2, 29))
+    expect(calc('=EDATE("2026-11-19", 14)')).toBe(toSerial(2028, 1, 19))
+    expect(calc('=EOMONTH("2026-03-15", 0)')).toBe(toSerial(2026, 3, 31))
+    expect(calc('=EOMONTH("2026-03-15", -1)')).toBe(toSerial(2026, 2, 28))
+    expect(calc('=EOMONTH("2026-03-15", -13)')).toBe(toSerial(2025, 2, 28))
+    expect(calc('=EOMONTH("2024-01-10", 1)')).toBe(toSerial(2024, 2, 29))
+  })
+
+  it('DAYS and date arithmetic', () => {
+    covers('DAYS')
+    expect(calc('=DAYS("2026-03-01", "2026-02-01")')).toBe(28)
+    expect(calc('=DAYS("2024-03-01", "2024-02-01")')).toBe(29)
+    expect(calc('="2026-01-02"-"2026-01-01"')).toBe(1)
+    expect(calc('=A1+7', { A1: '2026-11-19' })).toBe(46352)
+    expect(
+      calc('=COUNTIF(A1:A3, ">2026-01-01")', {
+        A1: toSerial(2025, 6, 1),
+        A2: toSerial(2026, 6, 1),
+        A3: toSerial(2027, 1, 1),
+      }),
+    ).toBe(2)
+  })
+
+  it('DATEDIF in every unit', () => {
+    covers('DATEDIF')
+    const span = (unit: string) =>
+      calc(`=DATEDIF("2020-02-15", "2026-11-19", "${unit}")`)
+    expect(span('Y')).toBe(6)
+    expect(span('M')).toBe(81)
+    expect(span('D')).toBe(2469)
+    expect(span('MD')).toBe(4)
+    expect(span('YM')).toBe(9)
+    expect(span('yd')).toBe(277)
+    expect(calc('=DATEDIF("2026-01-20", "2026-03-05", "MD")')).toBe(13)
+    expect(calc('=DATEDIF("2024-02-29", "2025-02-28", "Y")')).toBe(0)
+    expect(code(calc('=DATEDIF("2026-02-01", "2026-01-01", "D")'))).toBe(
+      '#NUM!',
+    )
+    expect(code(span('W'))).toBe('#NUM!')
+  })
+
+  it('NETWORKDAYS, WORKDAY with holidays', () => {
+    covers('NETWORKDAYS', 'WORKDAY')
+    const holidays = { A1: '2026-11-11', A2: toSerial(2026, 11, 16) }
+    expect(calc('=NETWORKDAYS("2026-11-02", "2026-11-13")', holidays)).toBe(10)
+    expect(
+      calc('=NETWORKDAYS("2026-11-02", "2026-11-13", A1:A2)', holidays),
+    ).toBe(9)
+    expect(calc('=NETWORKDAYS("2026-11-13", "2026-11-02")', holidays)).toBe(-10)
+    expect(calc('=NETWORKDAYS("2026-11-14", "2026-11-15")')).toBe(0)
+    expect(calc('=WORKDAY("2026-11-13", 1)')).toBe(toSerial(2026, 11, 16))
+    expect(calc('=WORKDAY("2026-11-13", 1, A1:A2)', holidays)).toBe(
+      toSerial(2026, 11, 17),
+    )
+    expect(calc('=WORKDAY("2026-11-16", -1)')).toBe(toSerial(2026, 11, 13))
+    expect(calc('=WORKDAY("2026-11-09", 5, A1)', holidays)).toBe(
+      toSerial(2026, 11, 17),
+    )
+  })
+
+  it('YEARFRAC', () => {
+    covers('YEARFRAC')
+    expect(calc('=YEARFRAC("2026-01-01", "2026-07-01")')).toBe(0.5)
+    expect(calc('=YEARFRAC("2026-01-01", "2026-12-31", 0)')).toBe(1)
+    expect(calc('=YEARFRAC("2026-01-31", "2026-03-31", 0)')).toBeCloseTo(
+      60 / 360,
+    )
+    expect(calc('=YEARFRAC("2026-01-01", "2026-07-01", 1)')).toBeCloseTo(
+      181 / 365,
+    )
+    expect(calc('=YEARFRAC("2024-01-01", "2025-01-01", 1)')).toBe(1)
+    expect(calc('=YEARFRAC("2024-01-01", "2024-07-01", 1)')).toBeCloseTo(
+      182 / 366,
+    )
+    expect(calc('=YEARFRAC("2026-01-01", "2026-07-01", 2)')).toBeCloseTo(
+      181 / 360,
+    )
+    expect(calc('=YEARFRAC("2026-01-01", "2026-07-01", 3)')).toBeCloseTo(
+      181 / 365,
+    )
+    expect(calc('=YEARFRAC("2026-01-31", "2026-03-31", 4)')).toBeCloseTo(
+      60 / 360,
+    )
+    expect(calc('=YEARFRAC("2026-07-01", "2026-01-01")')).toBe(0.5)
+    expect(code(calc('=YEARFRAC("2026-01-01", "2026-07-01", 5)'))).toBe('#NUM!')
+  })
+})
+
+describe('TEXT', () => {
+  it('formats numbers', () => {
+    covers('TEXT')
+    expect(calc('=TEXT(1234.567, "0")')).toBe('1235')
+    expect(calc('=TEXT(1234.567, "0.00")')).toBe('1234.57')
+    expect(calc('=TEXT(1234.567, "#,##0")')).toBe('1,235')
+    expect(calc('=TEXT(1234567.891, "#,##0.00")')).toBe('1,234,567.89')
+    expect(calc('=TEXT(0.256, "0%")')).toBe('26%')
+    expect(calc('=TEXT(0.256, "0.0%")')).toBe('25.6%')
+    expect(calc('=TEXT(12345, "0.00E+00")')).toBe('1.23E+04')
+    expect(calc('=TEXT(0.00012, "0.0E+00")')).toBe('1.2E-04')
+    expect(calc('=TEXT(-5, "0.00")')).toBe('-5.00')
+    expect(calc('=TEXT(-5, "0;(0)")')).toBe('(5)')
+    expect(calc('=TEXT(0, "0;-0;""none""")')).toBe('none')
+    expect(calc('=TEXT(0.5, "#.##")')).toBe('.5')
+    expect(calc('=TEXT(1.005, "0.00")')).toBe('1.01')
+    expect(calc('=TEXT(3, "$0.00")')).toBe('$3.00')
+    expect(calc('=TEXT(5, "0 ""units""")')).toBe('5 units')
+    expect(calc('=TEXT(7, "\\#0")')).toBe('#7')
+    expect(calc('=TEXT(1500000, "#,##0,")')).toBe('1,500')
+    expect(calc('=TEXT(42, "General")')).toBe('42')
+    expect(calc('=TEXT("3.5", "0.00")')).toBe('3.50')
+  })
+
+  it('formats dates and times', () => {
+    expect(calc('=TEXT(DATE(2026, 11, 19), "yyyy-mm-dd")')).toBe('2026-11-19')
+    expect(calc('=TEXT(46345, "dddd, mmmm d, yyyy")')).toBe(
+      'Thursday, November 19, 2026',
+    )
+    expect(calc('=TEXT(46345, "ddd dd mmm yy")')).toBe('Thu 19 Nov 26')
+    expect(calc('=TEXT(46345, "m/d/yyyy")')).toBe('11/19/2026')
+    expect(calc('=TEXT("2026-11-19 14:05:09", "hh:mm:ss")')).toBe('14:05:09')
+    expect(calc('=TEXT("2026-11-19 14:05:09", "h:mm AM/PM")')).toBe('2:05 PM')
+    expect(calc('=TEXT(0, "h:mm AM/PM")')).toBe('12:00 AM')
+    expect(calc('=TEXT(0.5, "mm:ss")')).toBe('00:00')
+    expect(calc('=TEXT(46345.75, "yyyy-mm-dd hh:mm")')).toBe('2026-11-19 18:00')
+  })
+
+  it('leaves text and booleans alone', () => {
+    expect(calc('=TEXT("Apples", "0.00")')).toBe('Apples')
+    expect(calc('=TEXT(TRUE, "0")')).toBe('TRUE')
+    expect(code(calc('=TEXT(1/0, "0")'))).toBe('#DIV/0!')
   })
 })
 

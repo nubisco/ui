@@ -11,8 +11,10 @@ import {
   parseNumericText,
   scalar,
   textArg,
+  toNumber,
   toText,
 } from '../values'
+import { formatValue } from '../format'
 import { firstError, type IFunctionDefinition } from './define'
 
 // Excel's limit on the length of a text value. REPT stops there instead of
@@ -356,6 +358,28 @@ export const TEXT_FUNCTIONS: IFunctionDefinition[] = [
       return parsed === null
         ? formulaError('#VALUE!', 'The text is not a number')
         : parsed
+    },
+  },
+  {
+    name: 'TEXT',
+    category: 'text',
+    syntax: 'TEXT(value, format)',
+    description:
+      'Formats a number or date as text with a format code such as "#,##0.00", "0%" or "yyyy-mm-dd".',
+    minArgs: 2,
+    maxArgs: 2,
+    call: (args) => {
+      const value = scalar(args[0])
+      const format = textArg(args[1])
+      if (isFormulaError(value)) return value
+      if (isFormulaError(format)) return format
+      if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE'
+      if (typeof value === 'string') {
+        // Text that reads as a number or a date is formatted as one.
+        const n = toNumber(value)
+        return formatValue(isFormulaError(n) ? value : n, format)
+      }
+      return formatValue(value ?? 0, format)
     },
   },
 ]

@@ -1,4 +1,5 @@
 import type { TScalar } from './types'
+import { parseDateText } from './dates'
 import { compareValues, isFormulaError, parseNumericText } from './values'
 
 /**
@@ -50,7 +51,7 @@ export function criterionTest(criterion: TScalar): (value: TScalar) => boolean {
     return () => false
   }
 
-  const number = parseNumericText(operand)
+  const number = parseNumericText(operand) ?? parseDateText(operand)
   const upper = operand.toUpperCase()
   const target: string | number | boolean =
     number !== null

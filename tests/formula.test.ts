@@ -5,6 +5,9 @@ import {
   findFunctions,
   FORMULA_FUNCTIONS,
   formatRef,
+  fromSerial,
+  parseDateText,
+  toSerial,
   isFormula,
   isFormulaError,
   lettersToColumn,
@@ -62,6 +65,9 @@ describe('tokenize', () => {
     '=SUM(A1;1,5)',
     '="unterminated',
     '=@{}!? ~',
+    '=SUM({1,5\\2,5;3\\4};{1})',
+    '={1,2;3,4}+{"a;b",TRUE}',
+    '=}{;\\',
     '',
   ]
 
@@ -241,7 +247,7 @@ describe('function metadata', () => {
   it('is sorted and complete', () => {
     const names = FORMULA_FUNCTIONS.map((fn) => fn.name)
     expect(names).toEqual(names.slice().sort())
-    expect(names).toHaveLength(83)
+    expect(names).toHaveLength(106)
     for (const fn of FORMULA_FUNCTIONS) {
       expect(fn.syntax.startsWith(fn.name + '(')).toBe(true)
       expect(fn.description).toMatch(/^[A-Z].*\.$/)
@@ -256,5 +262,113 @@ describe('function metadata', () => {
       'SUMIFS',
     ])
     expect(findFunctions('ZZ')).toEqual([])
+  })
+})
+
+describe('array literals in the tokenizer and the locale round trip', () => {
+  it('emits braces and row separators', () => {
+    expect(tokenize('={1,2;3,4}').map((t) => t.type)).toEqual([
+      'operator',
+      'brace',
+      'number',
+      'separator',
+      'number',
+      'rowSeparator',
+      'number',
+      'separator',
+      'number',
+      'brace',
+    ])
+    expect(tokenize('={1\\2;3}', PT).map((t) => t.type)).toEqual([
+      'operator',
+      'brace',
+      'number',
+      'separator',
+      'number',
+      'rowSeparator',
+      'number',
+      'brace',
+    ])
+  })
+
+  it('treats a backslash outside braces as invalid', () => {
+    expect(tokenize('=1\\2', PT)[2].type).toBe('invalid')
+  })
+
+  it('round trips arrays between pt-PT and the stored text', () => {
+    expect(toCanonical('=SUM({1,5\\2,5;3\\4})', PT)).toBe('=SUM({1.5,2.5;3,4})')
+    expect(toLocalized('=SUM({1.5,2.5;3,4})', PT)).toBe('=SUM({1,5\\2,5;3\\4})')
+    expect(toCanonical('=SUM({1\\2};3,5)', PT)).toBe('=SUM({1,2},3.5)')
+    expect(toLocalized('=SUM({1,2},3.5)', PT)).toBe('=SUM({1\\2};3,5)')
+  })
+})
+
+describe('serial dates', () => {
+  it('counts days from 1899-12-30', () => {
+    expect(toSerial(1899, 12, 30)).toBe(0)
+    expect(toSerial(1899, 12, 31)).toBe(1)
+    expect(toSerial(2026, 11, 19)).toBe(46345)
+    expect(toSerial(2026, 11, 19, 18)).toBe(46345.75)
+    expect(toSerial(2024, 2, 29)).toBe(45351)
+  })
+
+  it('does not invent 29 February 1900', () => {
+    expect(toSerial(1900, 2, 28)).toBe(60)
+    expect(toSerial(1900, 3, 1)).toBe(61)
+    expect(toSerial(1900, 2, 29)).toBe(61)
+    expect(parseDateText('1900-02-29')).toBeNull()
+  })
+
+  it('rolls over months and days', () => {
+    expect(toSerial(2026, 13, 1)).toBe(toSerial(2027, 1, 1))
+    expect(toSerial(2026, 0, 1)).toBe(toSerial(2025, 12, 1))
+    expect(toSerial(2026, 3, 0)).toBe(toSerial(2026, 2, 28))
+    expect(toSerial(2024, 3, 0)).toBe(toSerial(2024, 2, 29))
+  })
+
+  it('reads a serial back into its parts', () => {
+    expect(fromSerial(46345.75)).toEqual({
+      year: 2026,
+      month: 11,
+      day: 19,
+      hours: 18,
+      minutes: 0,
+      seconds: 0,
+      weekday: 4,
+    })
+    expect(fromSerial(0).weekday).toBe(6)
+    expect(fromSerial(45351)).toMatchObject({ year: 2024, month: 2, day: 29 })
+    // Rounded to the nearest second, so no 23:59:59.999.
+    expect(fromSerial(46345 + 0.9999999999)).toMatchObject({
+      day: 20,
+      hours: 0,
+      seconds: 0,
+    })
+    expect(fromSerial(toSerial(2026, 1, 1, 13, 14, 15))).toMatchObject({
+      hours: 13,
+      minutes: 14,
+      seconds: 15,
+    })
+  })
+
+  it('parses ISO dates and times', () => {
+    expect(parseDateText('2026-11-19')).toBe(46345)
+    expect(parseDateText(' 2026-11-19 ')).toBe(46345)
+    expect(parseDateText('2026-11-19T18:00')).toBe(46345.75)
+    expect(parseDateText('2026-11-19 06:00:00')).toBe(46345.25)
+    expect(parseDateText('12:00')).toBe(0.5)
+    expect(parseDateText('06:00:00')).toBe(0.25)
+    expect(parseDateText('2024-02-29')).toBe(45351)
+    for (const bad of [
+      '2023-02-29',
+      '2026-13-01',
+      '2026-11-19T25:00',
+      '24:00',
+      '19/11/2026',
+      'soon',
+      '2026',
+    ]) {
+      expect(parseDateText(bad), bad).toBeNull()
+    }
   })
 })
