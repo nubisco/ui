@@ -1,3 +1,11 @@
+# [5.60.0](https://github.com/nubisco/ui/compare/v5.59.1...v5.60.0) (2026-11-19)
+
+
+### Features
+
+* **formula:** zero-dependency formula engine on @nubisco/ui/formula ([35c08c0](https://github.com/nubisco/ui/commit/35c08c02a4129bc7f4baa3f6ce3b6a177fbeafff))
+* **spreadsheet:** formulas, styles, merges, conditional formats and CSV ([dd100d7](https://github.com/nubisco/ui/commit/dd100d7350ab3e83bd80c9825cc1cae8b29269b9))
+
 ## [5.59.1](https://github.com/nubisco/ui/compare/v5.59.0...v5.59.1) (2026-11-19)
 
 
