@@ -23,6 +23,7 @@
     <div
       ref="scrollerRef"
       class="nb-spreadsheet__scroller"
+      :class="{ 'nb-spreadsheet__scroller--active': !!focused }"
       tabindex="0"
       role="grid"
       aria-multiselectable="true"
@@ -990,7 +991,7 @@ function cellClass(row: ISpreadsheetRow, col: ISpreadsheetColumn) {
   const attrs = cellAttrsFor(row, col)
   const isFocused =
     focused.value?.rowId === row.id && focused.value?.columnId === col.id
-  const isInSelection = isCellInSelection(row.id, col.id)
+  const lines = selectionLines(row.id, col.id)
   const alignClass =
     col.align ??
     (sheetMode.value
@@ -1003,7 +1004,11 @@ function cellClass(row: ISpreadsheetRow, col: ISpreadsheetColumn) {
   return {
     [`nb-spreadsheet__cell--${alignClass}`]: true,
     'nb-spreadsheet__cell--focused': isFocused,
-    'nb-spreadsheet__cell--selected': isInSelection,
+    'nb-spreadsheet__cell--selected': lines.selected,
+    'nb-spreadsheet__cell--edge-top': lines.top,
+    'nb-spreadsheet__cell--edge-bottom': lines.bottom,
+    'nb-spreadsheet__cell--edge-left': lines.left,
+    'nb-spreadsheet__cell--edge-right': lines.right,
     'nb-spreadsheet__cell--readonly': isReadOnly(row, col),
     'nb-spreadsheet__cell--computed': !!attrs.computed || !!row.computed,
     'nb-spreadsheet__cell--pinned-top': row.pinned === 'top',
@@ -1043,14 +1048,12 @@ function headerClass(
   ci: number,
   kind: 'letters' | 'label',
 ) {
-  const bounds = selectionBounds.value
   return {
     'nb-spreadsheet__header--letters': kind === 'letters',
     'nb-spreadsheet__header--stacked': headerRows.value.length === 2,
     'nb-spreadsheet__header--sortable': kind === 'label' && !!col.sortable,
     'nb-spreadsheet__header--sorted': sortBy.value?.columnId === col.id,
-    'nb-spreadsheet__header--selected':
-      !!bounds && ci >= bounds.c1 && ci <= bounds.c2,
+    'nb-spreadsheet__header--selected': isColumnInSelection(ci),
     'nb-spreadsheet__header--pinned-left': col.pinned === 'left',
     'nb-spreadsheet__header--pinned-right': col.pinned === 'right',
     'nb-spreadsheet__header--last': ci === orderedColumns.value.length - 1,
@@ -1178,8 +1181,7 @@ function gutterStyle(row: IRenderRow) {
 // ─── Selection helpers ─────────────────────────────────────────────────────
 // The selection as row and column positions, worked out once per change
 // rather than once per cell.
-const selectionBounds = computed(() => {
-  const sel = selection.value
+function boundsOf(sel: ISpreadsheetSelection | null): IBounds | null {
   if (!sel) return null
   const r1 = rowIndex.value.get(sel.startRowId) ?? -1
   const r2 = rowIndex.value.get(sel.endRowId) ?? -1
@@ -1192,24 +1194,81 @@ const selectionBounds = computed(() => {
     c1: Math.min(c1, c2),
     c2: Math.max(c1, c2),
   }
+}
+
+const selectionBounds = computed(() => boundsOf(selection.value))
+
+// Cmd/Ctrl-click adds a range, as desktop spreadsheets do. The ranges added
+// before the current one are kept here, and `selection` stays the range the
+// active cell is in. Any plain click or move drops them.
+const extraSelections = ref<ISpreadsheetSelection[]>([])
+
+const allSelectionBounds = computed(() => {
+  const out: IBounds[] = []
+  for (const sel of extraSelections.value) {
+    const b = boundsOf(sel)
+    if (b) out.push(b)
+  }
+  if (selectionBounds.value) out.push(selectionBounds.value)
+  return out
 })
 
+function isPositionSelected(ri: number, ci: number): boolean {
+  for (const b of allSelectionBounds.value) {
+    if (ri >= b.r1 && ri <= b.r2 && ci >= b.c1 && ci <= b.c2) return true
+  }
+  return false
+}
+
 function isCellInSelection(rowId: string, columnId: string): boolean {
-  const b = selectionBounds.value
-  if (!b) return false
+  return isPositionSelected(
+    rowIndex.value.get(rowId) ?? -1,
+    colIndex.value.get(columnId) ?? -1,
+  )
+}
+
+// The lines a cell draws so the ranges read as boxes: ranges that touch
+// share one, and each range on its own gets its own. A cell owns the grid
+// lines on its right and bottom, so it draws those wherever the selection
+// starts or stops across them, on either side. The first column and row have
+// no cell before them to draw their left and top edges, so they draw them.
+function selectionLines(rowId: string, columnId: string) {
   const ri = rowIndex.value.get(rowId) ?? -1
   const ci = colIndex.value.get(columnId) ?? -1
-  return ri >= b.r1 && ri <= b.r2 && ci >= b.c1 && ci <= b.c2
+  const here = isPositionSelected(ri, ci)
+  return {
+    selected: here,
+    right: here !== isPositionSelected(ri, ci + 1),
+    bottom: here !== isPositionSelected(ri + 1, ci),
+    left: here && ci === 0,
+    top: here && ri === 0,
+  }
 }
 
 function isRowInSelection(rowId: string): boolean {
-  const b = selectionBounds.value
-  if (!b) return false
   const ri = rowIndex.value.get(rowId) ?? -1
-  return ri >= b.r1 && ri <= b.r2
+  return allSelectionBounds.value.some((b) => ri >= b.r1 && ri <= b.r2)
 }
 
-function setFocus(rowId: string, columnId: string, extendSelection = false) {
+function isColumnInSelection(ci: number): boolean {
+  return allSelectionBounds.value.some((b) => ci >= b.c1 && ci <= b.c2)
+}
+
+// Keeps the current range as an added one, before a Cmd/Ctrl-click starts
+// the next.
+function keepRange() {
+  if (selection.value)
+    extraSelections.value = [...extraSelections.value, selection.value]
+}
+
+function setFocus(
+  rowId: string,
+  columnId: string,
+  extendSelection = false,
+  add = false,
+) {
+  if (add) keepRange()
+  else if (!extendSelection) extraSelections.value = []
   focused.value = { rowId, columnId }
   if (extendSelection && selection.value) {
     selection.value = {
@@ -1236,36 +1295,49 @@ function selectRange(
   anchorRowId: string,
   anchorColumnId: string,
   start: ISpreadsheetSelection,
+  mode: 'new' | 'add' | 'extend' = 'new',
 ) {
+  if (mode === 'add') keepRange()
+  else if (mode === 'new') extraSelections.value = []
   focused.value = { rowId: anchorRowId, columnId: anchorColumnId }
   selection.value = start
   emit('focus', focused.value)
   emit('selection', selection.value)
 }
 
-function selectColumns(columnId: string, extend = false) {
+function selectColumns(columnId: string, extend = false, add = false) {
   const rows = allRows.value
   if (!rows.length) return
   const anchor =
     extend && selection.value ? selection.value.startColumnId : columnId
-  selectRange(rows[0].id, anchor, {
-    startRowId: rows[0].id,
-    startColumnId: anchor,
-    endRowId: rows[rows.length - 1].id,
-    endColumnId: columnId,
-  })
+  selectRange(
+    rows[0].id,
+    anchor,
+    {
+      startRowId: rows[0].id,
+      startColumnId: anchor,
+      endRowId: rows[rows.length - 1].id,
+      endColumnId: columnId,
+    },
+    extend ? 'extend' : add ? 'add' : 'new',
+  )
 }
 
-function selectRows(rowId: string, extend = false) {
+function selectRows(rowId: string, extend = false, add = false) {
   const cols = orderedColumns.value
   if (!cols.length) return
   const anchor = extend && selection.value ? selection.value.startRowId : rowId
-  selectRange(anchor, cols[0].id, {
-    startRowId: anchor,
-    startColumnId: cols[0].id,
-    endRowId: rowId,
-    endColumnId: cols[cols.length - 1].id,
-  })
+  selectRange(
+    anchor,
+    cols[0].id,
+    {
+      startRowId: anchor,
+      startColumnId: cols[0].id,
+      endRowId: rowId,
+      endColumnId: cols[cols.length - 1].id,
+    },
+    extend ? 'extend' : add ? 'add' : 'new',
+  )
 }
 
 function selectAll() {
@@ -1307,7 +1379,7 @@ function onCellMouseDown(
   lastPointerType = ''
   if (editing.value) commitEdit()
   isSelecting.value = true
-  setFocus(row.id, col.id, e.shiftKey)
+  setFocus(row.id, col.id, e.shiftKey, !e.shiftKey && (e.metaKey || e.ctrlKey))
   focusScroller()
   e.preventDefault()
   document.addEventListener('mouseup', stopSelecting, { once: true })
@@ -1356,14 +1428,14 @@ function onHeaderMouseDown(
   // letters above them select.
   if (col.sortable && (kind === 'label' || headerRows.value.length === 1))
     toggleSort(col)
-  else selectColumns(col.id, e.shiftKey)
+  else selectColumns(col.id, e.shiftKey, e.metaKey || e.ctrlKey)
 }
 
 function onGutterMouseDown(e: MouseEvent, row: ISpreadsheetRow) {
   if (e.button !== 0) return
   if (editing.value) commitEdit()
   focusScroller()
-  selectRows(row.id, e.shiftKey)
+  selectRows(row.id, e.shiftKey, e.metaKey || e.ctrlKey)
 }
 
 function onCornerMouseDown(e: MouseEvent) {
@@ -1603,6 +1675,7 @@ function onKeydown(e: KeyboardEvent) {
       break
     case 'Escape':
       selection.value = null
+      extraSelections.value = []
       emit('selection', null)
       break
     case 'Delete':
@@ -1788,15 +1861,20 @@ function applyChanges(changes: ISpreadsheetChange[]) {
 }
 
 // ─── Bulk clear / clipboard ────────────────────────────────────────────────
+// Every selected cell, once, across the added ranges too.
 function selectedCells(): Array<{ rowId: string; columnId: string }> {
-  const b = selectionBounds.value
-  if (!b) return []
   const rows = allRows.value
   const cols = orderedColumns.value
+  const seen = new Set<string>()
   const out: Array<{ rowId: string; columnId: string }> = []
-  for (let r = b.r1; r <= b.r2; r++) {
-    for (let c = b.c1; c <= b.c2; c++) {
-      out.push({ rowId: rows[r].id, columnId: cols[c].id })
+  for (const b of allSelectionBounds.value) {
+    for (let r = b.r1; r <= b.r2; r++) {
+      for (let c = b.c1; c <= b.c2; c++) {
+        const key = `${r}:${c}`
+        if (seen.has(key)) continue
+        seen.add(key)
+        out.push({ rowId: rows[r].id, columnId: cols[c].id })
+      }
     }
   }
   return out
@@ -1929,7 +2007,12 @@ function growColumnIds(ids: string[], needed: number): string[] {
 // sideways fills the cells it passes: numbers that step evenly carry the
 // series on, and anything else repeats. Ctrl+D and Ctrl+R copy the first row
 // or column of the selection over the rest, for the keyboard.
-const fillEnabled = computed(() => props.fillHandle ?? sheetMode.value)
+// A fill works from one range, so the handle and the keys stand down while
+// ranges have been added.
+const fillEnabled = computed(
+  () =>
+    (props.fillHandle ?? sheetMode.value) && extraSelections.value.length === 0,
+)
 
 interface IBounds {
   r1: number
@@ -2187,6 +2270,9 @@ watch([orderedColumns, allRows], () => {
   const colShown = colIndex.value.has(fc.columnId)
   const rowShown = rowIndex.value.has(fc.rowId)
   if (colShown && rowShown) {
+    const kept = extraSelections.value.filter((sel) => boundsOf(sel))
+    if (kept.length !== extraSelections.value.length)
+      extraSelections.value = kept
     if (selection.value && !selectionBounds.value) {
       selection.value = null
       emit('selection', null)
@@ -2210,6 +2296,7 @@ watch([orderedColumns, allRows], () => {
   else {
     focused.value = null
     selection.value = null
+    extraSelections.value = []
     emit('focus', null)
     emit('selection', null)
   }
@@ -2377,6 +2464,10 @@ defineExpose({
   undo,
   redo,
   getSelection: () => selection.value,
+  getSelections: () =>
+    [...extraSelections.value, selection.value].filter(
+      (s): s is ISpreadsheetSelection => !!s,
+    ),
   selectAll,
   selectColumn: (columnId: string) => selectColumns(columnId),
   selectRow: (rowId: string) => selectRows(rowId),
@@ -2511,7 +2602,9 @@ defineExpose({
   min-width: min-content;
 }
 
-.nb-spreadsheet__scroller:focus-visible {
+// The ring around the whole grid shows only until a cell is active. From
+// then on the active cell's own ring is where the focus is.
+.nb-spreadsheet__scroller:focus-visible:not(.nb-spreadsheet__scroller--active) {
   box-shadow: inset 0 0 0 2px var(--nbss-focus-ring);
 }
 
@@ -2785,8 +2878,29 @@ defineExpose({
   background: var(--nb-c-surface-selected);
 }
 
-// Active cell: inset 2px focus ring, no offset, no jump on focus.
-.nb-spreadsheet__cell--focused {
+// Each range is boxed in the focus ring's colour, on the grid lines
+// themselves (see selectionLines).
+.nb-spreadsheet__cell--edge-right {
+  border-right-color: var(--nbss-focus-ring);
+}
+.nb-spreadsheet__cell--edge-bottom {
+  border-bottom-color: var(--nbss-focus-ring);
+}
+.nb-spreadsheet__cell--edge-top {
+  box-shadow: inset 0 1px 0 var(--nbss-focus-ring);
+}
+.nb-spreadsheet__cell--edge-left {
+  box-shadow: inset 1px 0 0 var(--nbss-focus-ring);
+}
+.nb-spreadsheet__cell--edge-top.nb-spreadsheet__cell--edge-left {
+  box-shadow:
+    inset 0 1px 0 var(--nbss-focus-ring),
+    inset 1px 0 0 var(--nbss-focus-ring);
+}
+
+// Active cell: inset 2px focus ring, no offset, no jump on focus. Doubled
+// up to win over the range's edge lines.
+.nb-spreadsheet__cell.nb-spreadsheet__cell--focused {
   box-shadow: inset 0 0 0 2px var(--nbss-focus-ring);
   z-index: 2;
 }

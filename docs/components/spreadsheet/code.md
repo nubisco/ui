@@ -309,7 +309,7 @@ interface ISpreadsheetCellAttrs {
 | ---------------------- | --------------------------------------------- | --------------------------------------------------------------- |
 | `commit`               | `ISpreadsheetChange`                          | One cell was committed (edit, paste, clear, undo, redo)         |
 | `change`               | `ISpreadsheetChange[]`                        | The batch of changes from one action                            |
-| `selection`            | `ISpreadsheetSelection \| null`               | The selected range changed                                      |
+| `selection`            | `ISpreadsheetSelection \| null`               | The range the active cell is in changed                         |
 | `focus`                | `{ rowId: string; columnId: string } \| null` | The active cell changed                                         |
 | `column-resize`        | `{ columnId: string; width: number }`         | A column was resized, at the end of a drag or on each key       |
 | `update:hiddenColumns` | `string[]`                                    | Columns were hidden or shown                                    |
@@ -364,7 +364,8 @@ sheet.value?.selectColumn(columnId) // select a whole column
 sheet.value?.selectRow(rowId) // select a whole row
 sheet.value?.selectAll()
 sheet.value?.hideColumns(['note']) // and showColumns, hideRows, showRows
-sheet.value?.getSelection()
+sheet.value?.getSelection() // the range the active cell is in
+sheet.value?.getSelections() // every range, with the ones added by Cmd/Ctrl-click
 sheet.value?.undo()
 sheet.value?.redo()
 ```

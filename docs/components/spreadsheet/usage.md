@@ -153,7 +153,9 @@ Set `column.sortable` to let a header click sort the rows. The first click sorts
 
 ## Selecting
 
-Drag across cells, or hold `Shift` while clicking or moving, to select a range. A click on a column header that does not sort selects the whole column, a click in the gutter selects the row, and the corner selects everything. `Shift` grows any of them. A selected range can be copied, cut, pasted over and cleared, and its column and row headers are tinted, so the extent of a selection is clear while scrolling.
+Drag across cells, or hold `Shift` while clicking or moving, to select a range. A click on a column header that does not sort selects the whole column, a click in the gutter selects the row, and the corner selects everything. `Shift` grows any of them. A selected range is boxed by a line around it, and its column and row headers are tinted, so the extent of a selection is clear while scrolling.
+
+Hold `Cmd` (`Ctrl` on Windows and Linux) while clicking or dragging to add another range, and each range gets a box of its own. `Delete` clears every range. Copy, cut, paste and the fill handle work on the range the active cell is in, as a desktop spreadsheet's do with ranges that do not form one block.
 
 ## Keyboard, mouse and clipboard
 
@@ -165,6 +167,7 @@ Drag across cells, or hold `Shift` while clicking or moving, to select a range. 
 | Cancel editing           | `Esc`                                                           |
 | Clear the selected range | `Delete` / `Backspace`                                          |
 | Extend the selection     | Hold `Shift` while moving / Shift-click                         |
+| Add a range              | Cmd/Ctrl-click or drag                                          |
 | Select the column        | `Ctrl+Space` / click its header                                 |
 | Select the row           | `Shift+Space` / click its gutter cell                           |
 | Select everything        | `Cmd/Ctrl+A` / click the corner                                 |

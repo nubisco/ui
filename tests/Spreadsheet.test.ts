@@ -1139,3 +1139,81 @@ describe('NbSpreadsheet sheet mode', () => {
     w.unmount()
   })
 })
+
+describe('NbSpreadsheet range boxes', () => {
+  type TCells = Record<string, string | number | boolean | null>
+  const grid: TCells = { D4: 1 }
+  function sheet() {
+    const w = mount(Spreadsheet, {
+      props: {
+        cells: grid,
+        locale: 'en-GB',
+        'onUpdate:cells': (v: TCells) => w.setProps({ cells: v }),
+      },
+      attachTo: document.body,
+    })
+    return w
+  }
+  const edges = (w: ReturnType<typeof sheet>, ref: string) =>
+    w
+      .find(`[data-cell="${ref.slice(1)}::${ref[0]}"]`)
+      .classes()
+      .filter((c) => c.startsWith('nb-spreadsheet__cell--edge-'))
+      .map((c) => c.replace('nb-spreadsheet__cell--edge-', ''))
+      .sort()
+
+  afterEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  it('boxes a range on the grid lines around it', async () => {
+    const w = sheet()
+    await w.find('[data-cell="2::B"]').trigger('mousedown')
+    await w.find('[data-cell="3::C"]').trigger('mousedown', { shiftKey: true })
+    expect(edges(w, 'B2')).toEqual([])
+    expect(edges(w, 'C2')).toEqual(['right'])
+    expect(edges(w, 'B3')).toEqual(['bottom'])
+    expect(edges(w, 'C3')).toEqual(['bottom', 'right'])
+    // The cells before the range draw its left and top edges.
+    expect(edges(w, 'A2')).toEqual(['right'])
+    expect(edges(w, 'B1')).toEqual(['bottom'])
+    expect(edges(w, 'D2')).toEqual([])
+    w.unmount()
+  })
+
+  it('adds a range with Cmd or Ctrl, boxes each, and clears both', async () => {
+    const w = sheet()
+    await w.find('[data-cell="1::A"]').trigger('mousedown')
+    await w.find('[data-cell="3::C"]').trigger('mousedown', { metaKey: true })
+    expect(w.findAll('.nb-spreadsheet__cell--selected')).toHaveLength(2)
+    expect(edges(w, 'A1').sort()).toEqual(['bottom', 'left', 'right', 'top'])
+    expect(edges(w, 'C3')).toEqual(['bottom', 'right'])
+    expect(edges(w, 'B3')).toEqual(['right'])
+    expect(edges(w, 'C2')).toEqual(['bottom'])
+    expect(w.find('.nb-spreadsheet__fill-handle').exists()).toBe(false)
+    expect(
+      (w.vm as unknown as { getSelections(): unknown[] }).getSelections(),
+    ).toHaveLength(2)
+
+    await w.find('[data-cell="2::B"]').trigger('mousedown', { ctrlKey: true })
+    w.setProps({ cells: { A1: 1, B2: 2, C3: 3, D4: 4 } })
+    await nextTick()
+    await w.find('.nb-spreadsheet__scroller').trigger('keydown', {
+      key: 'Delete',
+    })
+    expect(w.props('cells')).toEqual({ D4: 4 })
+
+    await w.find('[data-cell="4::D"]').trigger('mousedown')
+    expect(w.findAll('.nb-spreadsheet__cell--selected')).toHaveLength(1)
+    w.unmount()
+  })
+
+  it('drops the ring around the whole grid once a cell is active', async () => {
+    const w = sheet()
+    const scroller = w.find('.nb-spreadsheet__scroller')
+    expect(scroller.classes()).not.toContain('nb-spreadsheet__scroller--active')
+    await w.find('[data-cell="1::A"]').trigger('mousedown')
+    expect(scroller.classes()).toContain('nb-spreadsheet__scroller--active')
+    w.unmount()
+  })
+})
