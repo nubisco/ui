@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { FORMULA_FUNCTIONS } from '@nubisco/ui/formula'
 import type {
   ISpreadsheetColumn,
   ISpreadsheetRow,
   ISpreadsheetChange,
   TSpreadsheetCells,
+  TSpreadsheetStyles,
+  ISpreadsheetConditionalFormat,
 } from '@nubisco/ui'
 
 // ── Basic example ───────────────────────────────────────────────────────────
@@ -201,6 +204,96 @@ const sheetCells = ref<TSpreadsheetCells>({
   B3: 1350,
   C3: 52,
 })
+
+// ── Styles, merges and conditional formats ──────────────────────────────────
+const lookSheet = ref<{
+  applyStyle(patch: Record<string, unknown>): void
+  clearStyles(): void
+  merge(): void
+} | null>(null)
+const lookCells = ref<TSpreadsheetCells>({
+  A1: 'Quarterly costs',
+  A2: 'Line',
+  B2: 'Budget',
+  C2: 'Actual',
+  D2: 'Variance',
+  A3: 'Hosting',
+  B3: 1800,
+  C3: 1650,
+  D3: '=B3-C3',
+  A4: 'Licences',
+  B4: 2400,
+  C4: 2790,
+  D4: '=B4-C4',
+  A5: 'Training',
+  B5: 900,
+  C5: 450,
+  D5: '=B5-C5',
+  A6: 'Total',
+  B6: '=SUM(B3:B5)',
+  C6: '=SUM(C3:C5)',
+  D6: '=SUM(D3:D5)',
+})
+const money = { type: 'currency', currency: 'EUR' } as const
+const lookStyles = ref<TSpreadsheetStyles>({
+  A1: { bold: true, align: 'center' },
+  A2: { bold: true },
+  B2: { bold: true },
+  C2: { bold: true },
+  D2: { bold: true },
+  A6: { bold: true },
+  ...Object.fromEntries(
+    ['B', 'C', 'D'].flatMap((c) =>
+      [3, 4, 5, 6].map((r) => [`${c}${r}`, { format: money }]),
+    ),
+  ),
+})
+const lookMerges = ref<string[]>(['A1:D1'])
+const lookFormats: ISpreadsheetConditionalFormat[] = [
+  { range: 'D3:D6', rule: { when: 'lessThan', value: 0 }, style: { intent: 'danger' } },
+  { range: 'D3:D6', rule: { when: 'greaterThan', value: 0 }, style: { intent: 'success' } },
+]
+
+// ── Formulas ────────────────────────────────────────────────────────────────
+const formulaCells = ref<TSpreadsheetCells>({
+  A1: 'Item',
+  B1: 'Qty',
+  C1: 'Unit price',
+  D1: 'Amount',
+  A2: 'Sensors',
+  B2: 12,
+  C2: 14,
+  D2: '=B2*C2',
+  A3: 'Cables',
+  B3: 30,
+  C3: 2.5,
+  D3: '=B3*C3',
+  A4: 'Controllers',
+  B4: 4,
+  C4: 39,
+  D4: '=B4*C4',
+  A5: 'Total',
+  B5: '=SUM(B2:B4)',
+  D5: '=SUM(D2:D4)',
+  A6: 'Largest line',
+  D6: '=INDEX(A2:A4,MATCH(MAX(D2:D4),D2:D4,0))',
+})
+
+const CATEGORY_LABELS: Record<string, string> = {
+  math: 'Math',
+  statistical: 'Statistical',
+  logical: 'Logical',
+  text: 'Text',
+  lookup: 'Lookup and reference',
+  information: 'Information',
+}
+const functionGroups = computed(() =>
+  Object.entries(CATEGORY_LABELS).map(([category, label]) => ({
+    category,
+    label,
+    functions: FORMULA_FUNCTIONS.filter((fn) => fn.category === category),
+  })),
+)
 </script>
 
 <style scoped>

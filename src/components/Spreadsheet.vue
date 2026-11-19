@@ -17,6 +17,47 @@
       <slot name="toolbar" />
     </div>
 
+    <!-- The formula bar: the active cell's reference, and its contents with
+         a formula as written. Typing in it edits the cell. -->
+    <div v-if="showFormulaBar" class="nb-spreadsheet__formula-bar">
+      <span class="nb-spreadsheet__name-box">{{ nameBoxText }}</span>
+      <span class="nb-spreadsheet__fx" aria-hidden="true">fx</span>
+      <div class="nb-spreadsheet__bar-field">
+        <div
+          v-if="isFormulaDraft"
+          class="nb-spreadsheet__mirror nb-spreadsheet__mirror--bar"
+          aria-hidden="true"
+        >
+          <span :style="{ transform: `translateX(${-draftScroll.bar}px)` }"
+            ><span
+              v-for="(run, i) in draftRuns"
+              :key="i"
+              :class="run.colour ? `nb-spreadsheet__ref--${run.colour}` : ''"
+              >{{ run.text }}</span
+            ></span
+          >
+        </div>
+        <input
+          ref="barRef"
+          class="nb-spreadsheet__bar-input"
+          :class="{ 'nb-spreadsheet__input--formula': isFormulaDraft }"
+          :value="barText"
+          :readonly="!barEditable"
+          :aria-label="strings.spreadsheetFormulaBar"
+          v-bind="assistAria"
+          autocomplete="off"
+          spellcheck="false"
+          @focus="onBarFocus"
+          @input="onBarInput"
+          @keydown.stop="editing && onEditorKeydown($event)"
+          @keyup="updateAssist"
+          @click="updateAssist"
+          @blur="onEditorBlur"
+          @scroll="onDraftScroll"
+        />
+      </div>
+    </div>
+
     <!-- The scroller is the grid a screen reader sees. It keeps the focus
          while the person moves around, and names the active cell through
          aria-activedescendant, so no cell is ever in the tab order. -->
@@ -208,53 +249,146 @@
               @click="showRows(hiddenRowsAfter)"
             />
           </div>
-          <div
-            v-for="col in renderColumns"
-            :id="cellId(row.id, col.id)"
-            :key="`c-${row.id}-${col.id}`"
-            class="nb-spreadsheet__cell"
-            :class="cellClass(row, col)"
-            role="gridcell"
-            :aria-colindex="ciOf(col) + colOffset + 1"
-            :aria-selected="isCellInSelection(row.id, col.id)"
-            :aria-readonly="isReadOnly(row, col) || undefined"
-            :style="cellStyle(row, col, ciOf(col))"
-            :title="cellTitle(row, col)"
-            :data-cell="`${row.id}::${col.id}`"
-            :data-row="row.id"
-            :data-col="col.id"
-            @pointerdown="onCellPointerDown($event)"
-            @mousedown="onCellMouseDown($event, row, col)"
-            @mouseenter="onCellMouseEnter(row, col)"
-            @dblclick="onCellDblClick(row, col)"
-            @contextmenu="onContextMenu($event, 'cell', row.id, col.id)"
-          >
-            <span>{{ cellDisplay(row, col) }}</span>
-            <!-- The fill handle: a mouse affordance, with Ctrl+D and Ctrl+R
+          <template v-for="col in renderColumns" :key="`c-${row.id}-${col.id}`">
+            <div
+              v-if="!isCovered(row.id, col.id)"
+              :id="cellId(row.id, col.id)"
+              class="nb-spreadsheet__cell"
+              :class="cellClass(row, col)"
+              role="gridcell"
+              :aria-colindex="ciOf(col) + colOffset + 1"
+              :aria-selected="isCellInSelection(row.id, col.id)"
+              :aria-readonly="isReadOnly(row, col) || undefined"
+              :style="cellStyle(row, col, ciOf(col))"
+              :title="cellTitle(row, col)"
+              :data-cell="`${row.id}::${col.id}`"
+              :data-row="row.id"
+              :data-col="col.id"
+              @pointerdown="onCellPointerDown($event)"
+              @mousedown="onCellMouseDown($event, row, col)"
+              @mouseenter="onCellMouseEnter(row, col)"
+              @dblclick="onCellDblClick(row, col)"
+              @contextmenu="onContextMenu($event, 'cell', row.id, col.id)"
+            >
+              <span>{{ cellDisplay(row, col) }}</span>
+              <!-- The fill handle: a mouse affordance, with Ctrl+D and Ctrl+R
                  doing the same from the keyboard. -->
-            <span
-              v-if="isFillHandleCell(row.id, col.id)"
-              class="nb-spreadsheet__fill-handle"
-              aria-hidden="true"
-              @mousedown.stop.prevent="startFill"
-            />
-          </div>
+              <span
+                v-if="isFillHandleCell(row.id, col.id)"
+                class="nb-spreadsheet__fill-handle"
+                aria-hidden="true"
+                @mousedown.stop.prevent="startFill"
+              />
+            </div>
+          </template>
         </div>
+
+        <!-- The cells a formula being edited refers to, boxed in its
+             references' colours. -->
+        <div
+          v-for="box in refBoxes"
+          :key="box.key"
+          class="nb-spreadsheet__ref-box"
+          :class="`nb-spreadsheet__ref--${box.colour}`"
+          :style="box.style"
+          aria-hidden="true"
+        />
       </div>
 
       <!-- Edit input overlay -->
+      <!-- A formula's references are coloured on a layer behind the
+           editor's text, which is drawn transparent over it. -->
+      <div
+        v-if="editing && isFormulaDraft"
+        class="nb-spreadsheet__editor nb-spreadsheet__mirror"
+        :style="editorStyle"
+        aria-hidden="true"
+      >
+        <span :style="{ transform: `translateX(${-draftScroll.cell}px)` }"
+          ><span
+            v-for="(run, i) in draftRuns"
+            :key="i"
+            :class="run.colour ? `nb-spreadsheet__ref--${run.colour}` : ''"
+            >{{ run.text }}</span
+          ></span
+        >
+      </div>
       <input
         v-if="editing"
         ref="editorRef"
         v-model="editing.draft"
         class="nb-spreadsheet__editor"
+        :class="{ 'nb-spreadsheet__input--formula': isFormulaDraft }"
         :style="editorStyle"
         :inputmode="editorInputMode"
         :aria-label="editorLabel"
+        v-bind="assistAria"
+        autocomplete="off"
+        spellcheck="false"
         enterkeyhint="next"
-        @blur="commitEdit(false)"
+        @focus="onEditorFocus('cell')"
+        @blur="onEditorBlur"
+        @input="onDraftInput"
+        @keyup="updateAssist"
+        @click="updateAssist"
+        @scroll="onDraftScroll"
         @keydown.stop="onEditorKeydown"
       />
+    </div>
+
+    <!-- Functions offered while a name is typed, and the call being typed
+         into. Fixed to the viewport, so the sheet's own scroll box never
+         clips them. -->
+    <div
+      v-if="editing && (assist || signature) && assistPosition"
+      class="nb-spreadsheet__assist"
+      :style="{
+        left: `${assistPosition.left}px`,
+        top: `${assistPosition.top}px`,
+      }"
+    >
+      <ul
+        v-if="assist"
+        :id="assistId"
+        class="nb-spreadsheet__assist-list"
+        role="listbox"
+        :aria-label="strings.spreadsheetFunctions"
+      >
+        <li
+          v-for="(fn, i) in assist.items"
+          :id="`${assistId}-${i}`"
+          :key="fn.name"
+          class="nb-spreadsheet__assist-option"
+          :class="{
+            'nb-spreadsheet__assist-option--active': i === assist.active,
+          }"
+          role="option"
+          :aria-selected="i === assist.active"
+          @mousedown.prevent="acceptAssist(i)"
+        >
+          <span class="nb-spreadsheet__assist-name">{{ fn.name }}</span>
+          <span class="nb-spreadsheet__assist-description">{{
+            fn.description
+          }}</span>
+        </li>
+      </ul>
+      <div
+        v-else-if="signature"
+        :id="`${assistId}-signature`"
+        class="nb-spreadsheet__signature"
+      >
+        <span class="nb-spreadsheet__signature-call"
+          ><template
+            v-for="(part, i) in partOfSignature(signature.fn, signature.arg)"
+            :key="i"
+            ><strong v-if="part.current">{{ part.text }}</strong
+            ><template v-else>{{ part.text }}</template></template
+          ></span
+        >
+        <span class="nb-spreadsheet__assist-description">{{
+          signature.fn.description
+        }}</span>
+      </div>
     </div>
 
     <!-- The context menu, with `context-menu`. It acts on the selection,
@@ -283,6 +417,20 @@
         shortcut="Delete"
         @select="clearSelection"
       />
+      <template v-if="sheetMode">
+        <NbMenuDivider />
+        <NbMenuItem
+          v-if="selectionHasMerge"
+          :label="strings.spreadsheetUnmerge"
+          @select="unmergeSelection"
+        />
+        <NbMenuItem
+          v-else
+          :label="strings.spreadsheetMerge"
+          :disabled="!canMerge"
+          @select="mergeSelection"
+        />
+      </template>
       <template v-if="menuSortColumn">
         <NbMenuDivider />
         <NbMenuItem
@@ -360,7 +508,36 @@ import type {
   TSpreadsheetSize,
   TSpreadsheetSortDir,
   TSpreadsheetValue,
+  TSpreadsheetStyles,
+  ISpreadsheetCellStyle,
+  ISpreadsheetCsvOptions,
 } from './Spreadsheet.d'
+import {
+  cleanStyle,
+  formatNumber,
+  isSheetError,
+  mergeStyle,
+  parseRange,
+  rangesOverlap,
+  rangeText,
+  ruleMatches,
+  type ISheetRange,
+} from './spreadsheet/sheetLook'
+import { parseCsv, toCsv } from '@/utils/csv.helper'
+import {
+  createFormulaSheet,
+  findFunctions,
+  FORMULA_FUNCTIONS,
+  isFormula,
+  referencesIn,
+  shiftFormula,
+  syntaxForLocale,
+  toCanonical,
+  toLocalized,
+  tokenize,
+  type IFormulaFunction,
+  type TFormulaValue,
+} from '@/formula'
 
 const props = withDefaults(defineProps<ISpreadsheetProps>(), {
   columns: () => [],
@@ -378,6 +555,9 @@ const props = withDefaults(defineProps<ISpreadsheetProps>(), {
   contextMenu: false,
   extent: 'data',
   fillHandle: undefined,
+  formulas: true,
+  formulaBar: undefined,
+  conditionalFormats: undefined,
 })
 
 // The ids of the hidden columns and rows. Bind them to keep them, or leave
@@ -391,6 +571,15 @@ const hiddenRows = defineModel<string[]>('hiddenRows', { default: () => [] })
 // its own columns and rows over them. Left unbound, the sheet is in table
 // mode and the host's `columns` and `rows` are the data.
 const cells = defineModel<TSpreadsheetCells>('cells')
+// Sheet mode's look, `v-model:styles`, keyed like the cells: what people
+// set with Cmd/Ctrl+B, I and U and the exposed `applyStyle`. And its merged
+// ranges, `v-model:merges`, such as ['A1:C1']: a merge shows its first cell
+// across the range, and keeps the cells under it out of sight. Unbound, the
+// sheet keeps both for as long as it is on the page.
+const styles = defineModel<TSpreadsheetStyles>('styles', {
+  default: () => ({}),
+})
+const merges = defineModel<string[]>('merges', { default: () => [] })
 
 const emit = defineEmits<{
   commit: [change: ISpreadsheetChange]
@@ -430,12 +619,21 @@ const editing = ref<{
   columnId: string
   draft: string
   mode: 'enter' | 'edit'
+  // Where the draft is typed: the cell's own editor or the formula bar.
+  source?: 'cell' | 'bar'
 } | null>(null)
 const scrollTop = ref(0)
 const scrollLeft = ref(0)
 let lastPointerType = ''
-const undoStack = ref<ISpreadsheetChange[][]>([])
-const redoStack = ref<ISpreadsheetChange[][]>([])
+// One step of undo: the cell changes, and in sheet mode the styles and
+// merges before and after, when the step changed them.
+interface IUndoStep {
+  changes: ISpreadsheetChange[]
+  styles?: [TSpreadsheetStyles, TSpreadsheetStyles]
+  merges?: [string[], string[]]
+}
+const undoStack = ref<IUndoStep[]>([])
+const redoStack = ref<IUndoStep[]>([])
 
 // ─── Sheet mode ────────────────────────────────────────────────────────────
 const sheetMode = computed(() => cells.value !== undefined)
@@ -464,6 +662,11 @@ const dataBounds = computed(() => {
     if (!m) continue
     rows = Math.max(rows, Number(m[2]))
     columns = Math.max(columns, lettersToIndex(m[1]) + 1)
+  }
+  // A merged range is part of the sheet even while it is empty.
+  for (const m of sheetMerges.value) {
+    rows = Math.max(rows, m.r2 + 1)
+    columns = Math.max(columns, m.c2 + 1)
   }
   return { rows, columns }
 })
@@ -525,6 +728,288 @@ const sourceRows = computed<ISpreadsheetRow[]>(() => {
 
 function cellRef(rowId: string, columnId: string): string {
   return `${columnId}${rowId}`
+}
+
+// A sheet-mode cell's place in the whole sheet, hidden rows and columns
+// counted, which is what references, merges and formats are written in.
+function sheetPosition(rowId: string, columnId: string) {
+  return { r: Number(rowId) - 1, c: lettersToIndex(columnId) }
+}
+
+// ─── Merged ranges ─────────────────────────────────────────────────────────
+// Merges in sheet positions. A single cell or a range that does not parse is
+// not a merge, and neither is a whole column or row.
+const sheetMerges = computed<ISheetRange[]>(() => {
+  if (!sheetMode.value) return []
+  const out: ISheetRange[] = []
+  for (const text of merges.value) {
+    const r = parseRange(text)
+    if (!r || !Number.isFinite(r.r2) || !Number.isFinite(r.c2)) continue
+    if (r.r1 === r.r2 && r.c1 === r.c2) continue
+    out.push(r)
+  }
+  return out
+})
+
+// The same merges in view positions, over the rows and columns shown. A
+// merge that is wholly hidden is not drawn, and one partly hidden spans what
+// is left of it.
+const viewMerges = computed<IBounds[]>(() => {
+  const out: IBounds[] = []
+  for (const m of sheetMerges.value) {
+    let r1 = -1
+    let r2 = -1
+    let c1 = -1
+    let c2 = -1
+    for (let r = m.r1; r <= m.r2; r++) {
+      const i = rowIndex.value.get(String(r + 1))
+      if (i === undefined) continue
+      if (r1 < 0) r1 = i
+      r2 = i
+    }
+    for (let c = m.c1; c <= m.c2; c++) {
+      const i = colIndex.value.get(indexToLetters(c))
+      if (i === undefined) continue
+      if (c1 < 0) c1 = i
+      c2 = i
+    }
+    if (r1 < 0 || c1 < 0 || (r1 === r2 && c1 === c2)) continue
+    out.push({ r1, r2, c1, c2 })
+  }
+  return out
+})
+
+// Every view position a merge covers, its first cell included.
+const mergeByPosition = computed(() => {
+  const map = new Map<string, IBounds>()
+  for (const m of viewMerges.value)
+    for (let r = m.r1; r <= m.r2; r++)
+      for (let c = m.c1; c <= m.c2; c++) map.set(`${r}:${c}`, m)
+  return map
+})
+
+function mergeAt(ri: number, ci: number): IBounds | undefined {
+  return mergeByPosition.value.get(`${ri}:${ci}`)
+}
+
+// A merge shows its first cell across the range. The cells under it are not
+// rendered, so a click anywhere on the range lands on the first cell.
+function isCovered(rowId: string, columnId: string): boolean {
+  if (!viewMerges.value.length) return false
+  const ri = rowIndex.value.get(rowId) ?? -1
+  const ci = colIndex.value.get(columnId) ?? -1
+  const m = mergeAt(ri, ci)
+  return !!m && (m.r1 !== ri || m.c1 !== ci)
+}
+
+// A selection that reaches into a merge takes all of it, as in a desktop
+// spreadsheet, so a range never ends halfway across a merged cell.
+function expandToMerges(b: IBounds): IBounds {
+  if (!viewMerges.value.length) return b
+  const out = { ...b }
+  let grown = true
+  while (grown) {
+    grown = false
+    for (const m of viewMerges.value) {
+      if (!rangesOverlap(out, m)) continue
+      if (m.r1 < out.r1 || m.r2 > out.r2 || m.c1 < out.c1 || m.c2 > out.c2) {
+        out.r1 = Math.min(out.r1, m.r1)
+        out.r2 = Math.max(out.r2, m.r2)
+        out.c1 = Math.min(out.c1, m.c1)
+        out.c2 = Math.max(out.c2, m.c2)
+        grown = true
+      }
+    }
+  }
+  return out
+}
+
+// View bounds as a sheet range, for the merges and styles written in refs.
+function sheetRangeOf(b: IBounds): ISheetRange {
+  const rows = allRows.value
+  const cols = orderedColumns.value
+  const a = sheetPosition(rows[b.r1].id, cols[b.c1].id)
+  const z = sheetPosition(rows[b.r2].id, cols[b.c2].id)
+  return { r1: a.r, c1: a.c, r2: z.r, c2: z.c }
+}
+
+// Merges the active range into one cell, replacing any merge it overlaps.
+function mergeSelection() {
+  const b = selectionBounds.value
+  if (!sheetMode.value || !b || (b.r1 === b.r2 && b.c1 === b.c2)) return
+  const range = sheetRangeOf(b)
+  const before = merges.value
+  const after = [
+    ...before.filter((t) => {
+      const m = parseRange(t)
+      return !m || !rangesOverlap(m, range)
+    }),
+    rangeText(range),
+  ]
+  pushUndo([], { merges: [before, after] })
+  merges.value = after
+}
+
+// Splits every merge the selection touches back into cells.
+function unmergeSelection() {
+  if (!sheetMode.value || !allSelectionBounds.value.length) return
+  const ranges = allSelectionBounds.value.map(sheetRangeOf)
+  const before = merges.value
+  const after = before.filter((t) => {
+    const m = parseRange(t)
+    return !m || !ranges.some((r) => rangesOverlap(m, r))
+  })
+  if (after.length === before.length) return
+  pushUndo([], { merges: [before, after] })
+  merges.value = after
+}
+
+const canMerge = computed(() => {
+  const b = selectionBounds.value
+  return !!b && (b.r1 !== b.r2 || b.c1 !== b.c2)
+})
+
+const selectionHasMerge = computed(() =>
+  allSelectionBounds.value.some((b) =>
+    viewMerges.value.some((m) => rangesOverlap(m, b)),
+  ),
+)
+
+// ─── Cell styles and conditional formats ───────────────────────────────────
+const parsedFormats = computed(() => {
+  if (!sheetMode.value || !props.conditionalFormats?.length) return []
+  const out: Array<{
+    range: ISheetRange
+    format: NonNullable<typeof props.conditionalFormats>[number]
+  }> = []
+  for (const format of props.conditionalFormats) {
+    const range = parseRange(format.range)
+    if (range) out.push({ range, format })
+  }
+  return out
+})
+
+// A cell's look: its own style, then every conditional format that passes
+// for it, in order.
+function cellLook(
+  rowId: string,
+  columnId: string,
+): ISpreadsheetCellStyle | undefined {
+  if (!sheetMode.value) return undefined
+  let look: ISpreadsheetCellStyle | undefined =
+    styles.value[cellRef(rowId, columnId)]
+  if (!parsedFormats.value.length) return look
+  const { r, c } = sheetPosition(rowId, columnId)
+  for (const { range, format } of parsedFormats.value) {
+    if (r < range.r1 || r > range.r2 || c < range.c1 || c > range.c2) continue
+    const formulaResult =
+      format.rule.when === 'formula'
+        ? evaluateRule(format.rule.formula, r - range.r1, c - range.c1)
+        : undefined
+    if (ruleMatches(format.rule, shownValue(rowId, columnId), formulaResult))
+      look = mergeStyle(look, format.style)
+  }
+  return look
+}
+
+// Sets style keys on every selected cell. A key given as undefined or false
+// is removed, so `applyStyle({ intent: undefined })` clears a colour.
+function applyStyle(patch: Partial<ISpreadsheetCellStyle>) {
+  if (!sheetMode.value) return
+  const before = styles.value
+  const after: TSpreadsheetStyles = { ...before }
+  for (const { rowId, columnId } of selectedCells()) {
+    const key = cellRef(rowId, columnId)
+    const next = cleanStyle({ ...before[key], ...patch })
+    if (next) after[key] = next
+    else delete after[key]
+  }
+  pushUndo([], { styles: [before, after] })
+  styles.value = after
+}
+
+// Bold, italic, underline and strikethrough follow the active cell: on when
+// it lacks them, off when it has them, for the whole selection.
+function toggleStyle(key: 'bold' | 'italic' | 'underline' | 'strike') {
+  const fc = focused.value
+  if (!fc) return
+  const on = !styles.value[cellRef(fc.rowId, fc.columnId)]?.[key]
+  applyStyle({ [key]: on })
+}
+
+function clearStyles() {
+  applyStyle({
+    bold: undefined,
+    italic: undefined,
+    underline: undefined,
+    strike: undefined,
+    align: undefined,
+    intent: undefined,
+    format: undefined,
+  })
+}
+
+// ─── CSV ───────────────────────────────────────────────────────────────────
+// The sheet as CSV. Sheet mode writes A1 to the last filled cell. Table mode
+// writes a row of column labels, then every row in the order shown. Hidden
+// columns and rows are part of the data, so both are written.
+function exportCsv(options: ISpreadsheetCsvOptions = {}): string {
+  const display = options.values === 'display'
+  const cols = allOrderedColumns.value
+  const out: unknown[][] = []
+  if (sheetMode.value) {
+    const { rows, columns } = dataBounds.value
+    for (let r = 0; r < rows; r++) {
+      const line: unknown[] = []
+      for (let c = 0; c < columns; c++) {
+        const rowId = String(r + 1)
+        const columnId = indexToLetters(c)
+        line.push(display ? textOf(rowId, columnId) : rawValue(rowId, columnId))
+      }
+      out.push(line)
+    }
+  } else {
+    out.push(cols.map((c) => c.label))
+    for (const row of [
+      ...sourceRows.value.filter((r) => r.pinned === 'top'),
+      ...sortedAllDataRows.value,
+      ...sourceRows.value.filter((r) => r.pinned === 'bottom'),
+    ]) {
+      out.push(
+        cols.map((col) =>
+          display ? cellDisplay(row, col) : rawValue(row.id, col.id),
+        ),
+      )
+    }
+  }
+  return toCsv(out, options.delimiter ?? ',')
+}
+
+// Replaces a sheet-mode sheet's cells with CSV text, as one step that undo
+// takes back. Numbers are read as typed numbers are. Table mode's data is the
+// host's, so there it does nothing: use `parseCsv` and set the rows.
+function importCsv(text: string, delimiter?: string) {
+  if (!sheetMode.value) return
+  const next: TSpreadsheetCells = {}
+  parseCsv(text, delimiter).forEach((line, r) => {
+    line.forEach((field, c) => {
+      const value = parseSheetInput(field)
+      if (value !== null) next[`${indexToLetters(c)}${r + 1}`] = value
+    })
+  })
+  const current = cells.value ?? {}
+  const changes: ISpreadsheetChange[] = []
+  for (const key of new Set([...Object.keys(current), ...Object.keys(next)])) {
+    const m = /^([A-Z]+)(\d+)$/.exec(key)
+    if (!m) continue
+    const before = current[key] ?? null
+    const after = next[key] ?? null
+    if (!sameValue(before, after))
+      changes.push(makeChange(m[2], m[1], before, after))
+  }
+  if (!changes.length) return
+  pushUndo(changes)
+  applyChanges(changes)
 }
 
 // ─── Derived: column ordering with pinned-left first, pinned-right last ────
@@ -721,13 +1206,22 @@ const renderColumns = computed<ISpreadsheetColumn[]>(() => {
   const from = scrollLeft.value - view
   const to = scrollLeft.value + view * 2
   let x = props.showGutter ? props.gutterWidth : 0
-  const out: ISpreadsheetColumn[] = []
-  for (const c of cols) {
+  const shown = new Set<number>()
+  cols.forEach((c, i) => {
     const w = widthOf(c)
-    if (c.pinned || (x + w >= from && x <= to)) out.push(c)
+    if (c.pinned || (x + w >= from && x <= to)) shown.add(i)
     x += w
+  })
+  // As with rows: a merge that starts left of the window and reaches into
+  // it keeps its first column.
+  for (const m of viewMerges.value) {
+    for (let c = m.c1 + 1; c <= m.c2; c++)
+      if (shown.has(c)) {
+        shown.add(m.c1)
+        break
+      }
   }
-  return out
+  return cols.filter((_, i) => shown.has(i))
 })
 
 function ciOf(col: ISpreadsheetColumn): number {
@@ -878,6 +1372,15 @@ const renderRows = computed<IRenderRow[]>(() => {
       ...r,
       __virtualIndex: start + i + pinnedTopRows.value.length,
     }))
+  // A merge that starts above the window but reaches into it needs its first
+  // row rendered, or the part in view would be blank.
+  const firstInView = start + pinnedTopRows.value.length
+  for (const m of viewMerges.value) {
+    if (m.r1 >= firstInView || m.r2 < firstInView) continue
+    const r = allRows.value[m.r1]
+    if (r && !mid.some((x) => x.id === r.id))
+      mid.unshift({ ...r, __virtualIndex: m.r1 })
+  }
   const bot: IRenderRow[] = pinnedBottomRows.value.map((r, i) => ({
     ...r,
     __virtualIndex:
@@ -949,8 +1452,64 @@ function formatSheetValue(raw: unknown): string {
   return String(raw)
 }
 
-function parseInput(col: ISpreadsheetColumn, input: string): unknown {
+// ─── Formulas ──────────────────────────────────────────────────────────────
+// A sheet-mode cell holding text that starts with '=' is a formula. The
+// cells keep its text, and the sheet shows what it works out to. The engine
+// keeps each formula's parse between changes, so a change re-reads only the
+// formulas whose text changed.
+const formulaSheet = createFormulaSheet()
+const NO_FORMULA_VALUES = new Map<string, TFormulaValue>()
+const formulasOn = computed(() => sheetMode.value && props.formulas)
+const formulaValues = computed(() =>
+  formulasOn.value
+    ? formulaSheet.compute(cells.value ?? {})
+    : NO_FORMULA_VALUES,
+)
+
+// What a cell shows before it is formatted: a formula's result, or the
+// value itself.
+function shownValue(rowId: string, columnId: string): unknown {
+  const raw = rawValue(rowId, columnId)
+  if (formulasOn.value && isFormula(raw))
+    return formulaValues.value.get(cellRef(rowId, columnId)) ?? null
+  return raw
+}
+
+// A conditional format's formula, moved from the range's first cell to the
+// one being styled, and worked out against the sheet as it stands.
+function evaluateRule(formula: string, dRow: number, dCol: number): unknown {
+  if (!sheetMode.value) return undefined
+  // Reading the values first makes the engine's last compute the current one.
+  void formulaValues.value
+  const text = formula.startsWith('=') ? formula : `=${formula}`
+  return formulaSheet.evaluate(shiftFormula(text, dRow, dCol))
+}
+
+// The text a sheet-mode cell shows: an error's code, a number in the cell's
+// format, anything else as it is.
+function textOf(rowId: string, columnId: string): string {
+  const value = shownValue(rowId, columnId)
+  if (isSheetError(value)) return value.error
+  if (typeof value === 'number')
+    return formatNumber(
+      value,
+      styles.value[cellRef(rowId, columnId)]?.format,
+      props.locale,
+    )
+  return formatSheetValue(value)
+}
+
+// `typed` is a value a person typed, in which a formula is in the sheet's
+// syntax. A pasted formula is already canonical: the sheet copied it.
+function parseInput(
+  col: ISpreadsheetColumn,
+  input: string,
+  typed = false,
+): unknown {
   if (col.parse) return col.parse(input)
+  const text = input.trim()
+  if (typed && formulasOn.value && text.length > 1 && text.startsWith('='))
+    return toCanonical(text, formulaSyntax.value)
   if (sheetMode.value) return parseSheetInput(input)
   return defaultParse(col, input)
 }
@@ -984,7 +1543,7 @@ function cellDisplay(row: ISpreadsheetRow, col: ISpreadsheetColumn): string {
   if (attrs.display !== undefined) return attrs.display
   const raw = rawValue(row.id, col.id)
   if (col.format) return col.format(raw, row)
-  return sheetMode.value ? formatSheetValue(raw) : defaultFormat(col, raw)
+  return sheetMode.value ? textOf(row.id, col.id) : defaultFormat(col, raw)
 }
 
 function cellClass(row: ISpreadsheetRow, col: ISpreadsheetColumn) {
@@ -992,10 +1551,12 @@ function cellClass(row: ISpreadsheetRow, col: ISpreadsheetColumn) {
   const isFocused =
     focused.value?.rowId === row.id && focused.value?.columnId === col.id
   const lines = selectionLines(row.id, col.id)
+  const look = cellLook(row.id, col.id)
   const alignClass =
+    look?.align ??
     col.align ??
     (sheetMode.value
-      ? typeof rawValue(row.id, col.id) === 'number'
+      ? typeof shownValue(row.id, col.id) === 'number'
         ? 'right'
         : 'left'
       : col.type === 'number' || col.type === 'date'
@@ -1015,6 +1576,13 @@ function cellClass(row: ISpreadsheetRow, col: ISpreadsheetColumn) {
     'nb-spreadsheet__cell--pinned-bottom': row.pinned === 'bottom',
     'nb-spreadsheet__cell--fill': isCellInFill(row.id, col.id),
     'nb-spreadsheet__cell--fill-anchor': isFillHandleCell(row.id, col.id),
+    'nb-spreadsheet__cell--bold': !!look?.bold,
+    'nb-spreadsheet__cell--italic': !!look?.italic,
+    'nb-spreadsheet__cell--underline': !!look?.underline,
+    'nb-spreadsheet__cell--strike': !!look?.strike,
+    [`nb-spreadsheet__cell--intent-${look?.intent}`]: !!look?.intent,
+    'nb-spreadsheet__cell--error':
+      sheetMode.value && isSheetError(shownValue(row.id, col.id)),
     [attrs.className ?? '']: !!attrs.className,
     [row.className ?? '']: !!row.className,
   }
@@ -1028,7 +1596,11 @@ function isReadOnly(row: ISpreadsheetRow, col: ISpreadsheetColumn): boolean {
 }
 
 function cellTitle(row: ISpreadsheetRow, col: ISpreadsheetColumn): string {
-  return cellAttrsFor(row, col).tooltip ?? ''
+  const tooltip = cellAttrsFor(row, col).tooltip
+  if (tooltip !== undefined) return tooltip
+  // An error's code says little on its own, so its reason is the tooltip.
+  const value = sheetMode.value ? shownValue(row.id, col.id) : undefined
+  return isSheetError(value) ? value.message : ''
 }
 
 // Ids go into an attribute, so they are positions, not the host's own ids,
@@ -1133,6 +1705,16 @@ function cellStyle(row: IRenderRow, col: ISpreadsheetColumn, ci: number) {
     sticky.zIndex = String(Math.max(Number(sticky.zIndex ?? 0), 2))
     Object.assign(sticky, pinnedRowOffset(row))
   }
+  // A merge's first cell spans the whole range.
+  const merge = viewMerges.value.length
+    ? mergeAt(row.__virtualIndex, ci)
+    : undefined
+  if (merge)
+    return {
+      gridRow: `${gridRow} / span ${merge.r2 - merge.r1 + 1}`,
+      gridColumn: `${baseCol} / span ${merge.c2 - merge.c1 + 1}`,
+      ...sticky,
+    }
   return { gridRow, gridColumn: baseCol, ...sticky }
 }
 
@@ -1188,12 +1770,12 @@ function boundsOf(sel: ISpreadsheetSelection | null): IBounds | null {
   const c1 = colIndex.value.get(sel.startColumnId) ?? -1
   const c2 = colIndex.value.get(sel.endColumnId) ?? -1
   if (r1 < 0 || r2 < 0 || c1 < 0 || c2 < 0) return null
-  return {
+  return expandToMerges({
     r1: Math.min(r1, r2),
     r2: Math.max(r1, r2),
     c1: Math.min(c1, c2),
     c2: Math.max(c1, c2),
-  }
+  })
 }
 
 const selectionBounds = computed(() => boundsOf(selection.value))
@@ -1236,10 +1818,14 @@ function selectionLines(rowId: string, columnId: string) {
   const ri = rowIndex.value.get(rowId) ?? -1
   const ci = colIndex.value.get(columnId) ?? -1
   const here = isPositionSelected(ri, ci)
+  // A merged cell's lines are on the far side of the whole range.
+  const merge = mergeAt(ri, ci)
+  const right = merge ? merge.c2 : ci
+  const bottom = merge ? merge.r2 : ri
   return {
     selected: here,
-    right: here !== isPositionSelected(ri, ci + 1),
-    bottom: here !== isPositionSelected(ri + 1, ci),
+    right: here !== isPositionSelected(ri, right + 1),
+    bottom: here !== isPositionSelected(bottom + 1, ci),
     left: here && ci === 0,
     top: here && ri === 0,
   }
@@ -1368,6 +1954,13 @@ function onCellMouseDown(
     lastPointerType = ''
     return
   }
+  // A formula waiting for an operand takes the cell as a reference, and the
+  // edit stays open.
+  if (editing.value && canPoint()) {
+    e.preventDefault()
+    pointFromMouse(row, col, e)
+    return
+  }
   // A tap on the cell that is already active opens it for editing. On a
   // touch screen there is no key to type into the cell, and the keyboard only
   // appears for a focused field.
@@ -1384,14 +1977,23 @@ function onCellMouseDown(
   e.preventDefault()
   document.addEventListener('mouseup', stopSelecting, { once: true })
   if (tapOnActive && !isReadOnly(row, col)) {
-    const raw = rawValue(row.id, col.id)
-    startEdit(row, col, raw == null ? '' : String(raw), 'edit')
+    startEdit(row, col, editText(row.id, col.id), 'edit')
   }
 }
 
 function onCellMouseEnter(row: ISpreadsheetRow, col: ISpreadsheetColumn) {
   if (fillTarget.value) {
     onFillEnter(row.id, col.id)
+    return
+  }
+  if (pointing.value?.dragging) {
+    point(
+      {
+        ri: rowIndex.value.get(row.id) ?? 0,
+        ci: colIndex.value.get(col.id) ?? 0,
+      },
+      true,
+    )
     return
   }
   if (!isSelecting.value || !selection.value) return
@@ -1409,8 +2011,7 @@ function stopSelecting() {
 
 function onCellDblClick(row: ISpreadsheetRow, col: ISpreadsheetColumn) {
   if (isReadOnly(row, col)) return
-  const raw = rawValue(row.id, col.id)
-  startEdit(row, col, raw == null ? '' : String(raw), 'edit')
+  startEdit(row, col, editText(row.id, col.id), 'edit')
 }
 
 // A sortable column's header sorts, as it always has. Any other header
@@ -1460,10 +2061,22 @@ function moveBy(dRow: number, dCol: number, extendSelection = false) {
     return
   }
   const rows = allRows.value
-  const ri = rowIndex.value.get(focused.value.rowId) ?? 0
-  const ci = colIndex.value.get(focused.value.columnId) ?? 0
-  const nri = Math.max(0, Math.min(rows.length - 1, ri + dRow))
-  const nci = Math.max(0, Math.min(orderedColumns.value.length - 1, ci + dCol))
+  let ri = rowIndex.value.get(focused.value.rowId) ?? 0
+  let ci = colIndex.value.get(focused.value.columnId) ?? 0
+  // From a merged cell, a move starts at the edge it is going out of.
+  const from = mergeAt(ri, ci)
+  if (from) {
+    if (dRow > 0) ri = from.r2
+    if (dCol > 0) ci = from.c2
+  }
+  let nri = Math.max(0, Math.min(rows.length - 1, ri + dRow))
+  let nci = Math.max(0, Math.min(orderedColumns.value.length - 1, ci + dCol))
+  // And a move into a merge lands on its first cell.
+  const into = mergeAt(nri, nci)
+  if (into) {
+    nri = into.r1
+    nci = into.c1
+  }
   const rowId = rows[nri].id
   const columnId = orderedColumns.value[nci].id
   setFocus(rowId, columnId, extendSelection)
@@ -1604,6 +2217,21 @@ function onKeydown(e: KeyboardEvent) {
     selectAll()
     return
   }
+  // Bold, italic and underline, the keys every editor shares. Sheet mode
+  // only: a table's look is the host's.
+  const styleKey = { b: 'bold', i: 'italic', u: 'underline' } as const
+  const lower = e.key.toLowerCase()
+  if (
+    mod &&
+    sheetMode.value &&
+    !e.shiftKey &&
+    !e.altKey &&
+    (lower === 'b' || lower === 'i' || lower === 'u')
+  ) {
+    e.preventDefault()
+    toggleStyle(styleKey[lower])
+    return
+  }
   if (
     mod &&
     fillEnabled.value &&
@@ -1687,8 +2315,7 @@ function onKeydown(e: KeyboardEvent) {
       e.preventDefault()
       const fc = focusedCell()
       if (fc && !isReadOnly(fc.r, fc.c)) {
-        const raw = rawValue(fc.r.id, fc.c.id)
-        startEdit(fc.r, fc.c, raw == null ? '' : String(raw), 'edit')
+        startEdit(fc.r, fc.c, editText(fc.r.id, fc.c.id), 'edit')
       }
       break
     }
@@ -1711,10 +2338,20 @@ function startEdit(
   mode: 'enter' | 'edit',
 ) {
   scrollIntoView(row.id, col.id)
-  editing.value = { rowId: row.id, columnId: col.id, draft, mode }
+  editing.value = {
+    rowId: row.id,
+    columnId: col.id,
+    draft,
+    mode,
+    source: 'cell',
+  }
+  pointing.value = null
+  assist.value = null
+  signature.value = null
   void nextTick(() => {
     const input = editorRef.value
     if (!input) return
+    void nextTick(updateAssist)
     input.focus({ preventScroll: true })
     // Typed into: the caret goes after what was typed, so the next key adds
     // to it. Opened with F2 or a double click: the whole value is selected.
@@ -1767,6 +2404,7 @@ const editorStyle = computed(() => {
 })
 
 function onEditorKeydown(e: KeyboardEvent) {
+  if (onAssistKeydown(e)) return
   const mode = editing.value?.mode
   let move: [number, number] | null = null
   switch (e.key) {
@@ -1810,9 +2448,12 @@ function commitEdit(refocus = true) {
   editing.value = null
   const col = columnsById.value.get(columnId)
   if (!col) return
+  pointing.value = null
+  assist.value = null
+  signature.value = null
   let value: unknown
   try {
-    value = parseInput(col, draft)
+    value = parseInput(col, draft, true)
   } catch {
     if (refocus) focusScroller()
     return
@@ -1915,15 +2556,29 @@ function selectionText(): string | null {
   return rows.join('\n')
 }
 
+// What this sheet last put on the clipboard, and from where. Pasting the
+// same text back moves its formulas by the distance pasted, as a desktop
+// spreadsheet does. A cut moves them unchanged.
+let lastCopy: { text: string; r: number; c: number; cut: boolean } | null = null
+
 function onCopy(e: ClipboardEvent) {
   const text = selectionText()
   if (text === null) return
   e.preventDefault()
   e.clipboardData?.setData('text/plain', text)
+  const b = selectionBounds.value
+  if (sheetMode.value && b) {
+    const at = sheetPosition(
+      allRows.value[b.r1].id,
+      orderedColumns.value[b.c1].id,
+    )
+    lastCopy = { text, r: at.r, c: at.c, cut: false }
+  }
 }
 
 function onCut(e: ClipboardEvent) {
   onCopy(e)
+  if (lastCopy) lastCopy.cut = true
   clearSelection()
 }
 
@@ -1953,6 +2608,13 @@ function pasteText(text: string) {
   const baseR = rowIndex.value.get(focused.value.rowId) ?? 0
   const baseC = colIndex.value.get(focused.value.columnId) ?? 0
   const changes: ISpreadsheetChange[] = []
+  const at = sheetMode.value
+    ? sheetPosition(focused.value.rowId, focused.value.columnId)
+    : null
+  const shift =
+    at && lastCopy && lastCopy.text === text && !lastCopy.cut
+      ? { r: at.r - lastCopy.r, c: at.c - lastCopy.c }
+      : null
   matrix.forEach((line, dr) => {
     line.forEach((cellText, dc) => {
       const rowId = allRowIds[baseR + dr]
@@ -1971,6 +2633,8 @@ function pasteText(text: string) {
       } catch {
         return
       }
+      if (shift && formulasOn.value && isFormula(value))
+        value = shiftFormula(value, shift.r, shift.c)
       const before = rawValue(rowId, columnId)
       if (sameValue(before, value)) return
       changes.push(makeChange(rowId, columnId, before, value))
@@ -2115,6 +2779,26 @@ function seriesValues(
   })
 }
 
+// A formula copied from one view position to another, its relative
+// references moved by the distance between them, as a desktop spreadsheet
+// moves them. Anything else is returned as it is.
+function movedFormula(
+  value: unknown,
+  fromRow: number,
+  fromCol: number,
+  toRow: number,
+  toCol: number,
+): unknown {
+  if (!formulasOn.value || !isFormula(value)) return value
+  const rows = allRows.value
+  const cols = orderedColumns.value
+  if (!rows[fromRow] || !rows[toRow] || !cols[fromCol] || !cols[toCol])
+    return value
+  const a = sheetPosition(rows[fromRow].id, cols[fromCol].id)
+  const b = sheetPosition(rows[toRow].id, cols[toCol].id)
+  return shiftFormula(value, b.r - a.r, b.c - a.c)
+}
+
 // Fills `target`, which extends `source` along one axis.
 function fillRange(source: IBounds, target: IBounds) {
   const rows = allRows.value
@@ -2137,9 +2821,12 @@ function fillRange(source: IBounds, target: IBounds) {
       const src: unknown[] = []
       for (let r = source.r1; r <= source.r2; r++)
         src.push(rawValue(rows[r].id, cols[c].id))
-      seriesValues(src, count, backward).forEach((v, i) =>
-        write(backward ? source.r1 - 1 - i : source.r2 + 1 + i, c, v),
-      )
+      const k = source.r2 - source.r1 + 1
+      seriesValues(src, count, backward).forEach((v, i) => {
+        const to = backward ? source.r1 - 1 - i : source.r2 + 1 + i
+        const from = backward ? source.r2 - (i % k) : source.r1 + (i % k)
+        write(to, c, movedFormula(v, from, c, to, c))
+      })
     }
   } else {
     const backward = target.c1 < source.c1
@@ -2149,9 +2836,12 @@ function fillRange(source: IBounds, target: IBounds) {
       const src: unknown[] = []
       for (let c = source.c1; c <= source.c2; c++)
         src.push(rawValue(rows[r].id, cols[c].id))
-      seriesValues(src, count, backward).forEach((v, i) =>
-        write(r, backward ? source.c1 - 1 - i : source.c2 + 1 + i, v),
-      )
+      const k = source.c2 - source.c1 + 1
+      seriesValues(src, count, backward).forEach((v, i) => {
+        const to = backward ? source.c1 - 1 - i : source.c2 + 1 + i
+        const from = backward ? source.c2 - (i % k) : source.c1 + (i % k)
+        write(r, to, movedFormula(v, r, from, r, to))
+      })
     }
   }
   if (!changes.length) return
@@ -2406,29 +3096,494 @@ function menuPaste() {
     .catch(() => {})
 }
 
+// ─── Formula editing ───────────────────────────────────────────────────────
+// A formula is typed in the sheet's own syntax: in a locale with a decimal
+// comma, `=SUM(A1;1,5)`. The cells keep the canonical text, `=SUM(A1,1.5)`,
+// so a sheet reads the same whatever the locale of the person who wrote it.
+const formulaSyntax = computed(() => syntaxForLocale(props.locale))
+
+const showFormulaBar = computed(
+  () => sheetMode.value && (props.formulaBar ?? formulasOn.value),
+)
+
+// The text a cell opens with for editing: a formula as written, in the
+// sheet's syntax, and anything else as it is stored.
+function editText(rowId: string, columnId: string): string {
+  const raw = rawValue(rowId, columnId)
+  if (raw === null || raw === undefined) return ''
+  if (formulasOn.value && isFormula(raw))
+    return toLocalized(raw, formulaSyntax.value)
+  return String(raw)
+}
+
+const isFormulaDraft = computed(
+  () => formulasOn.value && !!editing.value?.draft.startsWith('='),
+)
+
+// The input being typed into: the cell's editor or the formula bar.
+function activeInput(): HTMLInputElement | null {
+  if (!editing.value) return null
+  return editing.value.source === 'bar' ? barRef.value : editorRef.value
+}
+
+// ── References in the draft ──
+// Each reference in a formula being edited has a colour, the same in the
+// text and on the grid, as in a desktop spreadsheet. The same reference
+// written twice keeps one colour.
+const REF_COLOURS = 8
+
+const draftRefs = computed(() => {
+  if (!isFormulaDraft.value || !editing.value) return []
+  const colours = new Map<string, number>()
+  return referencesIn(editing.value.draft, formulaSyntax.value).map((ref) => {
+    const key = ref.text.replace(/\$/g, '').toUpperCase()
+    if (!colours.has(key)) colours.set(key, (colours.size % REF_COLOURS) + 1)
+    return { ...ref, colour: colours.get(key)! }
+  })
+})
+
+// The draft as coloured runs, for the layer behind the input's text.
+const draftRuns = computed(() => {
+  if (!isFormulaDraft.value || !editing.value) return []
+  const text = editing.value.draft
+  const runs: Array<{ text: string; colour: number }> = []
+  let at = 0
+  for (const ref of draftRefs.value) {
+    if (ref.start > at)
+      runs.push({ text: text.slice(at, ref.start), colour: 0 })
+    runs.push({ text: text.slice(ref.start, ref.end), colour: ref.colour })
+    at = ref.end
+  }
+  if (at < text.length) runs.push({ text: text.slice(at), colour: 0 })
+  return runs
+})
+
+// The first and last shown row or column of a stretch of the sheet, as view
+// positions. Hidden ones are skipped, and a whole column stops at the end.
+function viewStretch(
+  from: number,
+  to: number,
+  size: number,
+  indexOf: (i: number) => number | undefined,
+): [number, number] | null {
+  const last = Math.min(to, size - 1)
+  let a: number | undefined
+  let b: number | undefined
+  for (let i = from; i <= last && a === undefined; i++) a = indexOf(i)
+  for (let i = last; i >= from && b === undefined; i--) b = indexOf(i)
+  return a === undefined || b === undefined ? null : [a, b]
+}
+
+// Boxes on the grid over the cells the draft refers to.
+const refBoxes = computed(() => {
+  const out: Array<{
+    key: string
+    colour: number
+    style: Record<string, string>
+  }> = []
+  const head = headerRows.value.length
+  for (const ref of draftRefs.value) {
+    const rows = viewStretch(
+      ref.range.r1,
+      ref.range.r2,
+      sheetSize.value.rows,
+      (i) => rowIndex.value.get(String(i + 1)),
+    )
+    const cols = viewStretch(
+      ref.range.c1,
+      ref.range.c2,
+      sheetSize.value.columns,
+      (i) => colIndex.value.get(indexToLetters(i)),
+    )
+    if (!rows || !cols) continue
+    out.push({
+      key: `${ref.start}`,
+      colour: ref.colour,
+      style: {
+        gridRow: `${rows[0] + 1 + head} / span ${rows[1] - rows[0] + 1}`,
+        gridColumn: `${colOffset.value + 1 + cols[0]} / span ${cols[1] - cols[0] + 1}`,
+      },
+    })
+  }
+  return out
+})
+
+// An input's text scrolls inside it, and its coloured layer follows.
+const draftScroll = ref({ cell: 0, bar: 0 })
+function onDraftScroll(e: Event) {
+  const input = e.target as HTMLInputElement
+  draftScroll.value = {
+    ...draftScroll.value,
+    [input === barRef.value ? 'bar' : 'cell']: input.scrollLeft,
+  }
+}
+
+// The combobox attributes both inputs carry while formulas are on.
+const assistAria = computed(() => {
+  if (!formulasOn.value) return {}
+  return {
+    role: 'combobox',
+    'aria-autocomplete': 'list' as const,
+    'aria-expanded': !!assist.value,
+    'aria-controls': assist.value ? assistId : undefined,
+    'aria-activedescendant': assist.value
+      ? `${assistId}-${assist.value.active}`
+      : undefined,
+    'aria-describedby': signature.value ? `${assistId}-signature` : undefined,
+  }
+})
+
+// ── Pointing ──
+// While a formula waits for an operand, a click on a cell, or an arrow key
+// in a cell opened by typing, writes that cell's reference into the formula
+// instead of leaving it. A drag, or Shift with the arrows, makes it a range.
+// Pointing again straight away replaces the reference just written.
+const pointing = ref<{
+  start: number
+  end: number
+  anchor: { ri: number; ci: number }
+  cursor: { ri: number; ci: number }
+  dragging: boolean
+} | null>(null)
+
+// After `=`, an opening bracket, a separator or an operator, a formula
+// wants an operand, and that is where a reference can go.
+function wantsOperand(text: string, caret: number): boolean {
+  const before = text.slice(0, caret).trimEnd()
+  if (!before.startsWith('=')) return false
+  const last = before[before.length - 1]
+  return (
+    '=(+-*/^&<>,;:'.includes(last) || last === formulaSyntax.value.separator
+  )
+}
+
+function canPoint(): boolean {
+  const input = activeInput()
+  if (!isFormulaDraft.value || !input || !editing.value) return false
+  const caret = input.selectionStart ?? editing.value.draft.length
+  if (pointing.value && caret === pointing.value.end) return true
+  return wantsOperand(editing.value.draft, caret)
+}
+
+function refTextAt(ri: number, ci: number): string {
+  const row = allRows.value[ri]
+  const col = orderedColumns.value[ci]
+  return row && col ? cellRef(row.id, col.id) : ''
+}
+
+// Writes the pointed cell or range into the draft, over the last pointed
+// reference when the caret is still right after it.
+function point(cursor: { ri: number; ci: number }, extend: boolean) {
+  const input = activeInput()
+  if (!editing.value || !input) return
+  const text = editing.value.draft
+  const caret = input.selectionStart ?? text.length
+  const again = pointing.value && caret === pointing.value.end
+  const start = again ? pointing.value!.start : caret
+  const end = again ? pointing.value!.end : caret
+  const anchor = extend && again ? pointing.value!.anchor : cursor
+  const a = refTextAt(anchor.ri, anchor.ci)
+  const b = refTextAt(cursor.ri, cursor.ci)
+  if (!a || !b) return
+  const r1 = Math.min(anchor.ri, cursor.ri)
+  const r2 = Math.max(anchor.ri, cursor.ri)
+  const c1 = Math.min(anchor.ci, cursor.ci)
+  const c2 = Math.max(anchor.ci, cursor.ci)
+  const written =
+    r1 === r2 && c1 === c2
+      ? refTextAt(r1, c1)
+      : `${refTextAt(r1, c1)}:${refTextAt(r2, c2)}`
+  editing.value.draft = text.slice(0, start) + written + text.slice(end)
+  const next = start + written.length
+  pointing.value = {
+    start,
+    end: next,
+    anchor,
+    cursor,
+    dragging: pointing.value?.dragging ?? false,
+  }
+  void nextTick(() => {
+    input.setSelectionRange(next, next)
+    updateAssist()
+  })
+}
+
+function pointFromKey(dRow: number, dCol: number, extend: boolean): boolean {
+  if (!canPoint() || !editing.value) return false
+  const from = pointing.value?.cursor ?? {
+    ri: rowIndex.value.get(editing.value.rowId) ?? 0,
+    ci: colIndex.value.get(editing.value.columnId) ?? 0,
+  }
+  const ri = Math.max(0, Math.min(allRows.value.length - 1, from.ri + dRow))
+  const ci = Math.max(
+    0,
+    Math.min(orderedColumns.value.length - 1, from.ci + dCol),
+  )
+  point({ ri, ci }, extend)
+  return true
+}
+
+function pointFromMouse(
+  row: ISpreadsheetRow,
+  col: ISpreadsheetColumn,
+  e: MouseEvent,
+) {
+  const ri = rowIndex.value.get(row.id) ?? 0
+  const ci = colIndex.value.get(col.id) ?? 0
+  point({ ri, ci }, e.shiftKey)
+  if (pointing.value) pointing.value.dragging = true
+  document.addEventListener(
+    'mouseup',
+    () => {
+      if (pointing.value) pointing.value.dragging = false
+    },
+    { once: true },
+  )
+}
+
+// ── Functions as they are typed ──
+// A name being typed offers the functions that start with it, and the caret
+// inside a function's brackets shows how the function is called.
+const assist = ref<{
+  items: IFormulaFunction[]
+  active: number
+  start: number
+  end: number
+} | null>(null)
+const signature = ref<{ fn: IFormulaFunction; arg: number } | null>(null)
+const assistPosition = ref<{ left: number; top: number } | null>(null)
+const assistId = `${baseId}-functions`
+
+function updateAssist() {
+  const input = activeInput()
+  if (!input || !isFormulaDraft.value || !editing.value) {
+    assist.value = null
+    signature.value = null
+    return
+  }
+  const text = editing.value.draft
+  const caret = input.selectionStart ?? text.length
+  const tokens = tokenize(text, formulaSyntax.value)
+  const atCaret = tokens.find(
+    (t) => t.end === caret && (t.type === 'name' || t.type === 'function'),
+  )
+  const items =
+    atCaret && /^[A-Za-z][A-Za-z0-9.]*$/.test(atCaret.text)
+      ? findFunctions(atCaret.text).slice(0, 8)
+      : []
+  assist.value =
+    items.length &&
+    !(
+      items.length === 1 &&
+      items[0].name === atCaret!.text.toUpperCase() &&
+      text[caret] === '('
+    )
+      ? {
+          items,
+          active: Math.min(assist.value?.active ?? 0, items.length - 1),
+          start: atCaret!.start,
+          end: atCaret!.end,
+        }
+      : null
+  // The innermost open call before the caret, and which argument it is on.
+  const stack: Array<{ name: string | null; arg: number }> = []
+  let previous: (typeof tokens)[number] | undefined
+  for (const t of tokens) {
+    if (t.start >= caret) break
+    if (t.type === 'paren' && t.text === '(')
+      stack.push({
+        name:
+          previous?.type === 'function' ? previous.text.toUpperCase() : null,
+        arg: 0,
+      })
+    else if (t.type === 'paren' && t.text === ')') stack.pop()
+    else if (t.type === 'separator' && stack.length)
+      stack[stack.length - 1].arg++
+    if (t.type !== 'whitespace') previous = t
+  }
+  const open = stack[stack.length - 1]
+  const fn = open?.name
+    ? FORMULA_FUNCTIONS.find((f) => f.name === open.name)
+    : undefined
+  signature.value = fn && !assist.value ? { fn, arg: open!.arg } : null
+  const rect = input.getBoundingClientRect()
+  assistPosition.value = { left: rect.left, top: rect.bottom + 2 }
+}
+
+function acceptAssist(index = assist.value?.active ?? 0) {
+  const a = assist.value
+  const input = activeInput()
+  if (!a || !editing.value || !input) return
+  const name = a.items[index].name
+  const text = editing.value.draft
+  const tail = text.slice(a.end)
+  const written = tail.startsWith('(') ? name : `${name}(`
+  editing.value.draft = text.slice(0, a.start) + written + tail
+  const caret = a.start + written.length + (tail.startsWith('(') ? 1 : 0)
+  assist.value = null
+  void nextTick(() => {
+    input.focus({ preventScroll: true })
+    input.setSelectionRange(caret, caret)
+    updateAssist()
+  })
+}
+
+// The keys the list and pointing take before the editor's own. True when
+// the key was used.
+function onAssistKeydown(e: KeyboardEvent): boolean {
+  const a = assist.value
+  if (a) {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault()
+      const step = e.key === 'ArrowDown' ? 1 : -1
+      a.active = (a.active + step + a.items.length) % a.items.length
+      return true
+    }
+    if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault()
+      acceptAssist()
+      return true
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      assist.value = null
+      return true
+    }
+  }
+  const arrows: Record<string, [number, number]> = {
+    ArrowUp: [-1, 0],
+    ArrowDown: [1, 0],
+    ArrowLeft: [0, -1],
+    ArrowRight: [0, 1],
+  }
+  const move = arrows[e.key]
+  if (
+    move &&
+    editing.value?.mode === 'enter' &&
+    !e.altKey &&
+    !e.metaKey &&
+    !e.ctrlKey
+  ) {
+    if (pointFromKey(move[0], move[1], e.shiftKey)) {
+      e.preventDefault()
+      return true
+    }
+  }
+  return false
+}
+
+// Typing anything ends pointing: the next reference is a new one.
+function onDraftInput() {
+  pointing.value = null
+  void nextTick(updateAssist)
+}
+
+function partOfSignature(fn: IFormulaFunction, arg: number) {
+  const open = fn.syntax.indexOf('(')
+  const close = fn.syntax.lastIndexOf(')')
+  if (open < 0 || close < open) return [{ text: fn.syntax, current: false }]
+  const params = fn.syntax.slice(open + 1, close).split(/,\s*/)
+  // A variadic function's last listed parameter stands for the rest.
+  const current = Math.min(arg, params.length - 1)
+  const parts: Array<{ text: string; current: boolean }> = [
+    { text: fn.syntax.slice(0, open + 1), current: false },
+  ]
+  params.forEach((p, i) => {
+    if (i)
+      parts.push({ text: `${formulaSyntax.value.separator} `, current: false })
+    parts.push({ text: p, current: i === current })
+  })
+  parts.push({ text: fn.syntax.slice(close), current: false })
+  return parts
+}
+
+// ── The formula bar ──
+const barRef = useTemplateRef<HTMLInputElement>('barRef')
+
+const nameBoxText = computed(() => {
+  const b = selectionBounds.value
+  if (!b || !focused.value) return ''
+  if (b.r1 === b.r2 && b.c1 === b.c2)
+    return cellRef(focused.value.rowId, focused.value.columnId)
+  return `${refTextAt(b.r1, b.c1)}:${refTextAt(b.r2, b.c2)}`
+})
+
+const barText = computed(() => {
+  if (editing.value) return editing.value.draft
+  const fc = focused.value
+  return fc ? editText(fc.rowId, fc.columnId) : ''
+})
+
+const barEditable = computed(() => {
+  const fc = focusedCell()
+  return !!fc && !isReadOnly(fc.r, fc.c)
+})
+
+// Focusing the bar opens the active cell for editing there, and the cell
+// shows the draft as it is typed.
+function onBarFocus() {
+  if (editing.value) {
+    editing.value.source = 'bar'
+    return
+  }
+  const fc = focusedCell()
+  if (!fc || isReadOnly(fc.r, fc.c)) return
+  editing.value = {
+    rowId: fc.r.id,
+    columnId: fc.c.id,
+    draft: editText(fc.r.id, fc.c.id),
+    mode: 'edit',
+    source: 'bar',
+  }
+}
+
+function onBarInput(e: Event) {
+  if (!editing.value) return
+  editing.value.draft = (e.target as HTMLInputElement).value
+  onDraftInput()
+}
+
+// Moving between the bar and the cell's editor keeps the edit open.
+function onEditorBlur(e: FocusEvent) {
+  const to = e.relatedTarget
+  if (to && (to === barRef.value || to === editorRef.value)) return
+  assist.value = null
+  signature.value = null
+  commitEdit(false)
+}
+
+function onEditorFocus(source: 'cell' | 'bar') {
+  if (editing.value) editing.value.source = source
+}
+
 // ─── Undo / redo ───────────────────────────────────────────────────────────
-function pushUndo(changes: ISpreadsheetChange[]) {
-  undoStack.value.push(changes)
+function pushUndo(
+  changes: ISpreadsheetChange[],
+  layout: Omit<IUndoStep, 'changes'> = {},
+) {
+  undoStack.value.push({ changes, ...layout })
   redoStack.value = []
 }
 
 function undo() {
-  const group = undoStack.value.pop()
-  if (!group) return
-  const reverted: ISpreadsheetChange[] = group.map((ch) => ({
-    ...ch,
-    before: ch.after,
-    after: ch.before,
-  }))
-  applyChanges(reverted)
-  redoStack.value.push(group)
+  const step = undoStack.value.pop()
+  if (!step) return
+  if (step.changes.length)
+    applyChanges(
+      step.changes.map((ch) => ({ ...ch, before: ch.after, after: ch.before })),
+    )
+  if (step.styles) styles.value = step.styles[0]
+  if (step.merges) merges.value = step.merges[0]
+  redoStack.value.push(step)
 }
 
 function redo() {
-  const group = redoStack.value.pop()
-  if (!group) return
-  applyChanges(group)
-  undoStack.value.push(group)
+  const step = redoStack.value.pop()
+  if (!step) return
+  if (step.changes.length) applyChanges(step.changes)
+  if (step.styles) styles.value = step.styles[1]
+  if (step.merges) merges.value = step.merges[1]
+  undoStack.value.push(step)
 }
 
 watch(
@@ -2442,8 +3597,9 @@ watch(
   () => measureFit(),
 )
 
+// The sheet never takes the focus on its own: a page decides where the
+// keyboard starts, and the exposed `focus` is there for one that wants it here.
 onMounted(() => {
-  focusScroller()
   measureFit()
   measureHeaders()
   if (typeof ResizeObserver !== 'undefined' && scrollerRef.value) {
@@ -2460,7 +3616,10 @@ onBeforeUnmount(() => sizeObserver?.disconnect())
 
 // Expose for parents
 defineExpose({
-  focus: (rowId: string, columnId: string) => setFocus(rowId, columnId),
+  focus: (rowId: string, columnId: string) => {
+    setFocus(rowId, columnId)
+    focusScroller()
+  },
   undo,
   redo,
   getSelection: () => selection.value,
@@ -2475,6 +3634,12 @@ defineExpose({
   showColumns,
   hideRows,
   showRows,
+  applyStyle,
+  clearStyles,
+  merge: mergeSelection,
+  unmerge: unmergeSelection,
+  exportCsv,
+  importCsv,
 })
 </script>
 
@@ -2922,6 +4087,38 @@ defineExpose({
   font-weight: 600;
 }
 
+// Sheet mode's cell styles. Colours are intents, painted with the library's
+// status surface pairs, so they hold their contrast in both themes. A
+// selected cell keeps the selection's tint over its colour.
+.nb-spreadsheet__cell--bold {
+  font-weight: 600;
+}
+.nb-spreadsheet__cell--italic {
+  font-style: italic;
+}
+.nb-spreadsheet__cell--underline > span {
+  text-decoration-line: underline;
+}
+.nb-spreadsheet__cell--strike > span {
+  text-decoration-line: line-through;
+}
+.nb-spreadsheet__cell--underline.nb-spreadsheet__cell--strike > span {
+  text-decoration-line: underline line-through;
+}
+@each $intent in neutral, info, success, warning, danger {
+  .nb-spreadsheet__cell--intent-#{$intent}:not(
+    .nb-spreadsheet__cell--selected
+  ) {
+    background: var(--nb-c-#{$intent}-surface);
+    color: var(--nb-c-on-#{$intent}-surface);
+  }
+}
+// A formula that could not be worked out shows its error code, in the
+// danger colour, with the reason as the tooltip.
+.nb-spreadsheet__cell--error {
+  color: var(--nb-c-danger-a11y, var(--nb-c-danger));
+}
+
 // Subtle shadow on the right edge of the rightmost pinned-left column
 // indicates "more content to the right", the same idea as Carbon's sticky
 // columns.
@@ -2965,6 +4162,145 @@ defineExpose({
   font: inherit;
   font-variant-numeric: tabular-nums;
   outline: none;
+}
+
+// ─── Formulas ────────────────────────────────────────────────────────────
+// The formula bar: the reference, then the contents, on the toolbar's
+// surface with a hairline under it.
+.nb-spreadsheet__formula-bar {
+  display: flex;
+  align-items: stretch;
+  min-height: var(--nbss-header-height);
+  border-bottom: 1px solid var(--nb-c-border);
+  background: var(--nb-c-surface);
+}
+.nb-spreadsheet__name-box {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-width: 5rem;
+  padding: 0 var(--nbss-cell-padding-x);
+  border-right: 1px solid var(--nb-c-border);
+  font-variant-numeric: tabular-nums;
+  color: var(--nb-c-text);
+}
+.nb-spreadsheet__fx {
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+  font-style: italic;
+  color: var(--nb-c-text-muted);
+  border-right: 1px solid var(--nb-c-border);
+}
+.nb-spreadsheet__bar-field {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+}
+.nb-spreadsheet__bar-input,
+.nb-spreadsheet__mirror--bar {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  padding: 0 var(--nbss-cell-padding-x);
+  background: transparent;
+  color: var(--nb-c-text);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+}
+.nb-spreadsheet__bar-input {
+  position: relative;
+  outline: none;
+}
+.nb-spreadsheet__bar-input:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--nbss-focus-ring);
+}
+.nb-spreadsheet__mirror--bar {
+  position: absolute;
+  inset: 0;
+}
+
+// The coloured layer behind a formula's text. It has the input's box and
+// font, so its runs sit exactly under the input's transparent characters.
+.nb-spreadsheet__mirror {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: pre;
+  pointer-events: none;
+}
+.nb-spreadsheet__mirror > span {
+  display: inline-block;
+}
+.nb-spreadsheet__input--formula {
+  background: transparent;
+  color: transparent;
+  caret-color: var(--nb-c-text);
+}
+.nb-spreadsheet__input--formula::selection {
+  color: transparent;
+}
+
+// The references' colours are the chart palette, which is built to tell
+// eight series apart in either theme.
+@for $i from 1 through 8 {
+  .nb-spreadsheet__ref--#{$i} {
+    --nbss-ref: var(--nb-c-chart-#{$i});
+    color: var(--nbss-ref);
+  }
+}
+.nb-spreadsheet__ref-box {
+  position: relative;
+  z-index: 3;
+  pointer-events: none;
+  border: 2px solid var(--nbss-ref);
+  background: color-mix(in srgb, var(--nbss-ref) 12%, transparent);
+}
+
+// The function list and the call hint, as a menu surface.
+.nb-spreadsheet__assist {
+  position: fixed;
+  z-index: 1000;
+  max-width: 28rem;
+  background: var(--nb-c-surface-raised, var(--nb-c-surface));
+  color: var(--nb-c-text);
+  border: 1px solid var(--nb-c-border);
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  font-size: var(--nb-type-body-compact-size);
+}
+.nb-spreadsheet__assist-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+}
+.nb-spreadsheet__assist-option {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+}
+.nb-spreadsheet__assist-option--active,
+.nb-spreadsheet__assist-option:hover {
+  background: var(--nb-c-surface-hover, var(--nb-c-surface));
+}
+.nb-spreadsheet__assist-name {
+  font-weight: 600;
+  flex: 0 0 auto;
+}
+.nb-spreadsheet__assist-description {
+  color: var(--nb-c-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nb-spreadsheet__signature {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.375rem 0.75rem;
 }
 
 // iOS zooms into any field whose text is under 16px.

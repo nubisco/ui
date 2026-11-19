@@ -822,6 +822,8 @@ export { pluralize } from './utils/pluralize.helper'
 export type { IPluralForms } from './utils/pluralize.helper'
 // Middle truncation for long record names, which keeps both ends readable.
 export { truncateMiddle } from './utils/truncateMiddle.helper'
+// CSV in and out, as RFC 4180 has it, for NbSpreadsheet and anything else.
+export { parseCsv, toCsv } from './utils/csv.helper'
 export { useInlineLoading } from './composables/useInlineLoading.composable'
 export type {
   TInlineLoadingStatus,
@@ -933,4 +935,11 @@ export type {
   TSpreadsheetCells,
   TSpreadsheetExtent,
   ISpreadsheetExtent,
+  TSpreadsheetIntent,
+  TSpreadsheetNumberFormat,
+  ISpreadsheetCellStyle,
+  TSpreadsheetStyles,
+  TSpreadsheetRule,
+  ISpreadsheetConditionalFormat,
+  ISpreadsheetCsvOptions,
 } from './components/Spreadsheet.d'

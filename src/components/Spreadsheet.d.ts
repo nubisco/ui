@@ -39,6 +39,86 @@ export interface ISpreadsheetExtent {
  */
 export type TSpreadsheetExtent = 'data' | 'infinite' | ISpreadsheetExtent
 
+/**
+ * What a cell's colour means, not the colour itself: each one paints the
+ * library's status surface pair, so it follows the theme and dark mode.
+ */
+export type TSpreadsheetIntent =
+  | 'neutral'
+  | 'info'
+  | 'success'
+  | 'warning'
+  | 'danger'
+
+/**
+ * How a number is shown. The value stays the number: a format changes only
+ * the text in the cell. `decimals` is fixed when set, up to 10 otherwise.
+ */
+export type TSpreadsheetNumberFormat =
+  | { type: 'number'; decimals?: number; grouping?: boolean }
+  | { type: 'percent'; decimals?: number }
+  | { type: 'currency'; currency: string; decimals?: number }
+
+/** The look of one cell in sheet mode. */
+export interface ISpreadsheetCellStyle {
+  bold?: boolean
+  italic?: boolean
+  underline?: boolean
+  strike?: boolean
+  /** Default: numbers to the right, everything else to the left. */
+  align?: TSpreadsheetAlign
+  intent?: TSpreadsheetIntent
+  format?: TSpreadsheetNumberFormat
+}
+
+/** Sheet-mode styles, keyed by reference like the cells. */
+export type TSpreadsheetStyles = Record<string, ISpreadsheetCellStyle>
+
+/**
+ * A conditional format's test. The comparisons work on the value a cell
+ * shows, so a formula's result is compared, not its text. A `formula` rule is
+ * written for the range's first cell and moves with each cell, as in a
+ * desktop spreadsheet: `=B2>A2` on `B2:B9` compares each row with column A.
+ */
+export type TSpreadsheetRule =
+  | {
+      when:
+        | 'greaterThan'
+        | 'lessThan'
+        | 'greaterOrEqual'
+        | 'lessOrEqual'
+        | 'equal'
+        | 'notEqual'
+      value: number | string
+    }
+  | { when: 'between' | 'notBetween'; min: number; max: number }
+  | {
+      when: 'contains' | 'notContains' | 'startsWith' | 'endsWith'
+      text: string
+    }
+  | { when: 'empty' | 'notEmpty' | 'error' }
+  | { when: 'formula'; formula: string }
+
+/** Styles a range's cells while they pass a rule. */
+export interface ISpreadsheetConditionalFormat {
+  /** A reference or range: 'B2:B20', 'C:C', 'A1'. */
+  range: string
+  rule: TSpreadsheetRule
+  /** Only the look applies: a rule never changes a number's format. */
+  style: Omit<ISpreadsheetCellStyle, 'format'>
+}
+
+/** Options for reading a sheet out as CSV. */
+export interface ISpreadsheetCsvOptions {
+  /** Default ','. */
+  delimiter?: string
+  /**
+   * 'display' writes what each cell shows, formatted. 'raw' writes the values,
+   * and formulas as their text. Default 'raw'.
+   */
+  values?: 'raw' | 'display'
+}
+
 export interface ISpreadsheetColumn {
   /** Stable id used for selection, sort, and host commits. */
   id: string
@@ -57,7 +137,7 @@ export interface ISpreadsheetColumn {
   pinned?: TSpreadsheetPinCol
   /** Text alignment inside the cell. Defaults: number+date right, text left. */
   align?: TSpreadsheetAlign
-  /** Cell value type — drives default formatter, parser, and input mode. */
+  /** Cell value type: drives the default formatter, parser and input mode. */
   type?: TSpreadsheetCellType
   /** All cells in this column are read-only. */
   readOnly?: boolean
@@ -77,7 +157,7 @@ export interface ISpreadsheetRow {
   pinned?: TSpreadsheetPinRow
   /** Row-wide CSS class for theming (e.g. 'weekend'). */
   className?: string
-  /** Marks the row as a totals/computed row — disables editing. */
+  /** Marks the row as a totals or computed row, which disables editing. */
   computed?: boolean
   /**
    * Text for the row header in the gutter, in place of the row number. Use
@@ -196,4 +276,20 @@ export interface ISpreadsheetProps {
    * `Ctrl+R`. Default: on in sheet mode, off in table mode.
    */
   fillHandle?: boolean
+  /**
+   * Sheet mode: styles applied while a range's cells pass a rule. A later
+   * entry wins where two set the same thing, and both win over `styles`.
+   */
+  conditionalFormats?: ISpreadsheetConditionalFormat[]
+  /**
+   * Sheet mode: work out cells whose text starts with `=` as formulas, such
+   * as `=SUM(B2:B9)`. The cells keep the formula and the sheet shows its
+   * result. Default true. The engine is `@nubisco/ui/formula`.
+   */
+  formulas?: boolean
+  /**
+   * Show the formula bar above the grid: the active cell's reference and its
+   * contents, a formula as written. Default: on in sheet mode with formulas.
+   */
+  formulaBar?: boolean
 }

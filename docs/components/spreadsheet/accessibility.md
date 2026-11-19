@@ -4,7 +4,7 @@ title: Spreadsheet
 intro: '`NbSpreadsheet` is an editable grid of cells for data people key in: dense rows, a sticky header, row numbers or labels in a gutter, keyboard entry like a desktop spreadsheet, range selection, clipboard, and undo. The app owns the data: the sheet renders it, captures input and emits the changes.'
 source: src/components/Spreadsheet.vue
 tab: accessibility
-pageTabs: ['usage', 'code', 'accessibility']
+pageTabs: ['usage', 'formulas', 'code', 'accessibility']
 a11y:
   automated: not recorded
   keyboard: tested
@@ -19,7 +19,7 @@ a11y:
 - A sortable column header carries `aria-sort` (`none`, `ascending` or `descending`).
 - The cell editor is a text field labelled with the column's label and the row's label or number.
 - Name the sheet with `aria-label`. A page with two sheets must name both.
-- The active cell draws a 2px `--nb-c-focus-ring` inside the cell, and the grid draws the same ring on its inner edge when it has keyboard focus, so nothing around it moves.
+- The active cell draws a 2px `--nb-c-focus-ring` inside the cell, and until a cell is active the grid draws the same ring on its inner edge when it has keyboard focus, so nothing around it moves. A selected range is boxed by a 1px line in the same colour, and each range added with `Cmd/Ctrl` has a box of its own.
 - With `column-headers="both"` the letters and the labels are two header rows. With `'letters'` alone, each letter header is named with its letter and its label ("B Quantity"), so the label is not lost to a screen reader.
 - The marks hidden columns and rows leave are buttons named for what they show ("Show 2 hidden columns"), out of the tab order like every other part of the grid. From the keyboard, the context menu shows hidden columns and rows, and it opens with `Shift+F10` or the menu key.
 - The context menu is `NbMenu`, so it has the menu's own keyboard model: the arrow keys, typeahead, `Esc` to close, and the focus back on the sheet afterwards.
@@ -27,6 +27,13 @@ a11y:
 - In sheet mode the column headers are the letters, and the cell editor is labelled with the cell's reference ("B3").
 - The fill handle is a mouse affordance and is hidden from assistive technology. `Ctrl+D` and `Ctrl+R` fill from the keyboard.
 - An infinite sheet reports the rows and columns it has grown to in `aria-rowcount` and `aria-colcount`, which rise as the person moves towards the end.
+- The formula bar's field is labelled "Formula", and the name beside it shows the active cell's reference or the selected range.
+- While formulas are on, the cell editor and the formula bar are `combobox`es. The function list is a `listbox` named "Functions", and the option the arrow keys are on is the field's `aria-activedescendant`, so a screen reader reads each function as it is reached. The arguments of the function being typed into are the field's description.
+- A reference's colour is never the only way to tell it apart: the reference is written in the formula, and the colour only links it to its box on the grid.
+- Pointing at cells while a formula is typed works from the keyboard as well as the mouse: in a cell opened by typing, the arrow keys write the cell they reach.
+- An error shows its code in the danger colour, and its reason is the cell's tooltip.
+- Cell colours are intents, painted with the status surface pairs, which keep AA contrast in both themes. Colour alone should not carry meaning: pair an intent with text or a format that says the same.
+- A merged cell is one cell to a screen reader, under its first row and column. Merge for layout and keep data unmerged.
 - On a touch screen a tap on the active cell opens it, since there is no key to type into it, and the editor's text is at least 16px so the page does not zoom.
 
 ## Keyboard

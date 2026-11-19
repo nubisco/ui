@@ -214,6 +214,12 @@ export interface INbStrings {
   /** Why the selected columns cannot be hidden: they are all that is left. */
   spreadsheetKeepOneColumn: string
   spreadsheetKeepOneRow: string
+  spreadsheetMerge: string
+  spreadsheetUnmerge: string
+  /** The accessible name of the formula bar's field. */
+  spreadsheetFormulaBar: string
+  /** The accessible name of the list of functions offered while typing. */
+  spreadsheetFunctions: string
   // NbSidebarMenuItem
   /** The accessible text of the item's `live` indicator. */
   sidebarMenuItemLive: string
@@ -425,6 +431,10 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
     }),
   spreadsheetKeepOneColumn: 'A sheet keeps at least one column',
   spreadsheetKeepOneRow: 'A sheet keeps at least one row',
+  spreadsheetMerge: 'Merge cells',
+  spreadsheetUnmerge: 'Unmerge cells',
+  spreadsheetFormulaBar: 'Formula',
+  spreadsheetFunctions: 'Functions',
   sidebarMenuItemLive: 'Running',
   imagePickerAdd: 'Add image',
   imagePickerDrop: 'Drop to upload',

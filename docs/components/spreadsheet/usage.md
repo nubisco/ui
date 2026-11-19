@@ -4,7 +4,7 @@ title: Spreadsheet
 intro: '`NbSpreadsheet` is an editable grid of cells for data people key in: dense rows, a sticky header, row numbers or labels in a gutter, keyboard entry like a desktop spreadsheet, range selection, clipboard, and undo. The app owns the data: the sheet renders it, captures input and emits the changes.'
 source: src/components/Spreadsheet.vue
 tab: usage
-pageTabs: ['usage', 'code', 'accessibility']
+pageTabs: ['usage', 'formulas', 'code', 'accessibility']
 ---
 
 Use it when people edit many values in place: hours per day, quantities per month, a budget. For a list people read, sort and act on row by row, use [`NbDataTable`](/components/data-table/usage) instead.
@@ -137,7 +137,55 @@ An infinite grid is never the default. Pick it for a scratch sheet, and bounds f
   />
 </preview>
 
+A cell whose text starts with `=` is a formula, such as `=SUM(B2:B9)`: the sheet shows its result and keeps the formula, and the formula bar above the grid shows it as written. See [Formulas](/components/spreadsheet/formulas) for writing them and the functions there are.
+
 Select a range and drag the square on its last corner to fill the cells beyond it. Numbers that step evenly, such as 1, 2 or 10, 20, carry the series on, and anything else repeats. `Ctrl+D` copies the selection's top row down over the rest of it, and `Ctrl+R` its first column to the right. The fill handle is on in sheet mode, and `fill-handle` turns it on in table mode too.
+
+## Styles
+
+A sheet-mode cell can be bold, italic, underlined or struck through, aligned, coloured and given a number format. `Cmd/Ctrl+B`, `I` and `U` set the first three on the selection. The rest come from the app's own toolbar, through the exposed `applyStyle`, so the sheet never decides which controls a page shows. Build the toolbar from [`NbButton`](/components/button/usage) in the `toolbar` slot.
+
+Colours are intents, not colours: `neutral`, `info`, `success`, `warning` and `danger` paint the library's status surfaces, so a coloured cell keeps its contrast in the dark theme. Use them for meaning, such as an overdue figure, and never for decoration.
+
+A number format changes the text, never the value: `{ type: 'currency', currency: 'EUR' }` shows `1200` as €1,200.00 and the cell still holds `1200`. `percent` multiplies by 100 for the text, as a desktop spreadsheet does, and `number` fixes the decimals and the grouping.
+
+<preview>
+  <NbSpreadsheet
+    ref="lookSheet"
+    v-model:cells="lookCells"
+    v-model:styles="lookStyles"
+    v-model:merges="lookMerges"
+    :conditional-formats="lookFormats"
+    locale="en-GB"
+    context-menu
+    aria-label="Quarterly costs"
+  >
+    <template #toolbar>
+      <NbButton variant="ghost" size="sm" icon="text-b" label="Bold" @click="lookSheet?.applyStyle({ bold: true })" />
+      <NbButton variant="ghost" size="sm" icon="text-italic" label="Italic" @click="lookSheet?.applyStyle({ italic: true })" />
+      <NbButton variant="ghost" size="sm" @click="lookSheet?.applyStyle({ format: { type: 'currency', currency: 'EUR' } })">Currency</NbButton>
+      <NbButton variant="ghost" size="sm" @click="lookSheet?.applyStyle({ intent: 'warning' })">Warning</NbButton>
+      <NbButton variant="ghost" size="sm" @click="lookSheet?.merge()">Merge</NbButton>
+      <NbButton variant="ghost" size="sm" @click="lookSheet?.clearStyles()">Clear styles</NbButton>
+    </template>
+  </NbSpreadsheet>
+</preview>
+
+## Merged cells
+
+Merge a range to show its first cell across all of it, for a heading over several columns or a label beside several rows. Merging is in the context menu and the exposed `merge()`, and the merged ranges are `v-model:merges`, such as `['A1:D1']`. A selection that reaches into a merge takes all of it, and the arrow keys step over it as one cell. The cells under a merge keep their values, out of sight, and come back when the range is unmerged.
+
+Merge for layout, rarely. A merged cell is one cell to a screen reader, and a column with merges in it is harder to select, sort and paste into.
+
+## Conditional formats
+
+`conditional-formats` styles the cells of a range while they pass a rule: greater than, between, contains, empty, an error, and so on. The rules read the value a cell shows, so a formula's result is what counts. Formats apply in order, a later one winning, and all of them over the cell's own style.
+
+A `formula` rule works as in a desktop spreadsheet. It is written for the range's first cell and moves with each cell: `{ range: 'C2:C9', rule: { when: 'formula', formula: '=C2>B2' } }` tests each row's C against its B. The cell is styled when the formula is TRUE or a number other than 0.
+
+## CSV
+
+`exportCsv()` writes the sheet as CSV, and `importCsv(text)` reads a file into a sheet-mode sheet as one step undo takes back. A file saved with semicolons and decimal commas, as spreadsheets in many European locales write them, reads as numbers in a sheet with that `locale`. See [CSV](/components/spreadsheet/code#csv) for the options and the `parseCsv` and `toCsv` helpers.
 
 ## Sorting
 
@@ -159,23 +207,24 @@ Hold `Cmd` (`Ctrl` on Windows and Linux) while clicking or dragging to add anoth
 
 ## Keyboard, mouse and clipboard
 
-| Action                   | Keys                                                            |
-| ------------------------ | --------------------------------------------------------------- |
-| Move the active cell     | `↑` `↓` `←` `→` / `Tab` / `Shift+Tab` / `Enter` / `Shift+Enter` |
-| Start editing            | Any printable key / `F2` / double-click / tap the active cell   |
-| Commit and move          | `Enter` / `Tab` / `↑` `↓`, and `←` `→` in a cell typed into     |
-| Cancel editing           | `Esc`                                                           |
-| Clear the selected range | `Delete` / `Backspace`                                          |
-| Extend the selection     | Hold `Shift` while moving / Shift-click                         |
-| Add a range              | Cmd/Ctrl-click or drag                                          |
-| Select the column        | `Ctrl+Space` / click its header                                 |
-| Select the row           | `Shift+Space` / click its gutter cell                           |
-| Select everything        | `Cmd/Ctrl+A` / click the corner                                 |
-| Narrow / widen column    | `Alt+Shift+←` / `Alt+Shift+→`, 8px a step                       |
-| Open the context menu    | `Shift+F10` / the menu key / right click (with `context-menu`)  |
-| Copy / cut / paste (TSV) | `Cmd/Ctrl+C` / `Cmd/Ctrl+X` / `Cmd/Ctrl+V`                      |
-| Fill down / right        | `Cmd/Ctrl+D` / `Cmd/Ctrl+R` (with the fill handle)              |
-| Undo / redo              | `Cmd/Ctrl+Z` / `Cmd/Ctrl+Shift+Z`                               |
+| Action                    | Keys                                                            |
+| ------------------------- | --------------------------------------------------------------- |
+| Move the active cell      | `↑` `↓` `←` `→` / `Tab` / `Shift+Tab` / `Enter` / `Shift+Enter` |
+| Start editing             | Any printable key / `F2` / double-click / tap the active cell   |
+| Commit and move           | `Enter` / `Tab` / `↑` `↓`, and `←` `→` in a cell typed into     |
+| Cancel editing            | `Esc`                                                           |
+| Clear the selected range  | `Delete` / `Backspace`                                          |
+| Extend the selection      | Hold `Shift` while moving / Shift-click                         |
+| Add a range               | Cmd/Ctrl-click or drag                                          |
+| Select the column         | `Ctrl+Space` / click its header                                 |
+| Select the row            | `Shift+Space` / click its gutter cell                           |
+| Select everything         | `Cmd/Ctrl+A` / click the corner                                 |
+| Narrow / widen column     | `Alt+Shift+←` / `Alt+Shift+→`, 8px a step                       |
+| Open the context menu     | `Shift+F10` / the menu key / right click (with `context-menu`)  |
+| Copy / cut / paste (TSV)  | `Cmd/Ctrl+C` / `Cmd/Ctrl+X` / `Cmd/Ctrl+V`                      |
+| Fill down / right         | `Cmd/Ctrl+D` / `Cmd/Ctrl+R` (with the fill handle)              |
+| Bold / italic / underline | `Cmd/Ctrl+B` / `Cmd/Ctrl+I` / `Cmd/Ctrl+U` (sheet mode)         |
+| Undo / redo               | `Cmd/Ctrl+Z` / `Cmd/Ctrl+Shift+Z`                               |
 
 Editing has the two states of a desktop spreadsheet. A cell opened by typing into it takes every arrow key as "commit and move", so a column of numbers is keyed in as `8`, `↓`, `8`, `↓` without touching the mouse. A cell opened with `F2`, a double click or a tap keeps `←` and `→` for moving the caret inside the text.
 
