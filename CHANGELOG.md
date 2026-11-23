@@ -1,3 +1,11 @@
+# [5.62.0](https://github.com/nubisco/ui/compare/v5.61.0...v5.62.0) (2026-11-23)
+
+
+### Features
+
+* **theme:** generate per-category tinted dark ramps ([8688532](https://github.com/nubisco/ui/commit/8688532b3e892bb83ded83151fbb8328966280d0))
+* **theme:** opt-in tinted dark surfaces under data-nb-dark-surfaces ([0b236ef](https://github.com/nubisco/ui/commit/0b236ef73682b8198b6015aabcf1bc65191449ef))
+
 # [5.61.0](https://github.com/nubisco/ui/compare/v5.60.0...v5.61.0) (2026-11-19)
 
 
