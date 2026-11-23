@@ -163,6 +163,7 @@
     "quality:check": "pnpm run test && pnpm run lint && pnpm run format:check && pnpm run types:check && pnpm run verify:marks",
     "docs:dev": "pnpm run generate && nubisco-docs dev docs",
     "penpot:tokens": "node scripts/penpot-tokens.mjs",
+    "generate:tinted-dark": "node scripts/build-tinted-dark.mjs",
     "docs:build": "pnpm run generate && node scripts/build-tokens.mjs && nubisco-docs build docs",
     "docs:serve": "nubisco-docs preview docs",
     "prepare": "simple-git-hooks",
