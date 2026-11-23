@@ -44,20 +44,27 @@
   }
 }
 
+/// Every declaration the preset makes, for one ramp.
+///
+/// Public so a scope that re-declares the per-plane field values from a
+/// different ramp (the tinted dark surfaces in `app-theme()`) can restate the
+/// preset from that ramp instead of overriding it.
+///
+/// @param {Map} $ramp - `$light`, `$dark`, or a map of the same shape
+/// @access public
+/// @group @nubisco/presets
+@mixin values($ramp) {
+  @include _fields($ramp);
+  // The old treatment had no separate disabled or read-only values: both
+  // fell back to the enabled ones and leaned on opacity alone.
+  --nb-c-field-bg-disabled: #{layers.token($ramp, classic-field-bg)};
+  --nb-c-field-border-disabled: #{layers.token($ramp, classic-field-border)};
+  --nb-c-field-border-readonly: #{layers.token($ramp, classic-field-border)};
+}
+
 @mixin classic-fields {
   [data-nb-preset='classic-fields'] {
-    @include _fields(layers.$light);
-    // The old treatment had no separate disabled or read-only values: both
-    // fell back to the enabled ones and leaned on opacity alone.
-    --nb-c-field-bg-disabled: #{layers.token(layers.$light, classic-field-bg)};
-    --nb-c-field-border-disabled: #{layers.token(
-        layers.$light,
-        classic-field-border
-      )};
-    --nb-c-field-border-readonly: #{layers.token(
-        layers.$light,
-        classic-field-border
-      )};
+    @include values(layers.$light);
   }
 
   /*
@@ -67,15 +74,6 @@
    */
   .dark[data-nb-preset='classic-fields'],
   .dark [data-nb-preset='classic-fields'] {
-    @include _fields(layers.$dark);
-    --nb-c-field-bg-disabled: #{layers.token(layers.$dark, classic-field-bg)};
-    --nb-c-field-border-disabled: #{layers.token(
-        layers.$dark,
-        classic-field-border
-      )};
-    --nb-c-field-border-readonly: #{layers.token(
-        layers.$dark,
-        classic-field-border
-      )};
+    @include values(layers.$dark);
   }
 }

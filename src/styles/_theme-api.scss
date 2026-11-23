@@ -53,9 +53,14 @@
 @use 'sass:meta';
 @use 'sass:string';
 @use 'accent' as accent;
+@use 'contrast' as contrast;
 @use 'logic' as logic;
 @use 'logic/ink' as ink;
+@use 'presets/classic-fields' as classic-fields;
+@use 'theme' as base-theme;
 @use 'variables/categories' as categories;
+@use 'variables/layers' as layers;
+@use 'variables/tinted-dark' as tinted;
 
 /// The tints every palette colour is expanded into, matching the library's own
 /// ramp exactly.
@@ -301,6 +306,9 @@ $_max-step: 900;
 /// they are not, and a surface that groups products by audience wants the
 /// category, not the app's own colour.
 ///
+/// It also emits the category's tinted dark ramp, which applies only under
+/// `[data-nb-dark-surfaces='tinted']` (see `configureDarkSurfaces()`).
+///
 /// @param {String} $id - the app's identifier, chosen by the app. The library
 ///   keeps no registry of these: it never needs to know which products exist.
 /// @param {String} $category - one of `creatives`, `engineers`, `home`, `fun`, `education`, `agents`
@@ -363,5 +371,156 @@ $_max-step: 900;
     @include accent.focus-ring(70%);
     @include accent.focus-inverse(dark);
     @include accent.link;
+  }
+
+  // Opt-in, so nothing here applies until the document carries the flag.
+  @include _tinted-dark($id, $category);
+}
+
+/// The attribute that opts a document into tinted dark surfaces. Written on
+/// `<html>` by `configureDarkSurfaces()`.
+$_tinted-flag: "[data-nb-dark-surfaces='tinted']";
+
+/// Joins selectors into one comma-separated selector list.
+@function _selector-list($selectors) {
+  $out: '';
+  @each $s in $selectors {
+    @if $out == '' {
+      $out: $s;
+    } @else {
+      $out: '#{$out}, #{$s}';
+    }
+  }
+  @return $out;
+}
+
+/// The four places a tinted dark scope can land.
+///
+/// The flag is on `<html>`. The dark class and the theme attribute are on
+/// `<html>` too when an application uses `useTheme()` and
+/// `useNamedTheme()`, but either can also sit on a subtree, which is the same
+/// pair of cases `theme()` covers. Each selector has three class or attribute
+/// parts against the single `.dark` that emits the grey ramp, so the tint wins
+/// whatever order the stylesheets are concatenated in.
+///
+/// @param {String} $theme - the `[data-nb-theme]` compound for the app
+/// @return {List} four selectors, each ending on the element that is themed
+@function _tinted-scopes($theme) {
+  @return (
+    '#{$_tinted-flag}.dark#{$theme}',
+    '#{$_tinted-flag} .dark#{$theme}',
+    '#{$_tinted-flag}.dark #{$theme}',
+    '#{$_tinted-flag} .dark #{$theme}'
+  );
+}
+
+/// The tinted scopes, each with a variant attribute added where the
+/// library's own variant rules can share an element with them: on `<html>`
+/// (the scope's first compound), on the themed element itself, or on a
+/// subtree inside it.
+@function _tinted-variants($scopes, $attribute) {
+  $out: ();
+  @each $scope in $scopes {
+    $out: list.append($out, '#{$attribute}#{$scope}', $separator: comma);
+    $out: list.append($out, '#{$scope}#{$attribute}', $separator: comma);
+    $out: list.append($out, '#{$scope} #{$attribute}', $separator: comma);
+  }
+  @return $out;
+}
+
+/// Every custom property the library's `dark` mixin derives from the dark
+/// ramp, emitted from another ramp of the same shape.
+///
+/// Mirrors `_theme.scss` (`dark`): the layer surfaces, borders and hovers,
+/// the per-plane set, the aliases that resolve them (re-declared because an
+/// alias written on an ancestor freezes to the ancestor's value), the text
+/// tiers with their readable foregrounds, the text roles and the field
+/// states. The link is re-emitted because its visited state mixes in the
+/// muted tier.
+@mixin _dark-ramp-values($ramp) {
+  @for $i from 0 through 3 {
+    --nb-c-layer-#{$i}: #{layers.level($ramp, surface, $i)};
+  }
+  @for $i from 0 through 3 {
+    --nb-c-layer-border-#{$i}: #{layers.level($ramp, border, $i)};
+  }
+  @for $i from 0 through 3 {
+    --nb-c-layer-hover-#{$i}: #{layers.level($ramp, hover, $i)};
+  }
+  @include base-theme.plane-values($ramp);
+
+  --nb-c-surface: var(--nb-c-layer-1);
+  --nb-c-surface-raised: var(--nb-c-layer-0);
+  --nb-c-border: var(--nb-c-layer-border-1);
+  --nb-c-surface-hover: var(--nb-c-layer-hover-1);
+  @include base-theme.plane-aliases(1);
+
+  --nb-c-text: #{layers.token($ramp, text)};
+  --nb-c-text-a11y: #{logic.color-contrast(layers.token($ramp, text))};
+  --nb-c-text-muted: #{layers.token($ramp, text-muted)};
+  --nb-c-text-muted-a11y: #{logic.color-contrast(
+      layers.token($ramp, text-muted)
+    )};
+  --nb-c-text-subtle: #{layers.token($ramp, text-subtle)};
+  @include base-theme.text-roles($ramp);
+
+  --nb-c-bg: var(--nb-c-layer-0);
+  --nb-c-bg-soft: var(--nb-c-layer-1);
+
+  --nb-c-field-bg-disabled: #{layers.level($ramp, surface, 0)};
+  --nb-c-field-border-disabled: #{layers.level($ramp, border, 0)};
+  --nb-c-field-border-readonly: #{layers.level($ramp, border, 1)};
+
+  @include accent.link;
+}
+
+/// Tinted dark surfaces, for one app.
+///
+/// Opt-in: every rule is scoped to `[data-nb-dark-surfaces='tinted']`, so a
+/// document without the attribute renders exactly the grey ramp, and light
+/// mode is never touched. With it, the dark surfaces, borders, hovers and
+/// per-plane values take the app's category hue at a holding WCAG luminance,
+/// and the text tiers take a trace of it. The values are generated, see
+/// `variables/_tinted-dark.scss`.
+///
+/// The tint follows `$category`, never an overridden accent: the generated
+/// ramps are measured per category, and an arbitrary accent is not.
+///
+/// Increased contrast and the classic field preset re-declare some of the
+/// same properties on the same elements. The tinted scope outranks their
+/// plain dark rules, so it restates both from the tinted ramp, at higher
+/// specificity still, rather than silently undoing them.
+///
+/// @param {String} $id - the app's theme id
+/// @param {String} $category - a key of `$categories`
+/// @access private
+@mixin _tinted-dark($id, $category) {
+  @if not map.has-key(tinted.$tinted-dark, $category) {
+    @error "No tinted dark ramp for category #{$category}. Run `pnpm run generate:tinted-dark`.";
+  }
+  $ramp: map.get(tinted.$tinted-dark, $category);
+  $scopes: _tinted-scopes("[data-nb-theme='#{$id}']");
+
+  #{_selector-list($scopes)} {
+    @include _dark-ramp-values($ramp);
+  }
+
+  #{_selector-list(_tinted-variants($scopes, "[data-nb-contrast='more']"))} {
+    @include contrast.values($ramp);
+  }
+
+  @media (prefers-contrast: more) {
+    $root: ":root:not([data-nb-contrast='standard'])";
+    $media: ();
+    @each $scope in $scopes {
+      $media: list.append($media, '#{$root}#{$scope}', $separator: comma);
+    }
+    #{_selector-list($media)} {
+      @include contrast.values($ramp);
+    }
+  }
+
+  #{_selector-list(_tinted-variants($scopes, "[data-nb-preset='classic-fields']"))} {
+    @include classic-fields.values($ramp);
   }
 }

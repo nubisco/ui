@@ -37,6 +37,19 @@
   --nb-c-text-placeholder: #{layers.token($ramp, text-muted)};
 }
 
+/// Every declaration increased contrast makes, for one ramp.
+///
+/// Public so a scope that re-declares the layer borders and text tiers from a
+/// different ramp (the tinted dark surfaces in `app-theme()`) can restate the
+/// increased-contrast values from that ramp instead of overriding them.
+///
+/// @param {Map} $ramp - `$light`, `$dark`, or a map of the same shape
+/// @access public
+/// @group @nubisco/theme
+@mixin values($ramp) {
+  @include _values($ramp);
+}
+
 /// No `.nb-layer-N` rules are needed: each one points `--nb-c-border` at
 /// `--nb-c-layer-border-N`, which resolves on its own element to the raised
 /// value inherited from this scope.

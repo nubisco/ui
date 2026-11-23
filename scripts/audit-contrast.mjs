@@ -6,12 +6,23 @@
  * border legibility against both surfaces it divides, and text on each layer.
  *
  * Carbon's real published token values (parsed from @carbon/themes) are the
- * reference. Run: node scripts/audit-contrast.mjs [--json]
+ * reference. Run: node scripts/audit-contrast.mjs [--json] [--tinted]
+ *
+ * `--tinted` also measures the opt-in tinted dark surfaces, one ramp per
+ * category, read from the compiled `app-theme()` output.
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { ROOT, dL, loadThemeResolvers, r2, ratio } from './lib/layerTokens.mjs'
+import {
+  ROOT,
+  dL,
+  loadThemeResolvers,
+  loadTintedResolvers,
+  r2,
+  ratio,
+} from './lib/layerTokens.mjs'
+import { readCategories } from './build-tinted-dark.mjs'
 
 const { light, dark } = loadThemeResolvers()
 
@@ -167,12 +178,24 @@ function measureCarbon(theme) {
   }
 }
 
+const tinted = process.argv.includes('--tinted')
+  ? Object.fromEntries(
+      Object.entries(loadTintedResolvers(Object.keys(readCategories()))).map(
+        ([category, get]) => [
+          category,
+          measureOurs(get, `ours:dark-tinted:${category}`),
+        ],
+      ),
+    )
+  : null
+
 const report = {
   generatedAt: new Date().toISOString(),
   ours: {
     light: measureOurs(light, 'ours:light'),
     dark: measureOurs(dark, 'ours:dark'),
   },
+  tinted,
   carbon: carbon
     ? {
         white: measureCarbon('white'),
@@ -228,5 +251,6 @@ function print(m) {
 }
 
 for (const k of ['light', 'dark']) print(report.ours[k])
+if (report.tinted) for (const m of Object.values(report.tinted)) print(m)
 if (report.carbon)
   for (const k of ['white', 'g10', 'g90', 'g100']) print(report.carbon[k])

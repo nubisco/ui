@@ -878,6 +878,16 @@ export type {
   IAppearanceController,
 } from './composables/useAppearance.composable'
 export {
+  useDarkSurfaces,
+  configureDarkSurfaces,
+  darkSurfacesAttribute,
+} from './composables/useDarkSurfaces.composable'
+export type {
+  TDarkSurfaces,
+  IDarkSurfacesOptions,
+  IDarkSurfacesController,
+} from './composables/useDarkSurfaces.composable'
+export {
   useNamedTheme,
   configureNamedTheme,
   isValidThemeId,

@@ -143,3 +143,30 @@ export function loadThemeResolvers() {
     dark: resolver([rootProps, darkProps]),
   }
 }
+
+/**
+ * A token lookup per category for the tinted dark surfaces
+ * (`[data-nb-dark-surfaces='tinted']`, emitted by `app-theme()`), falling
+ * back to the plain dark theme for anything the tint does not touch.
+ *
+ * @param {string[]} categories keys of `$categories`
+ * @returns {Record<string, (name: string) => string|null>}
+ */
+export function loadTintedResolvers(categories) {
+  const { dark } = loadThemeResolvers()
+  const out = {}
+  for (const category of categories) {
+    const { css } = sass.compileString(
+      `@use 'theme-api' as nb; @include nb.app-theme('probe', $category: '${category}');`,
+      { loadPaths: [resolve(ROOT, 'src/styles')], style: 'compressed' },
+    )
+    const tinted = resolver([
+      propsFrom(
+        css,
+        /^\[data-nb-dark-surfaces=tinted\]\.dark\[data-nb-theme=probe\],/,
+      ),
+    ])
+    out[category] = (name) => tinted(name) ?? dark(name)
+  }
+  return out
+}
