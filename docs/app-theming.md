@@ -180,6 +180,79 @@ Chrome:
 If you derive your own token from the accent, declare it in the same scope that
 sets the accent, not at `:root`.
 
+## Tinted dark surfaces
+
+By default the dark theme is neutral grey, whatever your category. A product can
+opt in to dark surfaces tinted toward its category instead. It is one call, at
+boot, next to the others:
+
+```ts
+// your-app/src/main.ts
+import { configureDarkSurfaces } from '@nubisco/ui'
+
+configureDarkSurfaces({ tinted: true })
+```
+
+That puts `data-nb-dark-surfaces="tinted"` on `<html>`. If you render the
+document yourself, writing the attribute there does the same thing, and
+`darkSurfacesAttribute(true)` gives a server the attribute to render for the
+first paint. Nothing changes in your stylesheet: `app-theme()` already emits the
+tinted values for your category, and they only apply under the attribute.
+
+`useDarkSurfaces()` returns `isTinted`, `setTinted()` and `toggle()` for an app
+that offers it as a setting. Like `configureAppearance()`, the choice is
+persisted under `nubisco.dark-surfaces` by default. Pass `storageKey` to
+namespace it, or `persist: false` if the decision is yours rather than the
+viewer's.
+
+### What changes
+
+In dark mode only, every value the dark theme takes from its ramp moves toward
+the hue of your category's dark accent:
+
+- the four layer surfaces, their borders and their hovers
+- the whole per-plane set (accent, selected, active, strong borders, field fill
+  and field rule, on all four planes)
+- the inverse pair and its edge, and the classic field preset's values
+- the three text tiers, very slightly
+
+The tint is subtle: OKLCH chroma 0.01 on surfaces (0.0085 on layer 0, rising to
+0.0115 on layer 3) and 0.004 on text. Every value keeps the **WCAG relative
+luminance** of the grey it replaces, so every contrast ratio the grey ramp was
+measured at holds. Where 8-bit rounding cannot hold it exactly, a surface,
+border or hover rounds darker and a text tier rounds lighter, so no pair gets
+worse. Increased contrast (`prefers-contrast: more` or
+`data-nb-contrast="more"`) keeps working on top, with the tinted strong borders.
+
+### What does not change
+
+- Light mode. Not one declaration.
+- The dark theme of any document without the attribute. The default compiled
+  CSS is the same as before this existed.
+- Your accent, status colours, charts and every other colour that is not a
+  surface or a text tier.
+- The hue source. The tint follows `$category`, not an overridden `$accent`,
+  because the tinted ramps are generated and measured per category.
+
+### The values are generated
+
+The tinted ramps live in `src/styles/variables/_tinted-dark.scss`, one map per
+category with the same shape as the dark ramp. They are generated from the dark
+ramp in `_layers.scss` and the accents in `_categories.scss` by
+`scripts/build-tinted-dark.mjs`. After changing either source, regenerate and
+commit the result:
+
+```sh
+pnpm run generate:tinted-dark
+```
+
+`tests/tintedDark.test.ts` fails if the committed file differs from what the
+generator writes. It also holds every category to the grey ramp's bars on the
+tinted surfaces: primary and muted text at 7:1 and subtle at 4.5:1 on all four
+layers, the dark status foregrounds at 4.5:1 on layers 0 and 1, and each depth
+step within 0.5 ΔL\* of the grey ramp's.
+`node scripts/audit-contrast.mjs --tinted` prints the full measurements.
+
 ## Migrating from the shared purple
 
 The old shared accent, `grape-hyacinth` `#5c35c4`, still works and is unchanged.
