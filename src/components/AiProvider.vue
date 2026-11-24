@@ -25,7 +25,20 @@
         hint="Empty uses the provider's default."
         orientation="stack"
       >
+        <NbSelect
+          v-if="modelOptions"
+          :id="id"
+          :model-value="model || null"
+          :options="modelOptions"
+          :placeholder="defaultPlaceholder"
+          clear-label="Use the default"
+          searchable
+          clearable
+          :disabled="busy"
+          @update:model-value="emit('update:model', String($event ?? ''))"
+        />
         <NbTextInput
+          v-else
           :id="id"
           :model-value="model"
           :placeholder="defaultModels[provider] ?? ''"
@@ -77,9 +90,11 @@ import NbField from './Field.vue'
 import NbPanel from './Panel.vue'
 import NbSelect from './Select.vue'
 import NbTextInput from './TextInput.vue'
+import { computed } from 'vue'
 import type { IAiProviderProps } from './AiProvider.d'
+import type { ISelectOption } from './Select.d'
 
-withDefaults(defineProps<IAiProviderProps>(), {
+const props = withDefaults(defineProps<IAiProviderProps>(), {
   title: 'AI briefings',
   providers: () => [
     { label: 'Anthropic (Claude)', value: 'anthropic' },
@@ -90,8 +105,40 @@ withDefaults(defineProps<IAiProviderProps>(), {
   model: '',
   apiKey: '',
   defaultModels: () => ({}),
+  models: undefined,
   hasKey: false,
   busy: false,
+})
+
+/**
+ * The choices for the selected provider, or null to keep free text. A saved
+ * model the list does not have (typed before the list existed, or since
+ * retired) stays visible, so opening the page never drops it unseen.
+ */
+const modelOptions = computed<ISelectOption[] | null>(() => {
+  const list = props.models?.[props.provider]
+  if (!list || list.length === 0) return null
+  const options: ISelectOption[] = list.map((m) => ({
+    label: m.label,
+    value: m.value,
+  }))
+  if (props.model && !list.some((m) => m.value === props.model)) {
+    options.unshift({
+      label: `${props.model} (not in the list)`,
+      value: props.model,
+    })
+  }
+  return options
+})
+
+/** "Default: Claude Haiku 5.5", what an empty model means. */
+const defaultPlaceholder = computed(() => {
+  const id = props.defaultModels[props.provider]
+  if (!id) return "Provider's default"
+  const label = props.models?.[props.provider]?.find(
+    (m) => m.value === id,
+  )?.label
+  return `Default: ${label ?? id}`
 })
 
 const emit = defineEmits<{

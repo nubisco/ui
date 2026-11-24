@@ -68,6 +68,37 @@ pageTabs: ['usage', 'accessibility']
 </template>
 ```
 
+## Picking a model from a list
+
+Pass `models` (a list per provider, `{ label, value }`) and the model becomes
+a choice from that list instead of free text, so a mistyped id can never be
+saved. Nubisco's own deployments get the list from Accord
+(`GET /api/m2m/ai-models`). Leave `models` out where there is no list, such as
+a product running on its own, and the field stays free text.
+
+```vue
+<NbAiProvider
+  v-model:provider="provider"
+  v-model:model="model"
+  v-model:api-key="apiKey"
+  :default-models="{ anthropic: 'claude-haiku-5-5' }"
+  :models="{
+    anthropic: [
+      { label: 'Claude Haiku 5.5', value: 'claude-haiku-5-5' },
+      { label: 'Claude Sonnet 5.5', value: 'claude-sonnet-5-5' },
+    ],
+  }"
+  :has-key="hasKey"
+  @save="save"
+/>
+```
+
+Clearing the choice means the default, which the empty choice names
+("Default: Claude Haiku 5.5"). A provider without a list keeps free text. A
+saved model the list does not have (typed before the list existed, or since
+retired) stays in the list, marked "not in the list", so opening the page
+never drops it unseen.
+
 ## Layout
 
 `NbAiProvider` and `NbAiUsage` sit side by side on a desktop: lay them out
@@ -78,6 +109,7 @@ panel, not the window.
 
 ## Rules the components keep
 
+- With a model list, the model is chosen, never typed.
 - The key is never shown: a stored key is a placeholder, and Remove key
   appears only when there is one.
 - Usage says nothing has been sent until a key exists, so the panel is never

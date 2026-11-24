@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { enableAutoUnmount, mount } from '@vue/test-utils'
 import NbAiProvider from '../src/components/AiProvider.vue'
 import NbAiUsage from '../src/components/AiUsage.vue'
+import NbSelect from '../src/components/Select.vue'
 import NbBriefing from '../src/components/Briefing.vue'
 import NbBriefingDestination from '../src/components/BriefingDestination.vue'
 
@@ -26,6 +27,75 @@ describe('NbAiProvider', () => {
     expect(
       inputs.some((i) => i.attributes('placeholder') === 'claude-haiku-4-5'),
     ).toBe(true)
+  })
+
+  it('keeps the model free text when no list is given', () => {
+    const wrapper = mount(NbAiProvider, { props: { provider: 'anthropic' } })
+    expect(wrapper.findComponent(NbSelect).exists()).toBe(true)
+    // The provider select is the only select: the model is a text input.
+    expect(wrapper.findAllComponents(NbSelect)).toHaveLength(1)
+    expect(wrapper.findAll('input:not([type="password"])')).toHaveLength(1)
+  })
+
+  it('makes the model a choice from the list when one is given', async () => {
+    const wrapper = mount(NbAiProvider, {
+      props: {
+        provider: 'anthropic',
+        model: '',
+        defaultModels: { anthropic: 'claude-haiku-5-5' },
+        models: {
+          anthropic: [
+            { label: 'Claude Haiku 5.5', value: 'claude-haiku-5-5' },
+            { label: 'Claude Sonnet 5.5', value: 'claude-sonnet-5-5' },
+          ],
+        },
+      },
+    })
+    const selects = wrapper.findAllComponents(NbSelect)
+    expect(selects).toHaveLength(2)
+    const model = selects[1]
+    expect(model.props('options')).toEqual([
+      { label: 'Claude Haiku 5.5', value: 'claude-haiku-5-5' },
+      { label: 'Claude Sonnet 5.5', value: 'claude-sonnet-5-5' },
+    ])
+    expect(model.text()).toContain('Default: Claude Haiku 5.5')
+
+    model.vm.$emit('update:modelValue', 'claude-sonnet-5-5')
+    model.vm.$emit('update:modelValue', null)
+    expect(wrapper.emitted('update:model')).toEqual([
+      ['claude-sonnet-5-5'],
+      [''],
+    ])
+  })
+
+  it('still shows a saved model the list does not have', () => {
+    const wrapper = mount(NbAiProvider, {
+      props: {
+        provider: 'anthropic',
+        model: 'claude-haiku-4-5',
+        models: {
+          anthropic: [{ label: 'Claude Haiku 5.5', value: 'claude-haiku-5-5' }],
+        },
+      },
+    })
+    const model = wrapper.findAllComponents(NbSelect)[1]
+    expect(model.props('options')[0]).toEqual({
+      label: 'claude-haiku-4-5 (not in the list)',
+      value: 'claude-haiku-4-5',
+    })
+    expect(model.props('modelValue')).toBe('claude-haiku-4-5')
+  })
+
+  it('falls back to free text for a provider the list does not cover', () => {
+    const wrapper = mount(NbAiProvider, {
+      props: {
+        provider: 'gemini',
+        models: {
+          anthropic: [{ label: 'Claude Haiku 5.5', value: 'claude-haiku-5-5' }],
+        },
+      },
+    })
+    expect(wrapper.findAllComponents(NbSelect)).toHaveLength(1)
   })
 
   it('offers Remove key only when a key is stored', async () => {

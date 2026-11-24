@@ -130,6 +130,7 @@ export { default as NbAiProvider } from './components/AiProvider.vue'
 export type {
   IAiProviderProps,
   IAiProviderOption,
+  IAiModelOption,
 } from './components/AiProvider.d'
 export { default as NbAiUsage } from './components/AiUsage.vue'
 export type { IAiUsageProps } from './components/AiUsage.d'
