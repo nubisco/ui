@@ -120,6 +120,8 @@ import NbBlueprint from './Blueprint.vue'
 import NbBlueprintBackground from './BlueprintBackground.vue'
 import NbBlueprintCard from './BlueprintCard.vue'
 import NbBlueprintControls from './BlueprintControls.vue'
+import NbCanvasControls from './CanvasControls.vue'
+import NbCanvasControlsGroup from './CanvasControlsGroup.vue'
 import NbBlueprintMinimap from './BlueprintMinimap.vue'
 import NbWalkthrough from './Walkthrough.vue'
 import NbWireframe from './Wireframe.vue'
@@ -246,6 +248,8 @@ const components = {
   NbBlueprintBackground,
   NbBlueprintCard,
   NbBlueprintControls,
+  NbCanvasControls,
+  NbCanvasControlsGroup,
   NbBlueprintMinimap,
   NbWalkthrough,
   NbWireframe,

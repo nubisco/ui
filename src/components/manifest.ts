@@ -128,6 +128,8 @@ export const COMPONENT_MANIFEST = {
   NbBlueprintBackground: 'BlueprintBackground',
   NbBlueprintCard: 'BlueprintCard',
   NbBlueprintControls: 'BlueprintControls',
+  NbCanvasControls: 'CanvasControls',
+  NbCanvasControlsGroup: 'CanvasControlsGroup',
   NbBlueprintMinimap: 'BlueprintMinimap',
   NbWalkthrough: 'Walkthrough',
   NbWireframe: 'Wireframe',

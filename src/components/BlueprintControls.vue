@@ -1,36 +1,33 @@
 <template>
-  <div
+  <NbCanvasControls
     v-if="visible"
     class="nb-blueprint-controls"
     :class="[`nb-blueprint-controls--${position}`, `is-${orientation}`]"
-    role="toolbar"
-    :aria-label="nbStrings.blueprintControls"
+    :label="nbStrings.blueprintControls"
+    :position="position"
+    :orientation="orientation"
   >
-    <div class="nb-blueprint-controls__group">
+    <NbCanvasControlsGroup class="nb-blueprint-controls__group">
       <NbButton
         variant="ghost"
-        :size="sm"
         icon="magnifying-glass-plus"
         :label="nbStrings.blueprintZoomIn"
         @click="bp.zoomIn()"
       />
       <NbButton
         variant="ghost"
-        :size="sm"
         icon="magnifying-glass-minus"
         :label="nbStrings.blueprintZoomOut"
         @click="bp.zoomOut()"
       />
       <NbButton
         variant="ghost"
-        :size="sm"
         icon="frame-corners"
         :label="nbStrings.blueprintFitToView"
         @click="bp.fitToView()"
       />
       <NbButton
         variant="ghost"
-        :size="sm"
         icon="crosshair"
         :label="nbStrings.blueprintCenter"
         @click="bp.centerView()"
@@ -38,87 +35,80 @@
       <NbButton
         v-if="autoLayout && !isReadonly"
         variant="ghost"
-        :size="sm"
         icon="tree-structure"
         :label="nbStrings.blueprintAutoLayout"
         @click="bp.autoLayout()"
       />
-    </div>
+    </NbCanvasControlsGroup>
 
     <!-- Alignment cluster: contextual, shown once more than one card is
          selected (those commands act on the selection). -->
-    <div v-if="showAlignment" class="nb-blueprint-controls__group">
+    <NbCanvasControlsGroup
+      v-if="showAlignment"
+      class="nb-blueprint-controls__group"
+    >
       <NbButton
         variant="ghost"
-        :size="sm"
         icon="align-left"
         :label="nbStrings.blueprintAlignLeft"
         @click="bp.alignLeft()"
       />
       <NbButton
         variant="ghost"
-        :size="sm"
         icon="align-center-horizontal"
         :label="nbStrings.blueprintAlignHorizontalCenter"
         @click="bp.alignCenter()"
       />
       <NbButton
         variant="ghost"
-        :size="sm"
         icon="align-right"
         :label="nbStrings.blueprintAlignRight"
         @click="bp.alignRight()"
       />
       <NbButton
         variant="ghost"
-        :size="sm"
         icon="align-top"
         :label="nbStrings.blueprintAlignTop"
         @click="bp.alignTop()"
       />
       <NbButton
         variant="ghost"
-        :size="sm"
         icon="align-center-vertical"
         :label="nbStrings.blueprintAlignVerticalCenter"
         @click="bp.alignMiddle()"
       />
       <NbButton
         variant="ghost"
-        :size="sm"
         icon="align-bottom"
         :label="nbStrings.blueprintAlignBottom"
         @click="bp.alignBottom()"
       />
       <NbButton
         variant="ghost"
-        :size="sm"
         icon="arrows-out-line-horizontal"
         :label="nbStrings.blueprintDistributeHorizontally"
         @click="bp.distributeHorizontally()"
       />
       <NbButton
         variant="ghost"
-        :size="sm"
         icon="arrows-out-line-vertical"
         :label="nbStrings.blueprintDistributeVertically"
         @click="bp.distributeVertically()"
       />
-    </div>
-  </div>
+    </NbCanvasControlsGroup>
+  </NbCanvasControls>
 </template>
 
 <script setup lang="ts">
 import { useNbStrings } from '@/composables/useNbStrings.composable'
 import { computed } from 'vue'
 import NbButton from './Button.vue'
-import { ESizeShort } from '@/types/Size.d'
+import NbCanvasControls from './CanvasControls.vue'
+import NbCanvasControlsGroup from './CanvasControlsGroup.vue'
 import { useBlueprint } from '../composables/useBlueprint.composable'
 import type { IBlueprintControlsProps } from './BlueprintControls.d'
 
 const nbStrings = useNbStrings()
-
-const sm = ESizeShort.Small
 
 const props = withDefaults(defineProps<IBlueprintControlsProps>(), {
   position: 'bottom-right',
@@ -138,51 +128,3 @@ const showAlignment = computed(
   () => props.alignment && !isReadonly.value && bp.selectedIds.value.size >= 2,
 )
 </script>
-
-<style scoped lang="scss">
-.nb-blueprint-controls {
-  position: absolute;
-  display: flex;
-  gap: 8px;
-  padding: 0;
-  z-index: 1;
-
-  &.is-vertical {
-    flex-direction: column;
-  }
-  &.is-horizontal {
-    flex-direction: row;
-  }
-
-  &--top-left {
-    top: 12px;
-    left: 12px;
-  }
-  &--top-right {
-    top: 12px;
-    right: 12px;
-  }
-  &--bottom-left {
-    bottom: 12px;
-    left: 12px;
-  }
-  &--bottom-right {
-    bottom: 12px;
-    right: 12px;
-  }
-}
-
-.nb-blueprint-controls__group {
-  display: flex;
-  gap: 2px;
-  padding: 4px;
-  border: 1px solid var(--nb-c-border);
-  border-radius: 10px;
-  background: var(--nb-c-layer-1, var(--nb-c-bg));
-  box-shadow: 0 4px 16px rgb(0 0 0 / 18%);
-
-  .is-vertical & {
-    flex-direction: column;
-  }
-}
-</style>

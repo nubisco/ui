@@ -7,6 +7,8 @@ tab: usage
 pageTabs: ['usage', 'code']
 ---
 
+It is built on [`NbCanvasControls`](/components/canvas-controls/usage), the generic version for any canvas, so it floats, groups and sizes its buttons the same way.
+
 Place it in the blueprint's `#chrome` slot (it renders in viewport space, in both the windowed and legacy APIs):
 
 ```vue

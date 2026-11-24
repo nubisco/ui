@@ -816,6 +816,16 @@
       0 1px 2px color-mix(in srgb, var(--nb-c-black) 6%, transparent),
       0 8px 24px -12px color-mix(in srgb, var(--nb-c-black) 18%, transparent);
 
+    // Canvas controls (`NbCanvasControls`): controls floating over a canvas,
+    // a map or a diagram. Their distance from the canvas edge, the corner of
+    // each group and the lift that sets a group off whatever is drawn under
+    // it. Black at low alpha, like the detached frame, so one value serves
+    // light and dark.
+    --nb-canvas-controls-inset: calc(var(--nb-base-unit) * 1.5); // 12px
+    --nb-canvas-controls-radius: var(--nb-radius-lg); // 12px
+    --nb-canvas-controls-shadow: 0 4px 16px
+      color-mix(in srgb, var(--nb-c-black) 18%, transparent);
+
     // Panels: emitted at :root so consumer apps can override on :root without
     // fighting the components' scoped-style specificity.
     --nb-shell-panel-header-height: calc(var(--nb-base-unit) * 3.5); // 28px

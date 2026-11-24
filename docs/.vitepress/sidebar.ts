@@ -80,6 +80,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Button', link: '/components/button/usage' },
       { text: 'Button Set', link: '/components/button-set/usage' },
       { text: 'Calendar', link: '/components/calendar/usage' },
+      { text: 'Canvas Controls', link: '/components/canvas-controls/usage' },
       { text: 'Card Grid', link: '/components/card-grid/usage' },
       {
         text: 'Charts',

@@ -16,6 +16,8 @@ import Blueprint from './components/Blueprint.vue'
 import BlueprintBackground from './components/BlueprintBackground.vue'
 import BlueprintCard from './components/BlueprintCard.vue'
 import BlueprintControls from './components/BlueprintControls.vue'
+import CanvasControls from './components/CanvasControls.vue'
+import CanvasControlsGroup from './components/CanvasControlsGroup.vue'
 import BlueprintDomRenderer from './components/BlueprintDomRenderer.vue'
 import BlueprintMinimap from './components/BlueprintMinimap.vue'
 import BlueprintPixiRenderer from './components/BlueprintPixiRenderer.vue'
@@ -149,6 +151,8 @@ declare module 'vue' {
     NbBlueprintBackground: typeof BlueprintBackground
     NbBlueprintCard: typeof BlueprintCard
     NbBlueprintControls: typeof BlueprintControls
+    NbCanvasControls: typeof CanvasControls
+    NbCanvasControlsGroup: typeof CanvasControlsGroup
     NbBlueprintDomRenderer: typeof BlueprintDomRenderer
     NbBlueprintMinimap: typeof BlueprintMinimap
     NbBlueprintPixiRenderer: typeof BlueprintPixiRenderer

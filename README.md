@@ -328,6 +328,7 @@ Most component libraries impose styling opinions that are hard to override. Nubi
 | Component           | Description                                                                          |
 | :------------------ | :----------------------------------------------------------------------------------- |
 | `NbFloatingToolbar` | Toolbar floating at an element or a plain rectangle (a text selection), focus-safe   |
+| `NbCanvasControls`  | Groups of controls floating in a corner of a canvas, a map or a diagram              |
 | `NbDragHandle`      | Six-dot grip that reports a pointer, keyboard or native drag without owning the move |
 
 ### Data Display

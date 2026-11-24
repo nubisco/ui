@@ -662,6 +662,13 @@ export type {
   IBlueprintControlsProps,
   TBlueprintChromePosition,
 } from './components/BlueprintControls.d'
+export { default as NbCanvasControls } from './components/CanvasControls.vue'
+export { default as NbCanvasControlsGroup } from './components/CanvasControlsGroup.vue'
+export type {
+  ICanvasControlsProps,
+  ICanvasControlsGroupProps,
+  TCanvasControlsPosition,
+} from './components/CanvasControls.d'
 export { default as NbBlueprintMinimap } from './components/BlueprintMinimap.vue'
 export type { IBlueprintMinimapProps } from './components/BlueprintMinimap.d'
 export {
