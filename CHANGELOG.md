@@ -1,3 +1,15 @@
+# [5.64.0](https://github.com/nubisco/ui/compare/v5.63.0...v5.64.0) (2026-11-24)
+
+
+### Bug Fixes
+
+* **image-cropper:** handles and drags follow a canvas shown smaller than it is drawn ([e45d2f2](https://github.com/nubisco/ui/commit/e45d2f2f721615a679cc82c0136ffe0ccd0fa767))
+
+
+### Features
+
+* **image-cropper:** initialCrop, fit to the container, and touch-sized handles ([cc800b8](https://github.com/nubisco/ui/commit/cc800b8d01f0f267a37a8b193f4eedf3c70c133a))
+
 # [5.63.0](https://github.com/nubisco/ui/compare/v5.62.0...v5.63.0) (2026-11-24)
 
 
