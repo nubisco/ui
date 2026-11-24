@@ -102,7 +102,9 @@ never drops it unseen.
 ## Layout
 
 `NbAiProvider` and `NbAiUsage` sit side by side on a desktop: lay them out
-in a two-column grid in the page. Inside `NbBriefing` the settings take a
+in a two-column grid in the page. On a settings page, where sections sit on
+the page ground rather than in boxes ([Settings](/patterns/settings)), pass
+`flat` to both: each keeps its border and padding and paints no surface. Inside `NbBriefing` the settings take a
 form's measure and the preview sits beside them once the panel is 900px
 wide, one column below that. It is a container query, so it follows the
 panel, not the window.

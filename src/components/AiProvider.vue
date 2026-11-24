@@ -1,5 +1,5 @@
 <template>
-  <NbPanel class="nb-ai-provider">
+  <NbPanel class="nb-ai-provider" :flat="flat">
     <header class="nb-ai-provider__header">
       <h2 class="nb-ai-provider__title">
         {{ title }} <NbAiLabel static size="sm" />
@@ -108,6 +108,7 @@ const props = withDefaults(defineProps<IAiProviderProps>(), {
   models: undefined,
   hasKey: false,
   busy: false,
+  flat: false,
 })
 
 /**

@@ -222,3 +222,21 @@ describe('NbBriefingDestination', () => {
     expect(wrapper.emitted('test')).toHaveLength(1)
   })
 })
+
+describe('flat', () => {
+  it.each([
+    ['NbAiProvider', NbAiProvider],
+    ['NbAiUsage', NbAiUsage],
+  ])('%s passes flat to its panel, off by default', (_name, component) => {
+    expect(
+      mount(component as never)
+        .find('.nb-panel')
+        .classes(),
+    ).not.toContain('nb-panel--flat')
+    expect(
+      mount(component as never, { props: { flat: true } })
+        .find('.nb-panel')
+        .classes(),
+    ).toContain('nb-panel--flat')
+  })
+})

@@ -26,4 +26,12 @@ export interface IAiUsageProps {
   pricingVerifiedOn?: string
   /** BCP 47 locale for the counts. Defaults to `navigator.language`, then `en`. */
   locale?: string
+  /**
+   * Draw the panel flat: border and padding, no surface of its own, so a
+   * settings page that stacks sections on the ground does not show a box.
+   * Passed to the inner NbPanel.
+   *
+   * @default false
+   */
+  flat?: boolean
 }

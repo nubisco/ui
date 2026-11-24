@@ -40,4 +40,12 @@ export interface IAiProviderProps {
   hasKey?: boolean
   /** A save or removal is in flight. Disables the form. */
   busy?: boolean
+  /**
+   * Draw the panel flat: border and padding, no surface of its own, so a
+   * settings page that stacks sections on the ground does not show a box.
+   * Passed to the inner NbPanel.
+   *
+   * @default false
+   */
+  flat?: boolean
 }

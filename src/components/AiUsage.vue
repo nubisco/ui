@@ -1,5 +1,5 @@
 <template>
-  <NbPanel class="nb-ai-usage">
+  <NbPanel class="nb-ai-usage" :flat="flat">
     <header class="nb-ai-usage__header">
       <h2 class="nb-ai-usage__title">{{ title }}</h2>
       <p class="nb-ai-usage__description">
@@ -38,6 +38,7 @@ const props = withDefaults(defineProps<IAiUsageProps>(), {
   estimatedCostUsd: null,
   unpricedModels: () => [],
   pricingVerifiedOn: '',
+  flat: false,
   locale: undefined,
 })
 
