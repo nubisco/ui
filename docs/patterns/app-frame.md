@@ -254,10 +254,23 @@ position. It also means there is exactly one place a long page can grow.
   inside the scroller fights the topbar's shadow, double-stacks on small
   viewports and covers the anchor targets the page links to.
 
-The one legitimate variation is `:main-padding="false"` for a canvas, which also
-sets `overflow: hidden` on `<main>`: a canvas manages its own viewport and
-nothing above it scrolls either. See
-[Applications with no router](#applications-with-no-router).
+The one legitimate variation is `:main-padding="false"`, which also sets
+`overflow: hidden` on `<main>`: the content manages its own viewport and nothing
+above it scrolls either. Two kinds of page take it:
+
+- **A canvas.** It pans and zooms its own surface. See
+  [Applications with no router](#applications-with-no-router).
+- **A page whose content is a table.** It runs edge to edge, with no page
+  padding around it, because the table paints its own layer and needs no box
+  ([Data table](/components/data-table/code#the-canonical-layout)). Give the
+  table `fill`, so its body is the scroller and its toolbar and header stay
+  pinned.
+
+```vue
+<NbShell :main-padding="false">
+  <NbDataTable fill title="Invoices" :columns="columns" :rows="rows" row-key="id" />
+</NbShell>
+```
 
 ## Choosing the frame's shape
 
