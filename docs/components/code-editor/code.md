@@ -21,9 +21,9 @@ Vite, import each worker with `?worker` and hand them to Monaco once, before
 the first editor mounts (in `main.ts`):
 
 ```ts
-import EditorWorker from 'monaco-editor/editor/editor.worker?worker'
+import EditorWorker from 'monaco-editor/editor/editor.worker.js?worker'
 // Only for the languages that have a language service:
-import JsonWorker from 'monaco-editor/language/json/json.worker?worker'
+import JsonWorker from 'monaco-editor/language/json/json.worker.js?worker'
 
 self.MonacoEnvironment = {
   getWorker: (_id: string, label: string) =>
@@ -31,8 +31,10 @@ self.MonacoEnvironment = {
 }
 ```
 
-The CSS, HTML and TypeScript workers are at
-`monaco-editor/language/{css,html,typescript}/{css,html,ts}.worker`. Without a
+Write the `.js` extension: Vite does not resolve these worker paths without
+it. The CSS, HTML and
+TypeScript workers are at
+`monaco-editor/language/{css,html,typescript}/{css,html,ts}.worker.js`. Without a
 `MonacoEnvironment`, Monaco falls back to running that work on the main thread,
 and says so in the console.
 

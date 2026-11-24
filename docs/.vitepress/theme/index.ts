@@ -9,8 +9,8 @@ import enUS from '../../locales/en-US.json'
 import ptPT from '../../locales/pt-PT.json'
 import { rulersDirective } from './directives/rulers'
 // NbCodeEditor's demos: Monaco's workers, wired the way an app wires them.
-import EditorWorker from 'monaco-editor/editor/editor.worker?worker'
-import JsonWorker from 'monaco-editor/language/json/json.worker?worker'
+import EditorWorker from 'monaco-editor/editor/editor.worker.js?worker'
+import JsonWorker from 'monaco-editor/language/json/json.worker.js?worker'
 
 // The docs are the escape hatch's own use case: every markdown demo names
 // components in a template VitePress compiles at build time, so they have to
