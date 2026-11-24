@@ -89,7 +89,8 @@
       color var(--nb-motion-quick) var(--nb-ease-standard);
   }
 
-  &:dir(rtl) #{$label} {
+  // Right to left, the label shrinks toward its own start, the right.
+  [dir='rtl'] & #{$label} {
     transform-origin: right top;
   }
 
