@@ -70,6 +70,7 @@ export { ETabsSize, ETabsVariant } from './components/Tabs.d'
 export type { IColorStripProps } from './components/ColorStrip.d'
 export type { IFileUploaderProps, IFileItem } from './components/FileUploader.d'
 export { EFileUploaderStatus } from './components/FileUploader.d'
+export type { ICodeEditorProps } from './components/CodeEditor.d'
 export type {
   IImagePickerProps,
   TImagePickerRejection,

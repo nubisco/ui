@@ -101,6 +101,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Checkbox', link: '/components/checkbox/usage' },
       { text: 'Chip Group', link: '/components/chip-group/usage' },
       { text: 'Close Button', link: '/components/close-button/usage' },
+      { text: 'Code Editor', link: '/components/code-editor/usage' },
       { text: 'Color Strip', link: '/components/color-strip/usage' },
       { text: 'Command Palette', link: '/components/command-palette/usage' },
       { text: 'Confirm', link: '/components/confirm/usage' },

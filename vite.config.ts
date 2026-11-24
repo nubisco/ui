@@ -160,14 +160,18 @@ export default defineConfig(({ command }) => ({
       // Externalize deps that shouldn't be bundled. `pixi.js` is an
       // optional peer dependency, dynamically imported only by the Blueprint
       // PixiJS renderer, so it must stay external (never bundled): consumers
-      // who use that renderer install it themselves.
+      // who use that renderer install it themselves. `monaco-editor` is the
+      // same: an optional peer that only `NbCodeEditor` imports, on mount.
       //
       // The glyph subpaths are external for a different reason: they are
       // published files with stable paths, and inlining them here would both
       // duplicate artwork the app may already import and destroy the addresses
       // the compile-time plugin emits.
       external: (id: string) =>
-        ['vue', 'fs', 'path', 'vite', 'pixi.js'].includes(id) ||
+        ['vue', 'fs', 'path', 'vite', 'pixi.js', 'monaco-editor'].includes(
+          id,
+        ) ||
+        id.startsWith('monaco-editor/') ||
         id.startsWith('@nubisco/ui/icons/') ||
         id.startsWith('@nubisco/ui/flags/'),
       output: {

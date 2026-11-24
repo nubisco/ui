@@ -51,6 +51,7 @@ import NbGrid from './Grid.vue'
 import NbIcon from './Icon.vue'
 import NbInfoHint from './InfoHint.vue'
 import NbInterpolationChart from './Charts/InterpolationChart.vue'
+import NbCodeEditor from './CodeEditor.vue'
 import NbImageCropper from './ImageCropper.vue'
 import NbImagePicker from './ImagePicker.vue'
 import NbJsonTree from './JsonTree.vue'
@@ -177,6 +178,7 @@ const components = {
   NbIcon,
   NbInfoHint,
   NbInterpolationChart,
+  NbCodeEditor,
   NbImageCropper,
   NbImagePicker,
   NbJsonTree,
