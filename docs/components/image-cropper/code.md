@@ -9,13 +9,17 @@ pageTabs: ['usage', 'code']
 
 ## Props
 
-| Prop              | Type           | Default | Description                                                    |
-| ----------------- | -------------- | ------- | -------------------------------------------------------------- |
-| `image`           | `File \| null` | `null`  | The image file to crop                                         |
-| `cropAsCircle`    | `boolean`      | `false` | Display the crop area as a circle overlay                      |
-| `outputAsCircle`  | `boolean`      | `false` | Output the cropped image with transparent corners (circle PNG) |
-| `lockAspectRatio` | `boolean`      | `false` | Maintain the crop area aspect ratio during resizing            |
-| `showPreview`     | `boolean`      | `false` | Display a live preview of the cropped image and geometry       |
+| Prop              | Type                     | Default    | Description                                                                                                                       |
+| ----------------- | ------------------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `image`           | `File \| null`           | `null`     | The image file to crop                                                                                                            |
+| `cropAsCircle`    | `boolean`                | `false`    | Display the crop area as a circle overlay                                                                                         |
+| `outputAsCircle`  | `boolean`                | `false`    | Output the cropped image with transparent corners (circle PNG)                                                                    |
+| `lockAspectRatio` | `boolean`                | `false`    | Maintain the crop area aspect ratio during resizing                                                                               |
+| `showPreview`     | `boolean`                | `false`    | Display a live preview of the cropped image and geometry                                                                          |
+| `initialCrop`     | `'center' \| 'full'`     | `'center'` | Where the crop area starts: half the image, centred, or the whole image. A square crop always starts square                       |
+| `fit`             | `'fixed' \| 'container'` | `'fixed'`  | Draw the image in 700 by 400, or at the width the cropper is given (up to 60% of the window's height), following it as it changes |
+
+On a touch phone, the resize handles grow a little and take touches in a 44px area around them, and a drag on the image never scrolls the page.
 
 ## Events
 

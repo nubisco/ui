@@ -1,6 +1,10 @@
 <template>
-  <div class="nb-image-cropper">
+  <div
+    class="nb-image-cropper"
+    :class="{ 'nb-image-cropper--fit-container': fit === 'container' }"
+  >
     <div
+      ref="container"
       class="canvas-container"
       @mousedown="onCanvasMouseDown"
       @mousemove="onMouseMove"
@@ -48,6 +52,12 @@
 <script setup lang="ts">
 import NbGrid from './Grid.vue'
 import { ref, onMounted, computed, watch, onBeforeUnmount } from 'vue'
+import {
+  fitImage,
+  initialCropRect as startingCropRect,
+  rescaleRect,
+  toCanvasPoint,
+} from '../utils/cropGeometry.helper'
 import { useI18n } from 'vue-i18n'
 import { ICropRect, EHandleName, IImageCropperProps } from './ImageCropper.d'
 
@@ -87,6 +97,8 @@ const props = withDefaults(defineProps<IImageCropperProps>(), {
   outputAsCircle: false,
   lockAspectRatio: false,
   showPreview: false,
+  initialCrop: 'center',
+  fit: 'fixed',
 })
 
 const emit = defineEmits<{
@@ -94,6 +106,11 @@ const emit = defineEmits<{
 }>()
 
 const canvas = ref<HTMLCanvasElement | null>(null)
+const container = ref<HTMLDivElement | null>(null)
+// On-screen pixels per canvas pixel. The canvas can be shown smaller than it
+// is drawn (CSS shrinks it to fit), and the handles sit on screen.
+const shownRatio = ref(1)
+let resizeObserver: ResizeObserver | null = null
 let ctx: CanvasRenderingContext2D | null = null
 const img = new Image()
 let sourceImageUrl: string | null = null
@@ -146,32 +163,16 @@ const loadImage = () => {
       canvas.value.width = drawWidth
       canvas.value.height = drawHeight
 
-      const offsetX = (canvas.value.width - img.width * scale.x) / 2
-      const offsetY = (canvas.value.height - img.height * scale.y) / 2
-
-      // if cropping as a circle or locking the aspect ratio, use a square crop.
-      if (props.cropAsCircle || props.lockAspectRatio) {
-        const minDimension = Math.min(img.width * scale.x, img.height * scale.y)
-        const initialCropSize = minDimension * 0.5
-        cropRect.value = {
-          x: offsetX + (img.width * scale.x - initialCropSize) / 2,
-          y: offsetY + (img.height * scale.y - initialCropSize) / 2,
-          width: initialCropSize,
-          height: initialCropSize,
-        }
-      } else {
-        // otherwise, set initial crop to 50% of the image dimensions.
-        cropRect.value = {
-          x: offsetX + (img.width * scale.x * 0.5 - img.width * scale.x * 0.25),
-          y:
-            offsetY +
-            (img.height * scale.y * 0.5 - img.height * scale.y * 0.25),
-          width: img.width * scale.x * 0.5,
-          height: img.height * scale.y * 0.5,
-        }
-      }
+      // The canvas is exactly the drawn image, so the crop area is measured
+      // from its corner.
+      cropRect.value = startingCropRect(
+        { width: drawWidth, height: drawHeight },
+        props.initialCrop,
+        props.cropAsCircle || props.lockAspectRatio,
+      )
 
       drawImage()
+      measureShown()
       cropImage()
     }
   }
@@ -194,9 +195,15 @@ onMounted(() => {
       loadImage()
     }
   }
+  if (container.value && typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(onContainerResize)
+    resizeObserver.observe(container.value)
+  }
 })
 
 onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  resizeObserver = null
   if (sourceImageUrl) {
     URL.revokeObjectURL(sourceImageUrl)
     sourceImageUrl = null
@@ -228,20 +235,52 @@ watch(
   },
 )
 
-const calculateScale = () => {
-  const aspectRatio = img.width / img.height
-  let drawWidth = DISPLAY_WIDTH
-  let drawHeight = DISPLAY_HEIGHT
-
-  if (aspectRatio > DISPLAY_WIDTH / DISPLAY_HEIGHT) {
-    drawHeight = DISPLAY_WIDTH / aspectRatio
-  } else {
-    drawWidth = DISPLAY_HEIGHT * aspectRatio
+/** The box the image is drawn in: fixed, or the container's width. */
+const displayBox = () => {
+  if (props.fit === 'container' && container.value) {
+    const width = container.value.clientWidth
+    if (width > 0) {
+      return { width, height: Math.max(200, window.innerHeight * 0.6) }
+    }
   }
+  return { width: DISPLAY_WIDTH, height: DISPLAY_HEIGHT }
+}
 
-  scale.x = drawWidth / img.width
-  scale.y = drawHeight / img.height
-  return { drawWidth, drawHeight }
+const calculateScale = () => {
+  const drawn = fitImage({ width: img.width, height: img.height }, displayBox())
+  scale.x = img.width ? drawn.width / img.width : 1
+  scale.y = img.height ? drawn.height / img.height : 1
+  return { drawWidth: drawn.width, drawHeight: drawn.height }
+}
+
+const measureShown = () => {
+  const el = canvas.value
+  if (!el || !el.width) return
+  const shown = el.getBoundingClientRect().width
+  shownRatio.value = shown ? shown / el.width : 1
+}
+
+/**
+ * The cropper's width changed. With `fit: 'container'` the image is drawn
+ * again at the new width, keeping the area the person chose. Either way the
+ * handles follow the canvas as it is shown.
+ */
+const onContainerResize = () => {
+  const el = canvas.value
+  if (el && props.fit === 'container' && img.width) {
+    const from = { width: el.width, height: el.height }
+    const { drawWidth, drawHeight } = calculateScale()
+    if (Math.round(drawWidth) !== Math.round(from.width)) {
+      el.width = drawWidth
+      el.height = drawHeight
+      cropRect.value = rescaleRect(cropRect.value, from, {
+        width: drawWidth,
+        height: drawHeight,
+      })
+      drawImage()
+    }
+  }
+  measureShown()
 }
 
 const drawImage = () => {
@@ -324,74 +363,34 @@ const drawOverlay = () => {
   }
 }
 
-// compute handle positions based on crop area shape
+// Each handle's centre, on screen. A circle's handles sit on the circle's
+// bounding square, a rectangle's on its corners and edges, and both are scaled
+// from canvas pixels to the size the canvas is shown at.
 const handlePositions = computed<
   Record<EHandleName, { left: string; top: string }>
 >(() => {
-  if (props.cropAsCircle) {
-    // for circle, position handles at the circle's boundary points
-    const centerX = cropRect.value.x + cropRect.value.width / 2
-    const centerY = cropRect.value.y + cropRect.value.height / 2
-    const radius = cropRect.value.width / 2
-
-    return {
-      'top-left': {
-        left: `${centerX - radius - 5}px`,
-        top: `${centerY - radius - 5}px`,
-      },
-      top: { left: `${centerX - 5}px`, top: `${centerY - radius - 5}px` },
-      'top-right': {
-        left: `${centerX + radius - 5}px`,
-        top: `${centerY - radius - 5}px`,
-      },
-      right: { left: `${centerX + radius - 5}px`, top: `${centerY - 5}px` },
-      'bottom-right': {
-        left: `${centerX + radius - 5}px`,
-        top: `${centerY + radius - 5}px`,
-      },
-      bottom: { left: `${centerX - 5}px`, top: `${centerY + radius - 5}px` },
-      'bottom-left': {
-        left: `${centerX - radius - 5}px`,
-        top: `${centerY + radius - 5}px`,
-      },
-      left: { left: `${centerX - radius - 5}px`, top: `${centerY - 5}px` },
-    }
-  } else {
-    // for rectangle, position handles at corners and edges
-    return {
-      'top-left': {
-        left: `${cropRect.value.x - 5}px`,
-        top: `${cropRect.value.y - 5}px`,
-      },
-      top: {
-        left: `${cropRect.value.x + cropRect.value.width / 2 - 5}px`,
-        top: `${cropRect.value.y - 5}px`,
-      },
-      'top-right': {
-        left: `${cropRect.value.x + cropRect.value.width - 5}px`,
-        top: `${cropRect.value.y - 5}px`,
-      },
-      right: {
-        left: `${cropRect.value.x + cropRect.value.width - 5}px`,
-        top: `${cropRect.value.y + cropRect.value.height / 2 - 5}px`,
-      },
-      'bottom-right': {
-        left: `${cropRect.value.x + cropRect.value.width - 5}px`,
-        top: `${cropRect.value.y + cropRect.value.height - 5}px`,
-      },
-      bottom: {
-        left: `${cropRect.value.x + cropRect.value.width / 2 - 5}px`,
-        top: `${cropRect.value.y + cropRect.value.height - 5}px`,
-      },
-      'bottom-left': {
-        left: `${cropRect.value.x - 5}px`,
-        top: `${cropRect.value.y + cropRect.value.height - 5}px`,
-      },
-      left: {
-        left: `${cropRect.value.x - 5}px`,
-        top: `${cropRect.value.y + cropRect.value.height / 2 - 5}px`,
-      },
-    }
+  const r = shownRatio.value
+  const { x, y, width, height } = cropRect.value
+  const left = x
+  const right = x + width
+  const top = y
+  // A circle is drawn from its width, so its handles sit on that square.
+  const bottom = props.cropAsCircle ? y + width : y + height
+  const midX = (left + right) / 2
+  const midY = (top + bottom) / 2
+  const at = (px: number, py: number) => ({
+    left: `calc(${px * r}px - var(--nb-crop-handle-half))`,
+    top: `calc(${py * r}px - var(--nb-crop-handle-half))`,
+  })
+  return {
+    'top-left': at(left, top),
+    top: at(midX, top),
+    'top-right': at(right, top),
+    right: at(right, midY),
+    'bottom-right': at(right, bottom),
+    bottom: at(midX, bottom),
+    'bottom-left': at(left, bottom),
+    left: at(left, midY),
   }
 })
 
@@ -409,8 +408,11 @@ const getCanvasPoint = (event: MouseEvent | TouchEvent) => {
   const canvasEl = canvas.value
   if (!canvasEl) return null
   const { clientX, clientY } = getClientCoordinates(event)
-  const { left, top } = canvasEl.getBoundingClientRect()
-  return { x: clientX - left, y: clientY - top }
+  return toCanvasPoint(
+    { x: clientX, y: clientY },
+    canvasEl.getBoundingClientRect(),
+    { width: canvasEl.width, height: canvasEl.height },
+  )
 }
 
 const onCanvasMouseDown = (event: MouseEvent | TouchEvent) => {
@@ -787,12 +789,22 @@ watch(
 </script>
 
 <style lang="scss" scoped>
+@use '../styles/variables/breakpoints' as bp;
+@use '../styles/logic/touch' as touch;
+
 $handle-size: 10px;
 $handle-offset: -7px;
 $border-color: var(--nb-c-border);
 $background-color: var(--nb-c-surface);
 
 .nb-image-cropper {
+  --nb-crop-handle-half: 5px;
+
+  // Larger handles for a finger, with the root's padding following them.
+  @include bp.phone-touch {
+    --nb-crop-handle-half: 8px;
+  }
+
   position: relative;
   user-select: none;
   display: inline-block;
@@ -805,6 +817,8 @@ $background-color: var(--nb-c-surface);
     display: inline-block;
     width: 100%;
     height: auto;
+    // A drag on the image moves the crop area, never the page under it.
+    touch-action: none;
 
     canvas {
       display: block;
@@ -815,11 +829,15 @@ $background-color: var(--nb-c-surface);
 
   .resize-handle {
     position: absolute;
-    width: 10px;
-    height: 10px;
+    width: calc(var(--nb-crop-handle-half) * 2);
+    height: calc(var(--nb-crop-handle-half) * 2);
     background: var(--nb-c-surface);
     border: 1px solid var(--nb-c-border);
     z-index: 1;
+
+    // A finger needs a 44px target: the handle grows a little on a touch
+    // phone, and an invisible area around it takes the touch.
+    @include touch.hit-area($position: false);
 
     &.top-left {
       cursor: nwse-resize;
@@ -851,6 +869,20 @@ $background-color: var(--nb-c-surface);
 
     &.left {
       cursor: ew-resize;
+    }
+  }
+
+  &--fit-container {
+    display: block;
+    width: 100%;
+    // The crop area starts on the image's edges, so its handles sit half
+    // outside the image. Room around it keeps them whole and reachable.
+    box-sizing: border-box;
+    padding: var(--nb-crop-handle-half);
+    overflow: visible;
+
+    .canvas-container {
+      display: block;
     }
   }
 

@@ -1,5 +1,21 @@
 # Upgrading
 
+## To 5.64.0 from 5.63.x
+
+**`NbImageCropper` works on a phone.** Additive, with one fix to check:
+
+- **Fixed:** a cropper shown smaller than it is drawn (CSS shrinks the canvas
+  to fit a narrow container) placed its handles and read drags in the
+  canvas's own pixels, so on a phone the handles sat off the crop area and a
+  drag landed short of the finger. Both now follow the canvas as shown. If
+  you corrected for this in your app, remove the correction.
+- **New, opt in:** `initialCrop="full"` starts the crop area on the whole
+  image, for a photographed page that only needs its edges trimmed.
+  `fit="container"` draws the image at the cropper's width instead of 700 by
+  400, and follows it as it changes.
+- **On a touch phone** the handles take touches in a 44px area, and a drag
+  on the image no longer scrolls the page.
+
 ## To 5.57.0 from 5.56.x
 
 **`NbSpreadsheet` graduates out of labs.** Nothing in its API is renamed or

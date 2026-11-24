@@ -74,6 +74,14 @@ Enable `showPreview` to display a real-time preview of the cropped area and its 
   <NbImageCropper :image="selectedImage" :showPreview="true" @crop="handleCrop" />
 </preview>
 
+## A photographed page
+
+A scanned page or a receipt only needs its edges trimmed, so start the crop area on the whole image with `initialCrop="full"`. Inside a dialog or on a phone, `fit="container"` draws the image at the width it has instead of a fixed 700 pixels, so it fills the screen and its handles stay under the finger.
+
+<preview>
+  <NbImageCropper :image="selectedImage" initial-crop="full" fit="container" @crop="handleCrop" />
+</preview>
+
 ## Circular output
 
 When `outputAsCircle` is enabled, the final cropped image has transparent corners, producing a circular PNG.
