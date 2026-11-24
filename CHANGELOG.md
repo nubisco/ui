@@ -1,3 +1,10 @@
+# [5.63.0](https://github.com/nubisco/ui/compare/v5.62.0...v5.63.0) (2026-11-24)
+
+
+### Features
+
+* **ai-provider:** pick the model from a list when the product has one ([eb0e6f0](https://github.com/nubisco/ui/commit/eb0e6f064a6343a81ec7925c22758216ac240551))
+
 # [5.62.0](https://github.com/nubisco/ui/compare/v5.61.0...v5.62.0) (2026-11-23)
 
 
