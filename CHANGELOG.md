@@ -1,3 +1,19 @@
+# [5.65.0](https://github.com/nubisco/ui/compare/v5.64.0...v5.65.0) (2026-11-24)
+
+
+### Bug Fixes
+
+* **code-editor:** import the Monaco workers with their .js extension ([d7807d5](https://github.com/nubisco/ui/commit/d7807d5c2dea7811773014c039bdf318a39206ac))
+* **fields:** mirror the floating label's origin with a dir attribute ([7f9fc71](https://github.com/nubisco/ui/commit/7f9fc71a4e766c26673e8f7ed5c1dcaa028cbc9c))
+
+
+### Features
+
+* **ai:** flat on NbAiProvider and NbAiUsage ([3a6b740](https://github.com/nubisco/ui/commit/3a6b740ddedadc404c9ba226012d58aaf02a846f))
+* **canvas-controls:** NbCanvasControls floats controls over any canvas ([1ff5722](https://github.com/nubisco/ui/commit/1ff572272580fb1fe6d32c55d0467a9bf4712cd9))
+* **code-editor:** add NbCodeEditor, Monaco as a field ([f66a0c3](https://github.com/nubisco/ui/commit/f66a0c3f12d27aa58fa9230e84d39ce555cd785f))
+* **fields:** fluid fields keep their size and float the label ([03304db](https://github.com/nubisco/ui/commit/03304db0463662e6dbb6f167f9b3d970e8a3a5be))
+
 # [5.64.0](https://github.com/nubisco/ui/compare/v5.63.0...v5.64.0) (2026-11-24)
 
 
