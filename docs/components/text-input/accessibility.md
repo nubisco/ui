@@ -14,7 +14,7 @@ a11y:
 ## What the component guarantees
 
 - **A native field.** It renders a real `<input>` (or `<textarea>` with `multiline`), so typing, selection, autofill, the on-screen keyboard and the reader's own field commands all work as the platform intends. `$attrs` land on the native element, so `autocomplete`, `inputmode` and `aria-*` you pass reach it.
-- **A label tied to the field.** `label` renders an `NbLabel` (or, in `fluid`, a `<label>`) whose `for` matches the field's id. `required` sets the native `required` and shows an asterisk that is `aria-hidden`, so it is not read as "star".
+- **A label tied to the field.** `label` renders an `NbLabel` (or, in `fluid`, a `<label>` inside the box, which floats above the value but stays the same element) whose `for` matches the field's id. `required` sets the native `required` and shows an asterisk that is `aria-hidden`, so it is not read as "star".
 - **Validation a reader hears.**
   - With `error`, the field carries `aria-invalid="true"`.
   - The visible message (error, then warning, then helper) has its own id, `{id}-error`, `{id}-warning` or `{id}-helper`, and the field points at it with `aria-describedby`. An `aria-describedby` you pass yourself is kept beside it.

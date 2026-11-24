@@ -19,7 +19,7 @@ The label sits above the field. Steppers are at the trailing edge: ghost, icon-o
 
 ### Fluid
 
-The label and optional helper icon live inside the field at the top. Useful in dense forms.
+The label sits inside the field, where a placeholder would be while it is empty, and steps up and shrinks once it has a value or focus. The helper is an icon on the value line. The field keeps the height of its `size` (`xs` is drawn at `sm`), like every fluid field.
 
 <preview>
   <NbNumberInput v-model="value" variant="fluid" label="Editors" helper="Maximum of 4" :min="1" :max="4" />

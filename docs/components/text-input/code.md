@@ -21,11 +21,24 @@ Label sits above the field, message below. Standard form layout.
 
 ### Fluid
 
-Label and message icon live inside the field box. Useful in dense toolbars or inspector panels.
+The label sits inside the field box. While the field is empty and idle it rests where a placeholder would be, and the moment the field has a value or focus it steps up and shrinks above the value. A `placeholder` shows only once the label has stepped aside. The message is an icon at the end of the value line. The field keeps the height of its `size`, as `NbSelect`, `NbNumberInput` and `NbDatePicker` do in fluid, so a row of them lines up.
 
 <preview dir="row">
   <NbTextInput v-model="variantFluid" variant="fluid" label="Translation key" placeholder="auth.login.title" helper="Use dot-separated notation." required style="width: 300px" />
 </preview>
+
+At `sm` (32px), for a filter bar or a toolbar:
+
+<preview dir="row">
+  <NbTextInput v-model="sizeSm" variant="fluid" size="sm" label="Name" style="width: 200px" />
+  <NbTextInput v-model="clearVal" variant="fluid" size="sm" label="Report" clearable style="width: 200px" />
+</preview>
+
+```vue
+<NbTextInput v-model="name" variant="fluid" size="sm" label="Name" />
+```
+
+A floated label and its value need two lines, which 24px cannot hold, so a fluid field draws `xs` at `sm`. The label moves on `transform` on the quick motion step, and with reduced motion it moves without travel.
 
 ```vue
 <template>
@@ -107,7 +120,7 @@ Use the `#actions` slot to place buttons inside the field at the trailing edge (
 
 `clearable` shows an `x` button once the field has a value. It empties the field, emits `clear` and keeps focus in the field, and <kbd>Escape</kbd> does the same. `revealable` on a `type="password"` field puts an eye at the far right that shows and hides the characters. Both buttons are named from the string catalogue (`textInputClear`, `textInputShowPassword`, `textInputHidePassword`).
 
-Both variants have them. In `fluid` they sit at the trailing edge of the value line, centred on the text rather than on the whole box, and the field keeps its height.
+Both variants have them. In `fluid` they sit at the trailing edge of the box and take the field's size, as in the default variant.
 
 <preview dir="row">
   <NbTextInput v-model="clearVal" label="Project name" clearable style="width: 300px" />

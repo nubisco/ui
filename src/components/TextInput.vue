@@ -202,45 +202,34 @@
 
     <!-- ── FLUID variant ─────────────────────────────────────── -->
     <template v-else-if="variant === 'fluid'">
-      <div class="nb-text-input__field-wrapper" :class="wrapperClasses">
-        <div
+      <div
+        class="nb-text-input__field-wrapper"
+        :class="[
+          wrapperClasses,
+          { 'nb-text-input__field-wrapper--floated': floated },
+        ]"
+      >
+        <!-- Inside the box: where the placeholder would be while the field is
+             empty, up and smaller once it has a value or focus. It stays the
+             field's label throughout, so it stays its accessible name. -->
+        <label
           v-if="(label || $slots.label) && !grouped"
-          class="nb-text-input__inner-header"
+          :for="inputId"
+          class="nb-text-input__inner-label"
+          :class="{ 'nb-text-input__inner-label--required': required }"
+          :title="label || undefined"
         >
-          <slot v-if="$slots.label" name="label" />
-          <label
-            v-else
-            :for="inputId"
-            class="nb-text-input__inner-label"
-            :class="{ 'nb-text-input__inner-label--required': required }"
-            :title="label || undefined"
+          <slot name="label">{{ label }}</slot>
+          <span
+            v-if="required"
+            class="nb-text-input__asterisk"
+            aria-hidden="true"
+            >*</span
           >
-            {{ label }}
-            <span
-              v-if="required"
-              class="nb-text-input__asterisk"
-              aria-hidden="true"
-              >*</span
-            >
-          </label>
-          <NbMessage
-            v-if="hasMessage"
-            :id="messageId"
-            :key="messageKey"
-            :variant="messageVariant"
-            :live="messageLive"
-            icon-only
-            class="nb-text-input__inner-message"
-          >
-            {{ messageText }}
-          </NbMessage>
-          <span v-if="countVisible" class="nb-text-input__count">{{
-            countText
-          }}</span>
-        </div>
+        </label>
 
-        <!-- The value line: the input, then the clear and reveal buttons at
-             the trailing edge, centred on the text rather than on the box. -->
+        <!-- The value line: the input, then the count, the message icon and
+             the clear and reveal buttons at the trailing edge. -->
         <div class="nb-text-input__fluid-row">
           <input
             :id="inputId"
@@ -264,6 +253,21 @@
             @blur="focused = false"
             @keydown.esc="onEscape"
           />
+
+          <span v-if="countVisible" class="nb-text-input__count">{{
+            countText
+          }}</span>
+          <NbMessage
+            v-if="hasMessage"
+            :id="messageId"
+            :key="messageKey"
+            :variant="messageVariant"
+            :live="messageLive"
+            icon-only
+            class="nb-text-input__inner-message"
+          >
+            {{ messageText }}
+          </NbMessage>
 
           <div v-if="showClear || showReveal" class="nb-text-input__controls">
             <NbButton
@@ -477,12 +481,21 @@ const grouped = group.grouped
 
 /*
  * The buttons are the field's size, so each is one square of the same
- * scale. A fluid field is taller than its size (the label sits inside it),
- * so its buttons stay at sm beside the value line, as NbDatePicker's
- * calendar button does.
+ * scale. A fluid field draws xs at sm (a floated label and its value need
+ * two lines), so its buttons do too.
  */
 const controlSize = computed(() =>
-  props.variant === 'fluid' ? 'sm' : resolvedSize.value,
+  props.variant === 'fluid' && resolvedSize.value === 'xs'
+    ? 'sm'
+    : resolvedSize.value,
+)
+
+/*
+ * A fluid label rests where the placeholder would be while the field is
+ * empty and unfocused, and floats up as soon as there is a value or focus.
+ */
+const floated = computed(
+  () => focused.value || String(model.value ?? '') !== '',
 )
 
 // Overlay mode: active when a highlight function is provided
@@ -905,79 +918,69 @@ const wrapperClasses = computed(() => ({
   }
 
   // ─── FLUID variant ────────────────────────────────────────
+  // The box keeps its size's height and the label floats inside it (see
+  // field.fluid-box). A floated label and the value need two lines, which
+  // 24px cannot hold, so xs is drawn at sm.
+  &--fluid#{&}--xs {
+    --field-h: var(--nb-field-height-sm);
+  }
+
   &--fluid {
     .nb-text-input__field-wrapper {
-      box-sizing: border-box;
-      flex: 1;
-      flex-direction: column;
-      align-items: stretch;
-      justify-content: space-between;
-      min-height: calc(var(--nb-base-unit) * 8);
-      padding-top: 8px;
-    }
+      @include field.fluid-box(
+        $label: '.nb-text-input__inner-label',
+        $value: '.nb-text-input__field',
+        $floated: '.nb-text-input__field-wrapper--floated',
+        $until-floated: '.nb-text-input__field::placeholder'
+      );
 
-    .nb-text-input__inner-header {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 0 var(--nb-field-padding-h);
-      margin-bottom: 4px;
-    }
-
-    .nb-text-input__inner-label {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex: 1;
-      min-width: 0;
-      font-size: var(--nb-type-body-sm-size);
-      font-weight: var(--nb-font-weight-semibold, 600);
-      color: var(--nb-c-text-muted);
-      letter-spacing: var(--nb-type-body-sm-letter-spacing);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      cursor: default;
-      user-select: none;
+      // Browser autofill fills the field before any input event.
+      &:has(.nb-text-input__field:autofill) .nb-text-input__inner-label {
+        transform: scale(0.75);
+      }
     }
 
     .nb-text-input__asterisk {
+      margin-inline-start: 2px;
       color: var(--nb-c-danger);
     }
 
-    /*
-     * The value line. Its bottom padding is the space below the text that
-     * the input used to carry itself, moved here so the line and the
-     * buttons beside it share one centre.
-     */
+    // The value line fills the box, the buttons centre on it.
     .nb-text-input__fluid-row {
       display: flex;
+      flex: 1;
+      align-self: stretch;
       align-items: center;
+      gap: 4px;
       min-width: 0;
-      padding-bottom: 10px;
+
+      // A count or message icon at the very end keeps the field's inset.
+      > .nb-text-input__count:last-child,
+      > .nb-text-input__inner-message:last-child {
+        margin-inline-end: var(--nb-field-padding-h);
+      }
     }
 
     .nb-text-input__field {
-      height: auto;
+      height: 100%;
       flex: 1;
-      padding: 0 var(--nb-field-padding-h);
+      padding-inline: var(--nb-field-padding-h);
       font-size: var(--nb-type-body-compact-size);
       @include touch.touch-field-text;
     }
 
-    /*
-     * The buttons are 32px, taller than the text line. The row they sit in
-     * has no height of its own, so they centre on the text and spill over
-     * it evenly without making the line, and so the field, any taller.
-     */
-    .nb-text-input__controls {
+    .nb-text-input__count {
       align-self: center;
-      height: 0;
+      padding-top: calc(10px + var(--nb-field-float-gap));
     }
 
-    .nb-text-input__controls .nb-text-input__control {
-      width: calc(var(--nb-base-unit) * 4);
-      height: calc(var(--nb-base-unit) * 4);
+    .nb-text-input__inner-message {
+      flex-shrink: 0;
+    }
+
+    .nb-text-input__controls {
+      display: flex;
+      align-items: center;
     }
   }
 }

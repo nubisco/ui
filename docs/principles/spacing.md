@@ -316,6 +316,10 @@ As density goes up, the gaps between controls must come **down**, not stay put. 
 
 Every field control (`NbTextInput`, `NbNumberInput`, `NbSelect`, `NbDatePicker`, `NbSearch`) implements all four sizes.
 
+### Fluid fields keep their size
+
+The `fluid` variant puts the label inside the box, where a placeholder would be while the field is empty, and floats it up and smaller once there is a value or focus. The box stays at its size's field height, so a fluid `sm` select is 32px and lines up with an `sm` button or field beside it. That makes `variant="fluid" size="sm"` the field for a filter bar. A floated label and its value need two lines, which 24px cannot hold, so fluid draws `xs` at `sm`. The geometry is one mixin, `field.fluid-box` in `src/styles/logic/_field.scss`, shared by all four fluid controls.
+
 ## Responsive spacing
 
 Two questions, answered flatly, because a breakpoint map in a template implies an answer to both and gets read either way.

@@ -153,29 +153,19 @@
           class="nb-date-picker__input-wrapper nb-date-picker__input-wrapper--fluid"
           :class="startWrapperClasses"
         >
-          <div
-            v-if="(label || $slots.label || startFluidMessage) && !grouped"
-            class="nb-date-picker__inner-header"
+          <label
+            v-if="(label || $slots.label) && !grouped"
+            :for="inputId"
+            class="nb-date-picker__inner-label"
           >
-            <slot v-if="$slots.label" name="label" />
-            <label v-else :for="inputId" class="nb-date-picker__inner-label">
-              {{ label }}
-              <span
-                v-if="required"
-                class="nb-date-picker__asterisk"
-                aria-hidden="true"
-                >*</span
-              >
-            </label>
-            <NbMessage
-              v-if="startFluidMessage"
-              :variant="startFluidMessage.variant"
-              icon-only
-              class="nb-date-picker__inner-message"
+            <slot name="label">{{ label }}</slot>
+            <span
+              v-if="required"
+              class="nb-date-picker__asterisk"
+              aria-hidden="true"
+              >*</span
             >
-              {{ startFluidMessage.text }}
-            </NbMessage>
-          </div>
+          </label>
           <div class="nb-date-picker__fluid-row">
             <input
               :id="inputId"
@@ -196,6 +186,14 @@
               @blur="onBlur"
               @keydown="onInputKeydown"
             />
+            <NbMessage
+              v-if="startFluidMessage && !grouped"
+              :variant="startFluidMessage.variant"
+              icon-only
+              class="nb-date-picker__inner-message"
+            >
+              {{ startFluidMessage.text }}
+            </NbMessage>
             <NbButton
               v-if="type !== 'simple'"
               variant="ghost"
@@ -219,28 +217,19 @@
           class="nb-date-picker__input-wrapper nb-date-picker__input-wrapper--fluid"
           :class="endWrapperClasses"
         >
-          <div
-            v-if="(endFluidLabel || endMessage) && !grouped"
-            class="nb-date-picker__inner-header"
+          <label
+            v-if="endFluidLabel && !grouped"
+            :for="endInputId"
+            class="nb-date-picker__inner-label"
           >
-            <label :for="endInputId" class="nb-date-picker__inner-label">
-              {{ endFluidLabel }}
-              <span
-                v-if="required"
-                class="nb-date-picker__asterisk"
-                aria-hidden="true"
-                >*</span
-              >
-            </label>
-            <NbMessage
-              v-if="endMessage"
-              :variant="endMessage.variant"
-              icon-only
-              class="nb-date-picker__inner-message"
+            {{ endFluidLabel }}
+            <span
+              v-if="required"
+              class="nb-date-picker__asterisk"
+              aria-hidden="true"
+              >*</span
             >
-              {{ endMessage.text }}
-            </NbMessage>
-          </div>
+          </label>
           <div class="nb-date-picker__fluid-row">
             <input
               :id="endInputId"
@@ -260,6 +249,14 @@
               @blur="onBlur"
               @keydown="onInputKeydown"
             />
+            <NbMessage
+              v-if="endMessage && !grouped"
+              :variant="endMessage.variant"
+              icon-only
+              class="nb-date-picker__inner-message"
+            >
+              {{ endMessage.text }}
+            </NbMessage>
             <NbButton
               variant="ghost"
               icon="calendar"
@@ -1178,10 +1175,12 @@ const calRows = computed(() => {
 })
 
 // The calendar button is the field's size, so it is one square of the same
-// scale. A fluid field is taller than its size (the label sits inside it),
-// so its button stays at sm beside the value row.
+// scale. A fluid field draws xs at sm (a floated label and its value need
+// two lines), so its button does too.
 const fieldButtonSize = computed(() =>
-  props.variant === 'fluid' ? 'sm' : resolvedSize.value,
+  props.variant === 'fluid' && resolvedSize.value === 'xs'
+    ? 'sm'
+    : resolvedSize.value,
 )
 
 const rootClasses = computed(() => [
@@ -1208,6 +1207,8 @@ const startWrapperClasses = computed(() => ({
   'nb-date-picker__input-wrapper--warning': startWarning.value,
   'nb-date-picker__input-wrapper--disabled': isDisabled.value,
   'nb-date-picker__input-wrapper--readonly': props.readonly,
+  'nb-date-picker__input-wrapper--floated':
+    focusedField.value === 'start' || !!displayValue.value,
 }))
 
 const endWrapperClasses = computed(() => ({
@@ -1216,6 +1217,8 @@ const endWrapperClasses = computed(() => ({
   'nb-date-picker__input-wrapper--warning': endHasWarning.value,
   'nb-date-picker__input-wrapper--disabled': isDisabled.value,
   'nb-date-picker__input-wrapper--readonly': props.readonly,
+  'nb-date-picker__input-wrapper--floated':
+    focusedField.value === 'end' || !!endDisplayValue.value,
 }))
 
 defineExpose({
@@ -1332,12 +1335,20 @@ defineExpose({
     background: transparent;
   }
 
+  // The box keeps its size's height and the label floats inside it.
   &--fluid {
-    flex-direction: column;
-    align-items: stretch;
-    min-height: calc(var(--nb-base-unit) * 8);
-    padding-top: 8px;
+    @include field.fluid-box(
+      $label: '.nb-date-picker__inner-label',
+      $value: '.nb-date-picker__field',
+      $floated: '.nb-date-picker__input-wrapper--floated',
+      $until-floated: '.nb-date-picker__field::placeholder'
+    );
   }
+}
+
+// A floated label and the value need two lines, so fluid draws xs at sm.
+.nb-date-picker--fluid.nb-date-picker--xs {
+  --field-h: var(--nb-field-height-sm);
 }
 
 .nb-date-picker__field {
@@ -1373,9 +1384,7 @@ defineExpose({
   @include touch.touch-field-text;
 
   .nb-date-picker__input-wrapper--fluid & {
-    height: auto;
-    flex: 1;
-    padding: 0 var(--nb-field-padding-h) 10px;
+    height: 100%;
     font-size: var(--nb-type-body-compact-size);
     @include touch.touch-field-text;
   }
@@ -1397,39 +1406,21 @@ defineExpose({
   height: calc(var(--field-h) - 1px - var(--nb-field-border-width, 0px));
 }
 
-.nb-date-picker__input-wrapper--fluid .nb-date-picker__icon.nb-button {
-  width: calc(var(--nb-base-unit) * 4);
-  height: calc(var(--nb-base-unit) * 4);
-  margin: 0 var(--nb-base-unit) var(--nb-base-unit) 0;
-}
-
-.nb-date-picker__inner-header {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 var(--nb-field-padding-h);
-  margin-bottom: 4px;
-}
-
-.nb-date-picker__inner-label {
-  flex: 1;
-  min-width: 0;
-  font-size: var(--nb-type-body-sm-size);
-  font-weight: var(--nb-font-weight-semibold, 600);
-  color: var(--nb-c-text-muted);
-  letter-spacing: var(--nb-type-body-sm-letter-spacing);
-  cursor: default;
-  user-select: none;
+.nb-date-picker__inner-message {
+  flex-shrink: 0;
 }
 
 .nb-date-picker__asterisk {
+  margin-inline-start: 2px;
   color: var(--nb-c-danger);
 }
 
 .nb-date-picker__fluid-row {
   display: flex;
   align-items: center;
+  align-self: stretch;
   flex: 1;
+  min-width: 0;
 }
 
 .nb-date-picker__message {

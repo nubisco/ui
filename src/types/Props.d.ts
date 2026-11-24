@@ -51,7 +51,10 @@ interface IWithFieldAppearance {
   /**
    * Presentation variant:
    * - `default` — label above, message below (standard style).
-   * - `fluid`   — label and status icon inside the field box.
+   * - `fluid`   — label and status icon inside the field box. The label rests
+   *   where a placeholder would be while the field is empty, and floats up
+   *   and smaller once it has a value or focus. The box keeps the height of
+   *   `size`, and `xs` is drawn at `sm`.
    */
   variant?: 'default' | 'fluid'
   /**

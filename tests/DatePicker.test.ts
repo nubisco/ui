@@ -333,14 +333,14 @@ describe('DatePicker', () => {
     )
   })
 
-  it('shows an icon-only message in the fluid header when error is set', () => {
+  it('shows an icon-only message on the fluid value line when error is set', () => {
     const wrapper = createWrapper({
       variant: 'fluid',
       label: 'Delivery',
       error: 'Bad date',
     })
     const msg = wrapper.find(
-      '.nb-date-picker__inner-header [data-testid="nb-message"]',
+      '.nb-date-picker__fluid-row [data-testid="nb-message"]',
     )
     expect(msg.exists()).toBe(true)
     expect(msg.attributes('data-variant')).toBe('error')

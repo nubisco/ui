@@ -295,7 +295,7 @@ A disabled field cannot be interacted with at all. A read-only field remains foc
 
 ## Fluid Variant
 
-The fluid variant places the label inside the field, matching other fluid-style form controls. Validation feedback appears as an icon in the field header (hover it for the full message), the same behaviour as the fluid `NbTextInput`.
+The fluid variant places the label inside the field, where the placeholder would be while it is empty, and steps it up and smaller once there is a date or focus, the same behaviour as the fluid `NbTextInput`. Validation feedback appears as an icon on the value line (hover it for the full message). The field keeps the height of its `size` (`xs` is drawn at `sm`).
 
 <preview>
   <NbGrid dir="col" gap="md">

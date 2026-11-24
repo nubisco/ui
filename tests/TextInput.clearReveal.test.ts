@@ -171,33 +171,18 @@ describe('NbTextInput clear and reveal in both variants', () => {
     })
   }
 
-  it('fluid: the buttons are sm whatever the field size', () => {
-    const w = mount(TextInput, {
-      props: {
-        variant: 'fluid',
-        size: 'lg',
-        clearable: true,
-        modelValue: 'abc',
-      },
-    })
-    expect(w.find('.nb-text-input__clear').classes()).toContain('nb-button--sm')
-  })
-
-  it('fluid: the buttons centre on the value line and add no height', () => {
-    const css = readFileSync(
-      resolve(__dirname, '../src/components/TextInput.vue'),
-      'utf8',
-    )
-    const fluid = css.slice(css.indexOf('// ─── FLUID variant'))
-    // The line carries the space under the text, so the input and the
-    // buttons beside it share one centre.
-    expect(fluid).toMatch(
-      /\.nb-text-input__fluid-row \{[^}]*align-items: center;[^}]*padding-bottom: 10px;/,
-    )
-    // A zero-height box: the 32px buttons spill over the line evenly
-    // rather than making the field taller.
-    expect(fluid).toMatch(
-      /\.nb-text-input__controls \{[^}]*align-self: center;[^}]*height: 0;/,
-    )
+  it('fluid: the buttons are the field size, and xs is drawn at sm', () => {
+    for (const [size, expected] of [
+      ['lg', 'nb-button--lg'],
+      ['sm', 'nb-button--sm'],
+      ['xs', 'nb-button--sm'],
+    ] as const) {
+      const w = mount(TextInput, {
+        props: { variant: 'fluid', size, clearable: true, modelValue: 'abc' },
+      })
+      expect(w.find('.nb-text-input__clear').classes(), size).toContain(
+        expected,
+      )
+    }
   })
 })

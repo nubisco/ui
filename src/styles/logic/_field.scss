@@ -1,3 +1,5 @@
+@use 'motion';
+
 /// The corners of a field box.
 ///
 /// One radius for all four corners is what a field draws on its own:
@@ -19,4 +21,98 @@
   border-end-start-radius: var(--nb-field-radius-start, #{$radius});
   border-start-end-radius: var(--nb-field-radius-end, #{$radius});
   border-end-end-radius: var(--nb-field-radius-end, #{$radius});
+}
+
+/// The fluid box: the label sits inside the field, like a placeholder, while
+/// the field is empty, and steps up and shrinks the moment it has a value or
+/// focus, the classic floating label.
+///
+/// The box keeps the height of its size (`--field-h`, the field-height token
+/// the component already sets), so a fluid field lines up with any other
+/// control of the same size. A floated label and the value line need two
+/// lines, which 24px cannot hold, so components draw `xs` at `sm`.
+///
+/// The geometry is one stack: the floated label (16px line scaled to 12px)
+/// over the value line (16px), overlapping by 2px at sm, 26px in all and
+/// centred in the box. Larger sizes open a gap between the two (2px at md,
+/// 4px at lg). The value line sits below the centre of the box by half the
+/// top padding `$value` gets, since it is centred in its row.
+///
+/// The label is the same element in both places and moves on `transform`
+/// alone, on the quick step and the standard curve. Reduced motion drops the
+/// travel and keeps the colour change.
+///
+/// @param {String} $label - the label inside the box
+/// @param {String} $value - the value line (an input, or a span of text)
+/// @param {String} $floated - the box modifier that floats the label
+/// @param {String} $until-floated [null] - what stays hidden while the label
+///   rests in its place (the placeholder, which the label stands in for)
+/// @group @nubisco/logic
+@mixin fluid-box($label, $value, $floated, $until-floated: null) {
+  position: relative;
+  box-sizing: border-box;
+  height: var(--field-h);
+  min-height: 0;
+  // Space between the floated label and the value: none at sm, where the box
+  // has no room for it, and a little more with each size above.
+  --nb-field-float-gap: max(0px, calc((var(--field-h) - 32px) / 4));
+  --nb-field-float-top: calc(
+    (var(--field-h) - 26px - var(--nb-field-float-gap)) / 2
+  );
+
+  #{$label} {
+    position: absolute;
+    top: var(--nb-field-float-top);
+    inset-inline-start: var(--nb-field-padding-h);
+    z-index: 1;
+    box-sizing: border-box;
+    max-width: calc(100% - var(--nb-field-padding-h) * 2);
+    font-size: var(--nb-type-body-compact-size);
+    font-weight: var(--nb-font-weight-regular, 400);
+    letter-spacing: var(--nb-type-body-compact-letter-spacing, normal);
+    line-height: 16px;
+    text-transform: none;
+    color: var(--nb-c-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    // Clicks go through to the control, which the label names anyway.
+    pointer-events: none;
+    user-select: none;
+    transform-origin: left top;
+    // At rest: centred in the box, where the placeholder would be.
+    transform: translateY(
+      calc(var(--field-h) / 2 - 8px - var(--nb-field-float-top))
+    );
+    transition:
+      transform var(--nb-motion-quick) var(--nb-ease-standard),
+      color var(--nb-motion-quick) var(--nb-ease-standard);
+  }
+
+  &:dir(rtl) #{$label} {
+    transform-origin: right top;
+  }
+
+  &#{$floated} #{$label} {
+    transform: scale(0.75);
+  }
+
+  #{$value} {
+    box-sizing: border-box;
+    padding-top: calc(10px + var(--nb-field-float-gap));
+    padding-bottom: 0;
+    line-height: 16px;
+  }
+
+  @if $until-floated {
+    &:not(#{$floated}) #{$until-floated} {
+      opacity: 0;
+    }
+  }
+
+  @include motion.reduced {
+    #{$label} {
+      transition: color var(--nb-motion-quick) var(--nb-ease-standard);
+    }
+  }
 }

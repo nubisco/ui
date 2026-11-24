@@ -19,11 +19,31 @@ The label sits above the field. Helper/error/warning messages appear below.
 
 ### Fluid
 
-The label is rendered inside the field at the top. Useful in dense forms or inline editors.
+The label sits inside the field. While nothing is chosen it rests where a placeholder would be, and once an option is chosen, or the control has focus, it steps up and shrinks above the value. The field keeps the height of its `size`, so a fluid select lines up with every other control of that size. That makes it the select for a filter bar or a toolbar, where a label above the field has no room.
 
 <preview>
   <NbSelect v-model="locale" variant="fluid" label="Locale" :options="localeOptions" />
 </preview>
+
+At `sm` (32px) in a filter bar. The first select is empty, the second has a value:
+
+<preview dir="row">
+  <NbSelect v-model="filterLocale" variant="fluid" size="sm" label="Locale" :options="localeOptions" clearable style="width: 200px" />
+  <NbSelect v-model="filterPlatform" variant="fluid" size="sm" label="Platform" :options="platformOptions" style="width: 200px" />
+</preview>
+
+```vue
+<NbSelect
+  v-model="language"
+  variant="fluid"
+  size="sm"
+  label="Language"
+  :options="languages"
+  clearable
+/>
+```
+
+A floated label and its value need two lines, which 24px cannot hold, so a fluid field draws `xs` at `sm`. The label moves on `transform` on the quick motion step, and with reduced motion it moves without travel.
 
 ```vue
 <template>

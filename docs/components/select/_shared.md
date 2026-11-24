@@ -8,6 +8,8 @@ const clearableLocales = ref<string[]>(['en', 'fr'])
 const platform = ref('linkedin')
 const version = ref('fix-1120')
 const country = ref('PT')
+const filterLocale = ref<string | null>(null)
+const filterPlatform = ref<string | null>('linkedin')
 
 const versionOptions = [
   { label: '1.9.0', value: 'aff-190', group: 'Affects version' },

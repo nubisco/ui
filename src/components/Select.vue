@@ -141,68 +141,80 @@
           :aria-required="required || undefined"
           :aria-invalid="ariaInvalid"
           :aria-describedby="describedBy"
+          :aria-labelledby="fluidLabelledBy"
           :disabled="isDisabled || undefined"
           @click="toggleDropdown"
           @focus="focused = true"
           @blur="focused = false"
         >
-          <NbGrid
+          <!-- Inside the box: where the placeholder would be while nothing
+               is chosen, up and smaller once an option is chosen or the
+               control has focus. The combobox is named by it throughout. -->
+          <span
             v-if="(label || $slots.label) && !grouped"
-            dir="row"
-            align="center"
-            gap="xs"
-            class="nb-select__inner-header"
+            :id="fluidLabelId"
+            class="nb-select__inner-label"
           >
-            <slot v-if="$slots.label" name="label" />
-            <label v-else class="nb-select__inner-label">
-              {{ label }}
-              <span
-                v-if="required"
-                class="nb-select__asterisk"
-                aria-hidden="true"
-                >*</span
-              >
-            </label>
-            <NbMessage
-              v-if="helper && !error && !warning"
-              :id="ids.helper"
-              variant="helper"
-              :icon-only="true"
-              live="off"
-              aria-hidden="true"
-              class="nb-select__inner-message"
-              >{{ helper }}</NbMessage
+            <slot name="label">{{ label }}</slot>
+            <span v-if="required" class="nb-select__asterisk" aria-hidden="true"
+              >*</span
             >
-          </NbGrid>
-          <NbGrid dir="row" align="end" flex class="nb-select__value-row">
-            <span
-              :class="[
-                'nb-select__value',
-                {
-                  'nb-select__value--placeholder': !displayValue,
-                  'nb-select__value--with-icon': !!selectedIcon,
-                },
-              ]"
-            >
-              <NbIcon
-                v-if="selectedIcon"
-                class="nb-select__value-icon"
-                :name="selectedIcon"
-                :size="16"
-              />
-              <slot v-if="displayValue" name="value" :values="selectedValues">{{
-                displayValue
-              }}</slot>
-              <template v-else>{{ placeholder }}</template>
-            </span>
-            <span
-              v-if="showClear"
-              class="nb-select__clear-space"
-              aria-hidden="true"
+          </span>
+          <span
+            :class="[
+              'nb-select__value',
+              {
+                'nb-select__value--placeholder': !displayValue,
+                'nb-select__value--with-icon': !!selectedIcon,
+              },
+            ]"
+          >
+            <NbIcon
+              v-if="selectedIcon"
+              class="nb-select__value-icon"
+              :name="selectedIcon"
+              :size="16"
             />
-            <NbGrid align="center" justify="center" class="nb-select__caret">
-              <NbIcon :name="isOpen ? 'caret-up' : 'caret-down'" :size="16" />
-            </NbGrid>
+            <slot v-if="displayValue" name="value" :values="selectedValues">{{
+              displayValue
+            }}</slot>
+            <template v-else>{{ placeholder }}</template>
+          </span>
+          <NbMessage
+            v-if="helper && !error && !warning && !grouped"
+            :id="ids.helper"
+            variant="helper"
+            :icon-only="true"
+            live="off"
+            aria-hidden="true"
+            class="nb-select__status-icon"
+            >{{ helper }}</NbMessage
+          >
+          <NbMessage
+            v-else-if="error && !grouped"
+            variant="error"
+            :icon-only="true"
+            live="off"
+            aria-hidden="true"
+            class="nb-select__status-icon"
+            >{{ error }}</NbMessage
+          >
+          <NbMessage
+            v-else-if="warning && !grouped"
+            variant="warning"
+            :icon-only="true"
+            live="off"
+            aria-hidden="true"
+            class="nb-select__status-icon"
+            >{{ warning }}</NbMessage
+          >
+          <span
+            v-if="showClear"
+            class="nb-select__clear-space"
+            aria-hidden="true"
+          />
+          <NbGrid align="center" justify="center" class="nb-select__caret">
+            <NbIcon :name="isOpen ? 'caret-up' : 'caret-down'" :size="16" />
           </NbGrid>
         </button>
         <NbButton
@@ -508,6 +520,14 @@ const {
   live: messageLive,
   key: messageKey,
 } = useFieldMessage(props, inputId)
+/*
+ * The fluid label is text inside the trigger, and a combobox takes no name
+ * from its content, so the trigger points at it. Its content is the value.
+ */
+const fluidLabelId = computed(() => `${inputId.value}-label`)
+const fluidLabelledBy = computed(() =>
+  !grouped && (props.label || slots.label) ? fluidLabelId.value : undefined,
+)
 const describedBy = computed(() =>
   joinDescribedBy(
     grouped ? undefined : messageId.value,
@@ -869,6 +889,15 @@ function clearSelection() {
   focusTrigger()
 }
 
+/*
+ * A fluid label rests where the placeholder would be while nothing is chosen
+ * and the control is idle, and floats up once an option is chosen, the
+ * control has focus or its list is open.
+ */
+const floated = computed(
+  () => focused.value || isOpen.value || selectedValues.value.length > 0,
+)
+
 const rootClasses = computed(() => [
   'nb-select',
   `nb-select--${props.variant}`,
@@ -882,6 +911,7 @@ const rootClasses = computed(() => [
       ((!grouped && !!props.warning) || group.status.value === 'warning'),
     'nb-select--multiple': props.multiple,
     'nb-select--bare': !!slots.trigger,
+    'nb-select--floated': props.variant === 'fluid' && floated.value,
   },
 ])
 
@@ -1358,73 +1388,33 @@ defineExpose({
     font-size: var(--nb-type-body-sm-size);
   }
 
+  // The fluid box keeps its size's height and the label floats inside it
+  // (see field.fluid-box). Otherwise it is the default trigger, so the
+  // caret, the clear button and the status icon sit where they always do.
+  // A floated label and the value need two lines, so xs is drawn at sm.
+  &--fluid#{&}--xs {
+    --field-h: var(--nb-field-height-sm);
+    --nb-field-font-size: var(--nb-type-body-compact-size);
+  }
+
   &--fluid {
     .nb-select__trigger {
-      flex: 1;
-      flex-direction: column;
-      align-items: stretch;
-      justify-content: space-between;
-      height: auto;
-      min-height: calc(var(--nb-base-unit) * 8);
-      padding: calc(var(--nb-base-unit) * 1) 0 0;
-      gap: 0;
-    }
-
-    .nb-select__inner-header {
-      padding: 0 var(--nb-field-padding-h);
-      margin-bottom: 4px;
-    }
-
-    .nb-select__inner-label {
-      flex: 1;
-      min-width: 0;
-      font-size: var(--nb-type-body-sm-size);
-      font-weight: var(--nb-font-weight-semibold, 600);
-      color: var(--nb-c-text-muted);
-      letter-spacing: var(--nb-type-body-sm-letter-spacing);
-      cursor: default;
-      user-select: none;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .nb-select__asterisk {
-      color: var(--nb-c-danger);
-    }
-
-    .nb-select__inner-message {
-      flex-shrink: 0;
-    }
-
-    .nb-select__value-row {
-      padding: 0 0 10px;
+      @include field.fluid-box(
+        $label: '.nb-select__inner-label',
+        $value: '.nb-select__value',
+        $floated: ':is(.nb-select--floated *)',
+        $until-floated: '.nb-select__value--placeholder'
+      );
     }
 
     .nb-select__value {
       flex: 1;
-      padding: 0 var(--nb-field-padding-h);
       font-size: var(--nb-type-body-compact-size);
     }
 
-    .nb-select__caret {
-      position: static;
-      width: auto;
-      height: auto;
-      padding: 0 var(--nb-field-padding-h);
-    }
-
-    .nb-select__control {
-      flex: 1;
-    }
-
-    // The fluid caret has padding on both sides and no gap before it, and
-    // the value row sits at the bottom of the trigger.
-    .nb-select__clear {
-      top: auto;
-      bottom: 8px;
-      right: calc(var(--nb-field-padding-h) * 2 + 16px);
-      transform: none;
+    .nb-select__asterisk {
+      margin-inline-start: 2px;
+      color: var(--nb-c-danger);
     }
   }
 }

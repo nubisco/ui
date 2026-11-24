@@ -119,27 +119,28 @@
 
     <!-- FLUID variant -->
     <template v-else-if="variant === 'fluid'">
-      <div class="nb-number-input__field-wrapper" :class="wrapperClasses">
-        <div v-if="label && !grouped" class="nb-number-input__inner-header">
-          <label :for="inputId" class="nb-number-input__inner-label">
-            {{ label }}
-            <span
-              v-if="required"
-              class="nb-number-input__asterisk"
-              aria-hidden="true"
-              >*</span
-            >
-          </label>
-          <NbMessage
-            v-if="helper && !error && !warning"
-            :id="ids.helper"
-            variant="helper"
-            live="off"
-            :icon-only="true"
-            class="nb-number-input__inner-message"
-            >{{ helper }}</NbMessage
+      <div
+        class="nb-number-input__field-wrapper"
+        :class="[
+          wrapperClasses,
+          { 'nb-number-input__field-wrapper--floated': floated },
+        ]"
+      >
+        <!-- Inside the box: where the placeholder would be while the field is
+             empty, up and smaller once it has a value or focus. -->
+        <label
+          v-if="label && !grouped"
+          :for="inputId"
+          class="nb-number-input__inner-label"
+        >
+          {{ label }}
+          <span
+            v-if="required"
+            class="nb-number-input__asterisk"
+            aria-hidden="true"
+            >*</span
           >
-        </div>
+        </label>
 
         <div class="nb-number-input__fluid-row">
           <input
@@ -162,7 +163,16 @@
           />
 
           <NbMessage
-            v-if="error && !grouped"
+            v-if="helper && !error && !warning && !grouped"
+            :id="ids.helper"
+            variant="helper"
+            live="off"
+            :icon-only="true"
+            class="nb-number-input__status"
+            >{{ helper }}</NbMessage
+          >
+          <NbMessage
+            v-else-if="error && !grouped"
             variant="error"
             :icon-only="true"
             live="off"
@@ -284,6 +294,16 @@ const emit = defineEmits<{
 
 const inputRef = ref<HTMLInputElement | null>(null)
 const focused = ref(false)
+
+/*
+ * A fluid label rests where the placeholder would be while the field is
+ * empty and unfocused, and floats up once there is a value or focus.
+ */
+const floated = computed(
+  () =>
+    focused.value ||
+    (props.modelValue !== null && props.modelValue !== undefined),
+)
 
 // Positional, so two fields never share an id.
 const autoId = useStableId({})
@@ -587,45 +607,24 @@ defineExpose({ focus: () => inputRef.value?.focus() })
     font-size: var(--nb-type-body-sm-size);
   }
 
-  // FLUID variant
+  // FLUID variant: the box keeps its size's height and the label floats
+  // inside it (see field.fluid-box). xs is drawn at sm, as every fluid field.
+  &--fluid#{&}--xs {
+    --field-h: var(--nb-field-height-sm);
+  }
+
   &--fluid {
     .nb-number-input__field-wrapper {
-      // When a label is present inside: expand to column layout
-      &:has(.nb-number-input__inner-header) {
-        flex: 1;
-        flex-direction: column;
-        align-items: stretch;
-        justify-content: space-between;
-        height: auto;
-        min-height: calc(var(--nb-base-unit) * 8);
-        padding-top: 8px;
-      }
-    }
-
-    .nb-number-input__inner-header {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 0 var(--nb-field-padding-h);
-      margin-bottom: 4px;
-    }
-
-    .nb-number-input__inner-label {
-      flex: 1;
-      min-width: 0;
-      font-size: var(--nb-type-overline-size);
-      font-weight: var(--nb-type-overline-weight);
-      color: var(--nb-c-text-muted);
-      text-transform: var(--nb-type-overline-text-transform);
-      letter-spacing: var(--nb-type-overline-letter-spacing);
-      cursor: default;
-      user-select: none;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      @include field.fluid-box(
+        $label: '.nb-number-input__inner-label',
+        $value: '.nb-number-input__field',
+        $floated: '.nb-number-input__field-wrapper--floated',
+        $until-floated: '.nb-number-input__field::placeholder'
+      );
     }
 
     .nb-number-input__asterisk {
+      margin-inline-start: 2px;
       color: var(--nb-c-danger);
     }
 
@@ -633,12 +632,13 @@ defineExpose({ focus: () => inputRef.value?.focus() })
       display: flex;
       align-items: center;
       flex: 1;
+      min-width: 0;
     }
 
     .nb-number-input__field {
-      height: auto;
+      height: 100%;
       flex: 1;
-      padding: 6px var(--nb-field-padding-h) 10px;
+      padding-inline: var(--nb-field-padding-h);
       font-size: var(--nb-type-body-compact-size);
       @include touch.touch-field-text;
     }
