@@ -16,8 +16,6 @@ import Blueprint from './components/Blueprint.vue'
 import BlueprintBackground from './components/BlueprintBackground.vue'
 import BlueprintCard from './components/BlueprintCard.vue'
 import BlueprintControls from './components/BlueprintControls.vue'
-import CanvasControls from './components/CanvasControls.vue'
-import CanvasControlsGroup from './components/CanvasControlsGroup.vue'
 import BlueprintDomRenderer from './components/BlueprintDomRenderer.vue'
 import BlueprintMinimap from './components/BlueprintMinimap.vue'
 import BlueprintPixiRenderer from './components/BlueprintPixiRenderer.vue'
@@ -29,6 +27,8 @@ import BriefingDestination from './components/BriefingDestination.vue'
 import Button from './components/Button.vue'
 import ButtonSet from './components/ButtonSet.vue'
 import Calendar from './components/Calendar.vue'
+import CanvasControls from './components/CanvasControls.vue'
+import CanvasControlsGroup from './components/CanvasControlsGroup.vue'
 import Card from './components/Card.vue'
 import CardGrid from './components/CardGrid.vue'
 import ChatMessage from './components/ChatMessage.vue'
@@ -151,8 +151,6 @@ declare module 'vue' {
     NbBlueprintBackground: typeof BlueprintBackground
     NbBlueprintCard: typeof BlueprintCard
     NbBlueprintControls: typeof BlueprintControls
-    NbCanvasControls: typeof CanvasControls
-    NbCanvasControlsGroup: typeof CanvasControlsGroup
     NbBlueprintDomRenderer: typeof BlueprintDomRenderer
     NbBlueprintMinimap: typeof BlueprintMinimap
     NbBlueprintPixiRenderer: typeof BlueprintPixiRenderer
@@ -164,6 +162,8 @@ declare module 'vue' {
     NbButton: typeof Button
     NbButtonSet: typeof ButtonSet
     NbCalendar: typeof Calendar
+    NbCanvasControls: typeof CanvasControls
+    NbCanvasControlsGroup: typeof CanvasControlsGroup
     NbCard: typeof Card
     NbCardGrid: typeof CardGrid
     NbChatMessage: typeof ChatMessage
