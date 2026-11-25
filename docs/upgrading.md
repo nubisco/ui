@@ -1,5 +1,22 @@
 # Upgrading
 
+## To 5.66.0 from 5.65.x
+
+**Three layout gaps closed.** Nothing to change in an app, and nothing moves on
+a desktop:
+
+- **New, opt in:** `wrap` on `NbContainedListItem`, or on `NbContainedList`
+  for every row, lets a title and its line wrap instead of ending in an
+  ellipsis. Without it, rows keep one line each, as before.
+- **Fixed:** an `NbStructuredList` column with `width: 'auto'` was sized row
+  by row, so it did not line up from one row to the next. The list now holds
+  the column tracks and every row is a subgrid of them. Lists whose columns
+  are all lengths or `fr` render exactly as before. If you gave an `auto`
+  column a fixed width only to make it line up, you can put `auto` back.
+- **On a phone** an `NbPanel` header wraps: actions that do not fit beside the
+  title drop under it, at the start, instead of squeezing the title. A short
+  title with one icon button keeps its actions beside it.
+
 ## To 5.64.0 from 5.63.x
 
 **`NbImageCropper` works on a phone.** Additive, with one fix to check:
