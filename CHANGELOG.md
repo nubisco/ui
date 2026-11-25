@@ -1,3 +1,10 @@
+# [5.67.0](https://github.com/nubisco/ui/compare/v5.66.1...v5.67.0) (2026-11-25)
+
+
+### Features
+
+* **tooltip:** a flag at the start of the chip, for text in another language ([c5bc3ac](https://github.com/nubisco/ui/commit/c5bc3ace2b7d70da17c96dae2aa366559502b9c3))
+
 ## [5.66.1](https://github.com/nubisco/ui/compare/v5.66.0...v5.66.1) (2026-11-25)
 
 
