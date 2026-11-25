@@ -1,3 +1,16 @@
+# [5.66.0](https://github.com/nubisco/ui/compare/v5.65.0...v5.66.0) (2026-11-25)
+
+
+### Bug Fixes
+
+* **structured-list:** auto columns line up across every row ([3ddb355](https://github.com/nubisco/ui/commit/3ddb3558ffcf3d68ca0f7b8e5c9f7ffa7fa360d1))
+
+
+### Features
+
+* **contained-list:** wrap lets a title and its line take more than one line ([055d0b1](https://github.com/nubisco/ui/commit/055d0b186fe0fe04b441785d12f34381f19877c9))
+* **panel:** on a phone the header actions drop under a long title ([7c69265](https://github.com/nubisco/ui/commit/7c6926511bc60126568951f92c21de38c24eb36c))
+
 # [5.65.0](https://github.com/nubisco/ui/compare/v5.64.0...v5.65.0) (2026-11-24)
 
 
