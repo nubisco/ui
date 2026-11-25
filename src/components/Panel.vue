@@ -91,6 +91,7 @@ provide(
 
 <style lang="scss" scoped>
 @use '../styles/logic/radius' as radius;
+@use '../styles/variables/breakpoints' as breakpoints;
 
 .nb-panel {
   background: var(--nb-c-surface);
@@ -186,5 +187,23 @@ provide(
   align-items: center;
   justify-content: flex-end;
   gap: var(--nb-spacing-8);
+}
+
+// On a phone the actions stop crushing the title. The header wraps, so the
+// actions stay beside a title that fits next to them and drop to a line of
+// their own, at the start, under one that does not. The title keeps its
+// whole line rather than breaking after every word, and a short title with
+// one icon button looks as it did. The desktop never wraps here.
+@include breakpoints.phone {
+  .nb-panel__header {
+    flex-wrap: wrap;
+    row-gap: var(--nb-spacing-8);
+  }
+
+  .nb-panel__actions {
+    flex-shrink: 1;
+    justify-content: flex-start;
+    max-inline-size: 100%;
+  }
 }
 </style>

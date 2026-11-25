@@ -67,6 +67,23 @@ One filled button per header: a second `primary` in the same `actions` slot
 warns in development. See
 [Information hierarchy](/principles/hierarchy#emphasis-one-filled-button-per-region).
 
+## On a phone
+
+On a phone the header wraps. Actions that fit beside the title stay there, so
+a short title with one icon button looks as it does on a desktop. When the
+title needs the room, the actions drop to a line of their own under it, at the
+start, and the title keeps its whole line instead of breaking after every
+word. Nothing changes on a desktop, and there is nothing to set: it follows
+the library's phone signal (see
+[What the library does on a phone](/principles/layout#what-the-library-does-on-a-phone)).
+
+<preview>
+  <NbPanel title="Dependencies that point the wrong way" description="Found in the last scan." style="width: 100%; max-width: 22rem">
+    <template #actions><NbButton size="sm" variant="primary">Copy the brief</NbButton></template>
+    <p style="margin: 0">On a phone the button sits under the title.</p>
+  </NbPanel>
+</preview>
+
 ## Raised or flat
 
 A panel is raised: it paints the next plane, and that says "this is a group".

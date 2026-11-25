@@ -582,7 +582,8 @@ padding. The drawer closes after navigation, and focus follows both overlays.
 None of it touches the desktop.
 
 Every component caps its own width and degrades to full width rather than
-overflowing, `NbModal` becomes a sheet, and fields and frame controls grow to
+overflowing, `NbModal` becomes a sheet, `NbPanel` moves its header actions
+under a title that needs the room, and fields and frame controls grow to
 44px touch targets on a touch screen. Your own phone changes go through the
 same signal: the `phone` and `phone-touch` mixins in SCSS, `usePhoneLayout()`
 in script. Never a raw width.
