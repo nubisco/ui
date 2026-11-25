@@ -357,6 +357,28 @@ This is not a nicety. WCAG 2.1 AA **1.4.13 Content on Hover or Focus** requires 
 
 **A tooltip is still not a container.** The chip takes no focus, is never in the tab order, closes on <kbd>Escape</kbd> and on the next pointerdown outside it, and holds nothing operable: no links, no buttons, no scroll. Hoverable is about _reading_, not about _operating_. If the content has to be clicked or scrolled, it is not a tooltip: use [`NbInfoHint`](/components/info-hint/usage) for a pinnable popover, or a [modal](/components/modal/usage) for anything larger.
 
+### A flag, for text in another language
+
+`flag` draws a 16px flag at the start of the chip, level with the first line, with the text in its own column beside it. It is for a tooltip that says which language its words are in: a word pointed at in a translated page showing the book's own wording, or a phrase in a foreign text showing its meaning.
+
+```vue
+<template>
+  <span
+    v-nb-tooltip="{
+      body: 'PT teorema de Pitágoras',
+      flag: 'pt',
+      position: 'top',
+    }"
+  >
+    Pythagoras' theorem
+  </span>
+</template>
+```
+
+It takes what [`NbFlag`](/components/flag/usage) takes: a country code or an imported flag module, and a code needs that flag registered or the catalogue loaded, exactly as `NbFlag` does. The flag is the library's own artwork, drawn once per flag and reused, so it never passes through the content allowlist above and caller content still cannot add an `<svg>` or an `<img>`. A flag that cannot be drawn is left out and the text shows on its own.
+
+**A flag is not a language.** It is decorative and hidden from assistive technology, and English is spoken in more countries than any one flag stands for. Put the language's code or name in the text as well, as above.
+
 ## Tone
 
 <preview dir="row" wrap>
@@ -513,6 +535,7 @@ What none of that can tell you is what a browser and a screen reader do with it,
 | `body`          | `string \| IComponentContent[]`                                          | none                | Main line. A string is text: eleven bare inline tags survive, attributes are never parsed, newlines become `<br>`.                                     |
 | `header`        | `string \| IComponentContent[]`                                          | none                | Bold line above the body.                                                                                                                              |
 | `tip`           | `string \| IComponentContent[]`                                          | none                | Demoted line below the body, for a hint such as a shortcut.                                                                                            |
+| `flag`          | `TFlagSource`                                                            | none                | A 16px flag at the start of the chip, for text in another language. A country code or a flag module, as `NbFlag` takes. Decorative.                    |
 | `aria`          | `'auto' \| 'label' \| 'description' \| 'none'`                           | `'auto'`            | How the text is wired to assistive technology. `auto` = `label` when the anchor has no accessible name, else `description`.                            |
 | `position`      | `'cursor' \| 'top' \| 'bottom' \| 'left' \| 'right'`                     | `'cursor'`          | Preferred placement. Flipped and clamped to stay in the viewport. Focus and touch triggers use `top` when this is `cursor`.                            |
 | `followCursor`  | `boolean`                                                                | `false`             | With `position: 'cursor'`, keeps the chip beside the moving pointer. Reactive.                                                                         |
@@ -564,6 +587,19 @@ The chip is a `<span>` appended to `<body>`, positioned `fixed`:
     <div class="nb-tooltip-tip">…</div>
   </div>
 </span>
+```
+
+With `flag`, the content gains a modifier class, the flag, and a column for the text:
+
+```html
+<div class="nb-tooltip-content nb-tooltip-content--flagged">
+  <span class="nb-tooltip-flag" aria-hidden="true"><svg>…</svg></span>
+  <div class="nb-tooltip-text">
+    <div class="nb-tooltip-header">…</div>
+    <div class="nb-tooltip-body">…</div>
+    <div class="nb-tooltip-tip">…</div>
+  </div>
+</div>
 ```
 
 The chip is `aria-hidden` in every mode and carries no `role` and no `id`. It is a painting of text that is already in the accessibility tree, and duplicating it there would announce the same words twice.

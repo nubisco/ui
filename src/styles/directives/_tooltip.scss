@@ -120,6 +120,26 @@
       border-width: calc(var(--nb-base-unit) + 1px);
     }
 
+    // A flag sits at the start of the chip, level with the first line of
+    // text, and the text keeps its own column so a wrapped line does not run
+    // back under the flag.
+    &-content--flagged {
+      display: flex;
+      align-items: flex-start;
+      gap: calc(var(--nb-base-unit) * 1.5);
+    }
+    &-flag {
+      display: inline-flex;
+      flex: none;
+      // Centred on the first line: half the line box minus half the flag.
+      // The line height is a pixel value in the type set.
+      margin-top: calc((var(--nb-type-body-compact-line-height) - 16px) / 2);
+      line-height: 0;
+    }
+    &-text {
+      min-width: 0;
+    }
+
     &-header {
       font-weight: var(--nb-font-weight-semibold);
     }

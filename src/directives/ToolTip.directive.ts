@@ -1,4 +1,8 @@
 import type { App, DirectiveBinding, ObjectDirective } from 'vue'
+import { h, render } from 'vue'
+import NbFlag from '@/components/Flag.vue'
+import { glyphNameOf } from '@/composables/glyphCatalog.composable'
+import type { TFlagSource } from '@/types/Glyph.d'
 import { prefersReducedMotion } from '@/composables/useReducedMotion.composable'
 import { motion } from '@/tokens/motion'
 import type { IComponentContent } from '@/types/ContentRenderer'
@@ -115,6 +119,13 @@ export interface ITooltipOptions {
   body?: string | Array<IComponentContent> | null
   header?: string | Array<IComponentContent> | null
   tip?: string | Array<IComponentContent> | null
+  /** A flag drawn at the start of the chip, before the header and body, at
+   *  16px. A country code (`'pt'`, `'gb'`) or a flag module, exactly what
+   *  `NbFlag` takes. For a tooltip that says which language its text is in,
+   *  such as a translation shown when a word is pointed at. The flag is
+   *  decorative: put the language's name or code in the body as well, because
+   *  a flag alone is not a language and is not read out. */
+  flag?: TFlagSource | null
   /** The chip's tone, from the same vocabulary the rest of the library uses
    *  (`NbBanner.status`, `EVariant`). `default` is the inverted chip and is
    *  what a labelling tooltip should stay on: a coloured chip on a plain icon
@@ -1394,7 +1405,8 @@ const createTooltipContent = ({
   header = '',
   body = '',
   tip = '',
-}: Partial<Pick<ITooltipOptions, 'header' | 'body' | 'tip'>>) => {
+  flag,
+}: Partial<Pick<ITooltipOptions, 'header' | 'body' | 'tip' | 'flag'>>) => {
   // No surrounding whitespace between the wrapper and the children.
   // When `.nb-tooltip-content` is `display: flex` (or any layout that
   // creates anonymous-text-node flex items), the indentation between
@@ -1402,13 +1414,61 @@ const createTooltipContent = ({
   // height. Emitting tight HTML avoids that anonymous-item trap and
   // also makes empty header/body/tip divs cleanly match `:empty`
   // selectors for hide-on-empty rules.
-  return (
-    `<div class="nb-tooltip-content">` +
+  const text =
     `<div class="nb-tooltip-header">${renderTooltipContent(header)}</div>` +
     `<div class="nb-tooltip-body">${renderTooltipContent(body)}</div>` +
-    `<div class="nb-tooltip-tip">${renderTooltipContent(tip)}</div>` +
+    `<div class="nb-tooltip-tip">${renderTooltipContent(tip)}</div>`
+  const flagHtml = flag ? flagMarkup(flag) : ''
+  if (!flagHtml) return `<div class="nb-tooltip-content">${text}</div>`
+  return (
+    `<div class="nb-tooltip-content nb-tooltip-content--flagged">` +
+    `<span class="nb-tooltip-flag" aria-hidden="true">${flagHtml}</span>` +
+    `<div class="nb-tooltip-text">${text}</div>` +
     `</div>`
   )
+}
+
+// ── Flag ──────────────────────────────────────────────────────────────────
+//
+// The chip is built as an HTML string, and caller content goes through an
+// allowlist that admits no SVG, so a flag cannot arrive as content. It does
+// not need to: the flag is the library's own artwork, chosen by a code. It is
+// rendered once through `NbFlag` into a detached element and the resulting
+// markup is cached per flag. Nothing the caller writes reaches this string
+// except the choice of which flag, and an unknown code renders nothing.
+const FLAG_PX = 16
+const flagCache = new Map<string, string>()
+
+const flagMarkup = (flag: TFlagSource): string => {
+  const key =
+    typeof flag === 'string'
+      ? flag.replaceAll('_', '-').toLowerCase()
+      : glyphNameOf(flag)
+  if (key && flagCache.has(key)) return flagCache.get(key)!
+  if (typeof document === 'undefined') return ''
+  const host = document.createElement('div')
+  let markup = ''
+  try {
+    render(h(NbFlag, { flag, size: FLAG_PX }), host)
+    const svg = host.querySelector('svg')
+    if (svg) {
+      svg.removeAttribute('id')
+      svg.setAttribute('aria-hidden', 'true')
+      svg.setAttribute('focusable', 'false')
+      markup = svg.outerHTML
+    }
+  } catch (error) {
+    // A runtime code with no catalogue loaded throws in NbFlag. A tooltip
+    // must not take the page down for a missing flag: the text still shows.
+    devWarn(
+      `flag:${key ?? 'module'}`,
+      `The flag could not be drawn: ${String(error)}`,
+    )
+  } finally {
+    render(null, host)
+  }
+  if (key && markup) flagCache.set(key, markup)
+  return markup
 }
 
 /** The chip's full class list for a given side. Built in one place so the
@@ -1447,6 +1507,7 @@ const showTooltip = (
     header,
     body,
     tip,
+    flag,
     delay = 400,
     animationTime,
     position,
@@ -1517,7 +1578,7 @@ const showTooltip = (
 
     const tooltip = document.createElement('span') as TTooltipChip
     tooltip.className = chipClassName(effectivePosition, status, extraClass)
-    tooltip.innerHTML = createTooltipContent({ header, body, tip })
+    tooltip.innerHTML = createTooltipContent({ header, body, tip, flag })
 
     // ── Hoverable (WCAG 2.1 AA 1.4.13) ──────────────────────────────────
     //
@@ -1647,7 +1708,7 @@ const hideTooltip = (
 }
 
 const updateTooltip = (el: TTooltipEl, options: ITooltipOptions) => {
-  const { header, body, tip, position } = options
+  const { header, body, tip, flag, position } = options
   const status = statusOf(options)
   const extraClass = chipClassOf(options)
   // Re-place against the side the live chip was opened with, not the raw
@@ -1664,6 +1725,7 @@ const updateTooltip = (el: TTooltipEl, options: ITooltipOptions) => {
       header,
       body,
       tip,
+      flag,
     })
     // Appearance, not just content. `flavor` and `classExtra` are part of the
     // signature that decided to repaint, so they have to be applied here or a
