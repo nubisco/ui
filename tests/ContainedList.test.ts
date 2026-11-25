@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { defineComponent } from 'vue'
+import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
 import ContainedList from '../src/components/ContainedList.vue'
 import ContainedListItem from '../src/components/ContainedListItem.vue'
@@ -186,5 +186,70 @@ describe('NbContainedListItem lineClamp', () => {
       '--nb-contained-list-item-line-clamp: 3',
     )
     expect(line.find('mark').text()).toBe('package')
+  })
+})
+
+describe('NbContainedListItem wrap', () => {
+  const WRAP = 'nb-contained-list-item--wrap'
+
+  it('keeps one line per title by default, in a list or alone', () => {
+    expect(
+      mount(ContainedListItem, { props: { title: 'One' } }).classes(),
+    ).not.toContain(WRAP)
+    const w = mountList(
+      '<ContainedList aria-label="Files"><ContainedListItem title="One" /></ContainedList>',
+    )
+    expect(w.find('li').classes()).not.toContain(WRAP)
+  })
+
+  it('wraps when the item asks', () => {
+    const w = mount(ContainedListItem, {
+      props: { title: 'src/a/very/long/path.ts', wrap: true },
+    })
+    expect(w.classes()).toContain(WRAP)
+  })
+
+  it('takes the list wrap as every row default', () => {
+    const w = mountList(`
+      <ContainedList aria-label="Files" wrap>
+        <ContainedListItem title="One" />
+        <ContainedListItem title="Two" />
+      </ContainedList>`)
+    const items = w.findAll('li')
+    expect(items).toHaveLength(2)
+    for (const item of items) expect(item.classes()).toContain(WRAP)
+  })
+
+  it('lets an item override the list, either way', () => {
+    const w = mountList(`
+      <ContainedList aria-label="Files" wrap>
+        <ContainedListItem title="One" :wrap="false" />
+      </ContainedList>
+      <ContainedList aria-label="Others">
+        <ContainedListItem title="Two" wrap />
+      </ContainedList>`)
+    const [one, two] = w.findAll('li')
+    expect(one.classes()).not.toContain(WRAP)
+    expect(two.classes()).toContain(WRAP)
+  })
+
+  it('follows the list when the list changes', async () => {
+    const w = mount(ContainedList, {
+      props: { ariaLabel: 'Files', wrap: false },
+      slots: { default: () => h(ContainedListItem, { title: 'One' }) },
+    })
+    expect(w.find('li').classes()).not.toContain(WRAP)
+    await w.setProps({ wrap: true })
+    expect(w.find('li').classes()).toContain(WRAP)
+  })
+
+  it('keeps a line clamp while it wraps', () => {
+    const w = mount(ContainedListItem, {
+      props: { title: 'One', line: 'A long passage', lineClamp: 2, wrap: true },
+    })
+    expect(w.classes()).toContain(WRAP)
+    expect(w.find('.nb-contained-list-item__line').classes()).toContain(
+      'nb-contained-list-item__line--wraps',
+    )
   })
 })

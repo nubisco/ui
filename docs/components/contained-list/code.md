@@ -60,6 +60,38 @@ doubled heading the hierarchy rules are there to stop.
 </NbContainedListItem>
 ```
 
+## Titles that wrap
+
+`wrap` lets the title and the line under it take as many lines as they need,
+for names that lose their point when they are cut: a file path, a finding, a
+sentence. A long unbroken token, such as a path, breaks anywhere rather than
+pushing the row wider. Set it on the list for every row, or on one item. An
+item's own `wrap` wins over the list's, so `:wrap="false"` keeps one row to a
+line in a list that wraps. A `line-clamp` above 1 still caps the line. The
+default stays one line each, for a list people scan.
+
+<preview>
+  <NbPanel style="width: 100%; max-width: 22rem">
+    <NbContainedList title="Changed files" wrap>
+      <NbContainedListItem title="src/server/routes/billing/invoice-reminders.ts" line="Two new imports from the mailer, one of them back into the routes" href="#titles-that-wrap">
+        <template #trailing>+42</template>
+      </NbContainedListItem>
+      <NbContainedListItem title="README.md" line="One paragraph" href="#titles-that-wrap" />
+    </NbContainedList>
+  </NbPanel>
+</preview>
+
+```vue
+<NbContainedList title="Changed files" wrap>
+  <NbContainedListItem
+    v-for="file in files"
+    :key="file.path"
+    :title="file.path"
+    :line="file.summary"
+  />
+</NbContainedList>
+```
+
 ## NbContainedList props
 
 | Prop           | Type                   | Default     | Description                                                                   |
@@ -69,6 +101,7 @@ doubled heading the hierarchy rules are there to stop.
 | `size`         | `'sm' \| 'md' \| 'lg'` | `'md'`      | Row height: 32, 40 or 48px.                                                   |
 | `maxHeight`    | `string`               | `undefined` | Cap the height and scroll, with the header sticky above the rows.             |
 | `ariaLabel`    | `string`               | `undefined` | The list's accessible name when it has no `title`.                            |
+| `wrap`         | `boolean`              | `false`     | Every row's title and line wrap instead of ending in an ellipsis.             |
 
 ## NbContainedList slots
 
@@ -86,6 +119,7 @@ doubled heading the hierarchy rules are there to stop.
 | `itemKey`   | `string`           | `undefined` | A short identifier before the title, mono and subtle. Not `key`: Vue reserves it.     |
 | `line`      | `string`           | `undefined` | One line of context under the title.                                                  |
 | `lineClamp` | `number`           | `1`         | How many lines `line` may wrap onto before it ends in an ellipsis.                    |
+| `wrap`      | `boolean`          | the list's  | The title and the line wrap in full. Unset, the row follows the list's `wrap`.        |
 | `to`        | `string \| object` | `undefined` | Target route. A `<RouterLink>` with vue-router, a plain link for a string without it. |
 | `href`      | `string`           | `undefined` | Renders the row as a link.                                                            |
 | `target`    | `string`           | `undefined` | Link target. `_blank` also sets `rel="noopener"`.                                     |

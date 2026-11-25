@@ -5,6 +5,7 @@
       'nb-contained-list-item--interactive': isInteractive,
       'nb-contained-list-item--current': current,
       'nb-contained-list-item--disabled': disabled,
+      'nb-contained-list-item--wrap': wraps,
     }"
   >
     <component
@@ -49,9 +50,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import { useSurfaceLink } from './Card.link'
 import type { IContainedListItemProps } from './ContainedList.d'
+import { NB_CONTAINED_LIST_WRAP } from './ContainedList.context'
 
 const props = withDefaults(defineProps<IContainedListItemProps>(), {
   title: undefined,
@@ -64,7 +66,12 @@ const props = withDefaults(defineProps<IContainedListItemProps>(), {
   clickable: false,
   current: false,
   disabled: false,
+  wrap: undefined,
 })
+
+// The item's own `wrap` wins, then the list's, then one line each.
+const listWrap = inject(NB_CONTAINED_LIST_WRAP, null)
+const wraps = computed(() => props.wrap ?? listWrap?.value ?? false)
 
 const emit = defineEmits<{
   /** Activated by a click, Enter or Space. The event carries the modifier keys. */
@@ -205,6 +212,25 @@ const ariaCurrent = computed(() => {
   line-clamp: var(--nb-contained-list-item-line-clamp);
   white-space: normal;
   overflow-wrap: anywhere;
+}
+
+/*
+ * `wrap`: the title and the line take as many lines as they need. A name
+ * that is long because it is precise (a file path, a sentence) loses its
+ * point when it is cut. A long unbroken token, such as a path, breaks
+ * anywhere rather than pushing the row wider. `lineClamp` above 1 still caps
+ * the line, because its rule above sets the clamp and this one only lifts the
+ * nowrap.
+ */
+.nb-contained-list-item--wrap .nb-contained-list-item__title,
+.nb-contained-list-item--wrap .nb-contained-list-item__line {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.nb-contained-list-item--wrap
+  .nb-contained-list-item__line:not(.nb-contained-list-item__line--wraps) {
+  overflow: visible;
 }
 
 // A row that acts is a whole-row target. On a phone touch screen it grows to

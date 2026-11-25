@@ -27,6 +27,14 @@ export interface IContainedListProps {
   maxHeight?: string
   /** The list's accessible name when it has no `title`. */
   ariaLabel?: string
+  /**
+   * Let every row's title and line wrap instead of ending in an ellipsis. An
+   * item's own `wrap` wins over this. Off by default: a list people scan
+   * keeps one line per title.
+   *
+   * @default false
+   */
+  wrap?: boolean
 }
 
 export interface IContainedListItemProps {
@@ -49,6 +57,14 @@ export interface IContainedListItemProps {
    * search result. The `#line` slot keeps its inline markup either way.
    */
   lineClamp?: number
+  /**
+   * Let the title and the line under it wrap onto as many lines as they need
+   * instead of ending in an ellipsis, for names too long to cut, such as a
+   * file path or a sentence. A `lineClamp` above `1` still caps the line.
+   * Unset, the row follows the list's `wrap`, and one line each is the
+   * default.
+   */
+  wrap?: boolean
   /** Target route, as on `NbButton`: a `<RouterLink>` when a router exists. */
   to?: string | Record<string, unknown>
   /** Renders the row as a link. */

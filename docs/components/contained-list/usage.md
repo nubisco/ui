@@ -62,7 +62,9 @@ Reach for something else when:
 Every row has the same anatomy, so a list of them scans down one edge:
 
 - `item-key`: a short identifier before the title, mono and subtle. Optional.
-- `title`: the row's name, at `heading-compact`. One line, truncated.
+- `title`: the row's name, at `heading-compact`. One line, truncated, unless
+  the list or the row has `wrap`, for names that lose their point when cut.
+  See [Titles that wrap](/components/contained-list/code#titles-that-wrap).
 - `line`: one line of context under it, `body-sm`, muted. Optional.
 - `#leading`: an avatar, an icon or a status dot before everything.
 - `#trailing`: one badge or a count at the end. Not a control: a row that is a

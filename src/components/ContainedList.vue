@@ -35,9 +35,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useSlots } from 'vue'
+import { computed, provide, toRef, useSlots } from 'vue'
 import { useStableId } from '@/composables/useStableId.composable'
 import type { IContainedListProps } from './ContainedList.d'
+import { NB_CONTAINED_LIST_WRAP } from './ContainedList.context'
 
 const props = withDefaults(defineProps<IContainedListProps>(), {
   title: undefined,
@@ -45,7 +46,12 @@ const props = withDefaults(defineProps<IContainedListProps>(), {
   size: 'md',
   maxHeight: undefined,
   ariaLabel: undefined,
+  wrap: false,
 })
+
+// The rows read the list's `wrap` as their default, so a list of long names
+// says it once rather than on every row.
+provide(NB_CONTAINED_LIST_WRAP, toRef(props, 'wrap'))
 
 const slots = useSlots()
 const hasHeader = computed(
