@@ -7,7 +7,9 @@ export interface IStructuredListColumn {
   /**
    * The column's track, as a CSS grid track size. Defaults to
    * `minmax(0, 1fr)`, so columns share the width and a long value wraps.
-   * Give a short fixed column (a count, a date) `auto` or a length.
+   * Give a short fixed column (a count, a date) `auto` or a length. An
+   * `auto` column is as wide as its widest cell in any row, so it lines up
+   * from one row to the next.
    */
   width?: string
   /** `'end'` for figures, so a column of numbers lines up on the right. */

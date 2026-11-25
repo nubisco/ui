@@ -43,6 +43,30 @@ A column's `width` is a CSS grid track (`'6rem'`, `'auto'`), and defaults to
 `minmax(0, 1fr)`. `align: 'end'` right-aligns a column of figures with tabular
 numerals.
 
+## Columns sized by their content
+
+A column with `width: 'auto'` is as wide as its widest cell in any row, the
+header included, so it lines up from the first row to the last. The list holds
+the column tracks and every row is a subgrid of them: each row still lays out
+only its own cells, and the tracks are measured once for the whole list. The
+`minmax(0, 1fr)` columns share what is left.
+
+<preview>
+  <NbStructuredList :columns="fileColumns" :rows="fileRows" aria-label="Files" class="structured-list-auto-demo" style="width: 100%" />
+</preview>
+
+```vue
+<NbStructuredList
+  :columns="[
+    { key: 'path', label: 'File', width: 'auto' },
+    { key: 'owner', label: 'Owner', width: 'auto' },
+    { key: 'note', label: 'Note' },
+  ]"
+  :rows="files"
+  aria-label="Files"
+/>
+```
+
 ## Slots
 
 | Slot         | Props            | Description                 |

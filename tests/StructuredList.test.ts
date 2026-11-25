@@ -30,13 +30,20 @@ describe('NbStructuredList', () => {
     ])
   })
 
-  it('lays every row on one shared template, row by row', () => {
+  it('lays every row on the one set of tracks the list holds', () => {
     const w = mount(StructuredList, { props: { columns, rows } })
     expect(w.attributes('style')).toContain(
       '--nb-structured-list-columns: minmax(0, 1fr) auto minmax(0, 1fr)',
     )
-    // The grid is on each row, never on the list.
+    // The list holds the tracks and each row is its own subgrid of them, so a
+    // row only lays out its own cells. Whether an `auto` column lines up is a
+    // layout question jsdom cannot answer: e2e/list-layout.spec.ts measures it.
     expect(w.findAll('.nb-structured-list__row')).toHaveLength(3)
+    for (const row of w.findAll('.nb-structured-list__row')) {
+      expect(row.findAll('[role="cell"], [role="columnheader"]')).toHaveLength(
+        columns.length,
+      )
+    }
   })
 
   it('shows a dash for an empty value', () => {

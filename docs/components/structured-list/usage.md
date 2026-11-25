@@ -42,8 +42,10 @@ thing. A list with a header row is tabular data, several facts about several
 things, and a screen reader should announce it as a table with column
 headers. Bolting columns onto the `<dl>` would have given it the wrong
 semantics, and `layout="columns"` already means something else there. What
-the two components share is the safety rule: **the grid is on each row**, so a
-row only ever lays out its own cells.
+the two components share is the safety rule: **each row is its own grid**, so a
+row only ever lays out its own cells. In a structured list that grid is a
+subgrid of the list's columns, which is what lines an `auto` column up across
+every row.
 
 ## Condensed and flush
 

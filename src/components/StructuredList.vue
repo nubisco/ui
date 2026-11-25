@@ -71,9 +71,11 @@ const props = withDefaults(defineProps<IStructuredListProps>(), {
   empty: '–',
 })
 
-// One template for every row, the header row included, so the columns line up
-// without the list itself being the grid. Each row is its own grid, which is
-// what keeps NbDefinitionList safe: a row only ever lays out its own cells.
+// One set of tracks for the whole list, the header row included. The list
+// holds the tracks and every row is a subgrid of them, so an `auto` column is
+// as wide as its widest cell in any row and the columns line up from one row
+// to the next. Each row is still its own grid, which is what keeps
+// NbDefinitionList safe: a row only ever lays out its own cells.
 const tracks = computed(() =>
   props.columns.map((column) => column.width ?? 'minmax(0, 1fr)').join(' '),
 )
@@ -97,13 +99,25 @@ function isEmpty(value: unknown): boolean {
 // Read-only rows with column headers: the sub-items of a record, a list of
 // roles and their counts. Lighter than NbDataTable (no toolbar, no sorting, no
 // selection, no paging) and, unlike NbDefinitionList, more than two columns.
+//
+// The list is the grid that holds the column tracks, and the row groups and
+// rows are subgrids of it, so a content-sized track (`auto`, `max-content`) is
+// measured once across every row. The inline padding sits on the list, so
+// the tracks share exactly the width they had when each row was its own grid,
+// and each row reaches back over it with a negative margin, so its border
+// still runs edge to edge. A subgrid passes its own margin and padding on to
+// the cells at its edges, and here they cancel out, so the first and last
+// cells sit where they always did. Where subgrid is not supported the rows
+// fall back to their own template, as before.
 .nb-structured-list {
   --nb-structured-list-pad-y: var(--nb-spacing-16);
   --nb-structured-list-pad-x: var(--nb-spacing-16);
 
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: var(--nb-structured-list-columns);
+  column-gap: var(--nb-spacing-16);
   min-inline-size: 0;
+  padding-inline: var(--nb-structured-list-pad-x);
 
   &--condensed {
     --nb-structured-list-pad-y: var(--nb-spacing-8);
@@ -114,11 +128,23 @@ function isEmpty(value: unknown): boolean {
   }
 }
 
+.nb-structured-list__head,
+.nb-structured-list__body {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: var(--nb-structured-list-columns);
+  grid-template-columns: subgrid;
+  column-gap: var(--nb-spacing-16);
+}
+
 .nb-structured-list__row {
   display: grid;
+  grid-column: 1 / -1;
   grid-template-columns: var(--nb-structured-list-columns);
+  grid-template-columns: subgrid;
   column-gap: var(--nb-spacing-16);
   align-items: baseline;
+  margin-inline: calc(-1 * var(--nb-structured-list-pad-x));
   padding: var(--nb-structured-list-pad-y) var(--nb-structured-list-pad-x);
   border-block-end: 1px solid var(--nb-c-border);
 }
@@ -157,9 +183,21 @@ function isEmpty(value: unknown): boolean {
 // the first cell is the row's title, every other cell takes its column header
 // as a label, and the header row goes (its labels are on the cells now).
 @include breakpoints.phone {
+  .nb-structured-list {
+    display: flex;
+    flex-direction: column;
+    padding-inline: 0;
+  }
+
+  .nb-structured-list__head,
+  .nb-structured-list__body {
+    display: block;
+  }
+
   .nb-structured-list__row {
     grid-template-columns: minmax(0, 1fr);
     row-gap: var(--nb-spacing-2);
+    margin-inline: 0;
   }
 
   .nb-structured-list__row--head {

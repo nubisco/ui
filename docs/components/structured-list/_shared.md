@@ -10,4 +10,14 @@ const roleRows = [
   { id: 'viewer', name: 'Viewer', people: 14, can: 'Read' },
   { id: 'guest', name: 'Guest', people: 0, can: '' },
 ]
+const fileColumns = [
+  { key: 'path', label: 'File', width: 'auto' },
+  { key: 'owner', label: 'Owner', width: 'auto' },
+  { key: 'note', label: 'Note' },
+]
+const fileRows = [
+  { id: 1, path: 'src/main.ts', owner: 'Platform', note: 'Entry point' },
+  { id: 2, path: 'src/server/routes/billing.ts', owner: 'Billing', note: 'Imports the mailer' },
+  { id: 3, path: 'README.md', owner: 'Docs and developer experience', note: '' },
+]
 </script>
