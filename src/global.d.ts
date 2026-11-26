@@ -92,6 +92,7 @@ import PieChart from './components/Charts/PieChart.vue'
 import PrimaryActionScope from './components/PrimaryActionScope.vue'
 import ProgressBar from './components/ProgressBar.vue'
 import Radio from './components/Radio.vue'
+import Rating from './components/Rating.vue'
 import ReorderList from './components/ReorderList.vue'
 import Search from './components/Search.vue'
 import Select from './components/Select.vue'
@@ -227,6 +228,7 @@ declare module 'vue' {
     NbPrimaryActionScope: typeof PrimaryActionScope
     NbProgressBar: typeof ProgressBar
     NbRadio: typeof Radio
+    NbRating: typeof Rating
     NbReorderList: typeof ReorderList
     NbSearch: typeof Search
     NbSelect: typeof Select

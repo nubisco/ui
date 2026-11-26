@@ -80,6 +80,7 @@ import NbPanel from './Panel.vue'
 import NbPieChart from './Charts/PieChart.vue'
 import NbProgressBar from './ProgressBar.vue'
 import NbRadio from './Radio.vue'
+import NbRating from './Rating.vue'
 import NbReorderList from './ReorderList.vue'
 import NbSelect from './Select.vue'
 import NbShell from './Shell.vue'
@@ -207,6 +208,7 @@ const components = {
   NbPieChart,
   NbProgressBar,
   NbRadio,
+  NbRating,
   NbSelect,
   NbShell,
   NbSidebarBrand,

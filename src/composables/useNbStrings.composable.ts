@@ -105,6 +105,12 @@ export interface INbStrings {
   searchPlaceholder: string
   // NbSelect `clearable`, when no `clearLabel` is passed
   selectClear: string
+  // NbRating
+  ratingLabel: string
+  ratingValue: (value: number, max: number) => string
+  ratingStars: (count: number) => string
+  ratingNotRated: string
+  ratingClear: string
   // NbNumberInput
   numberInputDecrease: string
   numberInputIncrease: string
@@ -332,6 +338,12 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
   searchLabel: 'Search',
   searchPlaceholder: 'Search',
   selectClear: 'Clear selection',
+  ratingLabel: 'Rating',
+  ratingValue: (value: number, max: number) => `${value} of ${max} stars`,
+  ratingStars: (count: number) =>
+    pluralize(count, { one: '{count} star', other: '{count} stars' }),
+  ratingNotRated: 'Not rated',
+  ratingClear: 'Clear rating',
   numberInputDecrease: 'Decrease',
   numberInputIncrease: 'Increase',
   fileUploaderDropHint: 'Drag and drop files here or click to upload',

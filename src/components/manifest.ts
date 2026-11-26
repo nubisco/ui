@@ -87,6 +87,7 @@ export const COMPONENT_MANIFEST = {
   NbPieChart: 'Charts/PieChart',
   NbProgressBar: 'ProgressBar',
   NbRadio: 'Radio',
+  NbRating: 'Rating',
   NbSelect: 'Select',
   NbShell: 'Shell',
   NbSidebarBrand: 'SidebarBrand',

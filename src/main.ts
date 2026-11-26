@@ -550,6 +550,8 @@ export type {
 export { default as NbRadio } from './components/Radio.vue'
 export type { IRadioOption, IRadioProps } from './components/Radio.d'
 export { ERadioDirection } from './components/Radio.d'
+export { default as NbRating } from './components/Rating.vue'
+export type { IRatingProps, TRatingSize } from './components/Rating.d'
 export { default as NbNotificationCenter } from './components/NotificationCenter.vue'
 export type {
   INotificationItem,

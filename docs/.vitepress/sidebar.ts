@@ -145,6 +145,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Panel', link: '/components/panel/usage' },
       { text: 'Progress Bar', link: '/components/progress-bar/usage' },
       { text: 'Radio', link: '/components/radio/usage' },
+      { text: 'Rating', link: '/components/rating/usage' },
       { text: 'Reorder List', link: '/components/reorder-list/usage' },
       { text: 'Search', link: '/components/search/usage' },
       { text: 'Select', link: '/components/select/usage' },

@@ -321,6 +321,7 @@ Most component libraries impose styling opinions that are hard to override. Nubi
 | `NbCheckbox`    | Styled checkbox with label and indeterminate state                                 |
 | `NbRadio`       | Radio button group with vertical/horizontal layout                                 |
 | `NbSlider`      | Range slider with single value and range modes                                     |
+| `NbRating`      | Star rating, read only or as a radio group input, clearable                        |
 | `NbColorStrip`  | Color strip with single/multi-select                                               |
 
 ### Actions
