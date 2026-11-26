@@ -1,3 +1,10 @@
+# [5.68.0](https://github.com/nubisco/ui/compare/v5.67.0...v5.68.0) (2026-11-26)
+
+
+### Features
+
+* **rating:** NbRating, a star rating to show or set a score ([4c82aae](https://github.com/nubisco/ui/commit/4c82aaea21ab9d9603b3a95ab83f22515dcc4cf8))
+
 # [5.67.0](https://github.com/nubisco/ui/compare/v5.66.1...v5.67.0) (2026-11-25)
 
 
