@@ -98,6 +98,7 @@ const iconMap = {
 <style scoped lang="scss">
 @use '../styles/logic/radius' as radius;
 @use '../styles/logic/focus' as focus;
+@use '../styles/variables/breakpoints' as breakpoints;
 
 .nb-banner {
   display: flex;
@@ -246,6 +247,37 @@ const iconMap = {
     }
     &:focus-visible {
       @include focus.ring(var(--nb-banner-bg));
+    }
+  }
+}
+
+// On a phone the actions drop under the sentence. They never shrink, which is
+// right beside a line of text on a desktop, but in 360px they took the whole
+// row and left the sentence a few pixels wide: one word per line, the buttons
+// over it and the page scrolling sideways (nubisco.io's language offer). The
+// row wraps instead: the sentence keeps the first line beside the icon and the
+// close button, and the actions take a line of their own, lined up with the
+// text. Nothing here reaches a desktop.
+@include breakpoints.phone {
+  .nb-banner:has(.nb-banner__actions) {
+    flex-wrap: wrap;
+    align-items: flex-start;
+
+    .nb-banner__body {
+      flex: 1 1 0;
+    }
+    .nb-banner__close {
+      order: 1;
+    }
+    .nb-banner__actions {
+      order: 2;
+      flex: 1 0 100%;
+      flex-wrap: wrap;
+      align-self: auto;
+    }
+    // Under the text, not under the icon.
+    .nb-banner__icon ~ .nb-banner__actions {
+      padding-inline-start: calc(18px + var(--nb-base-unit) * 1.5);
     }
   }
 }
