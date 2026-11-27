@@ -28,6 +28,7 @@ import NbCheckbox from './Checkbox.vue'
 import NbCheckboxGroup from './CheckboxGroup.vue'
 import NbChipGroup from './ChipGroup.vue'
 import NbCloseButton from './CloseButton.vue'
+import NbCodeInput from './CodeInput.vue'
 import NbColorStrip from './ColorStrip.vue'
 import NbDataTable from './DataTable.vue'
 import NbDefinitionList from './DefinitionList.vue'
@@ -182,6 +183,7 @@ const components = {
   NbInfoHint,
   NbInterpolationChart,
   NbCodeEditor,
+  NbCodeInput,
   NbImageCropper,
   NbImagePicker,
   NbJsonTree,

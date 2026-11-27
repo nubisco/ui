@@ -708,6 +708,14 @@ export { default as NbForm } from './components/Form.vue'
 export type { IFormProps } from './components/Form.d'
 export { default as NbCodeEditor } from './components/CodeEditor.vue'
 export type { ICodeEditorProps } from './components/CodeEditor.d'
+export { default as NbCodeInput } from './components/CodeInput.vue'
+export type {
+  ICodeInputExpose,
+  ICodeInputProps,
+  TCodeInputMode,
+  TCodeInputSize,
+  TCodeInputState,
+} from './components/CodeInput.d'
 export { default as NbImageCropper } from './components/ImageCropper.vue'
 export type { ICropRect, IImageCropperProps } from './components/ImageCropper.d'
 export { EHandleName } from './components/ImageCropper.d'

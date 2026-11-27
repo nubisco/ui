@@ -32,6 +32,7 @@ import NbSelect from '../src/components/Select.vue'
 import NbCheckbox from '../src/components/Checkbox.vue'
 import NbCheckboxGroup from '../src/components/CheckboxGroup.vue'
 import NbRadio from '../src/components/Radio.vue'
+import NbCodeInput from '../src/components/CodeInput.vue'
 import NbSwitch from '../src/components/Switch.vue'
 import NbSlider from '../src/components/Slider.vue'
 import NbTabs from '../src/components/Tabs.vue'
@@ -133,6 +134,29 @@ const cases: ICase[] = [
             { label: 'Free', value: 'free' },
             { label: 'Pro', value: 'pro' },
           ],
+        },
+      }),
+  },
+  {
+    name: 'NbCodeInput with an error',
+    render: () =>
+      mount(NbCodeInput, {
+        props: {
+          label: 'Verification code',
+          state: 'error',
+          error: 'That code is not right',
+        },
+      }),
+  },
+  {
+    name: 'NbCodeInput grouped, verifying',
+    render: () =>
+      mount(NbCodeInput, {
+        props: {
+          groups: [4, 4],
+          mode: 'alphanumeric',
+          modelValue: 'ABCD1234',
+          state: 'verifying',
         },
       }),
   },
