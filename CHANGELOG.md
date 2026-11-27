@@ -1,3 +1,10 @@
+## [5.69.1](https://github.com/nubisco/ui/compare/v5.69.0...v5.69.1) (2026-11-27)
+
+
+### Bug Fixes
+
+* **banner:** on a phone the actions drop under the sentence ([#23](https://github.com/nubisco/ui/issues/23)) ([908c569](https://github.com/nubisco/ui/commit/908c569e7130732df10b78d2d301243b14394c78))
+
 # [5.69.0](https://github.com/nubisco/ui/compare/v5.68.0...v5.69.0) (2026-11-27)
 
 
