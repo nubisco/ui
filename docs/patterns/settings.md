@@ -81,6 +81,16 @@ and its button is as loud as Save.
 6. **The destructive section last, after `xxl`.** 48px above it, so it reads
    as apart. Its control is `danger outlined`, never filled, and the
    confirmation dialog carries the filled one.
+7. **A status beside the settings, when there is room.** When the settings
+   protect or configure something whose state matters on every tab (an
+   account's sign-in security, a project's health), give that state a
+   read-only panel beside the column from `lg` up: an `NbPanel` about 20rem
+   wide, `position: sticky`, holding an `NbContainedList` of rows. Each row has
+   its icon, its name, an `NbBadge` stating the value (`success`, `warning` or
+   `neutral`, never colour for rank) and a link to the section that changes
+   it. The panel changes nothing itself, so it is not a second form beside the
+   first. Below `lg` it is hidden, and the tab that owns those settings opens
+   with the same rows, so the information never depends on the window.
 
 ## One save model per section, and it shows
 
@@ -106,6 +116,11 @@ presence of the Save button alone.
 - **No section title in a box and a heading above it.** One name per section.
 
 ## Reference
+
+Accord's profile (`ui/src/views/ProfileView.vue`, with the status panel in
+`ui/src/views/profile/SecurityStatusList.vue`, in the `accord` repository) is
+the reference for the status beside the settings (anatomy item 7). Agreed by
+Jose on 2026-11-27.
 
 Acta's space settings is the screen this pattern is written against: a name
 form, a list editor, a done-window setting and "Archive or delete" as four
