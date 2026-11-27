@@ -61,6 +61,7 @@ export const COMPONENT_MANIFEST = {
   NbInfoHint: 'InfoHint',
   NbInterpolationChart: 'Charts/InterpolationChart',
   NbCodeEditor: 'CodeEditor',
+  NbCodeInput: 'CodeInput',
   NbImageCropper: 'ImageCropper',
   NbImagePicker: 'ImagePicker',
   NbJsonTree: 'JsonTree',

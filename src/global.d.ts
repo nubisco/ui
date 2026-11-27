@@ -38,6 +38,7 @@ import CheckboxGroup from './components/CheckboxGroup.vue'
 import ChipGroup from './components/ChipGroup.vue'
 import CloseButton from './components/CloseButton.vue'
 import CodeEditor from './components/CodeEditor.vue'
+import CodeInput from './components/CodeInput.vue'
 import ColorStrip from './components/ColorStrip.vue'
 import CommandPalette from './components/CommandPalette.vue'
 import Confirm from './components/Confirm.vue'
@@ -174,6 +175,7 @@ declare module 'vue' {
     NbChipGroup: typeof ChipGroup
     NbCloseButton: typeof CloseButton
     NbCodeEditor: typeof CodeEditor
+    NbCodeInput: typeof CodeInput
     NbColorStrip: typeof ColorStrip
     NbCommandPalette: typeof CommandPalette
     NbConfirm: typeof Confirm

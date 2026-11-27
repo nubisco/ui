@@ -111,6 +111,12 @@ export interface INbStrings {
   ratingStars: (count: number) => string
   ratingNotRated: string
   ratingClear: string
+  // NbCodeInput
+  codeInputLabel: string
+  codeInputDigits: (count: number) => string
+  codeInputCharacters: (count: number) => string
+  codeInputVerifying: string
+  codeInputVerified: string
   // NbNumberInput
   numberInputDecrease: string
   numberInputIncrease: string
@@ -344,6 +350,13 @@ export const NB_DEFAULT_STRINGS: Readonly<INbStrings> = Object.freeze({
     pluralize(count, { one: '{count} star', other: '{count} stars' }),
   ratingNotRated: 'Not rated',
   ratingClear: 'Clear rating',
+  codeInputLabel: 'Verification code',
+  codeInputDigits: (count: number) =>
+    pluralize(count, { one: '{count} digit', other: '{count} digits' }),
+  codeInputCharacters: (count: number) =>
+    pluralize(count, { one: '{count} character', other: '{count} characters' }),
+  codeInputVerifying: 'Verifying',
+  codeInputVerified: 'Verified',
   numberInputDecrease: 'Decrease',
   numberInputIncrease: 'Increase',
   fileUploaderDropHint: 'Drag and drop files here or click to upload',
