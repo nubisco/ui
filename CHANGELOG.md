@@ -1,3 +1,10 @@
+# [5.69.0](https://github.com/nubisco/ui/compare/v5.68.0...v5.69.0) (2026-11-27)
+
+
+### Features
+
+* **code-input:** NbCodeInput, a one-time or device code drawn as slots ([d32f12a](https://github.com/nubisco/ui/commit/d32f12aa632128118cc460eb3be6143ffee5eae5))
+
 # [5.68.0](https://github.com/nubisco/ui/compare/v5.67.0...v5.68.0) (2026-11-26)
 
 
