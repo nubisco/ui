@@ -1,3 +1,10 @@
+## [5.69.2](https://github.com/nubisco/ui/compare/v5.69.1...v5.69.2) (2026-11-28)
+
+
+### Bug Fixes
+
+* outlined buttons keep their colour, and three NbDataTable fixes ([#24](https://github.com/nubisco/ui/issues/24)) ([6559b83](https://github.com/nubisco/ui/commit/6559b8330378a8c82cb504c2d6c260c677a13179))
+
 ## [5.69.1](https://github.com/nubisco/ui/compare/v5.69.0...v5.69.1) (2026-11-27)
 
 
