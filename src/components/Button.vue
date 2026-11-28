@@ -749,7 +749,12 @@ onMounted(() => {
 
   // Outlined modifier: transparent background, colored border and text
   // Applied to all variants except ghost (which has no bg by design)
-  &--outlined:not(&--ghost):not(&--link) {
+  //
+  // The link exclusion sits inside `:where()`, so it adds no specificity.
+  // As a plain second `:not()` it lifted this rule one class above the
+  // per-variant colours below, and every outlined button (danger, primary,
+  // tertiary) drew neutral text and a neutral border at rest.
+  &--outlined:not(&--ghost):not(:where(&--link)) {
     background: transparent;
     color: var(--nb-c-contrast);
     border: 1px solid currentColor;

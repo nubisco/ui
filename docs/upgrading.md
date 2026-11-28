@@ -1,5 +1,21 @@
 # Upgrading
 
+## To 5.69.2 from 5.69.1
+
+**Three fixes, nothing to change in an app.** No prop is renamed or removed:
+
+- **Fixed:** an outlined button drew neutral text and a neutral border at rest
+  since 5.41.0, whatever its variant: `variant="danger" outlined`,
+  `danger-tertiary`, `tertiary` and every other outlined variant. They draw
+  their own colour again, as ink that clears AA in light and dark, tinted dark
+  surfaces included. Hover and pressed did not change.
+- **Fixed:** `NbDataTable`'s error row named its icon in a way the build could
+  not link. It drew nothing, or threw in an app without the icon catalogue. If
+  you registered `warning-circle-fill` with `registerIcons()` to work around
+  it, the registration is now unused and can go.
+- **On a phone** the fields in an `NbDataTable` `#search` slot stack, each the
+  full width, instead of sharing one cramped line. Desktop layouts do not move.
+
 ## To 5.66.0 from 5.65.x
 
 **Three layout gaps closed.** Nothing to change in an app, and nothing moves on

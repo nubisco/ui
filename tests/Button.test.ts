@@ -318,7 +318,7 @@ describe('link variant', () => {
 
   it('is never given the outlined border', () => {
     expect(linkRule).toMatch(
-      /\.nb-button--outlined:not\(\.nb-button--ghost\):not\(\.nb-button--link\)/,
+      /\.nb-button--outlined:not\(\.nb-button--ghost\):not\(:where\(\.nb-button--link\)\)/,
     )
   })
 })

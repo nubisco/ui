@@ -271,6 +271,25 @@ describe('NbDataTable', () => {
       expect(error.attributes('colspan')).toBe(empty.attributes('colspan'))
     })
 
+    it('draws its warning icon from a glyph the build links', () => {
+      // "warning-circle-fill" is no glyph's name, so the build could not link
+      // it and it fell through to a lookup at runtime: nothing drawn here (the
+      // tests run without the catalogue, as a compile-time app does), and a
+      // throw in an app that did not register it by hand.
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+      // The real NbIcon, not the shared stub: only a linked module draws.
+      const icon = mountTable(
+        { error: 'Boom' },
+        { global: { stubs: { NbIcon: false } } },
+      ).find('.nb-data-table__state--error .nb-icon')
+      expect(icon.attributes('aria-hidden')).toBe('true')
+      expect(icon.find('svg').exists()).toBe(true)
+      expect(icon.classes()).toContain('warning-circle')
+      warn.mockRestore()
+      error.mockRestore()
+    })
+
     it('prefers the error state over the empty state', () => {
       const wrapper = mountTable({ rows: [], error: 'Failed' })
       expect(wrapper.find('.nb-data-table__state--error').exists()).toBe(true)
@@ -754,6 +773,58 @@ describe('NbDataTable rowActions', () => {
         .findAll('button')
         .every((b) => b.attributes('disabled') !== undefined),
     ).toBe(true)
+  })
+
+  it('names every row action, whatever state it is in', () => {
+    // Inline, disabled with a reason and loading, then the overflow trigger
+    // past three: each is an icon-only button, so its label is its only name.
+    const three = (): IActionGroupItem[] => [
+      { id: 'edit', label: 'Edit', icon: 'pencil-simple' },
+      {
+        id: 'delete',
+        label: 'Delete',
+        icon: 'trash',
+        disabled: true,
+        disabledReason: 'Paid invoices cannot be deleted',
+      },
+      { id: 'send', label: 'Send', icon: 'star', loading: true },
+    ]
+    const four = (): IActionGroupItem[] => [
+      ...three(),
+      { id: 'copy', label: 'Copy', icon: 'star' },
+    ]
+    const namesOf = (list: () => IActionGroupItem[], stacked: boolean) => {
+      const wrapper = mountTable({ rowActions: list, stackOnPhone: stacked })
+      const names = wrapper
+        .findAll('td.nb-data-table__actions-cell')[0]
+        .findAll('button')
+        .map((b) => b.attributes('aria-label'))
+      wrapper.unmount()
+      return names
+    }
+    for (const stacked of [false, true]) {
+      if (stacked) stubPhone()
+      expect(namesOf(three, stacked)).toEqual(['Edit', 'Delete', 'Send'])
+      expect(namesOf(four, stacked)).toEqual(['Edit', 'Delete', 'More actions'])
+      if (stacked) unstubPhone()
+    }
+  })
+
+  it('shows the label of each row action as its tooltip', async () => {
+    const wrapper = mountTable(
+      { rowActions: actions },
+      { attachTo: document.body },
+    )
+    const edit = wrapper
+      .findAll('td.nb-data-table__actions-cell')[1]
+      .find('button')
+    expect(edit.attributes('data-nb-tooltip-anchor')).toBeDefined()
+    await edit.trigger('focusin')
+    await vi.waitFor(() => {
+      const chip = document.body.querySelector('.nb-tooltip')
+      expect(chip?.textContent?.trim()).toBe('Edit')
+    })
+    wrapper.unmount()
   })
 
   it('runs an action on click', async () => {
