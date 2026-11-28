@@ -62,6 +62,20 @@ Use the slot when the actions are not a list of buttons, a split button or a
 menu, say. A filled `primary` in the slot still counts towards the one-primary
 warning.
 
+Slot actions cannot fold to icons the way the `actions` prop does. On a phone,
+when they do not fit beside the title, they drop under it, so a long title
+keeps the row.
+
+<preview>
+  <NbPageHeader title="Quarterly report for the board, with the regional breakdown" style="width: 100%">
+    <template #status><NbBadge variant="blue">Draft</NbBadge></template>
+    <template #actions>
+      <NbButton size="sm" variant="ghost">Export</NbButton>
+      <NbButton size="sm" variant="primary">Publish</NbButton>
+    </template>
+  </NbPageHeader>
+</preview>
+
 ```vue
 <NbPageHeader title="Quarterly report">
   <template #actions>
