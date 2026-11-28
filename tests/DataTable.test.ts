@@ -775,6 +775,58 @@ describe('NbDataTable rowActions', () => {
     ).toBe(true)
   })
 
+  it('names every row action, whatever state it is in', () => {
+    // Inline, disabled with a reason and loading, then the overflow trigger
+    // past three: each is an icon-only button, so its label is its only name.
+    const three = (): IActionGroupItem[] => [
+      { id: 'edit', label: 'Edit', icon: 'pencil-simple' },
+      {
+        id: 'delete',
+        label: 'Delete',
+        icon: 'trash',
+        disabled: true,
+        disabledReason: 'Paid invoices cannot be deleted',
+      },
+      { id: 'send', label: 'Send', icon: 'star', loading: true },
+    ]
+    const four = (): IActionGroupItem[] => [
+      ...three(),
+      { id: 'copy', label: 'Copy', icon: 'star' },
+    ]
+    const namesOf = (list: () => IActionGroupItem[], stacked: boolean) => {
+      const wrapper = mountTable({ rowActions: list, stackOnPhone: stacked })
+      const names = wrapper
+        .findAll('td.nb-data-table__actions-cell')[0]
+        .findAll('button')
+        .map((b) => b.attributes('aria-label'))
+      wrapper.unmount()
+      return names
+    }
+    for (const stacked of [false, true]) {
+      if (stacked) stubPhone()
+      expect(namesOf(three, stacked)).toEqual(['Edit', 'Delete', 'Send'])
+      expect(namesOf(four, stacked)).toEqual(['Edit', 'Delete', 'More actions'])
+      if (stacked) unstubPhone()
+    }
+  })
+
+  it('shows the label of each row action as its tooltip', async () => {
+    const wrapper = mountTable(
+      { rowActions: actions },
+      { attachTo: document.body },
+    )
+    const edit = wrapper
+      .findAll('td.nb-data-table__actions-cell')[1]
+      .find('button')
+    expect(edit.attributes('data-nb-tooltip-anchor')).toBeDefined()
+    await edit.trigger('focusin')
+    await vi.waitFor(() => {
+      const chip = document.body.querySelector('.nb-tooltip')
+      expect(chip?.textContent?.trim()).toBe('Edit')
+    })
+    wrapper.unmount()
+  })
+
   it('runs an action on click', async () => {
     const list = actions({ id: 2 })
     const wrapper = mountTable({ rowActions: () => list })
