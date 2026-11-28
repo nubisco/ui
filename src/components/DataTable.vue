@@ -1337,6 +1337,30 @@ function onRowKeyup(event: KeyboardEvent, row: T, rowIndex: number) {
   }
 }
 
+// ── Filters in #search, on a phone ─────────────────────────
+// On a desktop the fields in #search share the start of the strip. On a phone
+// that row is about 350px wide, and three filters in it were cut to about
+// 110px each, too narrow to read their own placeholders. So on a phone the
+// start of the strip takes a line of its own and its fields stack, each the
+// full width, 8px apart. Inside the phone query only, so a desktop keeps
+// every pixel, and it does not depend on `stack-on-phone`: a table that
+// scrolls sideways still has a toolbar that must fit the screen.
+@include bp.phone {
+  .nb-data-table__toolbar-tools--search :deep(.nb-toolbar__start) {
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--nb-spacing-8);
+    padding-block: var(--nb-spacing-8);
+    padding-inline: var(--nb-spacing-16);
+
+    > * {
+      flex: none;
+      width: 100%;
+    }
+  }
+}
+
 // ── Stacked on a phone (stackOnPhone) ──────────────────────
 // Each row becomes a card: the primary cell is its title, the meta cells share
 // one muted line under it, and every other cell is a label and value pair read

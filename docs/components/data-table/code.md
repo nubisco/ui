@@ -269,6 +269,12 @@ screen's, so a table in a card or a side panel wraps the same way a phone does.
 Tick a row: the batch bar still covers the whole strip, at whatever height it
 has.
 
+Filters go in `#search` too, as its direct children: a search field, a select
+or two, a date range. On a desktop they share the start of the strip. On a
+phone that line is too short for more than one field, so there they stack, each
+the full width of the table, 8px apart. A wrapper of your own around them is a
+single child, and its layout stays yours.
+
 <preview>
   <div style="max-width: 520px">
     <NbDataTable
