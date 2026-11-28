@@ -210,7 +210,15 @@
                   gap="xs"
                   class="nb-data-table__state-inner"
                 >
-                  <NbIcon name="warning-circle-fill" aria-hidden="true" />
+                  <!-- The name and the weight apart, so the build links the
+                       glyph. "warning-circle-fill" is no glyph's name: it
+                       fell through to a lookup at runtime, which drew
+                       nothing, or threw in an app without the catalogue. -->
+                  <NbIcon
+                    name="warning-circle"
+                    weight="fill"
+                    aria-hidden="true"
+                  />
                   <span>{{
                     error === true ? nbStrings.dataTableError : error
                   }}</span>

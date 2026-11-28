@@ -271,6 +271,25 @@ describe('NbDataTable', () => {
       expect(error.attributes('colspan')).toBe(empty.attributes('colspan'))
     })
 
+    it('draws its warning icon from a glyph the build links', () => {
+      // "warning-circle-fill" is no glyph's name, so the build could not link
+      // it and it fell through to a lookup at runtime: nothing drawn here (the
+      // tests run without the catalogue, as a compile-time app does), and a
+      // throw in an app that did not register it by hand.
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+      // The real NbIcon, not the shared stub: only a linked module draws.
+      const icon = mountTable(
+        { error: 'Boom' },
+        { global: { stubs: { NbIcon: false } } },
+      ).find('.nb-data-table__state--error .nb-icon')
+      expect(icon.attributes('aria-hidden')).toBe('true')
+      expect(icon.find('svg').exists()).toBe(true)
+      expect(icon.classes()).toContain('warning-circle')
+      warn.mockRestore()
+      error.mockRestore()
+    })
+
     it('prefers the error state over the empty state', () => {
       const wrapper = mountTable({ rows: [], error: 'Failed' })
       expect(wrapper.find('.nb-data-table__state--error').exists()).toBe(true)
