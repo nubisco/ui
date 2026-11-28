@@ -15,6 +15,7 @@
       <div
         v-if="actions?.length || $slots.actions"
         class="nb-page-header__actions"
+        :class="{ 'nb-page-header__actions--unfolded': !actions?.length }"
       >
         <PrimaryActionScope owner="NbPageHeader">
           <NbActionGroup
@@ -188,11 +189,29 @@ onUpdated(checkStatus)
   margin-block-start: var(--nb-spacing-4);
 }
 
-// On a phone the actions keep to their own corner: the action group has
-// already folded to icons and a menu, so the title takes the rest of the row.
+// On a phone the actions keep to their own corner when they fit: the action
+// group has already folded to icons and a menu, so the title takes the rest of
+// the row. Slot actions cannot fold, and never shrink, so beside a long title
+// they took the row and left the title one letter wide. Beside slot actions
+// the title asks for at least 12rem, and actions that would leave it less drop
+// under it instead.
 @include breakpoints.phone {
   .nb-page-header__title-row {
     gap: var(--nb-spacing-8);
+  }
+
+  .nb-page-header__title-row:has(.nb-page-header__actions--unfolded) {
+    flex-wrap: wrap;
+
+    .nb-page-header__heading {
+      flex-basis: 12rem;
+    }
+
+    .nb-page-header__actions {
+      flex-shrink: 1;
+      min-inline-size: 0;
+      justify-content: flex-start;
+    }
   }
 }
 </style>
